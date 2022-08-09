@@ -1,0 +1,31 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+.mainBackground {
+  background-color: #ef4345;
+}
+
+.logo {
+  height: 40px;
+  transform: scale(1.5);
+}
+
+.title {
+  margin: auto 0 auto 10px;
+  color: white;
+  padding-left: 10px;
+}
+
+.username {
+  color: white;
+  margin: auto;
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  vertical-align: bottom;
+}

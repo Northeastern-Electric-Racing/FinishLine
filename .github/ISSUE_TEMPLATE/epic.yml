@@ -1,0 +1,27 @@
+name: Epic
+description: A grouping of many issues
+title: "[Area] - Short Description"
+labels: [epic]
+body:
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: What are the user stories driving this epic?
+    validations:
+      required: false
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: What does someone need to know to work on this epic? What will they be making?
+    validations:
+      required: true
+  - type: textarea
+    id: tickets
+    attributes:
+      label: Tickets
+      description: What tickets will be a part of this epic?
+      value: " - [ ] #\n - [ ] #"
+    validations:
+      required: true

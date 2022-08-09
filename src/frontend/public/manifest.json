@@ -1,0 +1,30 @@
+{
+  "short_name": "NER PM Dashboard",
+  "name": "Northeastern Electric Racing Project Management Dashboard",
+  "icons": [
+    {
+      "src": "NERfavicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "NERfavicon192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "NERfavicon512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src":"NER-Logo-App-Icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ef4345",
+  "background_color": "#ffffff"
+}

@@ -1,0 +1,66 @@
+name: Bug
+description: For any issue related to a bug
+title: "[Area] - Short Description"
+labels: [bug]
+body:
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser(s)
+      description: Which browsers does this affect?
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Other (specify below)
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s)
+      description: Which platforms does this affect?
+      multiple: true
+      options:
+        - Desktop
+        - iOS
+        - Android
+        - Other (specify below)
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version(s)
+      description: Which versions of the application does this affect?
+      multiple: true
+      options:
+        - main
+        - production
+        - other (specify below)
+  - type: textarea
+    id: observed-behavior
+    attributes:
+      label: Observed Behavior
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How could someone reproduce this bug?
+      value: "1. \n2. \n3. "
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (as needed)
+      description: Add screenshots of the bug if applicable
+    validations:
+      required: false

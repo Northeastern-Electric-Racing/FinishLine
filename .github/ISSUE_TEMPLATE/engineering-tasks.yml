@@ -1,0 +1,32 @@
+name: Engineering Tasks
+description: For issues related to engineering tasks
+title: "[Area] - Short Description"
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a brief summary of this issue
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: What does someone need to know to work on this issue?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How will this solution be implemented? What will be changed or added? What is the expected result?
+    validations:
+      required: true
+  - type: textarea
+    id: mocks
+    attributes:
+      label: Mocks
+      description: Provide mocks of this new feature
+    validations:
+      required: false

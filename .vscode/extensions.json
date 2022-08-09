@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+        "orta.vscode-jest",
+        "prisma.prisma",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "mgmcdermott.vscode-language-babel",
+        "pkief.material-icon-theme"
+	]
+}

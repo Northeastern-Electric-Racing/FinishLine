@@ -1,0 +1,62 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+$ner-header-font: 'Anton';
+$ner-body-font: 'Oswald';
+
+p,
+div,
+body {
+  margin: 0;
+  font-family: $ner-body-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: $ner-header-font;
+}
+
+$primary: #ef4345;
+$dark: #464646;
+
+// change the theme
+$theme-colors: (
+  'ner-red': #ef4345,
+  'ner-dark-grey': #292929,
+  'ner-dark-bg': #353434,
+  'ner-light-bg': #ffffff,
+  'ner-white': #ffffff
+);
+
+@function theme-color($key) {
+  @return map-get($theme-colors, $key);
+}
+
+.dark {
+  p,
+  div,
+  body,
+  div,
+  td,
+  tr {
+    color: #ffffff;
+  }
+
+  background-color: #353434;
+}
+
+.light {
+  // this is empty because not setting the text color defaults everything to what it was before
+  // same for background color
+}
+
+// Import Bootstrap and its default variables
+@import '~bootstrap/scss/bootstrap.scss';

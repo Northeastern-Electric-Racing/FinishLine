@@ -1,0 +1,14 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+.sidebar {
+  position: fixed;
+  height: 100%;
+  background-color: #292929;
+  width: 75px;
+  min-width: 75px;
+  text-align: center;
+  font-size: 14px;
+}

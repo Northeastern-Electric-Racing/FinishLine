@@ -1,0 +1,20 @@
+name: Run Linting Check
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  run-linting-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+      - name: Install modules
+        run: yarn install && yarn prisma:generate
+      - name: Run linting check
+        run: yarn lint

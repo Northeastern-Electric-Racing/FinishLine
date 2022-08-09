@@ -1,0 +1,15 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+
+.dropdownItems {
+  padding-left: 1.5em !important;
+  background-color: transparent;
+  border: none;
+}
+
+.UserMenuItem {
+  padding: 0 !important;
+}

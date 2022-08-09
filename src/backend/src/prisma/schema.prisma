@@ -1,0 +1,264 @@
+// This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+// See the LICENSE file in the repository root folder for details.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum CR_Type {
+  ISSUE
+  DEFINITION_CHANGE
+  OTHER
+  STAGE_GATE
+  ACTIVATION
+}
+
+enum WBS_Element_Status {
+  INACTIVE
+  ACTIVE
+  COMPLETE
+}
+
+enum Role {
+  APP_ADMIN
+  ADMIN
+  LEADERSHIP
+  MEMBER
+  GUEST
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
+
+enum Scope_CR_Why_Type {
+  ESTIMATION
+  SCHOOL
+  DESIGN
+  MANUFACTURING
+  RULES
+  INITIALIZATION
+  COMPETITION
+  MAINTENANCE
+  OTHER_PROJECT
+  OTHER
+}
+
+model User {
+  userId       Int            @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  googleAuthId String         @unique
+  email        String         @unique
+  emailId      String?        @unique
+  role         Role           @default(GUEST)
+  userSettings User_Settings?
+
+  // Relation references
+  submittedChangeRequests Change_Request[] @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests  Change_Request[] @relation(name: "reviewedChangeRequests")
+  markedAsProjectLead     Activation_CR[]  @relation(name: "markAsProjectLead")
+  markedAsProjectManager  Activation_CR[]  @relation(name: "markAsProjectManager")
+  changes                 Change[]
+  projectLead             WBS_Element[]    @relation(name: "projectLead")
+  projectManager          WBS_Element[]    @relation(name: "projectManager")
+  Session                 Session[]
+  teams                   Team[]           @relation(name: "teamsAsMember")     
+  teamAsLead              Team?            @relation(name: "teamAsLead")
+  createdRisks            Risk[]           @relation(name: "createdBy")
+  resolvedRisks           Risk[]           @relation(name: "resolvedBy")
+  deletedRisks            Risk[]           @relation(name: "deletedBy")
+}
+
+model Team {
+  teamId         String         @id @default(uuid())
+  teamName       String
+  slackId        String
+  description    String         @default("")
+  leaderId       Int            @unique
+  leader         User           @relation(name: "teamAsLead", fields:[leaderId], references: [userId]) 
+  projects       Project[]      
+  members        User[]         @relation(name: "teamsAsMember")
+}
+
+model Session {
+  sessionId  Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [userId])
+  created    DateTime @default(now())
+  deviceInfo String?
+}
+
+model User_Settings {
+  id           String @id @default(uuid())
+  userId       Int    @unique
+  user         User   @relation(fields: [userId], references: [userId])
+  defaultTheme Theme  @default(DARK)
+}
+
+model Change_Request {
+  crId                    Int            @id @default(autoincrement())
+  submitterId             Int
+  submitter               User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
+  dateSubmitted           DateTime       @default(now())
+  wbsElementId            Int
+  wbsElement              WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  type                    CR_Type
+  reviewerId              Int?
+  reviewer                User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  dateReviewed            DateTime?
+  accepted                Boolean?
+  reviewNotes             String?
+  changes                 Change[]
+  scopeChangeRequest      Scope_CR?
+  stageGateChangeRequest  Stage_Gate_CR?
+  activationChangeRequest Activation_CR?
+}
+
+model Scope_CR {
+  scopeCrId       Int            @id @default(autoincrement())
+  changeRequestId Int            @unique
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  what            String
+  why             Scope_CR_Why[]
+  scopeImpact     String
+  timelineImpact  Int
+  budgetImpact    Int
+}
+
+model Scope_CR_Why {
+  scopeCrWhyId Int               @id @default(autoincrement())
+  scopeCrId    Int
+  scopeCr      Scope_CR          @relation(fields: [scopeCrId], references: [scopeCrId])
+  type         Scope_CR_Why_Type
+  explain      String
+}
+
+model Stage_Gate_CR {
+  stageGateCrId   Int            @id @default(autoincrement())
+  changeRequestId Int            @unique
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  leftoverBudget  Int
+  confirmDone     Boolean
+}
+
+model Activation_CR {
+  activationCrId   Int            @id @default(autoincrement())
+  changeRequestId  Int            @unique
+  changeRequest    Change_Request @relation(fields: [changeRequestId], references: [crId])
+  projectLeadId    Int
+  projectLead      User           @relation(name: "markAsProjectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId Int
+  projectManager   User           @relation(name: "markAsProjectManager", fields: [projectManagerId], references: [userId])
+  startDate        DateTime
+  confirmDetails   Boolean
+}
+
+model Change {
+  changeId        Int            @id @default(autoincrement())
+  changeRequestId Int
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  dateImplemented DateTime       @default(now())
+  implementerId   Int
+  implementer     User           @relation(fields: [implementerId], references: [userId])
+  wbsElementId    Int
+  wbsElement      WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  detail          String
+}
+
+model WBS_Element {
+  wbsElementId          Int                @id @default(autoincrement())
+  dateCreated           DateTime           @default(now())
+  carNumber             Int
+  projectNumber         Int
+  workPackageNumber     Int
+  name                  String
+  status                WBS_Element_Status @default(INACTIVE)
+  projectLeadId         Int?
+  projectLead           User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId      Int?
+  projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  changeRequests        Change_Request[]
+  changes               Change[]
+  project               Project?
+  workPackage           Work_Package?
+  dependentWorkPackages Work_Package[]     @relation("dependencies")
+
+  @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
+}
+
+model Project {
+  projectId             Int                  @id @default(autoincrement())
+  wbsElementId          Int                  @unique
+  wbsElement            WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget                Int                  @default(0)
+  summary               String
+  googleDriveFolderLink String?
+  slideDeckLink         String?
+  bomLink               String?
+  taskListLink          String?
+  rules                 String[]
+  goals                 Description_Bullet[] @relation(name: "projectGoals")
+  features              Description_Bullet[] @relation(name: "projectFeatures")
+  otherConstraints      Description_Bullet[] @relation(name: "projectOtherConstraints")
+  workPackages          Work_Package[]
+  teamId                String?                   
+  team                  Team?                  @relation(fields: [teamId], references: [teamId])
+  risks                 Risk[]
+}
+
+model Work_Package {
+  workPackageId      Int                  @id @default(autoincrement())
+  wbsElementId       Int                  @unique
+  wbsElement         WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  projectId          Int
+  project            Project              @relation(fields: [projectId], references: [projectId])
+  orderInProject     Int
+  startDate          DateTime
+  progress           Int                  @default(0)
+  duration           Int
+  dependencies       WBS_Element[]        @relation(name: "dependencies")
+  expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
+  deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
+}
+
+model Description_Bullet {
+  descriptionId                   Int           @id @default(autoincrement())
+  dateAdded                       DateTime      @default(now())
+  dateDeleted                     DateTime?
+  detail                          String
+  // Relation references
+  projectIdGoals                  Int?
+  projectGoals                    Project?      @relation(name: "projectGoals", fields: [projectIdGoals], references: [projectId])
+  projectIdFeatures               Int?
+  projectFeatures                 Project?      @relation(name: "projectFeatures", fields: [projectIdFeatures], references: [projectId])
+  projectIdOtherConstraints       Int?
+  projectOtherConstraints         Project?      @relation(name: "projectOtherConstraints", fields: [projectIdOtherConstraints], references: [projectId])
+  workPackageIdExpectedActivities Int?
+  workPackageExpectedActivities   Work_Package? @relation(name: "workPackageExpectedActivities", fields: [workPackageIdExpectedActivities], references: [workPackageId])
+  workPackageIdDeliverables       Int?
+  workPackageDeliverables         Work_Package? @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
+}
+
+model Risk {
+  id               String    @id @default(uuid())
+  projectId        Int
+  project          Project   @relation(fields: [projectId], references: [projectId])
+  detail           String
+  isResolved       Boolean   @default(false)
+  dateDeleted      DateTime?
+  dateCreated      DateTime  @default(now())
+  createdByUserId  Int
+  createdBy        User      @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
+  resolvedByUserId Int?
+  resolvedBy       User?     @relation(name: "resolvedBy", fields: [resolvedByUserId], references: [userId])
+  resolvedAt       DateTime?
+  deletedByUserId  Int?
+  deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+}

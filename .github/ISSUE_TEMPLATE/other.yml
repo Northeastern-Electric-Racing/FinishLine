@@ -1,0 +1,18 @@
+name: Other
+description: For features that don't fit the other categories
+title: "[Area] - Short Description"
+body:
+  - type: textarea
+    id: desired-changes
+    attributes:
+      label: Desired Changes
+      description: What changes do you want to make?
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (as needed)
+      description: Add screenshots if applicable
+    validations:
+      required: false
