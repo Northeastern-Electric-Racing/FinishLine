@@ -5,13 +5,13 @@
 
 import { useState } from 'react';
 import { useHistory } from 'react-router';
+import { RoleEnum } from 'shared';
 import { exampleAllUsers } from '../../test-support/test-data/users.stub';
 import { useTheme } from '../../services/theme.hooks';
 import { useAuth } from '../../services/auth.hooks';
 import { routes } from '../../routes';
-import LoginPage from './login-page/login-page';
-import LoadingIndicator from '../../components/loading-indicator/loading-indicator';
-import { RoleEnum } from 'shared';
+import LoginPage from './login-page';
+import LoadingIndicator from '../../components/loading-indicator';
 
 interface LoginProps {
   postLoginRedirect: { url: string; search: string };
@@ -21,7 +21,7 @@ interface LoginProps {
  * Page for unauthenticated users to do login.
  */
 const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
-  const [devUserRole, setDevUserRole] = useState<string>(RoleEnum.APP_ADMIN);
+  const [devUserRole, setDevUserRole] = useState<string>(RoleEnum.APP_ADMIN as string);
   const history = useHistory();
   const theme = useTheme();
   const auth = useAuth();

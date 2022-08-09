@@ -10,11 +10,11 @@ import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
 import { useTheme } from '../../../services/theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../services/users.hooks';
-import LoadingIndicator from '../../../components/loading-indicator/loading-indicator';
-import PageBlock from '../../../layouts/page-block/page-block';
-import ErrorPage from '../../ErrorPage/error-page';
-import UserSettingsEdit from './user-settings-edit/user-settings-edit';
-import UserSettingsView from './user-settings-view/user-settings-view';
+import LoadingIndicator from '../../../components/loading-indicator';
+import PageBlock from '../../../layouts/page-block';
+import ErrorPage from '../../error-page';
+import UserSettingsEdit from './user-settings-edit';
+import UserSettingsView from './user-settings-view';
 
 interface UserSettingsProps {
   userId: number;

@@ -5,7 +5,7 @@
 
 import { useState, useContext } from 'react';
 import { AuthenticatedUser, User } from 'shared';
-import { AuthContext } from '../app/app-context-auth/app-context-auth';
+import { AuthContext } from '../app/app-context-auth';
 import { useLogUserIn } from './users.hooks';
 import { Auth } from '../types';
 

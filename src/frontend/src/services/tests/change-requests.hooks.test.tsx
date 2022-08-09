@@ -6,7 +6,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
-import wrapper from '../../app/app-context-query/app-context-query';
+import wrapper from '../../app/app-context-query';
 import { mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
 import {
   exampleAllChangeRequests,

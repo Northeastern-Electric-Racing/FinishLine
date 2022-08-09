@@ -11,15 +11,15 @@ import { useAllUsers } from '../../../services/users.hooks';
 import { useEditWorkPackage } from '../../../services/work-packages.hooks';
 import { routes } from '../../../routes';
 import { wbsPipe } from '../../../pipes';
-import EditableTextInputList from '../../../components/editable-text-input-list/editable-text-input-list';
-import ErrorPage from '../../../pages/ErrorPage/error-page';
-import LoadingIndicator from '../../../components/loading-indicator/loading-indicator';
-import PageBlock from '../../../layouts/page-block/page-block';
+import EditableTextInputList from '../../../components/editable-text-input-list';
+import ErrorPage from '../../error-page';
+import LoadingIndicator from '../../../components/loading-indicator';
+import PageBlock from '../../../layouts/page-block';
 import PageTitle from '../../../layouts/page-title/page-title';
 import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/create-wp-form';
-import DependenciesList from '../work-package-view-container/dependencies-list/dependencies-list';
-import EditModeOptions from './edit-mode-options/edit-mode-options';
-import WorkPackageEditDetails from './work-package-edit-details/work-package-edit-details';
+import DependenciesList from '../work-package-view-container/dependencies-list';
+import EditModeOptions from './edit-mode-options';
+import WorkPackageEditDetails from './work-package-edit-details';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;

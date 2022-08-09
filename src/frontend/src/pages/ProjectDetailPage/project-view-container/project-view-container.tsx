@@ -8,15 +8,16 @@ import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
 import { wbsPipe } from '../../../pipes';
 import { useAuth } from '../../../services/auth.hooks';
-import ChangesList from '../../../components/changes-list/changes-list';
-import DescriptionList from '../../../components/description-list/description-list';
-import WorkPackageSummary from './work-package-summary/work-package-summary';
+import ChangesList from '../../../components/changes-list';
+import DescriptionList from '../../../components/description-list';
+import WorkPackageSummary from './work-package-summary';
 import PageTitle from '../../../layouts/page-title/page-title';
-import PageBlock from '../../../layouts/page-block/page-block';
-import ProjectDetails from './project-details/project-details';
-import RulesList from './rules-list/rules-list';
+import PageBlock from '../../../layouts/page-block';
+import ProjectDetails from './project-details';
+import RulesList from './rules-list';
+import RiskLog from './risk-log';
 import { routes } from '../../../routes';
-import ProjectGantt from './project-gantt/project-gantt';
+import ProjectGantt from './project-gantt';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -49,6 +50,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </DropdownButton>
   );
 
+  const testRisks = [
+    { details: 'Risk #1', resolved: false },
+    { details: 'Risk #2', resolved: true },
+    { details: 'Risk #3', resolved: false }
+  ];
+
   return (
     <Container fluid className="mb-5">
       <PageTitle
@@ -70,6 +77,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <RulesList rules={proj.rules} />
       <ChangesList changes={proj.changes} />
+      <RiskLog risks={testRisks} />
       <PageBlock title={'Work Packages'}>
         {proj.workPackages.map((ele: WorkPackage) => (
           <div key={wbsPipe(ele.wbsNum)} className="mt-3">

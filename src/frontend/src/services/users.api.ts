@@ -4,9 +4,10 @@
  */
 
 import axios from 'axios';
+import { User } from 'shared';
 import { apiUrls } from '../urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
-import { User, AuthenticatedUser, UserSettings } from 'shared';
+import { AuthenticatedUser, UserSettings } from 'shared';
 
 /**
  * Fetches all users.

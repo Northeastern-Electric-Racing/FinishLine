@@ -7,7 +7,7 @@ import React, { ReactElement } from 'react';
 import { MemoryRouter, Route } from 'react-router-dom';
 import { render, RenderOptions } from '@testing-library/react';
 import { routes } from '../routes';
-import AppContext from '../app/app-context/app-context';
+import AppContext from '../app/app-context';
 
 // Regular Expression to match WBS Numbers
 const wbsRegex: RegExp = /([1-9]{1}([0-9]{1})?)\.([1-9]{1}([0-9]{1})?)\.[0-9]{1,2}/;

@@ -12,16 +12,16 @@ import { useEditSingleProject } from '../../../services/projects.hooks';
 import { useAllUsers } from '../../../services/users.hooks';
 import { useAuth } from '../../../services/auth.hooks';
 import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/create-wp-form';
-import EditableTextInputList from '../../../components/editable-text-input-list/editable-text-input-list';
+import EditableTextInputList from '../../../components/editable-text-input-list';
 import PageTitle from '../../../layouts/page-title/page-title';
-import ProjectEditDetails from './project-edit-details/project-edit-details';
-import EditModeOptions from './edit-mode-options/edit-mode-options';
-import ProjectEditSummary from './project-edit-summary/project-edit-summary';
-import PageBlock from '../../../layouts/page-block/page-block';
-import ChangesList from '../../../components/changes-list/changes-list';
-import ErrorPage from '../../../pages/ErrorPage/error-page';
-import LoadingIndicator from '../../../components/loading-indicator/loading-indicator';
-import WorkPackageSummary from '../project-view-container/work-package-summary/work-package-summary';
+import ProjectEditDetails from './project-edit-details';
+import EditModeOptions from './edit-mode-options';
+import ProjectEditSummary from './project-edit-summary';
+import PageBlock from '../../../layouts/page-block';
+import ChangesList from '../../../components/changes-list';
+import ErrorPage from '../../error-page';
+import LoadingIndicator from '../../../components/loading-indicator';
+import WorkPackageSummary from '../project-view-container/work-package-summary';
 
 /**
  * Helper function to turn DescriptionBullets into a list of { id:number, detail:string }.

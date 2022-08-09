@@ -8,9 +8,9 @@ import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../services/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../services/change-requests.hooks';
 import { routes } from '../../../routes';
-import ErrorPage from '../../../pages/ErrorPage/error-page';
-import LoadingIndicator from '../../../components/loading-indicator/loading-indicator';
-import StageGateWorkPackageModal from './stage-gate-work-package-modal/stage-gate-work-package-modal';
+import ErrorPage from '../../error-page';
+import LoadingIndicator from '../../../components/loading-indicator';
+import StageGateWorkPackageModal from './stage-gate-work-package-modal';
 
 interface StageGateWorkPackageModalContainerProps {
   wbsNum: WbsNumber;

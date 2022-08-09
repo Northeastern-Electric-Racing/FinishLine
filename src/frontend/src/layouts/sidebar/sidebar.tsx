@@ -13,8 +13,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../routes';
 import { LinkItem } from '../../types';
-import NavPageLinks from './nav-page-links/nav-page-links';
-import styles from './sidebar.module.css';
+import NavPageLinks from './nav-page-links';
+import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 
 const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [

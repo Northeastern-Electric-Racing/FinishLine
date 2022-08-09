@@ -4,7 +4,7 @@
  */
 
 import { Button, Col, Form, Row } from 'react-bootstrap';
-import PageBlock from '../../../layouts/page-block/page-block';
+import PageBlock from '../../../layouts/page-block';
 import { CreateProjectFormStates } from '../create-project-form';
 
 interface CreateProjectFormViewProps {

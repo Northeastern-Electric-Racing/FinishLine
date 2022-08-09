@@ -9,9 +9,9 @@ import { useAuth } from '../../../services/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../services/change-requests.hooks';
 import { useAllUsers } from '../../../services/users.hooks';
 import { routes } from '../../../routes';
-import ErrorPage from '../../../pages/ErrorPage/error-page';
-import LoadingIndicator from '../../../components/loading-indicator/loading-indicator';
-import ActivateWorkPackageModal from './activate-work-package-modal/activate-work-package-modal';
+import ErrorPage from '../../error-page';
+import LoadingIndicator from '../../../components/loading-indicator';
+import ActivateWorkPackageModal from './activate-work-package-modal';
 
 interface ActivateWorkPackageModalContainerProps {
   wbsNum: WbsNumber;

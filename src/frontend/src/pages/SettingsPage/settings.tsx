@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
 import { useAuth } from '../../services/auth.hooks';
 import PageTitle from '../../layouts/page-title/page-title';
-import PageBlock from '../../layouts/page-block/page-block';
+import PageBlock from '../../layouts/page-block';
 import UserSettings from './user-settings/user-settings';
 
 const Settings: React.FC = () => {
