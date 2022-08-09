@@ -7,7 +7,7 @@ Read more [here](https://github.com/Northeastern-Electric-Racing/FinishLine/blob
 
 All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (emergency backup contact: [`@jamescd18`](https://github.com/jamescd18)).
 
-## Local Setup for Developers Who Worked on v2
+## Getting Started for Developers Who Worked on v2
 
 If you worked on PM Dashboard v2, then setting this up will be easy. Here are the steps:
 
