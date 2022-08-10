@@ -11,11 +11,11 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const options: cors.CorsOptions = {
-  origin: ['http://localhost:3000', 'https://finishline.netlify.app/'],
+  origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: false,
-  allowedHeaders: ['Content-Type', 'X-Requested-With', 'XMLHttpRequest']
+  allowedHeaders: '*'
 };
 
 app.use(cors(options));
@@ -29,7 +29,7 @@ app.use('/risks', risksRouter);
 app.use('/change-requests', changeRequestsRouter);
 
 app.use('/', (_req, res) => {
-  res.json('Welcome to FinishLine');
+  res.json('Welcome to FinishLine!');
 });
 
 app.listen(port, () => {
