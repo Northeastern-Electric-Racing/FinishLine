@@ -13,7 +13,7 @@ const port = process.env.PORT || 3001;
 const options: cors.CorsOptions = {
   origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
+  credentials: false,
   preflightContinue: false,
   allowedHeaders: '*'
 };
@@ -29,7 +29,7 @@ app.use('/risks', risksRouter);
 app.use('/change-requests', changeRequestsRouter);
 
 app.use('/', (_req, res) => {
-  res.json('Welcome to FinishLine!');
+  res.json('Welcome to FinishLine');
 });
 
 app.listen(port, () => {
