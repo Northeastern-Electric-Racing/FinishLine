@@ -14,7 +14,7 @@ const options: cors.CorsOptions = {
   origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: false,
-  preflightContinue: false,
+  preflightContinue: true,
   allowedHeaders: '*'
 };
 
