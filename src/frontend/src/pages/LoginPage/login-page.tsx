@@ -7,6 +7,9 @@ import GoogleLogin from 'react-google-login';
 import { Card } from 'react-bootstrap';
 import LoginDev from './login-dev';
 import { Theme } from '../../types';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { apiUrls } from '../../urls';
 
 const styles = {
   card: {
@@ -32,11 +35,23 @@ const LoginPage: React.FC<LoginPageProps> = ({
   prodFailure,
   theme
 }) => {
+  const [data, setData] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await axios.get(apiUrls.test());
+
+      setData(result.data);
+    };
+    fetchData();
+  }, []);
+
   return (
     <Card bg={theme.cardBg} className={'mx-auto mt-sm-5 '} style={styles.card}>
       <Card.Body>
         <Card.Title>NER PM Dashboard</Card.Title>
         <Card.Text>Login Required. Students must use their Husky Google account.</Card.Text>
+        <Card.Text>{data}</Card.Text>
         <GoogleLogin
           clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
           //jsSrc={'accounts.google.com/gsi/client.js'}
