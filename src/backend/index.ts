@@ -10,15 +10,15 @@ import changeRequestsRouter from './src/routes/change-requests.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-// const options: cors.CorsOptions = {
-//   origin: '*',
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   credentials: false,
-//   preflightContinue: true,
-//   allowedHeaders: '*'
-// };
+const options: cors.CorsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: false,
+  preflightContinue: true,
+  allowedHeaders: '*'
+};
 
-app.use(cors());
+app.use(cors(options));
 app.use(express.json());
 
 app.use('/users', userRouter);
@@ -40,6 +40,5 @@ app.listen(port, () => {
   █████╗  ██║██╔██╗ ██║██║███████╗███████║██║     ██║██╔██╗ ██║█████╗  
   ██╔══╝  ██║██║╚██╗██║██║╚════██║██╔══██║██║     ██║██║╚██╗██║██╔══╝  
   ██║     ██║██║ ╚████║██║███████║██║  ██║███████╗██║██║ ╚████║███████╗
-  ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝
-                                                                       `);
+  ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝`);
 });
