@@ -9,8 +9,6 @@
 
 const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
-const test = () => `${API_URL}/`;
-
 /**************** Users Endpoint ****************/
 const users = () => `${API_URL}/users`;
 const usersById = (id: string) => `${users()}/${id}`;
@@ -45,8 +43,6 @@ const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gat
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 
 export const apiUrls = {
-  test,
-
   users,
   usersById,
   usersLogin,
