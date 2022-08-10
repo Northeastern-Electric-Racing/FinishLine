@@ -7,9 +7,6 @@ import GoogleLogin from 'react-google-login';
 import { Card } from 'react-bootstrap';
 import LoginDev from './login-dev';
 import { Theme } from '../../types';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { apiUrls } from '../../urls';
 
 const styles = {
   card: {
