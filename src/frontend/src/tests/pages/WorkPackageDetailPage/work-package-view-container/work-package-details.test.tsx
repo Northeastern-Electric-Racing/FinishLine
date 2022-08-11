@@ -3,26 +3,26 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../../test-support/test-utils';
+import { render, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { endDatePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../pipes';
+import { endDatePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
   exampleWorkPackage3
-} from '../../../../test-support/test-data/work-packages.stub';
+} from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/work-package-view-container/work-package-details';
-import { useAllUsers } from '../../../../services/users.hooks';
+import { useAllUsers } from '../../../../hooks/users.hooks';
 import { User } from 'shared';
-import { mockUseQueryResult } from '../../../../test-support/test-data/test-utils.stub';
+import { mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
 import { UseQueryResult } from 'react-query';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
   exampleLeadershipUser
-} from '../../../../test-support/test-data/users.stub';
+} from '../../../test-support/test-data/users.stub';
 
-jest.mock('../../../../services/users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 

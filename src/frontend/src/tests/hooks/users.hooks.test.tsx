@@ -8,12 +8,12 @@ import { act } from 'react-dom/test-utils';
 import { AxiosResponse } from 'axios';
 import { User } from 'shared';
 import wrapper from '../../app/app-context-query';
-import { mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
-import { exampleAllUsers, exampleAdminUser } from '../../test-support/test-data/users.stub';
-import { getAllUsers, getSingleUser, logUserIn } from '../users.api';
-import { useAllUsers, useSingleUser, useLogUserIn } from '../users.hooks';
+import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
+import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
+import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
+import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
 
-jest.mock('../users.api');
+jest.mock('../../apis/users.api');
 
 describe('user hooks', () => {
   it('handles getting a list of users', async () => {

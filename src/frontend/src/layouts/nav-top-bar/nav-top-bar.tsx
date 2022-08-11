@@ -5,9 +5,9 @@
 
 import { Nav, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { routes } from '../../routes';
-import { useAuth } from '../../services/auth.hooks';
-import { fullNamePipe } from '../../pipes';
+import { routes } from '../../utils/routes';
+import { useAuth } from '../../hooks/auth.hooks';
+import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './nav-user-menu';
 import NavNotificationsMenu from './nav-notifications-menu';
 import styles from '../../stylesheets/layouts/nav-top-bar/nav-top-bar.module.css';

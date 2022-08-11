@@ -5,8 +5,8 @@
 
 import axios from 'axios';
 import { Project, WbsNumber } from 'shared';
-import { wbsPipe } from '../pipes';
-import { apiUrls } from '../urls';
+import { wbsPipe } from '../utils/pipes';
+import { apiUrls } from '../utils/urls';
 import { projectTransformer } from './transformers/projects.transformers';
 
 /**

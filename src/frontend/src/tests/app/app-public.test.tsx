@@ -4,12 +4,12 @@
  */
 
 import { User } from 'shared';
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
-import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { useAuth } from '../../services/auth.hooks';
-import { routes } from '../../routes';
-import { Auth } from '../../types';
+import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
+import { exampleAdminUser } from '../test-support/test-data/users.stub';
+import { mockAuth } from '../test-support/test-data/test-utils.stub';
+import { useAuth } from '../../hooks/auth.hooks';
+import { routes } from '../../utils/routes';
+import { Auth } from '../../utils/types';
 import AppPublic from '../../app/app-public';
 
 jest.mock('../../app/app-authenticated', () => {
@@ -21,7 +21,7 @@ jest.mock('../../app/app-authenticated', () => {
   };
 });
 
-jest.mock('../../services/auth.hooks');
+jest.mock('../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

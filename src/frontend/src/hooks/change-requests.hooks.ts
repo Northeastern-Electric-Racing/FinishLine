@@ -12,7 +12,7 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest
-} from './change-requests.api';
+} from '../apis/change-requests.api';
 
 /**
  * Custom React Hook to supply all change requests.

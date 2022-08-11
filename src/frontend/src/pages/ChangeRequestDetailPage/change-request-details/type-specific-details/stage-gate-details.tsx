@@ -5,7 +5,7 @@
 
 import { Col, Container, Row } from 'react-bootstrap';
 import { StageGateChangeRequest } from 'shared';
-import { booleanPipe, dollarsPipe } from '../../../../pipes';
+import { booleanPipe, dollarsPipe } from '../../../../utils/pipes';
 import PageBlock from '../../../../layouts/page-block';
 
 interface StageGateDetailsProps {

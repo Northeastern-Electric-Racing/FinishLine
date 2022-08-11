@@ -10,7 +10,7 @@ import {
   exampleLeadershipUser,
   exampleMemberUser,
   exampleGuestUser
-} from '../../test-support/test-data/users.stub';
+} from '../../tests/test-support/test-data/users.stub';
 
 interface LoginDevProps {
   devSetRole: (role: string) => void;

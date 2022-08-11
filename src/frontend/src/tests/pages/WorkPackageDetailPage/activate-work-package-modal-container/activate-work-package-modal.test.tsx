@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../../../test-support/test-utils';
-import { exampleAllUsers } from '../../../../test-support/test-data/users.stub';
-import { exampleWbs1 } from '../../../../test-support/test-data/wbs-numbers.stub';
+import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/activate-work-package-modal-container/activate-work-package-modal';
-import { wbsPipe } from '../../../../pipes';
+import { wbsPipe } from '../../../../utils/pipes';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting

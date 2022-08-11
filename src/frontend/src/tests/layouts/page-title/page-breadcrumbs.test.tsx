@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
-import { testLinkItems } from '../../../test-support/test-data/test-utils.stub';
-import { LinkItem } from '../../../types';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
+import { LinkItem } from '../../../utils/types';
 import PageBreadcrumbs from '../../../layouts/page-title/page-breadcrumbs';
 
 // Render component under test

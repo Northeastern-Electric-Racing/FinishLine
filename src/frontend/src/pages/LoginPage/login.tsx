@@ -6,10 +6,10 @@
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { RoleEnum } from 'shared';
-import { exampleAllUsers } from '../../test-support/test-data/users.stub';
-import { useTheme } from '../../services/theme.hooks';
-import { useAuth } from '../../services/auth.hooks';
-import { routes } from '../../routes';
+import { exampleAllUsers } from '../../tests/test-support/test-data/users.stub';
+import { useTheme } from '../../hooks/theme.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
+import { routes } from '../../utils/routes';
 import LoginPage from './login-page';
 import LoadingIndicator from '../../components/loading-indicator';
 

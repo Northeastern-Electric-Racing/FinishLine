@@ -5,9 +5,9 @@
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { apiUrls } from '../../urls';
-import { exampleAllUsers, exampleAdminUser } from '../../test-support/test-data/users.stub';
-import { getAllUsers, getSingleUser, logUserIn } from '../users.api';
+import { apiUrls } from '../../utils/urls';
+import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
+import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
 
 // Mock the server endpoint(s) that the component will hit
 const server = setupServer(

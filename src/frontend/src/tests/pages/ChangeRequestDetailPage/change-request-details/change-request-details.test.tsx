@@ -9,20 +9,20 @@ import {
   render,
   screen,
   act
-} from '../../../../test-support/test-utils';
+} from '../../../test-support/test-utils';
 import {
   ActivationChangeRequest,
   ChangeRequest,
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { datePipe } from '../../../../pipes';
+import { datePipe } from '../../../../utils/pipes';
 import {
   exampleActivationChangeRequest,
   exampleAllChangeRequests,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../../../test-support/test-data/change-requests.stub';
+} from '../../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetails from '../../../../pages/ChangeRequestDetailPage/change-request-details/change-request-details';
 
 /**

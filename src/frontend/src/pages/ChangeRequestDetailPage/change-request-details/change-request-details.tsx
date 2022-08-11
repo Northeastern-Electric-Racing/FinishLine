@@ -13,8 +13,8 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { routes } from '../../../routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../../pipes';
+import { routes } from '../../../utils/routes';
+import { datePipe, fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import ActivationDetails from './type-specific-details/activation-details';
 import StageGateDetails from './type-specific-details/stage-gate-details';
 import ImplementedChangesList from './implemented-changes-list';

@@ -5,7 +5,7 @@
 
 import { Col, Container, Row } from 'react-bootstrap';
 import { WorkPackage } from 'shared';
-import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../pipes';
+import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/wbs-status';
 import PageBlock from '../../../layouts/page-block';
 

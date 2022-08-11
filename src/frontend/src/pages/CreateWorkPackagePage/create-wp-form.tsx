@@ -6,9 +6,9 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { isProject, validateWBS, WbsNumber } from 'shared';
-import { useAuth } from '../../services/auth.hooks';
-import { useCreateSingleWorkPackage } from '../../services/work-packages.hooks';
-import { routes } from '../../routes';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/loading-indicator';
 import CreateWPFormView from './create-wp-form/create-wp-form';
 

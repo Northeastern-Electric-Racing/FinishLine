@@ -5,8 +5,8 @@
 
 import axios from 'axios';
 import { WbsNumber, WorkPackage } from 'shared';
-import { wbsPipe } from '../pipes';
-import { apiUrls } from '../urls';
+import { wbsPipe } from '../utils/pipes';
+import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 /**

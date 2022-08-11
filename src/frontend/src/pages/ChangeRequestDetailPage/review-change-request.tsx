@@ -4,8 +4,8 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../services/auth.hooks';
-import { useReviewChangeRequest } from '../../services/change-requests.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useReviewChangeRequest } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../error-page';
 import LoadingIndicator from '../../components/loading-indicator';
 import ReviewChangeRequestsView from './review-change-request/review-change-request';

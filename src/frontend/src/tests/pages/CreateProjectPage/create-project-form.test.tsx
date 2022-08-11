@@ -4,14 +4,14 @@
  */
 
 import { User } from 'shared';
-import { render, screen } from '../../../test-support/test-utils';
-import { useAuth } from '../../../services/auth.hooks';
-import { Auth } from '../../../types';
-import { exampleAdminUser, exampleGuestUser } from '../../../test-support/test-data/users.stub';
-import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import { render, screen } from '../../test-support/test-utils';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { Auth } from '../../../utils/types';
+import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateProjectForm from '../../../pages/CreateProjectPage/create-project-form';
 
-jest.mock('../../../services/auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

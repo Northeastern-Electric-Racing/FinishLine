@@ -5,30 +5,30 @@
 
 import { UseQueryResult } from 'react-query';
 import { ChangeRequest } from 'shared';
-import { Auth } from '../../../types';
+import { Auth } from '../../../utils/types';
 import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR
-} from '../../../test-support/test-data/change-requests.stub';
+} from '../../test-support/test-data/change-requests.stub';
 import {
   exampleAdminUser,
   exampleAdminUser2,
   exampleGuestUser,
   exampleMemberUser
-} from '../../../test-support/test-data/users.stub';
+} from '../../test-support/test-data/users.stub';
 import {
   render,
   screen,
   routerWrapperBuilder,
   act,
   fireEvent
-} from '../../../test-support/test-utils';
-import { mockUseQueryResult, mockAuth } from '../../../test-support/test-data/test-utils.stub';
-import { useSingleChangeRequest } from '../../../services/change-requests.hooks';
-import { useAuth } from '../../../services/auth.hooks';
+} from '../../test-support/test-utils';
+import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/change-request-details';
 
-jest.mock('../../../services/change-requests.hooks');
+jest.mock('../../../hooks/change-requests.hooks');
 
 const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<
   UseQueryResult<ChangeRequest>
@@ -45,7 +45,7 @@ const mockSingleCRHook = (
   );
 };
 
-jest.mock('../../../services/auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

@@ -5,7 +5,7 @@
 
 import { Container, Row, Col } from 'react-bootstrap';
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import { weeksPipe, dollarsPipe } from '../../../../pipes';
+import { weeksPipe, dollarsPipe } from '../../../../utils/pipes';
 import PageBlock from '../../../../layouts/page-block';
 
 interface StandardDetailsProps {

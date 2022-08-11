@@ -7,13 +7,13 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { Project } from 'shared';
 import wrapper from '../../app/app-context-query';
-import { mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
-import { exampleAllProjects, exampleProject1 } from '../../test-support/test-data/projects.stub';
-import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
-import { getAllProjects, getSingleProject } from '../projects.api';
-import { useAllProjects, useSingleProject } from '../projects.hooks';
+import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
+import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
+import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
+import { getAllProjects, getSingleProject } from '../../apis/projects.api';
+import { useAllProjects, useSingleProject } from '../../hooks/projects.hooks';
 
-jest.mock('../projects.api');
+jest.mock('../../apis/projects.api');
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {

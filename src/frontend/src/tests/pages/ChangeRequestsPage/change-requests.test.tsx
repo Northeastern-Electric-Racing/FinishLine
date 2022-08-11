@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { routes } from '../../../routes';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { routes } from '../../../utils/routes';
 import ChangeRequests from '../../../pages/ChangeRequestsPage/change-requests';
 
 jest.mock('../../../pages/ChangeRequestsPage/change-requests-table', () => {

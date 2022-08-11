@@ -8,7 +8,7 @@ import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
-import { routes } from '../../routes';
+import { routes } from '../../utils/routes';
 import { FormInput } from './create-change-request';
 import PageTitle from '../../layouts/page-title/page-title';
 import PageBlock from '../../layouts/page-block';

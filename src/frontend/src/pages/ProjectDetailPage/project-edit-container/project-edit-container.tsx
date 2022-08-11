@@ -6,11 +6,11 @@
 import { SyntheticEvent, useState } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { DescriptionBullet, Project, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../pipes';
-import { routes } from '../../../routes';
-import { useEditSingleProject } from '../../../services/projects.hooks';
-import { useAllUsers } from '../../../services/users.hooks';
-import { useAuth } from '../../../services/auth.hooks';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
+import { useEditSingleProject } from '../../../hooks/projects.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/create-wp-form';
 import EditableTextInputList from '../../../components/editable-text-input-list';
 import PageTitle from '../../../layouts/page-title/page-title';

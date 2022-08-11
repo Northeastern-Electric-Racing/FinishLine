@@ -4,14 +4,14 @@
  */
 
 import { UseMutationResult } from 'react-query';
-import { render, screen } from '../../../../test-support/test-utils';
-import { wbsPipe } from '../../../../pipes';
-import { exampleWbs1 } from '../../../../test-support/test-data/wbs-numbers.stub';
+import { render, screen } from '../../../test-support/test-utils';
+import { wbsPipe } from '../../../../utils/pipes';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/stage-gate-work-package-modal-container/stage-gate-work-package-modal-container';
-import { mockUseMutationResult } from '../../../../test-support/test-data/test-utils.stub';
-import { useCreateStageGateChangeRequest } from '../../../../services/change-requests.hooks';
+import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
+import { useCreateStageGateChangeRequest } from '../../../../hooks/change-requests.hooks';
 
-jest.mock('../../../../services/change-requests.hooks');
+jest.mock('../../../../hooks/change-requests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;

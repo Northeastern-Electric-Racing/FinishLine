@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import NavTopBar from '../../../layouts/nav-top-bar/nav-top-bar';
 
 /**

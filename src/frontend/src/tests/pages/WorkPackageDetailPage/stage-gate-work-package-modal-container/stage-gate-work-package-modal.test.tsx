@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../../../test-support/test-utils';
-import { wbsPipe } from '../../../../pipes';
-import { exampleAllUsers } from '../../../../test-support/test-data/users.stub';
-import { exampleWbs1 } from '../../../../test-support/test-data/wbs-numbers.stub';
+import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
+import { wbsPipe } from '../../../../utils/pipes';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/stage-gate-work-package-modal-container/stage-gate-work-package-modal';
 
 /**

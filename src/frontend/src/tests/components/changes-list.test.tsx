@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { exampleWorkPackage2 } from '../../test-support/test-data/work-packages.stub';
+import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
+import { exampleWorkPackage2 } from '../test-support/test-data/work-packages.stub';
 import ChangesList from '../../components/changes-list';
 
 /**

@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fireEvent, render, screen } from '../../../../test-support/test-utils';
-import { exampleUserSettingsLight } from '../../../../test-support/test-data/user-settings.stub';
+import { fireEvent, render, screen } from '../../../test-support/test-utils';
+import { exampleUserSettingsLight } from '../../../test-support/test-data/user-settings.stub';
 import UserSettingsEdit from '../../../../pages/SettingsPage/user-settings/user-settings-edit';
 
 /**
