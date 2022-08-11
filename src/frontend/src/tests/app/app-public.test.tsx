@@ -40,15 +40,6 @@ const renderComponent = (path?: string, route?: string) => {
 };
 
 describe('app public section', () => {
-  it('renders login page', () => {
-    mockHook(false, exampleAdminUser);
-    renderComponent(routes.LOGIN, routes.LOGIN);
-
-    expect(screen.getByText('NER PM Dashboard')).toBeInTheDocument();
-    expect(screen.getByText(/Login Required/i)).toBeInTheDocument();
-    expect(screen.getByText('Login')).toBeInTheDocument();
-  });
-
   it('renders loading spinner', () => {
     mockHook(true, exampleAdminUser);
     renderComponent(routes.LOGIN, routes.LOGIN);
