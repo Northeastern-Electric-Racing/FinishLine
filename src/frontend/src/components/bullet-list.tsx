@@ -17,7 +17,7 @@ interface BulletListProps {
 
 const styles = {
   bulletList: {
-    paddingLeft: '200px',
+    paddingLeft: '35px',
     marginBottom: '0em'
   }
 };
