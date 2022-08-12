@@ -15,7 +15,7 @@ import { exampleWbsProject1 } from '../../TestSupport/TestData/WbsNumbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/Users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 
-jest.mock('../../../hooks/Workpackages.hooks');
+jest.mock('../../../hooks/WorkPackages.hooks');
 
 const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
 
