@@ -7,7 +7,7 @@ import { render, screen, routerWrapperBuilder } from '../../../test-support/test
 import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModal';
-import { wbsPipe } from '../../../../utils/pipes';
+import { wbsPipe } from '../../../../utils/Pipes';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting

@@ -6,7 +6,7 @@
 import React, { ReactElement } from 'react';
 import { MemoryRouter, Route } from 'react-router-dom';
 import { render, RenderOptions } from '@testing-library/react';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 import AppContext from '../../app/AppContext';
 
 // Regular Expression to match WBS Numbers

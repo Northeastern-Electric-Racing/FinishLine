@@ -15,13 +15,13 @@ import {
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { useAllChangeRequests } from '../../../hooks/ChangeRequests.hooks';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
-import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
+import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
 import { useTheme } from '../../../hooks/Theme.hooks';
-import { Theme } from '../../../utils/types';
-import themes from '../../../utils/themes';
+import { Theme } from '../../../utils/Types';
+import themes from '../../../utils/Themes';
 
 jest.mock('../../../hooks/ChangeRequests.hooks');
 

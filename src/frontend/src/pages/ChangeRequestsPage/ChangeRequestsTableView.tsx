@@ -9,7 +9,7 @@ import BootstrapTable, {
   RowEventHandlerProps,
   SortOrder
 } from 'react-bootstrap-table-next';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 
 export interface DisplayChangeRequest {
   id: number;

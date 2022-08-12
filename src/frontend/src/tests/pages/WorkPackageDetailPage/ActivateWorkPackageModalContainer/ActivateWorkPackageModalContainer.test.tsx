@@ -6,7 +6,7 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { render, screen } from '../../../test-support/test-utils';
-import { wbsPipe } from '../../../../utils/pipes';
+import { wbsPipe } from '../../../../utils/Pipes';
 import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';

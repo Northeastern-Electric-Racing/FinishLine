@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Project, User } from 'shared';
 import { useAllProjects } from '../../hooks/Projects.hooks';
-import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
+import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ProjectsTableFilter from './ProjectsTableFilter';

@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { wbsPipe } from '../../../../utils/pipes';
+import { wbsPipe } from '../../../../utils/Pipes';
 import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModal';

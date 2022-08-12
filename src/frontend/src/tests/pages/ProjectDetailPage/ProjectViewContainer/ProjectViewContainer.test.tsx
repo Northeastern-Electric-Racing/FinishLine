@@ -10,7 +10,7 @@ import {
   fireEvent,
   act
 } from '../../../test-support/test-utils';
-import { Auth } from '../../../../utils/types';
+import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/Auth.hooks';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../../test-support/test-data/test-utils.stub';

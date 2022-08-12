@@ -8,7 +8,7 @@ import { useHistory } from 'react-router-dom';
 import { isProject, validateWBS, WbsNumber } from 'shared';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
 

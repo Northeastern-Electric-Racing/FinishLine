@@ -6,7 +6,7 @@
 import GoogleLogin from 'react-google-login';
 import { Card } from 'react-bootstrap';
 import LoginDev from './LoginDev';
-import { Theme } from '../../utils/types';
+import { Theme } from '../../utils/Types';
 
 const styles = {
   card: {

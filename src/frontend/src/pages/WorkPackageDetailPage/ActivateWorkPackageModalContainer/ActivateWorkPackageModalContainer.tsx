@@ -8,7 +8,7 @@ import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/ChangeRequests.hooks';
 import { useAllUsers } from '../../../hooks/Users.hooks';
-import { routes } from '../../../utils/routes';
+import { routes } from '../../../utils/Routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ActivateWorkPackageModal from './ActivateWorkPackageModal';

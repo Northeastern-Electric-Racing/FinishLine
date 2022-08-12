@@ -5,7 +5,7 @@
 
 import { WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { wbsPipe, listPipe, endDatePipe, datePipe } from '../../../../utils/pipes';
+import { wbsPipe, listPipe, endDatePipe, datePipe } from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,

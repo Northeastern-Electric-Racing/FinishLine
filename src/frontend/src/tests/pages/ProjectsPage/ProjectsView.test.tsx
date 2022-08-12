@@ -13,7 +13,7 @@ import {
   waitFor,
   wbsRegex
 } from '../../test-support/test-utils';
-import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
+import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { useAllProjects } from '../../../hooks/Projects.hooks';
 import {
   exampleAllProjects,

@@ -6,7 +6,7 @@
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/Auth.hooks';
 import { useTheme } from '../hooks/Theme.hooks';
-import { routes } from '../utils/routes';
+import { routes } from '../utils/Routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 

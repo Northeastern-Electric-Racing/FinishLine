@@ -6,7 +6,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import ProjectsTable from '../../../pages/ProjectsPage/ProjectsTable';
 import { Project } from 'shared';
-import { wbsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
+import { wbsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import { wbsRegex } from '../../test-support/test-utils';
 import {
   exampleProject1,

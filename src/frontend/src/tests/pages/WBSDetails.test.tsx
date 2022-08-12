@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 import WBSDetails from '../../pages/WBSDetails';
 
 jest.mock('../../pages/ProjectDetailPage/ProjectPage', () => {

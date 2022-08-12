@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Button, Dropdown, Form } from 'react-bootstrap';
 import { User, WbsElementStatus } from 'shared';
-import { fullNamePipe } from '../../utils/pipes';
+import { fullNamePipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
 import styles from '../../stylesheets/Common.module.scss';
 

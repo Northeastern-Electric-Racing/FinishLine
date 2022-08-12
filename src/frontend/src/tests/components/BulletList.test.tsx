@@ -5,8 +5,8 @@
 
 import { render, screen } from '@testing-library/react';
 import { useTheme } from '../../hooks/Theme.hooks';
-import themes from '../../utils/themes';
-import { Theme } from '../../utils/types';
+import themes from '../../utils/Themes';
+import { Theme } from '../../utils/Types';
 import BulletList from '../../components/BulletList';
 
 jest.mock('../../hooks/theme.hooks');

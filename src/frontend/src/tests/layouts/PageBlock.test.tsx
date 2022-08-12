@@ -5,8 +5,8 @@
 
 import { render, screen } from '../test-support/test-utils';
 import { useTheme } from '../../hooks/Theme.hooks';
-import { Theme } from '../../utils/types';
-import themes from '../../utils/themes';
+import { Theme } from '../../utils/Types';
+import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
 
 jest.mock('../../hooks/theme.hooks');

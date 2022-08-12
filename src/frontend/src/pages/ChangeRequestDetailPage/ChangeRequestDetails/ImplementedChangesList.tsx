@@ -6,8 +6,8 @@
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { ImplementedChange } from 'shared';
-import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../../utils/pipes';
-import { routes } from '../../../utils/routes';
+import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../../utils/Pipes';
+import { routes } from '../../../utils/Routes';
 import BulletList from '../../../components/BulletList';
 
 interface ImplementedChangesListProps {

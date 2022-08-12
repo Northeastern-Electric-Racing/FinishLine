@@ -6,7 +6,7 @@
 import { render, screen } from '@testing-library/react';
 import { ChangeRequest } from 'shared';
 import { exampleAllChangeRequests } from '../../test-support/test-data/change-requests.stub';
-import { booleanPipe, fullNamePipe, wbsPipe } from '../../../utils/pipes';
+import { booleanPipe, fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 import ChangeRequestsTableView, {
   DisplayChangeRequest

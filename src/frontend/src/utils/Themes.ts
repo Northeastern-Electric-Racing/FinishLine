@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Theme } from './types';
+import { Theme } from './Types';
 
 const themes: Theme[] = [
   {

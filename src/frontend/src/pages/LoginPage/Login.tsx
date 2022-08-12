@@ -9,7 +9,7 @@ import { RoleEnum } from 'shared';
 import { exampleAllUsers } from '../../tests/test-support/test-data/users.stub';
 import { useTheme } from '../../hooks/Theme.hooks';
 import { useAuth } from '../../hooks/Auth.hooks';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 

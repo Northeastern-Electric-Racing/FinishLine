@@ -12,7 +12,7 @@ import {
   act,
   fireEvent
 } from '../../test-support/test-utils';
-import { Auth } from '../../../utils/types';
+import { Auth } from '../../../utils/Types';
 import { useSingleWorkPackage } from '../../../hooks/WorkPackages.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';

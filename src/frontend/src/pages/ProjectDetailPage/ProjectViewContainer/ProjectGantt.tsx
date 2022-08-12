@@ -5,7 +5,7 @@
 
 import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
-import { ganttAllColumns } from '../../../utils/chart-data';
+import { ganttAllColumns } from '../../../utils/ChartData';
 import PageBlock from '../../../layouts/PageBlock';
 
 interface ProjectGanttProps {

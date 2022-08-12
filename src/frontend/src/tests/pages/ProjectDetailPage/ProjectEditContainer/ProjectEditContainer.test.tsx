@@ -6,7 +6,7 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { wbsPipe } from '../../../../utils/pipes';
+import { wbsPipe } from '../../../../utils/Pipes';
 import { useEditSingleProject } from '../../../../hooks/Projects.hooks';
 import { exampleProject1 as exPrj1 } from '../../../test-support/test-data/projects.stub';
 import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';

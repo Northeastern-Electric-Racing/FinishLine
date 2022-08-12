@@ -9,7 +9,7 @@ import { Col, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
 import { FormInput } from './UserSettings';
-import themes from '../../../utils/themes';
+import themes from '../../../utils/Themes';
 
 interface UserSettingsEditProps {
   currentSettings: FormInput;

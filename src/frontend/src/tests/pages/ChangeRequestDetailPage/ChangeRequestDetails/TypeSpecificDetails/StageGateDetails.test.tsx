@@ -6,8 +6,8 @@
 import { render, screen } from '@testing-library/react';
 import { StageGateChangeRequest } from 'shared';
 import { useTheme } from '../../../../../hooks/Theme.hooks';
-import themes from '../../../../../utils/themes';
-import { Theme } from '../../../../../utils/types';
+import themes from '../../../../../utils/Themes';
+import { Theme } from '../../../../../utils/Types';
 import { exampleStageGateChangeRequest } from '../../../../test-support/test-data/change-requests.stub';
 import StageGateDetails from '../../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/TypeSpecificDetails/StageGateDetails';
 

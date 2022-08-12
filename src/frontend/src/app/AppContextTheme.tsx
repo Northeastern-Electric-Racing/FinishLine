@@ -5,7 +5,7 @@
 
 import { createContext } from 'react';
 import { useProvideTheme } from '../hooks/Theme.hooks';
-import { Theme } from '../utils/types';
+import { Theme } from '../utils/Types';
 
 export const ThemeContext = createContext<Theme | undefined>(undefined);
 

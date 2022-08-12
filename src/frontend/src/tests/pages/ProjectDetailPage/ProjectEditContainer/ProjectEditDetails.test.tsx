@@ -6,7 +6,7 @@
 import { act, render, screen } from '../../../test-support/test-utils';
 import userEvent from '@testing-library/user-event';
 import { WbsElementStatus } from 'shared';
-import { fullNamePipe } from '../../../../utils/pipes';
+import { fullNamePipe } from '../../../../utils/Pipes';
 import {
   exampleProject1,
   exampleProject2,

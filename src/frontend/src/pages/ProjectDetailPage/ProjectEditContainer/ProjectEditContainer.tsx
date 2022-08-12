@@ -6,8 +6,8 @@
 import { SyntheticEvent, useState } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { DescriptionBullet, Project, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/pipes';
-import { routes } from '../../../utils/routes';
+import { wbsPipe } from '../../../utils/Pipes';
+import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/Projects.hooks';
 import { useAllUsers } from '../../../hooks/Users.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';

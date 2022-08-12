@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../../utils/routes';
+import { routes } from '../../../utils/Routes';
 import ChangeRequests from '../../../pages/ChangeRequestsPage/ChangeRequests';
 
 jest.mock('../../../pages/ChangeRequestsPage/ChangeRequestsTable', () => {

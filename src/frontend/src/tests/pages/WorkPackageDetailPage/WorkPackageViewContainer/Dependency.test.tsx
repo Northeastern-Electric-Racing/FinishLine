@@ -5,7 +5,7 @@
 
 import { render, screen } from '../../../test-support/test-utils';
 import { exampleWbsWorkPackage1 } from '../../../test-support/test-data/wbs-numbers.stub';
-import { wbsPipe } from '../../../../utils/pipes';
+import { wbsPipe } from '../../../../utils/Pipes';
 import Dependency from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/Dependency';
 
 describe('rendering a dependency', () => {

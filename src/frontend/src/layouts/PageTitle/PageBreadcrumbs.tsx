@@ -5,8 +5,8 @@
 
 import { Link } from 'react-router-dom';
 import { Breadcrumb } from 'react-bootstrap';
-import { LinkItem } from '../../utils/types';
-import { routes } from '../../utils/routes';
+import { LinkItem } from '../../utils/Types';
+import { routes } from '../../utils/Routes';
 import styles from '../../stylesheets/layouts/PageBreadcrumbs.module.css';
 
 interface PageTitleProps {

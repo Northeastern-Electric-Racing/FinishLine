@@ -16,7 +16,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { datePipe } from '../../../../utils/pipes';
+import { datePipe } from '../../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
   exampleAllChangeRequests,

@@ -5,9 +5,9 @@
 
 import { render, screen } from '@testing-library/react';
 import { useTheme } from '../../../../hooks/Theme.hooks';
-import { fullNamePipe } from '../../../../utils/pipes';
-import themes from '../../../../utils/themes';
-import { Theme } from '../../../../utils/types';
+import { fullNamePipe } from '../../../../utils/Pipes';
+import themes from '../../../../utils/Themes';
+import { Theme } from '../../../../utils/Types';
 import { exampleProject1, exampleProject3 } from '../../../test-support/test-data/projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 

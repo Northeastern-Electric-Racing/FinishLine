@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { wbsPipe } from '../../../utils/pipes';
+import { wbsPipe } from '../../../utils/Pipes';
 import { mockUtils } from '../../test-support/test-data/test-utils.stub';
 import {
   exampleWbsWorkPackage1,

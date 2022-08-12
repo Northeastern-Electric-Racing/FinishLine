@@ -5,7 +5,7 @@
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { apiUrls } from '../../utils/urls';
+import { apiUrls } from '../../utils/Urls';
 import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest

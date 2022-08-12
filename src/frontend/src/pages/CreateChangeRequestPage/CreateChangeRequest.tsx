@@ -8,7 +8,7 @@ import { ChangeRequestExplanation, ChangeRequestType, validateWBS } from 'shared
 import { useAuth } from '../../hooks/Auth.hooks';
 import { useCreateStandardChangeRequest } from '../../hooks/ChangeRequests.hooks';
 import { useQuery } from '../../hooks/Utils.hooks';
-import { routes } from '../../utils/routes';
+import { routes } from '../../utils/Routes';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';

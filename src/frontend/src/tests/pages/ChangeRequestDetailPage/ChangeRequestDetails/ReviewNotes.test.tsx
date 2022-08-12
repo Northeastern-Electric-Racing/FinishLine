@@ -4,7 +4,7 @@
  */
 
 import { ChangeRequest } from 'shared';
-import { datePipe, fullNamePipe } from '../../../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../../../utils/Pipes';
 import {
   exampleAllChangeRequests,
   exampleStandardChangeRequest

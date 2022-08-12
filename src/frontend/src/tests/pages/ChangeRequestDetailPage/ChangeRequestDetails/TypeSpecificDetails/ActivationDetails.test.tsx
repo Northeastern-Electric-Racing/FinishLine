@@ -6,9 +6,9 @@
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
 import { useTheme } from '../../../../../hooks/Theme.hooks';
-import { datePipe } from '../../../../../utils/pipes';
-import themes from '../../../../../utils/themes';
-import { Theme } from '../../../../../utils/types';
+import { datePipe } from '../../../../../utils/Pipes';
+import themes from '../../../../../utils/Themes';
+import { Theme } from '../../../../../utils/Types';
 import { exampleActivationChangeRequest } from '../../../../test-support/test-data/change-requests.stub';
 import ActivationDetails from '../../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/TypeSpecificDetails/ActivationDetails';
 

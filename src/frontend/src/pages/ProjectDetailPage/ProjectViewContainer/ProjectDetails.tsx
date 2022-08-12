@@ -18,7 +18,7 @@ import {
   endDatePipe,
   fullNamePipe,
   weeksPipe
-} from '../../../utils/pipes';
+} from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
