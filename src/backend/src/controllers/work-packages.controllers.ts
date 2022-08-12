@@ -157,6 +157,7 @@ export const createWorkPackage = async (req: Request, res: Response) => {
     return elem.wbsElementId;
   });
 
+
   // add to the database
   await prisma.work_Package.create({
     data: {
@@ -244,6 +245,10 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   );
   if (depsIds.includes(undefined)) {
     return res.status(404).json({ message: `Dependency with wbs number ${depsIds} not found` });
+  }
+
+  if(depsIds.includes(originalWorkPackage.wbsElementId)) {
+      return res.status(400).json({message: `A Work Package cannot have itself as a dependency` });
   }
 
   const { wbsElementId } = originalWorkPackage;
