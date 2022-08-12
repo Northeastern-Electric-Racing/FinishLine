@@ -9,7 +9,7 @@ import { apiUrls } from '../../utils/Urls';
 import {
   exampleAllWorkPackages,
   exampleWorkPackage1
-} from '../test-support/test-data/work-packages.stub';
+} from '../TestSupport/TestData/WorkPackages.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 
 // Mock the server endpoint(s) that the component will hit

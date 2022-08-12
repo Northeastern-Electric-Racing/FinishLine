@@ -7,11 +7,11 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
-import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
+import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
 import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest
-} from '../test-support/test-data/change-requests.stub';
+} from '../TestSupport/TestData/ChangeRequests.stub';
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/ChangeRequests.hooks';
 

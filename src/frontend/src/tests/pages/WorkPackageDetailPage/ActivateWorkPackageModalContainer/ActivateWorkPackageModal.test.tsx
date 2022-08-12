@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
-import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
+import { render, screen, routerWrapperBuilder } from '../../../TestSupport/TestUtils';
+import { exampleAllUsers } from '../../../TestSupport/TestData/Users.stub';
+import { exampleWbs1 } from '../../../TestSupport/TestData/WbsNumbers.stub';
 import ActivateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModal';
 import { wbsPipe } from '../../../../utils/Pipes';
 

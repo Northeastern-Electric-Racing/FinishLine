@@ -5,8 +5,8 @@
 
 import { UseMutationResult } from 'react-query';
 import { useCreateStandardChangeRequest } from '../../../hooks/ChangeRequests.hooks';
-import { mockUseMutationResult } from '../../test-support/test-data/test-utils.stub';
-import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { mockUseMutationResult } from '../../TestSupport/TestData/TestUtils.stub';
+import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
 import CreateChangeRequest from '../../../pages/CreateChangeRequestPage/CreateChangeRequest';
 
 jest.mock('../../../hooks/ChangeRequests.hooks');

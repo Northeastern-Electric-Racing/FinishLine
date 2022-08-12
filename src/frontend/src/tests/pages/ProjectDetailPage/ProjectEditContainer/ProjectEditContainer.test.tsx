@@ -5,20 +5,20 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder } from '../../../TestSupport/TestUtils';
 import { wbsPipe } from '../../../../utils/Pipes';
 import { useEditSingleProject } from '../../../../hooks/Projects.hooks';
-import { exampleProject1 as exPrj1 } from '../../../test-support/test-data/projects.stub';
+import { exampleProject1 as exPrj1 } from '../../../TestSupport/TestData/Projects.stub';
 import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
 import {
   mockUseMutationResult,
   mockUseQueryResult
-} from '../../../test-support/test-data/test-utils.stub';
+} from '../../../TestSupport/TestData/TestUtils.stub';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
   exampleLeadershipUser
-} from '../../../test-support/test-data/users.stub';
+} from '../../../TestSupport/TestData/Users.stub';
 import ProjectEditContainer from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditContainer';
 
 jest.mock('../../../../hooks/projects.hooks');

@@ -5,20 +5,14 @@
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../TestSupport/TestUtils';
 import { Auth } from '../../../utils/Types';
 import { useSingleWorkPackage } from '../../../hooks/WorkPackages.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
-import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { exampleWorkPackage1 } from '../../test-support/test-data/work-packages.stub';
-import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
-import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
+import { mockAuth, mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+import { exampleWorkPackage1 } from '../../TestSupport/TestData/WorkPackages.stub';
+import { exampleWbsProject1 } from '../../TestSupport/TestData/WbsNumbers.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/Users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 
 jest.mock('../../../hooks/Workpackages.hooks');

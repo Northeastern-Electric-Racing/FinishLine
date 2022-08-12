@@ -5,16 +5,16 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
+import { render, routerWrapperBuilder, screen } from '../../../TestSupport/TestUtils';
 import { useEditWorkPackage } from '../../../../hooks/WorkPackages.hooks';
-import { exampleWorkPackage1 } from '../../../test-support/test-data/work-packages.stub';
+import { exampleWorkPackage1 } from '../../../TestSupport/TestData/WorkPackages.stub';
 import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
 import {
   mockUseMutationResult,
   mockUseQueryResult
-} from '../../../test-support/test-data/test-utils.stub';
+} from '../../../TestSupport/TestData/TestUtils.stub';
 import WorkPackageEditContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageEditContainer/WorkPackageEditContainer';
-import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
+import { exampleAllUsers } from '../../../TestSupport/TestData/Users.stub';
 
 jest.mock('../../../../hooks/WorkPackages.hooks');
 

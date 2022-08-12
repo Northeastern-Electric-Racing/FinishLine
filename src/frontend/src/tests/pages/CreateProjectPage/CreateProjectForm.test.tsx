@@ -4,11 +4,11 @@
  */
 
 import { User } from 'shared';
-import { render, screen } from '../../test-support/test-utils';
+import { render, screen } from '../../TestSupport/TestUtils';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import { Auth } from '../../../utils/Types';
-import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
-import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/Users.stub';
+import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
 import CreateProjectForm from '../../../pages/CreateProjectPage/CreateProjectForm';
 
 jest.mock('../../../hooks/auth.hooks');

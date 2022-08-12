@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import { routes } from '../../../utils/Routes';
-import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
+import { exampleStandardChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
 import ReviewChangeRequest from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequest';
 
 const renderComponent = (modalShow: boolean, route: string) => {

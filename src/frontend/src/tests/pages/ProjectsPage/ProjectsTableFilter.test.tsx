@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { act, fireEvent, render, screen } from '../../test-support/test-utils';
+import { act, fireEvent, render, screen } from '../../TestSupport/TestUtils';
 import ProjectsTableFilter from '../../../pages/ProjectsPage/ProjectsTableFilter';
 import {
   exampleAdminUser,
   exampleLeadershipUser,
   exampleProjectLeadUser,
   exampleProjectManagerUser
-} from '../../test-support/test-data/users.stub';
+} from '../../TestSupport/TestData/Users.stub';
 import { WbsElementStatus } from 'shared';
 
 let temp: any[] = [];

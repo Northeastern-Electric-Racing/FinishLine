@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { exampleStandardChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
+import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import ReviewChangeRequestsView from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequestView';
 
 /**

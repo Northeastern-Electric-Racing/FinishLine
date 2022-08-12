@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { act, render, screen } from '../../../test-support/test-utils';
+import { act, render, screen } from '../../../TestSupport/TestUtils';
 import userEvent from '@testing-library/user-event';
 import { WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../../utils/Pipes';
@@ -11,12 +11,12 @@ import {
   exampleProject1,
   exampleProject2,
   exampleProject3
-} from '../../../test-support/test-data/projects.stub';
+} from '../../../TestSupport/TestData/Projects.stub';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
   exampleLeadershipUser
-} from '../../../test-support/test-data/users.stub';
+} from '../../../TestSupport/TestData/Users.stub';
 import ProjectEditDetails from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditDetails';
 
 const projs = [exampleProject1, exampleProject2, exampleProject3];

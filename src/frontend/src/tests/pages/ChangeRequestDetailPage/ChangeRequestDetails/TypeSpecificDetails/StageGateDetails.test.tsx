@@ -8,7 +8,7 @@ import { StageGateChangeRequest } from 'shared';
 import { useTheme } from '../../../../../hooks/Theme.hooks';
 import themes from '../../../../../utils/Themes';
 import { Theme } from '../../../../../utils/Types';
-import { exampleStageGateChangeRequest } from '../../../../test-support/test-data/change-requests.stub';
+import { exampleStageGateChangeRequest } from '../../../../TestSupport/TestData/ChangeRequests.stub';
 import StageGateDetails from '../../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/TypeSpecificDetails/StageGateDetails';
 
 jest.mock('../../../../../hooks/theme.hooks');

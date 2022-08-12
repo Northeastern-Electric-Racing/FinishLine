@@ -5,7 +5,7 @@
 
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { routerWrapperBuilder } from '../test-support/test-utils';
+import { routerWrapperBuilder } from '../TestSupport/TestUtils';
 import { routes } from '../../utils/Routes';
 import ActionButton from '../../components/ActionButton';
 

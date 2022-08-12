@@ -8,8 +8,8 @@ import { act } from 'react-dom/test-utils';
 import { AxiosResponse } from 'axios';
 import { User } from 'shared';
 import wrapper from '../../app/AppContextQuery';
-import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
+import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
+import { exampleAllUsers, exampleAdminUser } from '../TestSupport/TestData/Users.stub';
 import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
 import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/Users.hooks';
 
