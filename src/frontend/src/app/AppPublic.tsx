@@ -8,7 +8,7 @@ import { useAuth } from '../hooks/auth.hooks';
 import { useTheme } from '../hooks/theme.hooks';
 import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
-import AppAuthenticated from './app-authenticated';
+import AppAuthenticated from './AppAuthenticated';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();

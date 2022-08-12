@@ -4,7 +4,7 @@
  */
 
 import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
-import AppAuthenticated from '../../app/app-authenticated';
+import AppAuthenticated from '../../app/AppAuthenticated';
 
 jest.mock('../../pages/ProjectsPage/projects', () => {
   return {

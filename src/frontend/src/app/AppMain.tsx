@@ -4,8 +4,8 @@
  */
 
 import { BrowserRouter } from 'react-router-dom';
-import AppContext from './app-context';
-import AppPublic from './app-public';
+import AppContext from './AppContext';
+import AppPublic from './AppPublic';
 
 const AppMain: React.FC = () => {
   return (

@@ -10,9 +10,9 @@ import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import { Auth } from '../../utils/types';
-import AppPublic from '../../app/app-public';
+import AppPublic from '../../app/AppPublic';
 
-jest.mock('../../app/app-authenticated', () => {
+jest.mock('../../app/AppAuthenticated', () => {
   return {
     __esModule: true,
     default: () => {

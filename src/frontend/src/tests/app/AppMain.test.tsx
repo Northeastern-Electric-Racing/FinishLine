@@ -4,16 +4,16 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import AppMain from '../../app/app-main';
+import AppMain from '../../app/AppMain';
 
-jest.mock('../../app/app-public', () => {
+jest.mock('../../app/AppPublic', () => {
   return {
     __esModule: true,
     default: () => <div>public</div>
   };
 });
 
-jest.mock('../../app/app-context', () => {
+jest.mock('../../app/AppContext', () => {
   return {
     __esModule: true,
     default: (props: any) => (

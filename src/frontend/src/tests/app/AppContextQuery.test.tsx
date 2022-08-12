@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react'; // avoid circular dependency
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import AppContextQuery from '../../app/app-context-query';
+import AppContextQuery from '../../app/AppContextQuery';
 
 describe('app context', () => {
   it('renders simple text as children', () => {

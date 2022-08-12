@@ -4,9 +4,9 @@
  */
 
 import { render, screen } from '@testing-library/react'; // avoid circular dependency
-import AppContext from '../../app/app-context';
+import AppContext from '../../app/AppContext';
 
-jest.mock('../../app/app-context-query', () => {
+jest.mock('../../app/AppContextQuery', () => {
   return {
     __esModule: true,
     default: (props: any) => {
@@ -15,7 +15,7 @@ jest.mock('../../app/app-context-query', () => {
   };
 });
 
-jest.mock('../../app/app-context-auth', () => {
+jest.mock('../../app/AppContextAuth', () => {
   return {
     __esModule: true,
     default: (props: any) => {
@@ -24,7 +24,7 @@ jest.mock('../../app/app-context-auth', () => {
   };
 });
 
-jest.mock('../../app/app-context-theme', () => {
+jest.mock('../../app/AppContextTheme', () => {
   return {
     __esModule: true,
     default: (props: any) => {

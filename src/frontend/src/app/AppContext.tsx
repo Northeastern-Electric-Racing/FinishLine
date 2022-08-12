@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import AppContextAuth from './app-context-auth';
-import AppContextQuery from './app-context-query';
-import AppContextTheme from './app-context-theme';
+import AppContextAuth from './AppContextAuth';
+import AppContextQuery from './AppContextQuery';
+import AppContextTheme from './AppContextTheme';
 
 const AppContext: React.FC = (props) => {
   return (

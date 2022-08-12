@@ -4,9 +4,9 @@
  */
 
 import { render, screen } from '@testing-library/react'; // avoid circular dependency
-import AppContextAuth from '../../app/app-context-auth';
+import AppContextAuth from '../../app/AppContextAuth';
 import { useAuth } from '../../hooks/auth.hooks';
-import AppContextQuery from '../../app/app-context-query';
+import AppContextQuery from '../../app/AppContextQuery';
 
 describe('app context auth', () => {
   it('renders simple text as children', () => {
