@@ -10,8 +10,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import { routes } from '../../utils/routes';
 import { FormInput } from './CreateChangeRequest';
-import PageTitle from '../../layouts/page-title/page-title';
-import PageBlock from '../../layouts/page-block';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
+import PageBlock from '../../layouts/PageBlock';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;

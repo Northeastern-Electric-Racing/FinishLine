@@ -6,7 +6,7 @@
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../../utils/pipes';
-import PageBlock from '../../../layouts/page-block';
+import PageBlock from '../../../layouts/PageBlock';
 
 interface ReviewNotesProps {
   reviewer?: User;

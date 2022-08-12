@@ -20,8 +20,8 @@ import StageGateDetails from './TypeSpecificDetails/StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './TypeSpecificDetails/StandardDetails';
 import ReviewChangeRequest from '../ReviewChangeRequest';
-import PageTitle from '../../../layouts/page-title/page-title';
-import PageBlock from '../../../layouts/page-block';
+import PageTitle from '../../../layouts/PageTitle/PageTitle';
+import PageBlock from '../../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 
 const convertStatus = (cr: ChangeRequest): string => {

@@ -6,7 +6,7 @@
 import { Project, User, WbsElementStatus } from 'shared';
 import { Col, Container, Row, Form, InputGroup } from 'react-bootstrap';
 import { fullNamePipe, emDashPipe } from '../../../utils/pipes';
-import PageBlock from '../../../layouts/page-block';
+import PageBlock from '../../../layouts/PageBlock';
 
 // new parts added at the bottom
 interface projectDetailsProps {

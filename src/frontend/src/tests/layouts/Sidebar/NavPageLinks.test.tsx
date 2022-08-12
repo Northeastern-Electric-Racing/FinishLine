@@ -5,7 +5,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
-import NavPageLinks from '../../../layouts/sidebar/nav-page-links';
+import NavPageLinks from '../../../layouts/Sidebar/NavPageLinks';
 
 /**
  * Sets up the component under test with the desired values and renders it.

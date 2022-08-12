@@ -4,7 +4,7 @@
  */
 
 import { ReactNode } from 'react';
-import PageBlock from '../layouts/page-block';
+import PageBlock from '../layouts/PageBlock';
 import styles from '../stylesheets/components/horizontal-list.module.css';
 
 interface HorizontalListProps {

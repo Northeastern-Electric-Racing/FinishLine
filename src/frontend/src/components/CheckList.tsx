@@ -4,7 +4,7 @@
  */
 
 import { ReactNode, useState } from 'react';
-import PageBlock from '../layouts/page-block';
+import PageBlock from '../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';

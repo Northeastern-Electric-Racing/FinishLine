@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Button, Dropdown, Form } from 'react-bootstrap';
 import { ChangeRequestType, ChangeRequestReason } from 'shared';
-import PageBlock from '../../layouts/page-block';
+import PageBlock from '../../layouts/PageBlock';
 import styles from '../../stylesheets/common.module.scss';
 
 interface FilterFieldStateProps {

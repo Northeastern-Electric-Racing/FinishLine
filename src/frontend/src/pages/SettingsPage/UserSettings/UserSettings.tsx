@@ -11,7 +11,7 @@ import { ThemeName } from 'shared';
 import { useTheme } from '../../../hooks/Theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/Users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import PageBlock from '../../../layouts/page-block';
+import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import UserSettingsEdit from './UserSettingsEdit';
 import UserSettingsView from './UserSettingsView';

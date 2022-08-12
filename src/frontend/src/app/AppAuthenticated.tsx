@@ -9,10 +9,10 @@ import ChangeRequests from '../pages/ChangeRequestsPage/ChangeRequests';
 import Projects from '../pages/ProjectsPage/Projects';
 import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
-import NavTopBar from '../layouts/nav-top-bar/nav-top-bar';
+import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Settings from '../pages/SettingsPage/Settings';
 import HelpPage from '../pages/HelpPage';
-import Sidebar from '../layouts/sidebar/sidebar';
+import Sidebar from '../layouts/Sidebar/Sidebar';
 import TeamsPage from '../pages/TeamsPage';
 
 const styles = {

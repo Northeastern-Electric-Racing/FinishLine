@@ -21,7 +21,7 @@ import {
 } from '../../../utils/pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
-import PageBlock from '../../../layouts/page-block';
+import PageBlock from '../../../layouts/PageBlock';
 
 interface ProjectDetailsProps {
   project: Project;

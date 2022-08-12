@@ -4,9 +4,9 @@
  */
 
 import { render, screen } from '../../test-support/test-utils';
-import PageTitle from '../../../layouts/page-title/page-title';
+import PageTitle from '../../../layouts/PageTitle/PageTitle';
 
-jest.mock('../../../layouts/page-title/page-breadcrumbs', () => {
+jest.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
   return {
     __esModule: true,
     default: () => {

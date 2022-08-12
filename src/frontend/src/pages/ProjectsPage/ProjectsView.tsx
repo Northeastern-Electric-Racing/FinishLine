@@ -11,7 +11,7 @@ import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ProjectsTableFilter from './ProjectsTableFilter';
-import PageTitle from '../../layouts/page-title/page-title';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 
 /***

@@ -10,7 +10,7 @@ import {
   fireEvent,
   routerWrapperBuilder
 } from '../../test-support/test-utils';
-import NavNotificationsMenu from '../../../layouts/nav-top-bar/nav-notifications-menu';
+import NavNotificationsMenu from '../../../layouts/NavTopBar/NavNotificationsMenu';
 
 /**
  * Sets up the component under test with the desired values and renders it.

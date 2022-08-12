@@ -4,7 +4,7 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import NavTopBar from '../../../layouts/nav-top-bar/nav-top-bar';
+import NavTopBar from '../../../layouts/NavTopBar/NavTopBar';
 
 /**
  * Sets up the component under test with the desired values and renders it.

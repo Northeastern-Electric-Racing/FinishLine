@@ -12,7 +12,7 @@ import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import PageBlock from '../../layouts/page-block';
+import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 
 const styles = {

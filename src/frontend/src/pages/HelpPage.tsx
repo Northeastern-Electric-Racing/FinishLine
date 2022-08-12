@@ -6,8 +6,8 @@
 import { Col, Container, Row } from 'react-bootstrap';
 import { faScroll, faCode, faCommentAlt } from '@fortawesome/free-solid-svg-icons';
 import ExternalLink from '../components/ExternalLink';
-import PageTitle from '../layouts/page-title/page-title';
-import PageBlock from '../layouts/page-block';
+import PageTitle from '../layouts/PageTitle/PageTitle';
+import PageBlock from '../layouts/PageBlock';
 
 const HelpPage: React.FC = () => {
   return (

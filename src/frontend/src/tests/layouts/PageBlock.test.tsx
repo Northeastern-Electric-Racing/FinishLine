@@ -7,7 +7,7 @@ import { render, screen } from '../test-support/test-utils';
 import { useTheme } from '../../hooks/Theme.hooks';
 import { Theme } from '../../utils/types';
 import themes from '../../utils/themes';
-import PageBlock from '../../layouts/page-block';
+import PageBlock from '../../layouts/PageBlock';
 
 jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;

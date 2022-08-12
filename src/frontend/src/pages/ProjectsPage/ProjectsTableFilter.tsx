@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Button, Dropdown, Form } from 'react-bootstrap';
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/page-block';
+import PageBlock from '../../layouts/PageBlock';
 import styles from '../../stylesheets/common.module.scss';
 
 /**

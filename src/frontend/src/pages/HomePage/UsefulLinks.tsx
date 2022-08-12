@@ -15,7 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Container, Row } from 'react-bootstrap';
 import ExternalLink from '../../components/ExternalLink';
-import PageBlock from '../../layouts/page-block';
+import PageBlock from '../../layouts/PageBlock';
 
 const UsefulLinks: React.FC = () => {
   const links = [

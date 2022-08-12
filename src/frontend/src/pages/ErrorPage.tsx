@@ -4,7 +4,7 @@
  */
 
 import { Container } from 'react-bootstrap';
-import PageBlock from '../layouts/page-block';
+import PageBlock from '../layouts/PageBlock';
 import styles from '../stylesheets/pages/error-page.module.css';
 
 interface ErrorPageProps {

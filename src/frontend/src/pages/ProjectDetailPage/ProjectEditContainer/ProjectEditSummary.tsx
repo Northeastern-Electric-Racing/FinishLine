@@ -6,7 +6,7 @@
 import { Form } from 'react-bootstrap';
 import { Project } from 'shared';
 
-import PageBlock from '../../../layouts/page-block';
+import PageBlock from '../../../layouts/PageBlock';
 
 interface ProjectEditSummaryProps {
   project: Project;

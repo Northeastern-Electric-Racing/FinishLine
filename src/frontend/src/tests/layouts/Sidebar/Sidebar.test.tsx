@@ -4,7 +4,7 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import Sidebar from '../../../layouts/sidebar/sidebar';
+import Sidebar from '../../../layouts/Sidebar/Sidebar';
 
 /**
  * Sets up the component under test with the desired values and renders it.

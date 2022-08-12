@@ -16,7 +16,7 @@ import ChangeRequestsFilter from './ChangeRequestsFilter';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ActionButton from '../../components/ActionButton';
 import ErrorPage from '../ErrorPage';
-import PageTitle from '../../layouts/page-title/page-title';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
 
 /***
  * Returns a list of change requests that has been filtered according to the given params.
