@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleProject } from '../../hooks/projects.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/loading-indicator';
-import CreateProjectFormView from './create-project-form/create-project-form';
+import CreateProjectFormView from './create-project-form-view';
 
 export interface CreateProjectFormStates {
   name: Dispatch<SetStateAction<string>>;

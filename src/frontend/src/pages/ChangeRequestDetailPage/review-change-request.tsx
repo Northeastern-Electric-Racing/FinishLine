@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useReviewChangeRequest } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../error-page';
 import LoadingIndicator from '../../components/loading-indicator';
-import ReviewChangeRequestsView from './review-change-request/review-change-request';
+import ReviewChangeRequestsView from './review-change-request-view';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;

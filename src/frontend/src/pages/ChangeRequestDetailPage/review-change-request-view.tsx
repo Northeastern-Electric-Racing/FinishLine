@@ -7,7 +7,7 @@ import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { FormInput } from '../review-change-request';
+import { FormInput } from './review-change-request';
 
 interface ReviewChangeRequestViewProps {
   crId: number;

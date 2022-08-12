@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { wbsPipe } from '../../../../utils/pipes';
-import { mockUtils } from '../../../test-support/test-data/test-utils.stub';
+import { wbsPipe } from '../../../utils/pipes';
+import { mockUtils } from '../../test-support/test-data/test-utils.stub';
 import {
   exampleWbsWorkPackage1,
   exampleWbsWorkPackage2
-} from '../../../test-support/test-data/wbs-numbers.stub';
-import { render, screen } from '../../../test-support/test-utils';
-import CreateWPFormView from '../../../../pages/CreateWorkPackagePage/create-wp-form/create-wp-form';
+} from '../../test-support/test-data/wbs-numbers.stub';
+import { render, screen } from '../../test-support/test-utils';
+import CreateWPFormView from '../../../pages/CreateWorkPackagePage/create-wp-form-view';
 
 const mockDependencies = [wbsPipe(exampleWbsWorkPackage2), wbsPipe(exampleWbsWorkPackage1)];
 const mockEA = ['yooooo', 'wassup', 'bruh', 'whoosh'];

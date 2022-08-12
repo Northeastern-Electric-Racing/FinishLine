@@ -6,7 +6,7 @@
 import { useParams } from 'react-router-dom';
 import { useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
-import ChangeRequestDetailsView from './change-request-details/change-request-details';
+import ChangeRequestDetailsView from './change-request-details/change-request-details-view';
 import LoadingIndicator from '../../components/loading-indicator';
 import ErrorPage from '../error-page';
 

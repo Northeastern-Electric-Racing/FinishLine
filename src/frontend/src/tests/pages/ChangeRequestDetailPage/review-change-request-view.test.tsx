@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { exampleStandardChangeRequest } from '../../../test-support/test-data/change-requests.stub';
-import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import ReviewChangeRequestsView from '../../../../pages/ChangeRequestDetailPage/review-change-request/review-change-request';
+import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import ReviewChangeRequestsView from '../../../pages/ChangeRequestDetailPage/review-change-request-view';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting

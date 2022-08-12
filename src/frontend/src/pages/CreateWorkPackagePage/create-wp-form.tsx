@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/loading-indicator';
-import CreateWPFormView from './create-wp-form/create-wp-form';
+import CreateWPFormView from './create-wp-form-view';
 
 export interface EditableTextInputListUtils {
   add: (val: any) => void;

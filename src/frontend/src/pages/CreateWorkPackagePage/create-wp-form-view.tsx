@@ -4,9 +4,9 @@
  */
 
 import { Form, Row, Col, InputGroup, Button } from 'react-bootstrap';
-import PageBlock from '../../../layouts/page-block';
-import { EditableTextInputListUtils, FormStates } from '../create-wp-form';
-import EditableTextInputList from '../../../components/editable-text-input-list';
+import PageBlock from '../../layouts/page-block';
+import { EditableTextInputListUtils, FormStates } from './create-wp-form';
+import EditableTextInputList from '../../components/editable-text-input-list';
 
 interface CreateWPFormViewProps {
   states: FormStates;

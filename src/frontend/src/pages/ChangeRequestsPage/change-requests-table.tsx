@@ -10,8 +10,8 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import { DisplayChangeRequest } from './change-requests-table/change-requests-table';
-import CRTable from './change-requests-table/change-requests-table'; // Directly rename the default import
+import { DisplayChangeRequest } from './change-requests-table-view';
+import CRTable from './change-requests-table-view'; // Directly rename the default import
 import ChangeRequestsFilter from './change-requests-filter';
 import LoadingIndicator from '../../components/loading-indicator';
 import ActionButton from '../../components/action-button';

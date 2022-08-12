@@ -23,7 +23,7 @@ import {
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
 } from '../../../test-support/test-data/change-requests.stub';
-import ChangeRequestDetails from '../../../../pages/ChangeRequestDetailPage/change-request-details/change-request-details';
+import ChangeRequestDetailsView from '../../../../pages/ChangeRequestDetailPage/change-request-details/change-request-details-view';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -32,7 +32,7 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ChangeRequestDetails
+      <ChangeRequestDetailsView
         changeRequest={cr}
         isUserAllowedToReview={allowed}
         isUserAllowedToImplement={allowed}

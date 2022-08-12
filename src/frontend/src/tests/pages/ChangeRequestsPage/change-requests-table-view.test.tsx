@@ -5,12 +5,12 @@
 
 import { render, screen } from '@testing-library/react';
 import { ChangeRequest } from 'shared';
-import { exampleAllChangeRequests } from '../../../test-support/test-data/change-requests.stub';
-import { booleanPipe, fullNamePipe, wbsPipe } from '../../../../utils/pipes';
-import { routerWrapperBuilder } from '../../../test-support/test-utils';
-import ChangeRequestsTable, {
+import { exampleAllChangeRequests } from '../../test-support/test-data/change-requests.stub';
+import { booleanPipe, fullNamePipe, wbsPipe } from '../../../utils/pipes';
+import { routerWrapperBuilder } from '../../test-support/test-utils';
+import ChangeRequestsTableView, {
   DisplayChangeRequest
-} from '../../../../pages/ChangeRequestsPage/change-requests-table/change-requests-table';
+} from '../../../pages/ChangeRequestsPage/change-requests-table-view';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent: (changeRequests?: DisplayChangeRequest[]) => void = (crs) => {
@@ -30,7 +30,7 @@ const renderComponent: (changeRequests?: DisplayChangeRequest[]) => void = (crs)
   }
   render(
     <RouterWrapper>
-      <ChangeRequestsTable changeRequests={crs!} />
+      <ChangeRequestsTableView changeRequests={crs!} />
     </RouterWrapper>
   );
 };

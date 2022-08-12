@@ -9,7 +9,7 @@ import BootstrapTable, {
   RowEventHandlerProps,
   SortOrder
 } from 'react-bootstrap-table-next';
-import { routes } from '../../../utils/routes';
+import { routes } from '../../utils/routes';
 
 export interface DisplayChangeRequest {
   id: number;
@@ -29,7 +29,7 @@ interface ChangeRequestsTableProps {
 /**
  * Interactive table for displaying all change request data.
  */
-const ChangeRequestsTable: React.FC<ChangeRequestsTableProps> = ({
+const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
   changeRequests
 }: ChangeRequestsTableProps) => {
   const history = useHistory();
@@ -127,4 +127,4 @@ const ChangeRequestsTable: React.FC<ChangeRequestsTableProps> = ({
   );
 };
 
-export default ChangeRequestsTable;
+export default ChangeRequestsTableView;

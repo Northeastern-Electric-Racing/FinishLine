@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../test-support/test-utils';
-import CreateProjectFormView from '../../../../pages/CreateProjectPage/create-project-form/create-project-form';
+import { render, screen } from '../../test-support/test-utils';
+import CreateProjectFormView from '../../../pages/CreateProjectPage/create-project-form-view';
 
 const mockStates = {
   name: () => null,
