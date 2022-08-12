@@ -11,14 +11,7 @@ import {
   faListOl
 } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import {
-  datePipe,
-  dollarsPipe,
-  emDashPipe,
-  endDatePipe,
-  fullNamePipe,
-  weeksPipe
-} from '../../../utils/pipes';
+import { datePipe, dollarsPipe, endDatePipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import ExternalLink from '../../../components/external-link';
 import WbsStatus from '../../../components/wbs-status';
 import PageBlock from '../../../layouts/page-block';
@@ -72,12 +65,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Row>
           <Col className={allColsStyle} sm={4} md={4} lg={4} xl={3}>
             <b>Budget:</b> {dollarsPipe(project.budget)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={3}>
-            <b>Expected Progress:</b> {emDashPipe('')}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={2}>
-            <b>Timeline Status:</b> {emDashPipe('')}
           </Col>
         </Row>
         <Row className={`${allColsStyle} pl-3`}>
