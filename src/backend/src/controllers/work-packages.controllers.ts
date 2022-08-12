@@ -105,8 +105,7 @@ export const createWorkPackage = async (req: Request, res: Response) => {
 
   if(dependencies.find((dep: { carNumber: any; projectNumber: any; workPackageNumber: any; }) =>
     dep.carNumber === carNumber
-    && dep.projectNumber === projectNumber
-    && dep.workPackageNumber === workPackageNumber) !== undefined) {
+    && dep.projectNumber === projectNumber && dep.workPackageNumber === workPackageNumber) !== undefined) {
     return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
   }
 
