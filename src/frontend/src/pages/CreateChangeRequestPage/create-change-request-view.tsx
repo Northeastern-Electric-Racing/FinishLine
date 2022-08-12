@@ -40,12 +40,14 @@ const schema = yup.object().shape({
     .number()
     .typeError('Timeline Impact must be a number')
     .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
-    .required('Timeline Impact is required'),
+    .required('Timeline Impact is required')
+    .integer('Timeline Impact must be an integer'),
   budgetImpact: yup
     .number()
     .typeError('Budget Impact must be a number')
     .min(0, 'Budget Impact must be greater than or equal to $0')
-    .required('Budget Impact is required'),
+    .required('Budget Impact is required')
+    .integer('Budget Impact must be an integer'),
   why: yup
     .array()
     .min(1, 'At least one Why is required')
@@ -83,26 +85,26 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
       />
       <PageBlock title={''}>
         <Form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
-          <Row className="mx-2 justify-content-start">
+          <Row className='mx-2 justify-content-start'>
             <Col md={5} lg={4} xl={4}>
-              <Form.Group controlId="formWBSNumber" className="mx-2">
+              <Form.Group controlId='formWBSNumber' className='mx-2'>
                 <Form.Label>WBS Number</Form.Label>
                 <Form.Control
                   {...register('wbsNum')}
-                  placeholder="Project or Work Package WBS #"
+                  placeholder='Project or Work Package WBS #'
                   isInvalid={formState.errors.wbsNum?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
+                <Form.Control.Feedback type='invalid'>
                   {formState.errors.wbsNum?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
 
             <Col md={4} lg={4} xl={4}>
-              <Form.Group controlId="formType" className="mx-2">
+              <Form.Group controlId='formType' className='mx-2'>
                 <Form.Label>Type</Form.Label>
                 <Form.Control
-                  as="select"
+                  as='select'
                   {...register('type')}
                   isInvalid={formState.errors.type?.message !== undefined}
                   custom
@@ -113,37 +115,37 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                     </option>
                   ))}
                 </Form.Control>
-                <Form.Control.Feedback type="invalid">
+                <Form.Control.Feedback type='invalid'>
                   {formState.errors.type?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
 
-          <Row className="mx-2 justify-content-start">
+          <Row className='mx-2 justify-content-start'>
             <Col>
-              <Form.Group controlId="formWhat" className="mx-2">
+              <Form.Group controlId='formWhat' className='mx-2'>
                 <Form.Label>What</Form.Label>
                 <Form.Control
-                  as="textarea"
+                  as='textarea'
                   rows={3}
                   cols={50}
                   {...register('what')}
-                  placeholder="What is the situation?"
+                  placeholder='What is the situation?'
                   isInvalid={formState.errors.what?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
+                <Form.Control.Feedback type='invalid'>
                   {formState.errors.what?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col sm={6} md={6} lg={6} xl={6}>
-              <Form.Group controlId="formWhy" className="mx-2">
+              <Form.Group controlId='formWhy' className='mx-2'>
                 <Form.Label>Why</Form.Label>
                 {fields.map((field, index) => (
-                  <InputGroup key={index} className="d-flex m-1">
+                  <InputGroup key={index} className='d-flex m-1'>
                     <Form.Control
-                      as="select"
+                      as='select'
                       {...register(`why.${index}.type` as const)}
                       isInvalid={formState.errors.why?.[index]?.type !== undefined}
                       custom
@@ -156,21 +158,21 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                     </Form.Control>
                     <Form.Control
                       {...register(`why.${index}.explain` as const)}
-                      placeholder="Explain why"
+                      placeholder='Explain why'
                       isInvalid={formState.errors.why?.[index]?.explain?.message !== undefined}
                     />
-                    <Button variant="danger" onClick={() => remove(index)}>
+                    <Button variant='danger' onClick={() => remove(index)}>
                       X
                     </Button>
-                    <Form.Control.Feedback type="invalid" className="d-block">
+                    <Form.Control.Feedback type='invalid' className='d-block'>
                       {formState.errors.why?.[index]?.type}
                       {formState.errors.why?.[index]?.explain?.message}
                     </Form.Control.Feedback>
                   </InputGroup>
                 ))}
-                <Row className="px-2 justify-content-end">
+                <Row className='px-2 justify-content-end'>
                   <Button
-                    variant="outline-secondary"
+                    variant='outline-secondary'
                     onClick={() => append({ type: ChangeRequestReason.Design, explain: '' })}
                   >
                     Add Reason
@@ -180,42 +182,42 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
             </Col>
           </Row>
 
-          <Row className="mx-2 justify-content-start">
+          <Row className='mx-2 justify-content-start'>
             <Col>
-              <Form.Group controlId="formScopeImpact" className="mx-2">
+              <Form.Group controlId='formScopeImpact' className='mx-2'>
                 <Form.Label>Scope Impact</Form.Label>
                 <Form.Control
-                  as="textarea"
+                  as='textarea'
                   rows={3}
                   cols={50}
                   {...register('scopeImpact')}
-                  placeholder="What do you think the impact to scope is?"
+                  placeholder='What do you think the impact to scope is?'
                   isInvalid={formState.errors.scopeImpact?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
+                <Form.Control.Feedback type='invalid'>
                   {formState.errors.scopeImpact?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col sm={4} md={4} lg={4} xl={4}>
-              <Form.Group controlId="formTimelineImpact" className="mx-2">
+              <Form.Group controlId='formTimelineImpact' className='mx-2'>
                 <Form.Label>Timeline Impact</Form.Label>
                 <InputGroup>
                   <Form.Control
                     {...register('timelineImpact')}
-                    placeholder="# needed"
+                    placeholder='# needed'
                     isInvalid={formState.errors.timelineImpact?.message !== undefined}
                   />
                   <InputGroup.Append>
                     <InputGroup.Text>weeks</InputGroup.Text>
                   </InputGroup.Append>
-                  <Form.Control.Feedback type="invalid">
+                  <Form.Control.Feedback type='invalid'>
                     {formState.errors.timelineImpact?.message}
                   </Form.Control.Feedback>
                 </InputGroup>
               </Form.Group>
 
-              <Form.Group controlId="formBudgetImpact" className="mx-2">
+              <Form.Group controlId='formBudgetImpact' className='mx-2'>
                 <Form.Label>Budget Impact</Form.Label>
                 <InputGroup>
                   <InputGroup.Prepend>
@@ -223,18 +225,18 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                   </InputGroup.Prepend>
                   <Form.Control
                     {...register('budgetImpact')}
-                    placeholder="$ needed"
+                    placeholder='$ needed'
                     isInvalid={formState.errors.budgetImpact?.message !== undefined}
                   />
-                  <Form.Control.Feedback type="invalid">
+                  <Form.Control.Feedback type='invalid'>
                     {formState.errors.budgetImpact?.message}
                   </Form.Control.Feedback>
                 </InputGroup>
               </Form.Group>
             </Col>
           </Row>
-          <Row className="mx-2 justify-content-end">
-            <Button variant="success" type="submit">
+          <Row className='mx-2 justify-content-end'>
+            <Button variant='success' type='submit'>
               Submit
             </Button>
           </Row>
