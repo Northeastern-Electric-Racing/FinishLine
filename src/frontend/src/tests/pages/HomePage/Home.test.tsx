@@ -38,7 +38,7 @@ jest.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
   };
 });
 
-jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/Auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

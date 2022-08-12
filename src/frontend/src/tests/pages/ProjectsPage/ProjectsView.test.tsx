@@ -26,7 +26,7 @@ import {
 import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
 import ProjectsView, { filterProjects } from '../../../pages/ProjectsPage/ProjectsView';
 
-jest.mock('../../../hooks/projects.hooks');
+jest.mock('../../../hooks/Projects.hooks');
 
 const mockedUseAllProjects = useAllProjects as jest.Mock<UseQueryResult<Project[]>>;
 

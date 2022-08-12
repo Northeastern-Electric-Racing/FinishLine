@@ -9,7 +9,7 @@ import themes from '../../utils/Themes';
 import { Theme } from '../../utils/Types';
 import CheckList from '../../components/CheckList';
 
-jest.mock('../../hooks/theme.hooks');
+jest.mock('../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

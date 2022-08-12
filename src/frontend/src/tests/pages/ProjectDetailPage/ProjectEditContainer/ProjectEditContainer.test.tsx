@@ -21,7 +21,7 @@ import {
 } from '../../../TestSupport/TestData/Users.stub';
 import ProjectEditContainer from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditContainer';
 
-jest.mock('../../../../hooks/projects.hooks');
+jest.mock('../../../../hooks/Projects.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseEditSingleProject = useEditSingleProject as jest.Mock<UseMutationResult>;
@@ -32,7 +32,7 @@ const mockEditSingleProjectHook = (isLoading: boolean, isError: boolean, error?:
   );
 };
 
-jest.mock('../../../../hooks/users.hooks');
+jest.mock('../../../../hooks/Users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 

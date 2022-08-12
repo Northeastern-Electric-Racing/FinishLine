@@ -10,7 +10,7 @@ import { Theme } from '../../../../utils/Types';
 import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
 import RulesList from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RulesList';
 
-jest.mock('../../../../hooks/theme.hooks');
+jest.mock('../../../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

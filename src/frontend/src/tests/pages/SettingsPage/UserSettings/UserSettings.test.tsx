@@ -36,7 +36,7 @@ jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => 
   };
 });
 
-jest.mock('../../../../hooks/users.hooks');
+jest.mock('../../../../hooks/Users.hooks');
 
 const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<
   UseQueryResult<UserSettings>

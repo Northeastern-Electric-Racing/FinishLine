@@ -22,7 +22,7 @@ import {
   exampleLeadershipUser
 } from '../../../TestSupport/TestData/Users.stub';
 
-jest.mock('../../../../hooks/users.hooks');
+jest.mock('../../../../hooks/Users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 

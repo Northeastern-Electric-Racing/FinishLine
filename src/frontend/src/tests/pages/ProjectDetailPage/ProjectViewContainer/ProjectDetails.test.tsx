@@ -11,7 +11,7 @@ import { Theme } from '../../../../utils/Types';
 import { exampleProject1, exampleProject3 } from '../../../TestSupport/TestData/Projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 
-jest.mock('../../../../hooks/theme.hooks');
+jest.mock('../../../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

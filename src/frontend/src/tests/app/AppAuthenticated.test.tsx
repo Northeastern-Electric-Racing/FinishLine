@@ -6,7 +6,7 @@
 import { fireEvent, render, routerWrapperBuilder, screen } from '../TestSupport/TestUtils';
 import AppAuthenticated from '../../app/AppAuthenticated';
 
-jest.mock('../../pages/ProjectsPage/projects', () => {
+jest.mock('../../pages/ProjectsPage/Projects', () => {
   return {
     __esModule: true,
     default: () => {

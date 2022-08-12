@@ -21,7 +21,7 @@ jest.mock('../../app/AppAuthenticated', () => {
   };
 });
 
-jest.mock('../../hooks/auth.hooks');
+jest.mock('../../hooks/Auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

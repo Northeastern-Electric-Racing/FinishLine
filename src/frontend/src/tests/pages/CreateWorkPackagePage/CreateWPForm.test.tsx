@@ -10,7 +10,7 @@ import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/U
 import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
 
-jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/Auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

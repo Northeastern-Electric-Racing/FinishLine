@@ -9,7 +9,7 @@ import { Theme } from '../../utils/Types';
 import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
 
-jest.mock('../../hooks/theme.hooks');
+jest.mock('../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

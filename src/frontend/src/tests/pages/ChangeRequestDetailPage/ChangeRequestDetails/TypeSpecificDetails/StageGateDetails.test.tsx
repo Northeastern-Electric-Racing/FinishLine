@@ -11,7 +11,7 @@ import { Theme } from '../../../../../utils/Types';
 import { exampleStageGateChangeRequest } from '../../../../TestSupport/TestData/ChangeRequests.stub';
 import StageGateDetails from '../../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/TypeSpecificDetails/StageGateDetails';
 
-jest.mock('../../../../../hooks/theme.hooks');
+jest.mock('../../../../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

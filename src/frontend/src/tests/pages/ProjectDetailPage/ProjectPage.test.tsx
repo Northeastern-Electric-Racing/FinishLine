@@ -31,7 +31,7 @@ jest.mock('../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditCont
   };
 });
 
-jest.mock('../../../hooks/projects.hooks');
+jest.mock('../../../hooks/Projects.hooks');
 
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
 
