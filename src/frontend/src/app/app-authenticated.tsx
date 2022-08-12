@@ -5,12 +5,12 @@
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { routes } from '../utils/routes';
-import ChangeRequests from '../pages/ChangeRequestsPage/change-requests';
-import Projects from '../pages/ProjectsPage/projects';
-import { PageNotFound } from '../pages/page-not-found';
-import Home from '../pages/HomePage/home';
+import ChangeRequests from '../pages/ChangeRequestsPage/ChangeRequests';
+import Projects from '../pages/ProjectsPage/Projects';
+import { PageNotFound } from '../pages/PageNotFound';
+import Home from '../pages/HomePage/Home';
 import NavTopBar from '../layouts/nav-top-bar/nav-top-bar';
-import Settings from '../pages/SettingsPage/settings';
+import Settings from '../pages/SettingsPage/Settings';
 import HelpPage from '../pages/HelpPage';
 import Sidebar from '../layouts/sidebar/sidebar';
 import TeamsPage from '../pages/TeamsPage';

@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import { FormContext } from '../../pages/WorkPackageDetailPage/work-package-edit-container/work-package-edit-container';
+import { FormContext } from '../../pages/WorkPackageDetailPage/WorkPackageEditContainer/WorkPackageEditContainer';
 import EditableDetail from '../../components/editable-detail';
 
 describe.skip('Rendering Editable Detail Component', () => {
