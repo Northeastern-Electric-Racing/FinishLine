@@ -103,6 +103,11 @@ export const createWorkPackage = async (req: Request, res: Response) => {
 
   if (workPackageNumber !== 0) throw new TypeError('Given WBS Number is not for a project.');
 
+  if(dependencies.find((dep: { carNumber: any; projectNumber: any; workPackageNumber: any; }) => dep.carNumber === carNumber
+    && dep.projectNumber === projectNumber && dep.workPackageNumber === workPackageNumber) !== undefined) {
+    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
+  }
+
   const wbsElem = await prisma.wBS_Element.findUnique({
     where: {
       wbsNumber: {
@@ -156,10 +161,6 @@ export const createWorkPackage = async (req: Request, res: Response) => {
     if (elem === null) throw new TypeError('One of the dependencies was not found.');
     return elem.wbsElementId;
   });
-
-  if(dependenciesIds.find(id => id === projectId) !== undefined) {
-    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
-  }
 
 
   // add to the database
@@ -235,6 +236,20 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `Work Package with id #${workPackageId} not found` });
   }
 
+  if(dependencies.find((dep: { carNumber: number; projectNumber: number; workPackageNumber: number; }) =>
+    dep.carNumber === originalWorkPackage.wbsElement.carNumber
+    && dep.projectNumber === originalWorkPackage.wbsElement.projectNumber
+    && dep.workPackageNumber === originalWorkPackage.wbsElement.workPackageNumber) !== undefined) {
+    return res.status(400).json({ message: `A Work Package cannot have itself as a dependency` });
+  }
+
+  if(dependencies.find((dep: { carNumber: number; projectNumber: number; workPackageNumber: number; }) =>
+    dep.carNumber === originalWorkPackage.wbsElement.carNumber
+    && dep.projectNumber === originalWorkPackage.wbsElement.projectNumber
+    && dep.workPackageNumber === 0) !== undefined) {
+    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
+  }
+
   // the crId must match a valid approved change request
   const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
   if (changeRequest === null) {
@@ -249,10 +264,6 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   );
   if (depsIds.includes(undefined)) {
     return res.status(404).json({ message: `Dependency with wbs number ${depsIds} not found` });
-  }
-
-  if(depsIds.includes(originalWorkPackage.wbsElementId)) {
-      return res.status(400).json({message: `A Work Package cannot have itself as a dependency` });
   }
 
   const { wbsElementId } = originalWorkPackage;
