@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../../TestSupport/TestUtils';
+import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import { ImplementedChange } from 'shared';
-import { exampleStandardImplementedChangeRequest } from '../../../TestSupport/TestData/ChangeRequests.stub';
-import ImplementedChangesList from '../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/ImplementedChangesList';
+import { exampleStandardImplementedChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
+import ImplementedChangesList from '../../../pages/ChangeRequestDetailPage/ImplementedChangesList';
 
 /**
  * Sets up the component under test with the desired values and renders it.

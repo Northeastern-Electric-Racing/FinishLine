@@ -5,8 +5,8 @@
 
 import { Container, Row, Col } from 'react-bootstrap';
 import { ActivationChangeRequest } from 'shared';
-import { booleanPipe, datePipe, fullNamePipe } from '../../../../utils/Pipes';
-import PageBlock from '../../../../layouts/PageBlock';
+import { booleanPipe, datePipe, fullNamePipe } from '../../utils/Pipes';
+import PageBlock from '../../layouts/PageBlock';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;

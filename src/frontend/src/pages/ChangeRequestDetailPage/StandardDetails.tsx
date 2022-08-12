@@ -5,8 +5,8 @@
 
 import { Container, Row, Col } from 'react-bootstrap';
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import { weeksPipe, dollarsPipe } from '../../../../utils/Pipes';
-import PageBlock from '../../../../layouts/PageBlock';
+import { weeksPipe, dollarsPipe } from '../../utils/Pipes';
+import PageBlock from '../../layouts/PageBlock';
 
 interface StandardDetailsProps {
   cr: StandardChangeRequest;

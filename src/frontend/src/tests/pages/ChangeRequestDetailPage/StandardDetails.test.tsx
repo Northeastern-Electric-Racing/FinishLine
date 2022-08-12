@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../../TestSupport/TestUtils';
+import { render, screen } from '../../TestSupport/TestUtils';
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import { exampleStandardChangeRequest as cr } from '../../../../TestSupport/TestData/ChangeRequests.stub';
-import StandardDetails from '../../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/TypeSpecificDetails/StandardDetails';
+import { exampleStandardChangeRequest as cr } from '../../TestSupport/TestData/ChangeRequests.stub';
+import StandardDetails from '../../../pages/ChangeRequestDetailPage/StandardDetails';
 
 /**
  * Sets up the component under test with the desired values and renders it.

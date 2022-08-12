@@ -4,14 +4,14 @@
  */
 
 import { ChangeRequest } from 'shared';
-import { datePipe, fullNamePipe } from '../../../../utils/Pipes';
+import { datePipe, fullNamePipe } from '../../../utils/Pipes';
 import {
   exampleAllChangeRequests,
   exampleStandardChangeRequest
-} from '../../../TestSupport/TestData/ChangeRequests.stub';
-import { exampleAppAdminUser } from '../../../TestSupport/TestData/Users.stub';
-import { render, screen, fireEvent } from '../../../TestSupport/TestUtils';
-import ReviewNotes from '../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/ReviewNotes';
+} from '../../TestSupport/TestData/ChangeRequests.stub';
+import { exampleAppAdminUser } from '../../TestSupport/TestData/Users.stub';
+import { render, screen, fireEvent } from '../../TestSupport/TestUtils';
+import ReviewNotes from '../../../pages/ChangeRequestDetailPage/ReviewNotes';
 
 /**
  * Sets up the component under test with the desired values and renders it.

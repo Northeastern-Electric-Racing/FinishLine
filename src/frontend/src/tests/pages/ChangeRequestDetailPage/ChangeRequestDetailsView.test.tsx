@@ -3,27 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  routerWrapperBuilder,
-  fireEvent,
-  render,
-  screen,
-  act
-} from '../../../TestSupport/TestUtils';
+import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
 import {
   ActivationChangeRequest,
   ChangeRequest,
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { datePipe } from '../../../../utils/Pipes';
+import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
   exampleAllChangeRequests,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../../TestSupport/TestData/ChangeRequests.stub';
-import ChangeRequestDetailsView from '../../../../pages/ChangeRequestDetailPage/ChangeRequestDetails/ChangeRequestDetailsView';
+} from '../../TestSupport/TestData/ChangeRequests.stub';
+import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
 
 /**
  * Sets up the component under test with the desired values and renders it.
