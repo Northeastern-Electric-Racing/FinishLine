@@ -8,7 +8,7 @@ import { useTheme } from '../../hooks/theme.hooks';
 import themes from '../../utils/themes';
 import { Theme } from '../../utils/types';
 import { exampleWorkPackage2 } from '../test-support/test-data/work-packages.stub';
-import DescriptionList from '../../components/description-list';
+import DescriptionList from '../../components/DescriptionList';
 
 jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import CheckList from '../../../components/check-list';
+import CheckList from '../../../components/CheckList';
 
 interface RiskLogProps {
   risks: { details: string; resolved: boolean }[];

@@ -19,8 +19,8 @@ import {
   fullNamePipe,
   weeksPipe
 } from '../../../utils/pipes';
-import ExternalLink from '../../../components/external-link';
-import WbsStatus from '../../../components/wbs-status';
+import ExternalLink from '../../../components/ExternalLink';
+import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/page-block';
 
 interface ProjectDetailsProps {

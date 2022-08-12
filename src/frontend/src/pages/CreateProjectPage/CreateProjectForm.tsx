@@ -8,7 +8,7 @@ import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleProject } from '../../hooks/projects.hooks';
 import { routes } from '../../utils/routes';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateProjectFormView from './CreateProjectFormView';
 
 export interface CreateProjectFormStates {

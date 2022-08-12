@@ -5,7 +5,7 @@
 
 import { Col, Container, Row } from 'react-bootstrap';
 import { faScroll, faCode, faCommentAlt } from '@fortawesome/free-solid-svg-icons';
-import ExternalLink from '../components/external-link';
+import ExternalLink from '../components/ExternalLink';
 import PageTitle from '../layouts/page-title/page-title';
 import PageBlock from '../layouts/page-block';
 

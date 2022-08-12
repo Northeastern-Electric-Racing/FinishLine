@@ -9,7 +9,7 @@ import { Project, User } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import ProjectsTableFilter from './ProjectsTableFilter';
 import PageTitle from '../../layouts/page-title/page-title';
 import ErrorPage from '../ErrorPage';

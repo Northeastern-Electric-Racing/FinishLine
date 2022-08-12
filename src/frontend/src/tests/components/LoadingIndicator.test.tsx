@@ -4,7 +4,7 @@
  */
 
 import { render } from '@testing-library/react';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 describe('loading indicator', () => {
   it('renders without error', () => {

@@ -5,7 +5,7 @@
 
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
 import { exampleWorkPackage2 } from '../test-support/test-data/work-packages.stub';
-import ChangesList from '../../components/changes-list';
+import ChangesList from '../../components/ChangesList';
 
 /**
  * Sets up the component under test with the desired values and renders it.

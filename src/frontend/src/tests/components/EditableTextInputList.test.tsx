@@ -4,7 +4,7 @@
  */
 
 import { act, fireEvent, render, screen } from '../test-support/test-utils';
-import EditableTextInputList from '../../components/editable-text-input-list';
+import EditableTextInputList from '../../components/EditableTextInputList';
 
 const mockItems = ['tee hee', 'yahello', 'yeet', 'yoink'];
 

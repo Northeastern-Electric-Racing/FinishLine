@@ -11,7 +11,7 @@ import { useTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface LoginProps {
   postLoginRedirect: { url: string; search: string };

@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 import { useTheme } from '../../hooks/theme.hooks';
 import themes from '../../utils/themes';
 import { Theme } from '../../utils/types';
-import CheckList from '../../components/check-list';
+import CheckList from '../../components/CheckList';
 
 jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;

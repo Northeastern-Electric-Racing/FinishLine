@@ -10,7 +10,7 @@ import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hook
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
 import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 
 interface CreateChangeRequestProps {}

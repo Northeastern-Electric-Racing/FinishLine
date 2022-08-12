@@ -10,7 +10,7 @@ import { WorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, endDatePipe, listPipe, datePipe } from '../../../utils/pipes';
 import { useTheme } from '../../../hooks/theme.hooks';
 import { routes } from '../../../utils/routes';
-import WbsStatus from '../../../components/wbs-status';
+import WbsStatus from '../../../components/WbsStatus';
 import styles from '../../../stylesheets/pages/ProjectDetailPage/work-package-summary.module.scss';
 
 interface WorkPackageSummaryProps {

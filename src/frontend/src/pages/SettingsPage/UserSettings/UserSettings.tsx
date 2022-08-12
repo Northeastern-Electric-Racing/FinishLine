@@ -10,7 +10,7 @@ import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
 import { useTheme } from '../../../hooks/theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
-import LoadingIndicator from '../../../components/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/page-block';
 import ErrorPage from '../../ErrorPage';
 import UserSettingsEdit from './UserSettingsEdit';

@@ -8,7 +8,7 @@ import { WbsNumber } from 'shared';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
 import ProjectEditContainer from './ProjectEditContainer/ProjectEditContainer';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
 interface ProjectPageProps {

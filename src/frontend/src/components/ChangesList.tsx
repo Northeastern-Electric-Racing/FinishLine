@@ -8,7 +8,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';
 import { routes } from '../utils/routes';
-import BulletList from './bullet-list';
+import BulletList from './BulletList';
 
 interface ChangesListProps {
   changes: ImplementedChange[];

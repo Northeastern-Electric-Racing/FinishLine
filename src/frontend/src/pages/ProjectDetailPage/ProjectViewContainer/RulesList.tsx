@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import HorizontalList from '../../../components/horizontal-list';
+import HorizontalList from '../../../components/HorizontalList';
 
 interface RulesListProps {
   rules: string[];

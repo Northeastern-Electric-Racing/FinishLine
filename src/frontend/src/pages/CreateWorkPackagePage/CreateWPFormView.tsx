@@ -6,7 +6,7 @@
 import { Form, Row, Col, InputGroup, Button } from 'react-bootstrap';
 import PageBlock from '../../layouts/page-block';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
-import EditableTextInputList from '../../components/editable-text-input-list';
+import EditableTextInputList from '../../components/EditableTextInputList';
 
 interface CreateWPFormViewProps {
   states: FormStates;

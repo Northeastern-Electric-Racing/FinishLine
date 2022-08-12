@@ -13,8 +13,8 @@ import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { DisplayChangeRequest } from './ChangeRequestsTableView';
 import CRTable from './ChangeRequestsTableView'; // Directly rename the default import
 import ChangeRequestsFilter from './ChangeRequestsFilter';
-import LoadingIndicator from '../../components/loading-indicator';
-import ActionButton from '../../components/action-button';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ActionButton from '../../components/ActionButton';
 import ErrorPage from '../ErrorPage';
 import PageTitle from '../../layouts/page-title/page-title';
 

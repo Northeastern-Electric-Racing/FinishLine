@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useReviewChangeRequest } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
 
 interface ReviewChangeRequestProps {

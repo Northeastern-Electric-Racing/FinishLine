@@ -11,7 +11,7 @@ import { useTheme } from '../../hooks/theme.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/page-block';
 import ErrorPage from '../ErrorPage';
 

@@ -5,7 +5,7 @@
 
 import { faScroll } from '@fortawesome/free-solid-svg-icons';
 import { render, screen, fireEvent } from '../test-support/test-utils';
-import ExternalLink from '../../components/external-link';
+import ExternalLink from '../../components/ExternalLink';
 
 const TEST_DESCRIPTION = 'test';
 const TEST_LINK = 'github.com';

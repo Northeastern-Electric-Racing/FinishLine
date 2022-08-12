@@ -9,7 +9,7 @@ import { isProject, validateWBS, WbsNumber } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
 
 export interface EditableTextInputListUtils {

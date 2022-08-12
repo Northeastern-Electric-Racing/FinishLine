@@ -4,7 +4,7 @@
  */
 
 import { DescriptionBullet } from 'shared';
-import BulletList from './bullet-list';
+import BulletList from './BulletList';
 
 interface DescriptionListProps {
   title: string;

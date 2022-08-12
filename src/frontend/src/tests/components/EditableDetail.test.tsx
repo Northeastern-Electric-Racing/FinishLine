@@ -5,7 +5,7 @@
 
 import { render, screen } from '../test-support/test-utils';
 import { FormContext } from '../../pages/WorkPackageDetailPage/WorkPackageEditContainer/WorkPackageEditContainer';
-import EditableDetail from '../../components/editable-detail';
+import EditableDetail from '../../components/EditableDetail';
 
 describe.skip('Rendering Editable Detail Component', () => {
   const setField = (field: string, value: any) => {};

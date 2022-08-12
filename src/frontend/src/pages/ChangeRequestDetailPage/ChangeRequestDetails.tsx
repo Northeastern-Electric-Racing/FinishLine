@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import ChangeRequestDetailsView from './ChangeRequestDetails/ChangeRequestDetailsView';
-import LoadingIndicator from '../../components/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
 const ChangeRequestDetails: React.FC = () => {

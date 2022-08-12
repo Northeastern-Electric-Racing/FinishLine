@@ -12,15 +12,15 @@ import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWPForm';
-import EditableTextInputList from '../../../components/editable-text-input-list';
+import EditableTextInputList from '../../../components/EditableTextInputList';
 import PageTitle from '../../../layouts/page-title/page-title';
 import ProjectEditDetails from './ProjectEditDetails';
 import EditModeOptions from './EditModeOptions';
 import ProjectEditSummary from './ProjectEditSummary';
 import PageBlock from '../../../layouts/page-block';
-import ChangesList from '../../../components/changes-list';
+import ChangesList from '../../../components/ChangesList';
 import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import WorkPackageSummary from '../ProjectViewContainer/WorkPackageSummary';
 
 /**

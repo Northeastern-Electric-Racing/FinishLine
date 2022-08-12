@@ -10,7 +10,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import './stylesheets/custom.scss';
 import reportWebVitals from './reportWebVitals';
-import ErrorBoundary from './components/error-boundary';
+import ErrorBoundary from './components/ErrorBoundary';
 
 ReactDOM.render(
   <React.StrictMode>

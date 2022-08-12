@@ -10,7 +10,7 @@ import { useCreateActivationChangeRequest } from '../../../hooks/change-requests
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import ActivateWorkPackageModal from './ActivateWorkPackageModal';
 
 interface ActivateWorkPackageModalContainerProps {

@@ -9,7 +9,7 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import StageGateWorkPackageModal from './StageGateWorkPackageModal';
 
 interface StageGateWorkPackageModalContainerProps {

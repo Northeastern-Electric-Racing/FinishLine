@@ -10,10 +10,10 @@ import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import DescriptionList from '../../../components/description-list';
-import HorizontalList from '../../../components/horizontal-list';
+import DescriptionList from '../../../components/DescriptionList';
+import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
-import ChangesList from '../../../components/changes-list';
+import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/page-title/page-title';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 
