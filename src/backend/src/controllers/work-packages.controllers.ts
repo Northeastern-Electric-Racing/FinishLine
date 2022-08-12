@@ -157,6 +157,10 @@ export const createWorkPackage = async (req: Request, res: Response) => {
     return elem.wbsElementId;
   });
 
+  if(dependenciesIds.find(id => id === projectId) !== undefined) {
+    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
+  }
+
 
   // add to the database
   await prisma.work_Package.create({
