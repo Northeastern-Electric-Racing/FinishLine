@@ -8,7 +8,7 @@ import { Button, Dropdown, Form } from 'react-bootstrap';
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
-import styles from '../../stylesheets/common.module.scss';
+import styles from '../../stylesheets/Common.module.scss';
 
 /**
  * Variables to filter table with.

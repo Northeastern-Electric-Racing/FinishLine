@@ -7,7 +7,7 @@ import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
-import styles from '../../stylesheets/layouts/sidebar/nav-page-links.module.css';
+import styles from '../../stylesheets/layouts/Sidebar/NavPageLinks.module.css';
 
 interface NavPageLinkProps {
   linkItems: LinkItem[];

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import styles from '../stylesheets/pages/page-not-found.module.css';
+import styles from '../stylesheets/pages/PageNotFound.module.css';
 /**
  * A display for when the project reaches an unknown page.
  * @returns page containing error message.

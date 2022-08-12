@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/Auth.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
 import NavNotificationsMenu from './NavNotificationsMenu';
-import styles from '../../stylesheets/layouts/nav-top-bar/nav-top-bar.module.css';
+import styles from '../../stylesheets/layouts/NavTopBar/NavTopBar.module.css';
 
 const NavTopBar: React.FC = () => {
   const auth = useAuth();

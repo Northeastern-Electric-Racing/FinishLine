@@ -14,7 +14,7 @@ import {
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
-import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
+import styles from '../../stylesheets/layouts/Sidebar/Sidebar.module.css';
 
 const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [

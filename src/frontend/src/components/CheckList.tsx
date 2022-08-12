@@ -8,7 +8,7 @@ import PageBlock from '../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import styles from '../stylesheets/components/check-list.module.css';
+import styles from '../stylesheets/components/CheckList.module.css';
 
 interface CheckListProps {
   title: string;
