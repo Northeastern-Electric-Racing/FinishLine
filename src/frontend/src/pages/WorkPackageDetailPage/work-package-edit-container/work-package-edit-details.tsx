@@ -5,7 +5,7 @@
 
 import { Form, InputGroup, Container, Row, Col } from 'react-bootstrap';
 import { WorkPackage, User, WbsElementStatus } from 'shared';
-import { fullNamePipe, percentPipe, emDashPipe } from '../../../pipes';
+import { fullNamePipe, percentPipe, emDashPipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/page-block';
 
 interface Props {

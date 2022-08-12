@@ -7,16 +7,16 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { WorkPackage } from 'shared';
 import wrapper from '../../app/app-context-query';
-import { mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
+import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import {
   exampleAllWorkPackages,
   exampleWorkPackage1
-} from '../../test-support/test-data/work-packages.stub';
-import { exampleWbsWorkPackage1 } from '../../test-support/test-data/wbs-numbers.stub';
-import { getAllWorkPackages, getSingleWorkPackage } from '../work-packages.api';
-import { useAllWorkPackages, useSingleWorkPackage } from '../work-packages.hooks';
+} from '../test-support/test-data/work-packages.stub';
+import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
+import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
+import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 
-jest.mock('../work-packages.api');
+jest.mock('../../apis/work-packages.api');
 
 describe('work package hooks', () => {
   it('handles getting a list of work packages', async () => {

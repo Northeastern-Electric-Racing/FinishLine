@@ -6,8 +6,8 @@
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import { WbsNumber } from 'shared';
-import { wbsPipe } from '../../../pipes';
-import { routes } from '../../../routes';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 
 interface DependencyProps {
   wbsNumber: WbsNumber;

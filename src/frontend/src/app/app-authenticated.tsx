@@ -4,7 +4,7 @@
  */
 
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { routes } from '../routes';
+import { routes } from '../utils/routes';
 import ChangeRequests from '../pages/ChangeRequestsPage/change-requests';
 import Projects from '../pages/ProjectsPage/projects';
 import { PageNotFound } from '../pages/page-not-found';

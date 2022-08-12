@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import AppMain from './app/app-main';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import './custom.scss';
+import './stylesheets/custom.scss';
 import reportWebVitals from './reportWebVitals';
 import ErrorBoundary from './components/error-boundary';
 

@@ -10,7 +10,7 @@ import {
   getSingleUserSettings,
   logUserIn,
   updateUserSettings
-} from './users.api';
+} from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
 import { useAuth } from './auth.hooks';
 

@@ -11,8 +11,8 @@ import {
   faQuestionCircle,
   faUsers
 } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../routes';
-import { LinkItem } from '../../types';
+import { routes } from '../../utils/routes';
+import { LinkItem } from '../../utils/types';
 import NavPageLinks from './nav-page-links';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 

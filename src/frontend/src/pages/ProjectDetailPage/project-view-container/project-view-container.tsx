@@ -6,8 +6,8 @@
 import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
-import { wbsPipe } from '../../../pipes';
-import { useAuth } from '../../../services/auth.hooks';
+import { wbsPipe } from '../../../utils/pipes';
+import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/changes-list';
 import DescriptionList from '../../../components/description-list';
 import WorkPackageSummary from './work-package-summary';
@@ -16,7 +16,7 @@ import PageBlock from '../../../layouts/page-block';
 import ProjectDetails from './project-details';
 import RulesList from './rules-list';
 import RiskLog from './risk-log';
-import { routes } from '../../../routes';
+import { routes } from '../../../utils/routes';
 import ProjectGantt from './project-gantt';
 
 interface ProjectViewContainerProps {

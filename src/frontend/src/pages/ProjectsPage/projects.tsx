@@ -4,7 +4,7 @@
  */
 
 import { Route, Switch } from 'react-router-dom';
-import { routes } from '../../routes';
+import { routes } from '../../utils/routes';
 import ProjectsView from './projects-view';
 import WBSDetails from '../wbs-details';
 import CreateProjectForm from '../CreateProjectPage/create-project-form';

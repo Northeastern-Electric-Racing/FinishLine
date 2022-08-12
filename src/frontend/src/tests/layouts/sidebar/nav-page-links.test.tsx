@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
-import { testLinkItems } from '../../../test-support/test-data/test-utils.stub';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
 import NavPageLinks from '../../../layouts/sidebar/nav-page-links';
 
 /**

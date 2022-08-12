@@ -4,7 +4,7 @@
  */
 
 import { Route, Switch } from 'react-router-dom';
-import { routes } from '../../routes';
+import { routes } from '../../utils/routes';
 import ChangeRequestDetails from '../ChangeRequestDetailPage/change-request-details';
 import ChangeRequestsTable from './change-requests-table';
 import CreateChangeRequest from '../CreateChangeRequestPage/create-change-request';

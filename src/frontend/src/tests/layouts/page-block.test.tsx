@@ -3,13 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../test-support/test-utils';
-import { useTheme } from '../../services/theme.hooks';
-import { Theme } from '../../types';
-import themes from '../../themes';
+import { render, screen } from '../test-support/test-utils';
+import { useTheme } from '../../hooks/theme.hooks';
+import { Theme } from '../../utils/types';
+import themes from '../../utils/themes';
 import PageBlock from '../../layouts/page-block';
 
-jest.mock('../../services/theme.hooks');
+jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

@@ -7,9 +7,9 @@ import { useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ChangeRequest, ChangeRequestExplanation, StandardChangeRequest } from 'shared';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../routes';
-import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../pipes';
-import { useAllChangeRequests } from '../../services/change-requests.hooks';
+import { routes } from '../../utils/routes';
+import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { DisplayChangeRequest } from './change-requests-table/change-requests-table';
 import CRTable from './change-requests-table/change-requests-table'; // Directly rename the default import
 import ChangeRequestsFilter from './change-requests-filter';

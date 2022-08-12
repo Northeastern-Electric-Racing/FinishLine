@@ -10,7 +10,7 @@ import {
   createSingleProject,
   getAllProjects,
   getSingleProject
-} from './projects.api';
+} from '../apis/projects.api';
 
 /**
  * Custom React Hook to supply all projects.

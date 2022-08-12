@@ -5,12 +5,12 @@
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { apiUrls } from '../../urls';
+import { apiUrls } from '../../utils/urls';
 import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest
-} from '../../test-support/test-data/change-requests.stub';
-import { getAllChangeRequests, getSingleChangeRequest } from '../change-requests.api';
+} from '../test-support/test-data/change-requests.stub';
+import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
 
 // Mock the server endpoint(s) that the component will hit
 const server = setupServer(

@@ -4,12 +4,12 @@
  */
 
 import { UseMutationResult } from 'react-query';
-import { useCreateStandardChangeRequest } from '../../../services/change-requests.hooks';
-import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
-import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
+import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import { mockUseMutationResult } from '../../test-support/test-data/test-utils.stub';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import CreateChangeRequest from '../../../pages/CreateChangeRequestPage/create-change-request';
 
-jest.mock('../../../services/change-requests.hooks');
+jest.mock('../../../hooks/change-requests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStandardCR = useCreateStandardChangeRequest as jest.Mock<UseMutationResult>;

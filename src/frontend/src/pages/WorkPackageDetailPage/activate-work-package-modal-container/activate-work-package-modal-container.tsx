@@ -5,10 +5,10 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber } from 'shared';
-import { useAuth } from '../../../services/auth.hooks';
-import { useCreateActivationChangeRequest } from '../../../services/change-requests.hooks';
-import { useAllUsers } from '../../../services/users.hooks';
-import { routes } from '../../../routes';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { routes } from '../../../utils/routes';
 import ErrorPage from '../../error-page';
 import LoadingIndicator from '../../../components/loading-indicator';
 import ActivateWorkPackageModal from './activate-work-package-modal';

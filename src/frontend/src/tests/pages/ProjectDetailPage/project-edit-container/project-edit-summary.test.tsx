@@ -4,8 +4,8 @@
  */
 
 import userEvent from '@testing-library/user-event';
-import { exampleProject1 } from '../../../../test-support/test-data/projects.stub';
-import { act, render, screen } from '../../../../test-support/test-utils';
+import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
+import { act, render, screen } from '../../../test-support/test-utils';
 import ProjectEditSummary from '../../../../pages/ProjectDetailPage/project-edit-container/project-edit-summary';
 
 const proj = exampleProject1;

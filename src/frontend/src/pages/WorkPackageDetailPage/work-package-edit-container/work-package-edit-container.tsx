@@ -6,11 +6,11 @@
 import { createContext, useState, SyntheticEvent } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
-import { useAuth } from '../../../services/auth.hooks';
-import { useAllUsers } from '../../../services/users.hooks';
-import { useEditWorkPackage } from '../../../services/work-packages.hooks';
-import { routes } from '../../../routes';
-import { wbsPipe } from '../../../pipes';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
+import { routes } from '../../../utils/routes';
+import { wbsPipe } from '../../../utils/pipes';
 import EditableTextInputList from '../../../components/editable-text-input-list';
 import ErrorPage from '../../error-page';
 import LoadingIndicator from '../../../components/loading-indicator';

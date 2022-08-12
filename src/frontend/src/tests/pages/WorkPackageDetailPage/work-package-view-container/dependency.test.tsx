@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../../test-support/test-utils';
-import { exampleWbsWorkPackage1 } from '../../../../test-support/test-data/wbs-numbers.stub';
-import { wbsPipe } from '../../../../pipes';
+import { render, screen } from '../../../test-support/test-utils';
+import { exampleWbsWorkPackage1 } from '../../../test-support/test-data/wbs-numbers.stub';
+import { wbsPipe } from '../../../../utils/pipes';
 import Dependency from '../../../../pages/WorkPackageDetailPage/work-package-view-container/dependency';
 
 describe('rendering a dependency', () => {

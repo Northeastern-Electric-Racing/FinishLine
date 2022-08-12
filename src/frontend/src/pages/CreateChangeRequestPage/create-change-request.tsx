@@ -5,10 +5,10 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestExplanation, ChangeRequestType, validateWBS } from 'shared';
-import { useAuth } from '../../services/auth.hooks';
-import { useCreateStandardChangeRequest } from '../../services/change-requests.hooks';
-import { useQuery } from '../../services/utils.hooks';
-import { routes } from '../../routes';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
+import { useQuery } from '../../hooks/utils.hooks';
+import { routes } from '../../utils/routes';
 import ErrorPage from '../error-page';
 import LoadingIndicator from '../../components/loading-indicator';
 import CreateChangeRequestsView from './create-change-request-view';

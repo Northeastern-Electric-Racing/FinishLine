@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../../test-support/test-utils';
+import { render, screen } from '../../../test-support/test-utils';
 import EditModeOptions from '../../../../pages/ProjectDetailPage/project-edit-container/edit-mode-options';
 
 // TODO: Add better tests for this component.

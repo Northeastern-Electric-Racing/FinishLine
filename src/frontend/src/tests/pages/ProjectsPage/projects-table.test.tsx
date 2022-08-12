@@ -6,8 +6,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import ProjectsTable from '../../../pages/ProjectsPage/projects-table';
 import { Project } from 'shared';
-import { wbsPipe, fullNamePipe, weeksPipe } from '../../../pipes';
-import { wbsRegex } from '../../../test-support/test-utils';
+import { wbsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
+import { wbsRegex } from '../../test-support/test-utils';
 import {
   exampleProject1,
   exampleProject2,
@@ -15,7 +15,7 @@ import {
   exampleProject4,
   exampleProject5,
   exampleAllProjects
-} from '../../../test-support/test-data/projects.stub';
+} from '../../test-support/test-data/projects.stub';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (prjs: Project[]) => {

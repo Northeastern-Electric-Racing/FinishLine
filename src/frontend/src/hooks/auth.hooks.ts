@@ -7,7 +7,7 @@ import { useState, useContext } from 'react';
 import { AuthenticatedUser, User } from 'shared';
 import { AuthContext } from '../app/app-context-auth';
 import { useLogUserIn } from './users.hooks';
-import { Auth } from '../types';
+import { Auth } from '../utils/types';
 
 // Provider hook that creates auth object and handles state
 export const useProvideAuth = () => {

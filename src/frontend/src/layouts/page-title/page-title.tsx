@@ -4,7 +4,7 @@
  */
 
 import { ReactNode } from 'react';
-import { LinkItem } from '../../types';
+import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './page-breadcrumbs';
 
 interface PageTitleProps {

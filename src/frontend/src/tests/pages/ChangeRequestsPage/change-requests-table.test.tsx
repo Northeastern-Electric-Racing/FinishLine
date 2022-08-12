@@ -11,25 +11,25 @@ import {
   exampleActivationChangeRequest,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../../test-support/test-data/change-requests.stub';
-import { mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
-import { useAllChangeRequests } from '../../../services/change-requests.hooks';
-import { routerWrapperBuilder } from '../../../test-support/test-utils';
-import { fullNamePipe, wbsPipe } from '../../../pipes';
+} from '../../test-support/test-data/change-requests.stub';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
+import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
+import { routerWrapperBuilder } from '../../test-support/test-utils';
+import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/change-requests-table';
-import { useTheme } from '../../../services/theme.hooks';
-import { Theme } from '../../../types';
-import themes from '../../../themes';
+import { useTheme } from '../../../hooks/theme.hooks';
+import { Theme } from '../../../utils/types';
+import themes from '../../../utils/themes';
 
-jest.mock('../../../services/change-requests.hooks');
+jest.mock('../../../hooks/change-requests.hooks');
 
 const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
   UseQueryResult<ChangeRequest[]>
 >;
 
-jest.mock('../../../services/theme.hooks');
+jest.mock('../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {

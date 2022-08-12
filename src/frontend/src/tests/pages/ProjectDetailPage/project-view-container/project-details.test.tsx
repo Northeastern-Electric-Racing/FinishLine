@@ -4,14 +4,14 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../services/theme.hooks';
-import { fullNamePipe } from '../../../../pipes';
-import themes from '../../../../themes';
-import { Theme } from '../../../../types';
-import { exampleProject1, exampleProject3 } from '../../../../test-support/test-data/projects.stub';
+import { useTheme } from '../../../../hooks/theme.hooks';
+import { fullNamePipe } from '../../../../utils/pipes';
+import themes from '../../../../utils/themes';
+import { Theme } from '../../../../utils/types';
+import { exampleProject1, exampleProject3 } from '../../../test-support/test-data/projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/project-view-container/project-details';
 
-jest.mock('../../../../services/theme.hooks');
+jest.mock('../../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

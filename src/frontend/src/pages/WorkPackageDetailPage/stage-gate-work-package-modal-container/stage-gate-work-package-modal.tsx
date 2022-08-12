@@ -9,7 +9,7 @@ import { Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { WbsNumber } from 'shared';
 import { FormInput } from './stage-gate-work-package-modal-container';
-import { wbsPipe } from '../../../pipes';
+import { wbsPipe } from '../../../utils/pipes';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;

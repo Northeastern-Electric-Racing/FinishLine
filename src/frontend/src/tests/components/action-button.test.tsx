@@ -5,8 +5,8 @@
 
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../routes';
+import { routerWrapperBuilder } from '../test-support/test-utils';
+import { routes } from '../../utils/routes';
 import ActionButton from '../../components/action-button';
 
 // Sets up the component under test with the desired values and renders it.
