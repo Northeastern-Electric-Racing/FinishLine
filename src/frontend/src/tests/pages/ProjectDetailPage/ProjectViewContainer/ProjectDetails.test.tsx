@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../hooks/theme.hooks';
+import { useTheme } from '../../../../hooks/Theme.hooks';
 import { fullNamePipe } from '../../../../utils/pipes';
 import themes from '../../../../utils/themes';
 import { Theme } from '../../../../utils/types';

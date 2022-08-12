@@ -12,7 +12,7 @@ import {
   updateUserSettings
 } from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
-import { useAuth } from './auth.hooks';
+import { useAuth } from './Auth.hooks';
 
 /**
  * Custom React Hook to supply all users.

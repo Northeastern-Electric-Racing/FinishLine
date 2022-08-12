@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { WbsNumber } from 'shared';
-import { useSingleProject } from '../../hooks/projects.hooks';
+import { useSingleProject } from '../../hooks/Projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
 import ProjectEditContainer from './ProjectEditContainer/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';

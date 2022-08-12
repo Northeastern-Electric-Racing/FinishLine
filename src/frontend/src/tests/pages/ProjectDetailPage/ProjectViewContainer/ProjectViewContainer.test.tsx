@@ -11,7 +11,7 @@ import {
   act
 } from '../../../test-support/test-utils';
 import { Auth } from '../../../../utils/types';
-import { useAuth } from '../../../../hooks/auth.hooks';
+import { useAuth } from '../../../../hooks/Auth.hooks';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../../test-support/test-data/users.stub';

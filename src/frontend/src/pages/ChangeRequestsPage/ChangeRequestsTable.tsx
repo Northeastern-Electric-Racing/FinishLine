@@ -9,7 +9,7 @@ import { ChangeRequest, ChangeRequestExplanation, StandardChangeRequest } from '
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
-import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
+import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
 import { DisplayChangeRequest } from './ChangeRequestsTableView';
 import CRTable from './ChangeRequestsTableView'; // Directly rename the default import
 import ChangeRequestsFilter from './ChangeRequestsFilter';

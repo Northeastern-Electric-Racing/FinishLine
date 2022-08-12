@@ -5,14 +5,14 @@
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/WorkPackages.hooks';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import UpcomingDeadlines from '../../../pages/HomePage/UpcomingDeadlines';
 
-jest.mock('../../../hooks/work-packages.hooks');
+jest.mock('../../../hooks/WorkPackages.hooks');
 
 const mockedUseAllWPs = useAllWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 

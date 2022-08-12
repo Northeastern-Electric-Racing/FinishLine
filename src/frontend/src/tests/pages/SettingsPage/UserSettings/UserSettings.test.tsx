@@ -9,7 +9,7 @@ import {
   useLogUserIn,
   useSingleUserSettings,
   useUpdateUserSettings
-} from '../../../../hooks/users.hooks';
+} from '../../../../hooks/Users.hooks';
 import {
   mockUseMutationResult,
   mockUseQueryResult

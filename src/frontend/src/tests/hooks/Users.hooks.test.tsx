@@ -11,7 +11,7 @@ import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
 import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
-import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
+import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/Users.hooks';
 
 jest.mock('../../apis/users.api');
 

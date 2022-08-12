@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import { useTheme } from '../../hooks/theme.hooks';
+import { useTheme } from '../../hooks/Theme.hooks';
 import { Theme } from '../../utils/types';
 import themes from '../../utils/themes';
 import PageBlock from '../../layouts/page-block';

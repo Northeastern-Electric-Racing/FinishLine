@@ -13,7 +13,7 @@ import {
   exampleStageGateChangeRequest
 } from '../test-support/test-data/change-requests.stub';
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
-import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
+import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/ChangeRequests.hooks';
 
 jest.mock('../../apis/change-requests.api');
 

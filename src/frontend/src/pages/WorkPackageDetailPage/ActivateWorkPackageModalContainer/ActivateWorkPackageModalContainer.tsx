@@ -5,9 +5,9 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber } from 'shared';
-import { useAuth } from '../../../hooks/auth.hooks';
-import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAuth } from '../../../hooks/Auth.hooks';
+import { useCreateActivationChangeRequest } from '../../../hooks/ChangeRequests.hooks';
+import { useAllUsers } from '../../../hooks/Users.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';

@@ -6,9 +6,9 @@
 import { createContext, useState, SyntheticEvent } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
-import { useAuth } from '../../../hooks/auth.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useAuth } from '../../../hooks/Auth.hooks';
+import { useAllUsers } from '../../../hooks/Users.hooks';
+import { useEditWorkPackage } from '../../../hooks/WorkPackages.hooks';
 import { routes } from '../../../utils/routes';
 import { wbsPipe } from '../../../utils/pipes';
 import EditableTextInputList from '../../../components/EditableTextInputList';

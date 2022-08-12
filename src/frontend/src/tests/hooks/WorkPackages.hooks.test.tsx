@@ -14,7 +14,7 @@ import {
 } from '../test-support/test-data/work-packages.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
-import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
 
 jest.mock('../../apis/work-packages.api');
 

@@ -24,11 +24,11 @@ import {
   fireEvent
 } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { useSingleChangeRequest } from '../../../hooks/ChangeRequests.hooks';
+import { useAuth } from '../../../hooks/Auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
 
-jest.mock('../../../hooks/change-requests.hooks');
+jest.mock('../../../hooks/ChangeRequests.hooks');
 
 const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<
   UseQueryResult<ChangeRequest>
@@ -45,7 +45,7 @@ const mockSingleCRHook = (
   );
 };
 
-jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/Auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

@@ -12,7 +12,7 @@ import {
   exampleWorkPackage3
 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageDetails';
-import { useAllUsers } from '../../../../hooks/users.hooks';
+import { useAllUsers } from '../../../../hooks/Users.hooks';
 import { User } from 'shared';
 import { mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
 import { UseQueryResult } from 'react-query';

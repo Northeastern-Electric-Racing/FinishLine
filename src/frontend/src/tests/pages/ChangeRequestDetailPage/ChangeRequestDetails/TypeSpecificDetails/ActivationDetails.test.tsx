@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
-import { useTheme } from '../../../../../hooks/theme.hooks';
+import { useTheme } from '../../../../../hooks/Theme.hooks';
 import { datePipe } from '../../../../../utils/pipes';
 import themes from '../../../../../utils/themes';
 import { Theme } from '../../../../../utils/types';

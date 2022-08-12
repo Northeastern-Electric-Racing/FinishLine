@@ -5,7 +5,7 @@
 
 import { ReactNode } from 'react';
 import { Card } from 'react-bootstrap';
-import { useTheme } from '../hooks/theme.hooks';
+import { useTheme } from '../hooks/Theme.hooks';
 
 interface PageBlockProps {
   title: string;

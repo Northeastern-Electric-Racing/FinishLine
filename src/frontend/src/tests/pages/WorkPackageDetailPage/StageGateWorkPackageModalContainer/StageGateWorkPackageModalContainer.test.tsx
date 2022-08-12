@@ -9,9 +9,9 @@ import { wbsPipe } from '../../../../utils/pipes';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
-import { useCreateStageGateChangeRequest } from '../../../../hooks/change-requests.hooks';
+import { useCreateStageGateChangeRequest } from '../../../../hooks/ChangeRequests.hooks';
 
-jest.mock('../../../../hooks/change-requests.hooks');
+jest.mock('../../../../hooks/ChangeRequests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;

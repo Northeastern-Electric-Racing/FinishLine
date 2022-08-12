@@ -8,7 +8,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { GoogleLogout } from 'react-google-login';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../hooks/auth.hooks';
+import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/routes';
 import styles from '../../stylesheets/layouts/nav-top-bar/nav-user-menu.module.css';
 

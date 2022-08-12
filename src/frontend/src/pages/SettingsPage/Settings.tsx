@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
-import { useAuth } from '../../hooks/auth.hooks';
+import { useAuth } from '../../hooks/Auth.hooks';
 import PageTitle from '../../layouts/page-title/page-title';
 import PageBlock from '../../layouts/page-block';
 import UserSettings from './UserSettings/UserSettings';

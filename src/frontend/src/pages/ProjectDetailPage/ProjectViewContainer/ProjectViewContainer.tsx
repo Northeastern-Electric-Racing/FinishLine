@@ -7,7 +7,7 @@ import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { useAuth } from '../../../hooks/Auth.hooks';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
 import WorkPackageSummary from './WorkPackageSummary';

@@ -13,23 +13,23 @@ import {
   exampleStandardChangeRequest
 } from '../../test-support/test-data/change-requests.stub';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
+import { useAllChangeRequests } from '../../../hooks/ChangeRequests.hooks';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
-import { useTheme } from '../../../hooks/theme.hooks';
+import { useTheme } from '../../../hooks/Theme.hooks';
 import { Theme } from '../../../utils/types';
 import themes from '../../../utils/themes';
 
-jest.mock('../../../hooks/change-requests.hooks');
+jest.mock('../../../hooks/ChangeRequests.hooks');
 
 const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
   UseQueryResult<ChangeRequest[]>
 >;
 
-jest.mock('../../../hooks/theme.hooks');
+jest.mock('../../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {

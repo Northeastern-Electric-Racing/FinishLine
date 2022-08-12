@@ -14,7 +14,7 @@ import {
   wbsRegex
 } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
-import { useAllProjects } from '../../../hooks/projects.hooks';
+import { useAllProjects } from '../../../hooks/Projects.hooks';
 import {
   exampleAllProjects,
   exampleProject1,

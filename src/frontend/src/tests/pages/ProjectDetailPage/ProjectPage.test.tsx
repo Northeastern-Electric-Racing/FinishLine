@@ -7,7 +7,7 @@ import React from 'react';
 import { UseQueryResult } from 'react-query';
 import { Project } from 'shared';
 import { render, screen } from '../../test-support/test-utils';
-import { useSingleProject } from '../../../hooks/projects.hooks';
+import { useSingleProject } from '../../../hooks/Projects.hooks';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectPage from '../../../pages/ProjectDetailPage/ProjectPage';

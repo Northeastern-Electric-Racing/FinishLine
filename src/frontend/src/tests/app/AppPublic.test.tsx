@@ -7,7 +7,7 @@ import { User } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import { useAuth } from '../../hooks/auth.hooks';
+import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/routes';
 import { Auth } from '../../utils/types';
 import AppPublic from '../../app/AppPublic';
