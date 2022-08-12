@@ -10,7 +10,7 @@ import { User } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../TestSupport/TestData/Users.stub';
-import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
+import { getAllUsers, getSingleUser, logUserIn } from '../../apis/Users.api';
 import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/Users.hooks';
 
 jest.mock('../../apis/users.api');

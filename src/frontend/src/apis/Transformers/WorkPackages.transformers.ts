@@ -4,8 +4,8 @@
  */
 
 import { WorkPackage } from 'shared';
-import { implementedChangeTransformer } from './change-requests.transformers';
-import { descriptionBulletTransformer } from './projects.transformers';
+import { implementedChangeTransformer } from './ChangeRequests.transformers';
+import { descriptionBulletTransformer } from './Projects.transformers';
 
 /**
  * Transforms a work package to ensure deep field transformation of date objects.

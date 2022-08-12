@@ -13,10 +13,10 @@ import {
   exampleWorkPackage1
 } from '../TestSupport/TestData/WorkPackages.stub';
 import { exampleWbsWorkPackage1 } from '../TestSupport/TestData/WbsNumbers.stub';
-import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
+import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/WorkPackages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
 
-jest.mock('../../apis/work-packages.api');
+jest.mock('../../apis/WorkPackages.api');
 
 describe('work package hooks', () => {
   it('handles getting a list of work packages', async () => {

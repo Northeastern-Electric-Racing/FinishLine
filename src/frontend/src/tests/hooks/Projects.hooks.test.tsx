@@ -10,7 +10,7 @@ import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
 import { exampleAllProjects, exampleProject1 } from '../TestSupport/TestData/Projects.stub';
 import { exampleWbsProject1 } from '../TestSupport/TestData/WbsNumbers.stub';
-import { getAllProjects, getSingleProject } from '../../apis/projects.api';
+import { getAllProjects, getSingleProject } from '../../apis/Projects.api';
 import { useAllProjects, useSingleProject } from '../../hooks/Projects.hooks';
 
 jest.mock('../../apis/projects.api');

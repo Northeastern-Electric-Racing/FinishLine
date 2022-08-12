@@ -10,7 +10,7 @@ import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest
 } from '../TestSupport/TestData/ChangeRequests.stub';
-import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
+import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
 
 // Mock the server endpoint(s) that the component will hit
 const server = setupServer(

@@ -10,7 +10,7 @@ import {
   exampleAllWorkPackages,
   exampleWorkPackage1
 } from '../TestSupport/TestData/WorkPackages.stub';
-import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
+import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/WorkPackages.api';
 
 // Mock the server endpoint(s) that the component will hit
 const server = setupServer(
