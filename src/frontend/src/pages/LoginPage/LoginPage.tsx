@@ -35,10 +35,8 @@ const LoginPage: React.FC<LoginPageProps> = ({
   return (
     <Card bg={theme.cardBg} className={'mx-auto mt-sm-5 '} style={styles.card}>
       <Card.Body>
-        <Card.Title>NER PM Dashboard</Card.Title>
-        <Card.Text>
-          NOTICE: We are currently upgrading the dashboard. Please go to nerpm.com for now instead!
-        </Card.Text>
+        <Card.Title>FinishLine by NER</Card.Title>
+        <Card.Text>Login Required. Students must use their Husky Google account.</Card.Text>
         <GoogleLogin
           clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
           //jsSrc={'accounts.google.com/gsi/client.js'}
