@@ -16,53 +16,53 @@ changeRequestsRouter.get('/', getAllChangeRequests);
 changeRequestsRouter.get('/:crId', getChangeRequestByID);
 changeRequestsRouter.post(
   '/review',
-  body('reviewerId').isInt({ min: 0 }),
-  body('crId').isInt({ min: 0 }),
-  body('reviewNotes').not().isEmpty(),
+  body('reviewerId').isInt({ min: 0 }).not().isString(),
+  body('crId').isInt({ min: 0 }).not().isString(),
+  body('reviewNotes').isString().not().isEmpty(),
   body('accepted').isBoolean(),
   reviewChangeRequest
 );
 changeRequestsRouter.post(
   '/new/activation',
-  body('submitterId').isInt({ min: 0 }),
-  body('wbsNum.carNumber').isInt({ min: 0 }),
-  body('wbsNum.projectNumber').isInt({ min: 0 }),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom((value) => value === ChangeRequestType.Activation),
   body('startDate').isDate(),
-  body('projectLeadId').isInt({ min: 0 }),
-  body('projectManagerId').isInt({ min: 0 }),
+  body('projectLeadId').isInt({ min: 0 }).not().isString(),
+  body('projectManagerId').isInt({ min: 0 }).not().isString(),
   body('confirmDetails').isBoolean(),
   createActivationChangeRequest
 );
 changeRequestsRouter.post(
   '/new/stage-gate',
-  body('submitterId').isInt({ min: 0 }),
-  body('wbsNum.carNumber').isInt({ min: 0 }),
-  body('wbsNum.projectNumber').isInt({ min: 0 }),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom((value) => value === ChangeRequestType.StageGate),
-  body('leftoverBudget').isInt({ min: 0 }),
+  body('leftoverBudget').isInt({ min: 0 }).not().isString(),
   body('confirmDone').isBoolean(),
   createStageGateChangeRequest
 );
 changeRequestsRouter.post(
   '/new/standard',
-  body('submitterId').isInt({ min: 0 }),
-  body('wbsNum.carNumber').isInt({ min: 0 }),
-  body('wbsNum.projectNumber').isInt({ min: 0 }),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom(
     (value) =>
       value === ChangeRequestType.Other ||
       value === ChangeRequestType.Issue ||
       value === ChangeRequestType.Redefinition
   ),
-  body('scopeImpact').not().isEmpty(),
-  body('budgetImpact').isInt({ min: 0 }),
-  body('timelineImpact').isInt({ min: 0 }),
+  body('scopeImpact').isString().not().isEmpty(),
+  body('budgetImpact').isInt({ min: 0 }).not().isString(),
+  body('timelineImpact').isInt({ min: 0 }).not().isString(),
   body('why').isArray(),
-  body('why.*.explain').not().isEmpty(),
+  body('why.*.explain').isString().not().isEmpty(),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   createStandardChangeRequest
 );

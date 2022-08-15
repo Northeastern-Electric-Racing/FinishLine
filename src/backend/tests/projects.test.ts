@@ -63,7 +63,6 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 
   test('newProject fails with invalid crId', async () => {
@@ -71,7 +70,6 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 
   test('newProject fails with invalid name', async () => {
@@ -79,7 +77,6 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 
   test('newProject works', async () => {
@@ -121,7 +118,6 @@ describe('Projects', () => {
     const res = await request(app).post('/edit').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 
   test('editProject fails with feature with invalid id', async () => {
@@ -129,7 +125,6 @@ describe('Projects', () => {
     const res = await request(app).post('/edit').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 
   test('editProject fails with feature with invalid detail', async () => {
@@ -137,6 +132,5 @@ describe('Projects', () => {
     const res = await request(app).post('/edit').send(proj);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors.length).toBe(1);
   });
 });
