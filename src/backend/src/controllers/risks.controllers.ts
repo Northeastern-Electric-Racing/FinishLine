@@ -47,3 +47,32 @@ export const createRisk = async (req: Request, res: Response) => {
 
   return res.status(200).json({ message: `Successfully created risk #${createdRisk.id}.` });
 };
+
+export const deleteRisk = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { body } = req;
+  const { riskId, deletedByUserId } = body;
+
+  const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
+
+  if (!targetRisk) return res.status(404).json({ message: `risk with id ${riskId} not found` });
+
+  if (targetRisk.dateDeleted || targetRisk.deletedBy) {
+    return res.status(400).json({ message: 'this risk has already been deleted' });
+  }
+
+  const updatedRisk = await prisma.risk.update({
+    where: { id: riskId },
+    data: {
+      deletedByUserId,
+      dateDeleted: new Date()
+    },
+    ...riskQueryArgs
+  });
+
+  return res.status(200).json(riskTransformer(updatedRisk));
+};
