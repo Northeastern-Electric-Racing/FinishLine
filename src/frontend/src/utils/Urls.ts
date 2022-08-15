@@ -12,7 +12,7 @@ const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3
 /**************** Users Endpoint ****************/
 const users = () => `${API_URL}/users`;
 const usersById = (id: string) => `${users()}/${id}`;
-const usersLogin = () => `${users()}/auth:login`;
+const usersLogin = () => `${users()}/auth/:login`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 
 /**************** Projects Endpoint ****************/
