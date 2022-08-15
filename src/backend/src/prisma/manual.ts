@@ -5,6 +5,8 @@
 
 import { PrismaClient, Role } from '@prisma/client';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 const prisma = new PrismaClient();
 
 /**
@@ -13,13 +15,54 @@ const prisma = new PrismaClient();
  */
 
 /** Execute all given prisma database interaction scripts written in this function */
-const executeScripts = async () => {
-  await setUserRole(8, Role.MEMBER);
-};
+const executeScripts = async () => {};
 
-/** Update user's role given userId and new role */
+/**
+ * Update user's role given userId and new role
+ * Example: await setUserRole(8, Role.MEMBER);
+ */
 const setUserRole = async (id: number, role: Role) => {
   await prisma.user.update({ where: { userId: id }, data: { role } });
+};
+
+/**
+ * Print metrics on accepted Change Requests with timeline impact
+ */
+const checkTimelineImpact = async () => {
+  const res = await prisma.change_Request.findMany({
+    where: {
+      accepted: true,
+      scopeChangeRequest: {
+        timelineImpact: {
+          gt: 0
+        }
+      }
+    },
+    include: {
+      scopeChangeRequest: true
+    }
+  });
+  const calc = res.reduce((acc, curr) => {
+    return acc + (curr.scopeChangeRequest?.timelineImpact || 0);
+  }, 0);
+  console.log('total accepted CRs w/ timeline impact:', res.length);
+  console.log('total accepted delays', calc, 'weeks');
+};
+
+/**
+ * Print count of total work packages
+ */
+const countWorkPackages = async () => {
+  const res = await prisma.work_Package.count();
+  console.log('total work packages:', res);
+};
+
+/**
+ * Calculate active users by week
+ */
+const activeUserMetrics = async () => {
+  // sad dev doesn't feel like converting SQL to Prisma
+  // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
 };
 
 executeScripts()
