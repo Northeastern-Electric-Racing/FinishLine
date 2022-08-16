@@ -18,7 +18,7 @@ changeRequestsRouter.post(
   '/review',
   body('reviewerId').isInt({ min: 0 }).not().isString(),
   body('crId').isInt({ min: 0 }).not().isString(),
-  body('reviewNotes').isString().not().isEmpty(),
+  body('reviewNotes').isString(),
   body('accepted').isBoolean(),
   reviewChangeRequest
 );

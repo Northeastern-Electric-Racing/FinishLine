@@ -27,6 +27,7 @@
     "build:shared": "yarn workspace shared build",
     "build:frontend": "yarn workspace frontend build",
     "i": "yarn install && yarn prisma:generate",
+    "istart": "yarn i && yarn start",
     "reset": "rm yarn.lock; rm -rf ./node_modules; rm -rf src/frontend/node_modules; rm -rf src/backend/node_modules; rm -rf src/shared/node_modules;",
     "install:hard": "yarn reset; yarn install; yarn prisma:generate"
   },
