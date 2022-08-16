@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import PageBlock from '../layouts/PageBlock';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import * as yup from 'yup';
@@ -127,9 +132,13 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             </Col>
           </Row>
           <Row className="mx-2 justify-content-start">
-            <Button variant="success" type="submit" disabled={readOnly}>
-              Add
-            </Button>
+            {readOnly ? (
+              ''
+            ) : (
+              <Button variant="success" type="submit">
+                Add
+              </Button>
+            )}
           </Row>
         </Form>
       </PageBlock>
