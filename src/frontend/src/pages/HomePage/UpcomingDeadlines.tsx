@@ -14,13 +14,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-
-const styles = {
-  upcomingDeadlineCard: {
-    minWidth: 'fit-content !important',
-    margin: '0px 10px 10px 0px'
-  }
-};
+import styles from '../../stylesheets/pages/Home.module.css';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -37,8 +31,8 @@ const UpcomingDeadlines: React.FC = () => {
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
             <Card
+              className={styles.horizontalScrollCard}
               key={wbsPipe(wp.wbsNum)}
-              style={styles.upcomingDeadlineCard}
               border={theme.cardBorder}
               bg={theme.cardBg}
             >
