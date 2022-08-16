@@ -9,6 +9,8 @@ import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import styles from '../stylesheets/components/CheckList.module.css';
+import { routes } from '../utils/Routes';
+import { useHistory } from 'react-router';
 
 interface CheckListProps {
   title: string;
@@ -25,6 +27,8 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const history = useHistory();
 
   const handleCheck = (idx: number) => {
     const updatedChecks = checks.map((check, i) => {
@@ -67,7 +71,15 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
               </OverlayTrigger>
             ) : (
               <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-                <Button variant="success" data-testId="convertButton">
+                <Button
+                  variant="success"
+                  data-testId="convertButton"
+                  onClick={() => {
+                    history.push(
+                      routes.CHANGE_REQUESTS_NEW_WITH_WHAT + encodeURIComponent(check.details)
+                    );
+                  }}
+                >
                   <FontAwesomeIcon icon={faArrowRight} />
                 </Button>
               </OverlayTrigger>
