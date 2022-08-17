@@ -17,8 +17,8 @@ const mockHandleSubmit = jest.fn();
 const renderComponent = (
   readOnly: boolean,
   description = '',
-  budget = 0,
-  timeline = 0,
+  budgetImpact = 0,
+  timelineImpact = 0,
   scope = ''
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
@@ -28,8 +28,8 @@ const renderComponent = (
         readOnly={readOnly}
         onAdd={mockHandleSubmit}
         description={description}
-        budget={budget}
-        timeline={timeline}
+        budgetImpact={budgetImpact}
+        timelineImpact={timelineImpact}
         scope={scope}
       />
     </RouterWrapper>
@@ -41,32 +41,38 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     renderComponent(true);
     expect(screen.queryAllByText('Proposed Solution - Read Only').length).toEqual(1);
   });
+
   it('Renders the form title correctly when not readOnly', () => {
     renderComponent(false);
     expect(screen.queryAllByText('Proposed Solution').length).toEqual(1);
   });
+
   it('Renders labels for inputs correctly when readOnly', () => {
     renderComponent(true);
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
-    expect(screen.getByLabelText('Budget')).toBeInTheDocument();
-    expect(screen.getByLabelText('Timeline')).toBeInTheDocument();
+    expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Scope')).toBeInTheDocument();
   });
+
   it('Renders labels for inputs correctly when not readOnly', () => {
     renderComponent(false);
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
-    expect(screen.getByLabelText('Budget')).toBeInTheDocument();
-    expect(screen.getByLabelText('Timeline')).toBeInTheDocument();
+    expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Scope')).toBeInTheDocument();
   });
+
   it('Does not render add button when readOnly', () => {
     renderComponent(true);
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
   });
+
   it('Renders add button when not readOnly', () => {
     renderComponent(false);
     expect(screen.getByText('Add')).toBeInTheDocument();
   });
+
   it('Renders prefill elements when readOnly', () => {
     renderComponent(true, 'Test Description', 1, 2, 'Test Scope');
     expect(screen.getByDisplayValue('Test Description')).toBeInTheDocument();
@@ -74,6 +80,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByDisplayValue(2)).toBeInTheDocument();
     expect(screen.getByDisplayValue('Test Scope')).toBeInTheDocument();
   });
+
   it('Renders prefill elements when not readOnly', () => {
     renderComponent(false, 'Test Description', 1, 2, 'Test Scope');
     expect(screen.getByDisplayValue('Test Description')).toBeInTheDocument();
