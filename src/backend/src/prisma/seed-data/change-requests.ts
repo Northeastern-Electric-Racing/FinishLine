@@ -102,8 +102,7 @@ const dbSeedChangeRequest2: any = {
   ],
   scopeChangeRequestFields: {
     otherFields: {
-      what:
-        'It would be nice for the bodywork to have two removable side panels where they cover the pedal box',
+      what: 'It would be nice for the bodywork to have two removable side panels where they cover the pedal box',
       scopeImpact: 'New division of bodywork panels and adding removable mounting method',
       budgetImpact: 25,
       timelineImpact: 4
