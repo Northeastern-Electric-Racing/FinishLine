@@ -5,11 +5,11 @@ This is a living document that will take the place of an official Product Requir
 
 ## Table of Contents
 
-- [Projects](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md#projects)
-- [Work Packages](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md#work-packages)
-- [Change Requests](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md#change-requests)
-- [Other](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md#other)
-  - [Supported Platforms](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md#supported-platforms)
+- [Projects](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md#projects)
+- [Work Packages](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md#work-packages)
+- [Change Requests](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md#change-requests)
+- [Other](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md#other)
+  - [Supported Platforms](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md#supported-platforms)
 
 ## Projects
 
