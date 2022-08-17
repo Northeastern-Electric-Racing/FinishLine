@@ -65,6 +65,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
+      <RiskLog risks={testRisks} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList
@@ -77,7 +78,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <RulesList rules={proj.rules} />
       <ChangesList changes={proj.changes} />
-      <RiskLog risks={testRisks} />
       <PageBlock title={'Work Packages'}>
         {proj.workPackages.map((ele: WorkPackage) => (
           <div key={wbsPipe(ele.wbsNum)} className="mt-3">
