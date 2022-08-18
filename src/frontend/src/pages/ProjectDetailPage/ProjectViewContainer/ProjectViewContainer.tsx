@@ -18,6 +18,11 @@ import RulesList from './RulesList';
 import RiskLog from './RiskLog';
 import { routes } from '../../../utils/Routes';
 import ProjectGantt from './ProjectGantt';
+import {
+  exampleRisk1,
+  exampleRisk2,
+  exampleRisk3
+} from '../../../tests/TestSupport/TestData/Risks.stub';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -50,11 +55,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </DropdownButton>
   );
 
-  const testRisks = [
-    { details: 'Risk #1', resolved: false },
-    { details: 'Risk #2', resolved: true },
-    { details: 'Risk #3', resolved: false }
-  ];
+  const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3];
 
   return (
     <Container fluid className="mb-5">
