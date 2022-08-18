@@ -137,7 +137,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               </Row>
             </Col>
             <Col lg={true}>
-              <Row className="mx-2 justify-content-end">
+              <Row className="mx-2 mt-4 justify-content-end">
                 {readOnly ? (
                   ''
                 ) : (
