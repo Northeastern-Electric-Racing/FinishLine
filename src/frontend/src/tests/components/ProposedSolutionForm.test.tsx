@@ -37,16 +37,6 @@ const renderComponent = (
 };
 
 describe('Individual Proposed Solution Form Test Suite', () => {
-  it('Renders the form title correctly when readOnly', () => {
-    renderComponent(true);
-    expect(screen.queryAllByText('Proposed Solution - Read Only').length).toEqual(1);
-  });
-
-  it('Renders the form title correctly when not readOnly', () => {
-    renderComponent(false);
-    expect(screen.queryAllByText('Proposed Solution').length).toEqual(1);
-  });
-
   it('Renders labels for inputs correctly when readOnly', () => {
     renderComponent(true);
     expect(screen.getByLabelText('Description')).toBeInTheDocument();

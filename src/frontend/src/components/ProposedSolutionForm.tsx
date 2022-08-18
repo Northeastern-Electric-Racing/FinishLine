@@ -42,18 +42,6 @@ const schema = yup.object().shape({
     .integer('Timeline must be an integer')
 });
 
-const styles = {
-  numberInput: {
-    width: '47.5%'
-  },
-  descColumn: {
-    paddingRight: 0
-  },
-  numberColumn: {
-    paddingLeft: 0
-  }
-};
-
 const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   description,
   budgetImpact,
@@ -69,10 +57,10 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
 
   return (
     <>
-      <PageBlock title={`Proposed Solution${readOnly ? ' - Read Only' : ''}`}>
+      <PageBlock title={''}>
         <Form id="individual-proposed-solution-form" onSubmit={handleSubmit(onAdd)}>
           <Row className="mx-2 justify-content-start">
-            <Col lg={true} style={styles.descColumn}>
+            <Col lg={true}>
               <Form.Group controlId="formDescription" className="mx-2">
                 <Form.Label>Description</Form.Label>
                 <Form.Control
@@ -88,46 +76,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
-            <Col lg={true} style={styles.numberColumn}>
-              <Row className="mx-2 justify-content-around">
-                <Form.Group controlId="formBudgetImpact" style={styles.numberInput}>
-                  <Form.Label>Budget Impact</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Prepend>
-                      <InputGroup.Text>$</InputGroup.Text>
-                    </InputGroup.Prepend>
-                    <Form.Control
-                      {...register('budgetImpact')}
-                      placeholder="$ needed"
-                      isInvalid={formState.errors.budgetImpact?.message !== undefined}
-                      readOnly={readOnly}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {formState.errors.budgetImpact?.message}
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-                <Form.Group controlId="formTimelineImpact" style={styles.numberInput}>
-                  <Form.Label>Timeline Impact</Form.Label>
-                  <InputGroup>
-                    <Form.Control
-                      {...register('timelineImpact')}
-                      placeholder="# needed"
-                      isInvalid={formState.errors.timelineImpact?.message !== undefined}
-                      readOnly={readOnly}
-                    />
-                    <InputGroup.Append>
-                      <InputGroup.Text>weeks</InputGroup.Text>
-                    </InputGroup.Append>
-                    <Form.Control.Feedback type="invalid">
-                      {formState.errors.timelineImpact?.message}
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-              </Row>
-            </Col>
-          </Row>
-          <Row className="mx-2 justify-content-start">
             <Col lg={true}>
               <Form.Group controlId="formScope" className="mx-2">
                 <Form.Label>Scope</Form.Label>
@@ -145,14 +93,60 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               </Form.Group>
             </Col>
           </Row>
-          <Row className="mx-2 justify-content-end">
-            {readOnly ? (
-              ''
-            ) : (
-              <Button variant="success" type="submit">
-                Add
-              </Button>
-            )}
+          <Row className="mx-2 justify-content-start">
+            <Col lg={true}>
+              <Row className="mx-2 justify-content-start">
+                <Col lg={true} className="pl-0">
+                  <Form.Group controlId="formBudgetImpact">
+                    <Form.Label>Budget Impact</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Prepend>
+                        <InputGroup.Text>$</InputGroup.Text>
+                      </InputGroup.Prepend>
+                      <Form.Control
+                        {...register('budgetImpact')}
+                        placeholder="$ needed"
+                        isInvalid={formState.errors.budgetImpact?.message !== undefined}
+                        readOnly={readOnly}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {formState.errors.budgetImpact?.message}
+                      </Form.Control.Feedback>
+                    </InputGroup>
+                  </Form.Group>
+                </Col>
+                <Col lg={true} className="pr-0">
+                  <Form.Group controlId="formTimelineImpact">
+                    <Form.Label>Timeline Impact</Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        {...register('timelineImpact')}
+                        placeholder="# needed"
+                        isInvalid={formState.errors.timelineImpact?.message !== undefined}
+                        readOnly={readOnly}
+                      />
+                      <InputGroup.Append>
+                        <InputGroup.Text>weeks</InputGroup.Text>
+                      </InputGroup.Append>
+                      <Form.Control.Feedback type="invalid">
+                        {formState.errors.timelineImpact?.message}
+                      </Form.Control.Feedback>
+                    </InputGroup>
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Col>
+            <Col lg={true}>
+              <Row className="mx-2 justify-content-end">
+                {readOnly ? (
+                  ''
+                ) : (
+                  <Button variant="success" type="submit">
+                    Add
+                  </Button>
+                )}
+              </Row>
+            </Col>
           </Row>
         </Form>
       </PageBlock>
