@@ -12,8 +12,9 @@ import { projectTransformer } from './Transformers/Projects.transformers';
 /**
  * Fetches all projects.
  */
-export const getAllProjects = () => {
+export const getAllProjects = (token: string) => {
   return axios.get<Project[]>(apiUrls.projects(), {
+    headers: { authorization: token },
     transformResponse: (data) => JSON.parse(data).map(projectTransformer)
   });
 };

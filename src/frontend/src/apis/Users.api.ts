@@ -35,7 +35,7 @@ export const getSingleUser = (id: number) => {
  * @param id_token The login token for the user.
  */
 export const logUserIn = (id_token: string) => {
-  return axios.post<AuthenticatedUser>(
+  return axios.post<{ user: AuthenticatedUser; token: string }>(
     apiUrls.usersLogin(),
     { id_token },
     { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }

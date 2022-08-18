@@ -13,6 +13,7 @@ import { Auth } from '../utils/Types';
 export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
+  const [token, setToken] = useState('');
 
   const devSignin = (user: User) => {
     setUser(user);
@@ -20,13 +21,15 @@ export const useProvideAuth = () => {
   };
 
   const signin = async (id_token: string) => {
-    const user = await mutateAsync(id_token);
-    setUser(user);
+    const res = await mutateAsync(id_token);
+    setUser(res.user);
+    setToken(res.token);
     return user;
   };
 
   const signout = () => {
     setUser(undefined);
+    setToken('');
   };
 
   return {
@@ -34,6 +37,7 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
+    token,
     isLoading
   } as Auth;
 };

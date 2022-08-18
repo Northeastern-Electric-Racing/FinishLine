@@ -5,6 +5,7 @@ import {
   authUserQueryArgs,
   userTransformer
 } from '../utils/users.utils';
+import { generateAccessToken } from '../utils/utils';
 
 export const getAllUsers = async (_req: any, res: any) => {
   const users = await prisma.user.findMany();
@@ -102,5 +103,8 @@ export const logUserIn = async (req: any, res: any) => {
     }
   });
 
-  return res.status(200).json(authenticatedUserTransformer(user));
+  const token = generateAccessToken(user.googleAuthId);
+  console.log('logged in fr');
+
+  return res.status(200).json({ user: authenticatedUserTransformer(user), token });
 };
