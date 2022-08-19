@@ -9,6 +9,7 @@ import {
   calculateTimelineStatus
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
+import { userTransformer } from './users.utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -94,13 +95,13 @@ export const projectTransformer = (
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
     status: wbsElement.status as WbsElementStatus,
-    projectLead: projectLead ?? undefined,
-    projectManager: projectManager ?? undefined,
+    projectLead: projectLead ? userTransformer(projectLead) : undefined,
+    projectManager: projectManager ? userTransformer(projectManager) : undefined,
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
       wbsNum,
-      implementer: change.implementer,
+      implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
@@ -130,13 +131,17 @@ export const projectTransformer = (
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
         status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead ?? undefined,
-        projectManager: workPackage.wbsElement.projectManager ?? undefined,
+        projectLead: workPackage.wbsElement.projectLead
+          ? userTransformer(workPackage.wbsElement.projectLead)
+          : undefined,
+        projectManager: workPackage.wbsElement.projectManager
+          ? userTransformer(workPackage.wbsElement.projectManager)
+          : undefined,
         changes: workPackage.wbsElement.changes.map((change) => ({
           changeId: change.changeId,
           changeRequestId: change.changeRequestId,
           wbsNum: wbsNumOf(workPackage.wbsElement),
-          implementer: change.implementer,
+          implementer: userTransformer(change.implementer),
           detail: change.detail,
           dateImplemented: change.dateImplemented
         })),
