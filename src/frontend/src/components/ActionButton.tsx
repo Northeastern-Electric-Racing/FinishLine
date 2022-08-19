@@ -5,7 +5,7 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from 'react-bootstrap';
+import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
 const styles = {
@@ -26,7 +26,7 @@ interface ActionButtonProps {
 const ActionButton: React.FC<ActionButtonProps> = ({ link, icon, text }) => {
   return (
     <Link className={'row py-auto px-3 '} to={link} style={{ textDecoration: 'none' }}>
-      <Button>
+      <Button variant="contained" sx={{ backgroundColor: '#ef4345' }}>
         <div style={styles.button}>
           <FontAwesomeIcon className="mr-2 my-auto" icon={icon} size="1x" color="white" />
           <p className="mb-0" style={styles.buttonText}>
