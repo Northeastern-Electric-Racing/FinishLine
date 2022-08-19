@@ -104,7 +104,6 @@ export const logUserIn = async (req: any, res: any) => {
   });
 
   const token = generateAccessToken(user.googleAuthId);
-  console.log('logged in fr');
 
   return res.status(200).json({ user: authenticatedUserTransformer(user), token });
 };
