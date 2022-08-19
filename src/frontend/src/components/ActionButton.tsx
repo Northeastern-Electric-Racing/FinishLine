@@ -11,9 +11,6 @@ import { Link } from 'react-router-dom';
 const styles = {
   button: {
     display: 'flex'
-  },
-  buttonText: {
-    color: 'white'
   }
 };
 interface ActionButtonProps {
@@ -26,12 +23,13 @@ interface ActionButtonProps {
 const ActionButton: React.FC<ActionButtonProps> = ({ link, icon, text }) => {
   return (
     <Link className={'row py-auto px-3 '} to={link} style={{ textDecoration: 'none' }}>
-      <Button variant="contained" sx={{ backgroundColor: '#ef4345' }}>
+      <Button
+        variant="contained"
+        style={{ backgroundColor: '#ef4345', textTransform: 'none', fontSize: '15px' }}
+      >
         <div style={styles.button}>
           <FontAwesomeIcon className="mr-2 my-auto" icon={icon} size="1x" color="white" />
-          <p className="mb-0" style={styles.buttonText}>
-            {text}
-          </p>
+          {text}
         </div>
       </Button>
     </Link>
