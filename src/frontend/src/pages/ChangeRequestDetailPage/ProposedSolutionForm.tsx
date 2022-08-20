@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../layouts/PageBlock';
+import PageBlock from '../../layouts/PageBlock';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';

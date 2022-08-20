@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../TestSupport/TestUtils';
-import ProposedSolutionForm from '../../components/ProposedSolutionForm';
+import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
+import ProposedSolutionForm from '../../../pages/ChangeRequestDetailPage/ProposedSolutionForm';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
