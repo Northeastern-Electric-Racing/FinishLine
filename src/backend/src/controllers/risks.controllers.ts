@@ -25,16 +25,8 @@ export const createRisk = async (req: Request, res: Response) => {
   const { body } = req;
   const { projectId, detail, createdById } = body;
 
-  const targetProj = await prisma.project.findUnique({ where: { projectId } });
-
-  const targetUser = await prisma.user.findUnique({ where: { userId: createdById } });
-
-  if (!targetProj) {
-    return res.status(404).json({ message: `project with id #${projectId} not found!` });
-  }
-
-  if (!targetUser) {
-    return res.status(404).json({ message: `user with id #${projectId} not found!` });
+  if (!hasRiskPermissions(createdById, projectId)) {
+    return res.status(401).json({ message: 'Access Denied' });
   }
 
   const createdRisk = await prisma.risk.create({
