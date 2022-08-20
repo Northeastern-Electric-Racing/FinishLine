@@ -1,6 +1,11 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { createRisk, deleteRisk, editRisk, getRisksForProject } from '../controllers/risks.controllers';
+import {
+  createRisk,
+  deleteRisk,
+  editRisk,
+  getRisksForProject
+} from '../controllers/risks.controllers';
 
 const risksRouter = express.Router();
 

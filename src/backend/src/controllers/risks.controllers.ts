@@ -40,7 +40,6 @@ export const createRisk = async (req: Request, res: Response) => {
   return res.status(200).json({ message: `Successfully created risk #${createdRisk.id}.` });
 };
 
-
 export const editRisk = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -102,7 +101,6 @@ export const editRisk = async (req: Request, res: Response) => {
   // return the updated risk
   return res.status(200).json(riskTransformer(updatedRisk));
 };
-
 
 export const deleteRisk = async (req: Request, res: Response) => {
   const errors = validationResult(req);
