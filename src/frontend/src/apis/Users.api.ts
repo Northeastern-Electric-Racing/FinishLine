@@ -6,7 +6,7 @@
 import axios from 'axios';
 import { User } from 'shared';
 import { apiUrls } from '../utils/Urls';
-import { loginTransformer, userTransformer } from './Transformers/Users.transformers';
+import { authUserTransformer, userTransformer } from './Transformers/Users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 
 /**
@@ -35,10 +35,10 @@ export const getSingleUser = (id: number) => {
  * @param id_token The login token for the user.
  */
 export const logUserIn = (id_token: string) => {
-  return axios.post<{ user: AuthenticatedUser; token: string }>(
+  return axios.post<AuthenticatedUser>(
     apiUrls.usersLogin(),
     { id_token },
-    { transformResponse: (data) => loginTransformer(JSON.parse(data)) }
+    { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
   );
 };
 

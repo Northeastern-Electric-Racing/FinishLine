@@ -40,7 +40,7 @@ export const useSingleUser = (id: number) => {
  * Custom React Hook to log a user in.
  */
 export const useLogUserIn = () => {
-  return useMutation<{ user: AuthenticatedUser; token: string }, Error, string>(
+  return useMutation<AuthenticatedUser, Error, string>(
     ['users', 'login'],
     async (id_token: string) => {
       const { data } = await logUserIn(id_token);

@@ -2605,7 +2605,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cookie-parser@npm:^1.4.2":
+"@types/cookie-parser@npm:^1.4.3":
   version: 1.4.3
   resolution: "@types/cookie-parser@npm:1.4.3"
   dependencies:
@@ -2668,6 +2668,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/express-jwt@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@types/express-jwt@npm:6.0.4"
+  dependencies:
+    "@types/express": "*"
+    "@types/express-unless": "*"
+  checksum: bf4b80b10fbeb9d45491e605c79d4b2925823af76929ca833a208c13f73be45a7ab639e76054d0185457f97fef10b0232833dcc3f44dfcf14baabae26801420e
+  languageName: node
+  linkType: hard
+
 "@types/express-pino-logger@npm:4.0.2":
   version: 4.0.2
   resolution: "@types/express-pino-logger@npm:4.0.2"
@@ -2685,6 +2695,15 @@ __metadata:
     "@types/qs": "*"
     "@types/range-parser": "*"
   checksum: c40d9027884ab9e97fa29d9d41d1b75a5966109312e26594cf03c61b278b5bf8e095f53589e47899b34a2e224291a44043617695c3e8bd22284f988e48582ee6
+  languageName: node
+  linkType: hard
+
+"@types/express-unless@npm:*, @types/express-unless@npm:^0.5.3":
+  version: 0.5.3
+  resolution: "@types/express-unless@npm:0.5.3"
+  dependencies:
+    "@types/express": "*"
+  checksum: 5c76425ff7490123f3c072c942ae6d18bb3cbf91d5d9857c52fca1f9a3d11b72413dbfb3e4af28fdd7f745d1a443f90daadbcf7daff714d608eef10bd7c8763c
   languageName: node
   linkType: hard
 
@@ -4424,18 +4443,20 @@ __metadata:
   resolution: "backend@workspace:src/backend"
   dependencies:
     "@prisma/client": ^4.1.1
-    "@types/cookie-parser": ^1.4.2
+    "@types/cookie-parser": ^1.4.3
     "@types/cors": ^2.8.12
     "@types/express": ^4.17.6
+    "@types/express-jwt": ^6.0.4
     "@types/express-pino-logger": 4.0.2
     "@types/jsonwebtoken": ^8.5.8
     "@types/node": ^14.0.9
     "@types/supertest": ^2.0.12
     body-parser: ^1.19.0
-    cookie-parser: ^1.4.5
+    cookie-parser: ^1.4.6
     cors: ^2.8.5
     dotenv: ^16.0.1
     express: ^4.17.1
+    express-jwt: ^7.7.5
     express-pino-logger: 5.0.0
     express-validator: ^6.14.2
     google-auth-library: ^8.1.1
@@ -5692,7 +5713,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie-parser@npm:^1.4.5":
+"cookie-parser@npm:^1.4.6":
   version: 1.4.6
   resolution: "cookie-parser@npm:1.4.6"
   dependencies:
@@ -7852,12 +7873,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"express-jwt@npm:^7.7.5":
+  version: 7.7.5
+  resolution: "express-jwt@npm:7.7.5"
+  dependencies:
+    "@types/express-unless": ^0.5.3
+    "@types/jsonwebtoken": ^8.5.8
+    express-unless: ^2.0.2
+    jsonwebtoken: ^8.5.1
+  checksum: 815219a8102918e74fba2f392d2837848398beec5c1b604b8c4674881ce15f0c529a42daa7ec9e42da826e0db6cc622bd1718308e45963fae73a2b4de48dc24c
+  languageName: node
+  linkType: hard
+
 "express-pino-logger@npm:5.0.0":
   version: 5.0.0
   resolution: "express-pino-logger@npm:5.0.0"
   dependencies:
     pino-http: ^5.1.0
   checksum: 5f1d76f153d3d3ae13106a125643ba080f7e8d009ffa42c218d28fec20e1a9411f920ade5ac841bfbabf4f9c9c9fe6861ef67f16ab7c398601a54ee6d54fa02b
+  languageName: node
+  linkType: hard
+
+"express-unless@npm:^2.0.2":
+  version: 2.1.1
+  resolution: "express-unless@npm:2.1.1"
+  checksum: 3ae3cfdf7775f825d1bece5c6252218250c2e2d445766e46ef63882905bf864bc2b29f11beee01ab4325bbbc57ee2909c93d1745c179cab81a31926b8470adbd
   languageName: node
   linkType: hard
 

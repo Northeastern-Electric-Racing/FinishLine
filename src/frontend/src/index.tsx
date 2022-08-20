@@ -11,6 +11,9 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import './stylesheets/Custom.scss';
 import reportWebVitals from './reportWebVitals';
 import ErrorBoundary from './components/ErrorBoundary';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
 
 ReactDOM.render(
   <React.StrictMode>

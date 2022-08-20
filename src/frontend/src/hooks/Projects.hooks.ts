@@ -15,9 +15,9 @@ import {
 /**
  * Custom React Hook to supply all projects.
  */
-export const useAllProjects = (token: string) => {
+export const useAllProjects = () => {
   return useQuery<Project[], Error>(['projects'], async () => {
-    const { data } = await getAllProjects(token);
+    const { data } = await getAllProjects();
     return data;
   });
 };

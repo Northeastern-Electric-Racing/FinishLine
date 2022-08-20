@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Project, User } from 'shared';
 import { useAllProjects } from '../../hooks/Projects.hooks';
-import { useAuth } from '../../hooks/Auth.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -66,8 +65,7 @@ const ProjectsView: React.FC = () => {
   const [projectLeadID, setProjectLeadID] = useState(-1);
   const [projectManagerID, setProjectManagerID] = useState(-1);
   const [carNumber, setCarNumber] = useState(-1);
-  const { token } = useAuth();
-  const { isLoading, isError, data, error } = useAllProjects(token);
+  const { isLoading, isError, data, error } = useAllProjects();
 
   if (isLoading) return <LoadingIndicator />;
 

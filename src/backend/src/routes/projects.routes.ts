@@ -7,11 +7,10 @@ import {
 } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import { authenticateToken } from '../utils/utils';
 
 const projectRouter = express.Router();
 
-projectRouter.get('/', authenticateToken, getAllProjects);
+projectRouter.get('/', getAllProjects);
 projectRouter.get('/:wbsNum', getSingleProject);
 projectRouter.post(
   '/new',

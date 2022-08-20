@@ -39,3 +39,13 @@ export const authenticateToken = (req: Request, res: Response, next: any) => {
     next();
   });
 };
+
+export const requireJwtUnlessLogin = (fn: any) => {
+  return function (req: Request, res: Response, next: any) {
+    if (req.path === '/users/auth/:login') {
+      next();
+    } else {
+      fn(req, res, next);
+    }
+  };
+};

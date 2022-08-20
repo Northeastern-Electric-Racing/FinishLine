@@ -28,9 +28,3 @@ export const authUserTransformer = (authUser: AuthenticatedUser) => {
     ...authUser
   };
 };
-
-export const loginTransformer = (login: { user: AuthenticatedUser; token: string }) => {
-  return {
-    ...login
-  };
-};
