@@ -105,7 +105,7 @@ export const logUserIn = async (req: any, res: any) => {
 
   const token = generateAccessToken(user.googleAuthId);
 
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: false });
+  res.set('authorization', token);
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };

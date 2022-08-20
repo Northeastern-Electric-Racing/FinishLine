@@ -43,7 +43,7 @@ export const useLogUserIn = () => {
   return useMutation<AuthenticatedUser, Error, string>(
     ['users', 'login'],
     async (id_token: string) => {
-      const { data } = await logUserIn(id_token);
+      const data = await logUserIn(id_token);
       return data;
     }
   );

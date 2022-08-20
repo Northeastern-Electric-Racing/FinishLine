@@ -6,36 +6,23 @@ import teamsRouter from './src/routes/teams.routes';
 import workPackagesRouter from './src/routes/work-packages.routes';
 import risksRouter from './src/routes/risks.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
-import { expressjwt } from 'express-jwt';
-import cookieParser from 'cookie-parser';
-import { requireJwtUnlessLogin } from './src/utils/utils';
+import { authenticateToken } from './src/utils/utils';
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 const options: cors.CorsOptions = {
-  origin: 'http://localhost:3000',
+  origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
-  preflightContinue: true,
-  allowedHeaders: '*'
+  preflightContinue: false,
+  allowedHeaders: '*',
+  exposedHeaders: 'authorization'
 };
 
 app.use(cors(options));
 app.use(express.json());
-app.use(cookieParser());
-app.use(
-  requireJwtUnlessLogin(
-    expressjwt({
-      secret: process.env.TOKEN_SECRET as string,
-      algorithms: ['HS256'],
-      getToken: (req) => {
-        console.log(req.cookies);
-        return req.cookies.token;
-      }
-    })
-  )
-);
+app.use(authenticateToken);
 
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);

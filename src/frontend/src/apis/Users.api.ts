@@ -35,11 +35,19 @@ export const getSingleUser = (id: number) => {
  * @param id_token The login token for the user.
  */
 export const logUserIn = (id_token: string) => {
-  return axios.post<AuthenticatedUser>(
-    apiUrls.usersLogin(),
-    { id_token },
-    { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
-  );
+  return axios
+    .post<AuthenticatedUser>(
+      apiUrls.usersLogin(),
+      { id_token },
+      { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
+    )
+    .then((res) => {
+      const token = res.headers['authorization'];
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['authorization'] = localStorage.getItem('token') as string;
+
+      return res.data;
+    });
 };
 
 /**

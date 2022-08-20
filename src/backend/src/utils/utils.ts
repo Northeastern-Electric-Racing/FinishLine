@@ -28,24 +28,17 @@ export const generateAccessToken = (googleAuthId: string) => {
 };
 
 export const authenticateToken = (req: Request, res: Response, next: any) => {
-  // eslint-disable-next-line prefer-destructuring
-  const token = req.headers['authorization'];
-
-  if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
-
-  jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
-    console.log(err);
-    if (err) return res.status(403).json({ message: 'Authentication Failed!' });
+  if (req.path === '/users/auth/:login' || process.env.NODE_ENV !== 'production') {
     next();
-  });
-};
+  } else {
+    // eslint-disable-next-line prefer-destructuring
+    const token = req.headers['authorization'];
 
-export const requireJwtUnlessLogin = (fn: any) => {
-  return function (req: Request, res: Response, next: any) {
-    if (req.path === '/users/auth/:login') {
+    if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
+
+    jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
+      if (err) return res.status(403).json({ message: 'Authentication Failed!' });
       next();
-    } else {
-      fn(req, res, next);
-    }
-  };
+    });
+  }
 };
