@@ -24,7 +24,7 @@ const NavTopBar: React.FC = () => {
             src={'/NER-Logo-App-Icon.png'}
             alt="Northeastern Electric Racing Logo"
           />{' '}
-          <h3 className={styles.title}>NER PM Dashboard</h3>
+          <h3 className={styles.title}>FinishLine by NER</h3>
         </Link>
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="nav-top-bar-items" />

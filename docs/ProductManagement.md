@@ -4,41 +4,18 @@ Product Management documentation for the NER PM Dashboard v2.
 
 ## Table of Contents
 
-- [Document Purpose](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#document-purpose)
-- [Product Purpose](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#product-purpose)
-- [Product History](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#product-history)
-- [Users](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#users)
-- [Features](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#features)
-- [Metrics](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#metrics)
-- [Business Value](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#business-value)
-- [Key Resources](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#key-resources)
-- [Risks](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/ProductManagement.md#risks)
+- [Document Purpose](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#document-purpose)
+- [Users](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#users)
+- [Features](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#features)
+- [Metrics](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#metrics)
+- [Business Value](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#business-value)
+- [Key Resources](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#key-resources)
+- [Risks](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/ProductManagement.md#risks)
 
 ## Document Purpose
 
 The purpose of this document is to thoroughly record the purpose, metrics, and roadmap for the Northeastern Electric Racing Project Management Dashboard website (“NER PM Dashboard”).
 This document will help articulate the why and what behind the product, the motivation for building it, and the impact that it should have on the team.
-
-## Product Purpose
-
-The NER PM Dashboard is intended to assist NER’s Project Management Office (PMO) and other leadership with increasing efficiency in two aspects:
-
-1. understanding the state of the club’s projects and
-2. handling the processes and procedures associated with a formal project and change management system
-
-## Product History
-
-The NER PM Dashboard v1 was created in July of 2020 as a Google Apps Script web application attached to the database Google Sheet file.
-Major development took place during July and August prior to the start of the Fall 2020 semester.
-During Fall 2020, two developers make incremental improvements, and then in Spring 2020 a team of developers was formed.
-
-The NER PM Dashboard v2 was hypothesized during the Fall 2020 semester as the v1 developers ran into platform and framework limitations.
-Research, planning, and project initiation for v2 began in Spring 2021.
-The end of Summer 2021 was selected as the initial launch deadline for v2, but was not met.
-In Fall 2021, the team of developers was formalized into NER's Software Solutions team and grew to 20+ members.
-January 18, 2022 was selected as the adjusted launch deadline for v2, but was yet again not met.
-In Spring 2022, the Software Solutions team grew to 70+ members.
-The application finally launched in May of 2022.
 
 ## Users
 
@@ -60,7 +37,7 @@ Below is a list of the focus and priorities for each user group:
 
 ## Features
 
-The key features and feature categories for the NER PM Dashboard application are described in a separate [Requirements document](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/Docs/Requirements.md).
+The key features and feature categories for the NER PM Dashboard application are described in a separate [Requirements document](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/Docs/Requirements.md).
 
 ## Metrics
 
