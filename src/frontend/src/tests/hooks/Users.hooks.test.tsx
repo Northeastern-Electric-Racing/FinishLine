@@ -4,14 +4,13 @@
  */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { act } from 'react-dom/test-utils';
 import { AxiosResponse } from 'axios';
 import { User } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../TestSupport/TestData/Users.stub';
-import { getAllUsers, getSingleUser, logUserIn } from '../../apis/Users.api';
-import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/Users.hooks';
+import { getAllUsers, getSingleUser } from '../../apis/Users.api';
+import { useAllUsers, useSingleUser } from '../../hooks/Users.hooks';
 
 jest.mock('../../apis/Users.api');
 
@@ -30,21 +29,6 @@ describe('user hooks', () => {
     mockedGetSingleUser.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
 
     const { result, waitFor } = renderHook(() => useSingleUser(1), { wrapper });
-    await waitFor(() => result.current.isSuccess);
-    expect(result.current.data).toEqual(exampleAdminUser);
-  });
-
-  it('handles logging in a user', async () => {
-    const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<User>>>;
-    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
-
-    const { result, waitFor } = renderHook(() => useLogUserIn(), {
-      wrapper
-    });
-    act(() => {
-      result.current.mutate(exampleAdminUser.email);
-    });
-
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAdminUser);
   });

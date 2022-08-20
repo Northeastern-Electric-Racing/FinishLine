@@ -10,6 +10,7 @@ import { authenticateToken } from './src/utils/utils';
 
 const app = express();
 const port = process.env.PORT || 3001;
+export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 const options: cors.CorsOptions = {
   origin: '*',

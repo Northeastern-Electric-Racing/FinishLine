@@ -2,6 +2,7 @@ import { Description_Bullet, WBS_Element, WBS_Element_Status } from '@prisma/cli
 import { DescriptionBullet, WbsElementStatus, WbsNumber } from 'shared';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
+import { TOKEN_SECRET } from '../..';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -24,7 +25,7 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
   }[status]);
 
 export const generateAccessToken = (googleAuthId: string) => {
-  return jwt.sign({ googleAuthId }, process.env.TOKEN_SECRET as string, { expiresIn: '10h' });
+  return jwt.sign({ googleAuthId }, TOKEN_SECRET, { expiresIn: '10h' });
 };
 
 export const authenticateToken = (req: Request, res: Response, next: any) => {
@@ -36,7 +37,7 @@ export const authenticateToken = (req: Request, res: Response, next: any) => {
 
     if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
 
-    jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
+    jwt.verify(token, TOKEN_SECRET, (err: any) => {
       if (err) return res.status(403).json({ message: 'Authentication Failed!' });
       next();
     });
