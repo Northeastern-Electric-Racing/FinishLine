@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
-import { riskQueryArgs, riskTransformer } from '../utils/risks.utils';
+import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
 import { validationResult } from 'express-validator';
 
 export const getRisksForProject = async (req: Request, res: Response) => {
@@ -63,6 +63,10 @@ export const deleteRisk = async (req: Request, res: Response) => {
 
   if (targetRisk.dateDeleted || targetRisk.deletedBy) {
     return res.status(400).json({ message: 'this risk has already been deleted' });
+  }
+
+  if (!hasRiskPermissions(deletedByUserId, targetRisk.projectId)) {
+    return res.status(401).json({ message: 'Access Denied' });
   }
 
   const updatedRisk = await prisma.risk.update({
