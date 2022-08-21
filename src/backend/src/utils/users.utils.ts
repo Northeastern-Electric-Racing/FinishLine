@@ -14,7 +14,6 @@ export const authenticatedUserTransformer = (
     userId: user.userId,
     firstName: user.firstName,
     lastName: user.lastName,
-    googleAuthId: user.googleAuthId,
     email: user.email,
     emailId: user.emailId,
     role: user.role,
@@ -29,7 +28,6 @@ export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
     userId: user.userId ?? undefined,
     firstName: user.firstName ?? undefined,
     lastName: user.lastName ?? undefined,
-    googleAuthId: user.googleAuthId ?? undefined,
     email: user.email ?? undefined,
     emailId: user.emailId,
     role: user.role ?? undefined

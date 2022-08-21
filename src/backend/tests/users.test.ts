@@ -11,7 +11,6 @@ const batman = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',
-  googleAuthId: 'google',
   email: 'notbatman@gmail.com',
   emailId: 'notbatman',
   role: Role.APP_ADMIN
@@ -21,7 +20,6 @@ const superman = {
   userId: 2,
   firstName: 'Clark',
   lastName: 'Kent',
-  googleAuthId: 'idek what this is',
   email: 'clark.kent@thedailyplanet.com',
   emailId: 'clark.kent',
   role: Role.ADMIN
@@ -34,7 +32,10 @@ describe('Users', () => {
   });
 
   test('getAllUsers', async () => {
-    jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+    jest.spyOn(prisma.user, 'findMany').mockResolvedValue([
+      { ...superman, googleAuthId: 'a' },
+      { ...batman, googleAuthId: 'b' }
+    ]);
 
     const res = await request(app).get('/');
 
@@ -44,7 +45,7 @@ describe('Users', () => {
   });
 
   test('getSingleUser', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
 
     const res = await request(app).get('/1');
 

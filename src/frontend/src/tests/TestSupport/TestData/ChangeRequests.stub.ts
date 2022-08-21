@@ -138,7 +138,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP
@@ -158,7 +157,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP
@@ -178,7 +176,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP

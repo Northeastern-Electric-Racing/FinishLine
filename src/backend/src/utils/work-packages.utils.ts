@@ -7,6 +7,7 @@ import {
   WorkPackage
 } from 'shared';
 import prisma from '../prisma/prisma';
+import { userTransformer } from './users.utils';
 import { convertStatus, descBulletConverter, wbsNumOf } from './utils';
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
@@ -44,8 +45,12 @@ export const workPackageTransformer = (
     expectedActivities: wpInput.expectedActivities.map(descBulletConverter),
     deliverables: wpInput.deliverables.map(descBulletConverter),
     dependencies: wpInput.dependencies.map(wbsNumOf),
-    projectManager: wpInput.wbsElement.projectManager ?? undefined,
-    projectLead: wpInput.wbsElement.projectLead ?? undefined,
+    projectManager: wpInput.wbsElement.projectManager
+      ? userTransformer(wpInput.wbsElement.projectManager)
+      : undefined,
+    projectLead: wpInput.wbsElement.projectLead
+      ? userTransformer(wpInput.wbsElement.projectLead)
+      : undefined,
     status: convertStatus(wpInput.wbsElement.status),
     wbsNum,
     endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
@@ -55,7 +60,7 @@ export const workPackageTransformer = (
       wbsNum,
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
-      implementer: change.implementer,
+      implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     }))
