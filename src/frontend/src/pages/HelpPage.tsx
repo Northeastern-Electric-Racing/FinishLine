@@ -49,7 +49,7 @@ const HelpPage: React.FC = () => {
                 icon={faCode}
                 description={'Submit a ticket on GitHub'}
                 link={
-                  'https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/issues/new/choose'
+                  'https://github.com/Northeastern-Electric-Racing/FinishLine/issues/new/choose'
                 }
               />
             </Col>

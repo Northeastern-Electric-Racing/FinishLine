@@ -7,7 +7,6 @@ export interface User {
   userId: number;
   firstName: string;
   lastName: string;
-  googleAuthId: string;
   email: string;
   emailId: string | null;
   role: Role;
@@ -33,7 +32,6 @@ export interface AuthenticatedUser {
   userId: number;
   firstName: string;
   lastName: string;
-  googleAuthId: string;
   email: string;
   emailId: string | null;
   role: Role;

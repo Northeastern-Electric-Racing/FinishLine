@@ -26,7 +26,7 @@ _Any remaining things that need to get done_
 ## Checklist
 
 It can be helpful to check the `Checks` and `Files changed` tabs.
-Please review the [contributor guide](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md) and reach out to your squad if anything is unclear.
+Please review the [contributor guide](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md) and reach out to your squad if anything is unclear.
 Please request reviewers and ping on slack only after you've gone through this whole checklist.
 
 - [ ] All commits are tagged with the ticket number

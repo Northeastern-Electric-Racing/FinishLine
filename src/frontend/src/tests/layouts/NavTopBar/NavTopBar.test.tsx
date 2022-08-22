@@ -21,6 +21,6 @@ const renderComponent = () => {
 describe('navigation top bar tests', () => {
   it('renders site title', () => {
     renderComponent();
-    expect(screen.getByText(/NER PM Dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/FinishLine by NER/i)).toBeInTheDocument();
   });
 });

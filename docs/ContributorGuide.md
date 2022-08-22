@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Creating Issues And Suggesting Features](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#creating-issues-and-suggesting-features)
-- [Creating a Branch](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#creating-a-branch)
-- [Writing Code](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#writing-code)
-- [Creating a Commit](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#creating-a-commit)
-- [Testing Your Code](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#testing-your-code)
-- [Running the App Locally](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#running-the-app-locally)
-- [Creating a Pull Request](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/ContributorGuide.md#creating-a-pull-request)
+- [Creating Issues And Suggesting Features](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#creating-issues-and-suggesting-features)
+- [Creating a Branch](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#creating-a-branch)
+- [Writing Code](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#writing-code)
+- [Creating a Commit](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#creating-a-commit)
+- [Testing Your Code](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#testing-your-code)
+- [Running the App Locally](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#running-the-app-locally)
+- [Creating a Pull Request](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md#creating-a-pull-request)
 
 ## Creating Issues And Suggesting Features
 
-Navigate to the [GitHub repository issues page](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/issues) and click the "New Issue" button.
+Navigate to the [GitHub repository issues page](https://github.com/Northeastern-Electric-Racing/FinishLine/issues) and click the "New Issue" button.
 
 ### Issue Title
 
@@ -68,7 +68,7 @@ Next, use `git commit -m [message]` to commit your staged file with the message.
 Use the following syntax for commit messages: `#[issue number] - [description of changes made]`.
 Examples: `#12 - Expanded the creating commmits section` or `#79 - Increased list padding`.
 
-See [common git commands](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2#onboarding) for alternative methods for staging and committing changes.
+See [common git commands](https://github.com/Northeastern-Electric-Racing/FinishLine#onboarding) for alternative methods for staging and committing changes.
 
 ## Testing Your Code
 
@@ -85,7 +85,7 @@ The API endpoint can be found at `localhost:3000/.netlify/functions/`.
 
 ## When to push package.json?
 
-`package.json` contains all the dependencies of the project. 
+`package.json` contains all the dependencies of the project.
 Thus, when dependencies are added or removed from the project, or when the version of any dependency is changed, then `package.json` needs to be committed to the branch and pushed to the remote repository.
 Unless there are changes to `package.json`, you should **_not_** commit and push any changes to `package-lock.json`.
 
@@ -98,7 +98,7 @@ Pushing more commits to the GitHub repo will add them to the PR.
 Ensure that you have pushed your branch to GitHub using `git push`.
 You may need to run `git push --set-upstream origin [branch name]` as instructed by the git CLI if the branch does not already exist in the GitHub repo and only exists on your local computer.
 
-Navigate to the [PRs page on GitHub](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/pulls) and click "New pull request".
+Navigate to the [PRs page on GitHub](https://github.com/Northeastern-Electric-Racing/FinishLine/pulls) and click "New pull request".
 You may have to select the branch which you would like to merge into the `main` branch.
 
 Give your PR an informative and concise title.

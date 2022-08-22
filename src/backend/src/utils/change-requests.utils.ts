@@ -6,6 +6,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
+import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
@@ -46,10 +47,10 @@ export const changeRequestTransformer = (
     // all cr fields
     crId: changeRequest.crId,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
-    submitter: changeRequest.submitter,
+    submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
-    reviewer: changeRequest.reviewer ?? undefined,
+    reviewer: changeRequest.reviewer ? userTransformer(changeRequest.reviewer) : undefined,
     dateReviewed: changeRequest.dateReviewed ?? undefined,
     accepted: changeRequest.accepted ?? undefined,
     reviewNotes: changeRequest.reviewNotes ?? undefined,
@@ -62,7 +63,7 @@ export const changeRequestTransformer = (
       wbsNum: wbsNumOf(change.wbsElement),
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
-      implementer: change.implementer,
+      implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
@@ -76,8 +77,12 @@ export const changeRequestTransformer = (
     budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
     timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
     // activation cr fields
-    projectLead: changeRequest.activationChangeRequest?.projectLead ?? undefined,
-    projectManager: changeRequest.activationChangeRequest?.projectManager ?? undefined,
+    projectLead: changeRequest.activationChangeRequest?.projectLead
+      ? userTransformer(changeRequest.activationChangeRequest?.projectLead)
+      : undefined,
+    projectManager: changeRequest.activationChangeRequest?.projectManager
+      ? userTransformer(changeRequest.activationChangeRequest?.projectManager)
+      : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
