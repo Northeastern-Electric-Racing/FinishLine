@@ -113,7 +113,9 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
       wbsElement: {
         include: {
           workPackage: {
-            include: { project: { include: { team: { include: { leader: true } } } } }
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
           }
         }
       }
@@ -122,7 +124,9 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
 
   const team = createdCR.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}`;
+  const slackMsg =
+    `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}` +
+    ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
   await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
 
   return res.status(200).json({
@@ -185,7 +189,9 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 
   const team = createdChangeRequest.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}`;
+  const slackMsg =
+    `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+    ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
   await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
 
   return res.status(200).json({
