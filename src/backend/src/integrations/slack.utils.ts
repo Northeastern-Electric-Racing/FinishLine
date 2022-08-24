@@ -1,6 +1,11 @@
 import slack from '../integrations/slack';
 
-export const sendMessage = async (channelId: string, message: string, link: string) => {
+export const sendMessage = async (
+  channelId: string,
+  message: string,
+  link: string,
+  linkButtonText: string
+) => {
   await slack.chat.postMessage({
     token: process.env.SLACK_BOT_TOKEN,
     channel: channelId,
@@ -17,7 +22,7 @@ export const sendMessage = async (channelId: string, message: string, link: stri
           text: {
             type: 'plain_text',
             emoji: true,
-            text: 'View'
+            text: linkButtonText
           },
           url: link
         }

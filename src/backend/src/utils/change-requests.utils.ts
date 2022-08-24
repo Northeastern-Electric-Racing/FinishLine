@@ -1,4 +1,4 @@
-import { Prisma, Scope_CR_Why_Type } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -6,6 +6,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
+import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
 
@@ -89,4 +90,19 @@ export const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
+};
+
+export const sendSlackChangeRequestNotification = async (
+  team: Team & {
+    leader: User;
+  },
+  message: string,
+  crId: number
+) => {
+  return sendMessage(
+    team.slackId,
+    `:warning: New Change Request! :warning: ${message}`,
+    `https://finishlinebyner.com/cr/${crId}`,
+    `View CR #${crId}`
+  );
 };

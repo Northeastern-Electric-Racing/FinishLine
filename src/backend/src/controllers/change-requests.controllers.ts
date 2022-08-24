@@ -2,11 +2,11 @@ import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import {
   changeRequestRelationArgs,
-  changeRequestTransformer
+  changeRequestTransformer,
+  sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
 import { validationResult } from 'express-validator';
 import { Role } from '@prisma/client';
-import { sendMessage } from '../integrations/slack.utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -122,9 +122,8 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
 
   const team = createdCR.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `Change Request #${createdCR.crId} was just submitted by ${user.firstName} ${user.lastName}`;
-  const crLink = `https://finishlinebyner.com/cr/${createdCR.crId}`;
-  await sendMessage(team.slackId, slackMsg, crLink);
+  const slackMsg = `${user.firstName} ${user.lastName} wants to stage gate ${createdCR.wbsElement.name}`;
+  await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
 
   return res.status(200).json({
     message: `Successfully created activation change request #${createdCR.crId}.`
@@ -186,11 +185,8 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 
   const team = createdChangeRequest.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg =
-    `:warning: New Change Request! :warning: ${user.firstName} ${user.lastName}` +
-    ` wants to stage gate ${createdChangeRequest.wbsElement.name}. CR #${createdChangeRequest.crId}`;
-  const crLink = `https://finishlinebyner.com/cr/${createdChangeRequest.crId}`;
-  await sendMessage(team.slackId, slackMsg, crLink);
+  const slackMsg = `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}`;
+  await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
 
   return res.status(200).json({
     message: `Successfully created stage gate change request #${createdChangeRequest.crId}.`
@@ -258,9 +254,8 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
     createdChangeRequest.wbsElement.workPackage?.project.team ||
     createdChangeRequest.wbsElement.project?.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `Change Request #${createdChangeRequest.crId} was just submitted by ${user.firstName} ${user.lastName}`;
-  const crLink = `https://finishlinebyner.com/cr/${createdChangeRequest.crId}`;
-  await sendMessage(team.slackId, slackMsg, crLink);
+  const slackMsg = `${user.firstName} ${user.lastName} just submitted a ${body.type} Change Request`;
+  await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
 
   return res.status(200).json({
     message: `Successfully created standard change request #${createdChangeRequest.crId}.`
