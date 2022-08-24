@@ -6,6 +6,7 @@ import {
 } from '../utils/change-requests.utils';
 import { validationResult } from 'express-validator';
 import { Role } from '@prisma/client';
+import { sendMessage } from '../integrations/slack.utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -94,7 +95,7 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
 
-  const createdChangeRequest = await prisma.change_Request.create({
+  const createdCR = await prisma.change_Request.create({
     data: {
       submitter: { connect: { userId: body.submitterId } },
       wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
@@ -107,11 +108,26 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
           confirmDetails: body.confirmDetails
         }
       }
+    },
+    include: {
+      wbsElement: {
+        include: {
+          workPackage: {
+            include: { project: { include: { team: { include: { leader: true } } } } }
+          }
+        }
+      }
     }
   });
 
+  const team = createdCR.wbsElement.workPackage?.project.team;
+  if (!team) return res.status(500).json({ message: `Team not properly set up.` });
+  const slackMsg = `Change Request #${createdCR.crId} was just submitted by ${user.firstName} ${user.lastName}`;
+  const crLink = `https://finishlinebyner.com/cr/${createdCR.crId}`;
+  await sendMessage(team.slackId, slackMsg, crLink);
+
   return res.status(200).json({
-    message: `Successfully created activation change request #${createdChangeRequest.crId}.`
+    message: `Successfully created activation change request #${createdCR.crId}.`
   });
 };
 
