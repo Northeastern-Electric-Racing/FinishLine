@@ -237,8 +237,26 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
           why: { createMany: { data: body.why } }
         }
       }
+    },
+    include: {
+      wbsElement: {
+        include: {
+          project: { include: { team: { include: { leader: true } } } },
+          workPackage: {
+            include: { project: { include: { team: { include: { leader: true } } } } }
+          }
+        }
+      }
     }
   });
+
+  const team =
+    createdChangeRequest.wbsElement.workPackage?.project.team ||
+    createdChangeRequest.wbsElement.project?.team;
+  if (!team) return res.status(500).json({ message: `Team not properly set up.` });
+  const slackMsg = `Change Request #${createdChangeRequest.crId} was just submitted by ${user.firstName} ${user.lastName}`;
+  const crLink = `https://finishlinebyner.com/cr/${createdChangeRequest.crId}`;
+  await sendMessage(team.slackId, slackMsg, crLink);
 
   return res.status(200).json({
     message: `Successfully created standard change request #${createdChangeRequest.crId}.`
