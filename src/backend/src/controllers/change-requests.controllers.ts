@@ -175,7 +175,9 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
       wbsElement: {
         include: {
           workPackage: {
-            include: { project: { include: { team: { include: { leader: true } } } } }
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
           }
         }
       }
@@ -184,7 +186,9 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 
   const team = createdChangeRequest.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `Change Request #${createdChangeRequest.crId} was just submitted by ${user.firstName} ${user.lastName}`;
+  const slackMsg =
+    `:warning: New Change Request! :warning: ${user.firstName} ${user.lastName}` +
+    ` wants to stage gate ${createdChangeRequest.wbsElement.name}. CR #${createdChangeRequest.crId}`;
   const crLink = `https://finishlinebyner.com/cr/${createdChangeRequest.crId}`;
   await sendMessage(team.slackId, slackMsg, crLink);
 
