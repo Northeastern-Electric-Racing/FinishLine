@@ -97,12 +97,24 @@ export const sendSlackChangeRequestNotification = async (
     leader: User;
   },
   message: string,
-  crId: number
+  crId: number,
+  budgetImpact?: number
 ) => {
-  return sendMessage(
-    team.slackId,
-    `:warning: New Change Request! :warning: ${message}`,
-    `https://finishlinebyner.com/cr/${crId}`,
-    `View CR #${crId}`
-  );
+  const msgs = [];
+  const fullMsg = `:tada: New Change Request! :tada: ${message}`;
+  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
+  const btnText = `View CR #${crId}`;
+  msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
+
+  if (budgetImpact && budgetImpact > 100) {
+    msgs.push(
+      sendMessage(
+        process.env.SLACK_EBOARD_CHANNEL!,
+        `${fullMsg} with $${budgetImpact} requested`,
+        fullLink,
+        btnText
+      )
+    );
+  }
+  return Promise.all(msgs);
 };

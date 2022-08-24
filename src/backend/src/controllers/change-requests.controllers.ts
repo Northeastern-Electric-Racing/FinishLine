@@ -255,7 +255,12 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
   if (!project?.team) return res.status(500).json({ message: `Team not properly set up.` });
   const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
-  await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
+  await sendSlackChangeRequestNotification(
+    project.team,
+    slackMsg,
+    createdCR.crId,
+    body.budgetImpact
+  );
 
   return res.status(200).json({
     message: `Successfully created standard change request #${createdCR.crId}.`
