@@ -223,7 +223,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
 
-  const createdChangeRequest = await prisma.change_Request.create({
+  const createdCR = await prisma.change_Request.create({
     data: {
       submitter: { connect: { userId: body.submitterId } },
       wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
@@ -241,23 +241,23 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
     include: {
       wbsElement: {
         include: {
-          project: { include: { team: { include: { leader: true } } } },
+          project: { include: { team: { include: { leader: true } }, wbsElement: true } },
           workPackage: {
-            include: { project: { include: { team: { include: { leader: true } } } } }
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
           }
         }
       }
     }
   });
 
-  const team =
-    createdChangeRequest.wbsElement.workPackage?.project.team ||
-    createdChangeRequest.wbsElement.project?.team;
-  if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `${user.firstName} ${user.lastName} just submitted a ${body.type} Change Request`;
-  await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+  const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
+  if (!project?.team) return res.status(500).json({ message: `Team not properly set up.` });
+  const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
+  await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
 
   return res.status(200).json({
-    message: `Successfully created standard change request #${createdChangeRequest.crId}.`
+    message: `Successfully created standard change request #${createdCR.crId}.`
   });
 };
