@@ -122,7 +122,7 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
 
   const team = createdCR.wbsElement.workPackage?.project.team;
   if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `${user.firstName} ${user.lastName} wants to stage gate ${createdCR.wbsElement.name}`;
+  const slackMsg = `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}`;
   await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
 
   return res.status(200).json({
