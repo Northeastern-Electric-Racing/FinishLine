@@ -6,7 +6,7 @@ import {
   DescriptionBullet,
   calculateEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus
+  calculateTimelineStatus, calculateDuration
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
@@ -113,7 +113,7 @@ export const projectTransformer = (
     slideDeckLink: project.slideDeckLink ?? undefined,
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
-    duration: project.workPackages.reduce((prev, curr) => prev + curr.duration, 0),
+    duration: calculateDuration(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
