@@ -13,7 +13,14 @@ export const getRisksForProject = async (req: Request, res: Response) => {
 
   const risks = await prisma.risk.findMany({ where: { projectId }, ...riskQueryArgs });
 
-  return res.status(200).json(risks.map(riskTransformer));
+  try {
+    return res.status(200).json(risks.map(riskTransformer));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const createRisk = async (req: Request, res: Response) => {
@@ -99,7 +106,14 @@ export const editRisk = async (req: Request, res: Response) => {
   }
 
   // return the updated risk
-  return res.status(200).json(riskTransformer(updatedRisk));
+  try {
+    return res.status(200).json(riskTransformer(updatedRisk));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const deleteRisk = async (req: Request, res: Response) => {
@@ -132,5 +146,12 @@ export const deleteRisk = async (req: Request, res: Response) => {
     ...riskQueryArgs
   });
 
-  return res.status(200).json(riskTransformer(updatedRisk));
+  try {
+    return res.status(200).json(riskTransformer(updatedRisk));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };

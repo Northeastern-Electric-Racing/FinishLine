@@ -4,7 +4,14 @@ import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
 
 export const getAllTeams = async (_req: Request, res: Response) => {
   const teams = await prisma.team.findMany(teamRelationArgs);
-  return res.status(200).json(teams.map(teamTransformer));
+  try {
+    return res.status(200).json(teams.map(teamTransformer));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const getSingleTeam = async (req: Request, res: Response) => {
@@ -17,5 +24,12 @@ export const getSingleTeam = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `Team with id ${req.params.teamId} not found!` });
   }
 
-  return res.status(200).json(teamTransformer(team));
+  try {
+    return res.status(200).json(teamTransformer(team));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };

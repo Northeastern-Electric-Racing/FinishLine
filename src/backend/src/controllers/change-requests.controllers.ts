@@ -9,7 +9,14 @@ import { Role } from '@prisma/client';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
-  return res.status(200).json(changeRequests.map(changeRequestTransformer));
+  try {
+    return res.status(200).json(changeRequests.map(changeRequestTransformer));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 // Fetch the specific change request by its integer ID
@@ -22,7 +29,14 @@ export const getChangeRequestByID = async (req: Request, res: Response) => {
   if (requestedCR === null) {
     return res.status(404).json({ message: `change request with id ${crId} not found!` });
   }
-  return res.status(200).json(changeRequestTransformer(requestedCR));
+  try {
+    return res.status(200).json(changeRequestTransformer(requestedCR));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 // handle reviewing of change requests

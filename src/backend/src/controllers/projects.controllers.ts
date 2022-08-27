@@ -20,7 +20,14 @@ import { descBulletConverter } from '../utils/utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
   const projects = await prisma.project.findMany(manyRelationArgs);
-  res.status(200).json(projects.map(projectTransformer));
+  try {
+    res.status(200).json(projects.map(projectTransformer));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const getSingleProject = async (req: Request, res: Response) => {
@@ -45,7 +52,14 @@ export const getSingleProject = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
   }
 
-  return res.status(200).json(projectTransformer(wbsEle));
+  try {
+    return res.status(200).json(projectTransformer(wbsEle));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const newProject = async (req: Request, res: Response) => {

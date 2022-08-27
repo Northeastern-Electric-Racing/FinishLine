@@ -35,7 +35,14 @@ export const getAllWorkPackages = async (req: Request, res: Response) => {
     return passes;
   });
   outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
-  return res.status(200).json(outputWorkPackages);
+  try {
+    return res.status(200).json(outputWorkPackages);
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 // Fetch the work package for the specified WBS number
@@ -62,7 +69,14 @@ export const getSingleWorkPackage = async (req: Request, res: Response) => {
       .status(404)
       .json({ message: `work package with wbs num ${req.params.wbsNum} not found!` });
 
-  return res.status(200).json(workPackageTransformer(wp));
+  try {
+    return res.status(200).json(workPackageTransformer(wp));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const createWorkPackage = async (req: Request, res: Response) => {

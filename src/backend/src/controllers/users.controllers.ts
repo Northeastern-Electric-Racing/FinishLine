@@ -9,7 +9,14 @@ import {
 export const getAllUsers = async (_req: any, res: any) => {
   const users = await prisma.user.findMany();
   users.sort((a, b) => a.firstName.localeCompare(b.firstName));
-  res.status(200).json(users.map(userTransformer));
+  try {
+    res.status(200).json(users.map(userTransformer));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      res.status(400).json({ message: e.message });
+    }
+    throw e;
+  }
 };
 
 export const getSingleUser = async (req: any, res: any) => {
@@ -17,7 +24,15 @@ export const getSingleUser = async (req: any, res: any) => {
   const requestedUser = await prisma.user.findUnique({ where: { userId } });
   if (!requestedUser) return res.status(404).json({ message: `user #${userId} not found!` });
 
-  res.status(200).json(userTransformer(requestedUser));
+  try {
+    res.status(200).json(userTransformer(requestedUser));
+  } catch (e) {
+    if (e instanceof TypeError) {
+      res.status(400).json({ message: e.message });
+    } else {
+      throw e;
+    }
+  }
 };
 
 export const getUserSettings = async (req: any, res: any) => {
