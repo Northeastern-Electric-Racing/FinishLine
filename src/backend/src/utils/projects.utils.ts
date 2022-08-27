@@ -6,10 +6,12 @@ import {
   DescriptionBullet,
   calculateEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus, calculateDuration
+  calculateTimelineStatus,
+  calculateDuration
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
+import { riskQueryArgs, riskTransformer } from './risks.utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -23,6 +25,7 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
     team: true,
     goals: true,
     features: true,
+    risks: riskQueryArgs,
     otherConstraints: true,
     workPackages: {
       include: {
@@ -48,6 +51,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
         team: true,
         goals: true,
         features: true,
+        risks: riskQueryArgs,
         otherConstraints: true,
         workPackages: {
           include: {
@@ -117,6 +121,7 @@ export const projectTransformer = (
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
+    risks: project.risks.map(riskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const expectedProgress = calculatePercentExpectedProgress(
