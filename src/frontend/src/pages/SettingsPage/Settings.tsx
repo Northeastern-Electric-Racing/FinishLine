@@ -3,22 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
 import { useAuth } from '../../hooks/Auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
-import { getVersionNumber } from '../../apis/misc.api';
 
 const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
-  const [versionNumber, setVersionNumber] = useState('');
-
-  useEffect(() => {
-    getVersionNumber().then((response) => setVersionNumber(response.data.tag_name));
-  }, []);
 
   return (
     <Container fluid>
@@ -69,7 +63,6 @@ const Settings: React.FC = () => {
         </Container>
       </PageBlock>
       <UserSettings userId={auth.user?.userId!} />
-      <p>{versionNumber}</p>
     </Container>
   );
 };
