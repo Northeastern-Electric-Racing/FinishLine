@@ -15,7 +15,6 @@ const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
   const [versionNumber, setVersionNumber] = useState('');
-  console.log(versionNumber);
 
   useEffect(() => {
     getVersionNumber().then((response) => setVersionNumber(response.data.tag_name));
