@@ -101,10 +101,16 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   // and what number work package this should be
   const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
 
-  if (workPackageNumber !== 0) throw new TypeError('Given WBS Number is not for a project.');
+  if (workPackageNumber !== 0) {
+    return res
+      .status(400)
+      .json({ message: `Given WBS Number ${projectWbsNum.toString()} is not for a project.` });
+  }
 
-  if(dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
-    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
+  if (dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
+    return res
+      .status(400)
+      .json({ message: `A Work Package cannot have its own project as a dependency` });
   }
 
   const wbsElem = await prisma.wBS_Element.findUnique({
@@ -157,10 +163,11 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   );
 
   const dependenciesIds = dependenciesWBSElems.map((elem) => {
-    if (elem === null) throw new TypeError('One of the dependencies was not found.');
+    if (elem === null) {
+      return res.status(400).json({ message: 'One of the dependencies was not found.' });
+    }
     return elem.wbsElementId;
   });
-
 
   // add to the database
   await prisma.work_Package.create({
@@ -235,21 +242,29 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `Work Package with id #${workPackageId} not found` });
   }
 
-  if(dependencies.find((dep: any) => equalsWbsNumber(dep,
-    {
-      carNumber: originalWorkPackage.wbsElement.carNumber,
-      projectNumber: originalWorkPackage.wbsElement.projectNumber,
-      workPackageNumber: 0
-    })) != null) {
-    return res.status(400).json({ message: `A Work Package cannot have own project as a dependency` });
+  if (
+    dependencies.find((dep: any) =>
+      equalsWbsNumber(dep, {
+        carNumber: originalWorkPackage.wbsElement.carNumber,
+        projectNumber: originalWorkPackage.wbsElement.projectNumber,
+        workPackageNumber: 0
+      })
+    ) != null
+  ) {
+    return res
+      .status(400)
+      .json({ message: `A Work Package cannot have own project as a dependency` });
   }
 
-  if(dependencies.find((dep: any) => equalsWbsNumber(dep,
-    {
-      carNumber: originalWorkPackage.wbsElement.carNumber,
-      projectNumber: originalWorkPackage.wbsElement.projectNumber,
-      workPackageNumber: originalWorkPackage.wbsElement.workPackageNumber
-    })) != null) {
+  if (
+    dependencies.find((dep: any) =>
+      equalsWbsNumber(dep, {
+        carNumber: originalWorkPackage.wbsElement.carNumber,
+        projectNumber: originalWorkPackage.wbsElement.projectNumber,
+        workPackageNumber: originalWorkPackage.wbsElement.workPackageNumber
+      })
+    ) != null
+  ) {
     return res.status(400).json({ message: `A Work Package cannot have itself as a dependency` });
   }
 
