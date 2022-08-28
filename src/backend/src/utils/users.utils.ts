@@ -22,8 +22,6 @@ export const authenticatedUserTransformer = (
 };
 
 export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
-  if (user === null) throw new TypeError('User not found');
-
   return {
     userId: user.userId ?? undefined,
     firstName: user.firstName ?? undefined,
