@@ -9,8 +9,8 @@ import { apiUrls } from '../utils/Urls';
 /**
  * Fetches the version number of the app.
  */
-export const getVersionNumber = () => {
+export const getReleaseInfo = () => {
   return axios.get(apiUrls.version(), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (response) => JSON.parse(response)
   });
 };

@@ -16,13 +16,13 @@ import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/Sidebar/Sidebar.module.css';
-import { getVersionNumber } from '../../apis/misc.api';
+import { getReleaseInfo } from '../../apis/misc.api';
 
 const Sidebar: React.FC = () => {
   const [versionNumber, setVersionNumber] = useState('');
 
   useEffect(() => {
-    getVersionNumber().then((response) => setVersionNumber(response.data.tag_name));
+    getReleaseInfo().then((response) => setVersionNumber(response.data.tag_name));
   }, []);
 
   const linkItems: LinkItem[] = [
