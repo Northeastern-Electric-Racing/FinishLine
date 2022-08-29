@@ -5,7 +5,7 @@ FinishLine by NER is intended to assist NER’s Project Management Office (PMO) 
 1. understanding the state of the club’s projects and
 2. handling the processes and procedures associated with a formal project and change management system
 
-To access the app, ou can go [here](https://finishlinebyner.com) and sign in with your husky Google email.
+To access the app, you can go [here](https://finishlinebyner.com) and sign in with your husky Google email.
 
 ## Tech Stack
 

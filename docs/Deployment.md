@@ -3,17 +3,13 @@
 This document serves to document the application deployment process and details, as well as documenting the production application upkeep details.
 Deployment of the application and production application upkeep is primarily handled by the repository admins.
 
-## Repositories
-
-There are two GitHub repositories for this project, [one is contributions](https://github.com/Northeastern-Electric-Racing/FinishLine), and the other is for deployment.
-
-The contribution repository is public and housed under the [Northeastern Electric Racing GitHub organization](https://github.com/Northeastern-Electric-Racing).
-
 ## Netlify
 
-The web application is deployed via Netlify for both the front-end and the back-end.
-The back-end is built using Netlify Functions serverless functions.
-Netlify Functions is built on top of AWS Lambda, thus each file in [`src/backend/functions`](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/src/backend/functions) is built into a standalone lambda.
+The frontend is deployed via Netlify.
+
+## AWS
+
+The backend is deployed via AWS Elastic Beanstalk. It uses the Dockerfile in the repo to build a docker image that AWS then deploys. The link to this is at `https://api.finishlinebyner.com`.
 
 ## Production Database
 
