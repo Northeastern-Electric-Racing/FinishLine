@@ -140,14 +140,13 @@ model ProposedSolution {
   description        String
   timelineImpact     Int
   budgetImpact       Int
-  scope              String
+  scopeImpact        String
   changeRequest      Scope_CR @relation(fields: [changeRequestId], references: [scopeCrId])
   changeRequestId    Int
   createdByUserId    Int
   createdBy          User     @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
   dateCreated        Date     @default(now())
-  approvedBy         User?    @relation(name: "approvedBy", fields: [approvedByUserId], references: [userId])
-  approvedByUserId   Int?
+  approved           Boolean  @default(false)
 }
 
 model Scope_CR_Why {
