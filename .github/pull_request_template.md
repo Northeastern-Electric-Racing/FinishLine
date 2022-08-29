@@ -39,7 +39,7 @@ Please request reviewers and ping on slack only after you've gone through this w
 - [ ] Remove any non-applicable sections of this template
 - [ ] Assign the PR to yourself
 - [ ] PR is linked to the ticket
-- [ ] No `yarn.json` changes (unless dependencies have changed)
+- [ ] No `yarn.lock` changes (unless dependencies have changed)
 - [ ] Request reviewers & ping on Slack
 
 Closes # (issue #)
