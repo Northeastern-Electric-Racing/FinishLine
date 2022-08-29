@@ -70,17 +70,23 @@ const activeUserMetrics = async () => {
 const migrateToProposedSolutions = async () => {
   const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
   crs.forEach(async (cr) => {
-    await prisma.proposedSolution.create({
-      data: {
-        description: '',
-        timelineImpact: cr.timelineImpact,
-        scopeImpact: cr.scopeImpact,
-        budgetImpact: cr.budgetImpact,
-        changeRequestId: cr.scopeCrId,
-        createdByUserId: cr.changeRequest.submitterId,
-        dateCreated: cr.changeRequest.dateSubmitted
-      }
+    const alreadyHasSolution = await prisma.proposedSolution.findFirst({
+      where: { changeRequestId: cr.scopeCrId }
     });
+
+    if (!alreadyHasSolution) {
+      await prisma.proposedSolution.create({
+        data: {
+          description: '',
+          timelineImpact: cr.timelineImpact,
+          scopeImpact: cr.scopeImpact,
+          budgetImpact: cr.budgetImpact,
+          changeRequestId: cr.scopeCrId,
+          createdByUserId: cr.changeRequest.submitterId,
+          dateCreated: cr.changeRequest.dateSubmitted
+        }
+      });
+    }
   });
 };
 
