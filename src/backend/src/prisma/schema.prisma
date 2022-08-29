@@ -61,21 +61,19 @@ model User {
   userSettings User_Settings?
 
   // Relation references
-  submittedChangeRequests Change_Request[]   @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests  Change_Request[]   @relation(name: "reviewedChangeRequests")
-  markedAsProjectLead     Activation_CR[]    @relation(name: "markAsProjectLead")
-  markedAsProjectManager  Activation_CR[]    @relation(name: "markAsProjectManager")
+  submittedChangeRequests Change_Request[] @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests  Change_Request[] @relation(name: "reviewedChangeRequests")
+  markedAsProjectLead     Activation_CR[]  @relation(name: "markAsProjectLead")
+  markedAsProjectManager  Activation_CR[]  @relation(name: "markAsProjectManager")
   changes                 Change[]
-  projectLead             WBS_Element[]      @relation(name: "projectLead")
-  projectManager          WBS_Element[]      @relation(name: "projectManager")
+  projectLead             WBS_Element[]    @relation(name: "projectLead")
+  projectManager          WBS_Element[]    @relation(name: "projectManager")
   Session                 Session[]
-  teams                   Team[]             @relation(name: "teamsAsMember")
-  teamAsLead              Team?              @relation(name: "teamAsLead")
-  createdRisks            Risk[]             @relation(name: "createdBy")
-  resolvedRisks           Risk[]             @relation(name: "resolvedBy")
-  deletedRisks            Risk[]             @relation(name: "deletedBy")
-  ProposedSolution        ProposedSolution[]
-  ProposedSolution        ProposedSolution[]
+  teams                   Team[]           @relation(name: "teamsAsMember")
+  teamAsLead              Team?            @relation(name: "teamAsLead")
+  createdRisks            Risk[]           @relation(name: "createdBy")
+  resolvedRisks           Risk[]           @relation(name: "resolvedBy")
+  deletedRisks            Risk[]           @relation(name: "deletedBy")
 }
 
 model Team {
