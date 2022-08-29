@@ -123,15 +123,15 @@ model Change_Request {
 }
 
 model Scope_CR {
-  scopeCrId        Int                @id @default(autoincrement())
-  changeRequestId  Int                @unique
-  changeRequest    Change_Request     @relation(fields: [changeRequestId], references: [crId])
-  what             String
-  why              Scope_CR_Why[]
-  scopeImpact      String
-  timelineImpact   Int
-  budgetImpact     Int
-  ProposedSolution ProposedSolution[]
+  scopeCrId         Int                @id @default(autoincrement())
+  changeRequestId   Int                @unique
+  changeRequest     Change_Request     @relation(fields: [changeRequestId], references: [crId])
+  what              String
+  why               Scope_CR_Why[]
+  scopeImpact       String
+  timelineImpact    Int
+  budgetImpact      Int
+  proposedSolutions ProposedSolution[]
 }
 
 model ProposedSolution {
