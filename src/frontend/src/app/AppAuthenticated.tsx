@@ -14,6 +14,7 @@ import Settings from '../pages/SettingsPage/Settings';
 import HelpPage from '../pages/HelpPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import TeamsPage from '../pages/TeamsPage';
+import GanttPage from '../pages/GanttPage';
 
 const styles = {
   content: {
@@ -34,6 +35,7 @@ const AppAuthenticated: React.FC = () => {
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.TEAMS} component={TeamsPage} />
+            <Route path={routes.GANTT} component={GanttPage} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.HELP} component={HelpPage} />
             <Route exact path={routes.HOME} component={Home} />

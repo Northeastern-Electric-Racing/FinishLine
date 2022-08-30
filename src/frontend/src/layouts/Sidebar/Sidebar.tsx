@@ -10,7 +10,8 @@ import {
   faFolder,
   faHome,
   faQuestionCircle,
-  faUsers
+  faUsers,
+  faChartGantt
 } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
@@ -40,6 +41,11 @@ const Sidebar: React.FC = () => {
       name: 'Change Requests',
       icon: faExchangeAlt,
       route: routes.CHANGE_REQUESTS
+    },
+    {
+      name: 'Gantt',
+      icon: faChartGantt,
+      route: routes.GANTT
     },
     {
       name: 'Teams',
