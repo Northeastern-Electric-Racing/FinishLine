@@ -62,9 +62,7 @@ const GanttPage: React.FC = () => {
       start: wp.startDate,
       end: wp.endDate,
       progress: wp.progress,
-      dependencies: [
-        ...projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id.toString()
-      ],
+      project: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id.toString(),
       type: 'task'
     };
   });
@@ -75,7 +73,19 @@ const GanttPage: React.FC = () => {
 
   return (
     <div className={`pt-5 ${styles.page_not_found}`}>
-      <Gantt tasks={tasks} viewMode={viewMode} />
+      <Gantt tasks={tasks} viewMode={viewMode} preStepsCount={1} locale={'US'} />
+      <Gantt
+        tasks={tasks}
+        viewMode={viewMode}
+        locale={'US'}
+        viewDate={new Date()}
+        TaskListHeader={() => {
+          return <></>;
+        }}
+        TaskListTable={() => {
+          return <></>;
+        }}
+      />
     </div>
   );
 };
