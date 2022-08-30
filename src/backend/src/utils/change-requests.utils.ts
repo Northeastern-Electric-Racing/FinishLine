@@ -105,8 +105,9 @@ export const changeRequestTransformer = (
     scopeImpact: changeRequest.scopeChangeRequest?.scopeImpact ?? undefined,
     budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
     timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
-    proposedSolutions:
-      changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? [],
+    proposedSolutions: changeRequest.scopeChangeRequest
+      ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
+      : undefined,
     // activation cr fields
     projectLead: changeRequest.activationChangeRequest?.projectLead
       ? userTransformer(changeRequest.activationChangeRequest?.projectLead)
