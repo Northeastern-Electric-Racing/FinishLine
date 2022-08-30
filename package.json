@@ -17,7 +17,7 @@
     "prisma:reset": "cd src/backend; npx prisma migrate reset",
     "prisma:migrate": "cd src/backend; npx prisma migrate dev",
     "prisma:generate": "cd src/backend; npx prisma generate",
-    "prisma:manual": "cd src/backend; ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} src/backend/prisma/manual.ts",
+    "prisma:manual": "yarn workspace backend prisma:manual",
     "lint": "npx eslint .",
     "test:frontend": "yarn workspace frontend test",
     "test:backend": "yarn workspace backend test",

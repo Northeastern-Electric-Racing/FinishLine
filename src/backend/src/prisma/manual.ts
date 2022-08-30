@@ -70,12 +70,12 @@ const activeUserMetrics = async () => {
 const migrateToProposedSolutions = async () => {
   const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
   crs.forEach(async (cr) => {
-    const alreadyHasSolution = await prisma.proposedSolution.findFirst({
+    const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
       where: { changeRequestId: cr.scopeCrId }
     });
 
     if (!alreadyHasSolution) {
-      await prisma.proposedSolution.create({
+      await prisma.proposed_Solution.create({
         data: {
           description: '',
           timelineImpact: cr.timelineImpact,
