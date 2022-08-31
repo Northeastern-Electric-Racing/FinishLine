@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useState, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
 import {
   faExchangeAlt,
@@ -15,8 +16,15 @@ import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/Sidebar/Sidebar.module.css';
+import { getReleaseInfo } from '../../apis/misc.api';
 
 const Sidebar: React.FC = () => {
+  const [versionNumber, setVersionNumber] = useState('');
+
+  useEffect(() => {
+    getReleaseInfo().then((response) => setVersionNumber(response.data.tag_name));
+  }, []);
+
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -47,6 +55,7 @@ const Sidebar: React.FC = () => {
   return (
     <Nav className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
+      <p className={styles.versionNumber}>{versionNumber}</p>
     </Nav>
   );
 };

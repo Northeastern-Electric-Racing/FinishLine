@@ -71,7 +71,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         items={proj.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
       />
       <RulesList rules={proj.rules} />
-      <ChangesList changes={proj.changes} />
       <PageBlock title={'Work Packages'}>
         {proj.workPackages.map((ele: WorkPackage) => (
           <div key={wbsPipe(ele.wbsNum)} className="mt-3">
@@ -79,6 +78,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
           </div>
         ))}
       </PageBlock>
+      <ChangesList changes={proj.changes} />
     </Container>
   );
 };
