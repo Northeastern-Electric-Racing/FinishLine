@@ -7,7 +7,7 @@ import { ProjectPreview } from './project-types';
 import { UserPreview } from './user-types';
 
 export interface Risk {
-  id: String;
+  id: string;
   project: ProjectPreview;
   detail: string;
   isResolved: boolean;

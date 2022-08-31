@@ -8,6 +8,7 @@ import { useTheme } from '../../../../hooks/Theme.hooks';
 import themes from '../../../../utils/Themes';
 import { Theme } from '../../../../utils/Types';
 import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
+import { exampleRisk1, exampleRisk2, exampleRisk3 } from '../../../TestSupport/TestData/Risks.stub';
 
 jest.mock('../../../../hooks/Theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
@@ -19,11 +20,7 @@ const mockHook = () => {
 describe('Rendering Project Risk Log Component', () => {
   beforeEach(() => mockHook());
 
-  const testRisks = [
-    { details: 'Risk #1', resolved: false },
-    { details: 'Risk #2', resolved: true },
-    { details: 'Risk #3', resolved: false }
-  ];
+  const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3];
 
   it('Renders the RiskLog title', () => {
     render(<RiskLog risks={testRisks} />);

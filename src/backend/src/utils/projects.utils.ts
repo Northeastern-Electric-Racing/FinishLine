@@ -40,8 +40,7 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
         expectedActivities: true,
         deliverables: true
       }
-    },
-    risks: true
+    }
   }
 });
 
@@ -162,8 +161,7 @@ export const projectTransformer = (
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter)
       };
-    }),
-    risks: project.risks
+    })
   };
 };
 

@@ -14,7 +14,7 @@ interface CheckListProps {
   title: string;
   headerRight?: ReactNode;
   listItems: {
-    id: String;
+    id: string;
     detail: string;
     isResolved: boolean;
   }[];
