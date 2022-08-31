@@ -45,6 +45,7 @@ export interface Project extends WbsElement {
   features: DescriptionBullet[];
   otherConstraints: DescriptionBullet[];
   workPackages: WorkPackage[];
+  risks: Risk[];
   team?: TeamPreview;
   risks: Risk[];
 }
