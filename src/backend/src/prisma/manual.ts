@@ -83,7 +83,8 @@ const migrateToProposedSolutions = async () => {
           budgetImpact: cr.budgetImpact,
           changeRequestId: cr.scopeCrId,
           createdByUserId: cr.changeRequest.submitterId,
-          dateCreated: cr.changeRequest.dateSubmitted
+          dateCreated: cr.changeRequest.dateSubmitted,
+          approved: cr.changeRequest.accepted ?? false
         }
       });
     }
