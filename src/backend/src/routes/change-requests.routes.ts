@@ -7,7 +7,8 @@ import {
   createStandardChangeRequest,
   getAllChangeRequests,
   getChangeRequestByID,
-  reviewChangeRequest
+  reviewChangeRequest,
+  addProposedSolution
 } from '../controllers/change-requests.controllers';
 
 const changeRequestsRouter = express.Router();
@@ -65,6 +66,16 @@ changeRequestsRouter.post(
   body('why.*.explain').isString().not().isEmpty(),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   createStandardChangeRequest
+);
+changeRequestsRouter.post(
+  '/new/proposed-solution',
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('scopeCrId').isInt({ min: 0 }).not().isString(),
+  body('description').isString().not().isEmpty(),
+  body('scopeImpact').isString().not().isEmpty(),
+  body('timelineImpact').isInt({ min: 0 }).not().isString(),
+  body('budgetImpact').isInt({ min: 0 }).not().isString(),
+  addProposedSolution
 );
 
 export default changeRequestsRouter;
