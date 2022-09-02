@@ -100,6 +100,7 @@ export const sendSlackChangeRequestNotification = async (
   crId: number,
   budgetImpact?: number
 ) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
@@ -116,6 +117,5 @@ export const sendSlackChangeRequestNotification = async (
       )
     );
   }
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   return Promise.all(msgs);
 };
