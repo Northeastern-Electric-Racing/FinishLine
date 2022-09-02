@@ -6,8 +6,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AppMain from './app/AppMain';
-import 'bootstrap/dist/css/bootstrap.css';
-import './stylesheets/Custom.scss';
 import reportWebVitals from './reportWebVitals';
 import ErrorBoundary from './components/ErrorBoundary';
 

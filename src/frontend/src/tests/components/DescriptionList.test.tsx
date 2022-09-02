@@ -4,22 +4,10 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../hooks/Theme.hooks';
-import themes from '../../utils/Themes';
-import { Theme } from '../../utils/Types';
 import { exampleWorkPackage2 } from '../TestSupport/TestData/WorkPackages.stub';
 import DescriptionList from '../../components/DescriptionList';
 
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
-
 describe('Rendering Description List Component', () => {
-  beforeEach(() => mockHook());
-
   it('renders the component title', () => {
     render(
       <DescriptionList title={'Description'} items={exampleWorkPackage2.expectedActivities} />

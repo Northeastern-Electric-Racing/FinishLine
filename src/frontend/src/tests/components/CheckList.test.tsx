@@ -4,17 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../hooks/Theme.hooks';
-import themes from '../../utils/Themes';
-import { Theme } from '../../utils/Types';
 import CheckList from '../../components/CheckList';
-
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
 
 describe('Check List Component', () => {
   const testList = [
@@ -27,8 +17,6 @@ describe('Check List Component', () => {
     { details: 'Check #1', resolved: false },
     { details: 'Check #2', resolved: true }
   ];
-
-  beforeEach(() => mockHook());
 
   it('renders the component title', () => {
     render(<CheckList title={'test'} listItems={[]} />);

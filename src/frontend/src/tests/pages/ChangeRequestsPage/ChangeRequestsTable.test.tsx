@@ -12,9 +12,6 @@ import { useAllChangeRequests } from '../../../hooks/ChangeRequests.hooks';
 import { routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import ChangeRequestsTable from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
-import { useTheme } from '../../../hooks/Theme.hooks';
-import { Theme } from '../../../utils/Types';
-import themes from '../../../utils/Themes';
 
 jest.mock('../../../hooks/ChangeRequests.hooks');
 
@@ -22,15 +19,10 @@ const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
   UseQueryResult<ChangeRequest[]>
 >;
 
-jest.mock('../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {
   mockedUseAllChangeRequests.mockReturnValue(
     mockUseQueryResult<ChangeRequest[]>(isLoading, isError, data, error)
   );
-
-  mockTheme.mockReturnValue(themes[0]);
 };
 
 // Sets up the component under test with the desired values and renders it.

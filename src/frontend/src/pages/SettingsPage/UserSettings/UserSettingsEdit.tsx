@@ -9,7 +9,7 @@ import { Col, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
 import { FormInput } from './UserSettings';
-import themes from '../../../utils/Themes';
+import { themeChoices } from '../../../utils/Types';
 
 interface UserSettingsEditProps {
   currentSettings: FormInput;
@@ -19,10 +19,7 @@ interface UserSettingsEditProps {
 const schema = yup.object().shape({
   defaultTheme: yup
     .mixed<ThemeName>()
-    .oneOf(
-      themes.map((t) => t.name),
-      'Invalid theme chosen'
-    )
+    .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
     .required('Default theme is required')
 });
 
@@ -47,9 +44,9 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
               {...register('defaultTheme')}
               isInvalid={formState.errors.defaultTheme?.message !== undefined}
             >
-              {themes.map((t) => (
-                <option key={t.name} value={t.name}>
-                  {t.name}
+              {themeChoices.map((t) => (
+                <option key={t} value={t}>
+                  {t}
                 </option>
               ))}
             </Form.Control>

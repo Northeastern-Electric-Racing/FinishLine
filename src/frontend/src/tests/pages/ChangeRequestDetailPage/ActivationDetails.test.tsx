@@ -5,19 +5,9 @@
 
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
 import { datePipe } from '../../../utils/Pipes';
-import themes from '../../../utils/Themes';
-import { Theme } from '../../../utils/Types';
 import { exampleActivationChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
 import ActivationDetails from '../../../pages/ChangeRequestDetailPage/ActivationDetails';
-
-jest.mock('../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -27,8 +17,6 @@ const renderComponent = (cr: ActivationChangeRequest) => {
 };
 
 describe('Change request details activation cr display element tests', () => {
-  beforeEach(() => mockHook());
-
   const cr: ActivationChangeRequest = exampleActivationChangeRequest;
 
   it('Renders project lead', () => {

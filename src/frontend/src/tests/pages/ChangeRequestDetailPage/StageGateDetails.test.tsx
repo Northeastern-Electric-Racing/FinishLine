@@ -5,18 +5,8 @@
 
 import { render, screen } from '@testing-library/react';
 import { StageGateChangeRequest } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
-import themes from '../../../utils/Themes';
-import { Theme } from '../../../utils/Types';
 import { exampleStageGateChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
 import StageGateDetails from '../../../pages/ChangeRequestDetailPage/StageGateDetails';
-
-jest.mock('../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -26,8 +16,6 @@ const renderComponent = (cr: StageGateChangeRequest) => {
 };
 
 describe('Change request details stage gate cr display element tests', () => {
-  beforeEach(() => mockHook());
-
   const cr: StageGateChangeRequest = exampleStageGateChangeRequest;
   it('Renders confirm completed', () => {
     renderComponent(cr);

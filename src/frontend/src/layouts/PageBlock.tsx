@@ -5,7 +5,6 @@
 
 import { ReactNode } from 'react';
 import { Card } from 'react-bootstrap';
-import { useTheme } from '../hooks/Theme.hooks';
 
 interface PageBlockProps {
   title: string;
@@ -24,10 +23,8 @@ const styles = {
  * @param headerRight The optional stuff to display on the right side of the header
  */
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
-  const theme = useTheme();
-
   return (
-    <Card className={'mb-3'} border={theme.cardBorder} bg={theme.cardBg}>
+    <Card className={'mb-3'}>
       <Card.Body>
         <Card.Title style={styles.header}>
           <h5 className={'float-left mb-0'}>{title}</h5>
