@@ -4,6 +4,10 @@
  */
 
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Link from '@mui/material/Link';
 import { Container, Form, InputGroup } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
@@ -13,11 +17,6 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/Home.module.css';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Link from '@mui/material/Link';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -40,7 +39,7 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
-            <Card className={styles.horizontalScrollCard} key={wbsPipe(wp.wbsNum)}>
+            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content' }}>
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"
