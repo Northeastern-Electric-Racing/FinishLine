@@ -65,6 +65,22 @@ const activeUserMetrics = async () => {
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
 };
 
+/**
+ * Manually create a team via direct db.
+ */
+const createTeam = async (name: string, slackChannel: string) => {
+  const res = await prisma.team.create({
+    data: {
+      teamName: name,
+      slackId: slackChannel,
+      leader: { connect: { userId: 1 } },
+      projects: { connect: [{ projectId: 1 }, { projectId: 2 }] },
+      members: { connect: [{ userId: 2 }, { userId: 3 }] }
+    }
+  });
+  console.log(res);
+};
+
 executeScripts()
   .catch((e) => {
     console.error(e);
