@@ -4,17 +4,7 @@
  */
 
 import { render, screen } from '../TestSupport/TestUtils';
-import { useTheme } from '../../hooks/Theme.hooks';
-import { Theme } from '../../utils/Types';
-import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
-
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
 
 const renderComponent = (headerRight = false) => {
   return render(
@@ -25,8 +15,6 @@ const renderComponent = (headerRight = false) => {
 };
 
 describe('card component', () => {
-  beforeEach(() => mockHook());
-
   it('renders without error', () => {
     renderComponent();
   });

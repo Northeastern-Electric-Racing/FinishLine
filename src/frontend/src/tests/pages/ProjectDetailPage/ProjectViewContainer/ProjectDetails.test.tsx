@@ -4,23 +4,11 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../hooks/Theme.hooks';
 import { fullNamePipe } from '../../../../utils/Pipes';
-import themes from '../../../../utils/Themes';
-import { Theme } from '../../../../utils/Types';
 import { exampleProject1, exampleProject3 } from '../../../TestSupport/TestData/Projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 
-jest.mock('../../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
-
 describe('project details component', () => {
-  beforeEach(() => mockHook());
-
   it('Renders title', () => {
     render(<ProjectDetails project={exampleProject1} />);
     const titleElement = screen.getByText('Project Details');
