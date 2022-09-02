@@ -1,6 +1,6 @@
 # Prisma Migration Tools
 
-## `npm run prisma:seed`
+## `yarn prisma:seed`
 
 ### What it does
 
@@ -14,14 +14,14 @@ Running this command populates the database with a basic set of data for develop
 
 For more detailed information about [prisma seed](https://www.prisma.io/docs/guides/database/seed-database), click the link.
 
-## `npm run prisma:reset`
+## `yarn prisma:reset`
 
 ### What it does
 
 This command drops the database if possible or performs a soft reset if the database cannot be deleted.
 If the database is dropped, it creates a new database with the same name and runs all migrations and seed scripts.
-If `npm run prisma:reset` runs without any errors, then the `npm run prisma:seed` function is auto-invoked.
-This means you do not need to run the `npm run prisma:seed` command again.
+If `yarn prisma:reset` runs without any errors, then the `yarn prisma:seed` function is auto-invoked.
+This means you do not need to run the `yarn prisma:seed` command again.
 
 ### Why to use it
 
@@ -30,7 +30,7 @@ If you need to undo changes you made to the database schema or if there are migr
 
 For more detailed information about [prisma reset](https://www.prisma.io/docs/concepts/components/prisma-migrate), click the link.
 
-## `npm run prisma:migrate`
+## `yarn prisma:migrate`
 
 ### What it does
 
@@ -45,18 +45,18 @@ There will be a `name` field that the terminal will ask you to enter for the mig
 Enter a concise and appropriate name that reflects the changes you made to the prisma schema.
 
 Each time you run this command, if there are new changes, a SQL file will be generated that is added to the `migrations` folder.
-Otherwise, `npm run prisma:migrate` will apply the existing migration SQL files onto the database and not require a `name` field to be entered.
+Otherwise, `yarn prisma:migrate` will apply the existing migration SQL files onto the database and not require a `name` field to be entered.
 
 For more detailed information about [prisma migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate), click the link.
 
-## `npm run prisma:generate`
+## `yarn prisma:generate`
 
 ### What it does
 
 This command generates and initializes the prisma client.
 The prisma client is an auto-generated library that allows us to access data in our application.
 
-Note: The command `npm install` will automatically run `npm run prisma:generate`.
+Note: In v2, the command `npm install` would automatically run `npm run prisma:generate`. However, in v3, this does not happen, so you will need to run `yarn install` then `yarn prisma:generate` yourself OR you can just run `yarn i` which does both.
 
 ### Why to use it
 
