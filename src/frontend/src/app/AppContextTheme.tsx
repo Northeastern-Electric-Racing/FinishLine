@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { createContext, useMemo } from 'react';
 import { useProvideThemeToggle } from '../hooks/Theme.hooks';
@@ -27,7 +28,10 @@ const AppContextSettings: React.FC = (props) => {
 
   return (
     <ThemeToggleContext.Provider value={theme}>
-      <ThemeProvider theme={fullTheme}>{props.children}</ThemeProvider>
+      <ThemeProvider theme={fullTheme}>
+        <CssBaseline />
+        {props.children}
+      </ThemeProvider>
     </ThemeToggleContext.Provider>
   );
 };
