@@ -2381,7 +2381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.10.3":
+"@mui/utils@npm:^5.10.3, @mui/utils@npm:^5.9.3":
   version: 5.10.3
   resolution: "@mui/utils@npm:5.10.3"
   dependencies:
@@ -2393,6 +2393,24 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
   checksum: 591f45a31751092621af120f58a7116e87aa0ca616fb38ba5dc31f2a86534b90c10cc94ede5a7758d04a12c3fa0d4b3d878ebf4ca590b1531c32d4ee9227080a
+  languageName: node
+  linkType: hard
+
+"@mui/x-data-grid@npm:^5.16.0":
+  version: 5.16.0
+  resolution: "@mui/x-data-grid@npm:5.16.0"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    "@mui/utils": ^5.9.3
+    clsx: ^1.2.1
+    prop-types: ^15.8.1
+    reselect: ^4.1.6
+  peerDependencies:
+    "@mui/material": ^5.4.1
+    "@mui/system": ^5.4.1
+    react: ^17.0.2 || ^18.0.0
+    react-dom: ^17.0.2 || ^18.0.0
+  checksum: e339384f2fcdda9167bb100252da6a271a50e8d19d3ab0f79c4c56ab366876d809a4432551106d3b6c40687f9315c88cd799e2273159c70808d400edef676764
   languageName: node
   linkType: hard
 
@@ -8764,6 +8782,7 @@ __metadata:
     "@hookform/resolvers": ^2.9.7
     "@mui/icons-material": ^5.10.3
     "@mui/material": ^5.10.3
+    "@mui/x-data-grid": ^5.16.0
     "@testing-library/jest-dom": ^5.11.9
     "@testing-library/react": ^11.2.5
     "@testing-library/react-hooks": ^8.0.1
@@ -15497,6 +15516,13 @@ __metadata:
   version: 1.0.0
   resolution: "requires-port@npm:1.0.0"
   checksum: eee0e303adffb69be55d1a214e415cf42b7441ae858c76dfc5353148644f6fd6e698926fc4643f510d5c126d12a705e7c8ed7e38061113bdf37547ab356797ff
+  languageName: node
+  linkType: hard
+
+"reselect@npm:^4.1.6":
+  version: 4.1.6
+  resolution: "reselect@npm:4.1.6"
+  checksum: 3ea1058422904063ec93c8f4693fe33dcb2178bbf417ace8db5b2c797a5875cf357d9308d11ed3942ee22507dd34ecfbf1f3a21340a4f31c206cab1d36ceef31
   languageName: node
   linkType: hard
 
