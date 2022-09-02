@@ -3,16 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useHistory } from 'react-router-dom';
 import { Col, Container, Row } from 'react-bootstrap';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { routes } from '../../utils/Routes';
 import { useAllProjects } from '../../hooks/Projects.hooks';
-import { fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 /**
  * Parent component for the projects page housing the filter table and projects table.
  */
 const ProjectsView: React.FC = () => {
+  const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
 
   const baseColDef: any = {
@@ -82,7 +85,7 @@ const ProjectsView: React.FC = () => {
       ...baseColDef,
       field: 'duration',
       headerName: 'Duration',
-      type: 'number',
+      valueFormatter: (params) => weeksPipe(params.value),
       maxWidth: 100
     },
     {
@@ -115,14 +118,29 @@ const ProjectsView: React.FC = () => {
       <Row>
         <Col>
           <DataGrid
+            autoHeight
+            disableSelectionOnClick
             density="compact"
             pageSize={15}
             rowsPerPageOptions={[15, 30, 50, 100]}
-            autoHeight
             loading={isLoading}
             error={error}
             rows={data || []}
             columns={columns}
+            onRowClick={(params) => {
+              history.push(`${routes.PROJECTS}/${params.row.wbsNum}`);
+            }}
+            components={{ Toolbar: GridToolbar }}
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'wbsNum', sort: 'desc' }]
+              },
+              columns: {
+                columnVisibilityModel: {
+                  workPackages: false
+                }
+              }
+            }}
           />
         </Col>
       </Row>
