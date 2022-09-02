@@ -4,133 +4,147 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import BootstrapTable, {
-  ColumnDescription,
-  RowEventHandlerProps,
-  SortOrder
-} from 'react-bootstrap-table-next';
-import { validateWBS } from 'shared';
-
-export interface DisplayProject {
-  wbsNum: string;
-  name: string;
-  projectLead: string;
-  projectManager: string;
-  duration: string;
-}
-
-interface DisplayProjectProps {
-  allProjects: DisplayProject[];
-}
+import { Col, Container, Row } from 'react-bootstrap';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { routes } from '../../utils/Routes';
+import { useAllProjects } from '../../hooks/Projects.hooks';
+import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
 
 /**
- * Custom sorting order for wbsNums according to car, then project, then workPackage.
- * @param a 1st wbsNum in string form
- * @param b 2nd wbsNum in string form
- * @param order Imported SortOrder values 'asc' or 'desc'
- * @return number A number describing the value of a relative to b,
- *                according to the specified SortOrder.
+ * Table of all projects.
  */
-export function wbsNumSort(a: string, b: string, order: SortOrder) {
-  const wbs_a = validateWBS(a);
-  const wbs_b = validateWBS(b);
-  if (wbs_a.carNumber !== wbs_b.carNumber) {
-    if (order === 'asc') {
-      return wbs_a.carNumber - wbs_b.carNumber;
-    }
-    return wbs_b.carNumber - wbs_a.carNumber;
-  }
-  if (wbs_a.projectNumber !== wbs_b.projectNumber) {
-    if (order === 'asc') {
-      return wbs_a.projectNumber - wbs_b.projectNumber;
-    }
-    return wbs_b.projectNumber - wbs_a.projectNumber;
-  }
-  if (wbs_a.workPackageNumber !== wbs_b.workPackageNumber) {
-    if (order === 'asc') {
-      return wbs_a.workPackageNumber - wbs_b.workPackageNumber;
-    }
-    return wbs_b.workPackageNumber - wbs_a.workPackageNumber;
-  }
-  return 0; // Both wbsNums are exactly equal.
-}
-
-/**
- * Interactive table for displaying all projects table data.
- */
-const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayProjectProps) => {
+const ProjectsTable: React.FC = () => {
   const history = useHistory();
+  const { isLoading, data, error } = useAllProjects();
 
-  // Configures display options for all data columns
-  const columns: ColumnDescription[] = [
-    {
-      headerAlign: 'center',
-      dataField: 'wbsNum',
-      text: 'WBS #',
-      align: 'center',
-      sort: true,
-      sortFunc: wbsNumSort
-    },
-    {
-      headerAlign: 'center',
-      dataField: 'name',
-      text: 'Name',
-      align: 'left',
-      sort: true
-    },
-    {
-      headerAlign: 'center',
-      dataField: 'projectLead',
-      text: 'Project Lead',
-      align: 'left',
-      sort: true
-    },
-    {
-      headerAlign: 'center',
-      dataField: 'projectManager',
-      text: 'Project Manager',
-      align: 'left',
-      sort: true
-    },
-    {
-      headerAlign: 'center',
-      dataField: 'duration',
-      text: 'Duration',
-      align: 'center',
-      sort: true
-    }
-  ];
-
-  const defaultSort: [{ dataField: any; order: SortOrder }] = [
-    {
-      dataField: 'wbsNum',
-      order: 'asc'
-    }
-  ];
-
-  // define what happens during various row events
-  const rowEvents: RowEventHandlerProps = {
-    onClick: (e, row, rowIndex) => {
-      history.push(`/projects/${row.wbsNum}`);
-    }
+  const baseColDef: any = {
+    flex: 1,
+    align: 'center',
+    headerAlign: 'center'
   };
 
+  const dollars = (amount: number) => {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+    return formatter.format(amount);
+  };
+
+  const columns: GridColDef[] = [
+    {
+      ...baseColDef,
+      field: 'wbsNum',
+      headerName: 'WBS #',
+      valueFormatter: (params) => wbsPipe(params.value),
+      maxWidth: 100,
+      sortComparator: (v1, v2, param1, param2) => {
+        if (param1.value.carNumber !== param2.value.carNumber) {
+          return param1.value.carNumber - param2.value.carNumber;
+        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
+          return param1.value.projectNumber - param2.value.projectNumber;
+        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
+          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+        } else {
+          return 0;
+        }
+      }
+    },
+    {
+      ...baseColDef,
+      field: 'name',
+      headerName: 'Project Name',
+      align: 'left'
+    },
+    {
+      ...baseColDef,
+      field: 'projectLead',
+      headerName: 'Project Lead',
+      align: 'left',
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 250
+    },
+    {
+      ...baseColDef,
+      field: 'projectManager',
+      headerName: 'Project Manager',
+      align: 'left',
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 250
+    },
+    {
+      ...baseColDef,
+      field: 'team',
+      headerName: 'Team',
+      align: 'left',
+      valueFormatter: (params) => params.value?.teamName || 'No Team',
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'duration',
+      headerName: 'Duration',
+      valueFormatter: (params) => weeksPipe(params.value),
+      maxWidth: 100
+    },
+    {
+      ...baseColDef,
+      field: 'budget',
+      headerName: 'Budget',
+      align: 'right',
+      valueFormatter: (params) => dollars(params.value),
+      maxWidth: 100
+    },
+    {
+      ...baseColDef,
+      field: 'workPackages',
+      headerName: '# Work Packages',
+      type: 'number',
+      maxWidth: 150,
+      valueFormatter: (params) => params.value.length
+    },
+    {
+      ...baseColDef,
+      field: 'status',
+      headerName: 'Status',
+      maxWidth: 100
+    }
+  ];
+
   return (
-    <>
-      <BootstrapTable
-        striped
-        hover
-        condensed
-        bootstrap4
-        keyField="wbsNum"
-        data={allProjects}
-        columns={columns}
-        defaultSorted={defaultSort}
-        rowEvents={rowEvents}
-        noDataIndication="No Projects to Display"
-        rowStyle={{ cursor: 'pointer' }}
-      />
-    </>
+    <Container fluid>
+      <PageTitle title={'Projects'} previousPages={[]} />
+      <Row>
+        <Col>
+          <DataGrid
+            autoHeight
+            disableSelectionOnClick
+            density="compact"
+            pageSize={15}
+            rowsPerPageOptions={[15, 30, 50, 100]}
+            loading={isLoading}
+            error={error}
+            rows={data || []}
+            columns={columns}
+            onRowClick={(params) => {
+              history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
+            }}
+            components={{ Toolbar: GridToolbar }}
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'wbsNum', sort: 'asc' }]
+              },
+              columns: {
+                columnVisibilityModel: {
+                  workPackages: false
+                }
+              }
+            }}
+          />
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

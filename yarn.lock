@@ -2381,7 +2381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.10.3":
+"@mui/utils@npm:^5.10.3, @mui/utils@npm:^5.9.3":
   version: 5.10.3
   resolution: "@mui/utils@npm:5.10.3"
   dependencies:
@@ -2393,6 +2393,24 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
   checksum: 591f45a31751092621af120f58a7116e87aa0ca616fb38ba5dc31f2a86534b90c10cc94ede5a7758d04a12c3fa0d4b3d878ebf4ca590b1531c32d4ee9227080a
+  languageName: node
+  linkType: hard
+
+"@mui/x-data-grid@npm:^5.16.0":
+  version: 5.16.0
+  resolution: "@mui/x-data-grid@npm:5.16.0"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    "@mui/utils": ^5.9.3
+    clsx: ^1.2.1
+    prop-types: ^15.8.1
+    reselect: ^4.1.6
+  peerDependencies:
+    "@mui/material": ^5.4.1
+    "@mui/system": ^5.4.1
+    react: ^17.0.2 || ^18.0.0
+    react-dom: ^17.0.2 || ^18.0.0
+  checksum: e339384f2fcdda9167bb100252da6a271a50e8d19d3ab0f79c4c56ab366876d809a4432551106d3b6c40687f9315c88cd799e2273159c70808d400edef676764
   languageName: node
   linkType: hard
 
@@ -5663,7 +5681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.2.5, classnames@npm:^2.3.1":
+"classnames@npm:^2.3.1":
   version: 2.3.1
   resolution: "classnames@npm:2.3.1"
   checksum: 14db8889d56c267a591f08b0834989fe542d47fac659af5a539e110cc4266694e8de86e4e3bbd271157dbd831361310a8293e0167141e80b0f03a0f175c80960
@@ -8764,6 +8782,7 @@ __metadata:
     "@hookform/resolvers": ^2.9.7
     "@mui/icons-material": ^5.10.3
     "@mui/material": ^5.10.3
+    "@mui/x-data-grid": ^5.16.0
     "@testing-library/jest-dom": ^5.11.9
     "@testing-library/react": ^11.2.5
     "@testing-library/react-hooks": ^8.0.1
@@ -8784,7 +8803,6 @@ __metadata:
     react: ^17.0.1
     react-app-rewired: ^2.1.6
     react-bootstrap: ^1.4.3
-    react-bootstrap-table-next: ^4.0.3
     react-dom: ^17.0.1
     react-google-charts: ^4.0.0
     react-google-login: ^5.2.2
@@ -14850,22 +14868,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-bootstrap-table-next@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "react-bootstrap-table-next@npm:4.0.3"
-  dependencies:
-    classnames: ^2.2.5
-    react-transition-group: ^4.2.0
-    underscore: 1.9.1
-  peerDependencies:
-    classnames: ^2.2.5
-    prop-types: ^15.0.0
-    react: ^16.3.0
-    react-dom: ^16.3.0
-  checksum: 60d8facd2aca0235517d1367da602b577b09717eb4342183633762c4ee745e91deabed0e710269ac80efe0b787efe7a60aada607758f02da3d2f34c22cdc7990
-  languageName: node
-  linkType: hard
-
 "react-bootstrap@npm:^1.4.3":
   version: 1.6.6
   resolution: "react-bootstrap@npm:1.6.6"
@@ -15194,7 +15196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.2.0, react-transition-group@npm:^4.4.1, react-transition-group@npm:^4.4.5":
+"react-transition-group@npm:^4.4.1, react-transition-group@npm:^4.4.5":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
   dependencies:
@@ -15497,6 +15499,13 @@ __metadata:
   version: 1.0.0
   resolution: "requires-port@npm:1.0.0"
   checksum: eee0e303adffb69be55d1a214e415cf42b7441ae858c76dfc5353148644f6fd6e698926fc4643f510d5c126d12a705e7c8ed7e38061113bdf37547ab356797ff
+  languageName: node
+  linkType: hard
+
+"reselect@npm:^4.1.6":
+  version: 4.1.6
+  resolution: "reselect@npm:4.1.6"
+  checksum: 3ea1058422904063ec93c8f4693fe33dcb2178bbf417ace8db5b2c797a5875cf357d9308d11ed3942ee22507dd34ecfbf1f3a21340a4f31c206cab1d36ceef31
   languageName: node
   linkType: hard
 
@@ -17761,13 +17770,6 @@ __metadata:
   version: 2.0.5
   resolution: "undefsafe@npm:2.0.5"
   checksum: f42ab3b5770fedd4ada175fc1b2eb775b78f609156f7c389106aafd231bfc210813ee49f54483d7191d7b76e483bc7f537b5d92d19ded27156baf57592eb02cc
-  languageName: node
-  linkType: hard
-
-"underscore@npm:1.9.1":
-  version: 1.9.1
-  resolution: "underscore@npm:1.9.1"
-  checksum: bee6f587661a6a9ca2f77e611896141e0287af51d8ca6034b11d0d4163ddbdd181a9720078ddbe94d265b7694f4880bc7f4c2ad260cfb8985ee2f9adcf13df03
   languageName: node
   linkType: hard
 
