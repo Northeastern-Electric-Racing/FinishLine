@@ -5,6 +5,8 @@
 
 import { ThemeOptions } from '@mui/material/styles';
 
+export const themeChoices = ['light', 'dark'];
+
 export const nerThemeOptions: ThemeOptions = {
   palette: {
     mode: 'dark',

@@ -14,6 +14,8 @@ export interface Auth {
   isLoading: boolean;
 }
 
+export const themeChoices = ['DARK', 'LIGHT'];
+
 export interface LinkItem {
   name: string;
   icon?: IconProp;

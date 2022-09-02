@@ -39,8 +39,8 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
     setEdit(false);
     await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme });
     const res = await userSettings.refetch();
-    if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.name) {
-      theme.toggleTheme!(res.data?.defaultTheme);
+    if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.activeTheme.toUpperCase()) {
+      theme.toggleTheme();
     }
   };
 

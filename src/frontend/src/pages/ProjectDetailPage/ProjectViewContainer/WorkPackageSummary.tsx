@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
 import { WorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, endDatePipe, listPipe, datePipe } from '../../../utils/Pipes';
-import { useToggleTheme } from '../../../hooks/Theme.hooks';
 import { routes } from '../../../utils/Routes';
 import WbsStatus from '../../../components/WbsStatus';
 import styles from '../../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
@@ -19,7 +18,6 @@ interface WorkPackageSummaryProps {
 
 const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) => {
   const [open, setOpen] = useState(false);
-  const theme = useToggleTheme();
 
   const expectedActivitiesList = (
     <ul>
@@ -39,7 +37,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const numMoreDeliverables = workPackage.deliverables.length - 3;
 
   return (
-    <Card bg={theme.cardBg} border={theme.cardBorder}>
+    <Card>
       <Card.Header className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
         <div className={'d-flex justify-content-between'}>
           <div className={'d-flex'}>

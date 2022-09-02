@@ -6,7 +6,6 @@
 import GoogleLogin from 'react-google-login';
 import { Card } from 'react-bootstrap';
 import LoginDev from './LoginDev';
-import { Theme } from '../../utils/Types';
 
 const styles = {
   card: {
@@ -19,7 +18,6 @@ interface LoginPageProps {
   devFormSubmit: (e: any) => any;
   prodSuccess: (res: any) => any;
   prodFailure: (res: any) => any;
-  theme: Theme;
 }
 
 /**
@@ -29,11 +27,10 @@ const LoginPage: React.FC<LoginPageProps> = ({
   devSetRole,
   devFormSubmit,
   prodSuccess,
-  prodFailure,
-  theme
+  prodFailure
 }) => {
   return (
-    <Card bg={theme.cardBg} className={'mx-auto mt-sm-5 '} style={styles.card}>
+    <Card className={'mx-auto mt-sm-5 '} style={styles.card}>
       <Card.Body>
         <Card.Title>FinishLine by NER</Card.Title>
         <Card.Text>Login Required. Students must use their Husky Google account.</Card.Text>

@@ -4,21 +4,9 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useToggleTheme } from '../../hooks/Theme.hooks';
-import themes from '../../utils/Themes';
-import { Theme } from '../../utils/Types';
 import BulletList from '../../components/BulletList';
 
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useToggleTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
-
 describe('Bullet List Component', () => {
-  beforeEach(() => mockHook());
-
   it('renders the component title', () => {
     render(<BulletList title={'test'} list={[<></>]} />);
 
