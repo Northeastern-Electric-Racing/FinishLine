@@ -3,19 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { ReactNode } from 'react';
-import { Card } from 'react-bootstrap';
 
 interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
 }
-
-const styles = {
-  header: {
-    overflow: 'hidden'
-  }
-};
 
 /**
  * Custom component for a consistent page-building block.
@@ -24,14 +21,16 @@ const styles = {
  */
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
   return (
-    <Card className={'mb-3'}>
-      <Card.Body>
-        <Card.Title style={styles.header}>
-          <h5 className={'float-left mb-0'}>{title}</h5>
-          <div className={'float-right'}>{headerRight}</div>
-        </Card.Title>
+    <Card>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Typography variant="h5" sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
+          {headerRight}
+        </Box>
         {children}
-      </Card.Body>
+      </CardContent>
     </Card>
   );
 };
