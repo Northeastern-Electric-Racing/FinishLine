@@ -12,7 +12,6 @@ import { routes } from '../../utils/Routes';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { fullNamePipe } from '../../utils/Pipes';
 import NavUserMenu from './NavUserMenu';
-import NavNotificationsMenu from './NavNotificationsMenu';
 
 const NavTopBar: React.FC = () => {
   const auth = useAuth();
@@ -35,7 +34,6 @@ const NavTopBar: React.FC = () => {
               </Box>
             </Link>
           </Box>
-          <NavNotificationsMenu />
           <Typography variant="body1" component="div">
             {fullNamePipe(auth.user)}
           </Typography>
