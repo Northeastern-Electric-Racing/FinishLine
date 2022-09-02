@@ -12,9 +12,9 @@ import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 
 /**
- * Parent component for the projects page housing the filter table and projects table.
+ * Table of all projects.
  */
-const ProjectsView: React.FC = () => {
+const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
 
@@ -148,4 +148,4 @@ const ProjectsView: React.FC = () => {
   );
 };
 
-export default ProjectsView;
+export default ProjectsTable;

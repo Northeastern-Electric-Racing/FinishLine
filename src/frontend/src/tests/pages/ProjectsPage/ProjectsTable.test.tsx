@@ -3,138 +3,111 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
-import ProjectsTable from '../../../pages/ProjectsPage/ProjectsTable';
+import { UseQueryResult } from 'react-query';
 import { Project } from 'shared';
-import { wbsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
-import { wbsRegex } from '../../TestSupport/TestUtils';
 import {
-  exampleProject1,
-  exampleProject2,
-  exampleProject3,
-  exampleProject4,
-  exampleProject5,
-  exampleAllProjects
-} from '../../TestSupport/TestData/Projects.stub';
+  fireEvent,
+  render,
+  routerWrapperBuilder,
+  screen,
+  waitFor,
+  wbsRegex
+} from '../../TestSupport/TestUtils';
+import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
+import { useAllProjects } from '../../../hooks/Projects.hooks';
+import { exampleAllProjects } from '../../TestSupport/TestData/Projects.stub';
+import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+import ProjectsTable from '../../../pages/ProjectsPage/ProjectsTable';
+
+jest.mock('../../../hooks/Projects.hooks');
+
+const mockedUseAllProjects = useAllProjects as jest.Mock<UseQueryResult<Project[]>>;
+
+const mockHook = (isLoading: boolean, isError: boolean, data?: Project[], error?: Error) => {
+  mockedUseAllProjects.mockReturnValue(
+    mockUseQueryResult<Project[]>(isLoading, isError, data, error)
+  );
+};
 
 // Sets up the component under test with the desired values and renders it.
-const renderComponent = (prjs: Project[]) => {
-  const displayProjects = prjs.map((prj) => {
-    return {
-      wbsNum: wbsPipe(prj.wbsNum),
-      name: prj.name,
-      projectLead: fullNamePipe(prj.projectLead),
-      projectManager: fullNamePipe(prj.projectManager),
-      duration: weeksPipe(prj.workPackages.reduce((tot, cur) => tot + cur.duration, 0))
-    };
-  });
-
-  render(<ProjectsTable allProjects={displayProjects} />);
+const renderComponent = () => {
+  const RouterWrapper = routerWrapperBuilder({});
+  render(
+    <RouterWrapper>
+      <ProjectsTable />
+    </RouterWrapper>
+  );
 };
 
 describe('projects table component', () => {
-  it('handles sorting and reverse sorting the table by project name', async () => {
-    renderComponent(exampleAllProjects);
+  it('renders the title', async () => {
+    mockHook(false, false, []);
+    renderComponent();
 
-    const column: string = 'Name';
-    const expectedWbsOrder: string[] = [
-      exampleProject3,
-      exampleProject2,
-      exampleProject1,
-      exampleProject4,
-      exampleProject5
-    ].map((prj: Project) => wbsPipe(prj.wbsNum));
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsAsc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
+    expect(screen.getAllByText('Projects').length).toEqual(2);
   });
 
-  it('handles sorting and reverse sorting the table by project lead', async () => {
-    renderComponent(exampleAllProjects);
+  it('renders the loading indicator', () => {
+    mockHook(true, false);
+    renderComponent();
 
-    const column: string = 'Project Lead';
-    const expectedWbsOrder: string[] = [
-      exampleProject1,
-      exampleProject2,
-      exampleProject5,
-      exampleProject3,
-      exampleProject4
-    ].map((prj: Project) => wbsPipe(prj.wbsNum));
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele) => ele.innerHTML)).not.toEqual(expectedWbsOrder);
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsAsc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder);
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Name')).not.toBeInTheDocument();
   });
 
-  it('handles sorting and reverse sorting the table by project manager', async () => {
-    renderComponent(exampleAllProjects);
+  it('handles the api throwing an error', async () => {
+    mockHook(false, true);
+    renderComponent();
 
-    const column: string = 'Project Manager';
-    const expectedWbsOrder: string[] = [
-      exampleProject1,
-      exampleProject4,
-      exampleProject2,
-      exampleProject3,
-      exampleProject5
-    ].map((prj: Project) => wbsPipe(prj.wbsNum));
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele) => ele.innerHTML)).not.toEqual(expectedWbsOrder);
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsAsc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder);
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
   });
 
-  it('handles sorting and reverse sorting the table by duration', async () => {
-    renderComponent(exampleAllProjects);
+  it('handles the api returning an empty array', async () => {
+    mockHook(false, false, []);
+    renderComponent();
 
-    const column: string = 'Duration';
-    const expectedWbsOrder: string[] = [
-      exampleProject2,
-      exampleProject5,
-      exampleProject3,
-      exampleProject4,
-      exampleProject1
-    ].map((prj: Project) => wbsPipe(prj.wbsNum));
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsAsc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
+    expect(screen.getAllByText('Projects').length).toEqual(2);
+    expect(screen.getByText('No projects to display', { exact: false })).toBeInTheDocument();
   });
 
-  it('handles sorting and reverse sorting the table by wbsNum', async () => {
-    renderComponent(exampleAllProjects);
+  it('handles the api returning a normal array of projects', async () => {
+    mockHook(false, false, exampleAllProjects);
+    renderComponent();
+    await waitFor(() => screen.getByText(wbsPipe(exampleAllProjects[0].wbsNum)));
+
+    expect(screen.getByText('5 weeks')).toBeInTheDocument();
+    expect(
+      screen.getAllByText(fullNamePipe(exampleAllProjects[1].projectLead))[0]
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(fullNamePipe(exampleAllProjects[2].projectLead))[0]
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(fullNamePipe(exampleAllProjects[3].projectManager))
+    ).toBeInTheDocument();
+    expect(screen.getByText(wbsPipe(exampleAllProjects[4].wbsNum))).toBeInTheDocument();
+
+    expect(screen.getAllByText('Projects').length).toEqual(2);
+    expect(screen.queryByText('No projects to display', { exact: false })).not.toBeInTheDocument();
+  });
+
+  it('handles sorting and reverse sorting the table by wbs num', async () => {
+    mockHook(false, false, exampleAllProjects);
+    renderComponent();
+    await waitFor(() => screen.getByText(wbsPipe(exampleAllProjects[0].wbsNum)));
 
     const column: string = 'WBS #';
-    const expectedWbsOrder: string[] = [
-      exampleProject5,
-      exampleProject4,
-      exampleProject3,
-      exampleProject2,
-      exampleProject1
-    ].map((prj: Project) => wbsPipe(prj.wbsNum));
+    const expectedWbsOrder = exampleAllProjects.map((prj) => wbsPipe(prj.wbsNum));
+
+    // Default sort is wbs ascending
+    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
+    expect(wbsNumsAsc.map((ele: HTMLElement) => ele.innerHTML)).toEqual(expectedWbsOrder);
 
     fireEvent.click(screen.getByText(column));
     const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder);
-
-    fireEvent.click(screen.getByText(column));
-    const wbsNumsAsc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsAsc.map((ele) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
+    expect(wbsNumsDesc.map((ele: HTMLElement) => ele.innerHTML)).toEqual(
+      expectedWbsOrder.reverse()
+    );
   });
 });
