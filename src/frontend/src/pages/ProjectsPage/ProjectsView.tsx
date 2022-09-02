@@ -133,7 +133,7 @@ const ProjectsView: React.FC = () => {
             components={{ Toolbar: GridToolbar }}
             initialState={{
               sorting: {
-                sortModel: [{ field: 'wbsNum', sort: 'desc' }]
+                sortModel: [{ field: 'wbsNum', sort: 'asc' }]
               },
               columns: {
                 columnVisibilityModel: {
