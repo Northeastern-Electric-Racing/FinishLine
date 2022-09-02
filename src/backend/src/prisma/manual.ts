@@ -65,6 +65,56 @@ const activeUserMetrics = async () => {
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
 };
 
+/**
+ * Calculate, pull, and print various metrics per request from Anushka.
+ */
+const pullNumbersForPM = async () => {
+  const nums = await Promise.all([
+    '# of CRs',
+    prisma.change_Request.count(),
+    '# of CRs accepted',
+    prisma.change_Request.count({ where: { accepted: true } }),
+    '# of CRs denied',
+    prisma.change_Request.count({ where: { accepted: false } }),
+    '# of CRs open',
+    prisma.change_Request.count({ where: { accepted: null } }),
+    '# w/ timeline impact > 0',
+    prisma.change_Request.count({ where: { scopeChangeRequest: { timelineImpact: { gt: 0 } } } }),
+    '# w/ timeline impact > 0 ISSUE',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'ISSUE' }
+    }),
+    '# w/ timeline impact > 0 DEFINITION_CHANGE',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'DEFINITION_CHANGE' }
+    }),
+    '# w/ timeline impact > 0 OTHER',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'OTHER' }
+    }),
+    'w/ timeline impact > 0 AVG TIMELINE IMPACT',
+    prisma.scope_CR.aggregate({
+      _avg: { timelineImpact: true },
+      where: { timelineImpact: { gt: 0 } }
+    }),
+    'timeline impact = 0',
+    prisma.scope_CR.count({ where: { timelineImpact: { equals: 0 } } }),
+    'timeline impact >0 and <=2',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 0, lte: 2 } } }),
+    'timeline impact >2 and <=4',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 2, lte: 4 } } }),
+    'timeline impact >4 and <=8',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 4, lte: 8 } } }),
+    'timeline impact >8 and <=16',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 8, lte: 16 } } }),
+    'timeline impact >8',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 16 } } })
+  ]);
+  for (let idx = 0; idx < nums.length; idx += 2) {
+    console.log(nums[idx], nums[idx + 1]);
+  }
+};
+
 executeScripts()
   .catch((e) => {
     console.error(e);
