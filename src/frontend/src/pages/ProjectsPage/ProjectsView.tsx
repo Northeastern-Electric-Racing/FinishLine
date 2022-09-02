@@ -21,6 +21,14 @@ const ProjectsView: React.FC = () => {
     headerAlign: 'center'
   };
 
+  const dollars = (amount: number) => {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+    return formatter.format(amount);
+  };
+
   const columns: GridColDef[] = [
     {
       ...baseColDef,
@@ -33,8 +41,7 @@ const ProjectsView: React.FC = () => {
       ...baseColDef,
       field: 'name',
       headerName: 'Project Name',
-      align: 'left',
-      maxWidth: 300
+      align: 'left'
     },
     {
       ...baseColDef,
@@ -52,9 +59,23 @@ const ProjectsView: React.FC = () => {
     },
     {
       ...baseColDef,
+      field: 'team',
+      headerName: 'Team',
+      valueFormatter: (params) => params.value?.teamName || 'No Team'
+    },
+    {
+      ...baseColDef,
       field: 'duration',
       headerName: 'Duration',
       type: 'number',
+      maxWidth: 100
+    },
+    {
+      ...baseColDef,
+      field: 'budget',
+      headerName: 'Budget',
+      align: 'right',
+      valueFormatter: (params) => dollars(params.value),
       maxWidth: 100
     },
     {
