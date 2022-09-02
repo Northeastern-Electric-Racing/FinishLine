@@ -4,14 +4,14 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../../../hooks/Theme.hooks';
 import themes from '../../../../utils/Themes';
 import { Theme } from '../../../../utils/Types';
 import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
 import RulesList from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RulesList';
 
 jest.mock('../../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
+const mockTheme = useToggleTheme as jest.Mock<Theme>;
 
 const mockHook = () => {
   mockTheme.mockReturnValue(themes[0]);

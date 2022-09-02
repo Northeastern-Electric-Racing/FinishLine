@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { RoleEnum } from 'shared';
 import { exampleAllUsers } from '../../tests/TestSupport/TestData/Users.stub';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../hooks/Theme.hooks';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/Routes';
 import LoginPage from './LoginPage';
@@ -23,7 +23,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
   const [devUserRole, setDevUserRole] = useState<string>(RoleEnum.APP_ADMIN as string);
   const history = useHistory();
-  const theme = useTheme();
+  const theme = useToggleTheme();
   const auth = useAuth();
 
   if (auth.isLoading) return <LoadingIndicator />;

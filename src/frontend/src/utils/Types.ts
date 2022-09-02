@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, User, ThemeName } from 'shared';
+import { AuthenticatedUser, User } from 'shared';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export interface Auth {
@@ -12,15 +12,6 @@ export interface Auth {
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
   isLoading: boolean;
-}
-
-export interface Theme {
-  name: ThemeName;
-  className: string;
-  bgColor: string;
-  cardBg: string;
-  cardBorder: string;
-  toggleTheme?: (name: ThemeName) => void;
 }
 
 export interface LinkItem {

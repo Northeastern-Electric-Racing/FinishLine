@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../../hooks/Theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/Users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/PageBlock';
@@ -28,7 +28,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   const [edit, setEdit] = useState(false);
   const userSettings = useSingleUserSettings(userId);
   const update = useUpdateUserSettings();
-  const theme = useTheme();
+  const theme = useToggleTheme();
 
   if (userSettings.isLoading || update.isLoading) return <LoadingIndicator />;
   if (userSettings.isError)

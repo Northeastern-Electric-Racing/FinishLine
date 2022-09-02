@@ -5,7 +5,7 @@
 
 import { ReactNode } from 'react';
 import { Card } from 'react-bootstrap';
-import { useTheme } from '../hooks/Theme.hooks';
+import { useToggleTheme } from '../hooks/Theme.hooks';
 
 interface PageBlockProps {
   title: string;
@@ -24,7 +24,7 @@ const styles = {
  * @param headerRight The optional stuff to display on the right side of the header
  */
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
-  const theme = useTheme();
+  const theme = useToggleTheme();
 
   return (
     <Card className={'mb-3'} border={theme.cardBorder} bg={theme.cardBg}>

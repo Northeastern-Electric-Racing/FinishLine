@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../../hooks/Theme.hooks';
 import { datePipe } from '../../../utils/Pipes';
 import themes from '../../../utils/Themes';
 import { Theme } from '../../../utils/Types';
@@ -13,7 +13,7 @@ import { exampleActivationChangeRequest } from '../../TestSupport/TestData/Chang
 import ActivationDetails from '../../../pages/ChangeRequestDetailPage/ActivationDetails';
 
 jest.mock('../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
+const mockTheme = useToggleTheme as jest.Mock<Theme>;
 
 const mockHook = () => {
   mockTheme.mockReturnValue(themes[0]);

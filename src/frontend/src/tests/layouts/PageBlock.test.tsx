@@ -4,13 +4,13 @@
  */
 
 import { render, screen } from '../TestSupport/TestUtils';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../hooks/Theme.hooks';
 import { Theme } from '../../utils/Types';
 import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
 
 jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
+const mockTheme = useToggleTheme as jest.Mock<Theme>;
 
 const mockHook = () => {
   mockTheme.mockReturnValue(themes[0]);

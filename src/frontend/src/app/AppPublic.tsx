@@ -5,7 +5,7 @@
 
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/Auth.hooks';
-import { useTheme } from '../hooks/Theme.hooks';
+import { useToggleTheme } from '../hooks/Theme.hooks';
 import { routes } from '../utils/Routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
@@ -13,7 +13,7 @@ import AppAuthenticated from './AppAuthenticated';
 const AppPublic: React.FC = () => {
   const auth = useAuth();
   const history = useHistory();
-  const theme = useTheme();
+  const theme = useToggleTheme();
 
   // eslint-disable-next-line prefer-destructuring
   document.body.style.backgroundColor = theme.bgColor;

@@ -19,7 +19,7 @@ import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useToggleTheme } from '../../../hooks/Theme.hooks';
 import { Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
 
@@ -30,7 +30,7 @@ const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
 >;
 
 jest.mock('../../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
+const mockTheme = useToggleTheme as jest.Mock<Theme>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {
   mockedUseAllChangeRequests.mockReturnValue(

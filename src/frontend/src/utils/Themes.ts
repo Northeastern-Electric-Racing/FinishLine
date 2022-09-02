@@ -3,23 +3,80 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Theme } from './Types';
+import { ThemeOptions } from '@mui/material/styles';
 
-const themes: Theme[] = [
-  {
-    name: 'DARK',
-    className: 'dark',
-    bgColor: '#353434',
-    cardBg: 'dark',
-    cardBorder: 'light'
+export const nerThemeOptions: ThemeOptions = {
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#ef4345'
+    },
+    secondary: {
+      main: '#a72a1e'
+    }
   },
-  {
-    name: 'LIGHT',
-    className: 'light',
-    bgColor: '#ffffff',
-    cardBg: 'light',
-    cardBorder: 'dark'
+  typography: {
+    h1: {
+      fontFamily: 'Anton'
+    },
+    h2: {
+      fontFamily: 'Anton'
+    },
+    h3: {
+      fontFamily: 'Anton'
+    },
+    button: {
+      fontFamily: 'Oswald'
+    },
+    caption: {
+      fontFamily: 'Oswald'
+    },
+    overline: {
+      fontFamily: 'Oswald'
+    },
+    body2: {
+      fontFamily: 'Oswald'
+    },
+    body1: {
+      fontFamily: 'Oswald'
+    },
+    subtitle2: {
+      fontFamily: 'Anton'
+    },
+    subtitle1: {
+      fontFamily: 'Anton'
+    },
+    h6: {
+      fontFamily: 'Anton'
+    },
+    h5: {
+      fontFamily: 'Anton'
+    },
+    h4: {
+      fontFamily: 'Anton'
+    },
+    fontFamily: 'Oswald'
+  },
+  components: {
+    MuiButtonBase: {
+      defaultProps: {
+        disableRipple: true
+      }
+    },
+    MuiList: {
+      defaultProps: {
+        dense: true
+      }
+    },
+    MuiMenuItem: {
+      defaultProps: {
+        dense: true
+      }
+    },
+    MuiTable: {
+      defaultProps: {
+        size: 'small'
+      }
+    }
   }
-];
-
-export default themes;
+};
