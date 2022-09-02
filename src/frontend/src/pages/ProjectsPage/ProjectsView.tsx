@@ -128,7 +128,7 @@ const ProjectsView: React.FC = () => {
             rows={data || []}
             columns={columns}
             onRowClick={(params) => {
-              history.push(`${routes.PROJECTS}/${params.row.wbsNum}`);
+              history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
             }}
             components={{ Toolbar: GridToolbar }}
             initialState={{
