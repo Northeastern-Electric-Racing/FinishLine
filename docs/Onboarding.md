@@ -1,5 +1,9 @@
 # Onboarding
 
+# NOTE: THIS IS DEPRECATE DUE TO THE SWITCH TO V3
+
+# NEW ONBOARDING COMING SOON
+
 ## Project Setup
 
 First, ensure that you have [Node.js](https://nodejs.org/en/) installed.

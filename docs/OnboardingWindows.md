@@ -1,5 +1,9 @@
 # Onboarding
 
+# NOTE: THIS IS DEPRECATE DUE TO THE SWITCH TO V3
+
+# NEW ONBOARDING COMING SOON
+
 ## Project Setup
 
 First, ensure that you have [Node.js v14](https://nodejs.org/download/release/v14.18.3/) installed (you can also navigate to the Node.js website and find any v14 update you prefer).

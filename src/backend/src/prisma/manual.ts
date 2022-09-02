@@ -3,11 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { PrismaClient, Role } from '@prisma/client';
+import prisma from './prisma';
+import { Role } from '@prisma/client';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-const prisma = new PrismaClient();
 
 /**
  * This file is purely used for DevOps and database management.
@@ -63,6 +62,33 @@ const countWorkPackages = async () => {
 const activeUserMetrics = async () => {
   // sad dev doesn't feel like converting SQL to Prisma
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
+};
+
+/**
+ * migrate all Change Requests to use Proposed Solutions
+ */
+const migrateToProposedSolutions = async () => {
+  const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
+  crs.forEach(async (cr) => {
+    const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
+      where: { changeRequestId: cr.scopeCrId }
+    });
+
+    if (!alreadyHasSolution) {
+      await prisma.proposed_Solution.create({
+        data: {
+          description: '',
+          timelineImpact: cr.timelineImpact,
+          scopeImpact: cr.scopeImpact,
+          budgetImpact: cr.budgetImpact,
+          changeRequestId: cr.scopeCrId,
+          createdByUserId: cr.changeRequest.submitterId,
+          dateCreated: cr.changeRequest.dateSubmitted,
+          approved: cr.changeRequest.accepted ?? false
+        }
+      });
+    }
+  });
 };
 
 /**

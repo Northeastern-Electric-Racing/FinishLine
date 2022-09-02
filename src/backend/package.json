@@ -5,7 +5,8 @@
     "dev": "yarn nodemon index.ts",
     "test": "jest",
     "build": "tsc --noEmit false",
-    "start": "node -r dotenv/config dist/index.js"
+    "start": "node -r dotenv/config dist/index.js",
+    "prisma:manual": "ts-node ./src/prisma/manual.ts"
   },
   "dependencies": {
     "@prisma/client": "^4.1.1",

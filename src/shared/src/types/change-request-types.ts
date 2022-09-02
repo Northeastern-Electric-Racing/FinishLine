@@ -36,6 +36,18 @@ export interface StandardChangeRequest extends ChangeRequest {
   scopeImpact: string;
   budgetImpact: number;
   timelineImpact: number;
+  proposedSolutions: ProposedSolution[];
+}
+
+export interface ProposedSolution {
+  id: string;
+  description: string;
+  scopeImpact: string;
+  budgetImpact: number;
+  timelineImpact: number;
+  createdBy: User;
+  dateCreated: Date;
+  approved: boolean;
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
