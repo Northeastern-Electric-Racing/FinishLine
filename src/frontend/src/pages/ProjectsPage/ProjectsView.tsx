@@ -22,14 +22,16 @@ const ProjectsView: React.FC = () => {
       flex: 1,
       align: 'center',
       headerAlign: 'center',
-      valueFormatter: (params) => wbsPipe(params.value)
+      valueFormatter: (params) => wbsPipe(params.value),
+      maxWidth: 100
     },
     {
       field: 'name',
       headerName: 'Project Name',
       flex: 1,
       align: 'left',
-      headerAlign: 'center'
+      headerAlign: 'center',
+      maxWidth: 300
     },
     {
       field: 'projectLead',
@@ -37,7 +39,8 @@ const ProjectsView: React.FC = () => {
       flex: 1,
       align: 'center',
       headerAlign: 'center',
-      valueFormatter: (params) => fullNamePipe(params.value)
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 250
     },
     {
       field: 'projectManager',
@@ -45,7 +48,8 @@ const ProjectsView: React.FC = () => {
       flex: 1,
       align: 'center',
       headerAlign: 'center',
-      valueFormatter: (params) => fullNamePipe(params.value)
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 250
     },
     {
       field: 'duration',
@@ -53,7 +57,8 @@ const ProjectsView: React.FC = () => {
       flex: 1,
       align: 'center',
       headerAlign: 'center',
-      type: 'number'
+      type: 'number',
+      maxWidth: 100
     }
   ];
 
