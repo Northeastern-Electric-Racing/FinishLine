@@ -95,6 +95,14 @@ const ProjectsView: React.FC = () => {
     },
     {
       ...baseColDef,
+      field: 'workPackages',
+      headerName: '# Work Packages',
+      type: 'number',
+      maxWidth: 150,
+      valueFormatter: (params) => params.value.length
+    },
+    {
+      ...baseColDef,
       field: 'status',
       headerName: 'Status',
       maxWidth: 100
