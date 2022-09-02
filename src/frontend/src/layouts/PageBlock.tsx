@@ -21,7 +21,7 @@ interface PageBlockProps {
  */
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
   return (
-    <Card>
+    <Card sx={{ margin: 2 }}>
       <CardContent>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>
