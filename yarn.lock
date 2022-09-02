@@ -5681,7 +5681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.2.5, classnames@npm:^2.3.1":
+"classnames@npm:^2.3.1":
   version: 2.3.1
   resolution: "classnames@npm:2.3.1"
   checksum: 14db8889d56c267a591f08b0834989fe542d47fac659af5a539e110cc4266694e8de86e4e3bbd271157dbd831361310a8293e0167141e80b0f03a0f175c80960
@@ -8803,7 +8803,6 @@ __metadata:
     react: ^17.0.1
     react-app-rewired: ^2.1.6
     react-bootstrap: ^1.4.3
-    react-bootstrap-table-next: ^4.0.3
     react-dom: ^17.0.1
     react-google-charts: ^4.0.0
     react-google-login: ^5.2.2
@@ -14869,22 +14868,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-bootstrap-table-next@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "react-bootstrap-table-next@npm:4.0.3"
-  dependencies:
-    classnames: ^2.2.5
-    react-transition-group: ^4.2.0
-    underscore: 1.9.1
-  peerDependencies:
-    classnames: ^2.2.5
-    prop-types: ^15.0.0
-    react: ^16.3.0
-    react-dom: ^16.3.0
-  checksum: 60d8facd2aca0235517d1367da602b577b09717eb4342183633762c4ee745e91deabed0e710269ac80efe0b787efe7a60aada607758f02da3d2f34c22cdc7990
-  languageName: node
-  linkType: hard
-
 "react-bootstrap@npm:^1.4.3":
   version: 1.6.6
   resolution: "react-bootstrap@npm:1.6.6"
@@ -15213,7 +15196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.2.0, react-transition-group@npm:^4.4.1, react-transition-group@npm:^4.4.5":
+"react-transition-group@npm:^4.4.1, react-transition-group@npm:^4.4.5":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
   dependencies:
@@ -17787,13 +17770,6 @@ __metadata:
   version: 2.0.5
   resolution: "undefsafe@npm:2.0.5"
   checksum: f42ab3b5770fedd4ada175fc1b2eb775b78f609156f7c389106aafd231bfc210813ee49f54483d7191d7b76e483bc7f537b5d92d19ded27156baf57592eb02cc
-  languageName: node
-  linkType: hard
-
-"underscore@npm:1.9.1":
-  version: 1.9.1
-  resolution: "underscore@npm:1.9.1"
-  checksum: bee6f587661a6a9ca2f77e611896141e0287af51d8ca6034b11d0d4163ddbdd181a9720078ddbe94d265b7694f4880bc7f4c2ad260cfb8985ee2f9adcf13df03
   languageName: node
   linkType: hard
 

@@ -7,7 +7,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import AppMain from './app/AppMain';
 import 'bootstrap/dist/css/bootstrap.css';
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import './stylesheets/Custom.scss';
 import reportWebVitals from './reportWebVitals';
 import ErrorBoundary from './components/ErrorBoundary';
