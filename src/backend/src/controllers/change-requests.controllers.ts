@@ -123,11 +123,12 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
   });
 
   const team = createdCR.wbsElement.workPackage?.project.team;
-  if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg =
-    `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}` +
-    ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-  await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+  if (team) {
+    const slackMsg =
+      `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}` +
+      ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
+    await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+  }
 
   return res.status(200).json({
     message: `Successfully created activation change request #${createdCR.crId}.`
@@ -188,11 +189,12 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
   });
 
   const team = createdChangeRequest.wbsElement.workPackage?.project.team;
-  if (!team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg =
-    `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-    ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-  await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+  if (team) {
+    const slackMsg =
+      `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+      ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+    await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+  }
 
   return res.status(200).json({
     message: `Successfully created stage gate change request #${createdChangeRequest.crId}.`
@@ -259,15 +261,15 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   });
 
   const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
-  if (!project?.team) return res.status(500).json({ message: `Team not properly set up.` });
-  const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
-  await sendSlackChangeRequestNotification(
-    project.team,
-    slackMsg,
-    createdCR.crId,
-    body.budgetImpact
-  );
-
+  if (project?.team) {
+    const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
+    await sendSlackChangeRequestNotification(
+      project.team,
+      slackMsg,
+      createdCR.crId,
+      body.budgetImpact
+    );
+  }
   return res.status(200).json({
     message: `Successfully created standard change request #${createdCR.crId}.`
   });

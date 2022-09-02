@@ -116,5 +116,6 @@ export const sendSlackChangeRequestNotification = async (
       )
     );
   }
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   return Promise.all(msgs);
 };
