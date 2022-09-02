@@ -59,6 +59,14 @@ const ProjectsView: React.FC = () => {
       headerAlign: 'center',
       type: 'number',
       maxWidth: 100
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 1,
+      align: 'center',
+      headerAlign: 'center',
+      maxWidth: 100
     }
   ];
 
