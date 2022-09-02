@@ -3,53 +3,84 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { useState } from 'react';
 import { NavDropdown } from 'react-bootstrap';
-import { Link, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { GoogleLogout } from 'react-google-login';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/Routes';
-import styles from '../../stylesheets/layouts/NavTopBar/NavUserMenu.module.css';
+import Link from '@mui/material/Link';
+import Button from '@mui/material/Button';
 
 const NavUserMenu: React.FC = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
 
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
   return (
-    <NavDropdown
-      className="m-auto"
-      title={<FontAwesomeIcon icon={faUserCircle} size="2x" inverse />}
-      id="user-dropdown"
-      alignRight
-    >
-      <NavDropdown.ItemText>Logged in as: {auth.user?.emailId}</NavDropdown.ItemText>
-      <NavDropdown.Divider />
-      <NavDropdown.Item className={styles.UserMenuItem}>
-        <Link className={'nav-link ' + styles.dropdownItems} role="button" to={routes.SETTINGS}>
+    <>
+      <IconButton
+        size="large"
+        aria-label="account of current user"
+        aria-controls="menu-appbar"
+        aria-haspopup="true"
+        onClick={handleMenu}
+        color="inherit"
+      >
+        <AccountCircle />
+      </IconButton>
+      <Menu
+        id="menu-appbar"
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        keepMounted
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem
+          divider
+          component="p"
+          style={{ backgroundColor: 'transparent' }}
+          sx={{ cursor: 'default' }}
+        >
+          {auth.user?.email}
+        </MenuItem>
+        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose}>
           Settings
-        </Link>
-      </NavDropdown.Item>
-      <NavDropdown.Item className={styles.UserMenuItem}>
-        <GoogleLogout
-          clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-          //jsSrc={'accounts.google.com/gsi/client'}
-          onLogoutSuccess={() => {
-            auth!.signout();
-            history.push(routes.HOME);
-          }}
-          render={(renderProps) => (
-            <button
-              className={'nav-link ' + styles.dropdownItems}
-              onClick={renderProps.onClick}
-              disabled={renderProps.disabled}
-            >
-              Logout
-            </button>
-          )}
-        ></GoogleLogout>
-      </NavDropdown.Item>
-    </NavDropdown>
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <GoogleLogout
+            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+            //jsSrc={'accounts.google.com/gsi/client'}
+            onLogoutSuccess={() => {
+              auth!.signout();
+              history.push(routes.HOME);
+            }}
+            render={(renderProps) => (
+              <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+                Logout
+              </Button>
+            )}
+          ></GoogleLogout>
+        </MenuItem>
+      </Menu>
+    </>
   );
 };
 
