@@ -1,4 +1,4 @@
-import { Prisma, Scope_CR_Why_Type } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -7,6 +7,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
+import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
 
@@ -121,4 +122,32 @@ export const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
+};
+
+export const sendSlackChangeRequestNotification = async (
+  team: Team & {
+    leader: User;
+  },
+  message: string,
+  crId: number,
+  budgetImpact?: number
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const msgs = [];
+  const fullMsg = `:tada: New Change Request! :tada: ${message}`;
+  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
+  const btnText = `View CR #${crId}`;
+  msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
+
+  if (budgetImpact && budgetImpact > 100) {
+    msgs.push(
+      sendMessage(
+        process.env.SLACK_EBOARD_CHANNEL!,
+        `${fullMsg} with $${budgetImpact} requested`,
+        fullLink,
+        btnText
+      )
+    );
+  }
+  return Promise.all(msgs);
 };
