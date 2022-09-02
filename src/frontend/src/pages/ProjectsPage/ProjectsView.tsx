@@ -35,7 +35,18 @@ const ProjectsView: React.FC = () => {
       field: 'wbsNum',
       headerName: 'WBS #',
       valueFormatter: (params) => wbsPipe(params.value),
-      maxWidth: 100
+      maxWidth: 100,
+      sortComparator: (v1, v2, param1, param2) => {
+        if (param1.value.carNumber !== param2.value.carNumber) {
+          return param1.value.carNumber - param2.value.carNumber;
+        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
+          return param1.value.projectNumber - param2.value.projectNumber;
+        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
+          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+        } else {
+          return 0;
+        }
+      }
     },
     {
       ...baseColDef,
@@ -47,6 +58,7 @@ const ProjectsView: React.FC = () => {
       ...baseColDef,
       field: 'projectLead',
       headerName: 'Project Lead',
+      align: 'left',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
@@ -54,6 +66,7 @@ const ProjectsView: React.FC = () => {
       ...baseColDef,
       field: 'projectManager',
       headerName: 'Project Manager',
+      align: 'left',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
@@ -61,7 +74,9 @@ const ProjectsView: React.FC = () => {
       ...baseColDef,
       field: 'team',
       headerName: 'Team',
-      valueFormatter: (params) => params.value?.teamName || 'No Team'
+      align: 'left',
+      valueFormatter: (params) => params.value?.teamName || 'No Team',
+      maxWidth: 200
     },
     {
       ...baseColDef,
