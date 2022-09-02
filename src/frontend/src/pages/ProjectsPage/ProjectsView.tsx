@@ -15,57 +15,52 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 const ProjectsView: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
 
+  const baseColDef: any = {
+    flex: 1,
+    align: 'center',
+    headerAlign: 'center'
+  };
+
   const columns: GridColDef[] = [
     {
+      ...baseColDef,
       field: 'wbsNum',
       headerName: 'WBS #',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
       valueFormatter: (params) => wbsPipe(params.value),
       maxWidth: 100
     },
     {
+      ...baseColDef,
       field: 'name',
       headerName: 'Project Name',
-      flex: 1,
       align: 'left',
-      headerAlign: 'center',
       maxWidth: 300
     },
     {
+      ...baseColDef,
       field: 'projectLead',
       headerName: 'Project Lead',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
+      ...baseColDef,
       field: 'projectManager',
       headerName: 'Project Manager',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
+      ...baseColDef,
       field: 'duration',
       headerName: 'Duration',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
       type: 'number',
       maxWidth: 100
     },
     {
+      ...baseColDef,
       field: 'status',
       headerName: 'Status',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
       maxWidth: 100
     }
   ];
