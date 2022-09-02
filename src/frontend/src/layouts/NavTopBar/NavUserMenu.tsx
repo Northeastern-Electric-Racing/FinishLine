@@ -4,18 +4,14 @@
  */
 
 import { useState } from 'react';
-import { NavDropdown } from 'react-bootstrap';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { GoogleLogout } from 'react-google-login';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/Routes';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 
 const NavUserMenu: React.FC = () => {
