@@ -31,6 +31,7 @@ const renderComponent = (allowSubmit = true) => {
     <CreateWPFormView
       states={mockStates}
       dependencies={mockDependencies}
+      initialValues={{ name: '', wbsNum: '', duration: -1, crId: -1 }}
       depUtils={mockUtils}
       expectedActivities={mockEA}
       eaUtils={mockUtils}
