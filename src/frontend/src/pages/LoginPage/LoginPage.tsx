@@ -3,15 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import GoogleLogin from 'react-google-login';
-import { Card } from 'react-bootstrap';
 import LoginDev from './LoginDev';
-
-const styles = {
-  card: {
-    width: '25em'
-  }
-};
 
 interface LoginPageProps {
   devSetRole: (role: string) => void;
@@ -30,10 +27,12 @@ const LoginPage: React.FC<LoginPageProps> = ({
   prodFailure
 }) => {
   return (
-    <Card className={'mx-auto mt-sm-5 '} style={styles.card}>
-      <Card.Body>
-        <Card.Title>FinishLine by NER</Card.Title>
-        <Card.Text>Login Required. Students must use their Husky Google account.</Card.Text>
+    <Card sx={{ marginX: 'auto', maxWidth: '25em', marginTop: 5 }}>
+      <CardContent>
+        <Typography variant="h5">FinishLine by NER</Typography>
+        <Typography variant="body1">
+          Login Required. Students must use their Husky Google account.
+        </Typography>
         <GoogleLogin
           clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
           //jsSrc={'accounts.google.com/gsi/client.js'}
@@ -48,8 +47,10 @@ const LoginPage: React.FC<LoginPageProps> = ({
         ) : (
           ''
         )}
-      </Card.Body>
-      <Card.Footer className="text-muted">This site uses cookies.</Card.Footer>
+      </CardContent>
+      <CardActions>
+        <Typography variant="caption">This site uses cookies.</Typography>
+      </CardActions>
     </Card>
   );
 };

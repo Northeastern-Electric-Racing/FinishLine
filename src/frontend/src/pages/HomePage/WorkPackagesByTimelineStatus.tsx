@@ -4,8 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Link from '@mui/material/Link';
+import { Container, Form, InputGroup } from 'react-bootstrap';
+import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
@@ -13,7 +17,6 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/Home.module.css';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -29,35 +32,42 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
   }
 
   const fullDisplay = (
-    <Row className="flex-nowrap overflow-auto justify-content-start">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start'
+      }}
+    >
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
-            <Card className={styles.horizontalScrollCard} key={wbsPipe(wp.wbsNum)}>
-              <Card.Body className="p-3">
-                <Card.Title className="mb-2">
-                  <Link to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-                    {wbsPipe(wp.wbsNum)} - {wp.name}
-                  </Link>
-                </Card.Title>
-                <Card.Text>
-                  <Container fluid>
-                    <Row className="pb-1">End Date: {datePipe(wp.endDate)}</Row>
-                    <Row className="pb-1">
-                      Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
-                    </Row>
-                    <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
-                    <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
-                    <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
-                      Deliverables
-                    </Row>
-                  </Container>
-                </Card.Text>
-              </Card.Body>
+            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content' }}>
+              <CardContent sx={{ padding: 3 }}>
+                <Link
+                  variant="h6"
+                  component={RouterLink}
+                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                  sx={{ marginBottom: 2 }}
+                >
+                  {wbsPipe(wp.wbsNum)} - {wp.name}
+                </Link>
+                <Box>End Date: {datePipe(wp.endDate)}</Box>
+                <Box>
+                  Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
+                </Box>
+                <Box>Engineering Lead: {fullNamePipe(wp.projectLead)}</Box>
+                <Box>Project Manager: {fullNamePipe(wp.projectManager)}</Box>
+                <Box>
+                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
+                  Deliverables
+                </Box>
+              </CardContent>
             </Card>
           ))}
-    </Row>
+    </Box>
   );
 
   return (
