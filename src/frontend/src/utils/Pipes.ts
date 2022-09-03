@@ -72,3 +72,13 @@ export const datePipe = (date: Date) => {
 export const percentPipe = (percent: number) => {
   return `${percent}%`;
 };
+
+export const numberParamPipe = (param: string | null) => {
+  if (!param) return null;
+  try {
+    const num = parseInt(param);
+    return num;
+  } catch (err) {
+    return null;
+  }
+};

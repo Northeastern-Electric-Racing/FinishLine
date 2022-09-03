@@ -1,11 +1,13 @@
-import { Prisma, Scope_CR_Why_Type } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import {
   ActivationChangeRequest,
   ChangeRequest,
   ChangeRequestReason,
+  ProposedSolution,
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
+import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
 
@@ -23,6 +25,19 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
     OTHER: ChangeRequestReason.Other
   }[whyType]);
 
+export const proposedSolutionArgs = Prisma.validator<Prisma.Proposed_SolutionArgs>()({
+  include: {
+    createdBy: true
+  }
+});
+
+export const scopeCRArgs = Prisma.validator<Prisma.Scope_CRArgs>()({
+  include: {
+    why: true,
+    proposedSolutions: proposedSolutionArgs
+  }
+});
+
 export const changeRequestRelationArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
   include: {
     submitter: true,
@@ -34,11 +49,26 @@ export const changeRequestRelationArgs = Prisma.validator<Prisma.Change_RequestA
         wbsElement: true
       }
     },
-    scopeChangeRequest: { include: { why: true } },
+    scopeChangeRequest: scopeCRArgs,
     stageGateChangeRequest: true,
     activationChangeRequest: { include: { projectLead: true, projectManager: true } }
   }
 });
+
+export const proposedSolutionTransformer = (
+  proposedSolution: Prisma.Proposed_SolutionGetPayload<typeof proposedSolutionArgs>
+): ProposedSolution => {
+  return {
+    id: proposedSolution.proposedSolutionId,
+    description: proposedSolution.description,
+    scopeImpact: proposedSolution.scopeImpact,
+    budgetImpact: proposedSolution.budgetImpact,
+    timelineImpact: proposedSolution.timelineImpact,
+    createdBy: userTransformer(proposedSolution.createdBy),
+    dateCreated: proposedSolution.dateCreated,
+    approved: proposedSolution.approved
+  };
+};
 
 export const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
@@ -76,6 +106,9 @@ export const changeRequestTransformer = (
     scopeImpact: changeRequest.scopeChangeRequest?.scopeImpact ?? undefined,
     budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
     timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
+    proposedSolutions: changeRequest.scopeChangeRequest
+      ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
+      : undefined,
     // activation cr fields
     projectLead: changeRequest.activationChangeRequest?.projectLead
       ? userTransformer(changeRequest.activationChangeRequest?.projectLead)
@@ -89,4 +122,32 @@ export const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
+};
+
+export const sendSlackChangeRequestNotification = async (
+  team: Team & {
+    leader: User;
+  },
+  message: string,
+  crId: number,
+  budgetImpact?: number
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const msgs = [];
+  const fullMsg = `:tada: New Change Request! :tada: ${message}`;
+  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
+  const btnText = `View CR #${crId}`;
+  msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
+
+  if (budgetImpact && budgetImpact > 100) {
+    msgs.push(
+      sendMessage(
+        process.env.SLACK_EBOARD_CHANNEL!,
+        `${fullMsg} with $${budgetImpact} requested`,
+        fullLink,
+        btnText
+      )
+    );
+  }
+  return Promise.all(msgs);
 };

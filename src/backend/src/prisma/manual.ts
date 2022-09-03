@@ -3,11 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { PrismaClient, Role } from '@prisma/client';
+import prisma from './prisma';
+import { Role } from '@prisma/client';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-const prisma = new PrismaClient();
 
 /**
  * This file is purely used for DevOps and database management.
@@ -63,6 +62,99 @@ const countWorkPackages = async () => {
 const activeUserMetrics = async () => {
   // sad dev doesn't feel like converting SQL to Prisma
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
+};
+
+/**
+ * Calculate, pull, and print various metrics per request from Anushka.
+ */
+const pullNumbersForPM = async () => {
+  const nums = await Promise.all([
+    '# of CRs',
+    prisma.change_Request.count(),
+    '# of CRs accepted',
+    prisma.change_Request.count({ where: { accepted: true } }),
+    '# of CRs denied',
+    prisma.change_Request.count({ where: { accepted: false } }),
+    '# of CRs open',
+    prisma.change_Request.count({ where: { accepted: null } }),
+    '# w/ timeline impact > 0',
+    prisma.change_Request.count({ where: { scopeChangeRequest: { timelineImpact: { gt: 0 } } } }),
+    '# w/ timeline impact > 0 ISSUE',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'ISSUE' }
+    }),
+    '# w/ timeline impact > 0 DEFINITION_CHANGE',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'DEFINITION_CHANGE' }
+    }),
+    '# w/ timeline impact > 0 OTHER',
+    prisma.change_Request.count({
+      where: { scopeChangeRequest: { timelineImpact: { gt: 0 } }, type: 'OTHER' }
+    }),
+    'w/ timeline impact > 0 AVG TIMELINE IMPACT',
+    prisma.scope_CR.aggregate({
+      _avg: { timelineImpact: true },
+      where: { timelineImpact: { gt: 0 } }
+    }),
+    'timeline impact = 0',
+    prisma.scope_CR.count({ where: { timelineImpact: { equals: 0 } } }),
+    'timeline impact >0 and <=2',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 0, lte: 2 } } }),
+    'timeline impact >2 and <=4',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 2, lte: 4 } } }),
+    'timeline impact >4 and <=8',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 4, lte: 8 } } }),
+    'timeline impact >8 and <=16',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 8, lte: 16 } } }),
+    'timeline impact >8',
+    prisma.scope_CR.count({ where: { timelineImpact: { gt: 16 } } })
+  ]);
+  for (let idx = 0; idx < nums.length; idx += 2) {
+    console.log(nums[idx], nums[idx + 1]);
+  }
+};
+
+/**
+ * migrate all Change Requests to use Proposed Solutions
+ */
+const migrateToProposedSolutions = async () => {
+  const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
+  crs.forEach(async (cr) => {
+    const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
+      where: { changeRequestId: cr.scopeCrId }
+    });
+
+    if (!alreadyHasSolution) {
+      await prisma.proposed_Solution.create({
+        data: {
+          description: '',
+          timelineImpact: cr.timelineImpact,
+          scopeImpact: cr.scopeImpact,
+          budgetImpact: cr.budgetImpact,
+          changeRequestId: cr.scopeCrId,
+          createdByUserId: cr.changeRequest.submitterId,
+          dateCreated: cr.changeRequest.dateSubmitted,
+          approved: cr.changeRequest.accepted ?? false
+        }
+      });
+    }
+  });
+};
+
+/**
+ * Manually create a team via direct db.
+ */
+const createTeam = async (name: string, slackChannel: string) => {
+  const res = await prisma.team.create({
+    data: {
+      teamName: name,
+      slackId: slackChannel,
+      leader: { connect: { userId: 1 } },
+      projects: { connect: [{ projectId: 1 }, { projectId: 2 }] },
+      members: { connect: [{ userId: 2 }, { userId: 3 }] }
+    }
+  });
+  console.log(res);
 };
 
 executeScripts()

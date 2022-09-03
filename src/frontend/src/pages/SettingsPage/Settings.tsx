@@ -13,6 +13,7 @@ import UserSettings from './UserSettings/UserSettings';
 const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
+
   return (
     <Container fluid>
       <PageTitle title={'Settings'} previousPages={[]} />

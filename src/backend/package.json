@@ -5,10 +5,12 @@
     "dev": "yarn nodemon index.ts",
     "test": "jest",
     "build": "tsc --noEmit false",
-    "start": "node -r dotenv/config dist/index.js"
+    "start": "node -r dotenv/config dist/index.js",
+    "prisma:manual": "ts-node ./src/prisma/manual.ts"
   },
   "dependencies": {
     "@prisma/client": "^4.1.1",
+    "@slack/web-api": "^6.7.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
