@@ -13,7 +13,7 @@ import {
   faSortNumericDown,
   faCogs
 } from '@fortawesome/free-solid-svg-icons';
-import { Container, Row } from 'react-bootstrap';
+import Box from '@mui/material/Box';
 import ExternalLink from '../../components/ExternalLink';
 import PageBlock from '../../layouts/PageBlock';
 
@@ -60,9 +60,11 @@ const UsefulLinks: React.FC = () => {
 
   return (
     <PageBlock title={'Useful Links'}>
-      <Container fluid>
-        <Row>{links}</Row>
-      </Container>
+      <Box display="flex" flexDirection="row">
+        {links.map((ele) => (
+          <Box padding={1}>{ele}</Box>
+        ))}
+      </Box>
     </PageBlock>
   );
 };
