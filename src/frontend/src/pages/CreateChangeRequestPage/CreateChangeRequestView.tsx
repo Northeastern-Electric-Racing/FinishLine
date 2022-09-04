@@ -4,14 +4,24 @@
  */
 
 import * as yup from 'yup';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InputAdornment from '@mui/material/InputAdornment';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -67,7 +77,7 @@ const schema = yup.object().shape({
 });
 
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsNum, onSubmit }) => {
-  const { register, handleSubmit, control, formState } = useForm<FormInput>({
+  const { handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema),
     defaultValues: { wbsNum, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
   });
@@ -84,163 +94,188 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       />
       <PageBlock title={''}>
-        <Form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
-          <Row className="mx-2 justify-content-start">
-            <Col md={5} lg={4} xl={4}>
-              <Form.Group controlId="formWBSNumber" className="mx-2">
-                <Form.Label>WBS Number</Form.Label>
-                <Form.Control
-                  {...register('wbsNum')}
-                  placeholder="Project or Work Package WBS #"
-                  isInvalid={formState.errors.wbsNum?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.wbsNum?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
+        <form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+            name="wbsNum"
+            defaultValue={wbsNum}
+            control={control}
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="WBS Number"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.type}
+              />
+            )}
+          />
 
-            <Col md={4} lg={4} xl={4}>
-              <Form.Group controlId="formType" className="mx-2">
-                <Form.Label>Type</Form.Label>
-                <Form.Control
-                  as="select"
-                  {...register('type')}
-                  isInvalid={formState.errors.type?.message !== undefined}
-                  custom
+          <Controller
+            name="type"
+            defaultValue={ChangeRequestType.Issue}
+            control={control}
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <FormControl>
+                <InputLabel id={`${field.name}Label`}>Type</InputLabel>
+                <Select
+                  {...field}
+                  label="Type"
+                  labelId={`${field.name}Label`}
+                  error={!!fieldState.error}
                 >
-                  {permittedTypes.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
+                  {permittedTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
                   ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.type?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
+                </Select>
+                <FormHelperText>{fieldState.error?.type}</FormHelperText>
+              </FormControl>
+            )}
+          />
 
-          <Row className="mx-2 justify-content-start">
-            <Col>
-              <Form.Group controlId="formWhat" className="mx-2">
-                <Form.Label>What</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  cols={50}
-                  {...register('what')}
-                  placeholder="What is the situation?"
-                  isInvalid={formState.errors.what?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.what?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={6} md={6} lg={6} xl={6}>
-              <Form.Group controlId="formWhy" className="mx-2">
-                <Form.Label>Why</Form.Label>
-                {fields.map((field, index) => (
-                  <InputGroup key={index} className="d-flex m-1">
-                    <Form.Control
-                      as="select"
-                      {...register(`why.${index}.type` as const)}
-                      isInvalid={formState.errors.why?.[index]?.type !== undefined}
-                      custom
-                    >
-                      {Object.values(ChangeRequestReason).map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </Form.Control>
-                    <Form.Control
-                      {...register(`why.${index}.explain` as const)}
-                      placeholder="Explain why"
-                      isInvalid={formState.errors.why?.[index]?.explain?.message !== undefined}
-                    />
-                    <Button variant="danger" onClick={() => remove(index)}>
-                      X
-                    </Button>
-                    <Form.Control.Feedback type="invalid" className="d-block">
-                      {formState.errors.why?.[index]?.type}
-                      {formState.errors.why?.[index]?.explain?.message}
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                ))}
-                <Row className="px-2 justify-content-end">
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => append({ type: ChangeRequestReason.Design, explain: '' })}
-                  >
-                    Add Reason
+          <Controller
+            name="what"
+            control={control}
+            defaultValue=""
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label={'What'}
+                multiline
+                rows={4}
+                fullWidth
+                error={!!fieldState.error}
+                helperText={fieldState.error?.type}
+                placeholder="What is the situation?"
+              />
+            )}
+          />
+
+          <Box>
+            <Typography variant="subtitle2">Why</Typography>
+            <Box>
+              {fields.map((field, index) => (
+                <Box>
+                  <Controller
+                    name={`why.${index}.type` as const}
+                    defaultValue={ChangeRequestReason.Other}
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field, fieldState }) => (
+                      <FormControl>
+                        <InputLabel id={`${field.name}Label`}>Type</InputLabel>
+                        <Select
+                          {...field}
+                          label="Type"
+                          labelId={`${field.name}Label`}
+                          error={!!fieldState.error}
+                        >
+                          {Object.values(ChangeRequestReason).map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{fieldState.error?.type}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                  <Controller
+                    name={`why.${index}.explain` as const}
+                    defaultValue=""
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        label="Explain"
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.type}
+                        placeholder="Why details"
+                      />
+                    )}
+                  />
+                  <Button variant="contained" color="error" onClick={() => remove(index)}>
+                    <DeleteIcon />
                   </Button>
-                </Row>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mx-2 justify-content-start">
-            <Col>
-              <Form.Group controlId="formScopeImpact" className="mx-2">
-                <Form.Label>Scope Impact</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  cols={50}
-                  {...register('scopeImpact')}
-                  placeholder="What do you think the impact to scope is?"
-                  isInvalid={formState.errors.scopeImpact?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.scopeImpact?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={4} md={4} lg={4} xl={4}>
-              <Form.Group controlId="formTimelineImpact" className="mx-2">
-                <Form.Label>Timeline Impact</Form.Label>
-                <InputGroup>
-                  <Form.Control
-                    {...register('timelineImpact')}
-                    placeholder="# needed"
-                    isInvalid={formState.errors.timelineImpact?.message !== undefined}
-                  />
-                  <InputGroup.Append>
-                    <InputGroup.Text>weeks</InputGroup.Text>
-                  </InputGroup.Append>
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.timelineImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-
-              <Form.Group controlId="formBudgetImpact" className="mx-2">
-                <Form.Label>Budget Impact</Form.Label>
-                <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text>$</InputGroup.Text>
-                  </InputGroup.Prepend>
-                  <Form.Control
-                    {...register('budgetImpact')}
-                    placeholder="$ needed"
-                    isInvalid={formState.errors.budgetImpact?.message !== undefined}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.budgetImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mx-2 justify-content-end">
-            <Button variant="success" type="submit">
-              Submit
+                </Box>
+              ))}
+            </Box>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => append({ type: ChangeRequestReason.Design, explain: '' })}
+            >
+              Add Reason
             </Button>
-          </Row>
-        </Form>
+          </Box>
+
+          <Controller
+            name="scopeImpact"
+            control={control}
+            defaultValue=""
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label={'Scope Impact'}
+                multiline
+                rows={4}
+                fullWidth
+                error={!!fieldState.error}
+                helperText={fieldState.error?.type}
+                placeholder="What is the impact to scope?"
+              />
+            )}
+          />
+
+          <Controller
+            name="timelineImpact"
+            control={control}
+            defaultValue={0}
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Timeline Impact"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.type}
+                placeholder="# needed"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  endAdornment: <InputAdornment position="end">weeks</InputAdornment>
+                }}
+              />
+            )}
+          />
+
+          <Controller
+            name="budgetImpact"
+            control={control}
+            defaultValue={0}
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Budget Impact"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.type}
+                placeholder="$ needed"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  endAdornment: <InputAdornment position="end">USD</InputAdornment>
+                }}
+              />
+            )}
+          />
+
+          <Button variant="contained" color="success" type="submit">
+            Submit
+          </Button>
+        </form>
       </PageBlock>
     </>
   );
