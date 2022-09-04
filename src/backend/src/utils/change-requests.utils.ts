@@ -132,14 +132,12 @@ export const sendSlackChangeRequestNotification = async (
   crId: number,
   budgetImpact?: number
 ) => {
-  console.log('attempting to send slack notification with env: ', process.env.NODE_ENV);
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR #${crId}`;
   msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
-  console.log('main msg sent');
 
   if (budgetImpact && budgetImpact > 100) {
     msgs.push(

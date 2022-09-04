@@ -261,9 +261,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   });
 
   const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
-  console.log('checking project for slack ping', project);
   if (project?.team) {
-    console.log('project team good, sending slack ping', project.team);
     const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
     await sendSlackChangeRequestNotification(
       project.team,
@@ -271,9 +269,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
       createdCR.crId,
       body.budgetImpact
     );
-    console.log('slack ping sent');
   }
-  console.log('reached end of cr creation');
   return res.status(200).json({
     message: `Successfully created standard change request #${createdCR.crId}.`
   });
