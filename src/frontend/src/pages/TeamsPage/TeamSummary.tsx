@@ -9,7 +9,7 @@ import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
 import { Team } from 'shared';
 import { useTheme } from '../../hooks/Theme.hooks';
 import { routes } from '../../utils/Routes';
-import { fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
 
 interface TeamSummaryProps {
@@ -20,23 +20,14 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
 
-  const membersList = (
-    <ul>
-      {team.members.map((member, idx) => (
-        <li key={idx}>{fullNamePipe(member)}</li>
-      ))}
-    </ul>
-  );
+  const membersList = listPipe(team.members, (t) => fullNamePipe(t));
 
-  const projectsList = (
-    <ul>
-      {team.projects.map((project, idx) => (
-        <li key={idx}>
-          <Link to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>{project.name}</Link>
-        </li>
-      ))}
-    </ul>
-  );
+  const projectsList = team.projects.map((project, idx) => (
+    <>
+      <Link to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>{project.name}</Link>
+      {idx + 1 !== team.projects.length ? ', ' : ''}
+    </>
+  ));
 
   return (
     <Card bg={theme.cardBg} border={theme.cardBorder}>
@@ -44,6 +35,10 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         <div className={'d-flex justify-content-between'}>
           <div className={'d-flex'}>
             <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
+          </div>
+          <div className={'d-flex'}>
+            <div className={'mr-3'}>{team.projects.length} Projects</div>
+            <div>{team.members.length} Members</div>
           </div>
         </div>
       </Card.Header>
@@ -61,6 +56,8 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
                 <Col xs={12} md={6}>
                   <b>Members:</b> {membersList}
                 </Col>
+              </Row>
+              <Row>
                 <Col xs={12} md={6}>
                   <b>Projects:</b> {projectsList}
                 </Col>
