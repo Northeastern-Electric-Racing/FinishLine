@@ -6,7 +6,6 @@
 import { Container } from 'react-bootstrap';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import PageBlock from '../../layouts/PageBlock';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';

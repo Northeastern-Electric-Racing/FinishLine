@@ -14,9 +14,7 @@ import { Role } from '@prisma/client';
  */
 
 /** Execute all given prisma database interaction scripts written in this function */
-const executeScripts = async () => {
-  createTeam('Team Ligma', 'alksdjflkasd', 'Team Sugma', 'asdkuioew');
-};
+const executeScripts = async () => {};
 
 /**
  * Update user's role given userId and new role
@@ -144,9 +142,9 @@ const migrateToProposedSolutions = async () => {
 };
 
 /**
- * Manually create a team via direct db.
+ * Manually create two team via direct db. (for dev use only lol)
  */
-const createTeam = async (name: string, slack: string, name2: string, slack2: string) => {
+const createTeams = async (name: string, slack: string, name2: string, slack2: string) => {
   const res = await prisma.team.create({
     data: {
       teamName: name,
