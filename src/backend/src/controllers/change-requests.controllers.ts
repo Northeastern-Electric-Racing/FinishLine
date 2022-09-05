@@ -50,6 +50,16 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
 
+  // make sure that a proposed solution is selected before approving
+  const foundPS = await prisma.proposed_Solution.findMany({ where: {changeRequestId: foundCR.crId }});
+  let selected = false;
+  foundPS.forEach((proposedSolution) => {
+    if(proposedSolution.approved) {
+      selected = true;
+    }
+  });
+  if (!selected) return res.status(401).json({message: 'No proposed solution selected'});
+  
   // update change request
   const update = await prisma.change_Request.update({
     where: { crId },
