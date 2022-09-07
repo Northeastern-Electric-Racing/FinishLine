@@ -70,7 +70,7 @@ changeRequestsRouter.post(
 changeRequestsRouter.post(
   '/new/proposed-solution',
   body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('scopeCrId').isInt({ min: 0 }).not().isString(),
+  body('crId').isInt({ min: 0 }).not().isString(),
   body('description').isString().not().isEmpty(),
   body('scopeImpact').isString().not().isEmpty(),
   body('timelineImpact').isInt({ min: 0 }).not().isString(),

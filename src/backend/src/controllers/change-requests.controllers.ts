@@ -229,21 +229,19 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   }
   if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
 
+  // ensure existence of change request
+  const foundCR = await prisma.change_Request.findUnique({
+    where: { crId: body.crId }
+  });
+  if (!foundCR)
+    return res.status(404).json({ message: `change request with id #${body.crId} not found` });
+
   // ensure existence of scope change request
-  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { scopeCrId: body.scopeCrId } });
+  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: body.crId } });
   if (!foundScopeCR)
     return res
       .status(404)
-      .json({ message: `scope change request with id #${body.scopeCrId} not found` });
-
-  // ensure existence of change request
-  const foundCR = await prisma.change_Request.findUnique({
-    where: { crId: foundScopeCR.changeRequestId }
-  });
-  if (!foundCR)
-    return res
-      .status(404)
-      .json({ message: `change request with id #${foundScopeCR.changeRequestId} not found` });
+      .json({ message: `scope change request with change request id #${body.crId} not found` });
 
   const createProposedSolution = await prisma.proposed_Solution.create({
     data: {
@@ -251,7 +249,7 @@ export const addProposedSolution = async (req: Request, res: Response) => {
       scopeImpact: body.scopeImpact,
       timelineImpact: body.timelineImpact,
       budgetImpact: body.budgetImpact,
-      changeRequest: { connect: { scopeCrId: body.scopeCrId } },
+      changeRequest: { connect: { scopeCrId: foundScopeCR.scopeCrId } },
       createdBy: { connect: { userId: body.submitterId } }
     }
   });
