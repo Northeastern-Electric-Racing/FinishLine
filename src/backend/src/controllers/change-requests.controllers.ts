@@ -51,12 +51,17 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
 
   // if Scope CR, make sure that a proposed solution is selected before approving
-  if (
-    foundCR.type === 'ISSUE' ||
-    foundCR.type === 'DEFINITION_CHANGE' ||
-    foundCR.type === 'OTHER'
-  ) {
-    if (!psId) return res.status(400).json({ message: 'No proposed solution selected' });
+  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
+  if (foundScopeCR) {
+    if (!psId)
+      return res
+        .status(400)
+        .json({ message: 'No proposed solution selected for scope change request' });
+    const foundPs = await prisma.proposed_Solution.findUnique({
+      where: { proposedSolutionId: psId }
+    });
+    if (!foundPs)
+      return res.status(400).json({ message: `Proposed solution with id #${psId} not found` });
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
       data: {
