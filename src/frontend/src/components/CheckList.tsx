@@ -16,8 +16,9 @@ interface CheckListProps {
   title: string;
   headerRight?: ReactNode;
   listItems: {
-    details: string;
-    resolved: boolean;
+    id: String;
+    detail: string;
+    isResolved: boolean;
   }[];
 }
 
@@ -33,7 +34,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
   const handleCheck = (idx: number) => {
     const updatedChecks = checks.map((check, i) => {
       if (i === idx) {
-        check.resolved = !check.resolved;
+        check.isResolved = !check.isResolved;
         return check;
       }
       return check;
@@ -53,17 +54,17 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
               label={
                 <p
                   style={
-                    check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }
+                    check.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }
                   }
                 >
-                  {check.details}
+                  {check.detail}
                 </p>
               }
-              defaultChecked={check.resolved}
+              defaultChecked={check.isResolved}
               data-testId={`testCheckbox${idx}`}
               onChange={() => handleCheck(idx)}
             />
-            {check.resolved ? (
+            {check.isResolved ? (
               <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
                 <Button variant="danger" data-testId="deleteButton">
                   <FontAwesomeIcon icon={faTrash} />

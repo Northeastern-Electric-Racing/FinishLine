@@ -7,6 +7,7 @@ import { User } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { TimelineStatus } from './work-package-types';
 import { TeamPreview } from './team-types';
+import { Risk } from './risk-types';
 
 export interface WbsNumber {
   carNumber: number;
@@ -44,6 +45,7 @@ export interface Project extends WbsElement {
   features: DescriptionBullet[];
   otherConstraints: DescriptionBullet[];
   workPackages: WorkPackage[];
+  risks: Risk[];
   team?: TeamPreview;
 }
 
