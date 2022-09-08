@@ -49,7 +49,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   return (
     <CreateChangeRequestsView
       wbsNum={query.get('wbsNum') || ''}
-      what={query.get('what') || ''}
+      what={query.get('riskDetails') || ''}
       onSubmit={handleConfirm}
     />
   );

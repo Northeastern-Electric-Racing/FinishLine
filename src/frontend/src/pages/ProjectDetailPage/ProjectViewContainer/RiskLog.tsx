@@ -4,22 +4,23 @@
  */
 
 import CheckList from '../../../components/CheckList';
-import { Risk } from '../../../../../shared/src/types/risk-types';
+import { Risk, WbsNumber } from 'shared';
 
 interface RiskLogProps {
   risks: Risk[];
+  wbsNum: WbsNumber;
 }
 
-const RiskLog: React.FC<RiskLogProps> = ({ risks }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ risks, wbsNum }) => {
   const formatRisks = (risks: Risk[]): { id: string; detail: string; isResolved: boolean }[] => {
-    var result: { id: string; detail: string; isResolved: boolean }[] = [];
+    const result: { id: string; detail: string; isResolved: boolean }[] = [];
     risks.forEach((risk) => {
       result.push({ id: risk.id, detail: risk.detail, isResolved: risk.isResolved });
     });
     return result;
   };
 
-  return <CheckList title="Risk Log" listItems={formatRisks(risks)} />;
+  return <CheckList title="Risk Log" listItems={formatRisks(risks)} wbsNum={wbsNum} />;
 };
 
 export default RiskLog;

@@ -11,6 +11,8 @@ import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import styles from '../stylesheets/components/CheckList.module.css';
 import { routes } from '../utils/Routes';
 import { useHistory } from 'react-router';
+import { WbsNumber } from 'shared';
+import { wbsPipe } from '../utils/Pipes';
 
 interface CheckListProps {
   title: string;
@@ -20,9 +22,10 @@ interface CheckListProps {
     detail: string;
     isResolved: boolean;
   }[];
+  wbsNum: WbsNumber;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) => {
+const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems, wbsNum }) => {
   const [checks, setChecks] = useState(listItems);
   const [show, setShow] = useState(false);
 
@@ -54,7 +57,9 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
               label={
                 <p
                   style={
-                    check.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }
+                    check.isResolved
+                      ? { textDecoration: 'line-through' }
+                      : { textDecoration: 'none' }
                   }
                 >
                   {check.detail}
@@ -77,7 +82,10 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
                   data-testId="convertButton"
                   onClick={() => {
                     history.push(
-                      routes.CHANGE_REQUESTS_NEW_WITH_WHAT + encodeURIComponent(check.details)
+                      routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                        wbsPipe(wbsNum) +
+                        '&riskDetails=' +
+                        encodeURIComponent(check.detail)
                     );
                   }}
                 >
