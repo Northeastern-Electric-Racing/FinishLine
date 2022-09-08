@@ -14,13 +14,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-
-const styles = {
-  workPackageCard: {
-    minWidth: 'fit-content !important',
-    margin: '0px 10px 10px 0px'
-  }
-};
+import styles from '../../stylesheets/pages/Home.module.css';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -42,8 +36,8 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
             <Card
+              className={styles.horizontalScrollCard}
               key={wbsPipe(wp.wbsNum)}
-              style={styles.workPackageCard}
               border={theme.cardBorder}
               bg={theme.cardBg}
             >

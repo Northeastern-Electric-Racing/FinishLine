@@ -2,7 +2,8 @@ import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import {
   changeRequestRelationArgs,
-  changeRequestTransformer
+  changeRequestTransformer,
+  sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
 import { validationResult } from 'express-validator';
 import { Role } from '@prisma/client';
@@ -94,7 +95,7 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
 
-  const createdChangeRequest = await prisma.change_Request.create({
+  const createdCR = await prisma.change_Request.create({
     data: {
       submitter: { connect: { userId: body.submitterId } },
       wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
@@ -107,11 +108,30 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
           confirmDetails: body.confirmDetails
         }
       }
+    },
+    include: {
+      wbsElement: {
+        include: {
+          workPackage: {
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
+          }
+        }
+      }
     }
   });
 
+  const team = createdCR.wbsElement.workPackage?.project.team;
+  if (team) {
+    const slackMsg =
+      `${user.firstName} ${user.lastName} wants to activate ${createdCR.wbsElement.name}` +
+      ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
+    await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+  }
+
   return res.status(200).json({
-    message: `Successfully created activation change request #${createdChangeRequest.crId}.`
+    message: `Successfully created activation change request #${createdCR.crId}.`
   });
 };
 
@@ -154,8 +174,27 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
           confirmDone: body.confirmDone
         }
       }
+    },
+    include: {
+      wbsElement: {
+        include: {
+          workPackage: {
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
+          }
+        }
+      }
     }
   });
+
+  const team = createdChangeRequest.wbsElement.workPackage?.project.team;
+  if (team) {
+    const slackMsg =
+      `${user.firstName} ${user.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+      ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+    await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+  }
 
   return res.status(200).json({
     message: `Successfully created stage gate change request #${createdChangeRequest.crId}.`
@@ -192,7 +231,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
 
-  const createdChangeRequest = await prisma.change_Request.create({
+  const createdCR = await prisma.change_Request.create({
     data: {
       submitter: { connect: { userId: body.submitterId } },
       wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } },
@@ -206,10 +245,32 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
           why: { createMany: { data: body.why } }
         }
       }
+    },
+    include: {
+      wbsElement: {
+        include: {
+          project: { include: { team: { include: { leader: true } }, wbsElement: true } },
+          workPackage: {
+            include: {
+              project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+            }
+          }
+        }
+      }
     }
   });
 
+  const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
+  if (project?.team) {
+    const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
+    await sendSlackChangeRequestNotification(
+      project.team,
+      slackMsg,
+      createdCR.crId,
+      body.budgetImpact
+    );
+  }
   return res.status(200).json({
-    message: `Successfully created standard change request #${createdChangeRequest.crId}.`
+    message: `Successfully created standard change request #${createdCR.crId}.`
   });
 };

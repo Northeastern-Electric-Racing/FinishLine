@@ -60,7 +60,8 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   ],
   scopeImpact: 'Design and machine titanium spacers',
   budgetImpact: 75,
-  timelineImpact: 2
+  timelineImpact: 2,
+  proposedSolutions: []
 };
 
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
@@ -138,7 +139,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP
@@ -158,7 +158,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP
@@ -178,7 +177,6 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
         userId: 22,
         firstName: 'Joe',
         lastName: 'Schmoe',
-        googleAuthId: 'testID',
         email: 'j.schmoe@northeastern.edu',
         emailId: null,
         role: RoleEnum.LEADERSHIP
@@ -186,7 +184,8 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       detail: 'Add 3 weeks',
       dateImplemented: new Date('02/25/21')
     }
-  ]
+  ],
+  proposedSolutions: []
 };
 
 export const exampleAllChangeRequests: ChangeRequest[] = [

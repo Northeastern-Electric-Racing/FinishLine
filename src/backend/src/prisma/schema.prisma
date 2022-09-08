@@ -61,30 +61,31 @@ model User {
   userSettings User_Settings?
 
   // Relation references
-  submittedChangeRequests Change_Request[] @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests  Change_Request[] @relation(name: "reviewedChangeRequests")
-  markedAsProjectLead     Activation_CR[]  @relation(name: "markAsProjectLead")
-  markedAsProjectManager  Activation_CR[]  @relation(name: "markAsProjectManager")
-  changes                 Change[]
-  projectLead             WBS_Element[]    @relation(name: "projectLead")
-  projectManager          WBS_Element[]    @relation(name: "projectManager")
-  Session                 Session[]
-  teams                   Team[]           @relation(name: "teamsAsMember")     
-  teamAsLead              Team?            @relation(name: "teamAsLead")
-  createdRisks            Risk[]           @relation(name: "createdBy")
-  resolvedRisks           Risk[]           @relation(name: "resolvedBy")
-  deletedRisks            Risk[]           @relation(name: "deletedBy")
+  submittedChangeRequests  Change_Request[]    @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests   Change_Request[]    @relation(name: "reviewedChangeRequests")
+  markedAsProjectLead      Activation_CR[]     @relation(name: "markAsProjectLead")
+  markedAsProjectManager   Activation_CR[]     @relation(name: "markAsProjectManager")
+  changes                  Change[]
+  projectLead              WBS_Element[]       @relation(name: "projectLead")
+  projectManager           WBS_Element[]       @relation(name: "projectManager")
+  Session                  Session[]
+  teams                    Team[]              @relation(name: "teamsAsMember")
+  teamAsLead               Team?               @relation(name: "teamAsLead")
+  createdRisks             Risk[]              @relation(name: "createdBy")
+  resolvedRisks            Risk[]              @relation(name: "resolvedBy")
+  deletedRisks             Risk[]              @relation(name: "deletedBy")
+  createdProposedSolutions Proposed_Solution[]
 }
 
 model Team {
-  teamId         String         @id @default(uuid())
-  teamName       String
-  slackId        String
-  description    String         @default("")
-  leaderId       Int            @unique
-  leader         User           @relation(name: "teamAsLead", fields:[leaderId], references: [userId]) 
-  projects       Project[]      
-  members        User[]         @relation(name: "teamsAsMember")
+  teamId      String    @id @default(uuid())
+  teamName    String
+  slackId     String
+  description String    @default("")
+  leaderId    Int       @unique
+  leader      User      @relation(name: "teamAsLead", fields: [leaderId], references: [userId])
+  projects    Project[]
+  members     User[]    @relation(name: "teamsAsMember")
 }
 
 model Session {
@@ -122,14 +123,29 @@ model Change_Request {
 }
 
 model Scope_CR {
-  scopeCrId       Int            @id @default(autoincrement())
-  changeRequestId Int            @unique
-  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
-  what            String
-  why             Scope_CR_Why[]
-  scopeImpact     String
-  timelineImpact  Int
-  budgetImpact    Int
+  scopeCrId         Int                 @id @default(autoincrement())
+  changeRequestId   Int                 @unique
+  changeRequest     Change_Request      @relation(fields: [changeRequestId], references: [crId])
+  what              String
+  why               Scope_CR_Why[]
+  scopeImpact       String
+  timelineImpact    Int
+  budgetImpact      Int
+  proposedSolutions Proposed_Solution[]
+}
+
+model Proposed_Solution {
+  proposedSolutionId String   @id @default(uuid())
+  description        String
+  timelineImpact     Int
+  budgetImpact       Int
+  scopeImpact        String
+  changeRequest      Scope_CR @relation(fields: [changeRequestId], references: [scopeCrId])
+  changeRequestId    Int
+  createdByUserId    Int
+  createdBy          User     @relation(fields: [createdByUserId], references: [userId])
+  dateCreated        DateTime @default(now())
+  approved           Boolean  @default(false)
 }
 
 model Scope_CR_Why {
@@ -208,8 +224,8 @@ model Project {
   features              Description_Bullet[] @relation(name: "projectFeatures")
   otherConstraints      Description_Bullet[] @relation(name: "projectOtherConstraints")
   workPackages          Work_Package[]
-  teamId                String?                   
-  team                  Team?                  @relation(fields: [teamId], references: [teamId])
+  teamId                String?
+  team                  Team?                @relation(fields: [teamId], references: [teamId])
   risks                 Risk[]
 }
 

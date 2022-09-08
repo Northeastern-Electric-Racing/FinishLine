@@ -1,5 +1,9 @@
 # Onboarding
 
+# NOTE: THIS IS DEPRECATE DUE TO THE SWITCH TO V3
+
+# NEW ONBOARDING COMING SOON
+
 ## Project Setup
 
 First, ensure that you have [Node.js v14](https://nodejs.org/download/release/v14.18.3/) installed (you can also navigate to the Node.js website and find any v14 update you prefer).
@@ -50,7 +54,7 @@ In order to run the database for the first time, you will need to execute the fo
 Run `npm run prisma:reset`.
 This should apply all the existing database migrations to the database (create the required tables in the database, see `npm run prisma:migrate`) and populate the database with seed data (see `npm run prisma:seed`).
 
-Refer to [prisma migration tools](https://github.com/Northeastern-Electric-Racing/PM-Dashboard-v2/blob/main/docs/PrismaMigrationTools.md) for more information about these commands.
+Refer to [prisma migration tools](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/PrismaMigrationTools.md) for more information about these commands.
 
 ### Run and Test
 

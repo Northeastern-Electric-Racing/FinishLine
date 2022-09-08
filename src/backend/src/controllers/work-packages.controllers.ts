@@ -9,7 +9,7 @@ import {
   workPackageTransformer,
   wpQueryArgs
 } from '../utils/work-packages.utils';
-import { isProject, validateWBS, WbsNumber } from 'shared';
+import { equalsWbsNumber, isProject, validateWBS, WbsNumber } from 'shared';
 import { Role, WBS_Element } from '@prisma/client';
 import {
   addDescriptionBullets,
@@ -103,6 +103,10 @@ export const createWorkPackage = async (req: Request, res: Response) => {
 
   if (workPackageNumber !== 0) throw new TypeError('Given WBS Number is not for a project.');
 
+  if(dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
+    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
+  }
+
   const wbsElem = await prisma.wBS_Element.findUnique({
     where: {
       wbsNumber: {
@@ -156,6 +160,7 @@ export const createWorkPackage = async (req: Request, res: Response) => {
     if (elem === null) throw new TypeError('One of the dependencies was not found.');
     return elem.wbsElementId;
   });
+
 
   // add to the database
   await prisma.work_Package.create({
@@ -228,6 +233,24 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   });
   if (originalWorkPackage === null) {
     return res.status(404).json({ message: `Work Package with id #${workPackageId} not found` });
+  }
+
+  if(dependencies.find((dep: any) => equalsWbsNumber(dep,
+    {
+      carNumber: originalWorkPackage.wbsElement.carNumber,
+      projectNumber: originalWorkPackage.wbsElement.projectNumber,
+      workPackageNumber: 0
+    })) != null) {
+    return res.status(400).json({ message: `A Work Package cannot have own project as a dependency` });
+  }
+
+  if(dependencies.find((dep: any) => equalsWbsNumber(dep,
+    {
+      carNumber: originalWorkPackage.wbsElement.carNumber,
+      projectNumber: originalWorkPackage.wbsElement.projectNumber,
+      workPackageNumber: originalWorkPackage.wbsElement.workPackageNumber
+    })) != null) {
+    return res.status(400).json({ message: `A Work Package cannot have itself as a dependency` });
   }
 
   // the crId must match a valid approved change request
