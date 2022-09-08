@@ -18,14 +18,14 @@ const mockHook = () => {
 
 describe('Check List Component', () => {
   const testList = [
-    { details: 'Check #1', resolved: false },
-    { details: 'Check #2', resolved: true },
-    { details: 'Check #3', resolved: false }
+    { id: 'check1', detail: 'Check #1', isResolved: false },
+    { id: 'check2', detail: 'Check #2', isResolved: true },
+    { id: 'check3', detail: 'Check #3', isResolved: false }
   ];
 
   const testList2 = [
-    { details: 'Check #1', resolved: false },
-    { details: 'Check #2', resolved: true }
+    { id: 'check1', detail: 'Check #1', isResolved: false },
+    { id: 'check2', detail: 'Check #2', isResolved: true }
   ];
 
   beforeEach(() => mockHook());

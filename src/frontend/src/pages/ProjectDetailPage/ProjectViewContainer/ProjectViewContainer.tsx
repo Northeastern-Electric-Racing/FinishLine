@@ -18,11 +18,6 @@ import RulesList from './RulesList';
 import RiskLog from './RiskLog';
 import { routes } from '../../../utils/Routes';
 import ProjectGantt from './ProjectGantt';
-import {
-  exampleRisk1,
-  exampleRisk2,
-  exampleRisk3
-} from '../../../tests/TestSupport/TestData/Risks.stub';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -55,8 +50,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </DropdownButton>
   );
 
-  const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3];
-
   return (
     <Container fluid className="mb-5">
       <PageTitle
@@ -66,7 +59,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog risks={testRisks} />
+      <RiskLog risks={proj.risks} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList

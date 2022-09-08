@@ -11,8 +11,8 @@ interface RiskLogProps {
 }
 
 const RiskLog: React.FC<RiskLogProps> = ({ risks }) => {
-  const formatRisks = (risks: Risk[]): { id: String; detail: string; isResolved: boolean }[] => {
-    var result: { id: String; detail: string; isResolved: boolean }[] = [];
+  const formatRisks = (risks: Risk[]): { id: string; detail: string; isResolved: boolean }[] => {
+    var result: { id: string; detail: string; isResolved: boolean }[] = [];
     risks.forEach((risk) => {
       result.push({ id: risk.id, detail: risk.detail, isResolved: risk.isResolved });
     });
