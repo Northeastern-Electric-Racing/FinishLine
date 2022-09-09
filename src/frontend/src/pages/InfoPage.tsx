@@ -21,7 +21,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const InfoPage: React.FC = () => {
   return (
     <Container fluid>
-      <PageTitle title="Info" previousPages={[]} />
+      <PageTitle title="Information" previousPages={[]} />
       <PageBlock title="Resources">
         <Container fluid>
           <Row className="pb-2">Check out these helpful resources:</Row>
