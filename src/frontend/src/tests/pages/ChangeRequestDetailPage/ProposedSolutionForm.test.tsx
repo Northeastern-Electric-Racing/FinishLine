@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -42,7 +42,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope')).toBeInTheDocument();
+    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
   });
 
   it('Renders labels for inputs correctly when not readOnly', () => {
@@ -50,7 +50,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope')).toBeInTheDocument();
+    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
   });
 
   it('Does not render add button when readOnly', () => {

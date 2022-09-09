@@ -34,7 +34,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
           flexDirection: 'column-reverse'
         }}
       >
-        {proposedSolutionsList.map((proposedSolution) => (
+        {proposedSolutionsList.map((proposedSolution, i) => (
           <ProposedSolutionForm
             onAdd={() => {}}
             description={proposedSolution.description}
@@ -42,6 +42,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
             timelineImpact={proposedSolution.timelineImpact}
             budgetImpact={proposedSolution.budgetImpact}
             readOnly
+            key={i}
           />
         ))}
       </div>

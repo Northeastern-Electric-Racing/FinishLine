@@ -71,7 +71,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           </Col>
           <Col lg={true}>
             <Form.Group controlId="formScope" className="mx-2">
-              <Form.Label>Scope</Form.Label>
+              <Form.Label>Scope Impact</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
