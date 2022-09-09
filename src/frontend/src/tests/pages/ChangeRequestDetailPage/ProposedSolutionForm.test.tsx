@@ -19,7 +19,7 @@ const renderComponent = (
   description = '',
   budgetImpact = 0,
   timelineImpact = 0,
-  scope = ''
+  scopeImpact = ''
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -30,7 +30,7 @@ const renderComponent = (
         description={description}
         budgetImpact={budgetImpact}
         timelineImpact={timelineImpact}
-        scope={scope}
+        scopeImpact={scopeImpact}
       />
     </RouterWrapper>
   );

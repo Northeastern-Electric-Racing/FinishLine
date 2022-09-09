@@ -10,6 +10,7 @@ import { useTheme } from '../hooks/Theme.hooks';
 interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
+  cardContainerStyle?: string;
 }
 
 const styles = {
@@ -22,12 +23,18 @@ const styles = {
  * Custom component for a consistent page-building block.
  * @param title The title of the block on the page
  * @param headerRight The optional stuff to display on the right side of the header
+ * @param cardContainerStyle Can be used to override the default card container style
  */
-const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
+const PageBlock: React.FC<PageBlockProps> = ({
+  title,
+  headerRight,
+  children,
+  cardContainerStyle = 'mb-3'
+}) => {
   const theme = useTheme();
 
   return (
-    <Card className={'mb-3'} border={theme.cardBorder} bg={theme.cardBg}>
+    <Card className={cardContainerStyle} border={theme.cardBorder} bg={theme.cardBg}>
       <Card.Body>
         <Card.Title style={styles.header}>
           <h5 className={'float-left mb-0'}>{title}</h5>
