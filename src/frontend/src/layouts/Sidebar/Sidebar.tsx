@@ -47,9 +47,9 @@ const Sidebar: React.FC = () => {
       route: routes.TEAMS
     },
     {
-      name: 'Help',
+      name: 'Info',
       icon: faQuestionCircle,
-      route: routes.HELP
+      route: routes.INFO
     }
   ];
   return (
