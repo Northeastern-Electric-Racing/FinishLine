@@ -22,7 +22,7 @@ const renderComponent = () => {
 describe('help page component', () => {
   it('renders title', () => {
     renderComponent();
-    expect(screen.getAllByText('Info').length).toEqual(2);
+    expect(screen.getAllByText('Information').length).toEqual(2);
   });
 
   it('renders resources section', () => {
@@ -36,5 +36,18 @@ describe('help page component', () => {
     expect(screen.getByText(/Support/)).toBeInTheDocument();
     expect(screen.getByText(/Message in Slack/)).toBeInTheDocument();
     expect(screen.getByText(/GitHub/)).toBeInTheDocument();
+  });
+
+  it('renders calendars section', () => {
+    renderComponent();
+    expect(screen.getByText(/Calendars/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Public URL/).length).toEqual(6);
+    expect(screen.getAllByText(/iCal URL/).length).toEqual(6);
+    expect(screen.getByText(/Club-Wide Meetings & Events/)).toBeInTheDocument();
+    expect(screen.getByText(/Electrical Meetings/)).toBeInTheDocument();
+    expect(screen.getByText(/Mechanical Meetings/)).toBeInTheDocument();
+    expect(screen.getByText(/Business Meetings/)).toBeInTheDocument();
+    expect(screen.getByText(/Software Meetings/)).toBeInTheDocument();
+    expect(screen.getByText(/Engineering Reviews/)).toBeInTheDocument();
   });
 });

@@ -73,24 +73,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faScroll} className="mx-2" /> Club-Wide Meetings & Events
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
             <Col md={4} lg={3}>
@@ -98,24 +90,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faBolt} className="mx-2" /> Electrical Meetings
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
             <Col md={4} lg={3}>
@@ -123,24 +107,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faCog} className="mx-2" /> Mechanical Meetings
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
           </Row>
@@ -150,24 +126,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faDollarSign} className="mx-2" /> Business Meetings
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
             <Col md={4} lg={3}>
@@ -175,24 +143,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faCode} className="mx-2" /> Software Meetings
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
             <Col md={4} lg={3}>
@@ -200,24 +160,16 @@ const InfoPage: React.FC = () => {
                 <FontAwesomeIcon icon={faSearch} className="mx-2" /> Engineering Reviews
               </Row>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  Public URL
-                </a>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
               </Col>
               <Col>
-                <a
-                  href="https://calendar.google.com/calendar/ical/qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-2"
-                >
-                  iCal URL
-                </a>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
               </Col>
             </Col>
           </Row>
