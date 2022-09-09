@@ -5,16 +5,16 @@
 
 import { render, screen, routerWrapperBuilder } from '../TestSupport/TestUtils';
 import { routes } from '../../utils/Routes';
-import HelpPage from '../../pages/HelpPage';
+import InfoPage from '../../pages/InfoPage';
 
 /**
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  const RouterWrapper = routerWrapperBuilder({ path: routes.HELP, route: routes.HELP });
+  const RouterWrapper = routerWrapperBuilder({ path: routes.INFO, route: routes.INFO });
   return render(
     <RouterWrapper>
-      <HelpPage />
+      <InfoPage />
     </RouterWrapper>
   );
 };
@@ -22,7 +22,7 @@ const renderComponent = () => {
 describe('help page component', () => {
   it('renders title', () => {
     renderComponent();
-    expect(screen.getAllByText('Help').length).toEqual(2);
+    expect(screen.getAllByText('Info').length).toEqual(2);
   });
 
   it('renders resources section', () => {
