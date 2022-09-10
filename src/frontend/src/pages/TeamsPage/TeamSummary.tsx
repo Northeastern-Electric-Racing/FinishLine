@@ -48,8 +48,12 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
             <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
           </div>
           <div className={'d-flex'}>
-            <div className={'mr-3'}>{team.projects.length} Projects</div>
-            <div>{team.members.length} Members</div>
+            <div className={'mr-3'}>
+              {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
+            </div>
+            <div>
+              {team.members.length} Member{team.members.length === 1 ? '' : 's'}
+            </div>
           </div>
         </div>
       </Card.Header>
