@@ -60,8 +60,8 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
-    if (!foundPs)
-      return res.status(400).json({ message: `Proposed solution with id #${psId} not found` });
+    if (!foundPs || foundPs.changeRequestId !== crId)
+      return res.status(400).json({ message: `Proposed solution with id #${psId} not found for change request #${crId}` });
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
