@@ -11,6 +11,10 @@ import { useTheme } from '../../hooks/Theme.hooks';
 import { routes } from '../../utils/Routes';
 import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
+import ReactMarkdown from 'react-markdown';
+import PageBlock from '../../layouts/PageBlock';
+
+const DESCRIPTION_WORD_LIMIT = 100;
 
 interface TeamSummaryProps {
   team: Team;
@@ -28,6 +32,13 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
       {idx + 1 !== team.projects.length ? ', ' : ''}
     </>
   ));
+
+  let description = team.description;
+  let descriptionTooLong = false;
+  if (description.split(' ').length > DESCRIPTION_WORD_LIMIT) {
+    descriptionTooLong = true;
+    description = description.split(' ').slice(0, DESCRIPTION_WORD_LIMIT).join(' ') + '\u2026';
+  }
 
   return (
     <Card bg={theme.cardBg} border={theme.cardBorder}>
@@ -62,6 +73,18 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
                   <b>Projects:</b> {projectsList}
                 </Col>
               </Row>
+              {description && (
+                <Row className={styles.description}>
+                  <Col>
+                    <PageBlock title="">
+                      <ReactMarkdown>{description}</ReactMarkdown>
+                      {descriptionTooLong && (
+                        <Link to={`${routes.TEAMS}/${team.teamId}`}>{`(continue reading)`}</Link>
+                      )}
+                    </PageBlock>
+                  </Col>
+                </Row>
+              )}
             </Container>
           </Card.Body>
         </div>
