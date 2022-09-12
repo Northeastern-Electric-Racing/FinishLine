@@ -21,6 +21,13 @@ const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/new`;
 const projectsEdit = () => `${projects()}/edit`;
 
+/**************** Risks Endpoints ********************/
+const risks = () => `${API_URL}/risks`;
+const risksByProjectId = (projectId: number) => `${risks()}/${projectId}`;
+const risksCreate = () => `${risks()}/create`;
+const risksEdit = () => `${risks()}/edit`;
+const risksDelete = () => `${risks()}/delete`;
+
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
   const url = `${API_URL}/work-packages`;
@@ -56,6 +63,12 @@ export const apiUrls = {
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
+
+  risks,
+  risksByProjectId,
+  risksCreate,
+  risksEdit,
+  risksDelete,
 
   workPackages,
   workPackagesByWbsNum,
