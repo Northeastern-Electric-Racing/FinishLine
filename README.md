@@ -3,7 +3,8 @@
 Also known as PM Dashboard v3.
 
 A project management web application built in Typescript, React, and Express.
-Start by reading what the project is [all about](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/About.md).
+
+Almost all of our documentation is on [our Confluence page](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/5603329/Software). Start there to learn what the project is all about.
 
 All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (backup contact: [`@anthonybernardi`](https://github.com/anthonybernardi)).
 
@@ -22,12 +23,8 @@ Note: no more `npm` commands! Any time you would run `npm run ...` run `yarn ...
 
 ## Environment Setup for New Developers
 
-NOTE: the environment setup docs have not been updated from v2 yet!!!!!
-
-Go through either the [Mac onboarding](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/Onboarding.md) or [Windows onboarding](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/OnboardingWindows.md) steps.
+We have redone our onboarding docs and moved them to Confluence! [Check them out here](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/5079215/Software+Onboarding). If you have questions, ask them in the `#software_env-setup` channel in Slack. When you're done, check out the contributor guide (see below).
 
 ## How to Contribute
 
-First read the [Git contributor guide](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ContributorGuide.md).
-
-Next, head over to the [Project Board](https://github.com/orgs/Northeastern-Electric-Racing/projects/3) and find a ticket you like. Once you've chosen one, or if you need help, reach out to your Tech Lead or someone in the #software channel.
+Check out the [contributor guide](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/8060929/Software+Contributor+Guide). This will take you through the steps of finding a ticket, making a branch, committing code, creating a pull request, etc!
