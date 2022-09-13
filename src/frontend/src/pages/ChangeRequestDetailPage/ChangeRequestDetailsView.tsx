@@ -14,7 +14,7 @@ import {
   StandardChangeRequest
 } from 'shared';
 import { routes } from '../../utils/Routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { datePipe, fullNamePipe, wbsPipe, wbsToProjectWbs } from '../../utils/Pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -76,7 +76,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </Dropdown.Item>
       <Dropdown.Item
         as={Link}
-        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${wbsPipe(
+        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${wbsToProjectWbs(
           changeRequest.wbsNum
         )}`}
         disabled={!isUserAllowedToImplement}
@@ -140,7 +140,13 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} />}
+      {modalShow && (
+        <ReviewChangeRequest
+          crType={changeRequest.type}
+          modalShow={modalShow}
+          handleClose={handleClose}
+        />
+      )}
     </Container>
   );
 };
