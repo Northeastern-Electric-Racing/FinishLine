@@ -16,14 +16,19 @@ import {
   useDeleteSingleRisk
 } from '../../../hooks/Risks.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
+import { routes } from '../../../utils/Routes';
+import { wbsPipe } from '../../../utils/Pipes';
+import { useHistory } from 'react-router';
+import { WbsNumber } from 'shared';
 
 interface RiskLogProps {
   risks: Risk[];
   projectId: number;
   editMode?: boolean;
+  wbsNum: WbsNumber;
 }
 
-const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }) => {
   const auth = useAuth();
   const { userId } = auth.user!;
 
@@ -109,6 +114,8 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
 
   const renderTooltip = (message: string) => <Tooltip id="button-tooltip">{message}</Tooltip>;
 
+  const history = useHistory();
+
   return (
     <PageBlock title={'Risk Log'}>
       <Form>
@@ -142,7 +149,18 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
               </OverlayTrigger>
             ) : (
               <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-                <Button variant="success" data-testId="convertButton">
+                <Button
+                  variant="success"
+                  data-testId="convertButton"
+                  onClick={() => {
+                    history.push(
+                      routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                        wbsPipe(wbsNum) +
+                        '&riskDetails=' +
+                        encodeURIComponent(risk.detail)
+                    );
+                  }}
+                >
                   <FontAwesomeIcon icon={faArrowRight} />
                 </Button>
               </OverlayTrigger>
