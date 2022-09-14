@@ -15,7 +15,7 @@ import PageBlock from '../../layouts/PageBlock';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
-  what: string;
+  crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
 }
 
@@ -69,12 +69,12 @@ const schema = yup.object().shape({
 
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
-  what,
+  crDesc,
   onSubmit
 }) => {
   const { register, handleSubmit, control, formState } = useForm<FormInput>({
     resolver: yupResolver(schema),
-    defaultValues: { wbsNum, what, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
+    defaultValues: { wbsNum, what: crDesc, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
   });
   const { fields, append, remove } = useFieldArray({ control, name: 'why' });
 
