@@ -103,12 +103,6 @@ describe('Change request details standard cr display element tests', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
   });
-
-  it('Renders impact section', () => {
-    const cr: StandardChangeRequest = exampleStandardChangeRequest;
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
-  });
 });
 
 describe('Change request details activation cr display element tests', () => {
