@@ -7,6 +7,7 @@ import { ProposedSolution } from 'shared';
 import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
+import ProposedSolutionView from './ProposedSolutionView';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -35,15 +36,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         }}
       >
         {proposedSolutionsList.map((proposedSolution, i) => (
-          <ProposedSolutionForm
-            onAdd={() => {}}
-            description={proposedSolution.description}
-            scopeImpact={proposedSolution.scopeImpact}
-            timelineImpact={proposedSolution.timelineImpact}
-            budgetImpact={proposedSolution.budgetImpact}
-            readOnly
-            key={i}
-          />
+          <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
       </div>
       {showEditableForm ? (
