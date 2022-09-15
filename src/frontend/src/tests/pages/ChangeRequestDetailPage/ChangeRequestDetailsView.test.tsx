@@ -4,12 +4,7 @@
  */
 
 import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  StageGateChangeRequest,
-  StandardChangeRequest
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,

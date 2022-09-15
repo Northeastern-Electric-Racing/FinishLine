@@ -11,9 +11,13 @@ import ProposedSolutionView from './ProposedSolutionView';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
+  crReviewed: boolean;
 }
 
-const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions }) => {
+const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
+  proposedSolutions,
+  crReviewed
+}) => {
   const [proposedSolutionsList] = useState<ProposedSolution[]>(proposedSolutions);
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
 
@@ -24,9 +28,13 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
 
   return (
     <>
-      <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
-        + Add Proposed Solution
-      </Button>
+      {!crReviewed ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       <div
         style={{
           maxHeight: '35em',
