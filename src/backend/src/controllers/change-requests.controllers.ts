@@ -6,7 +6,7 @@ import {
   sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
 import { validationResult } from 'express-validator';
-import { Role, WBS_Element_Status } from '@prisma/client';
+import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
@@ -67,7 +67,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   });
 
   // if it's an activation cr and being accepted, we can do some stuff to the associated work package
-  if (update.activationChangeRequest && accepted) {
+  if (update.type === CR_Type.ACTIVATION && update.activationChangeRequest && accepted) {
     const { activationChangeRequest: actCr, wbsElement } = update;
     const shouldUpdateProjLead = actCr.projectLeadId !== wbsElement.projectLeadId;
     const shouldUpdateProjManager = actCr.projectManagerId !== wbsElement.projectManagerId;
