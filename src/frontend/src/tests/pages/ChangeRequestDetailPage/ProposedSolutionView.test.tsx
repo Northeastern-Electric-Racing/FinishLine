@@ -45,7 +45,7 @@ const renderComponent = (proposedSolution = exampleProposedSolution) => {
 describe('Proposed Solutions View Test Suite', () => {
   it('Renders correctly when approved', () => {
     renderComponent();
-    expect(screen.queryByText('Approved')).toBeInTheDocument();
+    expect(screen.getByText('Approved')).toBeInTheDocument();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
