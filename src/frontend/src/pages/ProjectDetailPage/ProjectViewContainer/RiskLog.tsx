@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Risk } from '../../../../../shared/src/types/risk-types';
+import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -18,16 +18,22 @@ import {
 } from '../../../hooks/Risks.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { routes } from '../../../utils/Routes';
+import { wbsPipe } from '../../../utils/Pipes';
+import { useHistory } from 'react-router';
+import { WbsNumber } from 'shared';
 
 interface RiskLogProps {
   projectId: number;
+  wbsNum: WbsNumber;
 }
 
 const sortRisksByDate = (a: Risk, b: Risk) => {
   return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
 };
 
-const RiskLog: React.FC<RiskLogProps> = ({ projectId }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
+  const history = useHistory();
   const auth = useAuth();
   const { userId } = auth.user!;
 
@@ -133,7 +139,18 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId }) => {
               </OverlayTrigger>
             ) : (
               <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-                <Button variant="success" data-testId="convertButton">
+                <Button
+                  variant="success"
+                  data-testId="convertButton"
+                  onClick={() => {
+                    history.push(
+                      routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                        wbsPipe(wbsNum) +
+                        '&riskDetails=' +
+                        encodeURIComponent(risk.detail)
+                    );
+                  }}
+                >
                   <FontAwesomeIcon icon={faArrowRight} />
                 </Button>
               </OverlayTrigger>
