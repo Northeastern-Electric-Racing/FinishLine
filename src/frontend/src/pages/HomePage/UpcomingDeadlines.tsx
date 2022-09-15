@@ -6,9 +6,14 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Link from '@mui/material/Link';
-import { Container, Form, InputGroup } from 'react-bootstrap';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import CardContent from '@mui/material/CardContent';
+import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Container } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
@@ -72,26 +77,27 @@ const UpcomingDeadlines: React.FC = () => {
     <PageBlock
       title={`Upcoming Deadlines (${workPackages.data?.length})`}
       headerRight={
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text>Next</InputGroup.Text>
-          </InputGroup.Prepend>
-          <Form.Control
-            custom
-            as="select"
+        <FormControl>
+          <InputLabel id="dateRange">Date Range</InputLabel>
+          <Select
+            label="Date Range"
+            labelId="dateRange"
             value={daysUntilDeadline}
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
+            startAdornment={<InputAdornment position="start">Next</InputAdornment>}
+            endAdornment={
+              <InputAdornment position="end" sx={{ marginRight: 2 }}>
+                days
+              </InputAdornment>
+            }
           >
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
-              <option key={days} value={days}>
+              <MenuItem key={days} value={days}>
                 {days}
-              </option>
+              </MenuItem>
             ))}
-          </Form.Control>
-          <InputGroup.Append>
-            <InputGroup.Text>Days</InputGroup.Text>
-          </InputGroup.Append>
-        </InputGroup>
+          </Select>
+        </FormControl>
       }
     >
       <Container fluid>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Container>
