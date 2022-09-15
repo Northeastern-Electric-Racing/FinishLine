@@ -10,7 +10,7 @@ import {
   editSingleRisk,
   getRisksForProject
 } from '../apis/Risks.api';
-import { Risk } from 'shared';
+import { Risk, WbsNumber } from 'shared';
 
 /**
  * Custom React hook to get all risks for a certain project.
@@ -25,7 +25,7 @@ export const useGetRisksForProject = (projectId: number) => {
 /**
  * Custom React hook to create a new risk.
  */
-export const useCreateSingleRisk = () => {
+export const useCreateSingleRisk = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['risks', 'create'],
@@ -35,7 +35,7 @@ export const useCreateSingleRisk = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['risks', 'create']);
+        queryClient.invalidateQueries([wbsNum]);
       }
     }
   );

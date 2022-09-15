@@ -4,7 +4,7 @@
  */
 
 import { Risk } from '../../../../../shared/src/types/risk-types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,18 +16,18 @@ import {
   useDeleteSingleRisk
 } from '../../../hooks/Risks.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
-
+import { WbsNumber } from 'shared';
 interface RiskLogProps {
   risks: Risk[];
   projectId: number;
-  editMode?: boolean;
+  wbsNum: WbsNumber;
 }
 
-const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }) => {
   const auth = useAuth();
   const { userId } = auth.user!;
 
-  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
+  const { mutateAsync: createMutateAsync } = useCreateSingleRisk(wbsNum);
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
   const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
 
@@ -35,12 +35,12 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
   const [show, setShow] = useState(false);
   const [risks, setRisks] = useState(risksData.filter((r) => !r.dateDeleted));
 
+  const filterDeletedRisks = (riskArray: Risk[]) => {
+    return riskArray.filter((r) => !r.dateDeleted);
+  };
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
-  useEffect(() => {
-    console.log('render');
-  }, [risks]);
 
   const handleCheck = async (risk: Risk) => {
     const newRisks = [...risks];
@@ -70,8 +70,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
     }
   };
 
-  // const handleEdit = (id: string) => {};
-
   const handleCreate = async () => {
     const payload = {
       projectId: projectId,
@@ -82,8 +80,8 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId }) => {
     try {
       await createMutateAsync(payload);
       handleClose();
-      const newRisks = risks.filter((r) => !r.dateDeleted);
-      setRisks(newRisks);
+      console.log(risksData);
+      setRisks(filterDeletedRisks(risksData));
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
