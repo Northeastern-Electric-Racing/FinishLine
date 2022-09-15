@@ -5,7 +5,7 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Badge, Col, Container, Row } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
 
 interface ProposedSolutionViewProps {
@@ -15,7 +15,19 @@ interface ProposedSolutionViewProps {
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution }) => {
   const spacer = 'mb-2';
   return (
-    <PageBlock title="" cardContainerStyle="mb-0">
+    <PageBlock
+      title=""
+      cardContainerStyle="mb-0"
+      headerRight={
+        proposedSolution.approved ? (
+          <b>
+            <Badge pill variant="success">
+              Approved
+            </Badge>
+          </b>
+        ) : null
+      }
+    >
       <Container fluid>
         <Row className={spacer}>
           <Col className={spacer} sm={3} md={2} lg={2} xl={1}>

@@ -5,7 +5,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
 import { ProposedSolution } from 'shared';
-import { exampleAdminUser } from '../../TestSupport/TestData/Users.stub';
+import { exampleAdminUser, exampleLeadershipUser } from '../../TestSupport/TestData/Users.stub';
 import ProposedSolutionView from '../../../pages/ChangeRequestDetailPage/ProposedSolutionView';
 
 const exampleProposedSolution: ProposedSolution = {
@@ -19,21 +19,33 @@ const exampleProposedSolution: ProposedSolution = {
   approved: true
 };
 
+const exampleProposedSolution2: ProposedSolution = {
+  id: '2',
+  description: 'Desc 2',
+  scopeImpact: 'Scope Impact 2',
+  budgetImpact: 22,
+  timelineImpact: 222,
+  createdBy: exampleLeadershipUser,
+  dateCreated: new Date(),
+  approved: false
+};
+
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = () => {
+const renderComponent = (proposedSolution = exampleProposedSolution) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionView proposedSolution={exampleProposedSolution} />
+      <ProposedSolutionView proposedSolution={proposedSolution} />
     </RouterWrapper>
   );
 };
 
 describe('Proposed Solutions View Test Suite', () => {
-  it('Renders correctly', () => {
+  it('Renders correctly when approved', () => {
     renderComponent();
+    expect(screen.queryByText('Approved')).toBeInTheDocument();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
@@ -42,5 +54,18 @@ describe('Proposed Solutions View Test Suite', () => {
     expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
     expect(screen.getByText('$11')).toBeInTheDocument();
     expect(screen.getByText('111 weeks')).toBeInTheDocument();
+  });
+
+  it('Renders correctly when not approved', () => {
+    renderComponent(exampleProposedSolution2);
+    expect(screen.queryByText('Approved')).not.toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('Scope Impact')).toBeInTheDocument();
+    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
+    expect(screen.getByText('Desc 2')).toBeInTheDocument();
+    expect(screen.getByText('Scope Impact 2')).toBeInTheDocument();
+    expect(screen.getByText('$22')).toBeInTheDocument();
+    expect(screen.getByText('222 weeks')).toBeInTheDocument();
   });
 });
