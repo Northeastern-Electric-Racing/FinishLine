@@ -9,6 +9,7 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
+import { useTheme } from '../../hooks/Theme.hooks';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -18,6 +19,15 @@ interface ProposedSolutionFormProps {
   readOnly?: boolean;
   onAdd: (data: ProposedSolution) => void;
 }
+
+const styles = {
+  white: {
+    color: 'white'
+  },
+  black: {
+    color: 'black'
+  }
+};
 
 const schema = yup.object().shape({
   description: yup.string().required('Description is required'),
@@ -49,13 +59,19 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
   });
 
+  const theme = useTheme();
+
   return (
     <PageBlock title="" cardContainerStyle="mb-0">
       <Form id="individual-proposed-solution-form" onSubmit={handleSubmit(onAdd)}>
         <Row className="mx-2 justify-content-start">
           <Col lg={true}>
             <Form.Group controlId="formDescription" className="mx-2">
-              <Form.Label>Description</Form.Label>
+              {theme.name === 'DARK' ? (
+                <Form.Label style={styles.white}>Description</Form.Label>
+              ) : (
+                <Form.Label style={styles.black}>Description</Form.Label>
+              )}
               <Form.Control
                 as="textarea"
                 rows={3}
@@ -71,7 +87,11 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           </Col>
           <Col lg={true}>
             <Form.Group controlId="formScope" className="mx-2">
-              <Form.Label>Scope Impact</Form.Label>
+              {theme.name === 'DARK' ? (
+                <Form.Label style={styles.white}>Scope Impact</Form.Label>
+              ) : (
+                <Form.Label style={styles.black}>Scope Impact</Form.Label>
+              )}
               <Form.Control
                 as="textarea"
                 rows={3}
@@ -91,7 +111,11 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             <Row className="mx-2 justify-content-start">
               <Col lg={true} className="pl-0">
                 <Form.Group controlId="formBudgetImpact">
-                  <Form.Label>Budget Impact</Form.Label>
+                  {theme.name === 'DARK' ? (
+                    <Form.Label style={styles.white}>Budget Impact</Form.Label>
+                  ) : (
+                    <Form.Label style={styles.black}>Budget Impact</Form.Label>
+                  )}
                   <InputGroup>
                     <InputGroup.Prepend>
                       <InputGroup.Text>$</InputGroup.Text>
@@ -110,7 +134,11 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               </Col>
               <Col lg={true} className="pr-0">
                 <Form.Group controlId="formTimelineImpact">
-                  <Form.Label>Timeline Impact</Form.Label>
+                  {theme.name === 'DARK' ? (
+                    <Form.Label style={styles.white}>Timeline Impact</Form.Label>
+                  ) : (
+                    <Form.Label style={styles.black}>Timeline Impact</Form.Label>
+                  )}
                   <InputGroup>
                     <Form.Control
                       {...register('timelineImpact')}
