@@ -35,17 +35,16 @@ jest.mock('../../../../apis/Risks.api');
 
 const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
+};
 
 const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3];
 
 describe.skip('Rendering Project Risk Log Component', () => {
   beforeEach(() => mockHook());
-
   it('Renders the RiskLog title', async () => {
     mockAuthHook();
     const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
     mockRisks.mockReturnValue(mockPromiseAxiosResponse<Risk[]>(testRisks));
-
     const { result, waitFor } = renderHook(() => useGetRisksForProject(exampleProject1.id), {
       wrapper
     });
@@ -54,12 +53,10 @@ describe.skip('Rendering Project Risk Log Component', () => {
     render(<RiskLog projectId={exampleProject1.id} />);
     expect(screen.getByText('Risk Log')).toBeInTheDocument();
   });
-
   it('Renders all of the risks', async () => {
     mockAuthHook();
     const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
     mockRisks.mockReturnValue(mockPromiseAxiosResponse<Risk[]>(testRisks));
-
     const { result, waitFor } = renderHook(() => useGetRisksForProject(exampleProject1.id), {
       wrapper
     });
