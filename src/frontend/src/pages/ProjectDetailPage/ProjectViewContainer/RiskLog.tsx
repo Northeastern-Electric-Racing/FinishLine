@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Risk } from '../../../../../shared/src/types/risk-types';
+import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -33,6 +33,7 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
 };
 
 const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
+  const history = useHistory();
   const auth = useAuth();
   const { userId } = auth.user!;
 
@@ -104,8 +105,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   };
 
   const renderTooltip = (message: string) => <Tooltip id="button-tooltip">{message}</Tooltip>;
-
-  const history = useHistory();
 
   return (
     <PageBlock title={'Risk Log'}>
