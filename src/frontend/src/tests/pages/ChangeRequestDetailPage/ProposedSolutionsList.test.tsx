@@ -45,7 +45,7 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed 
 };
 
 describe('Proposed Solutions List Test Suite', () => {
-  it('Renders correctly when not empty', () => {
+  it('Renders correctly when not empty and CR is not reviewed', () => {
     renderComponent(exampleProposedSolutions);
     expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
     expect(screen.getAllByText('Description').length).toBe(2);
@@ -62,7 +62,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('222 weeks')).toBeInTheDocument();
   });
 
-  it('Renders correctly when empty', () => {
+  it('Renders correctly when empty and CR is not reviewed', () => {
     renderComponent();
     expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
@@ -94,7 +94,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('Add')).toBeInTheDocument();
   });
 
-  it('Renders correctly when not empty and CR is not reviewed', () => {
+  it('Renders correctly when not empty and CR is reviewed', () => {
     renderComponent(exampleProposedSolutions, true);
     expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
     expect(screen.getAllByText('Description').length).toBe(2);
@@ -111,7 +111,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('222 weeks')).toBeInTheDocument();
   });
 
-  it('Renders correctly when empty and CR is not reviewed', () => {
+  it('Renders correctly when empty and CR is reviewed', () => {
     renderComponent([], true);
     expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
