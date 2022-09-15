@@ -50,12 +50,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </DropdownButton>
   );
 
-  const testRisks = [
-    { details: 'Risk #1', resolved: false },
-    { details: 'Risk #2', resolved: true },
-    { details: 'Risk #3', resolved: false }
-  ];
-
   return (
     <Container fluid className="mb-5">
       <PageTitle
@@ -65,7 +59,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog risks={testRisks} />
+      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList

@@ -11,7 +11,7 @@ import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
 import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Settings from '../pages/SettingsPage/Settings';
-import HelpPage from '../pages/HelpPage';
+import InfoPage from '../pages/InfoPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import TeamsPage from '../pages/TeamsPage';
 
@@ -35,7 +35,7 @@ const AppAuthenticated: React.FC = () => {
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.TEAMS} component={TeamsPage} />
             <Route path={routes.SETTINGS} component={Settings} />
-            <Route path={routes.HELP} component={HelpPage} />
+            <Route path={routes.INFO} component={InfoPage} />
             <Route exact path={routes.HOME} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>

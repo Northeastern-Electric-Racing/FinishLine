@@ -46,7 +46,13 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <CreateChangeRequestsView wbsNum={query.get('wbsNum') || ''} onSubmit={handleConfirm} />;
+  return (
+    <CreateChangeRequestsView
+      wbsNum={query.get('wbsNum') || ''}
+      crDesc={query.get('riskDetails') || ''}
+      onSubmit={handleConfirm}
+    />
+  );
 };
 
 export default CreateChangeRequest;

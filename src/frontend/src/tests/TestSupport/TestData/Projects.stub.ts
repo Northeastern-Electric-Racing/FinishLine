@@ -60,7 +60,8 @@ export const exampleProject1: Project = {
     }
   ],
   duration: 8,
-  workPackages: [exampleWorkPackage1, exampleWorkPackage2]
+  workPackages: [exampleWorkPackage1, exampleWorkPackage2],
+  risks: []
 };
 
 export const exampleProject2: Project = {
@@ -97,7 +98,8 @@ export const exampleProject2: Project = {
   ],
   changes: [],
   duration: 0,
-  workPackages: []
+  workPackages: [],
+  risks: []
 };
 
 export const exampleProject3: Project = {
@@ -138,7 +140,8 @@ export const exampleProject3: Project = {
   ],
   changes: [],
   duration: 3,
-  workPackages: [exampleWorkPackage1]
+  workPackages: [exampleWorkPackage1],
+  risks: []
 };
 
 export const exampleProject4: Project = {
@@ -175,7 +178,8 @@ export const exampleProject4: Project = {
   ],
   changes: [],
   duration: 5,
-  workPackages: [exampleWorkPackage2]
+  workPackages: [exampleWorkPackage2],
+  risks: []
 };
 
 export const exampleProject5: Project = {
@@ -212,7 +216,8 @@ export const exampleProject5: Project = {
   ],
   changes: [],
   duration: 2,
-  workPackages: [exampleWorkPackage3]
+  workPackages: [exampleWorkPackage3],
+  risks: []
 };
 
 export const exampleAllProjects: Project[] = [

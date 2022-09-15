@@ -7,7 +7,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface ExternalLinkProps {
-  icon: IconProp;
+  icon?: IconProp;
   link: string;
   description: string;
 }
@@ -16,7 +16,11 @@ interface ExternalLinkProps {
 const ExternalLink: React.FC<ExternalLinkProps> = ({ icon, link, description }) => {
   return (
     <div key={description} className="d-flex flex-row align-items-center px-3">
-      <FontAwesomeIcon icon={icon} size="lg" className="pr-1" data-testid={'icon'} />
+      {icon !== undefined ? (
+        <FontAwesomeIcon icon={icon} size="lg" className="pr-1" data-testid={'icon'} />
+      ) : (
+        ''
+      )}
       <a href={link} target="_blank" rel="noopener noreferrer">
         {description}
       </a>
