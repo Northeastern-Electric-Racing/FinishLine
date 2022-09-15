@@ -4,7 +4,7 @@
  */
 
 import { Risk } from '../../../../../shared/src/types/risk-types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,22 +13,26 @@ import styles from '../../../stylesheets/components/RiskLog.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
-  useDeleteSingleRisk
+  useDeleteSingleRisk,
+  useGetRisksForProject
 } from '../../../hooks/Risks.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber } from 'shared';
 
 interface RiskLogProps {
-  risks: Risk[];
   projectId: number;
-  editMode?: boolean;
   wbsNum: WbsNumber;
 }
 
-const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }) => {
+const sortRisksByDate = (a: Risk, b: Risk) => {
+  return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+};
+
+const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   const auth = useAuth();
   const { userId } = auth.user!;
 
@@ -38,35 +42,27 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
 
   const [newDetail, setNewDetail] = useState('');
   const [show, setShow] = useState(false);
-  const [risks, setRisks] = useState(risksData.filter((r) => !r.dateDeleted));
+  const risksQuery = useGetRisksForProject(projectId);
+
+  if (risksQuery.isLoading) return <LoadingIndicator />;
+
+  const risks = [
+    ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
+    ...risksQuery.data!.filter((r) => !r.dateDeleted && r.isResolved).sort(sortRisksByDate)
+  ];
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  useEffect(() => {
-    console.log('render');
-  }, [risks]);
-
   const handleCheck = async (risk: Risk) => {
-    const newRisks = [...risks];
-
     const payload = {
       userId: userId,
       id: risk.id,
       detail: risk.detail,
       resolved: !risk.isResolved
     };
-
     try {
       await editMutateAsync(payload);
-      newRisks.map((r) => {
-        if (r.id === risk.id) {
-          r.isResolved = !risk.isResolved;
-        }
-        return r;
-      });
-      console.log('finna render');
-      setRisks(newRisks);
     } catch (e) {
       if (e instanceof Error) {
         console.log(e);
@@ -74,8 +70,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
       }
     }
   };
-
-  // const handleEdit = (id: string) => {};
 
   const handleCreate = async () => {
     const payload = {
@@ -87,8 +81,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
     try {
       await createMutateAsync(payload);
       handleClose();
-      const newRisks = risks.filter((r) => !r.dateDeleted);
-      setRisks(newRisks);
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -104,7 +96,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
 
     try {
       await deleteMutateAsync(payload);
-      setRisks(risks.filter((r) => !(r.id === id)));
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -133,7 +124,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
                   {risk.detail}
                 </p>
               }
-              defaultChecked={risk.isResolved}
+              checked={risk.isResolved}
               data-testId={`testCheckbox${idx}`}
               onChange={() => handleCheck(risk)}
             />

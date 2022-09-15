@@ -25,7 +25,8 @@ export const createRisk = async (req: Request, res: Response) => {
   const { body } = req;
   const { projectId, detail, createdById } = body;
 
-  if (!hasRiskPermissions(createdById, projectId)) {
+  const hasPerms = await hasRiskPermissions(createdById, projectId);
+  if (!hasPerms) {
     return res.status(401).json({ message: 'Access Denied' });
   }
 
@@ -57,7 +58,8 @@ export const editRisk = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Cant edit a deleted risk' });
   }
 
-  if (!hasRiskPermissions(userId, originalRisk.projectId)) {
+  const hasPerms = await hasRiskPermissions(userId, originalRisk.projectId);
+  if (!hasPerms) {
     return res.status(401).json({ message: 'Access Denied' });
   }
 
@@ -119,7 +121,8 @@ export const deleteRisk = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'this risk has already been deleted' });
   }
 
-  if (!hasRiskPermissions(deletedByUserId, targetRisk.projectId)) {
+  const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
+  if (!hasPerms) {
     return res.status(401).json({ message: 'Access Denied' });
   }
 

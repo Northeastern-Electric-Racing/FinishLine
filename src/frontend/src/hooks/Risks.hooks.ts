@@ -35,7 +35,7 @@ export const useCreateSingleRisk = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['risks', 'create']);
+        queryClient.invalidateQueries(['risks']);
       }
     }
   );
@@ -46,11 +46,17 @@ export const useCreateSingleRisk = () => {
  */
 
 export const useEditSingleRisk = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['risks', 'edit'],
     async (riskPayload: any) => {
       const { data } = await editSingleRisk(riskPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['risks']);
+      }
     }
   );
 };
@@ -69,7 +75,7 @@ export const useDeleteSingleRisk = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['risks', 'delete']);
+        queryClient.invalidateQueries(['risks']);
       }
     }
   );
