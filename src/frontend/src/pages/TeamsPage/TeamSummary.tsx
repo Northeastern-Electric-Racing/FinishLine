@@ -11,10 +11,32 @@ import { useTheme } from '../../hooks/Theme.hooks';
 import { routes } from '../../utils/Routes';
 import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
-import ReactMarkdown from 'react-markdown';
-import PageBlock from '../../layouts/PageBlock';
 
-const DESCRIPTION_WORD_LIMIT = 100;
+interface TeamSummaryHeaderProps {
+  team: Team;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const TeamSummaryHeader: React.FC<TeamSummaryHeaderProps> = ({ team, open, setOpen }) => {
+  return (
+    <Card.Header className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
+      <div className={'d-flex justify-content-between'}>
+        <div className={'d-flex'}>
+          <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
+        </div>
+        <div className={'d-flex'}>
+          <div className={'mr-3'}>
+            {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
+          </div>
+          <div>
+            {team.members.length} Member{team.members.length === 1 ? '' : 's'}
+          </div>
+        </div>
+      </div>
+    </Card.Header>
+  );
+};
 
 interface TeamSummaryProps {
   team: Team;
@@ -33,31 +55,9 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
     </>
   ));
 
-  let description = team.description;
-  let descriptionTooLong = false;
-  if (description.split(' ').length > DESCRIPTION_WORD_LIMIT) {
-    descriptionTooLong = true;
-    description = description.split(' ').slice(0, DESCRIPTION_WORD_LIMIT).join(' ') + '\u2026';
-  }
-
   return (
     <Card bg={theme.cardBg} border={theme.cardBorder}>
-      <Card.Header className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
-        <div className={'d-flex justify-content-between'}>
-          <div className={'d-flex'}>
-            <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
-          </div>
-          <div className={'d-flex'}>
-            <div className={'mr-3'}>
-              {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
-            </div>
-            <div>
-              {team.members.length} Member{team.members.length === 1 ? '' : 's'}
-            </div>
-          </div>
-        </div>
-      </Card.Header>
-
+      <TeamSummaryHeader team={team} open={open} setOpen={setOpen} />
       <Collapse in={open}>
         <div>
           <Card.Body>
@@ -77,18 +77,6 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
                   <b>Projects:</b> {projectsList}
                 </Col>
               </Row>
-              {description && (
-                <Row className={styles.description}>
-                  <Col>
-                    <PageBlock title="">
-                      <ReactMarkdown>{description}</ReactMarkdown>
-                      {descriptionTooLong && (
-                        <Link to={`${routes.TEAMS}/${team.teamId}`}>{`(continue reading)`}</Link>
-                      )}
-                    </PageBlock>
-                  </Col>
-                </Row>
-              )}
             </Container>
           </Card.Body>
         </div>
