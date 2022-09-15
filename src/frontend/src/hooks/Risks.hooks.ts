@@ -10,7 +10,7 @@ import {
   editSingleRisk,
   getRisksForProject
 } from '../apis/Risks.api';
-import { Risk, WbsNumber } from 'shared';
+import { Risk } from 'shared';
 
 /**
  * Custom React hook to get all risks for a certain project.
@@ -25,7 +25,7 @@ export const useGetRisksForProject = (projectId: number) => {
 /**
  * Custom React hook to create a new risk.
  */
-export const useCreateSingleRisk = (wbsNum: WbsNumber) => {
+export const useCreateSingleRisk = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['risks', 'create'],
@@ -35,7 +35,7 @@ export const useCreateSingleRisk = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries([wbsNum]);
+        queryClient.invalidateQueries(['risks']);
       }
     }
   );
@@ -46,11 +46,17 @@ export const useCreateSingleRisk = (wbsNum: WbsNumber) => {
  */
 
 export const useEditSingleRisk = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['risks', 'edit'],
     async (riskPayload: any) => {
       const { data } = await editSingleRisk(riskPayload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['risks']);
+      }
     }
   );
 };
@@ -69,7 +75,7 @@ export const useDeleteSingleRisk = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['risks', 'delete']);
+        queryClient.invalidateQueries(['risks']);
       }
     }
   );

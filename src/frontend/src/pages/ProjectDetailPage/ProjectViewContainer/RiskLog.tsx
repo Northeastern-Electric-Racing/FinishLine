@@ -13,55 +13,51 @@ import styles from '../../../stylesheets/components/RiskLog.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
-  useDeleteSingleRisk
+  useDeleteSingleRisk,
+  useGetRisksForProject
 } from '../../../hooks/Risks.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
-import { WbsNumber } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+
 interface RiskLogProps {
-  risks: Risk[];
   projectId: number;
-  wbsNum: WbsNumber;
 }
 
-const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }) => {
+const sortRisksByDate = (a: Risk, b: Risk) => {
+  return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+};
+
+const RiskLog: React.FC<RiskLogProps> = ({ projectId }) => {
   const auth = useAuth();
   const { userId } = auth.user!;
 
-  const { mutateAsync: createMutateAsync } = useCreateSingleRisk(wbsNum);
+  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
   const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
 
   const [newDetail, setNewDetail] = useState('');
   const [show, setShow] = useState(false);
-  const [risks, setRisks] = useState(risksData.filter((r) => !r.dateDeleted));
+  const risksQuery = useGetRisksForProject(projectId);
 
-  const filterDeletedRisks = (riskArray: Risk[]) => {
-    return riskArray.filter((r) => !r.dateDeleted);
-  };
+  if (risksQuery.isLoading) return <LoadingIndicator />;
+
+  const risks = [
+    ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
+    ...risksQuery.data!.filter((r) => !r.dateDeleted && r.isResolved).sort(sortRisksByDate)
+  ];
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   const handleCheck = async (risk: Risk) => {
-    const newRisks = [...risks];
-
     const payload = {
       userId: userId,
       id: risk.id,
       detail: risk.detail,
       resolved: !risk.isResolved
     };
-
     try {
       await editMutateAsync(payload);
-      newRisks.map((r) => {
-        if (r.id === risk.id) {
-          r.isResolved = !risk.isResolved;
-        }
-        return r;
-      });
-      console.log('finna render');
-      setRisks(newRisks);
     } catch (e) {
       if (e instanceof Error) {
         console.log(e);
@@ -80,8 +76,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
     try {
       await createMutateAsync(payload);
       handleClose();
-      console.log(risksData);
-      setRisks(filterDeletedRisks(risksData));
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -97,7 +91,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
 
     try {
       await deleteMutateAsync(payload);
-      setRisks(risks.filter((r) => !(r.id === id)));
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -124,7 +117,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ risks: risksData, projectId, wbsNum }
                   {risk.detail}
                 </p>
               }
-              defaultChecked={risk.isResolved}
+              checked={risk.isResolved}
               data-testId={`testCheckbox${idx}`}
               onChange={() => handleCheck(risk)}
             />
