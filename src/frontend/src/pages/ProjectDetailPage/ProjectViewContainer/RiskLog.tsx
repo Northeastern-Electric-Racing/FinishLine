@@ -22,7 +22,6 @@ import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber } from 'shared';
-
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
@@ -35,7 +34,9 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
 const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   const history = useHistory();
   const auth = useAuth();
-  const { userId } = auth.user!;
+  const { userId, role } = auth.user!;
+
+  const hasPermissions = role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
 
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
@@ -109,59 +110,74 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   return (
     <PageBlock title={'Risk Log'}>
       <Form>
-        {risks.map((risk, idx) => (
-          <div key={idx} className={styles.container}>
-            <Form.Check
-              label={
-                <p
-                  style={
-                    risk.isResolved
-                      ? { textDecoration: 'line-through' }
-                      : { textDecoration: 'none' }
-                  }
-                >
-                  {risk.detail}
-                </p>
+        {risks.map((risk, idx) =>
+          hasPermissions ? (
+            <div key={idx} className={styles.container}>
+              <Form.Check
+                label={
+                  <p
+                    style={
+                      risk.isResolved
+                        ? { textDecoration: 'line-through' }
+                        : { textDecoration: 'none' }
+                    }
+                  >
+                    {risk.detail}
+                  </p>
+                }
+                checked={risk.isResolved}
+                data-testId={`testCheckbox${idx}`}
+                onChange={() => handleCheck(risk)}
+              />
+              {risk.isResolved ? (
+                <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
+                  <Button
+                    variant="danger"
+                    data-testId="deleteButton"
+                    onClick={() => handleDelete(risk.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+                  <Button
+                    variant="success"
+                    data-testId="convertButton"
+                    onClick={() => {
+                      history.push(
+                        routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                          wbsPipe(wbsNum) +
+                          '&riskDetails=' +
+                          encodeURIComponent(risk.detail)
+                      );
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faArrowRight} />
+                  </Button>
+                </OverlayTrigger>
+              )}
+            </div>
+          ) : (
+            <li
+              style={
+                risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }
               }
-              checked={risk.isResolved}
-              data-testId={`testCheckbox${idx}`}
-              onChange={() => handleCheck(risk)}
-            />
-            {risk.isResolved ? (
-              <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
-                <Button
-                  variant="danger"
-                  data-testId="deleteButton"
-                  onClick={() => handleDelete(risk.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </OverlayTrigger>
-            ) : (
-              <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-                <Button
-                  variant="success"
-                  data-testId="convertButton"
-                  onClick={() => {
-                    history.push(
-                      routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                        wbsPipe(wbsNum) +
-                        '&riskDetails=' +
-                        encodeURIComponent(risk.detail)
-                    );
-                  }}
-                >
-                  <FontAwesomeIcon icon={faArrowRight} />
-                </Button>
-              </OverlayTrigger>
-            )}
+              className="mt-2"
+            >
+              {risk.detail}
+            </li>
+          )
+        )}
+        {hasPermissions ? (
+          <div>
+            <Button variant="success" onClick={handleShow}>
+              Add New Risk
+            </Button>
           </div>
-        ))}
-        <div>
-          <Button variant="success" onClick={handleShow}>
-            Add New Risk
-          </Button>
-        </div>
+        ) : (
+          ''
+        )}
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
             <Modal.Title>Add New Risk</Modal.Title>
