@@ -36,7 +36,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   const auth = useAuth();
   const { userId, role } = auth.user!;
 
-  const hasPermissions = true; //role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
+  const hasPermissions = role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
 
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
