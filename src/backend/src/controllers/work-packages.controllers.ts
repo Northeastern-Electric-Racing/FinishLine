@@ -162,11 +162,14 @@ export const createWorkPackage = async (req: Request, res: Response) => {
     })
   );
 
-  const dependenciesIds = dependenciesWBSElems.map((elem) => {
+  const dependenciesIds: number[] = [];
+  // populate dependenciesIds with the element ID's
+  // and return error 400 if any elems are null
+  dependenciesWBSElems.forEach((elem) => {
     if (elem === null) {
       return res.status(400).json({ message: 'One of the dependencies was not found.' });
     }
-    return elem.wbsElementId;
+    dependenciesIds.push(elem.wbsElementId);
   });
 
   // add to the database
