@@ -36,7 +36,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   const auth = useAuth();
   const { userId, role } = auth.user!;
 
-  const hasPermissions = role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
+  const hasPermissions = true; //role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
 
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
@@ -129,15 +129,18 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
   };
 
   const DeleteRiskButton = (risk: Risk) => {
-    if (hasPermissions) {
-      return (
-        <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
-          <Button variant="danger" data-testId="deleteButton" onClick={() => handleDelete(risk.id)}>
-            <FontAwesomeIcon icon={faTrash} />
-          </Button>
-        </OverlayTrigger>
-      );
-    }
+    return (
+      <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
+        <Button
+          variant="danger"
+          data-testId="deleteButton"
+          disabled={!hasPermissions}
+          onClick={() => handleDelete(risk.id)}
+        >
+          <FontAwesomeIcon icon={faTrash} />
+        </Button>
+      </OverlayTrigger>
+    );
   };
 
   return (
@@ -170,7 +173,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
                       ? { textDecoration: 'line-through' }
                       : { textDecoration: 'none' }
                   }
-                  className="mt-3"
+                  className="mb-3"
                 >
                   {risk.detail}
                 </li>
