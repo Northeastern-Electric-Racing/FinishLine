@@ -56,7 +56,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
     <PageBlock
       title=""
     >
-      <Container fluid>
+      <Container fluid style={{'color': '#FFFFFF'}}>
         <Row className={spacer} onClick={setter}>
             <b>Description</b>
             {selected ? <Badge variant="success" style={{'margin': '0 0 0 70%'}}>Selected</Badge>
@@ -128,7 +128,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 
 
   useEffect(() => {
-    fetch('http://localhost:3001/change-requests/7')
+    fetch('http://localhost:3001/change-requests/' + crId)
       .then(function(response) {
         // The response is a Response instance.
         // You parse the data into a useable format using `.json()`
@@ -152,7 +152,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
         <div style={overflow}>
 
             {solutions.map((solution : ProposedSolution, i : number) => {
-              return (<div style={{'cursor': 'pointer', 'height' : '375px', 'width' : 'auto', 'margin' : 'auto', 'display' : 'block'}}>
+              return (<div style={{'cursor': 'pointer', 'width' : 'auto', 'margin' : 'auto', 'display' : 'block'}}>
                         <ProposedSolutionView proposedSolution={solution} selected={selected === i} setter={() => setSelected(i)} />
                       </div>)
             })}
