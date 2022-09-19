@@ -44,4 +44,11 @@ describe('Work Packages', () => {
 
     expect(res.statusCode).toBe(400);
   });
+
+  test('createWorkPackage fails if any elements in the dependencies are null', async () => {
+    const proj = { ...createWorkPackagePayload, dependencies: [null] };
+    const res = await request(app).post('/create').send(proj);
+
+    expect(res.statusCode).toBe(400);
+  });
 });
