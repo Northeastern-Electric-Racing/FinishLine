@@ -12,7 +12,7 @@ import { exampleRisk1, exampleRisk2, exampleRisk3 } from '../../../TestSupport/T
 import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/Auth.hooks';
 import { mockAuth, mockPromiseAxiosResponse } from '../../../TestSupport/TestData/TestUtils.stub';
-import { exampleAdminUser } from '../../../TestSupport/TestData/Users.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../../TestSupport/TestData/Users.stub';
 import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
 import { getRisksForProject } from '../../../../apis/Risks.api';
 import { AxiosResponse } from 'axios';
@@ -50,10 +50,11 @@ describe.skip('Rendering Project Risk Log Component', () => {
     });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(testRisks);
-    render(<RiskLog projectId={exampleProject1.id} />);
+    render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
     expect(screen.getByText('Risk Log')).toBeInTheDocument();
   });
-  it('Renders all of the risks', async () => {
+
+  it('Renders all of the risks and buttons when authorized', async () => {
     mockAuthHook();
     const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
     mockRisks.mockReturnValue(mockPromiseAxiosResponse<Risk[]>(testRisks));
@@ -62,9 +63,30 @@ describe.skip('Rendering Project Risk Log Component', () => {
     });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(testRisks);
-    render(<RiskLog projectId={exampleProject1.id} />);
+    render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
     expect(screen.getByText('Risk #1')).toBeInTheDocument();
     expect(screen.getByText('Risk #2')).toBeInTheDocument();
     expect(screen.getByText('Risk #3')).toBeInTheDocument();
+    expect(screen.getByTestId('deleteButton')).toBeInTheDocument();
+    expect(screen.getByTestId('convertButton')).toBeInTheDocument();
+    expect(screen.getByTestId('testCheckbox1')).toBeInTheDocument();
+  });
+
+  it('Renders all of the risks and buttons when unauthorized', async () => {
+    mockAuthHook(exampleGuestUser);
+    const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
+    mockRisks.mockReturnValue(mockPromiseAxiosResponse<Risk[]>(testRisks));
+    const { result, waitFor } = renderHook(() => useGetRisksForProject(exampleProject1.id), {
+      wrapper
+    });
+    await waitFor(() => result.current.isSuccess);
+    expect(result.current.data).toEqual(testRisks);
+    render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
+    expect(screen.getByText('Risk #1')).toBeInTheDocument();
+    expect(screen.getByText('Risk #2')).toBeInTheDocument();
+    expect(screen.getByText('Risk #3')).toBeInTheDocument();
+    expect(screen.queryByTestId('deleteButton')).not.toBeInTheDocument();
+    expect(screen.getByTestId('convertButton')).toBeInTheDocument();
+    expect(screen.queryByTestId('testCheckbox1')).not.toBeInTheDocument();
   });
 });
