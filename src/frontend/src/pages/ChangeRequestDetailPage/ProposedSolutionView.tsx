@@ -16,7 +16,7 @@ interface ProposedSolutionViewProps {
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution }) => {
   const spacer = 'mb-2';
   return (
-    <PageBlock title="" cardContainerStyle="mb-0">
+    <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">
       <Container fluid>
         <Row className={spacer + ' ' + styles.descLabelContainer}>
           <b>Description</b>
@@ -34,7 +34,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
         <Row className={spacer}>
           <b>Impact</b>
         </Row>
-        <Row className={spacer}>
+        <Row>
           <Col className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
             <b>Budget Impact</b>
           </Col>
