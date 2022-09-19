@@ -59,7 +59,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} />
+      <RiskLog
+        projectId={proj.id}
+        wbsNum={proj.wbsNum}
+        projLead={proj.projectLead}
+        projManager={proj.projectManager}
+      />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList

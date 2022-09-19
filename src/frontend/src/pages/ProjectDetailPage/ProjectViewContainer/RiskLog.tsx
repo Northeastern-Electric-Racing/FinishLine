@@ -21,22 +21,29 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import { useHistory } from 'react-router';
-import { WbsNumber } from 'shared';
+import { WbsNumber, User } from 'shared';
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
+  projLead?: User;
+  projManager?: User;
 }
 
 const sortRisksByDate = (a: Risk, b: Risk) => {
   return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
 };
 
-const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
   const history = useHistory();
   const auth = useAuth();
   const { userId, role } = auth.user!;
 
-  const hasPermissions = role === 'ADMIN' || role === 'APP_ADMIN' || role === 'LEADERSHIP';
+  const hasPermissions =
+    role === 'ADMIN' ||
+    role === 'APP_ADMIN' ||
+    role === 'LEADERSHIP' ||
+    projLead?.userId === userId ||
+    projManager?.userId === userId;
 
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
@@ -181,14 +188,10 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
               {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
             </div>
           ))}
-          {hasPermissions ? (
-            <div>
-              <Button variant="success" onClick={handleShow}>
-                Add New Risk
-              </Button>
-            </div>
-          ) : (
-            <></>
+          {hasPermissions && (
+            <Button variant="success" onClick={handleShow}>
+              Add New Risk
+            </Button>
           )}
         </div>
         <Modal show={show} onHide={handleClose}>
