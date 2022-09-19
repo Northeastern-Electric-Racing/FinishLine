@@ -8,6 +8,7 @@ import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from './ProposedSolutionView';
+import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -35,14 +36,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
       ) : (
         ''
       )}
-      <div
-        style={{
-          maxHeight: '35em',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column-reverse'
-        }}
-      >
+      <div className={styles.proposedSolutionsList}>
         {proposedSolutionsList.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
