@@ -8,11 +8,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
-import { ChangeRequestType } from 'shared';
 
 interface ReviewChangeRequestViewProps {
   crId: number;
-  crType: ChangeRequestType;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
@@ -25,7 +23,6 @@ const schema = yup.object().shape({
 
 const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   crId,
-  crType,
   modalShow,
   onHide,
   onSubmit
@@ -63,18 +60,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
           </Form.Group>
         </Form>
-        {crType === ChangeRequestType.Activation && (
-          <div>
-            NOTE: Accepting this change request will cause the following actions to occur for the
-            associated work package
-            <ul>
-              <li>Its status will be changed to ACTIVE</li>
-              <li>The project lead will be updated to match the change request</li>
-              <li>The project manager will be updated to match this change request</li>
-              <li>TThe start date will be updated to match this change request</li>
-            </ul>
-          </div>
-        )}
       </Modal.Body>
       <Modal.Footer>
         <Button

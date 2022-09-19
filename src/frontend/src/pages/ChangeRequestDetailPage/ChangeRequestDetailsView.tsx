@@ -140,13 +140,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && (
-        <ReviewChangeRequest
-          crType={changeRequest.type}
-          modalShow={modalShow}
-          handleClose={handleClose}
-        />
-      )}
+      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} />}
     </Container>
   );
 };
