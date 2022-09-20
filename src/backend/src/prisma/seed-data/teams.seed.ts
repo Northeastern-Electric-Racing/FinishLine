@@ -75,8 +75,8 @@ const dbSeedTeam2 = {
 
 const dbSeedTeam3 = {
   fields: {
-    teamName: 'Team Rocket',
-    slackId: 'slacky'
+    teamName: 'Huskies',
+    slackId: 'ruff'
   },
   leaderId: 3,
   projectIds: [],

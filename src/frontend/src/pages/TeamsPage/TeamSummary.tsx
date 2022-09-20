@@ -45,7 +45,7 @@ interface TeamSummaryProps {
 const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
-
+  const spacer = 'mb-2';
   const membersList = listPipe(team.members, (t) => fullNamePipe(t));
 
   const projectsList = team.projects.map((project, idx) => (
@@ -62,12 +62,12 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         <div>
           <Card.Body>
             <Container fluid>
-              <Row>
+              <Row className={spacer}>
                 <Col xs={12} md={6}>
                   <b>Lead:</b> {fullNamePipe(team.leader)}
                 </Col>
               </Row>
-              <Row>
+              <Row className={spacer}>
                 <Col xs={12} md={6}>
                   <b>Members:</b> {membersList}
                 </Col>
