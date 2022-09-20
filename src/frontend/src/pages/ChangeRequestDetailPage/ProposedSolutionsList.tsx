@@ -12,7 +12,7 @@ import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolu
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
-  crReviewed: boolean;
+  crReviewed?: boolean;
 }
 
 const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
