@@ -76,7 +76,6 @@ describe('change request details container', () => {
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     expect(screen.getAllByText(exStandardCR.crId, { exact: false }).length).toEqual(2);
-    expect(screen.getByText(exStandardCR.scopeImpact)).toBeInTheDocument();
   });
 
   it('handles the error with message', () => {

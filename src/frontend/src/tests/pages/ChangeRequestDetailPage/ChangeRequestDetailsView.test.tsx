@@ -4,12 +4,7 @@
  */
 
 import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  StageGateChangeRequest,
-  StandardChangeRequest
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
@@ -102,12 +97,6 @@ describe('Change request details standard cr display element tests', () => {
   it('Renders why section', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
-  });
-
-  it('Renders impact section', () => {
-    const cr: StandardChangeRequest = exampleStandardChangeRequest;
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
   });
 });
 
