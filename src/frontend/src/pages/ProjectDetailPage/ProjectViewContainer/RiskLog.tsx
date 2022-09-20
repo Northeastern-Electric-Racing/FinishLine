@@ -21,21 +21,29 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import { useHistory } from 'react-router';
-import { WbsNumber } from 'shared';
-
+import { WbsNumber, User } from 'shared';
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
+  projLead?: User;
+  projManager?: User;
 }
 
 const sortRisksByDate = (a: Risk, b: Risk) => {
   return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
 };
 
-const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
+const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
   const history = useHistory();
   const auth = useAuth();
-  const { userId } = auth.user!;
+  const { userId, role } = auth.user!;
+
+  const hasPermissions =
+    role === 'ADMIN' ||
+    role === 'APP_ADMIN' ||
+    role === 'LEADERSHIP' ||
+    projLead?.userId === userId ||
+    projManager?.userId === userId;
 
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
   const { mutateAsync: editMutateAsync } = useEditSingleRisk();
@@ -106,61 +114,85 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum }) => {
 
   const renderTooltip = (message: string) => <Tooltip id="button-tooltip">{message}</Tooltip>;
 
+  const ConvertToCRButton = (risk: Risk) => {
+    return (
+      <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+        <Button
+          variant="success"
+          data-testId="convertButton"
+          onClick={() => {
+            history.push(
+              routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                wbsPipe(wbsNum) +
+                '&riskDetails=' +
+                encodeURIComponent(risk.detail)
+            );
+          }}
+        >
+          <FontAwesomeIcon icon={faArrowRight} />
+        </Button>
+      </OverlayTrigger>
+    );
+  };
+
+  const DeleteRiskButton = (risk: Risk) => {
+    return (
+      <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
+        <Button
+          variant="danger"
+          data-testId="deleteButton"
+          disabled={!hasPermissions}
+          onClick={() => handleDelete(risk.id)}
+        >
+          <FontAwesomeIcon icon={faTrash} />
+        </Button>
+      </OverlayTrigger>
+    );
+  };
+
   return (
     <PageBlock title={'Risk Log'}>
       <Form>
-        {risks.map((risk, idx) => (
-          <div key={idx} className={styles.container}>
-            <Form.Check
-              label={
-                <p
+        <div className={styles.parentContainer}>
+          {risks.map((risk, idx) => (
+            <div key={idx} className={styles.container}>
+              {hasPermissions ? (
+                <Form.Check
+                  label={
+                    <p
+                      style={
+                        risk.isResolved
+                          ? { textDecoration: 'line-through' }
+                          : { textDecoration: 'none' }
+                      }
+                    >
+                      {risk.detail}
+                    </p>
+                  }
+                  checked={risk.isResolved}
+                  data-testId={`testCheckbox${idx}`}
+                  onChange={() => handleCheck(risk)}
+                />
+              ) : (
+                <li
                   style={
                     risk.isResolved
                       ? { textDecoration: 'line-through' }
                       : { textDecoration: 'none' }
                   }
+                  className="mb-3"
                 >
                   {risk.detail}
-                </p>
-              }
-              checked={risk.isResolved}
-              data-testId={`testCheckbox${idx}`}
-              onChange={() => handleCheck(risk)}
-            />
-            {risk.isResolved ? (
-              <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
-                <Button
-                  variant="danger"
-                  data-testId="deleteButton"
-                  onClick={() => handleDelete(risk.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </OverlayTrigger>
-            ) : (
-              <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-                <Button
-                  variant="success"
-                  data-testId="convertButton"
-                  onClick={() => {
-                    history.push(
-                      routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                        wbsPipe(wbsNum) +
-                        '&riskDetails=' +
-                        encodeURIComponent(risk.detail)
-                    );
-                  }}
-                >
-                  <FontAwesomeIcon icon={faArrowRight} />
-                </Button>
-              </OverlayTrigger>
-            )}
-          </div>
-        ))}
-        <div>
-          <Button variant="success" onClick={handleShow}>
-            Add New Risk
-          </Button>
+                </li>
+              )}
+              {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
+            </div>
+          ))}
+          {hasPermissions && (
+            <Button variant="success" onClick={handleShow}>
+              Add New Risk
+            </Button>
+          )}
         </div>
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
