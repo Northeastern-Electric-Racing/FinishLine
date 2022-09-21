@@ -9,6 +9,7 @@ import { useReviewChangeRequest } from '../../hooks/ChangeRequests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
+import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -29,6 +30,9 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   }
   const { id } = useParams<ParamTypes>();
   const crId = parseInt(id);
+
+  const crType = ChangeRequestDetailsView.arguments.changeRequest.type;
+
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
 
@@ -52,6 +56,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     <ReviewChangeRequestsView
       crId={crId}
       modalShow={modalShow}
+      crType={crType}
       onHide={handleClose}
       onSubmit={handleConfirm}
     />

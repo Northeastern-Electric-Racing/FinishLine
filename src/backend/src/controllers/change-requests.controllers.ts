@@ -5,7 +5,7 @@ import {
   changeRequestTransformer
 } from '../utils/change-requests.utils';
 import { validationResult } from 'express-validator';
-import { Role } from '@prisma/client';
+import { Role, CR_Type, WBS_Element_Status } from '@prisma/client';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -50,7 +50,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
 
   // update change request
-  const update = await prisma.change_Request.update({
+  const updated = await prisma.change_Request.update({
     where: { crId },
     data: {
       reviewer: { connect: { userId: reviewerId } },
@@ -60,8 +60,57 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     }
   });
 
+  // verify wbs element exists
+  const wbsElement = await prisma.wBS_Element.findUnique({
+    where: {
+      wbsElementId: updated.wbsElementId
+    },
+    include: {
+      workPackage: true
+    }
+  });
+
+  if (wbsElement === null)
+    return res
+      .status(404)
+      .json({ message: `wbs element with id #${updated.wbsElementId} not found` });
+
+  const progress: number | undefined = wbsElement.workPackage?.progress;
+
+  if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
+    prisma.work_Package.update({
+      where: { wbsElementId: wbsElement.wbsElementId },
+      data: {
+        wbsElement: {
+          update: {
+            status: WBS_Element_Status.COMPLETE,
+            changes: {
+              createMany: {
+                data: [
+                  {
+                    changeRequestId: crId,
+                    implementerId: reviewerId,
+                    detail: 'Edited WBS element status from ' + wbsElement.status + ' to "COMPLETE"'
+                  },
+                  {
+                    changeRequestId: crId,
+                    implementerId: reviewerId,
+                    detail: 'Edited progress from "' + progress + ' to "100"'
+                  }
+                ]
+              }
+            }
+          }
+        },
+        progress: 100
+      }
+    });
+  }
+
   // TODO: handle errors
-  return res.status(200).json({ message: `Change request #${update.crId} successfully reviewed.` });
+  return res
+    .status(200)
+    .json({ message: `Change request #${updated.crId} successfully reviewed.` });
 };
 
 export const createActivationChangeRequest = async (req: Request, res: Response) => {

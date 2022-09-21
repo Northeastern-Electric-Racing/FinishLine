@@ -1,0 +1,16 @@
+.footer {
+  height: 220px;
+  position: relative;
+}
+
+.warning_message {
+  color: red;
+  position: relative;
+  top: -70px;
+  padding-bottom: 10px;
+}
+
+.buttons_div {
+  position: relative;
+  top: -140px;
+}
