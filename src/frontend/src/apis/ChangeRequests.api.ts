@@ -108,3 +108,31 @@ export const createStageGateChangeRequest = (
     confirmDone
   });
 };
+
+/**
+ * Create a propose solution
+ * @param submitterId The ID of the user creating the change request.
+ * @param crId The ID of the associated change request.
+ * @param description The description of the proposed solution.
+ * @param scopeImpact the scope of the change for the proposed solution.
+ * @param timelineImpact the number of week(s) impact for the proposed solution.
+ * @param budgetImpact the budget in dollars, for the proposed solution.
+ */
+
+export const addProposedSolution = (
+  submitterId: number,
+  crId: number,
+  description: string,
+  scopeImpact: string,
+  timelineImpact: number,
+  budgetImpact: number
+) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestCreateProposeSolution(), {
+    submitterId,
+    crId,
+    description,
+    scopeImpact,
+    timelineImpact,
+    budgetImpact
+  });
+};

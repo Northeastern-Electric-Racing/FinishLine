@@ -11,7 +11,8 @@ import {
   createStageGateChangeRequest,
   getAllChangeRequests,
   getSingleChangeRequest,
-  reviewChangeRequest
+  reviewChangeRequest,
+  addProposedSolution
 } from '../apis/ChangeRequests.api';
 
 /**
@@ -99,6 +100,26 @@ export const useCreateStageGateChangeRequest = () => {
         payload.wbsNum,
         payload.leftoverBudget,
         payload.confirmDone
+      );
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a proposed solution
+ */
+export const useCreateProposeSolution = () => {
+  return useMutation<{ message: string }, Error, any>(
+    ['change requests', 'create', 'propose solution'], // what is this line for?????
+    async (payload: any) => {
+      const { data } = await addProposedSolution(
+        payload.submitterId,
+        payload.crId,
+        payload.description,
+        payload.scopeImpact,
+        payload.timelineImpact,
+        payload.budgetImpact
       );
       return data;
     }

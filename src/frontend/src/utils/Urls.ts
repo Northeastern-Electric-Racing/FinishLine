@@ -48,6 +48,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
+const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 
 /**************** Other Endpoints ****************/
 const version = () =>
@@ -82,6 +83,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
+  changeRequestCreateProposeSolution,
 
   version
 };
