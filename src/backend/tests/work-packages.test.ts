@@ -3,13 +3,10 @@ import express from 'express';
 import workPackageRouter from '../src/routes/work-packages.routes';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
-import { WbsElement } from 'shared';
 
 const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
-
-jest.mock('../src/utils/work-packages.utils');
 
 const batman = {
   userId: 1,
@@ -17,11 +14,8 @@ const batman = {
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
   emailId: 'notbatman',
-  role: Role.APP_ADMIN
-};
-
-const nullReturn = () => {
-  return null;
+  role: Role.APP_ADMIN,
+  googleAuthId: 'b'
 };
 
 const someWBElement = {
@@ -113,7 +107,7 @@ describe('Work Packages', () => {
   });
 
   test('createWorkPackage fails if WBS number does not represent a project', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
     const proj = {
       ...createWorkPackagePayload,
@@ -130,7 +124,7 @@ describe('Work Packages', () => {
   });
 
   test('createWorkPackage fails if any elements in the dependencies are null', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(someWBElement);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
@@ -139,16 +133,5 @@ describe('Work Packages', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('One of the dependencies was not found.');
-  });
-
-  test('findUniqueUser', async () => {
-    app.use('/', workPackageRouter);
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
-
-    await request(app).post('/create').send(createWorkPackagePayload);
-
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
   });
 });
