@@ -102,9 +102,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
 
   if (workPackageNumber !== 0) {
-    return res
-      .status(400)
-      .json({ message: `Given WBS Number ${projectWbsNum.toString()} is not for a project.` });
+    return res.status(400).json({
+      message: `Given WBS Number ${carNumber}.${projectNumber}.${workPackageNumber} is not for a project.`
+    });
   }
 
   if (dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
@@ -133,7 +133,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   if (wbsElem === null) {
     return res
       .status(404)
-      .json({ message: `Could not find element with wbs number: ${projectWbsNum.toString()}` });
+      .json({
+        message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
+      });
   }
 
   const { project } = wbsElem;
@@ -165,12 +167,19 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   const dependenciesIds: number[] = [];
   // populate dependenciesIds with the element ID's
   // and return error 400 if any elems are null
+
+  let dependenciesHasNulls = false;
   dependenciesWBSElems.forEach((elem) => {
     if (elem === null) {
-      return res.status(400).json({ message: 'One of the dependencies was not found.' });
+      dependenciesHasNulls = true;
+      return;
     }
     dependenciesIds.push(elem.wbsElementId);
   });
+
+  if (dependenciesHasNulls) {
+    return res.status(400).json({ message: 'One of the dependencies was not found.' });
+  }
 
   // add to the database
   await prisma.work_Package.create({
