@@ -1,10 +1,9 @@
 import request from 'supertest';
 import express from 'express';
 import workPackageRouter from '../src/routes/work-packages.routes';
-import { CR_Type, Prisma, Role, WBS_Element_Status } from '@prisma/client';
+import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
-import { WbsElement, WbsElementStatus } from 'shared';
-import userRouter from '../src/routes/users.routes';
+import { WbsElement } from 'shared';
 
 const app = express();
 app.use(express.json());
@@ -24,8 +23,6 @@ const batman = {
 const nullReturn = () => {
   return null;
 };
-
-const mockDependency = nullReturn as unknown as jest.Mock<WbsElement>;
 
 const someWBElement = {
   wbsElementId: 1,
@@ -107,8 +104,6 @@ const changeBatmobile = {
   reviewNotes: 'white sucks'
 };
 
-const nulledWBS = null as unknown as jest.Mock<WbsElement>;
-
 describe('Work Packages', () => {
   beforeEach(() => {
     prisma.user.findUnique = jest.fn();
@@ -151,7 +146,7 @@ describe('Work Packages', () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
 
-    const res = await request(app).post('/create').send(createWorkPackagePayload);
+    await request(app).post('/create').send(createWorkPackagePayload);
 
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
