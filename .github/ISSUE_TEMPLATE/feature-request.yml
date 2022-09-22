@@ -1,6 +1,6 @@
-name: New Feature
-description: For any issue related to creating a new feature
-title: "[Area] - Short Description"
+name: Feature Request
+description: Suggest a new feature for the project
+title: '[Area] - Short Description'
 labels: [new feature]
 body:
   - type: textarea
