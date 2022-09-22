@@ -14,7 +14,7 @@ _Any other notes go here_
 
 ## Screenshots
 
-_If you made UI changes you must post screenshots for ALL changes in 1) a normal sized window and 2) smallest possible window_
+_If you made UI changes you must post a screenshot of the whole page for each change in 1) a normal sized window and 2) the smallest possible window_
 
 _If you did any manual testing (e.g., with Postman), put screenshots of the http request and before and after of the db_
 
