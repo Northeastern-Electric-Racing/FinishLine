@@ -20,12 +20,16 @@ interface TeamSummaryHeaderProps {
 
 const TeamSummaryHeader: React.FC<TeamSummaryHeaderProps> = ({ team, open, setOpen }) => {
   return (
-    <Card.Header className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
+    <Card.Header
+      className={styles.header + ' pt-2 pb-2'}
+      onClick={() => setOpen(!open)}
+      aria-expanded={open}
+    >
       <div className={'d-flex justify-content-between'}>
-        <div className={'d-flex'}>
+        <div className={'h5 mb-0 d-flex align-items-center'}>
           <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
         </div>
-        <div className={'d-flex'}>
+        <div className={'d-flex align-items-center'}>
           <div className={'mr-3'}>
             {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
           </div>
@@ -60,7 +64,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
       <TeamSummaryHeader team={team} open={open} setOpen={setOpen} />
       <Collapse in={open}>
         <div>
-          <Card.Body>
+          <Card.Body className="pt-3 pb-3">
             <Container fluid>
               <Row className={spacer}>
                 <Col xs={12} md={6}>
