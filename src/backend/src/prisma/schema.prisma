@@ -247,6 +247,8 @@ model Work_Package {
 model Description_Bullet {
   descriptionId                   Int           @id @default(autoincrement())
   dateAdded                       DateTime      @default(now())
+  userChecked                     String?
+  dateTimeChecked                 DateTime?
   dateDeleted                     DateTime?
   detail                          String
   // Relation references
