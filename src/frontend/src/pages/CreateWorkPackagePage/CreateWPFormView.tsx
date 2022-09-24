@@ -11,6 +11,7 @@ import EditableTextInputList from '../../components/EditableTextInputList';
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
+  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;
@@ -24,6 +25,7 @@ interface CreateWPFormViewProps {
 const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   states,
   dependencies,
+  initialValues,
   depUtils,
   expectedActivities,
   eaUtils,
@@ -46,10 +48,11 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   <Form.Control
                     id="wp-name"
                     name="name"
+                    defaultValue={initialValues.name}
                     type="text"
                     onChange={(e) => name(e.target.value)}
                     required
-                  ></Form.Control>
+                  />
                 </Form.Group>
               </Row>
               <Row>
@@ -58,6 +61,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   <Form.Control
                     id="project-wbs-num"
                     name="wbsNum"
+                    defaultValue={initialValues.wbsNum}
                     type="text"
                     onChange={(e) => wbsNum(e.target.value)}
                     required
@@ -68,6 +72,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   <Form.Control
                     id="crId"
                     name="crId"
+                    defaultValue={initialValues.crId === -1 ? undefined : initialValues.crId}
                     type="number"
                     min={1}
                     onChange={(e) => crId(parseInt(e.target.value))}
@@ -93,6 +98,9 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                     <Form.Control
                       id="duration"
                       name="duration"
+                      defaultValue={
+                        initialValues.duration === -1 ? undefined : initialValues.duration
+                      }
                       aria-label={'duration'}
                       type="number"
                       min={0}

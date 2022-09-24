@@ -6,9 +6,12 @@ import {
   DescriptionBullet,
   calculateEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus
+  calculateTimelineStatus,
+  calculateDuration
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
+import { userTransformer } from './users.utils';
+import { riskQueryArgs, riskTransformer } from './risks.utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -22,6 +25,7 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
     team: true,
     goals: true,
     features: true,
+    risks: riskQueryArgs,
     otherConstraints: true,
     workPackages: {
       include: {
@@ -47,6 +51,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
         team: true,
         goals: true,
         features: true,
+        risks: riskQueryArgs,
         otherConstraints: true,
         workPackages: {
           include: {
@@ -94,13 +99,13 @@ export const projectTransformer = (
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
     status: wbsElement.status as WbsElementStatus,
-    projectLead: projectLead ?? undefined,
-    projectManager: projectManager ?? undefined,
+    projectLead: projectLead ? userTransformer(projectLead) : undefined,
+    projectManager: projectManager ? userTransformer(projectManager) : undefined,
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
       wbsNum,
-      implementer: change.implementer,
+      implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
@@ -112,10 +117,11 @@ export const projectTransformer = (
     slideDeckLink: project.slideDeckLink ?? undefined,
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
-    duration: project.workPackages.reduce((prev, curr) => prev + curr.duration, 0),
+    duration: calculateDuration(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
+    risks: project.risks.map(riskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const expectedProgress = calculatePercentExpectedProgress(
@@ -130,13 +136,17 @@ export const projectTransformer = (
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
         status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead ?? undefined,
-        projectManager: workPackage.wbsElement.projectManager ?? undefined,
+        projectLead: workPackage.wbsElement.projectLead
+          ? userTransformer(workPackage.wbsElement.projectLead)
+          : undefined,
+        projectManager: workPackage.wbsElement.projectManager
+          ? userTransformer(workPackage.wbsElement.projectManager)
+          : undefined,
         changes: workPackage.wbsElement.changes.map((change) => ({
           changeId: change.changeId,
           changeRequestId: change.changeRequestId,
           wbsNum: wbsNumOf(workPackage.wbsElement),
-          implementer: change.implementer,
+          implementer: userTransformer(change.implementer),
           detail: change.detail,
           dateImplemented: change.dateImplemented
         })),

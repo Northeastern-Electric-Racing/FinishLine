@@ -28,6 +28,11 @@ export const wbsPipe = (wbsNum: WbsNumber) => {
   return `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`;
 };
 
+/** Display WBS number as string but always the project number (1.2.3 -> 1.2.0) */
+export const projectWbsPipe = (wbsNum: WbsNumber) => {
+  return wbsPipe({ ...wbsNum, workPackageNumber: 0 });
+};
+
 /** Display user by their name "Joe Shmoe" */
 export const fullNamePipe = (user?: User) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
@@ -71,4 +76,14 @@ export const datePipe = (date: Date) => {
 /** returns a given number as a string with a percent sign */
 export const percentPipe = (percent: number) => {
   return `${percent}%`;
+};
+
+export const numberParamPipe = (param: string | null) => {
+  if (!param) return null;
+  try {
+    const num = parseInt(param);
+    return num;
+  } catch (err) {
+    return null;
+  }
 };

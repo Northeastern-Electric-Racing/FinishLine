@@ -11,6 +11,8 @@ import { useCreateSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
+import { useQuery } from '../../hooks/Utils.hooks';
+import { numberParamPipe } from '../../utils/Pipes';
 
 export interface EditableTextInputListUtils {
   add: (val: any) => void;
@@ -29,12 +31,13 @@ export interface FormStates {
 const CreateWPForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
+  const query = useQuery();
 
-  const [name, setName] = useState('');
-  const [projectWbsNum, setWbsNum] = useState('');
-  const [crId, setCrId] = useState(-1);
+  const [name, setName] = useState(query.get('name') ?? '');
+  const [projectWbsNum, setWbsNum] = useState(query.get('wbs') ?? '');
+  const [crId, setCrId] = useState(numberParamPipe(query.get('crId')) ?? -1);
   const [startDate, setStartDate] = useState('');
-  const [duration, setDuration] = useState(-1);
+  const [duration, setDuration] = useState(numberParamPipe(query.get('duration')) ?? -1);
   const [dependencies, setDependencies] = useState<string[]>([]);
   const [expectedActivities, setExpectedActivities] = useState<string[]>([]);
   const [deliverables, setDeliverables] = useState<string[]>([]);
@@ -104,6 +107,13 @@ const CreateWPForm: React.FC = () => {
     duration: setDuration
   };
 
+  const initialValues = {
+    name,
+    wbsNum: projectWbsNum,
+    crId,
+    duration
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -167,6 +177,7 @@ const CreateWPForm: React.FC = () => {
     <CreateWPFormView
       states={states}
       dependencies={dependencies}
+      initialValues={initialValues}
       depUtils={depUtils}
       expectedActivities={expectedActivities}
       eaUtils={eaUtils}

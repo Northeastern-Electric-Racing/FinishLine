@@ -44,7 +44,6 @@ const batman = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',
-  googleAuthId: 'google',
   email: 'notbatman@gmail.com',
   emailId: 'notbatman',
   role: Role.APP_ADMIN
@@ -82,7 +81,7 @@ describe('Projects', () => {
   test('newProject works', async () => {
     mockGetChangeRequestReviewState.mockResolvedValue(true);
     mockGetHighestProjectNumber.mockResolvedValue(0);
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
       wbsElementId: 1,
       status: 'ACTIVE',
