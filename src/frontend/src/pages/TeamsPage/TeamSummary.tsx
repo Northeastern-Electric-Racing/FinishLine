@@ -12,35 +12,27 @@ import { routes } from '../../utils/Routes';
 import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
 
-interface TeamSummaryHeaderProps {
-  team: Team;
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-const TeamSummaryHeader: React.FC<TeamSummaryHeaderProps> = ({ team, open, setOpen }) => {
-  return (
-    <Card.Header
-      className={styles.header + ' pt-2 pb-2'}
-      onClick={() => setOpen(!open)}
-      aria-expanded={open}
-    >
-      <div className={'d-flex justify-content-between'}>
-        <div className={'h5 mb-0 d-flex align-items-center'}>
-          <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
+const renderTeamSummaryHeader = (team: Team, open: boolean, setOpen: (open: boolean) => void) => (
+  <Card.Header
+    className={styles.header + ' pt-2 pb-2'}
+    onClick={() => setOpen(!open)}
+    aria-expanded={open}
+  >
+    <div className={'d-flex justify-content-between'}>
+      <div className={'h5 mb-0 d-flex align-items-center'}>
+        <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
+      </div>
+      <div className={'d-flex align-items-center'}>
+        <div className={'mr-3'}>
+          {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
         </div>
-        <div className={'d-flex align-items-center'}>
-          <div className={'mr-3'}>
-            {team.projects.length} Project{team.projects.length === 1 ? '' : 's'}
-          </div>
-          <div>
-            {team.members.length} Member{team.members.length === 1 ? '' : 's'}
-          </div>
+        <div>
+          {team.members.length} Member{team.members.length === 1 ? '' : 's'}
         </div>
       </div>
-    </Card.Header>
-  );
-};
+    </div>
+  </Card.Header>
+);
 
 interface TeamSummaryProps {
   team: Team;
@@ -61,7 +53,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
 
   return (
     <Card bg={theme.cardBg} border={theme.cardBorder}>
-      <TeamSummaryHeader team={team} open={open} setOpen={setOpen} />
+      {renderTeamSummaryHeader(team, open, setOpen)}
       <Collapse in={open}>
         <div>
           <Card.Body className="pt-3 pb-3">
