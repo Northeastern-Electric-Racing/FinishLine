@@ -66,7 +66,6 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
   });
 
-
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
     where: {
@@ -77,10 +76,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     }
   });
 
-  if (wbsElement === null)
+  if (!wbsElement) {
     return res
       .status(404)
       .json({ message: `wbs element with id #${updated.wbsElementId} not found` });
+  }
 
   const progress: number | undefined = wbsElement.workPackage?.progress;
 
@@ -119,10 +119,13 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
           }
         },
         progress: 100
+      }
+    });
+  }
 
   // if it's an activation cr and being accepted, we can do some stuff to the associated work package
-  if (update.type === CR_Type.ACTIVATION && update.activationChangeRequest && accepted) {
-    const { activationChangeRequest: actCr, wbsElement } = update;
+  if (updated.type === CR_Type.ACTIVATION && updated.activationChangeRequest && accepted) {
+    const { activationChangeRequest: actCr, wbsElement } = updated;
     const shouldUpdateProjLead = actCr.projectLeadId !== wbsElement.projectLeadId;
     const shouldUpdateProjManager = actCr.projectManagerId !== wbsElement.projectManagerId;
     const shouldChangeStartDate =
@@ -134,9 +137,9 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       const oldPL = await getUserFullName(wbsElement.projectLeadId);
       const newPL = await getUserFullName(actCr.projectLeadId);
       changes.push({
-        changeRequestId: update.crId,
+        changeRequestId: updated.crId,
         implementerId: reviewerId,
-        wbsElementId: update.wbsElementId,
+        wbsElementId: updated.wbsElementId,
         detail: `Project Lead changed from "${oldPL}" to "${newPL}"`
       });
     }
@@ -145,33 +148,33 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       const oldPM = await getUserFullName(wbsElement.projectManagerId);
       const newPM = await getUserFullName(actCr.projectManagerId);
       changes.push({
-        changeRequestId: update.crId,
+        changeRequestId: updated.crId,
         implementerId: reviewerId,
-        wbsElementId: update.wbsElementId,
+        wbsElementId: updated.wbsElementId,
         detail: `Project Lead changed from "${oldPM}" to "${newPM}"`
       });
     }
 
     if (shouldChangeStartDate) {
       changes.push({
-        changeRequestId: update.crId,
+        changeRequestId: updated.crId,
         implementerId: reviewerId,
-        wbsElementId: update.wbsElementId,
+        wbsElementId: updated.wbsElementId,
         detail: `Start Date changed from "${wbsElement.workPackage?.startDate.toLocaleDateString()}"\
                  to "${actCr.startDate.toLocaleDateString()}"`
       });
     }
 
     changes.push({
-      changeRequestId: update.crId,
+      changeRequestId: updated.crId,
       implementerId: reviewerId,
-      wbsElementId: update.wbsElementId,
+      wbsElementId: updated.wbsElementId,
       detail: `Changed status from ${wbsElement.status} to ${WBS_Element_Status.ACTIVE}`
     });
 
     await prisma.change.createMany({ data: changes });
     await prisma.wBS_Element.update({
-      where: { wbsElementId: update.wbsElementId },
+      where: { wbsElementId: updated.wbsElementId },
       data: {
         projectLeadId: actCr.projectLeadId,
         projectManagerId: actCr.projectManagerId,
