@@ -78,7 +78,27 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   const progress: number | undefined = wbsElement.workPackage?.progress;
 
   if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
-    prisma.work_Package.update({
+    const shouldChangeStatus = wbsElement.status !== WBS_Element_Status.COMPLETE;
+    const shouldChangeProgress = progress !== 100;
+
+    const changesList = [];
+    if (shouldChangeStatus) {
+      changesList.push({
+        changeRequestId: crId,
+        implementerId: reviewerId,
+        detail: `Changed status from ${wbsElement.status} to ${WBS_Element_Status.COMPLETE}`
+      });
+    }
+
+    if (shouldChangeProgress) {
+      changesList.push({
+        changeRequestId: crId,
+        implementerId: reviewerId,
+        detail: `Changed progress from ${progress} to 100`
+      });
+    }
+
+    await prisma.work_Package.update({
       where: { wbsElementId: wbsElement.wbsElementId },
       data: {
         wbsElement: {
@@ -86,18 +106,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
             status: WBS_Element_Status.COMPLETE,
             changes: {
               createMany: {
-                data: [
-                  {
-                    changeRequestId: crId,
-                    implementerId: reviewerId,
-                    detail: 'Edited WBS element status from ' + wbsElement.status + ' to "COMPLETE"'
-                  },
-                  {
-                    changeRequestId: crId,
-                    implementerId: reviewerId,
-                    detail: 'Edited progress from "' + progress + ' to "100"'
-                  }
-                ]
+                data: changesList
               }
             }
           }
