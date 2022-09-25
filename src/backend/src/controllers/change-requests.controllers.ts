@@ -35,7 +35,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
 
   const { body } = req;
-  const { reviewerId, crId, reviewNotes, accepted } = body;
+  const { reviewerId, crId, reviewNotes, accepted, psId } = body;
 
   // verify that the user is allowed review change requests
   const reviewer = await prisma.user.findUnique({ where: { userId: reviewerId } });
@@ -53,6 +53,27 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
+
+  // if Scope CR, make sure that a proposed solution is selected before approving
+  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
+  if (foundScopeCR) {
+    if (!psId)
+      return res
+        .status(400)
+        .json({ message: 'No proposed solution selected for scope change request' });
+    const foundPs = await prisma.proposed_Solution.findUnique({
+      where: { proposedSolutionId: psId }
+    });
+    if (!foundPs || foundPs.changeRequestId !== crId)
+      return res.status(400).json({ message: `Proposed solution with id #${psId} not found for change request #${crId}` });
+    // update proposed solution
+    await prisma.proposed_Solution.update({
+      where: { proposedSolutionId: psId },
+      data: {
+        approved: true
+      }
+    });
+  }
 
   // update change request
   const updated = await prisma.change_Request.update({

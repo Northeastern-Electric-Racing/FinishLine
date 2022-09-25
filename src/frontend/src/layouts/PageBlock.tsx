@@ -11,6 +11,7 @@ interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
   cardContainerStyle?: string;
+  cardBodyStyle?: string;
 }
 
 const styles = {
@@ -29,13 +30,14 @@ const PageBlock: React.FC<PageBlockProps> = ({
   title,
   headerRight,
   children,
-  cardContainerStyle = 'mb-3'
+  cardContainerStyle = 'mb-3',
+  cardBodyStyle = ''
 }) => {
   const theme = useTheme();
 
   return (
     <Card className={cardContainerStyle} border={theme.cardBorder} bg={theme.cardBg}>
-      <Card.Body>
+      <Card.Body className={cardBodyStyle}>
         <Card.Title style={styles.header}>
           <h5 className={'float-left mb-0'}>{title}</h5>
           <div className={'float-right'}>{headerRight}</div>

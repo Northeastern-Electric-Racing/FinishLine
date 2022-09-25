@@ -58,14 +58,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
       ) : (
         ''
       )}
-      <div
-        style={{
-          maxHeight: '35em',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column-reverse'
-        }}
-      >
+      <div className={styles.proposedSolutionsList}>
         {proposedSolutionsList.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
