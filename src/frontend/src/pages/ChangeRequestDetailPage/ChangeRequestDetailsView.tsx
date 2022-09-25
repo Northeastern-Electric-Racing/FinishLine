@@ -56,6 +56,7 @@ const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
         <ProposedSolutionsList
           proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
           crReviewed={cr.accepted !== undefined}
+          crId={cr.crId}
         />
       </PageBlock>
     );
