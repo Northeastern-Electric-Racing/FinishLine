@@ -9,23 +9,45 @@ import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from './ProposedSolutionView';
 import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
+import { useCreateProposeSolution } from '../../hooks/ChangeRequests.hooks';
+import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useAuth } from '../../hooks/Auth.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
-  crReviewed?: boolean;
+  crReviewed: boolean;
+  crId: number;
 }
 
 const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
   proposedSolutions,
-  crReviewed
+  crReviewed,
+  crId
 }) => {
   const [proposedSolutionsList] = useState<ProposedSolution[]>(proposedSolutions);
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
+  const auth = useAuth();
+  const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
 
-  const addProposedSolution = (data: ProposedSolution) => {
+  const addProposedSolution = async (data: ProposedSolution) => {
     proposedSolutionsList.push(data);
     setShowEditableForm(false);
+    const { description, timelineImpact, scopeImpact, budgetImpact } = data;
+
+    // send the details of new proposed solution to the backend database
+    await mutateAsync({
+      submitterId: auth.user?.userId,
+      crId,
+      description,
+      scopeImpact,
+      timelineImpact,
+      budgetImpact
+    });
   };
+
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   return (
     <>
