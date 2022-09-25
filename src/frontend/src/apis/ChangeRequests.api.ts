@@ -114,9 +114,9 @@ export const createStageGateChangeRequest = (
  * @param submitterId The ID of the user creating the change request.
  * @param crId The ID of the associated change request.
  * @param description The description of the proposed solution.
- * @param scopeImpact the scope of the change for the proposed solution.
- * @param timelineImpact the number of week(s) impact for the proposed solution.
- * @param budgetImpact the budget in dollars, for the proposed solution.
+ * @param scopeImpact The scope of the change for the proposed solution.
+ * @param timelineImpact The number of week(s) impact for the proposed solution.
+ * @param budgetImpact The budget in dollars, for the proposed solution.
  */
 
 export const addProposedSolution = (

@@ -111,7 +111,7 @@ export const useCreateStageGateChangeRequest = () => {
  */
 export const useCreateProposeSolution = () => {
   return useMutation<{ message: string }, Error, any>(
-    ['change requests', 'create', 'propose solution'], // what is this line for?????
+    ['change requests', 'create', 'propose solution'],
     async (payload: any) => {
       const { data } = await addProposedSolution(
         payload.submitterId,

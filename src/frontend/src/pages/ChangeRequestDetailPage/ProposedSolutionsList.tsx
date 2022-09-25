@@ -8,6 +8,7 @@ import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from './ProposedSolutionView';
+import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
 import { useCreateProposeSolution } from '../../hooks/ChangeRequests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
