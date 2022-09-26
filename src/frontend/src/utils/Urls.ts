@@ -49,6 +49,9 @@ const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activati
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 
+/**************** Teams Endpoints ****************/
+const teams = () => `${API_URL}/teams`;
+
 /**************** Other Endpoints ****************/
 const version = () =>
   `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -82,6 +85,8 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
+
+  teams,
 
   version
 };
