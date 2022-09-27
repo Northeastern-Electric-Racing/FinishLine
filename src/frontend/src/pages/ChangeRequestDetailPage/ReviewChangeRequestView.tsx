@@ -72,7 +72,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   });
 
   return (
-    <Modal show={modalShow} onHide={onHide} centered>
+    <Modal show={modalShow} onHide={onHide} style={{ color: 'black' }} centered>
       <Modal.Header
         className={'font-weight-bold'}
         closeButton
@@ -95,7 +95,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                 <ProposedSolutionView
                   proposedSolution={solution}
                   selected={selected === i}
-                  setter={() => setSelected(i)}
+                  onClick={() => setSelected(i)}
                 />
               </div>
             );

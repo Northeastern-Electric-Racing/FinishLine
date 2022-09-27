@@ -8,43 +8,34 @@ import { ProposedSolution } from 'shared';
 import PageBlock from '../layouts/PageBlock';
 import { Badge, Col, Container, Row } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../utils/Pipes';
-import { useTheme } from '../hooks/Theme.hooks';
-
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
   selected: boolean;
-  setter: any;
+  onClick: () => void;
 }
 
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
   proposedSolution,
   selected,
-  setter
+  onClick: setter
 }) => {
-  const styles = {
-    white: {
-      color: 'white'
-    },
-    black: {
-      color: 'black'
-    }
-  };
-
-  const theme = useTheme().name === 'DARK' ? styles.white : styles.black;
-
   const spacer = 'mb-1';
 
   const component = (
-    <PageBlock title="">
-      <Container fluid style={theme}>
-        <Row className={spacer} onClick={setter}>
+    <PageBlock title="" cardContainerStyle="mb-1">
+      <Container onClick={setter} fluid>
+        <Row className={spacer}>
           <b>Description</b>
           {selected ? (
-            <Badge variant="success" style={{ margin: '0 0 0 65%' }}>
+            <Badge
+              className={'mr-3'}
+              variant="success"
+              style={{ marginLeft: '66%', textAlign: 'right' }}
+            >
               Selected
             </Badge>
           ) : (
-            <Badge variant="danger" style={{ margin: '0 0 0 65%' }}>
+            <Badge variant="danger" style={{ marginLeft: '65%', alignContent: 'auto' }}>
               Unselected
             </Badge>
           )}
@@ -68,7 +59,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
           <Col className={spacer}>{weeksPipe(proposedSolution.timelineImpact)}</Col>
         </Row>
         <Row>
-          <Col className={spacer}>
+          <Col className={spacer} xs={7} sm={6} md={4} lg={6} xl={6}>
             <b>Scope Impact</b>
           </Col>
           <Col className={spacer}>{proposedSolution.scopeImpact}</Col>
