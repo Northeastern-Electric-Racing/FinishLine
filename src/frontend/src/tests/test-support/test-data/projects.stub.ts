@@ -9,9 +9,9 @@ import {
   exampleLeadershipUser,
   exampleProjectLeadUser,
   exampleProjectManagerUser
-} from './Users.stub';
-import { exampleWbsProject1, exampleWbsProject2 } from './WbsNumbers.stub';
-import { exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3 } from './WorkPackages.stub';
+} from './users.stub';
+import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
+import { exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3 } from './work-packages.stub';
 
 export const exampleProject1: Project = {
   id: 4,
