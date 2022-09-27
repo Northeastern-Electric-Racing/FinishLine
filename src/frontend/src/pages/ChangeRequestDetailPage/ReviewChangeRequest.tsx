@@ -53,7 +53,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   return (
     <ReviewChangeRequestsView
-      crId={crId}
+      cr={cr}
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}

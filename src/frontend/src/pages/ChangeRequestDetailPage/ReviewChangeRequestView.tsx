@@ -8,13 +8,12 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
-import { ProposedSolution } from 'shared';
-import { useEffect, useState } from 'react';
-import ProposedSolutionView from '../../components/ProposedSolutionView';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
+import { useState } from 'react';
+import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
 
 interface ReviewChangeRequestViewProps {
-  crId: number;
+  cr: ChangeRequest;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
@@ -26,12 +25,12 @@ const schema = yup.object().shape({
 });
 
 const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
-  crId,
+  cr,
   modalShow,
   onHide,
   onSubmit
 }: ReviewChangeRequestViewProps) => {
-  const [solutions, setSolutions] = useState([]);
+  // const [solutions, setSolutions] = useState([]);
   const [selected, setSelected] = useState(-1);
 
   const { register, setValue, getFieldState, reset, handleSubmit } = useForm<FormInput>({
@@ -42,7 +41,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
    * @param value true if review accepted, false if denied
    */
-  const handleAcceptDeny = (value: boolean, proposedSolutionIndex: number) => {
+  const handleAcceptDeny = (value: boolean) => {
     getFieldState('accepted') ? setValue('accepted', value) : register('accepted', { value });
   };
 
@@ -59,55 +58,85 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     'max-height': '300px'
   };
 
-  useEffect(() => {
-    fetch('http://localhost:3001/change-requests/' + crId)
-      .then(function (response) {
-        // The response is a Response instance.
-        // You parse the data into a useable format using `.json()`
-        return response.json();
-      })
-      .then(function (data) {
-        // `data` is the parsed version of the JSON returned from the above endpoint.
-        setSolutions(data['proposedSolutions']); // { "userId": 1, "id": 1, "title": "...", "body": "..." }
-      });
-  });
+  const proposedSolutionStyle = {
+    cursor: 'pointer',
+    width: 'auto',
+    margin: 'auto',
+    display: 'block'
+  };
+
+  if (cr.type === 'ISSUE') {
+    const issueCR = cr as StandardChangeRequest;
+    return (
+      <Modal
+        show={modalShow}
+        onHide={onHide}
+        style={{ color: 'black' }}
+        dialogClassName={'modaltheme'}
+        centered
+      >
+        <Modal.Header
+          className={'font-weight-bold'}
+          closeButton
+        >{`Review Change Request #${cr.crId}`}</Modal.Header>
+        <Modal.Body>
+          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Form.Label>Select Proposed Solution</Form.Label>
+          </Form>
+          <div style={overflow}>
+            {issueCR.proposedSolutions.map((solution: ProposedSolution, i: number) => {
+              return (
+                <div style={proposedSolutionStyle}>
+                  <ProposedSolutionSelectItem
+                    proposedSolution={solution}
+                    selected={selected === i}
+                    onClick={() => setSelected(i)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Form.Group controlId="formReviewNotes">
+              <Form.Label>Additional Comments</Form.Label>
+              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="success"
+            type="submit"
+            form="review-notes-form"
+            onClick={() => {
+              selected > -1 ? handleAcceptDeny(true) : alert('Please select a proposed solution!');
+            }}
+          >
+            Accept
+          </Button>
+          <Button
+            className={'ml-3'}
+            variant="danger"
+            type="submit"
+            form="review-notes-form"
+            onClick={() => {
+              selected > -1 ? handleAcceptDeny(false) : alert('Please select a proposed solution!');
+            }}
+          >
+            Deny
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
 
   return (
-    <Modal
-      show={modalShow}
-      onHide={onHide}
-      style={{ color: 'black' }}
-      dialogClassName={'modaltheme'}
-      centered
-    >
+    <Modal show={modalShow} onHide={onHide} centered>
       <Modal.Header
         className={'font-weight-bold'}
         closeButton
-      >{`Review Change Request #${crId}`}</Modal.Header>
+      >{`Review Change Request #${cr.crId}`}</Modal.Header>
       <Modal.Body>
-        <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-          <Form.Label>Select Proposed Solution</Form.Label>
-        </Form>
-        <div style={overflow}>
-          {solutions.map((solution: ProposedSolution, i: number) => {
-            return (
-              <div
-                style={{
-                  cursor: 'pointer',
-                  width: 'auto',
-                  margin: 'auto',
-                  display: 'block'
-                }}
-              >
-                <ProposedSolutionView
-                  proposedSolution={solution}
-                  selected={selected === i}
-                  onClick={() => setSelected(i)}
-                />
-              </div>
-            );
-          })}
-        </div>
         <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <Form.Group controlId="formReviewNotes">
             <Form.Label>Additional Comments</Form.Label>
@@ -120,11 +149,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           variant="success"
           type="submit"
           form="review-notes-form"
-          onClick={() => {
-            selected > -1
-              ? handleAcceptDeny(true, selected)
-              : alert('Please select a proposed solution!');
-          }}
+          onClick={() => handleAcceptDeny(true)}
         >
           Accept
         </Button>
@@ -133,11 +158,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           variant="danger"
           type="submit"
           form="review-notes-form"
-          onClick={() => {
-            selected > -1
-              ? handleAcceptDeny(false, selected)
-              : alert('Please select a proposed solution!');
-          }}
+          onClick={() => handleAcceptDeny(false)}
         >
           Deny
         </Button>
