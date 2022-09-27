@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import { ProposedSolution } from 'shared';
-import { exampleAdminUser, exampleLeadershipUser } from '../../TestSupport/TestData/Users.stub';
+import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import ProposedSolutionView from '../../../pages/ChangeRequestDetailPage/ProposedSolutionView';
 
 const exampleProposedSolution: ProposedSolution = {

@@ -37,7 +37,6 @@ describe('create new change request page test suite', () => {
     expect(screen.getByLabelText('Type')).toBeInTheDocument();
     expect(screen.getByLabelText('What')).toBeInTheDocument();
     expect(screen.getByLabelText('Why')).toBeInTheDocument();
-    expect(screen.getAllByLabelText(/Impact/).length).toBe(3);
   });
 
   it('renders all buttons', () => {
