@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../TestSupport/TestUtils';
+import { render, screen } from '../../test-support/test-utils';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import { Auth } from '../../../utils/Types';
-import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/Users.stub';
-import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
 import { useQuery } from '../../../hooks/Utils.hooks';
 

@@ -11,13 +11,13 @@ import {
   exampleLeadershipUser,
   exampleProjectLeadUser,
   exampleProjectManagerUser
-} from './Users.stub';
+} from './users.stub';
 import {
   exampleWbsProject1,
   exampleWbsProject2,
   exampleWbsWorkPackage1,
   exampleWbsWorkPackage2
-} from './WbsNumbers.stub';
+} from './wbs-numbers.stub';
 
 export const exampleWorkPackage1: WorkPackage = {
   id: 1,

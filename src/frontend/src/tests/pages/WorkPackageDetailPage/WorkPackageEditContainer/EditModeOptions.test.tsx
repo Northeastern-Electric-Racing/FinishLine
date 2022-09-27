@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../TestSupport/TestUtils';
+import { render, screen } from '../../../test-support/test-utils';
 import EditModeOptions from '../../../../pages/WorkPackageDetailPage/WorkPackageEditContainer/EditModeOptions';
 
 // TODO: better tests here

@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Risk } from '../../../../../shared/src/types/risk-types';
-import { exampleProject1, exampleProject2, exampleProject3 } from './Projects.stub';
-import { exampleMemberUser, exampleProjectLeadUser, exampleProjectManagerUser } from './Users.stub';
+import { Risk } from 'shared/src/types/risk-types';
+import { exampleProject1, exampleProject2, exampleProject3 } from './projects.stub';
+import { exampleMemberUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 
 export const exampleRisk1: Risk = {
   id: 'risk1',
