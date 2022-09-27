@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../TestSupport/TestUtils';
+import { render, screen } from '../../test-support/test-utils';
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import { exampleStandardChangeRequest as cr } from '../../TestSupport/TestData/ChangeRequests.stub';
+import { exampleStandardChangeRequest as cr } from '../../test-support/test-data/change-requests.stub';
 import StandardDetails from '../../../pages/ChangeRequestDetailPage/StandardDetails';
 
 /**

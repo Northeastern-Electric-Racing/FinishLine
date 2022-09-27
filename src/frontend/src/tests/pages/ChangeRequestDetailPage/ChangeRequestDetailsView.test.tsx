@@ -3,15 +3,20 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
-import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
+import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
+import {
+  ActivationChangeRequest,
+  ChangeRequest,
+  StageGateChangeRequest,
+  StandardChangeRequest
+} from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
   exampleAllChangeRequests,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../TestSupport/TestData/ChangeRequests.stub';
+} from '../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
 
 /**
@@ -97,6 +102,12 @@ describe('Change request details standard cr display element tests', () => {
   it('Renders why section', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
+  });
+
+  it('Renders impact section', () => {
+    const cr: StandardChangeRequest = exampleStandardChangeRequest;
+    renderComponent(cr);
+    expect(screen.getByText(`Impact`)).toBeInTheDocument();
   });
 });
 
