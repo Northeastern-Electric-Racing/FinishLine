@@ -4,7 +4,7 @@
  */
 
 import * as yup from 'yup';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
@@ -84,7 +84,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   );
 
   return (
-    <>
+    <Container fluid>
       <PageTitle
         title={'New Change Request'}
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
@@ -201,7 +201,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           </Row>
         </Form>
       </PageBlock>
-    </>
+    </Container>
   );
 };
 
