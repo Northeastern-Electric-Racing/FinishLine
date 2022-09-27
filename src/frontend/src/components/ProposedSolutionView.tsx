@@ -22,7 +22,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
   const spacer = 'mb-1';
 
   const component = (
-    <PageBlock title="" cardContainerStyle="mb-1">
+    <PageBlock title="" cardContainerStyle="mb-0" cardBodyStyle="pt-1 pb-2">
       <Container onClick={setter} fluid>
         <Row className={spacer}>
           <b>Description</b>

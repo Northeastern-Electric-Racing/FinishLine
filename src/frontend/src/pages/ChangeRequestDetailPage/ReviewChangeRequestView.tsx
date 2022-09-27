@@ -11,6 +11,7 @@ import { FormInput } from './ReviewChangeRequest';
 import { ProposedSolution } from 'shared';
 import { useEffect, useState } from 'react';
 import ProposedSolutionView from '../../components/ProposedSolutionView';
+import { useTheme } from '../../hooks/Theme.hooks';
 
 interface ReviewChangeRequestViewProps {
   crId: number;
@@ -72,7 +73,13 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   });
 
   return (
-    <Modal show={modalShow} onHide={onHide} style={{ color: 'black' }} centered>
+    <Modal
+      show={modalShow}
+      onHide={onHide}
+      style={{ color: 'black' }}
+      dialogClassName={'modaltheme'}
+      centered
+    >
       <Modal.Header
         className={'font-weight-bold'}
         closeButton
