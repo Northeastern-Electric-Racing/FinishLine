@@ -30,7 +30,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   onHide,
   onSubmit
 }: ReviewChangeRequestViewProps) => {
-  // const [solutions, setSolutions] = useState([]);
   const [selected, setSelected] = useState(-1);
 
   const { register, setValue, getFieldState, reset, handleSubmit } = useForm<FormInput>({
