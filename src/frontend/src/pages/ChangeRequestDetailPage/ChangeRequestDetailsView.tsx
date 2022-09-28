@@ -23,6 +23,7 @@ import ReviewChangeRequest from './ReviewChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
+import ProposedSolutionsList from './ProposedSolutionsList';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -45,6 +46,22 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <StageGateDetails cr={cr as StageGateChangeRequest} />;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
+  }
+};
+
+const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
+  if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
+    return (
+      <PageBlock title={'Proposed Solutions'}>
+        <ProposedSolutionsList
+          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
+          crReviewed={cr.accepted !== undefined}
+          crId={cr.crId}
+        />
+      </PageBlock>
+    );
+  } else {
+    return <></>;
   }
 };
 
@@ -131,6 +148,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </Container>
       </PageBlock>
       {buildDetails(changeRequest)}
+      {buildProposedSolutions(changeRequest)}
       <ReviewNotes
         reviewer={changeRequest.reviewer}
         reviewNotes={changeRequest.reviewNotes}

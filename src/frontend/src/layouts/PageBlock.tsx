@@ -24,6 +24,7 @@ const styles = {
  * Custom component for a consistent page-building block.
  * @param title The title of the block on the page
  * @param headerRight The optional stuff to display on the right side of the header
+ * @param cardContainerStyle Can be used to override the default card container style
  */
 const PageBlock: React.FC<PageBlockProps> = ({
   title,

@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../TestSupport/TestUtils';
-import { exampleAllWorkPackages } from '../../../TestSupport/TestData/WorkPackages.stub';
+import { render, screen } from '../../../test-support/test-utils';
+import { exampleAllWorkPackages } from '../../../test-support/test-data/work-packages.stub';
 import ProjectGantt from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectGantt';
 
 // Sets up the component under test with the desired values and renders it.

@@ -11,10 +11,10 @@ import {
   exampleActivationChangeRequest,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../TestSupport/TestData/ChangeRequests.stub';
-import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+} from '../../test-support/test-data/change-requests.stub';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { useAllChangeRequests } from '../../../hooks/ChangeRequests.hooks';
-import { routerWrapperBuilder } from '../../TestSupport/TestUtils';
+import { routerWrapperBuilder } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import ChangeRequestsTable, {
   filterCRs

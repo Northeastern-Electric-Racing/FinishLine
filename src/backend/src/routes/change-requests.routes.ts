@@ -21,6 +21,7 @@ changeRequestsRouter.post(
   body('crId').isInt({ min: 0 }).not().isString(),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
+  body('psId').optional().isString().not().isEmpty(),
   reviewChangeRequest
 );
 changeRequestsRouter.post(

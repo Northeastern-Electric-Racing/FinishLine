@@ -9,15 +9,15 @@ import { Auth } from '../../../utils/Types';
 import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR
-} from '../../TestSupport/TestData/ChangeRequests.stub';
+} from '../../test-support/test-data/change-requests.stub';
 import {
   exampleAdminUser,
   exampleAdminUser2,
   exampleGuestUser,
   exampleMemberUser
-} from '../../TestSupport/TestData/Users.stub';
-import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../TestSupport/TestUtils';
-import { mockUseQueryResult, mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
+} from '../../test-support/test-data/users.stub';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
+import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/ChangeRequests.hooks';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
@@ -76,7 +76,6 @@ describe('change request details container', () => {
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     expect(screen.getAllByText(exStandardCR.crId, { exact: false }).length).toEqual(2);
-    expect(screen.getByText(exStandardCR.scopeImpact)).toBeInTheDocument();
   });
 
   it('handles the error with message', () => {
