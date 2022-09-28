@@ -4,7 +4,10 @@
  */
 
 const dbSeedProposedSolution1: any = {
-  description: 'example solution 1 for change request 1',
+  description: 'Titanium spacers should be able to block the jet fuel',
+  timelineImpact: 2,
+  budgetImpact: 75,
+  scopeImpact: 'Design and machine titanium spacers',
   changeRequestId: 1,
   createdByUserId: 2,
   dateCreated: new Date('09/22/22 10:11:23'),
@@ -12,7 +15,10 @@ const dbSeedProposedSolution1: any = {
 };
 
 const dbSeedProposedSolution2: any = {
-  description: 'example solution 1 for change request 2',
+  description: 'Change the current design',
+  timelineImpact: 5,
+  budgetImpact: 20,
+  scopeImpact: 'Modify bodyworks to integrate side panels into the body',
   changeRequestId: 2,
   createdByUserId: 3,
   dateCreated: new Date('09/23/22 17:26:13'),
@@ -20,7 +26,10 @@ const dbSeedProposedSolution2: any = {
 };
 
 const dbSeedProposedSolution3: any = {
-  description: 'example solution 2 for change request 2',
+  description: 'Add to the current design',
+  timelineImpact: 4,
+  budgetImpact: 25,
+  scopeImpact: 'New division of bodywork panels and adding removable mounting method',
   changeRequestId: 2,
   createdByUserId: 3,
   dateCreated: new Date('09/23/22 17:28:45'),
@@ -28,7 +37,10 @@ const dbSeedProposedSolution3: any = {
 };
 
 const dbSeedProposedSolution4: any = {
-  description: 'example solution 1 for change request 3',
+  description: 'Avoid using instron entirely',
+  timelineImpact: 3,
+  budgetImpact: 50,
+  scopeImpact: 'Reduce complexity without Instron',
   changeRequestId: 3,
   createdByUserId: 4,
   dateCreated: new Date('09/24/22 14:52:07'),
@@ -36,7 +48,10 @@ const dbSeedProposedSolution4: any = {
 };
 
 const dbSeedProposedSolution5: any = {
-  description: 'example solution 2 for change request 3',
+  description: 'Look for other options other than those mentioned',
+  timelineImpact: 1,
+  budgetImpact: 120,
+  scopeImpact: 'Find replacement and check feasibility',
   changeRequestId: 3,
   createdByUserId: 4,
   dateCreated: new Date('09/24/22 14:55:32'),
@@ -44,7 +59,10 @@ const dbSeedProposedSolution5: any = {
 };
 
 const dbSeedProposedSolution6: any = {
-  description: 'example solution 3 for change request 3',
+  description: 'No changes made',
+  timelineImpact: 4,
+  budgetImpact: 55,
+  scopeImpact: 'Continue using Instron, maintain current complexity',
   changeRequestId: 3,
   createdByUserId: 4,
   dateCreated: new Date('09/25/22 15:01:28'),

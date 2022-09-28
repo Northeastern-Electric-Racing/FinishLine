@@ -111,16 +111,12 @@ const performSeed: () => Promise<void> = async () => {
   }
 
   for (const seedProposedSolution of dbSeedAllProposedSolutions) {
-    const crData = await prisma.scope_CR.findUnique({
-      where: { changeRequestId: seedProposedSolution.changeRequestId }
-    });
-
     await prisma.proposed_Solution.create({
       data: {
         description: seedProposedSolution.description,
-        timelineImpact: crData?.timelineImpact ?? 0,
-        scopeImpact: crData?.scopeImpact ?? '',
-        budgetImpact: crData?.budgetImpact ?? 0,
+        timelineImpact: seedProposedSolution.timelineImpact,
+        scopeImpact: seedProposedSolution.scopeImpact,
+        budgetImpact: seedProposedSolution.budgetImpact,
         changeRequestId: seedProposedSolution.changeRequestId,
         createdByUserId: seedProposedSolution.createdByUserId,
         dateCreated: seedProposedSolution.dateCreated,
