@@ -5,15 +5,23 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Badge, Col, Container, Row } from 'react-bootstrap';
+import { Badge, Button, Col, Container, Row } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionView.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
+  showDeleteButton?: boolean;
+  onDelete?: (proposedSolution: ProposedSolution) => void;
 }
 
-const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution }) => {
+const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
+  proposedSolution,
+  showDeleteButton,
+  onDelete
+}) => {
   const spacer = 'mb-2';
   return (
     <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">
@@ -26,6 +34,16 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
                 Approved
               </Badge>
             </b>
+          ) : null}
+          {showDeleteButton && onDelete !== undefined ? (
+            <Button
+              variant="danger"
+              onClick={() => {
+                onDelete(proposedSolution);
+              }}
+            >
+              <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+            </Button>
           ) : null}
         </Row>
         <Row className={spacer}>

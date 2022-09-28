@@ -9,7 +9,7 @@ import { useTheme } from '../../../hooks/Theme.hooks';
 import { datePipe } from '../../../utils/Pipes';
 import themes from '../../../utils/Themes';
 import { Theme } from '../../../utils/Types';
-import { exampleActivationChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
+import { exampleActivationChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ActivationDetails from '../../../pages/ChangeRequestDetailPage/ActivationDetails';
 
 jest.mock('../../../hooks/Theme.hooks');

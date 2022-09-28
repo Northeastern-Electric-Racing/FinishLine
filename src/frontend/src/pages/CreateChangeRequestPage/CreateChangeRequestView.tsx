@@ -4,7 +4,7 @@
  */
 
 import * as yup from 'yup';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
@@ -12,6 +12,7 @@ import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -83,7 +84,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   );
 
   return (
-    <>
+    <Container fluid>
       <PageTitle
         title={'New Change Request'}
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
@@ -126,7 +127,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-
           <Row className="mx-2 justify-content-start">
             <Col>
               <Form.Group controlId="formWhat" className="mx-2">
@@ -186,68 +186,22 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-
-          <Row className="mx-2 justify-content-start">
-            <Col>
-              <Form.Group controlId="formScopeImpact" className="mx-2">
-                <Form.Label>Scope Impact</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  cols={50}
-                  {...register('scopeImpact')}
-                  placeholder="What do you think the impact to scope is?"
-                  isInvalid={formState.errors.scopeImpact?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.scopeImpact?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={4} md={4} lg={4} xl={4}>
-              <Form.Group controlId="formTimelineImpact" className="mx-2">
-                <Form.Label>Timeline Impact</Form.Label>
-                <InputGroup>
-                  <Form.Control
-                    {...register('timelineImpact')}
-                    placeholder="# needed"
-                    isInvalid={formState.errors.timelineImpact?.message !== undefined}
-                  />
-                  <InputGroup.Append>
-                    <InputGroup.Text>weeks</InputGroup.Text>
-                  </InputGroup.Append>
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.timelineImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-
-              <Form.Group controlId="formBudgetImpact" className="mx-2">
-                <Form.Label>Budget Impact</Form.Label>
-                <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text>$</InputGroup.Text>
-                  </InputGroup.Prepend>
-                  <Form.Control
-                    {...register('budgetImpact')}
-                    placeholder="$ needed"
-                    isInvalid={formState.errors.budgetImpact?.message !== undefined}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.budgetImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mx-2 justify-content-end">
+          <PageBlock title="Proposed Solutions">
+            {' '}
+            <Row className="mx-2 justify-content-start">
+              <Col className="mx-2">
+                <CreateProposedSolutionsList />
+              </Col>
+            </Row>
+          </PageBlock>
+          <Row className="mx-2 mt-2 justify-content-end">
             <Button variant="success" type="submit">
               Submit
             </Button>
           </Row>
         </Form>
       </PageBlock>
-    </>
+    </Container>
   );
 };
 

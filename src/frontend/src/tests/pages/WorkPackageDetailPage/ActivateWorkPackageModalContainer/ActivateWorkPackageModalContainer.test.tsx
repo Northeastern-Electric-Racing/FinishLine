@@ -5,17 +5,17 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { render, screen } from '../../../TestSupport/TestUtils';
+import { render, screen } from '../../../test-support/test-utils';
 import { wbsPipe } from '../../../../utils/Pipes';
 import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
-import { exampleWbs1 } from '../../../TestSupport/TestData/WbsNumbers.stub';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import {
   mockUseMutationResult,
   mockUseQueryResult
-} from '../../../TestSupport/TestData/TestUtils.stub';
+} from '../../../test-support/test-data/test-utils.stub';
 import { useCreateActivationChangeRequest } from '../../../../hooks/ChangeRequests.hooks';
-import { exampleAllUsers } from '../../../TestSupport/TestData/Users.stub';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 
 jest.mock('../../../../hooks/Users.hooks');
 

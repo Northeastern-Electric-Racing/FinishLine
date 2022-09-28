@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import ProposedSolutionsList from '../../../pages/ChangeRequestDetailPage/ProposedSolutionsList';
 import { ProposedSolution } from 'shared';
-import { exampleAdminUser, exampleLeadershipUser } from '../../TestSupport/TestData/Users.stub';
+import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -39,7 +39,11 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed 
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} />
+      <ProposedSolutionsList
+        proposedSolutions={proposedSolutions}
+        crReviewed={crReviewed}
+        crId={0}
+      />
     </RouterWrapper>
   );
 };

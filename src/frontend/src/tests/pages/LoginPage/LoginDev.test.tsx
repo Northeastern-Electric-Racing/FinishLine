@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, fireEvent } from '../../TestSupport/TestUtils';
+import { render, screen, fireEvent } from '../../test-support/test-utils';
 import LoginDev from '../../../pages/LoginPage/LoginDev';
 
 /**

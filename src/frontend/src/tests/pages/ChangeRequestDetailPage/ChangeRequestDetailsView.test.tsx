@@ -3,7 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
+import {
+  routerWrapperBuilder,
+  fireEvent,
+  render,
+  screen,
+  act
+} from '../../test-support/test-utils';
 import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
@@ -11,7 +17,7 @@ import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../TestSupport/TestData/ChangeRequests.stub';
+} from '../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
 
 /**
