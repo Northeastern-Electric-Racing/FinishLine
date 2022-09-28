@@ -28,6 +28,11 @@ export const wbsPipe = (wbsNum: WbsNumber) => {
   return `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`;
 };
 
+/** Display WBS number as string but always the project number (1.2.3 -> 1.2.0) */
+export const projectWbsPipe = (wbsNum: WbsNumber) => {
+  return wbsPipe({ ...wbsNum, workPackageNumber: 0 });
+};
+
 /** Display user by their name "Joe Shmoe" */
 export const fullNamePipe = (user?: User) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
