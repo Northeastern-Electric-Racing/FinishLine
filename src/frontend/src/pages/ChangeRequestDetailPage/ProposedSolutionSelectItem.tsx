@@ -20,6 +20,9 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
 }) => {
   const spacer = 'mb-1';
 
+  const selectedStyle = { marginLeft: '66%', alignContent: 'right' };
+  const unselectedStyle = { marginLeft: '65%', alignContent: 'auto' };
+
   const component = (
     <Card className={'mb-3'} bg={'light'} border={'dark'}>
       <Card.Body>
@@ -27,15 +30,11 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
           <Row className={spacer}>
             <b>Description</b>
             {selected ? (
-              <Badge
-                className={'mr-3'}
-                variant="success"
-                style={{ marginLeft: '66%', textAlign: 'right' }}
-              >
+              <Badge className={'mr-3'} variant="success" style={selectedStyle}>
                 Selected
               </Badge>
             ) : (
-              <Badge variant="danger" style={{ marginLeft: '65%', alignContent: 'auto' }}>
+              <Badge variant="danger" style={unselectedStyle}>
                 Unselected
               </Badge>
             )}

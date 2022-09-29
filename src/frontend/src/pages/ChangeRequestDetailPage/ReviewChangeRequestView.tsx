@@ -64,7 +64,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     display: 'block'
   };
 
-  if (cr.type === 'ISSUE') {
+  if (cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER') {
     const issueCR = cr as StandardChangeRequest;
     return (
       <Modal
@@ -89,7 +89,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                   <ProposedSolutionSelectItem
                     proposedSolution={solution}
                     selected={selected === i}
-                    onClick={() => setSelected(i)}
+                    onClick={() => (selected === i ? setSelected(-1) : setSelected(i))}
                   />
                 </div>
               );
