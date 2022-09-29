@@ -6,12 +6,12 @@
 import React from 'react';
 import { UseQueryResult } from 'react-query';
 import { Project } from 'shared';
-import { render, screen } from '../../TestSupport/TestUtils';
+import { render, screen } from '../../test-support/test-utils';
 import { useSingleProject } from '../../../hooks/Projects.hooks';
-import { exampleWbsProject1 } from '../../TestSupport/TestData/WbsNumbers.stub';
-import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectPage from '../../../pages/ProjectDetailPage/ProjectPage';
-import { exampleProject1 } from '../../TestSupport/TestData/Projects.stub';
+import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 
 jest.mock('../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer', () => {
   return {

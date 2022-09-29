@@ -4,13 +4,13 @@
  */
 
 import { WorkPackage } from 'shared';
-import { render, screen, routerWrapperBuilder } from '../../../TestSupport/TestUtils';
+import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
 import { wbsPipe, listPipe, endDatePipe, datePipe } from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
   exampleWorkPackage3
-} from '../../../TestSupport/TestData/WorkPackages.stub';
+} from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageSummary from '../../../../pages/ProjectDetailPage/ProjectViewContainer/WorkPackageSummary';
 
 // Sets up the component under test with the desired values and renders it
