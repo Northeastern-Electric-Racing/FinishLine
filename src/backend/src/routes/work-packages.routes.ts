@@ -7,7 +7,7 @@ import {
   getAllWorkPackages,
   getSingleWorkPackage
 } from '../controllers/work-packages.controllers';
-import intMinZero from 'validate.util.ts';
+import { intMinZero } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', getAllWorkPackages);

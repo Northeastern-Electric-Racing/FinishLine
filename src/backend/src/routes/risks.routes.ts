@@ -6,7 +6,7 @@ import {
   editRisk,
   getRisksForProject
 } from '../controllers/risks.controllers';
-import intMinZero from 'validate.util.ts';
+import { intMinZero } from '../utils/validation.utils';
 const risksRouter = express.Router();
 
 risksRouter.get('/:projectId', getRisksForProject);

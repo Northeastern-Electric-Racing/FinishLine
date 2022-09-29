@@ -7,7 +7,7 @@ import {
 } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import intMinZero from 'validation.util.ts';
+import { intMinZero } from '../utils/validation.utils';
 
 const projectRouter = express.Router();
 
@@ -17,9 +17,9 @@ projectRouter.post(
   '/new',
   intMinZero(body('userId')),
   intMinZero(body('crId')),
-  intMinZero(body('name')),
+  body('name').isString().not().isEmpty(),
   intMinZero(body('carNumber')),
-  intMinZero(body('summary')),
+  body('summary').isString().not().isEmpty(),
   newProject
 );
 projectRouter.post(
@@ -33,10 +33,10 @@ projectRouter.post(
   body('rules').isArray(),
   body('rules.*').isString().not().isEmpty(),
   body('goals').isArray(),
-  intMinZero(body('goals.*.id')),
+  intMinZero(body('goals.*.id').optional()),
   body('goals.*.detail').isString().not().isEmpty(),
   body('features').isArray(),
-  intMinZero(body('features.*.id')),
+  intMinZero(body('features.*.id').optional()),
   body('features.*.detail').isString().not().isEmpty(),
   body('otherConstraints').isArray(),
   intMinZero(body('otherConstraints.*.id').optional()),

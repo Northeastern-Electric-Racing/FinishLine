@@ -10,7 +10,7 @@ import {
   reviewChangeRequest,
   addProposedSolution
 } from '../controllers/change-requests.controllers';
-import intMinZero from 'validation.utils.ts';
+import { intMinZero } from '../utils/validation.utils';
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', getAllChangeRequests);
