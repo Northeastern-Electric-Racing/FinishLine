@@ -7,6 +7,7 @@ import {
 } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
+import intMinZero from 'validation.util.ts';
 
 const projectRouter = express.Router();
 
@@ -14,39 +15,39 @@ projectRouter.get('/', getAllProjects);
 projectRouter.get('/:wbsNum', getSingleProject);
 projectRouter.post(
   '/new',
-  body('userId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
-  body('name').isString().not().isEmpty(),
-  body('carNumber').isInt({ min: 0 }).not().isString(),
-  body('summary').isString().not().isEmpty(),
+  intMinZero(body('userId')),
+  intMinZero(body('crId')),
+  intMinZero(body('name')),
+  intMinZero(body('carNumber')),
+  intMinZero(body('summary')),
   newProject
 );
 projectRouter.post(
   '/edit',
-  body('projectId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('projectId')),
+  intMinZero(body('crId')),
   body('name').isString().not().isEmpty(),
-  body('userId').isInt({ min: 0 }).not().isString(),
-  body('budget').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('userId')),
+  intMinZero(body('budget')),
   body('summary').isString().not().isEmpty(),
   body('rules').isArray(),
   body('rules.*').isString().not().isEmpty(),
   body('goals').isArray(),
-  body('goals.*.id').optional().isInt({ min: 0 }).not().isString(),
+  intMinZero(body('goals.*.id')),
   body('goals.*.detail').isString().not().isEmpty(),
   body('features').isArray(),
-  body('features.*.id').optional().isInt({ min: 0 }).not().isString(),
+  intMinZero(body('features.*.id')),
   body('features.*.detail').isString().not().isEmpty(),
   body('otherConstraints').isArray(),
-  body('otherConstraints.*.id').optional().isInt({ min: 0 }).not().isString(),
+  intMinZero(body('otherConstraints.*.id').optional()),
   body('otherConstraints.*.detail').isString().not().isEmpty(),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
   body('googleDriveFolderLink').isString().not().isEmpty(),
   body('slideDeckLink').isString().not().isEmpty(),
   body('bomLink').isString().not().isEmpty(),
   body('taskListLink').isString().not().isEmpty(),
-  body('projectLead').optional().isInt({ min: 0 }).not().isString(),
-  body('projectManager').optional().isInt({ min: 0 }).not().isString(),
+  intMinZero(body('projectLead').optional()),
+  intMinZero(body('projectManager').optional()),
   editProject
 );
 
