@@ -7,7 +7,7 @@ import {
 } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import intMinZero from 'validation.util.ts';
+import intMinZero from 'validation.utils';
 
 const projectRouter = express.Router();
 
