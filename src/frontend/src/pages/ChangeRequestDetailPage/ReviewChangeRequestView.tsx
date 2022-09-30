@@ -64,7 +64,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     display: 'block'
   };
 
-  const renderProposedSolutionModal: any = (scr: StandardChangeRequest) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (
+    scr: StandardChangeRequest
+  ) => {
     return (
       <Modal
         show={modalShow}
@@ -128,7 +130,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     );
   };
 
-  const renderModal: React.FC<ReviewChangeRequestViewProps> = () => {
+  const renderModal: () => JSX.Element = () => {
     return (
       <Modal show={modalShow} onHide={onHide} centered>
         <Modal.Header
@@ -166,12 +168,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     );
   };
 
-  if (cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER') {
-    const issueCR = cr as StandardChangeRequest;
-    return renderProposedSolutionModal(issueCR);
-  } else {
-    return renderModal;
-  }
+  return cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
+    ? renderProposedSolutionModal(cr as StandardChangeRequest)
+    : renderModal();
 };
 
 export default ReviewChangeRequestsView;
