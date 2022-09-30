@@ -64,8 +64,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     display: 'block'
   };
 
-  if (cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER') {
-    const issueCR = cr as StandardChangeRequest;
+  const renderProposedSolutionModal: any = (scr: StandardChangeRequest) => {
     return (
       <Modal
         show={modalShow}
@@ -83,7 +82,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             <Form.Label>Select Proposed Solution</Form.Label>
           </Form>
           <div style={overflow}>
-            {issueCR.proposedSolutions.map((solution: ProposedSolution, i: number) => {
+            {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
                 <div style={proposedSolutionStyle}>
                   <ProposedSolutionSelectItem
@@ -127,43 +126,52 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
         </Modal.Footer>
       </Modal>
     );
-  }
+  };
 
-  return (
-    <Modal show={modalShow} onHide={onHide} centered>
-      <Modal.Header
-        className={'font-weight-bold'}
-        closeButton
-      >{`Review Change Request #${cr.crId}`}</Modal.Header>
-      <Modal.Body>
-        <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-          <Form.Group controlId="formReviewNotes">
-            <Form.Label>Additional Comments</Form.Label>
-            <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          variant="success"
-          type="submit"
-          form="review-notes-form"
-          onClick={() => handleAcceptDeny(true)}
-        >
-          Accept
-        </Button>
-        <Button
-          className={'ml-3'}
-          variant="danger"
-          type="submit"
-          form="review-notes-form"
-          onClick={() => handleAcceptDeny(false)}
-        >
-          Deny
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
+  const renderModal: React.FC<ReviewChangeRequestViewProps> = () => {
+    return (
+      <Modal show={modalShow} onHide={onHide} centered>
+        <Modal.Header
+          className={'font-weight-bold'}
+          closeButton
+        >{`Review Change Request #${cr.crId}`}</Modal.Header>
+        <Modal.Body>
+          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Form.Group controlId="formReviewNotes">
+              <Form.Label>Additional Comments</Form.Label>
+              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="success"
+            type="submit"
+            form="review-notes-form"
+            onClick={() => handleAcceptDeny(true)}
+          >
+            Accept
+          </Button>
+          <Button
+            className={'ml-3'}
+            variant="danger"
+            type="submit"
+            form="review-notes-form"
+            onClick={() => handleAcceptDeny(false)}
+          >
+            Deny
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+
+  if (cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER') {
+    const issueCR = cr as StandardChangeRequest;
+    return renderProposedSolutionModal(issueCR);
+  } else {
+    return renderModal;
+  }
 };
 
 export default ReviewChangeRequestsView;
