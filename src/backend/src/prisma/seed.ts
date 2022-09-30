@@ -4,12 +4,12 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { dbSeedAllUsers } from './seed-data/users';
-import { dbSeedAllProjects } from './seed-data/projects';
-import { dbSeedAllWorkPackages } from './seed-data/work-packages';
-import { dbSeedAllChangeRequests } from './seed-data/change-requests';
-import { dbSeedAllSessions } from './seed-data/session';
-import { dbSeedAllRisks } from './seed-data/risks';
+import { dbSeedAllUsers } from './seed-data/users.seed';
+import { dbSeedAllProjects } from './seed-data/projects.seed';
+import { dbSeedAllWorkPackages } from './seed-data/work-packages.seed';
+import { dbSeedAllChangeRequests } from './seed-data/change-requests.seed';
+import { dbSeedAllSessions } from './seed-data/session.seed';
+import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 
 const prisma = new PrismaClient();
@@ -36,17 +36,6 @@ const performSeed: () => Promise<void> = async () => {
         goals: { create: seedProject.goals },
         features: { create: seedProject.features },
         otherConstraints: { create: seedProject.otherConstraints }
-      }
-    });
-  }
-
-  for (const seedTeam of dbSeedAllTeams) {
-    await prisma.team.create({
-      data: {
-        ...seedTeam.fields,
-        leaderId: seedTeam.leaderId,
-        projects: { connect: seedTeam.projectIds },
-        members: { connect: seedTeam.memberIds }
       }
     });
   }
