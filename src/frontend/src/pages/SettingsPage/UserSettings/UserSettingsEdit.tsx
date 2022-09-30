@@ -64,7 +64,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
             <Form.Label>
               {'Slack Id '}
               <a href="https://www.workast.com/help/article/how-to-find-a-slack-user-id/">
-                (how to find your Slack ID)
+                (How to find your Slack ID)
               </a>
             </Form.Label>
             <Form.Control
