@@ -65,7 +65,9 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       where: { proposedSolutionId: psId }
     });
     if (!foundPs || foundPs.changeRequestId !== crId)
-      return res.status(400).json({ message: `Proposed solution with id #${psId} not found for change request #${crId}` });
+      return res.status(400).json({
+        message: `Proposed solution with id #${psId} not found for change request #${crId}`
+      });
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
@@ -442,6 +444,12 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   });
   if (!foundCR)
     return res.status(404).json({ message: `change request with id #${body.crId} not found` });
+
+  // ensure the CR is not reviewed yet before adding propose solution
+  if (foundCR.accepted !== null)
+    return res
+      .status(400)
+      .json({ message: `change request with id #${body.crId} is already reviewed!` });
 
   // ensure existence of scope change request
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: body.crId } });

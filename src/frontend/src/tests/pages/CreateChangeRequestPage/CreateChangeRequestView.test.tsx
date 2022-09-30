@@ -14,11 +14,11 @@ const mockHandleSubmit = jest.fn();
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (wbsNum = '') => {
+const renderComponent = (wbsNum = '', crDesc = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CreateChangeRequestsView wbsNum={wbsNum} onSubmit={mockHandleSubmit} />
+      <CreateChangeRequestsView wbsNum={wbsNum} onSubmit={mockHandleSubmit} crDesc={crDesc} />
     </RouterWrapper>
   );
 };

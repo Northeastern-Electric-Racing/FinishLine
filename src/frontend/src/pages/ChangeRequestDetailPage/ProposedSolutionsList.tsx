@@ -16,7 +16,7 @@ import { useAuth } from '../../hooks/Auth.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
-  crReviewed: boolean;
+  crReviewed?: boolean;
   crId: number;
 }
 

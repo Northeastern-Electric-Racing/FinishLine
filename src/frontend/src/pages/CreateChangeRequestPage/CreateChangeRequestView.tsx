@@ -12,6 +12,7 @@ import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import ProposedSolutionsList from '../ChangeRequestDetailPage/ProposedSolutionsList';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -126,7 +127,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-
           <Row className="mx-2 justify-content-start">
             <Col>
               <Form.Group controlId="formWhat" className="mx-2">
@@ -186,7 +186,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-
           <Row className="mx-2 justify-content-start">
             <Col>
               <Form.Group controlId="formScopeImpact" className="mx-2">
@@ -221,7 +220,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   </Form.Control.Feedback>
                 </InputGroup>
               </Form.Group>
-
               <Form.Group controlId="formBudgetImpact" className="mx-2">
                 <Form.Label>Budget Impact</Form.Label>
                 <InputGroup>
@@ -240,7 +238,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-          <Row className="mx-2 justify-content-end">
+          {/* I don't think the scope, budget,and timeline can be removed from here without first updating the backend */}
+          <Row className="mx-2 justify-content-start">
+            <Col className="mx-2">
+              <ProposedSolutionsList proposedSolutions={[]} />
+            </Col>
+          </Row>
+          <Row className="mx-2 mt-2 justify-content-end">
             <Button variant="success" type="submit">
               Submit
             </Button>
