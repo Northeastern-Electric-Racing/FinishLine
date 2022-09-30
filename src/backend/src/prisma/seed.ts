@@ -40,6 +40,17 @@ const performSeed: () => Promise<void> = async () => {
     });
   }
 
+  for (const seedTeam of dbSeedAllTeams) {
+    await prisma.team.create({
+      data: {
+        ...seedTeam.fields,
+        leaderId: seedTeam.leaderId,
+        projects: { connect: seedTeam.projectIds },
+        members: { connect: seedTeam.memberIds }
+      }
+    });
+  }
+
   for (const seedRisk of dbSeedAllRisks) {
     await prisma.risk.create({
       data: {
