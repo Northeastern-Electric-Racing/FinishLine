@@ -38,7 +38,6 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
 
   const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
     setEdit(false);
-    console.log(slackId);
     slackId === undefined
       ? await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme })
       : await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme, slackId });
