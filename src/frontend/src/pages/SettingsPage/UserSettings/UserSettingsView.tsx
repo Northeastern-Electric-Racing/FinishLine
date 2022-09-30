@@ -14,8 +14,11 @@ interface UserSettingsViewProps {
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <Row>
-      <Col md={6} lg={4}>
+      <Col md={4} lg={2}>
         <b>Default Theme:</b> {settings.defaultTheme}
+      </Col>
+      <Col md={6} lg={4}>
+        <b>Slack ID:</b> {settings.slackId === undefined ? '' : settings.slackId}
       </Col>
     </Row>
   );
