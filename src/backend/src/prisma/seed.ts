@@ -10,6 +10,7 @@ import { dbSeedAllWorkPackages } from './seed-data/work-packages';
 import { dbSeedAllChangeRequests } from './seed-data/change-requests';
 import { dbSeedAllSessions } from './seed-data/session';
 import { dbSeedAllRisks } from './seed-data/risks';
+import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 
 const prisma = new PrismaClient();
@@ -107,6 +108,21 @@ const performSeed: () => Promise<void> = async () => {
       };
     }
     await prisma.change_Request.create({ data });
+  }
+
+  for (const seedProposedSolution of dbSeedAllProposedSolutions) {
+    await prisma.proposed_Solution.create({
+      data: {
+        description: seedProposedSolution.description,
+        timelineImpact: seedProposedSolution.timelineImpact,
+        scopeImpact: seedProposedSolution.scopeImpact,
+        budgetImpact: seedProposedSolution.budgetImpact,
+        changeRequestId: seedProposedSolution.changeRequestId,
+        createdByUserId: seedProposedSolution.createdByUserId,
+        dateCreated: seedProposedSolution.dateCreated,
+        approved: seedProposedSolution.approved
+      }
+    });
   }
 };
 
