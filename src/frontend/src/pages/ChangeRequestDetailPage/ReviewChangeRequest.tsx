@@ -9,10 +9,12 @@ import { useReviewChangeRequest } from '../../hooks/ChangeRequests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
+import { ChangeRequest } from 'shared';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
   handleClose: () => void;
+  cr: ChangeRequest;
 }
 
 export interface FormInput {
@@ -22,7 +24,8 @@ export interface FormInput {
 
 const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   modalShow,
-  handleClose
+  handleClose,
+  cr
 }: ReviewChangeRequestProps) => {
   interface ParamTypes {
     id: string;
@@ -50,7 +53,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   return (
     <ReviewChangeRequestsView
-      crId={crId}
+      cr={cr}
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}
