@@ -65,7 +65,9 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       where: { proposedSolutionId: psId }
     });
     if (!foundPs || foundPs.changeRequestId !== crId)
-      return res.status(400).json({ message: `Proposed solution with id #${psId} not found for change request #${crId}` });
+      return res.status(400).json({
+        message: `Proposed solution with id #${psId} not found for change request #${crId}`
+      });
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
@@ -385,9 +387,9 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
       scopeChangeRequest: {
         create: {
           what: body.what,
-          scopeImpact: body.scopeImpact,
-          timelineImpact: body.timelineImpact,
-          budgetImpact: body.budgetImpact,
+          scopeImpact: '',
+          timelineImpact: 0,
+          budgetImpact: 0,
           why: { createMany: { data: body.why } }
         }
       }
