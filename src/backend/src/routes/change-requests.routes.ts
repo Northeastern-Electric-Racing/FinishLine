@@ -18,7 +18,7 @@ changeRequestsRouter.get('/:crId', getChangeRequestByID);
 changeRequestsRouter.post(
   '/review',
   intMinZero(body('reviewerId')),
-  body('crId').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('crId')),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
   reviewChangeRequest
