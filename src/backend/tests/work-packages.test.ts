@@ -117,6 +117,7 @@ describe('Work Packages', () => {
         workPackageNumber: 2
       }
     };
+
     const res = await request(app).post('/create').send(proj);
 
     expect(res.statusCode).toBe(400);

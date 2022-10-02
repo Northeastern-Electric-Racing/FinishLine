@@ -41,14 +41,14 @@ export const getUserSettings = async (req: any, res: any) => {
 
 export const updateUserSettings = async (req: any, res: any) => {
   const userId: number = parseInt(req.params.userId);
-  if (!req.body || !req.body.defaultTheme) {
+  if (!req.body || !req.body.defaultTheme || !req.body.slackId) {
     return res.status(404).json({ message: 'No settings found to update.' });
   }
 
   await prisma.user_Settings.upsert({
     where: { userId },
-    update: { defaultTheme: req.body.defaultTheme },
-    create: { userId, defaultTheme: req.body.defaultTheme }
+    update: { defaultTheme: req.body.defaultTheme, slackId: req.body.slackId },
+    create: { userId, defaultTheme: req.body.defaultTheme, slackId: req.body.slackId }
   });
 
   return res.status(200).json({ message: `Successfully updated settings for user ${userId}.` });
