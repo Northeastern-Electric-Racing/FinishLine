@@ -4,14 +4,14 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { dbSeedAllUsers } from './seed-data/users';
-import { dbSeedAllProjects } from './seed-data/projects';
-import { dbSeedAllWorkPackages } from './seed-data/work-packages';
-import { dbSeedAllChangeRequests } from './seed-data/change-requests';
-import { dbSeedAllSessions } from './seed-data/session';
-import { dbSeedAllRisks } from './seed-data/risks';
-import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions';
+import { dbSeedAllUsers } from './seed-data/users.seed';
+import { dbSeedAllProjects } from './seed-data/projects.seed';
+import { dbSeedAllWorkPackages } from './seed-data/work-packages.seed';
+import { dbSeedAllChangeRequests } from './seed-data/change-requests.seed';
+import { dbSeedAllSessions } from './seed-data/session.seed';
+import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
+import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions';
 
 const prisma = new PrismaClient();
 
