@@ -69,11 +69,23 @@ const dbSeedProposedSolution6: any = {
   approved: false
 };
 
+const dbSeedProposedSolution7: any = {
+  description: 'Use Mithril instead as it is very lightweight and durable.',
+  timelineImpact: 5,
+  budgetImpact: 1000000,
+  scopeImpact: 'Will be difficult to find some',
+  changeRequestId: 4,
+  createdByUserId: 1,
+  dateCreated: new Date('09/29/22 15:01:28'),
+  approved: true
+};
+
 export const dbSeedAllProposedSolutions: any[] = [
   dbSeedProposedSolution1,
   dbSeedProposedSolution2,
   dbSeedProposedSolution3,
   dbSeedProposedSolution4,
   dbSeedProposedSolution5,
-  dbSeedProposedSolution6
+  dbSeedProposedSolution6,
+  dbSeedProposedSolution7
 ];

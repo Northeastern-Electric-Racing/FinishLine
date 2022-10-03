@@ -11,7 +11,7 @@ import { dbSeedAllChangeRequests } from './seed-data/change-requests.seed';
 import { dbSeedAllSessions } from './seed-data/session.seed';
 import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
-import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions';
+import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions.seed';
 
 const prisma = new PrismaClient();
 
