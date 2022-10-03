@@ -1,4 +1,6 @@
 import { WBS_Element_Status } from '@prisma/client';
+import { batman } from './users.test-data';
+import { CR_Type } from '@prisma/client';
 
 export const someProject = {
   wbsElementId: 1,
@@ -32,4 +34,50 @@ export const someProject = {
       }
     ]
   }
+};
+
+export const createWorkPackagePayload = {
+  projectWbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 0
+  },
+  name: 'Pack your bags',
+  crId: 1,
+  userId: batman.userId,
+  startDate: '2022-09-18',
+  duration: 5,
+  dependencies: [
+    {
+      wbsElementId: 65,
+      dateCreated: new Date('11/24/2021'),
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 1,
+      name: 'prereq',
+      status: WBS_Element_Status.COMPLETE
+    }
+  ],
+  expectedActivities: ['ayo'],
+  deliverables: ['ajdhjakfjafja']
+};
+
+export const changeBatmobile = {
+  crId: 1,
+  submitterId: 1,
+  wbsElementId: 65,
+  type: CR_Type.DEFINITION_CHANGE,
+  changes: [
+    {
+      changeRequestId: 1,
+      implementerId: 1,
+      wbsElementId: 65,
+      detail: 'changed batmobile from white (yuck) to black'
+    }
+  ],
+  dateSubmitted: new Date('11/24/2020'),
+  dateReviewed: new Date('11/25/2020'),
+  accepted: true,
+  reviewerId: 1,
+  reviewNotes: 'white sucks'
 };
