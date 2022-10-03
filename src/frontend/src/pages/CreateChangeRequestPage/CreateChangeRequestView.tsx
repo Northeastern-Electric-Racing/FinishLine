@@ -37,19 +37,6 @@ const schema = yup.object().shape({
     .test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
-  scopeImpact: yup.string().required('Scope Impact is required'),
-  timelineImpact: yup
-    .number()
-    .typeError('Timeline Impact must be a number')
-    .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
-    .required('Timeline Impact is required')
-    .integer('Timeline Impact must be an integer'),
-  budgetImpact: yup
-    .number()
-    .typeError('Budget Impact must be a number')
-    .min(0, 'Budget Impact must be greater than or equal to $0')
-    .required('Budget Impact is required')
-    .integer('Budget Impact must be an integer'),
   why: yup
     .array()
     .min(1, 'At least one Why is required')
