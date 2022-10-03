@@ -55,7 +55,7 @@ const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
       <PageBlock title={'Proposed Solutions'}>
         <ProposedSolutionsList
           proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
-          crReviewed={cr.accepted !== undefined}
+          crReviewed={cr.accepted}
           crId={cr.crId}
         />
       </PageBlock>
@@ -158,7 +158,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest}/>}
+      {modalShow && (
+        <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />
+      )}
     </Container>
   );
 };
