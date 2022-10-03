@@ -48,7 +48,8 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewerId,
         reviewPayload.crId,
         reviewPayload.accepted,
-        reviewPayload.reviewNotes
+        reviewPayload.reviewNotes,
+        reviewPayload.psId
       );
       return data;
     }

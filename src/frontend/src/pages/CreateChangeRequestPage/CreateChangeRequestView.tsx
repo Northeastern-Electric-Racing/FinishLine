@@ -13,6 +13,9 @@ import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ProposedSolutionsList from '../ChangeRequestDetailPage/ProposedSolutionsList';
+import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -82,6 +85,16 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
+
+  const { isLoading, isError, data, error } = useAllChangeRequests();
+
+  if (isLoading) return <LoadingIndicator />;
+
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  if (!data) return <ErrorPage></ErrorPage>;
+
+  const newCrId = data[data.length - 1].crId + 1;
 
   return (
     <>
@@ -241,7 +254,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           {/* I don't think the scope, budget,and timeline can be removed from here without first updating the backend */}
           <Row className="mx-2 justify-content-start">
             <Col className="mx-2">
-              <ProposedSolutionsList proposedSolutions={[]} />
+              <ProposedSolutionsList proposedSolutions={[]} crId={newCrId} />
             </Col>
           </Row>
           <Row className="mx-2 mt-2 justify-content-end">

@@ -40,9 +40,19 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
    * @param value true if review accepted, false if denied
+   * @param proposedSolutionIndex the index of the selected proposed solution in the proposed solutions list
    */
   const handleAcceptDeny = (value: boolean, proposedSolutionIndex: number) => {
     getFieldState('accepted') ? setValue('accepted', value) : register('accepted', { value });
+    const selectedProposeSolution = value ? solutions[proposedSolutionIndex] : null;
+    if (selectedProposeSolution !== null) {
+      solutions.map((solution: ProposedSolution, i: number) => {
+        if (i === proposedSolutionIndex) {
+          setValue('psId', solution.id);
+        }
+        return solution.id;
+      });
+    }
   };
 
   /**
