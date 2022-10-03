@@ -83,6 +83,15 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       >
         Create New Work Package
       </Dropdown.Item>
+      <Dropdown.Item
+        as={Link}
+        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${
+          changeRequest.crId
+        }&edit=${true}`}
+        disabled={!isUserAllowedToImplement}
+      >
+        Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
+      </Dropdown.Item>
     </DropdownButton>
   );
 

@@ -10,14 +10,16 @@ import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
 import ProjectEditContainer from './ProjectEditContainer/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { useQuery } from '../../hooks/Utils.hooks';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;
 }
 
 const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
+  const query = useQuery();
   const { isLoading, isError, data, error } = useSingleProject(wbsNum);
-  const [editMode, setEditMode] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
