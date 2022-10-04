@@ -4,7 +4,7 @@ import workPackageRouter from '../src/routes/work-packages.routes';
 import prisma from '../src/prisma/prisma';
 import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
-import { guestUser } from './test-data/users.test-data';
+import { wonderwoman } from './test-data/users.test-data';
 import { createWorkPackagePayload } from './test-data/projects.test-data';
 import { changeBatmobile } from './test-data/projects.test-data';
 const app = express();
@@ -50,7 +50,7 @@ describe('Work Packages', () => {
   });
   test('createWorkPackage fails if user does not have access', async () => {
     
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(guestUser);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
 
     const res = await request(app).post('/create').send(createWorkPackagePayload);
@@ -58,9 +58,6 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Access Denied');
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
   });
 
   test('createWorkPackage fails if user does not exist', async () => {
@@ -71,8 +68,5 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe(`User with id #${createWorkPackagePayload.userId} not found!`);
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
   });
 });

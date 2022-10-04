@@ -20,12 +20,12 @@ export const superman = {
   googleAuthId: 's'
 };
 
-export const guestUser = {
+export const wonderwoman = {
   userId: 3,
-  firstName: 'Bruce',
-  lastName: 'Wayne',
-  email: 'notbatman@gmail.com',
-  emailId: 'notbatman',
+  firstName: 'Wonder',
+  lastName: 'Woman',
+  email: 'amazonian1@savingtheday.com',
+  emailId: 'amazonian1',
   role: Role.GUEST,
-  googleAuthId: 'b'
+  googleAuthId: 'w'
 };
