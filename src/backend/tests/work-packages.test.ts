@@ -11,8 +11,6 @@ const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
 
-
-
 describe('Work Packages', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -49,7 +47,6 @@ describe('Work Packages', () => {
     expect(res.body.message).toBe('One of the dependencies was not found.');
   });
   test('createWorkPackage fails if user does not have access', async () => {
-    
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
 
