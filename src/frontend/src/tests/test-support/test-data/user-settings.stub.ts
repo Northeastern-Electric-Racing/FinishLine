@@ -7,12 +7,14 @@ import { UserSettings } from 'shared';
 
 export const exampleUserSettingsLight: UserSettings = {
   id: 'abc123',
-  defaultTheme: 'LIGHT'
+  defaultTheme: 'LIGHT',
+  slackId: 'sdfsdvsd'
 };
 
 export const exampleUserSettingsDark: UserSettings = {
   id: 'def456',
-  defaultTheme: 'DARK'
+  defaultTheme: 'DARK',
+  slackId: 'lalalal'
 };
 
 export const exampleAllUserSettings: UserSettings[] = [

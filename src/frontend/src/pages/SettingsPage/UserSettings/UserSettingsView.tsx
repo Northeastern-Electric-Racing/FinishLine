@@ -10,6 +10,25 @@ interface UserSettingsViewProps {
   settings: UserSettings;
 }
 
+const renderSlackId = (settings: UserSettings) => {
+  return settings.slackId === undefined ? (
+    <div>
+      <b>Slack ID: </b>
+    </div>
+  ) : (
+    <div>
+      <b>Slack ID: </b>
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
+      >
+        {settings.slackId}
+      </a>
+    </div>
+  );
+};
+
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
@@ -18,7 +37,7 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
         <b>Default Theme:</b> {settings.defaultTheme}
       </Col>
       <Col md={6} lg={4}>
-        <b>Slack ID:</b> {settings.slackId === undefined ? '' : settings.slackId}
+        {renderSlackId(settings)}
       </Col>
     </Row>
   );
