@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -18,6 +18,8 @@ interface CreateChangeRequestViewProps {
   wbsNum: string;
   crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
+  proposedSolutions: ProposedSolution[];
+  setProposedSolutions: (ps: ProposedSolution[]) => void;
 }
 
 const wbsTester = (wbsNum: string | undefined) => {
@@ -58,7 +60,9 @@ const schema = yup.object().shape({
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
   crDesc,
-  onSubmit
+  onSubmit,
+  proposedSolutions,
+  setProposedSolutions
 }) => {
   const { register, handleSubmit, control, formState } = useForm<FormInput>({
     resolver: yupResolver(schema),
@@ -177,7 +181,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             {' '}
             <Row className="mx-2 justify-content-start">
               <Col className="mx-2">
-                <CreateProposedSolutionsList />
+                <CreateProposedSolutionsList
+                  proposedSolutions={proposedSolutions}
+                  setProposedSolutions={setProposedSolutions}
+                />
               </Col>
             </Row>
           </PageBlock>

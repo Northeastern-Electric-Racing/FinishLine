@@ -10,19 +10,24 @@ import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
 
-const CreateProposedSolutionsList: React.FC = () => {
-  const [proposedSolutionsList, setProposedSolutionsList] = useState<ProposedSolution[]>([]);
+interface CreateProposedSolutionsListProps {
+  proposedSolutions: ProposedSolution[];
+  setProposedSolutions: (ps: ProposedSolution[]) => void;
+}
+
+const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = ({
+  proposedSolutions,
+  setProposedSolutions
+}) => {
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
 
   const addProposedSolution = async (data: ProposedSolution) => {
-    proposedSolutionsList.push(data);
+    proposedSolutions.push(data);
     setShowEditableForm(false);
   };
 
   const removeProposedSolution = (data: ProposedSolution) => {
-    setProposedSolutionsList(
-      proposedSolutionsList.filter((proposedSolution) => proposedSolution !== data)
-    );
+    setProposedSolutions(proposedSolutions.filter((proposedSolution) => proposedSolution !== data));
   };
 
   return (
@@ -31,7 +36,7 @@ const CreateProposedSolutionsList: React.FC = () => {
         + Add Proposed Solution
       </Button>
       <div className={styles.proposedSolutionsList}>
-        {proposedSolutionsList.map((proposedSolution, i) => (
+        {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
             key={i}
             proposedSolution={proposedSolution}

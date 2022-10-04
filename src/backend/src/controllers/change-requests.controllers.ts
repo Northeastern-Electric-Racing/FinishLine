@@ -418,9 +418,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
       body.budgetImpact
     );
   }
-  return res.status(200).json({
-    message: `Successfully created standard change request #${createdCR.crId}.`
-  });
+  return res.status(200).json(createdCR.crId);
 };
 
 export const addProposedSolution = async (req: Request, res: Response) => {

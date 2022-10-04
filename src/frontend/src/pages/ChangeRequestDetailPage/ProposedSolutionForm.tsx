@@ -63,7 +63,14 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
 
   return (
     <PageBlock title="" cardContainerStyle="mb-0">
-      <Form id="individual-proposed-solution-form" onSubmit={handleSubmit(onAdd)}>
+      <Form
+        id="individual-proposed-solution-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onAdd)(e);
+        }}
+      >
         <Row className="mx-2 justify-content-start">
           <Col lg={true}>
             <Form.Group controlId="formDescription" className="mx-2">
