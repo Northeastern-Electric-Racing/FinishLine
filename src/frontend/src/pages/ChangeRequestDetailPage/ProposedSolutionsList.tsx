@@ -16,7 +16,7 @@ import { useAuth } from '../../hooks/Auth.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
-  crReviewed: boolean;
+  crReviewed?: boolean;
   crId: number;
 }
 
@@ -51,7 +51,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
 
   return (
     <>
-      {!crReviewed ? (
+      {crReviewed === undefined ? (
         <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
           + Add Proposed Solution
         </Button>

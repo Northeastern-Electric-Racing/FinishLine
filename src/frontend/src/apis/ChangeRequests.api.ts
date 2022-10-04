@@ -40,13 +40,15 @@ export const reviewChangeRequest = (
   reviewerId: number,
   crId: number,
   accepted: boolean,
-  reviewNotes: string
+  reviewNotes: string,
+  psId: string
 ) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsReview(), {
     reviewerId,
     crId,
     accepted,
-    reviewNotes
+    reviewNotes,
+    psId
   });
 };
 

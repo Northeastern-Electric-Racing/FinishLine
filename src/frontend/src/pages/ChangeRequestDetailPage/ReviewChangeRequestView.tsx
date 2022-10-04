@@ -42,6 +42,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
    */
   const handleAcceptDeny = (value: boolean) => {
     getFieldState('accepted') ? setValue('accepted', value) : register('accepted', { value });
+    if (selected !== -1) {
+      setValue('psId', (cr as StandardChangeRequest).proposedSolutions[selected].id);
+    }
   };
 
   /**
@@ -119,9 +122,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             variant="danger"
             type="submit"
             form="review-notes-form"
-            onClick={() => {
-              selected > -1 ? handleAcceptDeny(false) : alert('Please select a proposed solution!');
-            }}
+            onClick={() => handleAcceptDeny(false)}
           >
             Deny
           </Button>
