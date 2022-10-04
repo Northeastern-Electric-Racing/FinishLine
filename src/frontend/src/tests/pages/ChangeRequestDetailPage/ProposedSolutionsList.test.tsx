@@ -35,7 +35,10 @@ const exampleProposedSolutions = [exampleProposedSolution1, exampleProposedSolut
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed = false) => {
+const renderComponent = (
+  proposedSolutions: ProposedSolution[] = [],
+  crReviewed: boolean | undefined = undefined
+) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
@@ -116,7 +119,7 @@ describe('Proposed Solutions List Test Suite', () => {
   });
 
   it('Renders correctly when empty and CR is reviewed', () => {
-    renderComponent([], true);
+    renderComponent([], false);
     expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);

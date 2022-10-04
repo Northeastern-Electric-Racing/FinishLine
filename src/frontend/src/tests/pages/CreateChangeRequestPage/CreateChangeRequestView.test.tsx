@@ -18,7 +18,13 @@ const renderComponent = (wbsNum = '', crDesc = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CreateChangeRequestsView wbsNum={wbsNum} onSubmit={mockHandleSubmit} crDesc={crDesc} />
+      <CreateChangeRequestsView
+        wbsNum={wbsNum}
+        onSubmit={mockHandleSubmit}
+        crDesc={crDesc}
+        proposedSolutions={[]}
+        setProposedSolutions={() => {}}
+      />
     </RouterWrapper>
   );
 };
