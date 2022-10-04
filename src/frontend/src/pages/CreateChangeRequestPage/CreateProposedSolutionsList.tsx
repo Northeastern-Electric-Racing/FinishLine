@@ -22,7 +22,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
 
   const addProposedSolution = async (data: ProposedSolution) => {
-    proposedSolutions.push(data);
+    setProposedSolutions([...proposedSolutions, data]);
     setShowEditableForm(false);
   };
 
