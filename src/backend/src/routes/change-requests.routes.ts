@@ -10,7 +10,7 @@ import {
   reviewChangeRequest,
   addProposedSolution
 } from '../controllers/change-requests.controllers';
-import { intMinZero } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', getAllChangeRequests);
@@ -63,7 +63,7 @@ changeRequestsRouter.post(
   intMinZero(body('budgetImpact')),
   intMinZero(body('timelineImpact')),
   body('why').isArray(),
-  body('why.*.explain').isString().not().isEmpty(),
+  nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   createStandardChangeRequest
 );
@@ -71,8 +71,8 @@ changeRequestsRouter.post(
   '/new/proposed-solution',
   intMinZero(body('submitterId')),
   intMinZero(body('crId')),
-  body('description').isString().not().isEmpty(),
-  body('scopeImpact').isString().not().isEmpty(),
+  nonEmptyString(body('description')),
+  nonEmptyString(body('scopeImpact')),
   intMinZero(body('timelineImpact')),
   intMinZero(body('budgetImpact')),
   addProposedSolution
