@@ -13,7 +13,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CreateProposedSolutionsList />
+      <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
     </RouterWrapper>
   );
 };
