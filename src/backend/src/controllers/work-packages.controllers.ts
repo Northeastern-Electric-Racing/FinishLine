@@ -89,7 +89,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   if (!user) return res.status(404).json({ message: `user with id #${userId} not found!` });
   if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
 
+  console.log('crId:', crId);
   const crReviewed = await getChangeRequestReviewState(crId);
+  console.log(crReviewed);
   if (crReviewed === null) {
     return res.status(404).json({ message: `change request with id #${crId} not found!` });
   }
@@ -131,11 +133,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   });
 
   if (wbsElem === null) {
-    return res
-      .status(404)
-      .json({
-        message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
-      });
+    return res.status(404).json({
+      message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
+    });
   }
 
   const { project } = wbsElem;

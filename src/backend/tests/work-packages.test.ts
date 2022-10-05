@@ -5,6 +5,7 @@ import { CR_Type, WBS_Element_Status } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
 import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
+import * as Utils from '../src/utils/projects.utils';
 
 const app = express();
 app.use(express.json());
@@ -56,6 +57,26 @@ const changeBatmobile = {
   reviewNotes: 'white sucks'
 };
 
+const unreviewedCr = {
+  crId: 69,
+  submitterId: 1,
+  wbsElementId: 65,
+  type: CR_Type.DEFINITION_CHANGE,
+  changes: [
+    {
+      changeRequestId: 1,
+      implementerId: 1,
+      wbsElementId: 65,
+      detail: "this won't get reviewed"
+    }
+  ],
+  dateSubmitted: new Date('11/24/2020'),
+  dateReviewed: null,
+  accepted: null,
+  reviewerId: null,
+  reviewNotes: null
+};
+
 describe('Work Packages', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -90,5 +111,27 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('One of the dependencies was not found.');
+  });
+
+  test('getChangeRequestReviewState returns null when ', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
+    const spy = jest.spyOn(Utils, 'getChangeRequestReviewState');
+
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(spy).toHaveBeenCalledWith(createWorkPackagePayload.crId);
+    expect(spy).toHaveReturnedWith(null);
+  });
+
+  test.only('getChangeRequestReviewState returns false when ', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
+    const spy = jest.spyOn(Utils, 'getChangeRequestReviewState');
+
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(spy).toHaveBeenCalledWith(createWorkPackagePayload.crId);
+    expect(spy).toHaveReturnedWith(false);
   });
 });
