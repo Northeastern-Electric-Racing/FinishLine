@@ -174,7 +174,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: updated.crId,
         implementerId: reviewerId,
         wbsElementId: updated.wbsElementId,
-        detail: `Project Lead changed from "${oldPM}" to "${newPM}"`
+        detail: `Project Manager changed from "${oldPM}" to "${newPM}"`
       });
     }
 
