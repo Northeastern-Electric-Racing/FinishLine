@@ -48,13 +48,6 @@ export const listPipe = <T>(array: T[], transform: (ele: T) => string) => {
   return array.map(transform).join(', ');
 };
 
-/** Formats the end date as a string. */
-export const endDatePipe = (startDate: Date, durWeeks: number) => {
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + durWeeks * 7);
-  return datePipe(endDate);
-};
-
 /** Replaces an empty string with an EM dash. */
 export const emDashPipe = (str: string) => {
   return str.trim() === '' ? '—' : str;

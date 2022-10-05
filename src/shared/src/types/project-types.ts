@@ -40,6 +40,7 @@ export interface Project extends WbsElement {
   slideDeckLink?: string;
   bomLink?: string;
   rules: string[];
+  endDate: Date;
   duration: number;
   goals: DescriptionBullet[];
   features: DescriptionBullet[];

@@ -11,7 +11,7 @@ import {
   faListOl
 } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import { datePipe, dollarsPipe, endDatePipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
+import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
@@ -32,12 +32,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
       : 'n/a';
   const end =
     project.workPackages.length > 0
-      ? endDatePipe(
+      ? datePipe(
           project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          ),
-          project.workPackages.reduce((tot, cur) => tot + cur.duration, 0)
+            (min, cur) => (cur.endDate < min ? cur.endDate : min),
+            project.workPackages[0].endDate
+          )
         )
       : 'n/a';
 

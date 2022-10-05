@@ -31,6 +31,7 @@ export const projectTransformer = (project: Project) => {
   return {
     ...project,
     dateCreated: new Date(project.dateCreated),
+    endDate: new Date(project.endDate),
     workPackages: project.workPackages.map(workPackageTransformer),
     goals: project.goals.map(descriptionBulletTransformer),
     features: project.features.map(descriptionBulletTransformer),
