@@ -22,6 +22,7 @@ import ChangesList from '../../../components/ChangesList';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import WorkPackageSummary from '../ProjectViewContainer/WorkPackageSummary';
+import { useQuery } from '../../../hooks/Utils.hooks';
 
 /**
  * Helper function to turn DescriptionBullets into a list of { id:number, detail:string }.
@@ -40,10 +41,11 @@ interface ProjectEditContainerProps {
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitEditMode }) => {
   const auth = useAuth();
+  const query = useQuery();
   const allUsers = useAllUsers();
   const { mutateAsync } = useEditSingleProject(proj.wbsNum);
 
-  const [crId, setCrId] = useState(-1);
+  const [crId, setCrId] = useState(query.get('crId') || -1);
   const [name, setName] = useState(proj.name);
   const [summary, setSummary] = useState(proj.summary);
   const [budget, setBudget] = useState(proj.budget);
@@ -179,7 +181,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
 
     const payload = {
       projectId: proj.id,
-      crId,
+      crId: Number(crId),
       name,
       userId,
       budget,
@@ -224,6 +226,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
               type="number"
               placeholder="Change Request ID #"
               required
+              value={crId}
               min={0}
               onChange={(e) => setCrId(Number(e.target.value))}
             />

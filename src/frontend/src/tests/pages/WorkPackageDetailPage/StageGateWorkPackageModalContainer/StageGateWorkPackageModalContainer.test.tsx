@@ -4,11 +4,11 @@
  */
 
 import { UseMutationResult } from 'react-query';
-import { render, screen } from '../../../TestSupport/TestUtils';
+import { render, screen } from '../../../test-support/test-utils';
 import { wbsPipe } from '../../../../utils/Pipes';
-import { exampleWbs1 } from '../../../TestSupport/TestData/WbsNumbers.stub';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import { mockUseMutationResult } from '../../../TestSupport/TestData/TestUtils.stub';
+import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
 import { useCreateStageGateChangeRequest } from '../../../../hooks/ChangeRequests.hooks';
 
 jest.mock('../../../../hooks/ChangeRequests.hooks');

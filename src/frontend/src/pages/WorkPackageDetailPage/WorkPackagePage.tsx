@@ -11,14 +11,16 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import WorkPackageEditContainer from './WorkPackageEditContainer/WorkPackageEditContainer';
 import WorkPackageViewContainer from './WorkPackageViewContainer/WorkPackageViewContainer';
+import { useQuery } from '../../hooks/Utils.hooks';
 
 interface WorkPackagePageProps {
   wbsNum: WbsNumber;
 }
 
 const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
+  const query = useQuery();
   const { isLoading, isError, data, error } = useSingleWorkPackage(wbsNum);
-  const [editMode, setEditMode] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
   const auth = useAuth();
   const isGuest = auth.user?.role === 'GUEST';
 

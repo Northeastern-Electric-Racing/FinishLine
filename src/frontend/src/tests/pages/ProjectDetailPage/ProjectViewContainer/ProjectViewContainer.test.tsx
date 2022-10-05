@@ -9,12 +9,12 @@ import {
   routerWrapperBuilder,
   fireEvent,
   act
-} from '../../../TestSupport/TestUtils';
+} from '../../../test-support/test-utils';
 import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/Auth.hooks';
-import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
-import { mockAuth } from '../../../TestSupport/TestData/TestUtils.stub';
-import { exampleAdminUser, exampleGuestUser } from '../../../TestSupport/TestData/Users.stub';
+import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
+import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 
 jest.mock('../../../../hooks/Auth.hooks');

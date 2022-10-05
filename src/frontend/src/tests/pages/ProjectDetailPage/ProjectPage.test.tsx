@@ -6,12 +6,13 @@
 import React from 'react';
 import { UseQueryResult } from 'react-query';
 import { Project } from 'shared';
-import { render, screen } from '../../TestSupport/TestUtils';
+import { render, screen } from '../../test-support/test-utils';
 import { useSingleProject } from '../../../hooks/Projects.hooks';
-import { exampleWbsProject1 } from '../../TestSupport/TestData/WbsNumbers.stub';
-import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectPage from '../../../pages/ProjectDetailPage/ProjectPage';
-import { exampleProject1 } from '../../TestSupport/TestData/Projects.stub';
+import { exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { useQuery } from '../../../hooks/Utils.hooks';
 
 jest.mock('../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer', () => {
   return {
@@ -31,6 +32,13 @@ jest.mock('../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditCont
   };
 });
 
+jest.mock('../../../hooks/Utils.hooks');
+const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
+
+const mockUseQuery = () => {
+  mockedUseQuery.mockReturnValue(new URLSearchParams(''));
+};
+
 jest.mock('../../../hooks/Projects.hooks');
 
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
@@ -48,6 +56,7 @@ const renderComponent = () => {
 
 describe('test suite for Project Page', () => {
   beforeEach(() => {
+    mockUseQuery();
     mockProjectHook(false, false, exampleProject1);
     jest.spyOn(React, 'useState').mockReturnValue([false, jest.fn]);
   });

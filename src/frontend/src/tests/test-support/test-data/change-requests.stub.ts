@@ -17,8 +17,8 @@ import {
   exampleAppAdminUser,
   exampleProjectLeadUser,
   exampleProjectManagerUser
-} from './Users.stub';
-import { exampleWbsWorkPackage1 } from './WbsNumbers.stub';
+} from './users.stub';
+import { exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 
 export const exampleStandardChangeRequest: StandardChangeRequest = {
   crId: 37,
