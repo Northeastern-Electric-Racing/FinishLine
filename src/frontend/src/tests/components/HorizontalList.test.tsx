@@ -4,12 +4,12 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
 import { Theme } from '../../utils/Types';
 import themes from '../../utils/Themes';
 import HorizontalList from '../../components/HorizontalList';
 
-jest.mock('../../hooks/Theme.hooks');
+jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

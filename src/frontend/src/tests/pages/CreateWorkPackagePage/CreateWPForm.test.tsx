@@ -4,15 +4,15 @@
  */
 
 import { render, screen } from '../../test-support/test-utils';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/Types';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
-import { useQuery } from '../../../hooks/Utils.hooks';
+import { useQuery } from '../../../hooks/utils.hooks';
 
-jest.mock('../../../hooks/Auth.hooks');
-jest.mock('../../../hooks/Utils.hooks');
+jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/utils.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;

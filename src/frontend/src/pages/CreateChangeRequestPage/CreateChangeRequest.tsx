@@ -5,12 +5,12 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestExplanation, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import {
   useCreateProposeSolution,
   useCreateStandardChangeRequest
-} from '../../hooks/ChangeRequests.hooks';
-import { useQuery } from '../../hooks/Utils.hooks';
+} from '../../hooks/change-requests.hooks';
+import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/Routes';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';

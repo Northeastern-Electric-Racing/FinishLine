@@ -4,12 +4,12 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
 import { Theme } from '../../utils/Types';
 import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
 
-jest.mock('../../hooks/Theme.hooks');
+jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

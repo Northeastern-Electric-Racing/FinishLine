@@ -6,7 +6,7 @@
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/Routes';
 import Home from '../../../pages/HomePage/Home';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/Types';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
@@ -38,7 +38,7 @@ jest.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
   };
 });
 
-jest.mock('../../../hooks/Auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

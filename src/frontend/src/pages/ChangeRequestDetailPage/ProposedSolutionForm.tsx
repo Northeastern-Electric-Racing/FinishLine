@@ -9,7 +9,7 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
 
 interface ProposedSolutionFormProps {
   description?: string;
