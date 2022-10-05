@@ -5,6 +5,7 @@ import {
   authUserQueryArgs,
   userTransformer
 } from '../utils/users.utils';
+import { validationResult } from 'express-validator';
 
 export const getAllUsers = async (_req: any, res: any) => {
   const users = await prisma.user.findMany();
@@ -41,8 +42,10 @@ export const getUserSettings = async (req: any, res: any) => {
 
 export const updateUserSettings = async (req: any, res: any) => {
   const userId: number = parseInt(req.params.userId);
-  if (!req.body || !req.body.defaultTheme || !req.body.slackId) {
-    return res.status(404).json({ message: 'No settings found to update.' });
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
 
   await prisma.user_Settings.upsert({
