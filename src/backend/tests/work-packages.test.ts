@@ -113,9 +113,9 @@ describe('Work Packages', () => {
     expect(res.body.message).toBe('One of the dependencies was not found.');
   });
 
-  test('getChangeRequestReviewState returns null when ', async () => {
+  test('getChangeRequestReviewState returns null when changeRequest is not found', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
     const spy = jest.spyOn(Utils, 'getChangeRequestReviewState');
 
     const res = await request(app).post('/create').send(createWorkPackagePayload);
@@ -124,7 +124,7 @@ describe('Work Packages', () => {
     expect(spy).toHaveReturnedWith(null);
   });
 
-  test('getChangeRequestReviewState returns false when ', async () => {
+  test('getChangeRequestReviewState returns false when changeRequest has not been reviewed', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
     const spy = jest.spyOn(Utils, 'getChangeRequestReviewState');
