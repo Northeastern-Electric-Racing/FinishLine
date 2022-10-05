@@ -9,20 +9,24 @@ import { useReviewChangeRequest } from '../../hooks/ChangeRequests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
+import { ChangeRequest } from 'shared';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
   handleClose: () => void;
+  cr: ChangeRequest;
 }
 
 export interface FormInput {
   reviewNotes: string;
   accepted: boolean;
+  psId: string;
 }
 
 const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   modalShow,
-  handleClose
+  handleClose,
+  cr
 }: ReviewChangeRequestProps) => {
   interface ParamTypes {
     id: string;
@@ -32,7 +36,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
 
-  const handleConfirm = async ({ reviewNotes, accepted }: FormInput) => {
+  const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined)
       throw new Error('Cannot review change request without being logged in');
@@ -40,7 +44,8 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       reviewerId: auth.user?.userId,
       crId,
       reviewNotes,
-      accepted
+      accepted,
+      psId
     });
   };
 
@@ -50,7 +55,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   return (
     <ReviewChangeRequestsView
-      crId={crId}
+      cr={cr}
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}
