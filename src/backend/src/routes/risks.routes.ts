@@ -19,7 +19,7 @@ risksRouter.post(
 );
 risksRouter.post(
   '/edit',
-  body('userId').isInt().not().isString(),
+  intMinZero(body('userId')),
   nonEmptyString(body('id')),
   nonEmptyString(body('detail')),
   body('resolved').isBoolean(),

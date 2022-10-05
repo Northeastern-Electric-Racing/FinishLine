@@ -59,7 +59,7 @@ changeRequestsRouter.post(
       value === ChangeRequestType.Issue ||
       value === ChangeRequestType.Redefinition
   ),
-  body('scopeImpact').isString().not().isEmpty(),
+  nonEmptyString(body('scopeImpact')),
   intMinZero(body('budgetImpact')),
   intMinZero(body('timelineImpact')),
   body('why').isArray(),
