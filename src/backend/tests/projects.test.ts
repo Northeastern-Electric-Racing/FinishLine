@@ -124,12 +124,12 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  test('createRulesChangesJson with empty old + new lists', async () => {
+  test('createRulesChangesJson with empty old + new lists', () => {
     const rulesChanges = createRulesChangesJson('test', [], [], 1, 1, 1);
     expect(rulesChanges.length).toEqual(0);
   });
 
-  test('createRulesChangesJson with empty new list and non-empty old list', async () => {
+  test('createRulesChangesJson with empty new list and non-empty old list', () => {
     const rules = ['rule1', 'rule2', 'rule3'];
     const rulesChanges = createRulesChangesJson('test', rules, [], 1, 1, 1);
     expect(rulesChanges.length).toEqual(3);
@@ -141,7 +141,7 @@ describe('Projects', () => {
     });
   });
 
-  test('createRulesChangesJson with empty old list and non-empty new list', async () => {
+  test('createRulesChangesJson with empty old list and non-empty new list', () => {
     const rules = ['rule1', 'rule2', 'rule3'];
     const rulesChanges = createRulesChangesJson('test', [], rules, 1, 1, 1);
     expect(rulesChanges.length).toEqual(3);
@@ -153,7 +153,7 @@ describe('Projects', () => {
     });
   });
 
-  test('createRulesChangesJson with non-empty old list and non-empty new list', async () => {
+  test('createRulesChangesJson with non-empty old list and non-empty new list', () => {
     const oldRules = ['rule1', 'rule2', 'rule3'];
     const newRules = ['rule4', 'rule5', 'rule6'];
     const rulesChanges = createRulesChangesJson('test', oldRules, newRules, 1, 1, 1);

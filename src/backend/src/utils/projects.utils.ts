@@ -269,7 +269,6 @@ export const createRulesChangesJson = (
       changes.push({ element, type: 'Added new' });
     }
   });
-
   return changes.map((element) => {
     return {
       changeRequestId: crId,
