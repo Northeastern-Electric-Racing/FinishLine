@@ -124,7 +124,7 @@ describe('Work Packages', () => {
     expect(spy).toHaveReturnedWith(null);
   });
 
-  test.only('getChangeRequestReviewState returns false when ', async () => {
+  test('getChangeRequestReviewState returns false when ', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
     const spy = jest.spyOn(Utils, 'getChangeRequestReviewState');
