@@ -55,9 +55,9 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) =
       <Card.Body>
         <Card.Title style={styles.header}>
           <h5 className={'float-left mb-0'}>{title}</h5>
-          <i
+          <span
             style={collapse ? styles['up-arrow'] : styles['down-arrow']}
-            className={'float-right mx-3 cursor-pointer'}
+            className={'float-right mx-3 cursor-pointer collapser'}
             onClick={() => setCollapse(!collapse)}
           />
           <div className={'float-right'}>{headerRight}</div>
