@@ -8,11 +8,7 @@ export const checkWorkPackageDescriptionBullet = async (req: Request, res: Respo
   }
 
   const { body } = req;
-  const {
-    submitterId,
-    descriptionBulletId,
-  } = body;
+  const { submitterId, descriptionBulletId } = body;
 
   return res.status(200).json(body);
-
 };
