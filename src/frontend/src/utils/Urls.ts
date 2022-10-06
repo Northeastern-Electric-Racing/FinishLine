@@ -48,6 +48,7 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
+const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
@@ -85,6 +86,7 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
+  changeRequestCreateProposeSolution,
 
   teams,
 
