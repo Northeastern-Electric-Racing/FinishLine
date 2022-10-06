@@ -8,6 +8,7 @@ import {
 import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
+import { buildChangeDetail } from '../utils/utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -116,7 +117,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       changesList.push({
         changeRequestId: crId,
         implementerId: reviewerId,
-        detail: `Changed status from ${wbsElement.status} to ${WBS_Element_Status.COMPLETE}`
+        detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.COMPLETE)
       });
     }
 
@@ -124,7 +125,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       changesList.push({
         changeRequestId: crId,
         implementerId: reviewerId,
-        detail: `Changed progress from ${progress} to 100`
+        detail: buildChangeDetail('progress', progress?.toString() || 'null', '100')
       });
     }
 
@@ -163,7 +164,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: updated.crId,
         implementerId: reviewerId,
         wbsElementId: updated.wbsElementId,
-        detail: `Project Lead changed from "${oldPL}" to "${newPL}"`
+        detail: buildChangeDetail('Project Lead', oldPL, newPL)
       });
     }
 
@@ -174,7 +175,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: updated.crId,
         implementerId: reviewerId,
         wbsElementId: updated.wbsElementId,
-        detail: `Project Manager changed from "${oldPM}" to "${newPM}"`
+        detail: buildChangeDetail('Project Manager', oldPM, newPM)
       });
     }
 
@@ -183,8 +184,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: updated.crId,
         implementerId: reviewerId,
         wbsElementId: updated.wbsElementId,
-        detail: `Start Date changed from "${wbsElement.workPackage?.startDate.toLocaleDateString()}"\
-                 to "${actCr.startDate.toLocaleDateString()}"`
+        detail: buildChangeDetail(
+          'Start Date',
+          wbsElement.workPackage?.startDate.toLocaleDateString() || 'null',
+          actCr.startDate.toLocaleDateString()
+        )
       });
     }
 
@@ -192,7 +196,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       changeRequestId: updated.crId,
       implementerId: reviewerId,
       wbsElementId: updated.wbsElementId,
-      detail: `Changed status from ${wbsElement.status} to ${WBS_Element_Status.ACTIVE}`
+      detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.ACTIVE)
     });
 
     await prisma.change.createMany({ data: changes });
