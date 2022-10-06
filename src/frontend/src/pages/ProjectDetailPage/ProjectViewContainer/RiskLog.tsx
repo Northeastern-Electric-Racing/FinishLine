@@ -141,7 +141,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
         <Button
           variant="danger"
           data-testId="deleteButton"
-          disabled={!hasPermissions && !(risk.createdBy.userId === userId)}
+          disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
           <FontAwesomeIcon icon={faTrash} />
@@ -188,8 +188,8 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
             </div>
           ))}
-          {!(role === 'GUEST') && (
-            <Button variant="success" onClick={handleShow}>
+          {role !== 'GUEST' && (
+            <Button variant="success" onClick={handleShow} data-testId="createButton">
               Add New Risk
             </Button>
           )}
