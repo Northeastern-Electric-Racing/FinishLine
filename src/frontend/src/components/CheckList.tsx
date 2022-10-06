@@ -48,7 +48,6 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
                 </p>
               }
               defaultChecked={check.resolved}
-              data-testId={`testCheckbox${idx}`}
               onChange={() => handleCheck(idx)}
             />
           </div>
