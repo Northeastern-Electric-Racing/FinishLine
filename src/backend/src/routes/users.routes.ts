@@ -1,3 +1,4 @@
+import { Theme } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
 import {
@@ -15,8 +16,8 @@ userRouter.get('/:userId', getSingleUser);
 userRouter.get('/:userId/settings', getUserSettings);
 userRouter.post(
   '/:userId/settings',
-  body('defaultTheme').isBoolean().not().isEmpty(),
-  body('slackId').isString().not().isEmpty().optional({ nullable: true }),
+  body('defaultTheme').isIn([Theme.DARK, Theme.LIGHT]),
+  body('slackId').isString().notEmpty().optional({ nullable: true }),
   updateUserSettings
 );
 userRouter.post('/auth/:login', logUserIn);
