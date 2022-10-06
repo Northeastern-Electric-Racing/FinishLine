@@ -5,7 +5,7 @@
 
 import PageBlock from '../layouts/PageBlock';
 import { Form } from 'react-bootstrap';
-import styles from '../stylesheets/components/RiskLog.module.css';
+import styles from '../stylesheets/components/CheckList.module.css';
 import { ReactNode, useState } from 'react';
 
 export type CheckListItem = {

@@ -9,7 +9,7 @@ import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import styles from '../../../stylesheets/components/RiskLog.module.css';
+import styles from '../../../stylesheets/components/CheckList.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
