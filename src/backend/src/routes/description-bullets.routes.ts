@@ -6,8 +6,8 @@ const descriptionBulletsRouter = express.Router();
 
 descriptionBulletsRouter.post(
   '/check',
-  body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('descriptionBulletId').isInt({ min: 0 }).not().isString(),
+  body('userId').isInt({ min: 0 }).not().isString(),
+  body('descriptionId').isInt({ min: 0 }).not().isString(),
   checkWorkPackageDescriptionBullet
 );
 
