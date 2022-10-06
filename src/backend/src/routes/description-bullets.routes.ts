@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { checkWorkPackageDescriptionBullet } from '../controllers/Description-Bullets.controllers';
+import { checkWorkPackageDescriptionBullet } from '../controllers/description-bullets.controllers';
 
 const descriptionBulletsRouter = express.Router();
 
