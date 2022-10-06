@@ -30,15 +30,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           )
         )
       : 'n/a';
-  const end =
-    project.workPackages.length > 0
-      ? datePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.endDate < min ? cur.endDate : min),
-            project.workPackages[0].endDate
-          )
+  const end = project.endDate
+    ? datePipe(
+        project.workPackages.reduce(
+          (min, cur) => (cur.endDate < min ? cur.endDate : min),
+          project.workPackages[0].endDate
         )
-      : 'n/a';
+      )
+    : 'n/a';
 
   const allColsStyle = 'mb-2';
   return (

@@ -7,7 +7,7 @@ import { WbsElementStatus } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
 /**
- * This function calculates the end date.
+ * This function calculates the end date for a work package.
  * @param start the start date
  * @param weeks number of weeks
  * @returns the start date after the weeks have passed
@@ -16,6 +16,16 @@ const calculateEndDate = (start: Date, weeks: number) => {
   const end = new Date(start);
   end.setDate(start.getDate() + weeks * 7);
   return end;
+};
+
+/**
+ * This function calculates the end date for a project.
+ * @param wps an array of work packages
+ * @returns the latest end date of the workpackages
+ */
+const calculateProjectEndDate = (wps: { endDate: Date }[]) => {
+  const maxDate = wps.reduce((max, cur) => (cur.endDate > max ? cur.endDate : max), wps[0].endDate);
+  return maxDate;
 };
 
 /**
@@ -69,6 +79,7 @@ const calculateTimelineStatus = (progress: number, expectedProgress: number): Ti
 export {
   calculateDuration,
   calculateEndDate,
+  calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus
 };
