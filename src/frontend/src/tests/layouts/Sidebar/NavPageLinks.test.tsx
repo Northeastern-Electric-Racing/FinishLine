@@ -20,18 +20,10 @@ const renderComponent = () => {
 };
 
 describe('Navigation Page Links Tests', () => {
-  it('Renders Home Page Link', () => {
+  it('renders all the test link items', () => {
     renderComponent();
     expect(screen.getByText(/Home/i)).toBeInTheDocument();
-  });
-
-  it('Renders Projects Page Link', () => {
-    renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
-  });
-
-  it('Renders Change Requests Page Link', () => {
-    renderComponent();
     expect(screen.getByText(/Change Requests/i)).toBeInTheDocument();
   });
 });
