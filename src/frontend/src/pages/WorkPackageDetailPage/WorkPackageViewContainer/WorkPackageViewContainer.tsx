@@ -10,12 +10,12 @@ import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import DescriptionList from '../../../components/DescriptionList';
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
+import CheckList, { CheckListItem } from '../../../components/CheckList';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -75,6 +75,14 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   );
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
+
+  const stringToCheckListItem = (string: string): CheckListItem => {
+    return {
+      details: string,
+      resolved: false
+    };
+  };
+
   return (
     <Container fluid>
       <PageTitle
@@ -92,13 +100,17 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           <strong>{wbsPipe(dep)}</strong>
         ))}
       />
-      <DescriptionList
+      <CheckList
         title={'Expected Activities'}
-        items={workPackage.expectedActivities.filter((ea) => ea.dateDeleted === undefined)}
+        items={workPackage.expectedActivities
+          .filter((ea) => ea.dateDeleted === undefined)
+          .map((ea) => stringToCheckListItem(ea.detail))}
       />
-      <DescriptionList
+      <CheckList
         title={'Deliverables'}
-        items={workPackage.deliverables.filter((del) => del.dateDeleted === undefined)}
+        items={workPackage.deliverables
+          .filter((del) => del.dateDeleted === undefined)
+          .map((del) => stringToCheckListItem(del.detail))}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (
