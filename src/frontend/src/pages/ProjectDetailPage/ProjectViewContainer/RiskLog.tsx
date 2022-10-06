@@ -140,7 +140,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
       <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
         <Button
           variant="danger"
-          data-testId="deleteButton"
+          data-testId={`deleteButton-${risk.id}`}
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
