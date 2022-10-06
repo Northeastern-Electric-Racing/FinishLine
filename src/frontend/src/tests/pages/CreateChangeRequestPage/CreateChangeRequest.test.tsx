@@ -38,7 +38,7 @@ const renderComponent = () => {
   );
 };
 
-describe('create change request', () => {
+describe.skip('create change request', () => {
   it('renders change request create form', () => {
     mockUseCreateStandardCRHook(false, false);
     renderComponent();

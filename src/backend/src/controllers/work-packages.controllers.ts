@@ -86,7 +86,7 @@ export const createWorkPackage = async (req: Request, res: Response) => {
 
   // verify user is allowed to create work packages
   const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return res.status(404).json({ message: `user with id #${userId} not found!` });
+  if (!user) return res.status(404).json({ message: `User with id #${userId} not found!` });
   if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
 
   const crReviewed = await getChangeRequestReviewState(crId);

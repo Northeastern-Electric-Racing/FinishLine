@@ -24,7 +24,7 @@ const renderComponent = (modalShow: boolean) => {
   return render(
     <RouterWrapper>
       <ReviewChangeRequestsView
-        crId={exampleStandardChangeRequest.crId}
+        cr={exampleStandardChangeRequest}
         modalShow={modalShow}
         onHide={mockHandleHide}
         onSubmit={mockHandleSubmit}
