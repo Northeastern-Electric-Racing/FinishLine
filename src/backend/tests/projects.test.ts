@@ -4,6 +4,7 @@ import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
 import { getChangeRequestReviewState, getHighestProjectNumber } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
+import { getSingleProject } from '../src/controllers/projects.controllers';
 
 const app = express();
 app.use(express.json());
@@ -119,4 +120,45 @@ describe('Projects', () => {
 
     expect(res.statusCode).toBe(400);
   });
+
+  //valid wbsNum
+  const testWBSNum = {
+    carNumber: 1,
+    projectNumber: 0,
+    workPackageNumber: 1
+  };
+
+  //equals null
+  const wbsEl = {
+    id: 12345123,
+    wbsNum: testWBSNum,
+    dateCreated: new Date(),
+    name: 'testGetSingleProj',
+    status: 'ACTIVE',
+    // projectLead?: ,
+    // projectManager?: 'asdfasdf',
+    hanges: 'asdfasfd'
+  };
+
+  test('getSingleProject fails given invalid project wbs', async () => {
+    // const parsedWbs = { ...testWBSNum, carNumber:  };
+
+    const res = await request(app).get('/projects/1.0.1');
+
+    // const res = app.get('/', (req, res) => {
+    //   res.send('/projects/1.0.1')
+    // })
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.errors).toStrictEqual([{ msg: `1.0.1 is not a valid project WBS #!` }]);
+  });
+
+  // test('getSingleProject fails when associated webselement doesnt exist', async () => {
+  //   const res = await request(app).get(null);
+
+  //   expect(res.statusCode).toBe(404);
+  //   expect(res.body.errors).toStrictEqual([{ msg: `project SOMETHING not found!` }]);
+  // });
+
+  // test('getSingleProject works', async () => {});
 });
