@@ -13,28 +13,35 @@ import { useAuth } from '../../hooks/Auth.hooks';
 import { fullNamePipe } from '../../utils/Pipes';
 import NavUserMenu from './NavUserMenu';
 
+const textColor = 'white';
+const background = '#ef4345';
+
 const NavTopBar: React.FC = () => {
   const auth = useAuth();
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed">
-        <Toolbar>
+        <Toolbar disableGutters sx={{ px: 1, background, color: textColor }}>
           <Box sx={{ flexGrow: 1 }}>
             <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
               <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 <Box
                   component="img"
-                  sx={{ height: 50 }}
+                  sx={{ height: 60 }}
                   alt="Northeastern Electric Racing Logo"
                   src="/NER-Logo-App-Icon.png"
                 />
-                <Typography variant="h4" component="div" sx={{ flexGrow: 1, paddingLeft: 2 }}>
+                <Typography
+                  variant="h4"
+                  component="div"
+                  sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}
+                >
                   FinishLine by NER
                 </Typography>
               </Box>
             </Link>
           </Box>
-          <Typography variant="body1" component="div">
+          <Typography variant="body1" component="div" sx={{ color: textColor }}>
             {fullNamePipe(auth.user)}
           </Typography>
           <NavUserMenu />

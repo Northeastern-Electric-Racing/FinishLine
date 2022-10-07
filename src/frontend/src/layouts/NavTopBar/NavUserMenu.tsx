@@ -41,7 +41,11 @@ const NavUserMenu: React.FC = () => {
           vertical: 'bottom',
           horizontal: 'right'
         }}
-        keepMounted
+        PaperProps={{
+          style: {
+            transform: 'translateX(-10%) translateY(35%)'
+          }
+        }}
         transformOrigin={{
           vertical: 'bottom',
           horizontal: 'right'
