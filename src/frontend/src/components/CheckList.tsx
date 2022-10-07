@@ -21,6 +21,7 @@ interface CheckListProps {
 
 const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
   const [checks, setChecks] = useState(items);
+
   const handleCheck = (idx: number) => {
     const updatedChecks = checks.map((check, i) => {
       if (i === idx) {
