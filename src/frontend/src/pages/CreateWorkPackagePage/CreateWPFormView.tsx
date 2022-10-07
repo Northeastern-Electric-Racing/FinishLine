@@ -11,6 +11,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { createTheme } from '@mui/material/styles';
 import { routes } from '../../utils/Routes';
 import { datePipe } from '../../utils/Pipes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
@@ -58,9 +59,11 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
               <TextField
                 required
                 fullWidth
-                id="name"
+                sx={{ backgroundColor: 'white' }}
+                id=""
                 name="name"
                 type="text"
+                autoComplete="off"
                 label="Work Package Name"
                 placeholder="Enter work package name..."
                 onChange={(e) => name(e.target.value)}
@@ -69,6 +72,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
             <Grid item xs={3}>
               <TextField
                 required
+                sx={{ backgroundColor: 'white' }}
                 id="crId"
                 name="crId"
                 type="text"
@@ -78,17 +82,20 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={2}>
               <TextField
                 required
+                sx={{ backgroundColor: 'white' }}
                 id="wbsNum"
                 name="wbsNum"
                 type="text"
                 label="Project WBS Number"
+                autoComplete="off"
                 placeholder="Enter project WBS number..."
                 onChange={(e) => wbsNum(e.target.value)}
               />
-
+            </Grid>
+            <Grid item xs={2}>
               <DatePicker
                 label="Start Date"
                 inputFormat="yyyy-MM-dd"
@@ -97,11 +104,15 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   setStartDateVal(val);
                   startDate(datePipe(val!));
                 }}
-                renderInput={(params) => <TextField {...params} />}
+                renderInput={(params) => (
+                  <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />
+                )}
               />
-
+            </Grid>
+            <Grid item xs={2}>
               <TextField
                 required
+                sx={{ backgroundColor: 'white' }}
                 id="duration"
                 name="duration"
                 type="text"
