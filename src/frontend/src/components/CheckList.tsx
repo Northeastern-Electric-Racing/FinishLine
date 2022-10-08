@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of FinishLine by NER and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -25,6 +25,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
   const handleCheck = (idx: number) => {
     const updatedChecks = checks.map((check, i) => {
       if (i === idx) {
+        const check = checks[idx];
         check.resolved = !check.resolved;
         return check;
       }
@@ -48,7 +49,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
                   {check.details}
                 </p>
               }
-              defaultChecked={check.resolved}
+              checked={check.resolved}
               onChange={() => handleCheck(idx)}
             />
           </div>

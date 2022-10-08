@@ -6,16 +6,8 @@
 import { render, screen } from '@testing-library/react';
 import CheckList, { CheckListItem } from '../../components/CheckList';
 import { routerWrapperBuilder } from '../test-support/test-utils';
-import { useTheme } from '../../hooks/Theme.hooks';
-import { Theme } from '../../utils/Types';
 import themes from '../../utils/Themes';
-
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
+import * as themeHooks from '../../hooks/Theme.hooks';
 
 const testItems: CheckListItem[] = [
   { details: 'testItem1', resolved: false },
@@ -34,7 +26,7 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '') => {
   );
 };
 describe('Rendering CheckList Component', () => {
-  beforeEach(() => mockHook());
+  beforeEach(() => jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]));
   it('Renders the CheckList correctly when empty', () => {
     renderComponent([], 'testTitle');
     expect(screen.getByText('testTitle')).toBeInTheDocument();
