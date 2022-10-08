@@ -23,14 +23,8 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
   const [checks, setChecks] = useState(items);
 
   const handleCheck = (idx: number) => {
-    const updatedChecks = checks.map((check, i) => {
-      if (i === idx) {
-        const check = checks[idx];
-        check.resolved = !check.resolved;
-        return check;
-      }
-      return check;
-    });
+    const updatedChecks = [...checks];
+    updatedChecks[idx].resolved = !updatedChecks[idx].resolved;
     setChecks(updatedChecks);
   };
 
