@@ -19,10 +19,6 @@ const renderComponent = (title = 'test', pages: LinkItem[] = []) => {
 };
 
 describe('page-breadcrumbs component', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
   it('renders current page', () => {
     renderComponent();
 

@@ -20,10 +20,6 @@ const renderComponent = () => {
 };
 
 describe('action button', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
   it('renders text', () => {
     renderComponent();
     expect(screen.getByText('test')).toBeInTheDocument();
