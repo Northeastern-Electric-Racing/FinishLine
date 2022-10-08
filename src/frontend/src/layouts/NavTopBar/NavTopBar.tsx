@@ -33,6 +33,7 @@ const NavTopBar: React.FC = () => {
                 />
                 <Typography
                   variant="h4"
+                  fontSize={30}
                   component="div"
                   sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}
                 >

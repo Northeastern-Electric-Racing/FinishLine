@@ -50,6 +50,7 @@ const NavUserMenu: React.FC = () => {
           vertical: 'bottom',
           horizontal: 'right'
         }}
+        sx={{ minHeight: 0 }}
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
@@ -57,14 +58,14 @@ const NavUserMenu: React.FC = () => {
           divider
           component="p"
           style={{ backgroundColor: 'transparent' }}
-          sx={{ cursor: 'default' }}
+          sx={{ fontWeight: 600, cursor: 'default' }}
         >
           {auth.user?.email}
         </MenuItem>
-        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose}>
+        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleClose} component="div" sx={{ py: 0 }}>
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
             //jsSrc={'accounts.google.com/gsi/client'}
@@ -73,11 +74,15 @@ const NavUserMenu: React.FC = () => {
               history.push(routes.HOME);
             }}
             render={(renderProps) => (
-              <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+              <Button
+                onClick={renderProps.onClick}
+                disabled={renderProps.disabled}
+                sx={{ padding: 0, minHeight: 0, minWidth: 0 }}
+              >
                 Logout
               </Button>
             )}
-          ></GoogleLogout>
+          />
         </MenuItem>
       </Menu>
     </>

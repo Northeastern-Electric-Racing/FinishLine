@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container, Dropdown, DropdownButton } from 'react-bootstrap';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
@@ -57,7 +57,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   ];
 
   return (
-    <Container fluid className="mb-5">
+    <>
       <PageTitle
         title={`${wbsPipe(proj.wbsNum)} - ${proj.name}`}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
@@ -85,7 +85,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         ))}
       </PageBlock>
       <ChangesList changes={proj.changes} />
-    </Container>
+    </>
   );
 };
 
