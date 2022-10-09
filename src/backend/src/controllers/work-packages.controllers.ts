@@ -131,11 +131,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   });
 
   if (wbsElem === null) {
-    return res
-      .status(404)
-      .json({
-        message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
-      });
+    return res.status(404).json({
+      message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
+    });
   }
 
   const { project } = wbsElem;
