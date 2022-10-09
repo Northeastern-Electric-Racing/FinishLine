@@ -3,7 +3,7 @@ import { validationResult } from 'express-validator';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 
-export const checkWorkPackageDescriptionBullet = async (req: Request, res: Response) => {
+export const checkDescriptionBullet = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
