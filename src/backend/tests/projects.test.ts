@@ -2,9 +2,15 @@ import request from 'supertest';
 import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
-import { getChangeRequestReviewState, getHighestProjectNumber } from '../src/utils/projects.utils';
+import {
+  getChangeRequestReviewState,
+  getHighestProjectNumber,
+  projectTransformer,
+  uniqueRelationArgs
+} from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
 import { getSingleProject } from '../src/controllers/projects.controllers';
+import exp from 'constants';
 
 const app = express();
 app.use(express.json());
@@ -141,24 +147,52 @@ describe('Projects', () => {
   };
 
   test('getSingleProject fails given invalid project wbs', async () => {
-    // const parsedWbs = { ...testWBSNum, carNumber:  };
-
-    const res = await request(app).get('/projects/1.0.1');
-
-    // const res = app.get('/', (req, res) => {
-    //   res.send('/projects/1.0.1')
-    // })
-
+    let res = await request(app).get('/1.0.1');
     expect(res.statusCode).toBe(404);
-    expect(res.body.errors).toStrictEqual([{ msg: `1.0.1 is not a valid project WBS #!` }]);
+    expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
+
+    res = await request(app).get('/2.0.2');
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: `2.0.2 is not a valid project WBS #!` });
   });
 
-  // test('getSingleProject fails when associated webselement doesnt exist', async () => {
-  //   const res = await request(app).get(null);
+  test('getSingleProject fails when associated webselement doesnt exist', async () => {
+    let res = await request(app).get('/1.3.0');
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: 'project 1.3.0 not found!' });
 
-  //   expect(res.statusCode).toBe(404);
-  //   expect(res.body.errors).toStrictEqual([{ msg: `project SOMETHING not found!` }]);
-  // });
+    res = await request(app).get('/2.4.0');
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: 'project 2.4.0 not found!' });
+  });
 
-  // test('getSingleProject works', async () => {});
+  test('getSingleProject works', async () => {
+    // let res = await request(app).get('/1.1.0');
+    // expect(res.statusCode).toBe(200);
+    // expect(res.body).toBe(projectTransformer(wbsEle));
+
+    // res = await request(app).get('/1.23.0');
+    // expect(res.statusCode).toBe(200);
+
+    mockGetChangeRequestReviewState.mockResolvedValue(true);
+    mockGetHighestProjectNumber.mockResolvedValue(0);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({
+      wbsElementId: 1,
+      status: 'ACTIVE',
+      carNumber: 1,
+      projectNumber: 2,
+      workPackageNumber: 3,
+      dateCreated: new Date(),
+      name: 'car',
+      projectLeadId: 4,
+      projectManagerId: 5
+    });
+
+    const res = await request(app).post('/1.1.0');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toStrictEqual({
+      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+    });
+  });
 });
