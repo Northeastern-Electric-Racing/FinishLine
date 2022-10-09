@@ -19,3 +19,13 @@ export const superman = {
   role: Role.ADMIN,
   googleAuthId: 's'
 };
+
+export const wonderwoman = {
+  userId: 3,
+  firstName: 'Wonder',
+  lastName: 'Woman',
+  email: 'amazonian1@savingtheday.com',
+  emailId: 'amazonian1',
+  role: Role.GUEST,
+  googleAuthId: 'w'
+};

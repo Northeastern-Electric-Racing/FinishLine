@@ -11,7 +11,8 @@ import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/Ri
 import {
   exampleRisk1,
   exampleRisk2,
-  exampleRisk3
+  exampleRisk3,
+  exampleRisk4
 } from '../../../test-support/test-data/risks.stub';
 import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/auth.hooks';
@@ -19,7 +20,11 @@ import {
   mockAuth,
   mockPromiseAxiosResponse
 } from '../../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser } from '../../../test-support/test-data/users.stub';
+import {
+  exampleAdminUser,
+  exampleGuestUser,
+  exampleMemberUser
+} from '../../../test-support/test-data/users.stub';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import { getRisksForProject } from '../../../../apis/Risks.api';
 import { AxiosResponse } from 'axios';
@@ -44,7 +49,7 @@ const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
-const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3];
+const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4];
 
 describe.skip('Rendering Project Risk Log Component', () => {
   beforeEach(() => mockHook());
@@ -59,6 +64,21 @@ describe.skip('Rendering Project Risk Log Component', () => {
     expect(result.current.data).toEqual(testRisks);
     render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
     expect(screen.getByText('Risk Log')).toBeInTheDocument();
+  });
+
+  it('Allows deletion of own risks', async () => {
+    mockAuthHook(exampleMemberUser);
+    const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
+    mockRisks.mockReturnValue(mockPromiseAxiosResponse<Risk[]>(testRisks));
+    const { result, waitFor } = renderHook(() => useGetRisksForProject(exampleProject1.id), {
+      wrapper
+    });
+    await waitFor(() => result.current.isSuccess);
+    expect(result.current.data).toEqual(testRisks);
+    render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
+    expect(screen.getByTestId);
+    expect(screen.getByTestId('deleteButton-risk2')).toBeDisabled();
+    expect(screen.getByTestId('deleteButton-risk4')).toBeEnabled();
   });
 
   it('Renders all of the risks and buttons when authorized', async () => {
@@ -92,7 +112,8 @@ describe.skip('Rendering Project Risk Log Component', () => {
     expect(screen.getByText('Risk #1')).toBeInTheDocument();
     expect(screen.getByText('Risk #2')).toBeInTheDocument();
     expect(screen.getByText('Risk #3')).toBeInTheDocument();
-    expect(screen.queryByTestId('deleteButton')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('deleteButton-risk2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('createButton')).not.toBeInTheDocument();
     expect(screen.getByTestId('convertButton')).toBeInTheDocument();
     expect(screen.queryByTestId('testCheckbox1')).not.toBeInTheDocument();
   });
