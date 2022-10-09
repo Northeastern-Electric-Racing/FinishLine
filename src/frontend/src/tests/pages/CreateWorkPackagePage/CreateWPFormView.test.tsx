@@ -4,12 +4,12 @@
  */
 
 import { wbsPipe } from '../../../utils/Pipes';
-import { mockUtils } from '../../test-support/test-data/test-utils.stub';
+import { mockUtils } from '../../TestSupport/TestData/TestUtils.stub';
 import {
   exampleWbsWorkPackage1,
   exampleWbsWorkPackage2
-} from '../../test-support/test-data/wbs-numbers.stub';
-import { render, screen } from '../../test-support/test-utils';
+} from '../../TestSupport/TestData/WbsNumbers.stub';
+import { render, screen } from '../../TestSupport/TestUtils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
 
 const mockDependencies = [wbsPipe(exampleWbsWorkPackage2), wbsPipe(exampleWbsWorkPackage1)];

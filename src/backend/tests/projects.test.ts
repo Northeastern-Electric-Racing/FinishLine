@@ -2,8 +2,8 @@ import request from 'supertest';
 import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
+import { Role } from '@prisma/client';
 import { getChangeRequestReviewState, getHighestProjectNumber } from '../src/utils/projects.utils';
-import { batman } from './test-data/users.test-data';
 
 const app = express();
 app.use(express.json());
@@ -40,10 +40,23 @@ const editProjectPayload = {
   projectManager: 6
 };
 
+const batman = {
+  userId: 1,
+  firstName: 'Bruce',
+  lastName: 'Wayne',
+  email: 'notbatman@gmail.com',
+  emailId: 'notbatman',
+  role: Role.APP_ADMIN
+};
+
 describe('Projects', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
+  beforeEach(() => {
+    prisma.project.findMany = jest.fn();
+    prisma.project.findUnique = jest.fn();
+    prisma.user.findUnique = jest.fn();
+    prisma.wBS_Element.create = jest.fn();
   });
+
   test('newProject fails with invalid userId', async () => {
     const proj = { ...newProjectPayload, userId: -1 };
     const res = await request(app).post('/new').send(proj);

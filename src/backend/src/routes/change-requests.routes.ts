@@ -10,56 +10,58 @@ import {
   reviewChangeRequest,
   addProposedSolution
 } from '../controllers/change-requests.controllers';
-import { intMinZero } from '../utils/validation.utils';
+
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', getAllChangeRequests);
 changeRequestsRouter.get('/:crId', getChangeRequestByID);
 changeRequestsRouter.post(
   '/review',
-  intMinZero(body('reviewerId')),
-  intMinZero(body('crId')),
+  body('reviewerId').isInt({ min: 0 }).not().isString(),
+  body('crId').isInt({ min: 0 }).not().isString(),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
-  body('psId').optional().isString().not().isEmpty(),
   reviewChangeRequest
 );
 changeRequestsRouter.post(
   '/new/activation',
-  intMinZero(body('submitterId')),
-  intMinZero(body('wbsNum.carNumber')),
-  intMinZero(body('wbsNum.projectNumber')),
-  intMinZero(body('wbsNum.workPackageNumber')),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom((value) => value === ChangeRequestType.Activation),
   body('startDate').isDate(),
-  intMinZero(body('projectLeadId')),
-  intMinZero(body('projectManagerId')),
+  body('projectLeadId').isInt({ min: 0 }).not().isString(),
+  body('projectManagerId').isInt({ min: 0 }).not().isString(),
   body('confirmDetails').isBoolean(),
   createActivationChangeRequest
 );
 changeRequestsRouter.post(
   '/new/stage-gate',
-  intMinZero(body('submitterId')),
-  intMinZero(body('wbsNum.carNumber')),
-  intMinZero(body('wbsNum.projectNumber')),
-  intMinZero(body('wbsNum.workPackageNumber')),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom((value) => value === ChangeRequestType.StageGate),
-  intMinZero(body('leftoverBudget')),
+  body('leftoverBudget').isInt({ min: 0 }).not().isString(),
   body('confirmDone').isBoolean(),
   createStageGateChangeRequest
 );
 changeRequestsRouter.post(
   '/new/standard',
-  intMinZero(body('submitterId')),
-  intMinZero(body('wbsNum.carNumber')),
-  intMinZero(body('wbsNum.projectNumber')),
-  intMinZero(body('wbsNum.workPackageNumber')),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
+  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
   body('type').custom(
     (value) =>
       value === ChangeRequestType.Other ||
       value === ChangeRequestType.Issue ||
       value === ChangeRequestType.Redefinition
   ),
+  body('scopeImpact').isString().not().isEmpty(),
+  body('budgetImpact').isInt({ min: 0 }).not().isString(),
+  body('timelineImpact').isInt({ min: 0 }).not().isString(),
   body('why').isArray(),
   body('why.*.explain').isString().not().isEmpty(),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
@@ -67,12 +69,12 @@ changeRequestsRouter.post(
 );
 changeRequestsRouter.post(
   '/new/proposed-solution',
-  intMinZero(body('submitterId')),
-  intMinZero(body('crId')),
+  body('submitterId').isInt({ min: 0 }).not().isString(),
+  body('crId').isInt({ min: 0 }).not().isString(),
   body('description').isString().not().isEmpty(),
   body('scopeImpact').isString().not().isEmpty(),
-  intMinZero(body('timelineImpact')),
-  intMinZero(body('budgetImpact')),
+  body('timelineImpact').isInt({ min: 0 }).not().isString(),
+  body('budgetImpact').isInt({ min: 0 }).not().isString(),
   addProposedSolution
 );
 

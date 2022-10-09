@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
 import CreateChangeRequestsView from '../../../pages/CreateChangeRequestPage/CreateChangeRequestView';
 
 /**
@@ -14,17 +14,11 @@ const mockHandleSubmit = jest.fn();
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (wbsNum = '', crDesc = '') => {
+const renderComponent = (wbsNum = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CreateChangeRequestsView
-        wbsNum={wbsNum}
-        onSubmit={mockHandleSubmit}
-        crDesc={crDesc}
-        proposedSolutions={[]}
-        setProposedSolutions={() => {}}
-      />
+      <CreateChangeRequestsView wbsNum={wbsNum} onSubmit={mockHandleSubmit} />
     </RouterWrapper>
   );
 };
@@ -43,6 +37,7 @@ describe('create new change request page test suite', () => {
     expect(screen.getByLabelText('Type')).toBeInTheDocument();
     expect(screen.getByLabelText('What')).toBeInTheDocument();
     expect(screen.getByLabelText('Why')).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/Impact/).length).toBe(3);
   });
 
   it('renders all buttons', () => {

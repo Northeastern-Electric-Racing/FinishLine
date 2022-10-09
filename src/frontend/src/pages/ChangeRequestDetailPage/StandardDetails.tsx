@@ -5,6 +5,7 @@
 
 import { Container, Row, Col } from 'react-bootstrap';
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
+import { weeksPipe, dollarsPipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
 
 interface StandardDetailsProps {
@@ -35,6 +36,31 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
                 <Col className={spacer}>{ele.explain}</Col>
               </Row>
             ))}
+          </Col>
+        </Row>
+        <Row className={spacer}>
+          <Col className={spacer} xs={4} sm={3} md={2} lg={2} xl={1}>
+            <b>Impact</b>
+          </Col>
+          <Col>
+            <Row>
+              <Col className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
+                <b>Budget Impact</b>
+              </Col>
+              <Col className={spacer}>{dollarsPipe(cr.budgetImpact)}</Col>
+            </Row>
+            <Row>
+              <Col className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
+                <b>Timeline Impact</b>
+              </Col>
+              <Col className={spacer}>{weeksPipe(cr.timelineImpact)}</Col>
+            </Row>
+            <Row>
+              <Col className={spacer} md={4} lg={3} xl={2}>
+                <b>Scope Impact</b>
+              </Col>
+              <Col className={spacer}>{cr.scopeImpact}</Col>
+            </Row>
           </Col>
         </Row>
       </Container>

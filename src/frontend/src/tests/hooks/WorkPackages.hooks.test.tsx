@@ -7,12 +7,12 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { WorkPackage } from 'shared';
 import wrapper from '../../app/AppContextQuery';
-import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
+import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
 import {
   exampleAllWorkPackages,
   exampleWorkPackage1
-} from '../test-support/test-data/work-packages.stub';
-import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
+} from '../TestSupport/TestData/WorkPackages.stub';
+import { exampleWbsWorkPackage1 } from '../TestSupport/TestData/WbsNumbers.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/WorkPackages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
 

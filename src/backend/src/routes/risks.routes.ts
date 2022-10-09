@@ -6,14 +6,14 @@ import {
   editRisk,
   getRisksForProject
 } from '../controllers/risks.controllers';
-import { intMinZero } from '../utils/validation.utils';
+
 const risksRouter = express.Router();
 
 risksRouter.get('/:projectId', getRisksForProject);
 risksRouter.post(
   '/create',
-  intMinZero(body('projectId')),
-  intMinZero(body('createdById')),
+  body('projectId').isInt({ min: 0 }).not().isString(),
+  body('createdById').isInt({ min: 0 }).not().isString(),
   body('detail').isString().not().isEmpty(),
   createRisk
 );
@@ -28,7 +28,7 @@ risksRouter.post(
 risksRouter.post(
   '/delete',
   body('riskId').isString().not().isEmpty(),
-  intMinZero(body('deletedByUserId')),
+  body('deletedByUserId').isInt({ min: 0 }).not().isString(),
   deleteRisk
 );
 

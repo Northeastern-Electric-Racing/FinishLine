@@ -12,7 +12,7 @@ import {
   screen,
   waitFor,
   wbsRegex
-} from '../../test-support/test-utils';
+} from '../../TestSupport/TestUtils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { useAllProjects } from '../../../hooks/Projects.hooks';
 import {
@@ -22,8 +22,8 @@ import {
   exampleProject3,
   exampleProject4,
   exampleProject5
-} from '../../test-support/test-data/projects.stub';
-import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
+} from '../../TestSupport/TestData/Projects.stub';
+import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
 import ProjectsView, { filterProjects } from '../../../pages/ProjectsPage/ProjectsView';
 
 jest.mock('../../../hooks/Projects.hooks');

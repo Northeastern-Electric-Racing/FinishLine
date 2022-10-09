@@ -80,6 +80,7 @@ export const projectTransformer = (
     | Prisma.ProjectGetPayload<typeof manyRelationArgs>
     | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
 ): Project => {
+  if (payload === null) throw new TypeError('WBS_Element not found');
   const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
   const project = 'project' in payload ? payload.project! : payload;
   const wbsNum = wbsNumOf(wbsElement);

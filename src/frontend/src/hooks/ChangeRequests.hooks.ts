@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { ChangeRequest } from 'shared';
 import {
   createActivationChangeRequest,
@@ -11,8 +11,7 @@ import {
   createStageGateChangeRequest,
   getAllChangeRequests,
   getSingleChangeRequest,
-  reviewChangeRequest,
-  addProposedSolution
+  reviewChangeRequest
 } from '../apis/ChangeRequests.api';
 
 /**
@@ -41,7 +40,6 @@ export const useSingleChangeRequest = (id: number) => {
  * Custom React Hook to review a change request.
  */
 export const useReviewChangeRequest = () => {
-  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['change requests', 'review'],
     async (reviewPayload: any) => {
@@ -49,15 +47,9 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewerId,
         reviewPayload.crId,
         reviewPayload.accepted,
-        reviewPayload.reviewNotes,
-        reviewPayload.psId
+        reviewPayload.reviewNotes
       );
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
-      }
     }
   );
 };
@@ -109,32 +101,6 @@ export const useCreateStageGateChangeRequest = () => {
         payload.confirmDone
       );
       return data;
-    }
-  );
-};
-
-/**
- * Custom React Hook to create a proposed solution
- */
-export const useCreateProposeSolution = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['change requests', 'create', 'propose solution'],
-    async (payload: any) => {
-      const { data } = await addProposedSolution(
-        payload.submitterId,
-        payload.crId,
-        payload.description,
-        payload.scopeImpact,
-        payload.timelineImpact,
-        payload.budgetImpact
-      );
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['change requests']);
-      }
     }
   );
 };

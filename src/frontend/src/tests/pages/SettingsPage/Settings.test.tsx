@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import { routes } from '../../../utils/Routes';
 import Settings from '../../../pages/SettingsPage/Settings';
 

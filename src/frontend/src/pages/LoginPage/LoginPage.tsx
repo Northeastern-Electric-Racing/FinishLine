@@ -52,7 +52,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
           ''
         )}
       </Card.Body>
-      <Card.Footer className="text-muted">By using this app, you consent to cookies and tracking for purposes including security and improving the app.</Card.Footer>
+      <Card.Footer className="text-muted">This site uses cookies.</Card.Footer>
     </Card>
   );
 };

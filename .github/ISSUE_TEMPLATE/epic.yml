@@ -1,64 +1,20 @@
 name: Epic
-description: A collection of many tasks
-title: '[Area] - Short Description'
+description: A grouping of many issues
+title: "[Area] - Short Description"
 labels: [epic]
 body:
   - type: textarea
-    id: overview
+    id: user-stories
     attributes:
-      label: Overview
-      description: Provide a brief summary of this epic
+      label: User Stories
+      description: What are the user stories driving this epic?
     validations:
-      required: true
+      required: false
   - type: textarea
-    id: stakeholders
+    id: background
     attributes:
-      label: Stakeholders
-      description: Who to contact for this epic?
-      value: |
-        Product Stakeholder:
-        Software Stakeholder:
-        Reference Users:
-  - type: textarea
-    id: user-story
-    attributes:
-      label: User Story
-      value: 'As a _____, I want _____, so that _____.'
-    validations:
-      required: true
-  - type: textarea
-    id: metrics
-    attributes:
-      label: Success Metrics
-      description: What are the metrics we will use to determine if this is successful?
-    validations:
-      required: true
-  - type: textarea
-    id: rollout
-    attributes:
-      label: Rollout Plan
-      description: How will this be released? All at once? In parts?
-    validations:
-      required: true
-  - type: textarea
-    id: scope
-    attributes:
-      label: Out of Scope
-      description: What is not included in this epic?
-    validations:
-      required: true
-  - type: textarea
-    id: background-context
-    attributes:
-      label: Background / Context
-      description: What is the context for this epic? What already exists?
-    validations:
-      required: true
-  - type: textarea
-    id: acceptance
-    attributes:
-      label: Acceptance Criteria & Mock-ups
-      description: Each UI change needs a detailed mock-up. All business logic and cases should be accounted for as well.
+      label: Background
+      description: What does someone need to know to work on this epic? What will they be making?
     validations:
       required: true
   - type: textarea

@@ -3,13 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import { routes } from '../../../utils/Routes';
 import Home from '../../../pages/HomePage/Home';
 import { useAuth } from '../../../hooks/Auth.hooks';
 import { Auth } from '../../../utils/Types';
-import { exampleAdminUser } from '../../test-support/test-data/users.stub';
-import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../../TestSupport/TestData/Users.stub';
+import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
 
 jest.mock('../../../pages/HomePage/UsefulLinks', () => {
   return {

@@ -1,6 +1,6 @@
 name: Other
-description: For issues that don't fit the other categories
-title: '[Area] - Short Description'
+description: For features that don't fit the other categories
+title: "[Area] - Short Description"
 body:
   - type: textarea
     id: desired-changes

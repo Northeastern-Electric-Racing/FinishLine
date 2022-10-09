@@ -9,11 +9,11 @@ import {
   routerWrapperBuilder,
   act,
   fireEvent
-} from '../../../test-support/test-utils';
+} from '../../../TestSupport/TestUtils';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2
-} from '../../../test-support/test-data/work-packages.stub';
+} from '../../../TestSupport/TestData/WorkPackages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
 
 // Sets up the component under test with the desired values and renders it.

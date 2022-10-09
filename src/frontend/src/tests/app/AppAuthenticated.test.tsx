@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
+import { fireEvent, render, routerWrapperBuilder, screen } from '../TestSupport/TestUtils';
 import AppAuthenticated from '../../app/AppAuthenticated';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {

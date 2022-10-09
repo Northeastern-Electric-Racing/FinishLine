@@ -5,9 +5,9 @@
 
 import { render, screen } from '@testing-library/react';
 import { ChangeRequest } from 'shared';
-import { exampleAllChangeRequests } from '../../test-support/test-data/change-requests.stub';
+import { exampleAllChangeRequests } from '../../TestSupport/TestData/ChangeRequests.stub';
 import { booleanPipe, fullNamePipe, wbsPipe } from '../../../utils/Pipes';
-import { routerWrapperBuilder } from '../../test-support/test-utils';
+import { routerWrapperBuilder } from '../../TestSupport/TestUtils';
 import ChangeRequestsTableView, {
   DisplayChangeRequest
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTableView';

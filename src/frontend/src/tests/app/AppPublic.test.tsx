@@ -4,9 +4,9 @@
  */
 
 import { User } from 'shared';
-import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
-import { exampleAdminUser } from '../test-support/test-data/users.stub';
-import { mockAuth } from '../test-support/test-data/test-utils.stub';
+import { render, screen, routerWrapperBuilder } from '../TestSupport/TestUtils';
+import { exampleAdminUser } from '../TestSupport/TestData/Users.stub';
+import { mockAuth } from '../TestSupport/TestData/TestUtils.stub';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/Routes';
 import { Auth } from '../../utils/Types';

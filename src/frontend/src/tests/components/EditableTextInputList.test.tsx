@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { act, fireEvent, render, screen } from '../test-support/test-utils';
+import { act, fireEvent, render, screen } from '../TestSupport/TestUtils';
 import EditableTextInputList from '../../components/EditableTextInputList';
 
 const mockItems = ['tee hee', 'yahello', 'yeet', 'yoink'];

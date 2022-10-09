@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../test-support/test-utils';
+import { render, screen } from '../TestSupport/TestUtils';
 import { FormContext } from '../../pages/WorkPackageDetailPage/WorkPackageEditContainer/WorkPackageEditContainer';
 import EditableDetail from '../../components/EditableDetail';
 

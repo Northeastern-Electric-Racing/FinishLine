@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { RoleEnum } from 'shared';
-import { exampleAllUsers } from '../../tests/test-support/test-data/users.stub';
+import { exampleAllUsers } from '../../tests/TestSupport/TestData/Users.stub';
 import { useTheme } from '../../hooks/Theme.hooks';
 import { useAuth } from '../../hooks/Auth.hooks';
 import { routes } from '../../utils/Routes';

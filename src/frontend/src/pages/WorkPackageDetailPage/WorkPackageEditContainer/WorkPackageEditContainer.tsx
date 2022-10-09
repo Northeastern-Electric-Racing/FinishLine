@@ -20,7 +20,6 @@ import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWP
 import DependenciesList from '../WorkPackageViewContainer/DependenciesList';
 import EditModeOptions from './EditModeOptions';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import { useQuery } from '../../../hooks/Utils.hooks';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
@@ -38,7 +37,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   exitEditMode
 }) => {
   const auth = useAuth();
-  const query = useQuery();
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
   const { data: userData, isLoading, isError, error } = useAllUsers();
 
@@ -46,7 +44,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   const [projectLead, setProjectLead] = useState(workPackage.projectLead?.userId);
   const [projectManager, setProjectManager] = useState(workPackage.projectManager?.userId);
   const [name, setName] = useState<string>(workPackage.name);
-  const [crId, setCrId] = useState<string>(query.get('crId') || '');
+  const [crId, setCrId] = useState<string>('');
   const [startDate, setStartDate] = useState<Date>(workPackage.startDate);
   const [duration, setDuration] = useState<number>(workPackage.duration);
   const [deps, setDeps] = useState<WbsNumber[]>(workPackage.dependencies);
@@ -193,7 +191,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
               placeholder="Change Request ID #"
               min="0"
               required
-              value={crId}
               onChange={(e) => setCrId(e.target.value.trim())}
             />
           }

@@ -8,7 +8,7 @@ import { useTheme } from '../../../../hooks/Theme.hooks';
 import { fullNamePipe } from '../../../../utils/Pipes';
 import themes from '../../../../utils/Themes';
 import { Theme } from '../../../../utils/Types';
-import { exampleProject1, exampleProject3 } from '../../../test-support/test-data/projects.stub';
+import { exampleProject1, exampleProject3 } from '../../../TestSupport/TestData/Projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 
 jest.mock('../../../../hooks/Theme.hooks');
