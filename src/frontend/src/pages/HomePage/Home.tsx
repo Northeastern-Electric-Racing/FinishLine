@@ -4,7 +4,7 @@
  */
 
 import { Container } from 'react-bootstrap';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];

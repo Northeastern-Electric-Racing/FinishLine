@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
 import { WorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, endDatePipe, listPipe, datePipe } from '../../../utils/Pipes';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useTheme } from '../../../hooks/theme.hooks';
 import { routes } from '../../../utils/Routes';
 import WbsStatus from '../../../components/WbsStatus';
 import styles from '../../../stylesheets/pages/project-detail-page/work-package-summary.module.scss';

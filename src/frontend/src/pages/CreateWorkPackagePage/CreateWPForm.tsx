@@ -6,12 +6,12 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { isProject, validateWBS, WbsNumber } from 'shared';
-import { useAuth } from '../../hooks/Auth.hooks';
-import { useCreateSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
-import { useQuery } from '../../hooks/Utils.hooks';
+import { useQuery } from '../../hooks/utils.hooks';
 import { numberParamPipe } from '../../utils/Pipes';
 
 export interface EditableTextInputListUtils {

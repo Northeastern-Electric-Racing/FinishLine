@@ -6,9 +6,9 @@
 import { createContext, useState, SyntheticEvent } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { useAllUsers } from '../../../hooks/Users.hooks';
-import { useEditWorkPackage } from '../../../hooks/WorkPackages.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import EditableTextInputList from '../../../components/EditableTextInputList';
@@ -20,7 +20,7 @@ import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWP
 import DependenciesList from '../WorkPackageViewContainer/DependenciesList';
 import EditModeOptions from './EditModeOptions';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import { useQuery } from '../../../hooks/Utils.hooks';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
