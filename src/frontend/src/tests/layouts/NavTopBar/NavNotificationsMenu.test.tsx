@@ -9,7 +9,7 @@ import {
   waitFor,
   fireEvent,
   routerWrapperBuilder
-} from '../../TestSupport/TestUtils';
+} from '../../test-support/test-utils';
 import NavNotificationsMenu from '../../../layouts/NavTopBar/NavNotificationsMenu';
 
 /**
@@ -25,12 +25,7 @@ const renderComponent = () => {
 };
 
 describe('navigation notifications menu tests', () => {
-  it('renders the bell button', () => {
-    renderComponent();
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
-
-  it('renders the notification menu items', async () => {
+  it('renders the bell button and notification menu items', async () => {
     renderComponent();
     const bell: HTMLElement = screen.getByRole('button');
     expect(bell).toBeInTheDocument();

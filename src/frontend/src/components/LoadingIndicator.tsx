@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import styles from '../stylesheets/components/LoadingIndicator.module.css';
+import styles from '../stylesheets/components/loading-indicator.module.css';
 
 // Classic red square spinning loading indicator
 const LoadingIndicator: React.FC = () => {

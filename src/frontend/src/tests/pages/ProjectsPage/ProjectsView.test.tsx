@@ -12,9 +12,9 @@ import {
   screen,
   waitFor,
   wbsRegex
-} from '../../TestSupport/TestUtils';
+} from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
-import { useAllProjects } from '../../../hooks/Projects.hooks';
+import { useAllProjects } from '../../../hooks/projects.hooks';
 import {
   exampleAllProjects,
   exampleProject1,
@@ -22,11 +22,11 @@ import {
   exampleProject3,
   exampleProject4,
   exampleProject5
-} from '../../TestSupport/TestData/Projects.stub';
-import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
+} from '../../test-support/test-data/projects.stub';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectsView, { filterProjects } from '../../../pages/ProjectsPage/ProjectsView';
 
-jest.mock('../../../hooks/Projects.hooks');
+jest.mock('../../../hooks/projects.hooks');
 
 const mockedUseAllProjects = useAllProjects as jest.Mock<UseQueryResult<Project[]>>;
 

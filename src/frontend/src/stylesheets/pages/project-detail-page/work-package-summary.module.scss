@@ -1,0 +1,35 @@
+/*
+ * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+.header {
+  cursor: pointer;
+  font-size: large;
+}
+
+.name {
+  float: left;
+  margin-bottom: 0;
+}
+
+.duration {
+  float: right;
+}
+
+.wbsNum {
+  float: left;
+  min-width: 60px;
+  margin-bottom: 0;
+}
+
+.halfDiv {
+  width: 50%;
+  float: left;
+  padding-right: 20px;
+  min-width: 200px;
+}
+
+b {
+  font-weight: bold;
+}

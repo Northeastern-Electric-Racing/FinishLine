@@ -5,8 +5,8 @@
 
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/Auth.hooks';
-import { useCreateSingleProject } from '../../hooks/Projects.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useCreateSingleProject } from '../../hooks/projects.hooks';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateProjectFormView from './CreateProjectFormView';

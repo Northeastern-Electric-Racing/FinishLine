@@ -4,7 +4,7 @@
  */
 
 import { ChangeRequestType, ChangeRequestReason } from 'shared';
-import { act, fireEvent, render, screen } from '../../TestSupport/TestUtils';
+import { act, fireEvent, render, screen } from '../../test-support/test-utils';
 import ChangeRequestsFilter from '../../../pages/ChangeRequestsPage/ChangeRequestsFilter';
 
 let temp: any[] = [];
