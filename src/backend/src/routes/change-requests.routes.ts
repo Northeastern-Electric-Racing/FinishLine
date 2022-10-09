@@ -21,6 +21,7 @@ changeRequestsRouter.post(
   intMinZero(body('crId')),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
+  body('psId').optional().isString().not().isEmpty(),
   reviewChangeRequest
 );
 changeRequestsRouter.post(
@@ -59,9 +60,6 @@ changeRequestsRouter.post(
       value === ChangeRequestType.Issue ||
       value === ChangeRequestType.Redefinition
   ),
-  body('scopeImpact').isString().not().isEmpty(),
-  intMinZero(body('budgetImpact')),
-  intMinZero(body('timelineImpact')),
   body('why').isArray(),
   body('why.*.explain').isString().not().isEmpty(),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
