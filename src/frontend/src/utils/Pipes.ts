@@ -63,19 +63,19 @@ export const emDashPipe = (str: string) => {
 /**
  * Return a given date as a string in the local en-US format,
  * with single digit numbers starting with a zero.
+ *
+ * Prisma sends date in UTC but TypeScript assumes it's in your local time,
+ * so to get around that we do the toDateString() of the time and pass it into the Date constructor
+ * where the constructor assumes it's in UTC and makes the correct Date object finally
  */
 export const datePipe = (date: Date) => {
+  date = new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     timeZone: 'UTC'
   });
-};
-
-/** returns a given number as a string with a percent sign */
-export const percentPipe = (percent: number) => {
-  return `${percent}%`;
 };
 
 export const numberParamPipe = (param: string | null) => {

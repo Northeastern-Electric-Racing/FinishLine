@@ -131,11 +131,9 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   });
 
   if (wbsElem === null) {
-    return res
-      .status(404)
-      .json({
-        message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
-      });
+    return res.status(404).json({
+      message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
+    });
   }
 
   const { project } = wbsElem;
@@ -419,11 +417,15 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     .concat(expectedActivitiesChangeJson.changes)
     .concat(deliverablesChangeJson.changes);
 
+  // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
+  const date = new Date(startDate);
+  date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+
   // update the work package with the input fields
   const updatedWorkPackage = await prisma.work_Package.update({
     where: { wbsElementId },
     data: {
-      startDate: new Date(startDate),
+      startDate: date,
       duration,
       progress,
       wbsElement: {
