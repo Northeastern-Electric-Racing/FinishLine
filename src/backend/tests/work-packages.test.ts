@@ -6,7 +6,8 @@ import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
 import { wonderwoman } from './test-data/users.test-data';
 import { createWorkPackagePayload } from './test-data/work-packages.test-data';
-import { changeBatmobile } from './test-data/change-requests.test-data';
+import { changeBatmobile, unreviewedCr } from './test-data/change-requests.test-data';
+import { getChangeRequestReviewState } from '../src/utils/projects.utils';
 const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
@@ -65,5 +66,17 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe(`User with id #${createWorkPackagePayload.userId} not found!`);
+  });
+
+  test('getChangeRequestReviewState returns null when changeRequest is not found', async () => {
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+    const result = await getChangeRequestReviewState(1);
+    expect(result).toEqual(null);
+  });
+
+  test('getChangeRequestReviewState returns false when changeRequest has not been reviewed', async () => {
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
+    const result = await getChangeRequestReviewState(1);
+    expect(result).toEqual(false);
   });
 });
