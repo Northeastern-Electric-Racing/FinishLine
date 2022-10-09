@@ -11,6 +11,7 @@ import {
 import { batman } from './test-data/users.test-data';
 import { getSingleProject } from '../src/controllers/projects.controllers';
 import exp from 'constants';
+import { WbsElement } from 'shared';
 
 const app = express();
 app.use(express.json());
@@ -127,72 +128,74 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  //valid wbsNum
   const testWBSNum = {
     carNumber: 1,
-    projectNumber: 0,
-    workPackageNumber: 1
+    projectNumber: 1,
+    workPackageNumber: 0
   };
 
-  //equals null
-  const wbsEl = {
-    id: 12345123,
-    wbsNum: testWBSNum,
-    dateCreated: new Date(),
-    name: 'testGetSingleProj',
-    status: 'ACTIVE',
-    // projectLead?: ,
-    // projectManager?: 'asdfasdf',
-    hanges: 'asdfasfd'
-  };
+  // const wbsEl: WbsElement = {
+  //   id: 12345123,
+  //   wbsNum: testWBSNum,
+  //   dateCreated: new Date(),
+  //   name: 'testGetSingleProj',
+  //   status: WbsElementStatus.Inactive,
+  //   // projectLead?: ,
+  //   // projectManager?: 'asdfasdf',
+  //   changes: []
+  // };
 
-  test('getSingleProject fails given invalid project wbs', async () => {
-    let res = await request(app).get('/1.0.1');
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
-
-    res = await request(app).get('/2.0.2');
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toStrictEqual({ message: `2.0.2 is not a valid project WBS #!` });
-  });
-
-  test('getSingleProject fails when associated webselement doesnt exist', async () => {
-    let res = await request(app).get('/1.3.0');
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toStrictEqual({ message: 'project 1.3.0 not found!' });
-
-    res = await request(app).get('/2.4.0');
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toStrictEqual({ message: 'project 2.4.0 not found!' });
-  });
-
-  test('getSingleProject works', async () => {
-    // let res = await request(app).get('/1.1.0');
-    // expect(res.statusCode).toBe(200);
-    // expect(res.body).toBe(projectTransformer(wbsEle));
-
-    // res = await request(app).get('/1.23.0');
-    // expect(res.statusCode).toBe(200);
-
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
-    mockGetHighestProjectNumber.mockResolvedValue(0);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({
-      wbsElementId: 1,
-      status: 'ACTIVE',
-      carNumber: 1,
-      projectNumber: 2,
-      workPackageNumber: 3,
-      dateCreated: new Date(),
-      name: 'car',
-      projectLeadId: 4,
-      projectManagerId: 5
+  describe('test getSingleProject Endpoint', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
     });
 
-    const res = await request(app).post('/1.1.0');
+    test('getSingleProject fails given invalid project wbs', async () => {
+      let res = await request(app).get('/1.0.1');
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({
-      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+      res = await request(app).get('/2.0.2');
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toStrictEqual({ message: `2.0.2 is not a valid project WBS #!` });
+    });
+
+    test('getSingleProject fails when associated webselement doesnt exist', async () => {
+      let res = await request(app).get('/1.3.0');
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toStrictEqual({ message: 'project 1.3.0 not found!' });
+
+      res = await request(app).get('/2.4.0');
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toStrictEqual({ message: 'project 2.4.0 not found!' });
+    });
+
+    test('getSingleProject works', async () => {
+      // let res = await request(app).get('/1.1.0');
+      // expect(res.statusCode).toBe(200);
+      // expect(res.body).toBe(projectTransformer(wbsEle));
+
+      // res = await request(app).get('/1.23.0');
+      // expect(res.statusCode).toBe(200);
+
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({
+        wbsElementId: 123,
+        dateCreated: new Date(),
+        carNumber: 34,
+        projectNumber: 34,
+        workPackageNumber: 24,
+        name: 'piss',
+        status: 'ACTIVE',
+        projectLeadId: 1,
+        projectManagerId: 2
+      });
+
+      const res = await request(app).get('/1.1.0');
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toStrictEqual({
+        wbsNumber: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 }
+      });
     });
   });
 });
