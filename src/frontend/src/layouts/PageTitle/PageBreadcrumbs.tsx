@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Breadcrumb } from 'react-bootstrap';
 import { LinkItem } from '../../utils/Types';
 import { routes } from '../../utils/Routes';
-import styles from '../../stylesheets/layouts/PageBreadcrumbs.module.css';
+import styles from '../../stylesheets/layouts/page-breadcrumbs.module.css';
 
 interface PageTitleProps {
   currentPageTitle: string;

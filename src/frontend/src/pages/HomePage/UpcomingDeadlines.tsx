@@ -14,7 +14,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/Home.module.css';
+import styles from '../../stylesheets/pages/home.module.css';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
