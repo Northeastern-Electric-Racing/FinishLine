@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { AuthenticatedUser, User } from 'shared';
 import prisma from '../prisma/prisma';
 
@@ -38,4 +38,34 @@ export const getUserFullName = async (userId: number | null) => {
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return 'no one';
   return `${user.firstName} ${user.lastName}`;
+};
+
+export const rankUserRole = (role: Role) => {
+  switch (role) {
+    case 'APP_ADMIN':
+      return 5;
+    case 'ADMIN':
+      return 4;
+    case 'LEADERSHIP':
+      return 3;
+    case 'MEMBER':
+      return 2;
+    case 'GUEST':
+      return 1;
+  }
+};
+
+export const resolveUserRole = (rank: number) => {
+  switch (rank) {
+    case 5:
+      return 'APP_ADMIN';
+    case 4:
+      return 'ADMIN';
+    case 3:
+      return 'LEADERSHIP';
+    case 2:
+      return 'MEMBER';
+    case 1:
+      return 'GUEST';
+  }
 };
