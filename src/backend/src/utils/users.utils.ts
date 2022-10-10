@@ -54,18 +54,3 @@ export const rankUserRole = (role: Role) => {
       return 1;
   }
 };
-
-export const resolveUserRole = (rank: number) => {
-  switch (rank) {
-    case 5:
-      return 'APP_ADMIN';
-    case 4:
-      return 'ADMIN';
-    case 3:
-      return 'LEADERSHIP';
-    case 2:
-      return 'MEMBER';
-    case 1:
-      return 'GUEST';
-  }
-};

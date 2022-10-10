@@ -4,10 +4,8 @@ import {
   authenticatedUserTransformer,
   authUserQueryArgs,
   rankUserRole,
-  resolveUserRole,
   userTransformer
 } from '../utils/users.utils';
-import { Role } from '@prisma/client';
 
 export const getAllUsers = async (_req: any, res: any) => {
   const users = await prisma.user.findMany();
@@ -109,15 +107,18 @@ export const logUserIn = async (req: any, res: any) => {
 };
 export const updateUserRole = async (req: any, res: any) => {
   const updatingUserId: number = parseInt(req.params.userId);
+
   const { body } = req;
+
   const { promoteToRole, userId } = body;
+
   const user = await prisma.user.findUnique({ where: { userId } });
+
   let updatingUser = await prisma.user.findUnique({ where: { userId: updatingUserId } });
+
   if (promoteToRole === null) {
     return res.status(400).json({ message: 'Invalid Body' });
   }
-
-  const promote = promoteToRole;
 
   if (!user) {
     return res.status(404).json({ message: `user #${userId} not found!` });
@@ -133,21 +134,16 @@ export const updateUserRole = async (req: any, res: any) => {
   if (updatingUserRole >= userRole) {
     return res.status(400).json({ message: 'Cannot update user with equal or higher role' });
   }
-
-  if (!promote && updatingUserRole === 1) {
-    return res.status(400).json({ message: 'Cannot demote guest' });
+  if(rankUserRole(promoteToRole) > userRole)
+  {
+    return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
   }
 
-  if (promote) {
-    updatingUser = await prisma.user.update({
-      where: { userId: updatingUserId },
-      data: { role: resolveUserRole(updatingUserRole + 1) }
-    });
-  } else {
-    updatingUser = await prisma.user.update({
-      where: { userId: updatingUserId },
-      data: { role: resolveUserRole(updatingUserRole - 1) }
-    });
-  }
+  updatingUser = await prisma.user.update({
+    where: { userId: updatingUserId },
+    data: { role: promoteToRole
+    }
+  });
+
   return res.status(200).json(userTransformer(updatingUser));
 };

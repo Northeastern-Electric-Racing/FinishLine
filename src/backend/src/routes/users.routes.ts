@@ -8,7 +8,7 @@ import {
   updateUserSettings,
   updateUserRole
 } from '../controllers/users.controllers';
-import { intMinZero } from '../utils/validation.utils';
+import { intMinZero, isRole } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
@@ -20,7 +20,7 @@ userRouter.post('/auth/:login', logUserIn);
 userRouter.post(
   '/:userId/change-role',
   intMinZero(body('userId')),
-  body('promoteToRole').isBoolean(),
+  isRole(body('promoteToRole')),
   updateUserRole
 );
 
