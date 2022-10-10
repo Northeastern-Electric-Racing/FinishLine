@@ -69,4 +69,5 @@ export interface DescriptionBullet {
   detail: string;
   dateAdded: Date;
   dateDeleted?: Date;
+  userChecked?: User;
 }

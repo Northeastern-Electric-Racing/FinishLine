@@ -15,7 +15,7 @@ import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import CheckList, { CheckListItem } from '../../../components/CheckList';
+import CheckList from '../../../components/CheckList';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -76,13 +76,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
-  const stringToCheckListItem = (string: string): CheckListItem => {
-    return {
-      details: string,
-      resolved: false
-    };
-  };
-
   return (
     <Container fluid>
       <PageTitle
@@ -103,14 +96,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       <CheckList
         title={'Expected Activities'}
         items={workPackage.expectedActivities
-          .filter((ea) => ea.dateDeleted === undefined)
-          .map((ea) => stringToCheckListItem(ea.detail))}
+          .filter((ea) => !ea.dateDeleted)
+          .map((ea) => {
+            return { ...ea, resolved: !!ea.userChecked };
+          })}
       />
       <CheckList
         title={'Deliverables'}
         items={workPackage.deliverables
-          .filter((del) => del.dateDeleted === undefined)
-          .map((del) => stringToCheckListItem(del.detail))}
+          .filter((del) => !del.dateDeleted)
+          .map((del) => {
+            return { ...del, resolved: !!del.userChecked };
+          })}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (
