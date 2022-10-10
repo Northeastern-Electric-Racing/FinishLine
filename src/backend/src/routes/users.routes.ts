@@ -20,7 +20,7 @@ userRouter.post('/auth/:login', logUserIn);
 userRouter.post(
   '/:userId/change-role',
   intMinZero(body('userId')),
-  isRole(body('promoteToRole')),
+  isRole(body('role')),
   updateUserRole
 );
 

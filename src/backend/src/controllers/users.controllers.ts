@@ -6,6 +6,7 @@ import {
   rankUserRole,
   userTransformer
 } from '../utils/users.utils';
+import { validationResult } from 'express-validator';
 
 export const getAllUsers = async (_req: any, res: any) => {
   const users = await prisma.user.findMany();
@@ -106,44 +107,45 @@ export const logUserIn = async (req: any, res: any) => {
   return res.status(200).json(authenticatedUserTransformer(user));
 };
 export const updateUserRole = async (req: any, res: any) => {
-  const updatingUserId: number = parseInt(req.params.userId);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const targetUserId: number = parseInt(req.params.userId);
 
   const { body } = req;
 
-  const { promoteToRole, userId } = body;
+  const { role, userId } = body;
 
   const user = await prisma.user.findUnique({ where: { userId } });
 
-  let updatingUser = await prisma.user.findUnique({ where: { userId: updatingUserId } });
-
-  if (promoteToRole === null) {
-    return res.status(400).json({ message: 'Invalid Body' });
-  }
+  let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
 
   if (!user) {
     return res.status(404).json({ message: `user #${userId} not found!` });
   }
 
-  if (!updatingUser) {
-    return res.status(404).json({ message: `user #${updatingUserId} not found!` });
+  if (!targetUser) {
+    return res.status(404).json({ message: `user #${targetUserId} not found!` });
   }
 
   const userRole = rankUserRole(user.role);
-  const updatingUserRole = rankUserRole(updatingUser.role);
+  const updatingUserRole = rankUserRole(targetUser.role);
 
   if (updatingUserRole >= userRole) {
-    return res.status(400).json({ message: 'Cannot update user with equal or higher role' });
+    return res
+      .status(400)
+      .json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
   }
-  if(rankUserRole(promoteToRole) > userRole)
-  {
+  if (rankUserRole(role) > userRole) {
     return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
   }
 
-  updatingUser = await prisma.user.update({
-    where: { userId: updatingUserId },
-    data: { role: promoteToRole
-    }
+  targetUser = await prisma.user.update({
+    where: { userId: targetUserId },
+    data: { role }
   });
 
-  return res.status(200).json(userTransformer(updatingUser));
+  return res.status(200).json(userTransformer(targetUser));
 };
