@@ -40,7 +40,7 @@ describe('Users', () => {
   });
 
   test('updateUserSettings', async () => {
-    const usr = { ...batman, userId: 3, defaultTheme: 'DARK' };
+    const usr = { ...batman, firstName: 'Ben', defaultTheme: 'DARK' };
     const res = await request(app).post('/update').send(usr);
 
     expect(res.statusCode).toBe(200);
