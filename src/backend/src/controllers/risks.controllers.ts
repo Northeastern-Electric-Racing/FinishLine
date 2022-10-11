@@ -2,6 +2,7 @@ import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
 import { validationResult } from 'express-validator';
+import { Role } from '@prisma/client';
 
 export const getRisksForProject = async (req: Request, res: Response) => {
   const projectId = parseInt(req.params.projectId);
@@ -25,9 +26,11 @@ export const createRisk = async (req: Request, res: Response) => {
   const { body } = req;
   const { projectId, detail, createdById } = body;
 
-  const hasPerms = await hasRiskPermissions(createdById, projectId);
-  if (!hasPerms) {
-    return res.status(401).json({ message: 'Access Denied' });
+  const createdByUser = await prisma.user.findUnique({ where: { userId: createdById } });
+  if (createdByUser) {
+    if (createdByUser.role === Role.GUEST) {
+      return res.status(401).json({ message: 'Access Denied' });
+    }
   }
 
   const createdRisk = await prisma.risk.create({
@@ -121,8 +124,9 @@ export const deleteRisk = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'this risk has already been deleted' });
   }
 
+  const selfDelete = targetRisk.createdByUserId === deletedByUserId;
   const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
-  if (!hasPerms) {
+  if (!selfDelete && !hasPerms) {
     return res.status(401).json({ message: 'Access Denied' });
   }
 
