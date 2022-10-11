@@ -3,7 +3,6 @@ import express from 'express';
 import userRouter from '../src/routes/users.routes';
 import prisma from '../src/prisma/prisma';
 import { batman, superman } from './test-data/users.test-data';
-import { useTheme } from '../../frontend/src/hooks/Theme.hooks';
 
 const app = express();
 app.use('/', userRouter);
@@ -41,7 +40,7 @@ describe('Users', () => {
   });
 
   test('updateUserSettings', async () => {
-    const usr = { ...batman, userId: 3, defaultTheme: useTheme };
+    const usr = { ...batman, userId: 3, defaultTheme: 'DARK' };
     const res = await request(app).post('/update').send(usr);
 
     expect(res.statusCode).toBe(200);
