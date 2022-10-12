@@ -7,11 +7,14 @@ import { render, screen } from '@testing-library/react';
 import CheckList, { CheckListItem } from '../../components/CheckList';
 import { routerWrapperBuilder } from '../test-support/test-utils';
 import themes from '../../utils/Themes';
-import * as themeHooks from '../../hooks/Theme.hooks';
+import * as themeHooks from '../../hooks/theme.hooks';
+import * as authHooks from '../../hooks/auth.hooks';
+import { mockAuth } from '../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../test-support/test-data/users.stub';
 
 const testItems: CheckListItem[] = [
-  { details: 'testItem1', resolved: false },
-  { details: 'testItem2', resolved: true }
+  { id: 1, detail: 'testItem1', resolved: false },
+  { id: 2, detail: 'testItem2', resolved: true }
 ];
 
 /**
@@ -26,7 +29,10 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '') => {
   );
 };
 describe('Rendering CheckList Component', () => {
-  beforeEach(() => jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]));
+  beforeEach(() => {
+    jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]);
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
   it('Renders the CheckList correctly when empty', () => {
     renderComponent([], 'testTitle');
     expect(screen.getByText('testTitle')).toBeInTheDocument();
