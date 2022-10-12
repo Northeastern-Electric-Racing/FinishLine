@@ -131,15 +131,16 @@ export const updateUserRole = async (req: any, res: any) => {
   }
 
   const userRole = rankUserRole(user.role);
-  const updatingUserRole = rankUserRole(targetUser.role);
+  const targetUserRole = rankUserRole(targetUser.role);
 
-  if (updatingUserRole >= userRole) {
+  if (rankUserRole(role) > userRole) {
+    return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
+  }
+  
+  if (targetUserRole >= userRole) {
     return res
       .status(400)
       .json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
-  }
-  if (rankUserRole(role) > userRole) {
-    return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
   }
 
   targetUser = await prisma.user.update({
