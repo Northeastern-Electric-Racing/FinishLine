@@ -9,6 +9,7 @@ import {
 import prisma from '../prisma/prisma';
 import { userTransformer } from './users.utils';
 import { convertStatus, descBulletConverter, wbsNumOf } from './utils';
+import { buildChangeDetail } from '../utils/utils';
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -105,7 +106,7 @@ export const createChangeJsonNonList = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue}" to "${newValue}"`
+      detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
   return undefined;
@@ -125,7 +126,7 @@ export const createChangeJsonDates = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue.toUTCString()}" to "${newValue.toUTCString()}"`
+      detail: buildChangeDetail(nameOfField, oldValue.toUTCString(), newValue.toUTCString())
     };
   }
   return undefined;
@@ -232,9 +233,11 @@ export const createDescriptionBulletChangesJson = (
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
-          ? `${element.type} ${nameOfField} from "${seenOld.get(
-              element.element.id
-            )}" to "${seenNew.get(element.element.id)}"`
+          ? buildChangeDetail(
+              nameOfField,
+              seenOld.get(element.element.id) || 'null',
+              seenNew.get(element.element.id) || 'null'
+            )
           : `${element.type} ${nameOfField} "${element.element.detail}"`;
       return { changeRequestId: crId, implementerId, wbsElementId, detail };
     })
