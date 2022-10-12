@@ -9,7 +9,6 @@ import styles from '../stylesheets/components/CheckList.module.css';
 import { ReactNode } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import LoadingIndicator from './LoadingIndicator';
-import ErrorPage from '../pages/ErrorPage';
 import { useAuth } from '../hooks/Auth.hooks';
 
 export type CheckListItem = {
@@ -41,11 +40,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
           <div key={idx} className={styles.container}>
             <Form.Check
               label={
-                <p
-                  style={
-                    check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }
-                  }
-                >
+                <p style={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
                   {check.detail}
                 </p>
               }
