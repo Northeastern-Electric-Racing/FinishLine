@@ -17,7 +17,7 @@ userRouter.get('/:userId/settings', getUserSettings);
 userRouter.post(
   '/:userId/settings',
   body('defaultTheme').isIn([Theme.DARK, Theme.LIGHT]),
-  body('slackId').isString().notEmpty().optional({ nullable: true }),
+  body('slackId').isString(),
   updateUserSettings
 );
 userRouter.post('/auth/:login', logUserIn);

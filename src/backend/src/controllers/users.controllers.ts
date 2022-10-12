@@ -42,6 +42,9 @@ export const getUserSettings = async (req: any, res: any) => {
 
 export const updateUserSettings = async (req: any, res: any) => {
   const userId: number = parseInt(req.params.userId);
+  if (!userId) {
+    return res.status(404).json({ message: `could not find valid userId` });
+  }
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {

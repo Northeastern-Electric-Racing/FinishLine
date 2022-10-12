@@ -97,11 +97,11 @@ model Session {
 }
 
 model User_Settings {
-  id           String  @id @default(uuid())
-  userId       Int     @unique
-  user         User    @relation(fields: [userId], references: [userId])
-  defaultTheme Theme   @default(DARK)
-  slackId      String?
+  id           String @id @default(uuid())
+  userId       Int    @unique
+  user         User   @relation(fields: [userId], references: [userId])
+  defaultTheme Theme  @default(DARK)
+  slackId      String @default("")
 }
 
 model Change_Request {
