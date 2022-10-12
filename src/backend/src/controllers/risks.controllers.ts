@@ -31,6 +31,8 @@ export const createRisk = async (req: Request, res: Response) => {
     if (createdByUser.role === Role.GUEST) {
       return res.status(401).json({ message: 'Access Denied' });
     }
+  } else {
+    return res.status(404).json({ message: 'User Not Found' });
   }
 
   const createdRisk = await prisma.risk.create({
