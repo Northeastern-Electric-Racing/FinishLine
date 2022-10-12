@@ -1,3 +1,4 @@
+import { WBS_Element_Status } from '@prisma/client';
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import prisma from '../prisma/prisma';
@@ -12,16 +13,31 @@ export const checkDescriptionBullet = async (req: Request, res: Response) => {
   const { body } = req;
   const { userId, descriptionId } = body;
 
-  const originalDB = await prisma.description_Bullet.findUnique({ where: { descriptionId } });
+  const originalDB = await prisma.description_Bullet.findUnique({
+    where: { descriptionId },
+    include: {
+      workPackageDeliverables: { include: { wbsElement: true } },
+      workPackageExpectedActivities: { include: { wbsElement: true } }
+    }
+  });
 
   if (!originalDB) {
-    return res
-      .status(404)
-      .json({ message: `Description Bullet with id ${descriptionId} not found` });
+    return res.status(404).json({ message: `Description Bullet with id ${descriptionId} not found` });
   }
 
   if (originalDB.dateDeleted) {
     return res.status(400).json({ message: 'Cant edit a deleted Description Bullet' });
+  }
+
+  const workPackage = originalDB.workPackageDeliverables || originalDB.workPackageExpectedActivities;
+  if (!workPackage) {
+    return res.status(400).json({
+      message: 'This description bullet is not tied to a workpackage deliverable or expected activity!'
+    });
+  }
+
+  if (workPackage.wbsElement.status !== WBS_Element_Status.ACTIVE) {
+    return res.status(400).json({ message: 'Cannot check a description bullet on an inactive work package!' });
   }
 
   const hasPerms = await hasBulletCheckingPermissions(userId, descriptionId);
