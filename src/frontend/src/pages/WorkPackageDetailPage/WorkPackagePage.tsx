@@ -5,13 +5,13 @@
 
 import { useState } from 'react';
 import { WbsNumber } from 'shared';
-import { useSingleWorkPackage } from '../../hooks/WorkPackages.hooks';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import WorkPackageEditContainer from './WorkPackageEditContainer/WorkPackageEditContainer';
 import WorkPackageViewContainer from './WorkPackageViewContainer/WorkPackageViewContainer';
-import { useQuery } from '../../hooks/Utils.hooks';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface WorkPackagePageProps {
   wbsNum: WbsNumber;

@@ -6,7 +6,7 @@
 import { useState, useContext } from 'react';
 import { AuthenticatedUser, User } from 'shared';
 import { AuthContext } from '../app/AppContextAuth';
-import { useLogUserIn } from './Users.hooks';
+import { useLogUserIn } from './users.hooks';
 import { Auth } from '../utils/Types';
 
 // Provider hook that creates auth object and handles state

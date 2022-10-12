@@ -35,3 +35,12 @@ export const exampleRisk3: Risk = {
   dateCreated: new Date('2021-04-20'),
   createdBy: exampleProjectManagerUser
 };
+
+export const exampleRisk4: Risk = {
+  id: 'risk4',
+  project: exampleProject1,
+  detail: 'Risk #4',
+  isResolved: true,
+  dateCreated: new Date('2022-08-10'),
+  createdBy: exampleMemberUser
+};

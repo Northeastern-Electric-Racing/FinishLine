@@ -5,17 +5,23 @@
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
+import {
+  render,
+  screen,
+  routerWrapperBuilder,
+  act,
+  fireEvent
+} from '../../test-support/test-utils';
 import { Auth } from '../../../utils/Types';
-import { useSingleWorkPackage } from '../../../hooks/WorkPackages.hooks';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleWorkPackage1 } from '../../test-support/test-data/work-packages.stub';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 
-jest.mock('../../../hooks/WorkPackages.hooks');
+jest.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
 
@@ -30,7 +36,7 @@ const mockSingleWPHook = (
   );
 };
 
-jest.mock('../../../hooks/Auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

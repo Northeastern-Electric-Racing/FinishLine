@@ -7,7 +7,7 @@ import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { Badge, Button, Col, Container, Row } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionView.module.css';
+import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solution-view.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 

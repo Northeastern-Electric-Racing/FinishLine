@@ -12,7 +12,7 @@ import {
   exampleWorkPackage3
 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageDetails';
-import { useAllUsers } from '../../../../hooks/Users.hooks';
+import { useAllUsers } from '../../../../hooks/users.hooks';
 import { User } from 'shared';
 import { mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
 import { UseQueryResult } from 'react-query';
@@ -22,7 +22,7 @@ import {
   exampleLeadershipUser
 } from '../../../test-support/test-data/users.stub';
 
-jest.mock('../../../../hooks/Users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 
