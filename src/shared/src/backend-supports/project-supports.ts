@@ -24,6 +24,7 @@ const calculateEndDate = (start: Date, weeks: number) => {
  * @returns the latest end date of the workpackages
  */
 const calculateProjectEndDate = (wps: { duration: number; startDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
   const maxDate = wps.reduce(
     (max, cur) =>
       calculateEndDate(cur.startDate, cur.duration) > max

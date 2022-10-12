@@ -30,15 +30,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           )
         )
       : 'n/a';
-  const end = project.endDate
-    ? datePipe(
-        project.workPackages.reduce(
-          (min, cur) => (cur.endDate < min ? cur.endDate : min),
-          project.workPackages[0].endDate
-        )
-      )
-    : 'n/a';
-
   const allColsStyle = 'mb-2';
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
@@ -57,7 +48,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             <b>Start Date:</b> {start}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
-            <b>End Date:</b> {end}
+            <b>End Date:</b> {project.endDate}
           </Col>
         </Row>
         <Row>

@@ -64,7 +64,7 @@ export const exampleProject1: Project = {
     }
   ],
   duration: 8,
-  endDate: new Date('07/21/21'),
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage1, exampleWorkPackage2],
   risks: []
 };
@@ -103,7 +103,7 @@ export const exampleProject2: Project = {
   ],
   changes: [],
   duration: 0,
-  endDate: new Date('06/10/21'),
+  endDate: undefined,
   workPackages: [],
   risks: []
 };
@@ -146,7 +146,7 @@ export const exampleProject3: Project = {
   ],
   changes: [],
   duration: 3,
-  endDate: new Date('08/23/21'),
+  endDate: new Date('01/22/21'),
   workPackages: [exampleWorkPackage1],
   risks: []
 };
@@ -185,7 +185,7 @@ export const exampleProject4: Project = {
   ],
   changes: [],
   duration: 5,
-  endDate: new Date('06/15/21'),
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage2],
   risks: []
 };
@@ -224,7 +224,7 @@ export const exampleProject5: Project = {
   ],
   changes: [],
   duration: 2,
-  endDate: new Date('02/19/21'),
+  endDate: new Date('01/15/21'),
   workPackages: [exampleWorkPackage3],
   risks: []
 };
