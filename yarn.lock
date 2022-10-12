@@ -1576,6 +1576,69 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-io/core@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "@date-io/core@npm:2.15.0"
+  checksum: 5ecb264230a5bbf753177f84c7fa4e778b03d85bafb63709ca9211c373d52dae5decb6884bbe8f0a17bb2f17fc9184e418ca54da147106dfdb83fce6fb96631f
+  languageName: node
+  linkType: hard
+
+"@date-io/date-fns@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "@date-io/date-fns@npm:2.15.0"
+  dependencies:
+    "@date-io/core": ^2.15.0
+  peerDependencies:
+    date-fns: ^2.0.0
+  peerDependenciesMeta:
+    date-fns:
+      optional: true
+  checksum: 5aacac0efc50b6ae2d53d78b827a62a64fcf51e61dc4091aefec53db668ceadea0695f3cf878f89955b23a961deae5410dcbc5fd1d9326945c51bbb2f00d7aa9
+  languageName: node
+  linkType: hard
+
+"@date-io/dayjs@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "@date-io/dayjs@npm:2.15.0"
+  dependencies:
+    "@date-io/core": ^2.15.0
+  peerDependencies:
+    dayjs: ^1.8.17
+  peerDependenciesMeta:
+    dayjs:
+      optional: true
+  checksum: 3c06544f00ee33ea08d9002e988555f156559f06142bffcc9877f284057ae1aaa53967d97df771afabbb1fa87643d2f10130ee4d1f0fd7337ebdf2eba57a3018
+  languageName: node
+  linkType: hard
+
+"@date-io/luxon@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "@date-io/luxon@npm:2.15.0"
+  dependencies:
+    "@date-io/core": ^2.15.0
+  peerDependencies:
+    luxon: ^1.21.3 || ^2.x
+  peerDependenciesMeta:
+    luxon:
+      optional: true
+  checksum: 727ae1341040459fdf9ec4b818f46f926dba4f2b7258ae1f0c5da3b040e520322d451a5c5db6c1e6c150173e2a2ea384b56fc2d158352804c2b4e984324fceaf
+  languageName: node
+  linkType: hard
+
+"@date-io/moment@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "@date-io/moment@npm:2.15.0"
+  dependencies:
+    "@date-io/core": ^2.15.0
+  peerDependencies:
+    moment: ^2.24.0
+  peerDependenciesMeta:
+    moment:
+      optional: true
+  checksum: a2d5061ae2c7204f06bf5ced285685f2b1d73d8f89235c5344878b41266a920de72388d5c2b004be22b50982519efc824e5a9e9e89725de86bd6afd0740c5934
+  languageName: node
+  linkType: hard
+
 "@emotion/babel-plugin@npm:^11.10.0":
   version: 11.10.2
   resolution: "@emotion/babel-plugin@npm:11.10.2"
@@ -2411,6 +2474,50 @@ __metadata:
     react: ^17.0.2 || ^18.0.0
     react-dom: ^17.0.2 || ^18.0.0
   checksum: e339384f2fcdda9167bb100252da6a271a50e8d19d3ab0f79c4c56ab366876d809a4432551106d3b6c40687f9315c88cd799e2273159c70808d400edef676764
+  languageName: node
+  linkType: hard
+
+"@mui/x-date-pickers@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "@mui/x-date-pickers@npm:5.0.1"
+  dependencies:
+    "@babel/runtime": ^7.18.9
+    "@date-io/core": ^2.15.0
+    "@date-io/date-fns": ^2.15.0
+    "@date-io/dayjs": ^2.15.0
+    "@date-io/luxon": ^2.15.0
+    "@date-io/moment": ^2.15.0
+    "@mui/utils": ^5.9.3
+    "@types/react-transition-group": ^4.4.5
+    clsx: ^1.2.1
+    prop-types: ^15.7.2
+    react-transition-group: ^4.4.5
+    rifm: ^0.12.1
+  peerDependencies:
+    "@emotion/react": ^11.9.0
+    "@emotion/styled": ^11.8.1
+    "@mui/material": ^5.4.1
+    "@mui/system": ^5.4.1
+    date-fns: ^2.25.0
+    dayjs: ^1.10.7
+    luxon: ^1.28.0 || ^2.0.0 || ^3.0.0
+    moment: ^2.29.1
+    react: ^17.0.2 || ^18.0.0
+    react-dom: ^17.0.2 || ^18.0.0
+  peerDependenciesMeta:
+    "@emotion/react":
+      optional: true
+    "@emotion/styled":
+      optional: true
+    date-fns:
+      optional: true
+    dayjs:
+      optional: true
+    luxon:
+      optional: true
+    moment:
+      optional: true
+  checksum: adcabf32808dd2705210dd2ddd13cf63875912ffa9bbe05017b43f37b8e215dce5fa6b137a5a3f348aceacabc9af60abb97ba198cea31d5fce20d30f6c5dc718
   languageName: node
   linkType: hard
 
@@ -8783,6 +8890,7 @@ __metadata:
     "@mui/icons-material": ^5.10.3
     "@mui/material": ^5.10.3
     "@mui/x-data-grid": ^5.16.0
+    "@mui/x-date-pickers": ^5.0.1
     "@testing-library/jest-dom": ^5.11.9
     "@testing-library/react": ^11.2.5
     "@testing-library/react-hooks": ^8.0.1
@@ -15718,6 +15826,15 @@ __metadata:
   version: 1.0.0
   resolution: "rgba-regex@npm:1.0.0"
   checksum: 7f2cd271572700faea50753d82524cb2b98f17a5b9722965c7076f6cd674fe545f28145b7ef2cccabc9eca2475c793db16862cd5e7b3784a9f4b8d6496431057
+  languageName: node
+  linkType: hard
+
+"rifm@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "rifm@npm:0.12.1"
+  peerDependencies:
+    react: ">=16.8"
+  checksum: 7f11621b6a14885bdee0b49c21174627272a5f683f74aaf8444570dae319f86de38d2af55c17e08af1ebb837bf956894971cceadeaca890e4c9cd1d46f02a385
   languageName: node
   linkType: hard
 

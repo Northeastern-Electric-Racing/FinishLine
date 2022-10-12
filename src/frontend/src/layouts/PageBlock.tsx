@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { ReactNode } from 'react';
+import { readBuilderProgram } from 'typescript';
 
 interface PageBlockProps {
   title: string;
@@ -21,7 +22,7 @@ interface PageBlockProps {
  */
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) => {
   return (
-    <Card sx={{ my: 2 }} variant="outlined">
+    <Card sx={{ my: 2, backgroundColor: '#f0f1f8' }} variant="outlined">
       <CardContent>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>

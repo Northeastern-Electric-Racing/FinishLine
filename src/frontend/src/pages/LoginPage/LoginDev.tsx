@@ -3,7 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Form, InputGroup, FormControl, Button } from 'react-bootstrap';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
+import LoginIcon from '@mui/icons-material/Login';
+import FormControl from '@mui/material/FormControl';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
@@ -29,28 +34,27 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetRole, devFormSubmit }) => {
     exampleGuestUser
   ];
   return (
-    <Form className="pt-3" onSubmit={devFormSubmit}>
-      <InputGroup>
-        <InputGroup.Append>
-          <InputGroup.Text id="user-select">Select User</InputGroup.Text>
-        </InputGroup.Append>
-        <FormControl
+    <form onSubmit={devFormSubmit}>
+      <FormControl fullWidth sx={{ marginTop: 2 }}>
+        <InputLabel id="localDevUser">Local Dev User</InputLabel>
+        <Select
+          label="Local Dev User"
+          labelId="localDevUser"
           onChange={(e: any) => devSetRole(e.target.value)}
-          aria-describedby="user-select"
-          as="select"
-          custom
+          endAdornment={
+            <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
+              <LoginIcon />
+            </IconButton>
+          }
         >
           {usersList.map((user) => (
-            <option key={user.role}>{user.role}</option>
+            <MenuItem key={user.role} value={user.role}>
+              {user.role}
+            </MenuItem>
           ))}
-        </FormControl>
-        <InputGroup.Append>
-          <Button variant="primary" type="submit">
-            Log In
-          </Button>
-        </InputGroup.Append>
-      </InputGroup>
-    </Form>
+        </Select>
+      </FormControl>
+    </form>
   );
 };
 
