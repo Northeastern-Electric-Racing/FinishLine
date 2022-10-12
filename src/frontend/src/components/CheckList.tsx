@@ -5,11 +5,10 @@
 
 import PageBlock from '../layouts/PageBlock';
 import { Form } from 'react-bootstrap';
-import styles from '../stylesheets/components/CheckList.module.css';
+import styles from '../stylesheets/components/check-list.module.css';
 import { ReactNode } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
-import LoadingIndicator from './LoadingIndicator';
-import { useAuth } from '../hooks/Auth.hooks';
+import { useAuth } from '../hooks/auth.hooks';
 
 export type CheckListItem = {
   id: number;
@@ -25,9 +24,7 @@ interface CheckListProps {
 
 const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
   const auth = useAuth();
-  const { isLoading, mutateAsync } = useCheckDescriptionBullet();
-
-  if (isLoading) return <LoadingIndicator />;
+  const { mutateAsync } = useCheckDescriptionBullet();
 
   const handleCheck = async (idx: number) => {
     await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });

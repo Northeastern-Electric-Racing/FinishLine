@@ -9,7 +9,7 @@ import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import styles from '../../../stylesheets/components/CheckList.module.css';
+import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
@@ -122,10 +122,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           data-testId="convertButton"
           onClick={() => {
             history.push(
-              routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                wbsPipe(wbsNum) +
-                '&riskDetails=' +
-                encodeURIComponent(risk.detail)
+              routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(wbsNum) + '&riskDetails=' + encodeURIComponent(risk.detail)
             );
           }}
         >
@@ -159,13 +156,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               {hasPermissions ? (
                 <Form.Check
                   label={
-                    <p
-                      style={
-                        risk.isResolved
-                          ? { textDecoration: 'line-through' }
-                          : { textDecoration: 'none' }
-                      }
-                    >
+                    <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
                       {risk.detail}
                     </p>
                   }
@@ -175,11 +166,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
                 />
               ) : (
                 <li
-                  style={
-                    risk.isResolved
-                      ? { textDecoration: 'line-through' }
-                      : { textDecoration: 'none' }
-                  }
+                  style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
                   className="mb-3"
                 >
                   {risk.detail}
@@ -199,10 +186,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             <Modal.Title>Add New Risk</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form.Control
-              placeholder={'Enter New Risk Here'}
-              onChange={(e) => setNewDetail(e.target.value)}
-            />
+            <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={handleClose}>
