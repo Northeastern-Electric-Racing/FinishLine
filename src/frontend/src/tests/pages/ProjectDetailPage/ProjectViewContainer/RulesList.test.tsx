@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import * as themeHooks from '../../../../hooks/Theme.hooks';
+import * as themeHooks from '../../../../hooks/theme.hooks';
 import themes from '../../../../utils/Themes';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import RulesList from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RulesList';

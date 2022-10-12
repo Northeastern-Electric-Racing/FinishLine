@@ -7,14 +7,14 @@ import { useState } from 'react';
 import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
-import { useTheme } from '../../hooks/Theme.hooks';
-import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/Home.module.css';
+import styles from '../../stylesheets/pages/home.module.css';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');

@@ -27,6 +27,7 @@ describe('Work Packages', () => {
         workPackageNumber: 2
       }
     };
+
     const res = await request(app).post('/create').send(proj);
 
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);

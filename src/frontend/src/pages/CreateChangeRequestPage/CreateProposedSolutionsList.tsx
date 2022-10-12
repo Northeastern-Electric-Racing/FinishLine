@@ -8,8 +8,8 @@ import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionFor
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
-import { useAuth } from '../../hooks/Auth.hooks';
+import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
+import { useAuth } from '../../hooks/auth.hooks';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];

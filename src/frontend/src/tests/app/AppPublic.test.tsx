@@ -7,7 +7,7 @@ import { User } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/Routes';
 import { Auth } from '../../utils/Types';
 import AppPublic from '../../app/AppPublic';
@@ -21,7 +21,7 @@ jest.mock('../../app/AppAuthenticated', () => {
   };
 });
 
-jest.mock('../../hooks/Auth.hooks');
+jest.mock('../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

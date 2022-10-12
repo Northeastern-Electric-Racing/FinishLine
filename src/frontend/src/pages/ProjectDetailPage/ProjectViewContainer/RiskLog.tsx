@@ -15,8 +15,8 @@ import {
   useEditSingleRisk,
   useDeleteSingleRisk,
   useGetRisksForProject
-} from '../../../hooks/Risks.hooks';
-import { useAuth } from '../../../hooks/Auth.hooks';
+} from '../../../hooks/risks.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';

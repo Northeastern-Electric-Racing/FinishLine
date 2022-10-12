@@ -9,7 +9,7 @@ import {
   useLogUserIn,
   useSingleUserSettings,
   useUpdateUserSettings
-} from '../../../../hooks/Users.hooks';
+} from '../../../../hooks/users.hooks';
 import {
   mockUseMutationResult,
   mockUseQueryResult
@@ -36,7 +36,7 @@ jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => 
   };
 });
 
-jest.mock('../../../../hooks/Users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
 const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<
   UseQueryResult<UserSettings>

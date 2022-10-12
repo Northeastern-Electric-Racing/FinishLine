@@ -6,7 +6,7 @@
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/Routes';
 import Home from '../../../pages/HomePage/Home';
-import * as authHooks from '../../../hooks/Auth.hooks';
+import * as authHooks from '../../../hooks/auth.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 

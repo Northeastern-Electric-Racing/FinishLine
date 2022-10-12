@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../hooks/Theme.hooks';
+import { useTheme } from '../../../../hooks/theme.hooks';
 import themes from '../../../../utils/Themes';
 import { Theme } from '../../../../utils/Types';
 import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
@@ -15,7 +15,7 @@ import {
   exampleRisk4
 } from '../../../test-support/test-data/risks.stub';
 import { Auth } from '../../../../utils/Types';
-import { useAuth } from '../../../../hooks/Auth.hooks';
+import { useAuth } from '../../../../hooks/auth.hooks';
 import {
   mockAuth,
   mockPromiseAxiosResponse
@@ -29,18 +29,18 @@ import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import { getRisksForProject } from '../../../../apis/Risks.api';
 import { AxiosResponse } from 'axios';
 import { Risk } from 'shared';
-import { useGetRisksForProject } from '../../../../hooks/Risks.hooks';
+import { useGetRisksForProject } from '../../../../hooks/risks.hooks';
 import { renderHook } from '@testing-library/react-hooks';
 import wrapper from '../../../../app/AppContextQuery';
 
-jest.mock('../../../../hooks/Theme.hooks');
+jest.mock('../../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {
   mockTheme.mockReturnValue(themes[0]);
 };
 
-jest.mock('../../../../hooks/Auth.hooks');
+jest.mock('../../../../hooks/auth.hooks');
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
 jest.mock('../../../../apis/Risks.api');

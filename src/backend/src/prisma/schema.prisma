@@ -102,6 +102,7 @@ model User_Settings {
   userId       Int    @unique
   user         User   @relation(fields: [userId], references: [userId])
   defaultTheme Theme  @default(DARK)
+  slackId      String @default("")
 }
 
 model Change_Request {

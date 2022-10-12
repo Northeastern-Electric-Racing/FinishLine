@@ -4,7 +4,7 @@
  */
 
 import { Button } from 'react-bootstrap';
-import styles from '../../../stylesheets/pages/ProjectDetailPage/EditModeOptions.module.css';
+import styles from '../../../stylesheets/pages/project-detail-page/edit-mode-options.module.css';
 
 interface EditModeOptionsProps {
   exitEditMode: () => void;

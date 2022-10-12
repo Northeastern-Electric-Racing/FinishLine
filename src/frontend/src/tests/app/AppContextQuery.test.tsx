@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react'; // avoid circular dependency
-import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import AppContextQuery from '../../app/AppContextQuery';
 
 describe('app context', () => {

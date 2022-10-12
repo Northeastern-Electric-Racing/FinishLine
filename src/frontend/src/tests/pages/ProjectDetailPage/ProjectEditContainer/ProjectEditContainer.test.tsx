@@ -5,9 +5,9 @@
 
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
 import { wbsPipe } from '../../../../utils/Pipes';
-import * as projectHooks from '../../../../hooks/Projects.hooks';
+import * as projectHooks from '../../../../hooks/projects.hooks';
 import { exampleProject1 as exPrj1 } from '../../../test-support/test-data/projects.stub';
-import * as userHooks from '../../../../hooks/Users.hooks';
+import * as userHooks from '../../../../hooks/users.hooks';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
