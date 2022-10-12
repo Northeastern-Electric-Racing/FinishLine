@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/Routes';
 import { useAllProjects } from '../../hooks/Projects.hooks';
@@ -113,7 +113,7 @@ const ProjectsTable: React.FC = () => {
   ];
 
   return (
-    <Container fluid>
+    <>
       <PageTitle title={'Projects'} previousPages={[]} />
       <Row>
         <Col>
@@ -144,7 +144,7 @@ const ProjectsTable: React.FC = () => {
           />
         </Col>
       </Row>
-    </Container>
+    </>
   );
 };
 

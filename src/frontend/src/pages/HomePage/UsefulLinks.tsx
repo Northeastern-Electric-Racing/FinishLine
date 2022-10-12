@@ -60,7 +60,7 @@ const UsefulLinks: React.FC = () => {
 
   return (
     <PageBlock title={'Useful Links'}>
-      <Box display="flex" flexDirection="row">
+      <Box display="flex" flexWrap="wrap" flexDirection="row" sx={{ p: 0 }}>
         {links.map((ele) => (
           <Box padding={1}>{ele}</Box>
         ))}

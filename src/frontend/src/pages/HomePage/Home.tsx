@@ -4,7 +4,6 @@
  */
 
 import Typography from '@mui/material/Typography';
-import { Container } from 'react-bootstrap';
 import { useAuth } from '../../hooks/Auth.hooks';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -13,14 +12,14 @@ import UpcomingDeadlines from './UpcomingDeadlines';
 const Home: React.FC = () => {
   const auth = useAuth();
   return (
-    <Container fluid>
-      <Typography variant="h4" sx={{ textAlign: 'center', paddingY: 2 }}>
+    <>
+      <Typography variant="h3" sx={{ textAlign: 'center', pt: 3 }}>
         Welcome, {auth.user?.firstName}!
       </Typography>
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-    </Container>
+    </>
   );
 };
 
