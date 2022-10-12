@@ -101,6 +101,7 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
             value={item.toString()}
             label="Work Package Name"
             placeholder="Input new bullet here..."
+            sx={{ backgroundColor: 'white' }}
             ref={isLastElement(index) ? focusRef : null}
             autoFocus={hasTyped && isLastElement(index)}
             onKeyDown={(e: any) => handleKeyDown(e, index)}

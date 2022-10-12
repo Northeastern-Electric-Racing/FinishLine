@@ -97,7 +97,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
       <PageBlock title={''}>
         <form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={6} md={6}>
               <Controller
                 name="wbsNum"
                 defaultValue={wbsNum}
@@ -107,12 +107,18 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                   <TextField
                     {...field}
                     label="WBS Number"
+                    sx={{ backgroundColor: 'white' }}
+                    autoComplete="off"
                     error={!!fieldState.error}
                     helperText={fieldState.error?.type}
                   />
                 )}
               />
-
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <Box>
+                <Typography variant="caption">Type</Typography>
+              </Box>
               <Controller
                 name="type"
                 defaultValue={ChangeRequestType.Issue}
@@ -120,10 +126,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                 rules={{ required: true }}
                 render={({ field, fieldState }) => (
                   <FormControl>
-                    <InputLabel id={`${field.name}Label`}>Type</InputLabel>
                     <Select
                       {...field}
-                      label="Type"
+                      sx={{ backgroundColor: 'white' }}
+                      variant="outlined"
                       labelId={`${field.name}Label`}
                       error={!!fieldState.error}
                     >
@@ -133,11 +139,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                         </MenuItem>
                       ))}
                     </Select>
-                    <FormHelperText>{fieldState.error?.type}</FormHelperText>
+                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>
+                      {fieldState.error?.type}
+                    </FormHelperText>
                   </FormControl>
                 )}
               />
-
+            </Grid>
+            <Grid item xs={6} md={6}>
               <Controller
                 name="what"
                 control={control}
@@ -150,6 +159,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                     multiline
                     rows={4}
                     fullWidth
+                    sx={{ backgroundColor: 'white' }}
                     error={!!fieldState.error}
                     helperText={fieldState.error?.type}
                     placeholder="What is the situation?"
@@ -157,9 +167,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                 )}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Box marginBottom={1}>
-                <Typography variant="caption">Reasons Why CR is Needed</Typography>
+            <Grid item xs={6} md={6}>
+              <Box>
+                <Typography variant="caption">Why</Typography>
               </Box>
               <Box>
                 {fields.map((field, index) => (
@@ -171,11 +181,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                       rules={{ required: true }}
                       render={({ field, fieldState }) => (
                         <FormControl>
-                          <InputLabel id={`${field.name}Label`}>Type</InputLabel>
                           <Select
                             {...field}
-                            label="Type"
                             labelId={`${field.name}Label`}
+                            sx={{ backgroundColor: 'white' }}
                             error={!!fieldState.error}
                             autoWidth
                           >
@@ -201,11 +210,17 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                           error={!!fieldState.error}
                           helperText={fieldState.error?.type}
                           placeholder="Why details"
-                          sx={{ flexGrow: 1 }}
+                          autoComplete="off"
+                          sx={{ flexGrow: 1, backgroundColor: 'white' }}
                         />
                       )}
                     />
-                    <Button variant="contained" color="error" onClick={() => remove(index)}>
+                    <Button
+                      sx={{ maxHeight: '59px' }}
+                      variant="contained"
+                      color="error"
+                      onClick={() => remove(index)}
+                    >
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -218,67 +233,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
               >
                 Add Reason
               </Button>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Controller
-                name="scopeImpact"
-                control={control}
-                defaultValue=""
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label={'Scope Impact'}
-                    multiline
-                    rows={4}
-                    fullWidth
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.type}
-                    placeholder="What is the impact to scope?"
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Controller
-                name="timelineImpact"
-                control={control}
-                defaultValue={0}
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Timeline Impact"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.type}
-                    sx={{ maxWidth: 100 }}
-                    InputProps={{
-                      endAdornment: <InputAdornment position="end">weeks</InputAdornment>
-                    }}
-                  />
-                )}
-              />
-
-              <Controller
-                name="budgetImpact"
-                control={control}
-                defaultValue={0}
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="Budget Impact"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.type}
-                    placeholder="$ needed"
-                    sx={{ maxWidth: 150 }}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                      endAdornment: <InputAdornment position="end">USD</InputAdornment>
-                    }}
-                  />
-                )}
-              />
             </Grid>
           </Grid>
           <Box display="flex" flexDirection="row-reverse">

@@ -85,8 +85,9 @@ const UpcomingDeadlines: React.FC = () => {
             value={daysUntilDeadline}
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
             startAdornment={<InputAdornment position="start">Next</InputAdornment>}
+            autoWidth
             endAdornment={
-              <InputAdornment position="end" sx={{ marginRight: 2 }}>
+              <InputAdornment position="end" sx={{ marginLeft: -2, marginRight: 2 }}>
                 Days
               </InputAdornment>
             }
