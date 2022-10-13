@@ -14,15 +14,12 @@ describe('Users', () => {
     jest.clearAllMocks();
   });
 
-  const batman_settings = {
+  const batmanSettings = {
     id: 'bm',
     userId: 1,
-    user: batman,
     defaultTheme: Theme.DARK,
     slackId: 'slack'
   };
-
-  const newBatman = { ...batman, UserSettings: batman_settings };
 
   test('getAllUsers', async () => {
     jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
@@ -53,7 +50,7 @@ describe('Users', () => {
   });
 
   test('updateUserSettings', async () => {
-    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(newBatman.UserSettings);
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
     const req = { defaultTheme: 'DARK' };
     const res = await request(app).post('/1/settings').send(req);
 
@@ -61,7 +58,6 @@ describe('Users', () => {
   });
 
   test('updateUserSettings fails with no default theme', async () => {
-    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(newBatman.UserSettings);
     const req = {};
     const res = await request(app).post('/1/settings').send(req);
 
