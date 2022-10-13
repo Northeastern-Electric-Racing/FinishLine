@@ -29,7 +29,7 @@ describe('Users', () => {
     const { googleAuthId: g1, ...restOfBatman } = batman;
     const { googleAuthId: g2, ...restOfSuperman } = superman;
 
-    expect(res.statusCode).toBe(200);
+    expect(res.status).toBe(200);
     expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     // note that batman was sorted to the front because his first name is before supermans alphabetically
     // and also that we don't return the google auth id for security reasons
@@ -43,7 +43,7 @@ describe('Users', () => {
 
     const { googleAuthId, ...restOfBatman } = batman;
 
-    expect(res.statusCode).toBe(200);
+    expect(res.status).toBe(200);
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     // we don't return the google auth id for security reasons
     expect(res.body).toStrictEqual(restOfBatman);
@@ -54,13 +54,13 @@ describe('Users', () => {
     const req = { defaultTheme: 'DARK' };
     const res = await request(app).post('/1/settings').send(req);
 
-    expect(res.statusCode).toBe(200);
+    expect(res.status).toBe(200);
   });
 
   test('updateUserSettings fails with no default theme', async () => {
     const req = {};
-    const res = await request(app).post('/1/settings').send(req);
+    const res = await request(app).post('/1/settings').send(req).expect(404);
 
-    expect(res.statusCode).toBe(404);
+    expect(res.status).toBe(404);
   });
 });
