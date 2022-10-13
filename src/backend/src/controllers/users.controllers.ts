@@ -7,10 +7,7 @@ import {
   userTransformer
 } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
-<<<<<<< HEAD
 import { Request, Response } from 'express';
-=======
->>>>>>> develop
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
