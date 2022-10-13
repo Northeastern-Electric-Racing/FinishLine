@@ -11,11 +11,7 @@ interface UserSettingsViewProps {
 }
 
 const renderSlackId = (settings: UserSettings) => {
-  return settings.slackId === undefined ? (
-    <div>
-      <b>Slack ID: </b>
-    </div>
-  ) : (
+  return (
     <div>
       <b>Slack ID: </b>
       <a
@@ -31,6 +27,7 @@ const renderSlackId = (settings: UserSettings) => {
 
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
+  console.log(settings);
   return (
     <Row>
       <Col md={4} lg={2}>
