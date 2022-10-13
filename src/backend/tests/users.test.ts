@@ -53,7 +53,7 @@ describe('Users', () => {
   });
 
   test('updateUserSettings', async () => {
-    jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(newBatman.UserSettings);
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(newBatman.UserSettings);
     const req = { defaultTheme: 'DARK' };
     const res = await request(app).post('/1/settings').send(req);
 
@@ -61,7 +61,7 @@ describe('Users', () => {
   });
 
   test('updateUserSettings fails with no default theme', async () => {
-    jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(newBatman.UserSettings);
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(newBatman.UserSettings);
     const req = {};
     const res = await request(app).post('/1/settings').send(req);
 
