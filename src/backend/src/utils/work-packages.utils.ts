@@ -8,7 +8,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { userTransformer } from './users.utils';
-import { buildChangeDetail, convertStatus, descBulletConverter, wbsNumOf } from './utils';
+import { buildChangeDetail, convertStatus, wbsNumOf } from './utils';
 import { descBulletArgs, descBulletTransformer } from './description-bullets.utils';
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
@@ -26,14 +26,8 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   }
 });
 
-export const workPackageTransformer = (
-  wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>
-) => {
-  const expectedProgress = calculatePercentExpectedProgress(
-    wpInput.startDate,
-    wpInput.duration,
-    wpInput.wbsElement.status
-  );
+export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
+  const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   const bullets = wpInput.deliverables.concat(wpInput.expectedActivities);
   const progress = Math.floor((bullets.filter((b) => b.userChecked).length / bullets.length) * 100);
@@ -48,12 +42,8 @@ export const workPackageTransformer = (
     expectedActivities: wpInput.expectedActivities.map(descBulletTransformer),
     deliverables: wpInput.deliverables.map(descBulletTransformer),
     dependencies: wpInput.dependencies.map(wbsNumOf),
-    projectManager: wpInput.wbsElement.projectManager
-      ? userTransformer(wpInput.wbsElement.projectManager)
-      : undefined,
-    projectLead: wpInput.wbsElement.projectLead
-      ? userTransformer(wpInput.wbsElement.projectLead)
-      : undefined,
+    projectManager: wpInput.wbsElement.projectManager ? userTransformer(wpInput.wbsElement.projectManager) : undefined,
+    projectLead: wpInput.wbsElement.projectLead ? userTransformer(wpInput.wbsElement.projectLead) : undefined,
     status: convertStatus(wpInput.wbsElement.status),
     wbsNum,
     endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
@@ -123,7 +113,12 @@ export const createChangeJsonDates = (
   implementerId: number,
   wbsElementId: number
 ) => {
-  if (oldValue.getTime() !== newValue.getTime()) {
+  // toUTCString gives a date like "Fri, 01 Jan 2021 00:00:00 GMT" and we just want to compare those first four words
+  const oldDate = oldValue.toUTCString().split(' ').splice(0, 4).join();
+  const newDate = newValue.toUTCString().split(' ').splice(0, 4).join();
+  if (oldDate !== newDate) {
+    console.log(oldDate);
+    console.log(newDate);
     return {
       changeRequestId: crId,
       implementerId,
@@ -223,15 +218,9 @@ export const createDescriptionBulletChangesJson = (
   });
 
   return {
-    deletedIds: changes
-      .filter((element) => element.type === 'Removed')
-      .map((element) => element.element.id),
-    addedDetails: changes
-      .filter((element) => element.type === 'Added new')
-      .map((element) => element.element.detail),
-    editedIdsAndDetails: changes
-      .filter((element) => element.type === 'Edited')
-      .map((element) => element.element),
+    deletedIds: changes.filter((element) => element.type === 'Removed').map((element) => element.element.id),
+    addedDetails: changes.filter((element) => element.type === 'Added new').map((element) => element.element.detail),
+    editedIdsAndDetails: changes.filter((element) => element.type === 'Edited').map((element) => element.element),
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
