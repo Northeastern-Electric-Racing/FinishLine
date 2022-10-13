@@ -3,6 +3,8 @@ import express from 'express';
 import userRouter from '../src/routes/users.routes';
 import prisma from '../src/prisma/prisma';
 import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { Role } from '@prisma/client';
+import { GoogleAuth } from 'google-auth-library';
 
 const app = express();
 app.use(express.json());
@@ -41,7 +43,7 @@ describe('Users', () => {
   });
   test('cannotUpdateUserToHigherRole', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
-    const body = { userId: 2, role: 'APP_ADMIN' };
+    const body = { userId: superman.userId, role: 'APP_ADMIN' };
     const res = await request(app).post('/3/change-role').send(body);
     expect(res.statusCode).toBe(400);
     expect(res.body).toStrictEqual({
@@ -50,7 +52,7 @@ describe('Users', () => {
   });
   test('cannotDemoteUserOfSameRole', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(flash);
-    const body = { userId: 2, role: 'GUEST' };
+    const body = { userId: superman.userId, role: 'GUEST' };
     const res = await request(app).post('/4/change-role').send(body);
     expect(res.statusCode).toBe(400);
     expect(res.body).toStrictEqual({
@@ -58,13 +60,19 @@ describe('Users', () => {
     });
   });
   test('updateUserRoleSuccess', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
-    const body = { userId: 1, role: 'GUEST' };
-    const res = await request(app).post('/2/change-role').send({ body });
+    const newSuperman = { ...superman, role: Role.MEMBER };
 
-    const newSuperman = { ...superman, role: 'GUEST' };
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(batman);
+    jest.spyOn(prisma.user, "findUnique").mockResolvedValueOnce(superman);
+    jest.spyOn(prisma.user, 'update').mockResolvedValueOnce(newSuperman);
+
+    const body = { userId: 1, role: 'MEMBER' };
+
+    const res = await request(app).post('/2/change-role').send(body);
+    
+    const { googleAuthId, ...restOfSuperman } = newSuperman;
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({ newSuperman });
+    expect(res.body).toStrictEqual( restOfSuperman );
     expect(prisma.user.update).toHaveBeenCalledTimes(1);
   });
 });

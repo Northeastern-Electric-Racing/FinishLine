@@ -50,7 +50,7 @@ export const rankUserRole = (role: Role) => {
       return 3;
     case 'MEMBER':
       return 2;
-    case 'GUEST':
+    default:
       return 1;
   }
 };
