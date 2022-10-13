@@ -20,8 +20,11 @@ import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
 import { useTheme } from '../../../hooks/theme.hooks';
-import { Theme } from '../../../utils/Types';
+import { Auth, Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../hooks/change-requests.hooks');
 
@@ -38,6 +41,13 @@ const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], 
   );
 
   mockTheme.mockReturnValue(themes[0]);
+};
+
+jest.mock('../../../../hooks/auth.hooks');
+const mockedUseAuth = useAuth as jest.Mock<Auth>;
+
+const mockAuthHook = (user = exampleAdminUser) => {
+  mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
 // Sets up the component under test with the desired values and renders it.
@@ -88,6 +98,7 @@ describe('change requests table container', () => {
   });
 
   it('handles the api returning a normal array of change requests', async () => {
+    mockAuthHook();
     mockHook(false, false, exampleAllChangeRequests);
     renderComponent();
     await waitFor(() => screen.getByText(exampleAllChangeRequests[0].crId));
