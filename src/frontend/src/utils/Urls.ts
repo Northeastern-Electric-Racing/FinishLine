@@ -53,6 +53,10 @@ const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/prop
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 
+/**************** Description Bullet Endpoints ****************/
+const descriptionBullets = () => `${API_URL}/description-bullets`;
+const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
+
 /**************** Other Endpoints ****************/
 const version = () =>
   `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -89,6 +93,8 @@ export const apiUrls = {
   changeRequestCreateProposeSolution,
 
   teams,
+
+  descriptionBulletsCheck,
 
   version
 };
