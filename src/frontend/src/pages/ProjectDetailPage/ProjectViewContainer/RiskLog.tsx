@@ -116,22 +116,24 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
   const ConvertToCRButton = (risk: Risk) => {
     return (
-      <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-        <Button
-          variant="success"
-          data-testId="convertButton"
-          onClick={() => {
-            history.push(
-              routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                wbsPipe(wbsNum) +
-                '&riskDetails=' +
-                encodeURIComponent(risk.detail)
-            );
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </Button>
-      </OverlayTrigger>
+      role !== 'GUEST' && (
+        <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+          <Button
+            variant="success"
+            data-testId="convertButton"
+            onClick={() => {
+              history.push(
+                routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                  wbsPipe(wbsNum) +
+                  '&riskDetails=' +
+                  encodeURIComponent(risk.detail)
+              );
+            }}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </Button>
+        </OverlayTrigger>
+      )
     );
   };
 
