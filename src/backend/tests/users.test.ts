@@ -13,6 +13,16 @@ describe('Users', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
+  const batman_settings = {
+    id: 'bm',
+    userId: 1,
+    user: batman,
+    defaultTheme: Theme.DARK
+  };
+
+  const newBatman = { ...batman, UserSettings: batman_settings };
+
   test('getAllUsers', async () => {
     jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
 
@@ -42,15 +52,6 @@ describe('Users', () => {
   });
 
   test('updateUserSettings', async () => {
-    const batman_settings = {
-      id: 'bm',
-      userId: 1,
-      user: batman,
-      defaultTheme: Theme.DARK
-    };
-
-    const newBatman = { ...batman, UserSettings: batman_settings };
-
     jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(newBatman.UserSettings);
     const req = { defaultTheme: 'DARK' };
     const res = await request(app).post('/1/settings').send(req);
@@ -58,10 +59,11 @@ describe('Users', () => {
     expect(res.statusCode).toBe(200);
   });
 
-  // test('updateUserSettings fails with no default theme', async () => {
-  //   const req = {};
-  //   const res = await request(app).post('/1/settings').send(req);
+  test('updateUserSettings fails with no default theme', async () => {
+    jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(newBatman.UserSettings);
+    const req = {};
+    const res = await request(app).post('/1/settings').send(req);
 
-  //   expect(res.statusCode).toBe(404);
-  // });
+    expect(res.statusCode).toBe(404);
+  });
 });
