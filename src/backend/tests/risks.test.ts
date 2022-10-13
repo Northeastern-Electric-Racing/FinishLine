@@ -26,14 +26,12 @@ describe('Risks', () => {
   });
 
   test(`the original risk wasn't resolved and the payload is trying to resolve it`, async () => {
-    // const risk = { ...editRiskTrue};
     const res = await request(app).post('/edit').send(editRiskTrue);
 
     expect(res.body.isResolved).toBe(true);
   });
 
   test('the original risk was resolved and the payload is trying to unresolve it', async () => {
-    // const risk = { ...editRiskTrue};
     const res = await request(app).post('/edit').send(editRiskFalse);
 
     expect(res.body.isResolved).toBe(false);
