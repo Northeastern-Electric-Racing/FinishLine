@@ -5,19 +5,19 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { render, screen } from '../../../TestSupport/TestUtils';
+import { render, screen } from '../../../test-support/test-utils';
 import { wbsPipe } from '../../../../utils/Pipes';
-import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
-import { exampleWbs1 } from '../../../TestSupport/TestData/WbsNumbers.stub';
+import { useAllUsers, useLogUserIn } from '../../../../hooks/users.hooks';
+import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import {
   mockUseMutationResult,
   mockUseQueryResult
-} from '../../../TestSupport/TestData/TestUtils.stub';
-import { useCreateActivationChangeRequest } from '../../../../hooks/ChangeRequests.hooks';
-import { exampleAllUsers } from '../../../TestSupport/TestData/Users.stub';
+} from '../../../test-support/test-data/test-utils.stub';
+import { useCreateActivationChangeRequest } from '../../../../hooks/change-requests.hooks';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 
-jest.mock('../../../../hooks/Users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 
@@ -33,7 +33,7 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
   );
 };
 
-jest.mock('../../../../hooks/ChangeRequests.hooks');
+jest.mock('../../../../hooks/change-requests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateActivationCR =

@@ -13,7 +13,6 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -21,7 +20,6 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
-import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 
 interface CreateChangeRequestViewProps {
@@ -40,10 +38,7 @@ const wbsTester = (wbsNum: string | undefined) => {
 };
 
 const schema = yup.object().shape({
-  wbsNum: yup
-    .string()
-    .required('WBS number is required')
-    .test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
+  wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
   scopeImpact: yup.string().required('Scope Impact is required'),
@@ -90,10 +85,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
 
   return (
     <>
-      <PageTitle
-        title={'New Change Request'}
-        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      />
+      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title={''}>
         <form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
@@ -139,9 +131,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                         </MenuItem>
                       ))}
                     </Select>
-                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>
-                      {fieldState.error?.type}
-                    </FormHelperText>
+                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
                   </FormControl>
                 )}
               />
@@ -215,12 +205,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                         />
                       )}
                     />
-                    <Button
-                      sx={{ maxHeight: '59px' }}
-                      variant="contained"
-                      color="error"
-                      onClick={() => remove(index)}
-                    >
+                    <Button sx={{ maxHeight: '59px' }} variant="contained" color="error" onClick={() => remove(index)}>
                       <DeleteIcon />
                     </Button>
                   </Box>

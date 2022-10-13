@@ -1,0 +1,32 @@
+name: Task
+description: Create a task that a developer can complete.
+title: '[Area] - Short Description'
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a brief summary of this issue
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What are the conditions that need to be satisified to complete this task?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How will this solution be implemented? What will be changed or added?
+    validations:
+      required: true
+  - type: textarea
+    id: mocks
+    attributes:
+      label: Mocks
+      description: Provide mocks of this new feature
+    validations:
+      required: false

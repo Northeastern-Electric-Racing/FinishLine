@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
-import { useToggleTheme } from '../../../hooks/Theme.hooks';
-import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/Users.hooks';
+import { useToggleTheme } from '../../../hooks/theme.hooks';
+import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
@@ -31,8 +31,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   const theme = useToggleTheme();
 
   if (userSettings.isLoading || update.isLoading) return <LoadingIndicator />;
-  if (userSettings.isError)
-    return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
+  if (userSettings.isError) return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
   const handleConfirm = async ({ defaultTheme }: FormInput) => {

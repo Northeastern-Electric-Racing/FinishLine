@@ -9,7 +9,7 @@ import {
   waitFor,
   fireEvent,
   routerWrapperBuilder
-} from '../../TestSupport/TestUtils';
+} from '../../test-support/test-utils';
 import NavUserMenu from '../../../layouts/NavTopBar/NavUserMenu';
 
 /**
@@ -25,12 +25,7 @@ const renderComponent = () => {
 };
 
 describe('navigation user menu tests', () => {
-  it('renders user icon dropdown menu button', () => {
-    renderComponent();
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
-
-  it('renders the user menu items', async () => {
+  it('renders the button and user menu items', async () => {
     renderComponent();
     const user: HTMLElement = screen.getByRole('button');
     expect(user).toBeInTheDocument();

@@ -5,18 +5,18 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { render, routerWrapperBuilder, screen } from '../../../TestSupport/TestUtils';
-import { useEditWorkPackage } from '../../../../hooks/WorkPackages.hooks';
-import { exampleWorkPackage1 } from '../../../TestSupport/TestData/WorkPackages.stub';
-import { useAllUsers, useLogUserIn } from '../../../../hooks/Users.hooks';
+import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
+import { useEditWorkPackage } from '../../../../hooks/work-packages.hooks';
+import { exampleWorkPackage1 } from '../../../test-support/test-data/work-packages.stub';
+import { useAllUsers, useLogUserIn } from '../../../../hooks/users.hooks';
 import {
   mockUseMutationResult,
   mockUseQueryResult
-} from '../../../TestSupport/TestData/TestUtils.stub';
+} from '../../../test-support/test-data/test-utils.stub';
 import WorkPackageEditContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageEditContainer/WorkPackageEditContainer';
-import { exampleAllUsers } from '../../../TestSupport/TestData/Users.stub';
+import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 
-jest.mock('../../../../hooks/WorkPackages.hooks');
+jest.mock('../../../../hooks/work-packages.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseEditWorkPackage = useEditWorkPackage as jest.Mock<UseMutationResult>;
@@ -27,7 +27,7 @@ const mockEditWorkPackageHook = (isLoading: boolean, isError: boolean, error?: E
   );
 };
 
-jest.mock('../../../../hooks/Users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 

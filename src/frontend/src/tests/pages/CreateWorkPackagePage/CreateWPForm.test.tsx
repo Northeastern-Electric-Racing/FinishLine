@@ -3,19 +3,26 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../TestSupport/TestUtils';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { render, screen } from '../../test-support/test-utils';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/Types';
-import { exampleAdminUser, exampleGuestUser } from '../../TestSupport/TestData/Users.stub';
-import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
+import { useQuery } from '../../../hooks/utils.hooks';
 
-jest.mock('../../../hooks/Auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/utils.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
+const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
 
 const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
+};
+
+const mockUseQuery = () => {
+  mockedUseQuery.mockReturnValue(new URLSearchParams(''));
 };
 
 /**
@@ -28,6 +35,7 @@ const renderComponent = () => {
 describe('create wp form test suite', () => {
   it('render view component', () => {
     mockAuthHook();
+    mockUseQuery();
     renderComponent();
 
     expect(screen.getByText('Create New Work Package')).toBeInTheDocument();
@@ -35,6 +43,7 @@ describe('create wp form test suite', () => {
 
   it('disables submit button for guest users', () => {
     mockAuthHook(exampleGuestUser);
+    mockUseQuery();
     renderComponent();
 
     expect(screen.getByText('Create')).toBeDisabled();
@@ -42,6 +51,7 @@ describe('create wp form test suite', () => {
 
   it('enables submit button for admin users', () => {
     mockAuthHook();
+    mockUseQuery();
     renderComponent();
 
     expect(screen.getByText('Create')).not.toBeDisabled();

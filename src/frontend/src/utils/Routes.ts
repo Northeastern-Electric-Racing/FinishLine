@@ -7,7 +7,7 @@
 const HOME = `/`;
 const LOGIN = `/login`;
 const SETTINGS = `/settings`;
-const HELP = `/help`;
+const INFO = `/info`;
 const TEAMS = `/teams`;
 
 /**************** Projects Section ****************/
@@ -27,7 +27,7 @@ export const routes = {
   HOME,
   LOGIN,
   SETTINGS,
-  HELP,
+  INFO,
   TEAMS,
 
   PROJECTS,
