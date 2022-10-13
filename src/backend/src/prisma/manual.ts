@@ -4,7 +4,8 @@
  */
 
 import prisma from './prisma';
-import { Role } from '@prisma/client';
+import { Role, WBS_Element_Status } from '@prisma/client';
+import { calculateEndDate } from 'shared';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -138,6 +139,27 @@ const migrateToProposedSolutions = async () => {
         }
       });
     }
+  });
+};
+
+/**
+ * Migrate all complete wps to have checked description bullets
+ */
+const migrateToCheckableDescBullets = async () => {
+  const wps = await prisma.work_Package.findMany({
+    where: { wbsElement: { status: WBS_Element_Status.COMPLETE } },
+    include: { wbsElement: true }
+  });
+  wps.forEach(async (wp) => {
+    await prisma.description_Bullet.updateMany({
+      where: { workPackageIdExpectedActivities: wp.workPackageId },
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: wp.wbsElement.projectLeadId }
+    });
+
+    await prisma.description_Bullet.updateMany({
+      where: { workPackageIdDeliverables: wp.workPackageId },
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: wp.wbsElement.projectLeadId }
+    });
   });
 };
 
