@@ -27,7 +27,6 @@ const renderSlackId = (settings: UserSettings) => {
 
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
-  console.log(settings);
   return (
     <Row>
       <Col md={4} lg={2}>

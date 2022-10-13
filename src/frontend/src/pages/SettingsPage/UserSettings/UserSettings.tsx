@@ -43,6 +43,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
     if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.name) {
       theme.toggleTheme!(res.data?.defaultTheme);
     }
+    console.log(res);
   };
 
   return (
