@@ -44,14 +44,23 @@ export const getUserSettings = async (req: Request, res: Response) => {
 
 export const updateUserSettings = async (req: Request, res: Response) => {
   const userId: number = parseInt(req.params.userId);
-  if (!req.body || !req.body.defaultTheme) {
-    return res.status(404).json({ message: 'No settings found to update.' });
+  if (!userId) {
+    return res.status(404).json({ message: `could not find valid userId` });
+  }
+  const errors = validationResult(req);
+
+  if (!(await prisma.user.findUnique({ where: { userId } }))) {
+    return res.status(404).json({ message: `could not find user ${userId}` });
+  }
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
 
   await prisma.user_Settings.upsert({
     where: { userId },
-    update: { defaultTheme: req.body.defaultTheme },
-    create: { userId, defaultTheme: req.body.defaultTheme }
+    update: { defaultTheme: req.body.defaultTheme, slackId: req.body.slackId },
+    create: { userId, defaultTheme: req.body.defaultTheme, slackId: req.body.slackId }
   });
 
   return res.status(200).json({ message: `Successfully updated settings for user ${userId}.` });
