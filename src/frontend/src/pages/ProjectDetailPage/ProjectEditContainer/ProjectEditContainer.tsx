@@ -8,9 +8,9 @@ import { Container, Form } from 'react-bootstrap';
 import { DescriptionBullet, Project, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
-import { useEditSingleProject } from '../../../hooks/Projects.hooks';
-import { useAllUsers } from '../../../hooks/Users.hooks';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useEditSingleProject } from '../../../hooks/projects.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWPForm';
 import EditableTextInputList from '../../../components/EditableTextInputList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
@@ -22,7 +22,7 @@ import ChangesList from '../../../components/ChangesList';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import WorkPackageSummary from '../ProjectViewContainer/WorkPackageSummary';
-import { useQuery } from '../../../hooks/Utils.hooks';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 /**
  * Helper function to turn DescriptionBullets into a list of { id:number, detail:string }.

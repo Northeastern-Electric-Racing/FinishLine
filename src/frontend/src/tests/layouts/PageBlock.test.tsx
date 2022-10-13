@@ -4,17 +4,9 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import { useTheme } from '../../hooks/Theme.hooks';
-import { Theme } from '../../utils/Types';
+import * as themeHooks from '../../hooks/theme.hooks';
 import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
-
-jest.mock('../../hooks/Theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
 
 const renderComponent = (headerRight = false) => {
   return render(
@@ -25,27 +17,19 @@ const renderComponent = (headerRight = false) => {
 };
 
 describe('card component', () => {
-  beforeEach(() => mockHook());
-
-  it('renders without error', () => {
-    renderComponent();
-  });
+  beforeEach(() => jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]));
 
   it('renders title', () => {
-    renderComponent();
-
-    expect(screen.getByText('test')).toBeInTheDocument();
-  });
-
-  it('renders header right', () => {
     renderComponent(true);
 
+    expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('hi')).toBeInTheDocument();
+    expect(screen.getByText('hello')).toBeInTheDocument();
   });
 
-  it('renders children', () => {
-    renderComponent();
+  it('doesnt render headerRight if none is given', () => {
+    renderComponent(false);
 
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    expect(screen.queryByText('hi')).not.toBeInTheDocument();
   });
 });

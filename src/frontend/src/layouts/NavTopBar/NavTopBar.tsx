@@ -6,11 +6,11 @@
 import { Nav, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import { fullNamePipe } from '../../utils/Pipes';
 import NavUserMenu from './NavUserMenu';
 import NavNotificationsMenu from './NavNotificationsMenu';
-import styles from '../../stylesheets/layouts/NavTopBar/NavTopBar.module.css';
+import styles from '../../stylesheets/layouts/nav-top-bar/nav-top-bar.module.css';
 
 const NavTopBar: React.FC = () => {
   const auth = useAuth();

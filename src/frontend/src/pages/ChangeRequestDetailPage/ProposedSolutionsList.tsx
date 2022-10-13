@@ -8,11 +8,11 @@ import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from './ProposedSolutionView';
-import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
-import { useCreateProposeSolution } from '../../hooks/ChangeRequests.hooks';
+import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
+import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -25,13 +25,11 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
   crReviewed,
   crId
 }) => {
-  const [proposedSolutionsList] = useState<ProposedSolution[]>(proposedSolutions);
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
 
   const addProposedSolution = async (data: ProposedSolution) => {
-    proposedSolutionsList.push(data);
     setShowEditableForm(false);
     const { description, timelineImpact, scopeImpact, budgetImpact } = data;
 
@@ -51,7 +49,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
 
   return (
     <>
-      {crReviewed === undefined ? (
+      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
         <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
           + Add Proposed Solution
         </Button>
@@ -59,7 +57,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
         ''
       )}
       <div className={styles.proposedSolutionsList}>
-        {proposedSolutionsList.map((proposedSolution, i) => (
+        {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
       </div>
