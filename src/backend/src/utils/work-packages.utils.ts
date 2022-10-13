@@ -8,8 +8,8 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { userTransformer } from './users.utils';
-import { convertStatus, descBulletConverter, wbsNumOf } from './utils';
-import { buildChangeDetail } from '../utils/utils';
+import { buildChangeDetail, convertStatus, descBulletConverter, wbsNumOf } from './utils';
+import { descBulletArgs, descBulletTransformer } from './description-bullets.utils';
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -20,8 +20,8 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
         changes: { include: { implementer: true }, orderBy: { dateImplemented: 'asc' } }
       }
     },
-    expectedActivities: true,
-    deliverables: true,
+    expectedActivities: descBulletArgs,
+    deliverables: descBulletArgs,
     dependencies: true
   }
 });
@@ -35,16 +35,18 @@ export const workPackageTransformer = (
     wpInput.wbsElement.status
   );
   const wbsNum = wbsNumOf(wpInput.wbsElement);
+  const bullets = wpInput.deliverables.concat(wpInput.expectedActivities);
+  const progress = Math.floor((bullets.filter((b) => b.userChecked).length / bullets.length) * 100);
   return {
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
     name: wpInput.wbsElement.name,
     orderInProject: wpInput.orderInProject,
-    progress: wpInput.progress,
+    progress,
     startDate: wpInput.startDate,
     duration: wpInput.duration,
-    expectedActivities: wpInput.expectedActivities.map(descBulletConverter),
-    deliverables: wpInput.deliverables.map(descBulletConverter),
+    expectedActivities: wpInput.expectedActivities.map(descBulletTransformer),
+    deliverables: wpInput.deliverables.map(descBulletTransformer),
     dependencies: wpInput.dependencies.map(wbsNumOf),
     projectManager: wpInput.wbsElement.projectManager
       ? userTransformer(wpInput.wbsElement.projectManager)
