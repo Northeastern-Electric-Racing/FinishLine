@@ -20,10 +20,10 @@ import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
 import { useTheme } from '../../../hooks/theme.hooks';
-import { Auth, Theme } from '../../../utils/Types';
+import { Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
-import { useAuth } from '../../../hooks/auth.hooks';
-import { exampleAdminUser, exampleMemberUser } from '../../test-support/test-data/users.stub';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../hooks/change-requests.hooks');
@@ -43,16 +43,8 @@ const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], 
   mockTheme.mockReturnValue(themes[0]);
 };
 
-jest.mock('../../../hooks/auth.hooks');
-const mockedUseAuth = useAuth as jest.Mock<Auth>;
-
-const mockAuthHook = (user = exampleAdminUser) => {
-  mockedUseAuth.mockReturnValue(mockAuth(false, user));
-};
-
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {
-  mockAuthHook();
   const RouterWrapper = routerWrapperBuilder({});
   render(
     <RouterWrapper>
@@ -63,6 +55,11 @@ const renderComponent = () => {
 
 describe('change requests table container', () => {
   const NoCRMessage = 'No Change Requests to Display';
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
+  afterAll(() => jest.clearAllMocks());
 
   it('renders the loading indicator', () => {
     mockHook(true, false);
