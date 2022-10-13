@@ -16,19 +16,10 @@ jest.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 });
 
 describe('error page', () => {
-  it('renders without error', () => {
-    render(<PageTitle title={'test'} previousPages={[]} />);
-  });
-
-  it('renders title', () => {
+  it('renders title and breadcrumbs', () => {
     render(<PageTitle title={'test'} previousPages={[]} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();
-  });
-
-  it('renders breadcrumbs', () => {
-    render(<PageTitle title={'test'} previousPages={[]} />);
-
     expect(screen.getByText('page-breadcrumbs')).toBeInTheDocument();
   });
 });

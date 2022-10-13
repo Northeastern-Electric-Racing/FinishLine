@@ -35,7 +35,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
 
   const { body } = req;
-  const { reviewerId, crId, reviewNotes, accepted } = body;
+  const { reviewerId, crId, reviewNotes, accepted, psId } = body;
 
   // verify that the user is allowed review change requests
   const reviewer = await prisma.user.findUnique({ where: { userId: reviewerId } });
@@ -53,6 +53,29 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
+
+  // if Scope CR, make sure that a proposed solution is selected before approving
+  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
+  if (foundScopeCR && accepted === true) {
+    if (!psId)
+      return res
+        .status(400)
+        .json({ message: 'No proposed solution selected for scope change request' });
+    const foundPs = await prisma.proposed_Solution.findUnique({
+      where: { proposedSolutionId: psId }
+    });
+    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId)
+      return res.status(400).json({
+        message: `Proposed solution with id #${psId} not found for change request #${crId}`
+      });
+    // update proposed solution
+    await prisma.proposed_Solution.update({
+      where: { proposedSolutionId: psId },
+      data: {
+        approved: true
+      }
+    });
+  }
 
   // update change request
   const updated = await prisma.change_Request.update({
@@ -151,7 +174,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: updated.crId,
         implementerId: reviewerId,
         wbsElementId: updated.wbsElementId,
-        detail: `Project Lead changed from "${oldPM}" to "${newPM}"`
+        detail: `Project Manager changed from "${oldPM}" to "${newPM}"`
       });
     }
 
@@ -364,9 +387,9 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
       scopeChangeRequest: {
         create: {
           what: body.what,
-          scopeImpact: body.scopeImpact,
-          timelineImpact: body.timelineImpact,
-          budgetImpact: body.budgetImpact,
+          scopeImpact: '',
+          timelineImpact: 0,
+          budgetImpact: 0,
           why: { createMany: { data: body.why } }
         }
       }
@@ -395,9 +418,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
       body.budgetImpact
     );
   }
-  return res.status(200).json({
-    message: `Successfully created standard change request #${createdCR.crId}.`
-  });
+  return res.status(200).json(createdCR.crId);
 };
 
 export const addProposedSolution = async (req: Request, res: Response) => {
@@ -421,6 +442,12 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   });
   if (!foundCR)
     return res.status(404).json({ message: `change request with id #${body.crId} not found` });
+
+  if (foundCR.accepted !== null) {
+    return res
+      .status(400)
+      .json({ message: `cannot create proposed solutions on a reviewed change request!` });
+  }
 
   // ensure existence of scope change request
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: body.crId } });

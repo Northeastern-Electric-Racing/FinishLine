@@ -5,14 +5,14 @@
 
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useTheme } from '../../../hooks/theme.hooks';
 import { datePipe } from '../../../utils/Pipes';
 import themes from '../../../utils/Themes';
 import { Theme } from '../../../utils/Types';
 import { exampleActivationChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ActivationDetails from '../../../pages/ChangeRequestDetailPage/ActivationDetails';
 
-jest.mock('../../../hooks/Theme.hooks');
+jest.mock('../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {
