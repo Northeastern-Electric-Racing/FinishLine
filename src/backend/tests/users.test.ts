@@ -54,8 +54,6 @@ describe('Users', () => {
     const req = { defaultTheme: 'DARK' };
     const res = await request(app).post('/1/settings').send(req);
 
-    console.log(JSON.stringify(res.body));
-    expect(res.body).toStrictEqual('');
     expect(res.status).toBe(200);
   });
 
@@ -63,8 +61,6 @@ describe('Users', () => {
     const req = {};
     const res = await request(app).post('/1/settings').send(req);
 
-    console.log(JSON.stringify(res.body));
-    expect(res.body).toStrictEqual('');
     expect(res.status).toBe(404);
   });
 });
