@@ -4,7 +4,6 @@ import userRouter from '../src/routes/users.routes';
 import prisma from '../src/prisma/prisma';
 import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
-import { GoogleAuth } from 'google-auth-library';
 
 const app = express();
 app.use(express.json());

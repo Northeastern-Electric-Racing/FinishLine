@@ -7,14 +7,15 @@ import {
   userTransformer
 } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
+import { Request, Response } from 'express';
 
-export const getAllUsers = async (_req: any, res: any) => {
+export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
   users.sort((a, b) => a.firstName.localeCompare(b.firstName));
   res.status(200).json(users.map(userTransformer));
 };
 
-export const getSingleUser = async (req: any, res: any) => {
+export const getSingleUser = async (req: Request, res: Response) => {
   const userId: number = parseInt(req.params.userId);
   const requestedUser = await prisma.user.findUnique({ where: { userId } });
   if (!requestedUser) return res.status(404).json({ message: `user #${userId} not found!` });
@@ -22,7 +23,7 @@ export const getSingleUser = async (req: any, res: any) => {
   res.status(200).json(userTransformer(requestedUser));
 };
 
-export const getUserSettings = async (req: any, res: any) => {
+export const getUserSettings = async (req: Request, res: Response) => {
   const userId: number = parseInt(req.params.userId);
 
   const requestedUser = await prisma.user.findUnique({ where: { userId } });
@@ -41,7 +42,7 @@ export const getUserSettings = async (req: any, res: any) => {
   return res.status(200).json(settings);
 };
 
-export const updateUserSettings = async (req: any, res: any) => {
+export const updateUserSettings = async (req: Request, res: Response) => {
   const userId: number = parseInt(req.params.userId);
   if (!req.body || !req.body.defaultTheme) {
     return res.status(404).json({ message: 'No settings found to update.' });
@@ -56,7 +57,7 @@ export const updateUserSettings = async (req: any, res: any) => {
   return res.status(200).json({ message: `Successfully updated settings for user ${userId}.` });
 };
 
-export const logUserIn = async (req: any, res: any) => {
+export const logUserIn = async (req: Request, res: Response) => {
   if (!req.body || !req.body.id_token) return res.status(400).json({ message: 'Invalid Body' });
 
   // eslint-disable-next-line prefer-destructuring
@@ -106,7 +107,7 @@ export const logUserIn = async (req: any, res: any) => {
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };
-export const updateUserRole = async (req: any, res: any) => {
+export const updateUserRole = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
