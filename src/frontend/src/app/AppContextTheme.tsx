@@ -8,7 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useProvideThemeToggle } from '../hooks/Theme.hooks';
+import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import { nerThemeOptions } from '../utils/Themes';
 
 export const ThemeToggleContext = createContext({ activeTheme: 'dark', toggleTheme: () => {} });

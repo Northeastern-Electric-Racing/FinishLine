@@ -15,7 +15,7 @@ import {
 import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
-import styles from '../../stylesheets/layouts/Sidebar/Sidebar.module.css';
+import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { getReleaseInfo } from '../../apis/misc.api';
 
 const Sidebar: React.FC = () => {
@@ -47,9 +47,9 @@ const Sidebar: React.FC = () => {
       route: routes.TEAMS
     },
     {
-      name: 'Help',
+      name: 'Info',
       icon: faQuestionCircle,
-      route: routes.HELP
+      route: routes.INFO
     }
   ];
   return (

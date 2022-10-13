@@ -9,19 +9,28 @@ import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
-import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 import ActionButton from '../../components/ActionButton';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { useAuth } from '../../hooks/auth.hooks';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
-  const { isLoading, data, error } = useAllChangeRequests();
+  const { isLoading, isError, data, error } = useAllChangeRequests();
 
   const baseColDef: any = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
   };
+
+  const auth = useAuth();
+
+  if (isLoading) return <LoadingIndicator />;
+
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const columns: GridColDef[] = [
     {
@@ -115,6 +124,7 @@ const ChangeRequestsTable: React.FC = () => {
             link={routes.CHANGE_REQUESTS_NEW}
             icon={faPlus}
             text={'New Change Request'}
+            disabled={auth.user?.role === 'GUEST'}
           />
         }
       />

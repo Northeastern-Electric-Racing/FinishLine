@@ -4,7 +4,7 @@
  */
 
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
-import { useAuth } from '../hooks/Auth.hooks';
+import { useAuth } from '../hooks/auth.hooks';
 import { routes } from '../utils/Routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
@@ -16,9 +16,7 @@ const AppPublic: React.FC = () => {
   return (
     <Switch>
       <Route path={routes.LOGIN}>
-        <Login
-          postLoginRedirect={{ url: history.location.pathname, search: history.location.search }}
-        />
+        <Login postLoginRedirect={{ url: history.location.pathname, search: history.location.search }} />
       </Route>
       <Route
         path="*"

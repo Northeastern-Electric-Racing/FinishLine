@@ -9,7 +9,7 @@ import { apiUrls } from '../../utils/Urls';
 import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest
-} from '../TestSupport/TestData/ChangeRequests.stub';
+} from '../test-support/test-data/change-requests.stub';
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
 
 // Mock the server endpoint(s) that the component will hit

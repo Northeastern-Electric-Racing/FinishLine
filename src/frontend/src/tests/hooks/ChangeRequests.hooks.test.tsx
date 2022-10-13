@@ -7,13 +7,13 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
-import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
+import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import {
   exampleAllChangeRequests,
   exampleStageGateChangeRequest
-} from '../TestSupport/TestData/ChangeRequests.stub';
+} from '../test-support/test-data/change-requests.stub';
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
-import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
 jest.mock('../../apis/ChangeRequests.api');
 

@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/Routes';
 import Button from '@mui/material/Button';
 

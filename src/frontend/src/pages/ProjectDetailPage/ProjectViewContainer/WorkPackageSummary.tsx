@@ -69,9 +69,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
                   <Typography fontWeight="bold" paddingRight={1}>
                     End date:
                   </Typography>
-                  <Typography>
-                    {endDatePipe(workPackage.startDate, workPackage.duration)}
-                  </Typography>
+                  <Typography>{endDatePipe(workPackage.startDate, workPackage.duration)}</Typography>
                 </Box>
               </Box>
             </Grid>
@@ -85,10 +83,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               <Typography fontWeight="bold">Expected Activities:</Typography>
               <Typography>{expectedActivitiesList}</Typography>
               {numMoreExpectedActivities > 0 ? (
-                <Link
-                  component={RouterLink}
-                  to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}
-                >
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreExpectedActivities} more...
                 </Link>
               ) : (
@@ -99,10 +94,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               <Typography fontWeight="bold">Deliverables:</Typography>
               <Typography>{deliverablesList}</Typography>
               {numMoreDeliverables > 0 ? (
-                <Link
-                  component={RouterLink}
-                  to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}
-                >
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreDeliverables} more...
                 </Link>
               ) : (

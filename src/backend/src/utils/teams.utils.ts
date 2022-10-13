@@ -16,8 +16,6 @@ export const teamRelationArgs = Prisma.validator<Prisma.TeamArgs>()({
 });
 
 export const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamRelationArgs>): Team => {
-  if (team === null) throw new TypeError('Team not found');
-
   return {
     teamId: team.teamId,
     teamName: team.teamName,

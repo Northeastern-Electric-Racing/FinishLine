@@ -28,6 +28,11 @@ export const wbsPipe = (wbsNum: WbsNumber) => {
   return `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`;
 };
 
+/** Display WBS number as string but always the project number (1.2.3 -> 1.2.0) */
+export const projectWbsPipe = (wbsNum: WbsNumber) => {
+  return wbsPipe({ ...wbsNum, workPackageNumber: 0 });
+};
+
 /** Display user by their name "Joe Shmoe" */
 export const fullNamePipe = (user?: User) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
@@ -58,8 +63,13 @@ export const emDashPipe = (str: string) => {
 /**
  * Return a given date as a string in the local en-US format,
  * with single digit numbers starting with a zero.
+ *
+ * Prisma sends date in UTC but TypeScript assumes it's in your local time,
+ * so to get around that we do the toDateString() of the time and pass it into the Date constructor
+ * where the constructor assumes it's in UTC and makes the correct Date object finally
  */
 export const datePipe = (date: Date) => {
+  date = new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
@@ -71,4 +81,14 @@ export const datePipe = (date: Date) => {
 /** returns a given number as a string with a percent sign */
 export const percentPipe = (percent: number) => {
   return `${percent}%`;
+};
+
+export const numberParamPipe = (param: string | null) => {
+  if (!param) return null;
+  try {
+    const num = parseInt(param);
+    return num;
+  } catch (err) {
+    return null;
+  }
 };

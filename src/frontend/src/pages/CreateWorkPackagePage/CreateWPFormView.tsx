@@ -48,10 +48,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   const [startDateVal, setStartDateVal] = useState<Date | null>(null);
   return (
     <>
-      <PageTitle
-        title={'New Work Package'}
-        previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]}
-      />
+      <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
@@ -104,9 +101,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   setStartDateVal(val);
                   startDate(datePipe(val!));
                 }}
-                renderInput={(params) => (
-                  <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />
-                )}
+                renderInput={(params) => <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />}
               />
             </Grid>
             <Grid item xs={2}>

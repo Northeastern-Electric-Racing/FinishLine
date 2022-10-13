@@ -4,12 +4,12 @@
  */
 
 import { wbsPipe } from '../../../utils/Pipes';
-import { mockUtils } from '../../TestSupport/TestData/TestUtils.stub';
+import { mockUtils } from '../../test-support/test-data/test-utils.stub';
 import {
   exampleWbsWorkPackage1,
   exampleWbsWorkPackage2
-} from '../../TestSupport/TestData/WbsNumbers.stub';
-import { render, screen } from '../../TestSupport/TestUtils';
+} from '../../test-support/test-data/wbs-numbers.stub';
+import { render, screen } from '../../test-support/test-utils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
 
 const mockDependencies = [wbsPipe(exampleWbsWorkPackage2), wbsPipe(exampleWbsWorkPackage1)];
@@ -31,6 +31,7 @@ const renderComponent = (allowSubmit = true) => {
     <CreateWPFormView
       states={mockStates}
       dependencies={mockDependencies}
+      initialValues={{ name: '', wbsNum: '', duration: -1, crId: -1 }}
       depUtils={mockUtils}
       expectedActivities={mockEA}
       eaUtils={mockUtils}

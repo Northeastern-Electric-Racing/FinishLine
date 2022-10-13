@@ -4,53 +4,47 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import CheckList from '../../components/CheckList';
+import CheckList, { CheckListItem } from '../../components/CheckList';
+import { routerWrapperBuilder } from '../test-support/test-utils';
+import * as authHooks from '../../hooks/auth.hooks';
+import * as descBulletHooks from '../../hooks/description-bullets.hooks';
+import { mockAuth } from '../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../test-support/test-data/users.stub';
+import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
 
-describe('Check List Component', () => {
-  const testList = [
-    { details: 'Check #1', resolved: false },
-    { details: 'Check #2', resolved: true },
-    { details: 'Check #3', resolved: false }
-  ];
+const testItems: CheckListItem[] = [
+  { id: 1, detail: 'testItem1', resolved: false },
+  { id: 2, detail: 'testItem2', resolved: true }
+];
 
-  const testList2 = [
-    { details: 'Check #1', resolved: false },
-    { details: 'Check #2', resolved: true }
-  ];
-
-  it('renders the component title', () => {
-    render(<CheckList title={'test'} listItems={[]} />);
-
-    expect(screen.getByText('test')).toBeInTheDocument();
+/**
+ * Sets up the component under test with the desired values and renders it.
+ */
+const renderComponent = (items: CheckListItem[] = [], title: string = '') => {
+  const RouterWrapper = routerWrapperBuilder({});
+  return render(
+    <RouterWrapper>
+      <CheckList items={items} title={title} />
+    </RouterWrapper>
+  );
+};
+describe('Rendering CheckList Component', () => {
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(descBulletHooks, 'useCheckDescriptionBullet').mockReturnValue(mockCheckDescBulletReturnValue);
   });
 
-  it('renders all details', () => {
-    render(<CheckList title={'test'} listItems={testList} />);
-
-    expect(screen.getByText('Check #1')).toBeInTheDocument();
-    expect(screen.getByText('Check #2')).toBeInTheDocument();
-    expect(screen.getByText('Check #3')).toBeInTheDocument();
+  it('Renders the CheckList correctly when empty', () => {
+    renderComponent([], 'testTitle');
+    expect(screen.getByText('testTitle')).toBeInTheDocument();
+    expect(screen.queryByText('testItem1')).not.toBeInTheDocument();
+    expect(screen.queryByText('testItem2')).not.toBeInTheDocument();
   });
 
-  it('checks checkboxes that should be checked', () => {
-    render(<CheckList title={'test'} listItems={testList} />);
-
-    expect(screen.getByTestId('testCheckbox0')).not.toBeChecked();
-    expect(screen.getByTestId('testCheckbox1')).toBeChecked();
-    expect(screen.getByTestId('testCheckbox2')).not.toBeChecked();
-  });
-
-  it('renders all buttons"', () => {
-    render(<CheckList title={'test'} listItems={testList2} />);
-
-    expect(screen.getByTestId('convertButton')).toBeInTheDocument();
-    expect(screen.getByTestId('deleteButton')).toBeInTheDocument();
-    expect(screen.getByText('Add New Risk')).toBeInTheDocument();
-  });
-
-  it('renders the header right', () => {
-    render(<CheckList title="test" headerRight="testheaderright" listItems={[]} />);
-
-    expect(screen.getByText('testheaderright')).toBeInTheDocument();
+  it('Renders the CheckList correctly when not empty', () => {
+    renderComponent(testItems, 'testTitle');
+    expect(screen.getByText('testTitle')).toBeInTheDocument();
+    expect(screen.getByText('testItem1')).toBeInTheDocument();
+    expect(screen.getByText('testItem2')).toBeInTheDocument();
   });
 });

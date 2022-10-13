@@ -7,7 +7,7 @@ import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
 import WorkPackageSummary from './WorkPackageSummary';
@@ -50,12 +50,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </DropdownButton>
   );
 
-  const testRisks = [
-    { details: 'Risk #1', resolved: false },
-    { details: 'Risk #2', resolved: true },
-    { details: 'Risk #3', resolved: false }
-  ];
-
   return (
     <>
       <PageTitle
@@ -65,7 +59,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog risks={testRisks} />
+      <RiskLog
+        projectId={proj.id}
+        wbsNum={proj.wbsNum}
+        projLead={proj.projectLead}
+        projManager={proj.projectManager}
+      />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList

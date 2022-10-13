@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
+import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import RulesList from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RulesList';
 
 describe('Rendering Work Package Rules Component', () => {
