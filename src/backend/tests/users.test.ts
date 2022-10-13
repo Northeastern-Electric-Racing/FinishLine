@@ -18,7 +18,8 @@ describe('Users', () => {
     id: 'bm',
     userId: 1,
     user: batman,
-    defaultTheme: Theme.DARK
+    defaultTheme: Theme.DARK,
+    slackId: 'slack'
   };
 
   const newBatman = { ...batman, UserSettings: batman_settings };
