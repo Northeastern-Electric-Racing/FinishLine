@@ -5,13 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
-import {
-  faExchangeAlt,
-  faFolder,
-  faHome,
-  faQuestionCircle,
-  faUsers
-} from '@fortawesome/free-solid-svg-icons';
+import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers, faChess } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
@@ -45,6 +39,11 @@ const Sidebar: React.FC = () => {
       name: 'Teams',
       icon: faUsers,
       route: routes.TEAMS
+    },
+    {
+      name: 'Gantt',
+      icon: faChess,
+      route: routes.GANTT
     },
     {
       name: 'Info',

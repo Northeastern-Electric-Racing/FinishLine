@@ -1601,10 +1601,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fortawesome/fontawesome-common-types@npm:6.2.0":
+  version: 6.2.0
+  resolution: "@fortawesome/fontawesome-common-types@npm:6.2.0"
+  checksum: 1d0a3340dc2d2798609195cf77f1b0db98f0d87144044eb7cd3d78745baac8509705c6ebc7cce3d9bb36c7d7358ca064f77f39d86478ab1e7aa7aadc344cfd91
+  languageName: node
+  linkType: hard
+
 "@fortawesome/fontawesome-common-types@npm:^0.2.36":
   version: 0.2.36
   resolution: "@fortawesome/fontawesome-common-types@npm:0.2.36"
   checksum: d604ac51da0b1597127fde70c64157b70ead6af7f2643ab7dfca268ef99d4ed0b4cc823afba206362422a622e389828408bec573df802bf4f02b118d0fa18dc8
+  languageName: node
+  linkType: hard
+
+"@fortawesome/fontawesome-free@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "@fortawesome/fontawesome-free@npm:6.2.0"
+  checksum: fd3fcc0a963b907110922b5ac0ca67633aea20b5034102a1f5d285830f7f7a27f9c9de0c4a30228ccd2579bd8f95581a1bbef9519c7b74632e7012d60dd57bb7
   languageName: node
   linkType: hard
 
@@ -1623,6 +1637,15 @@ __metadata:
   dependencies:
     "@fortawesome/fontawesome-common-types": ^0.2.36
   checksum: eb037b703827ee37af3387a964afc7a190ff42a674ef46f4a6c295b634a38e849741eca78306b6423eaf3062d6ab1e7372aac5be2aec06f0fd9e8bd8110efcf9
+  languageName: node
+  linkType: hard
+
+"@fortawesome/free-solid-svg-icons@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "@fortawesome/free-solid-svg-icons@npm:6.2.0"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.2.0
+  checksum: b5edf24be491e8493028b7fd2158fb73f3a76491087970609c0ef6a4449fd4744312fe768bfcffc90a5ef86b9980f9ab8ebb36927ba8d9854c2fa638ceadb0ac
   languageName: node
   linkType: hard
 
@@ -8420,6 +8443,9 @@ __metadata:
     "@babel/plugin-transform-object-assign": ^7.18.6
     "@babel/preset-react": ^7.18.6
     "@babel/preset-typescript": ^7.18.6
+    "@fortawesome/fontawesome-common-types": "npm:6.2.0"
+    "@fortawesome/fontawesome-free": ^6.2.0
+    "@fortawesome/free-solid-svg-icons": ^6.2.0
     "@testing-library/jest-dom": ^5.16.4
     "@types/jest": ^28.1.6
     "@types/react-query": ^1.2.9
@@ -8428,6 +8454,7 @@ __metadata:
     concurrently: ^5.2.0
     eslint-config-prettier: ^8.5.0
     eslint-plugin-prettier: ^4.2.1
+    gantt-task-react: ^0.3.9
     prettier: ^2.0.5
     rimraf: ^3.0.2
     ts-node: ^10.9.1
@@ -8772,6 +8799,15 @@ __metadata:
   version: 1.2.3
   resolution: "functions-have-names@npm:1.2.3"
   checksum: c3f1f5ba20f4e962efb71344ce0a40722163e85bee2101ce25f88214e78182d2d2476aa85ef37950c579eb6cf6ee811c17b3101bb84004bb75655f3e33f3fdb5
+  languageName: node
+  linkType: hard
+
+"gantt-task-react@npm:^0.3.9":
+  version: 0.3.9
+  resolution: "gantt-task-react@npm:0.3.9"
+  peerDependencies:
+    react: ^18.0.0
+  checksum: b0559ff812f26375d14355262eb01bdb7d34bf072a18376168af58e50c9f03be31996159d3fff345733c9a3bd844258ffd4a6324a6b8ff8f766d723d0ecf23c4
   languageName: node
   linkType: hard
 
