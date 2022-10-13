@@ -103,11 +103,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             <Row className="mx-2 justify-content-start">
               <Col lg={true} className="pl-0">
                 <Form.Group controlId="formBudgetImpact">
-                  {theme.name === 'DARK' ? (
-                    <Form.Label style={styles.white}>Budget Impact</Form.Label>
-                  ) : (
-                    <Form.Label style={styles.black}>Budget Impact</Form.Label>
-                  )}
+                  <Form.Label style={styles.black}>Budget Impact</Form.Label>
                   <InputGroup>
                     <InputGroup.Prepend>
                       <InputGroup.Text>$</InputGroup.Text>
@@ -124,11 +120,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               </Col>
               <Col lg={true} className="pr-0">
                 <Form.Group controlId="formTimelineImpact">
-                  {theme.name === 'DARK' ? (
-                    <Form.Label style={styles.white}>Timeline Impact</Form.Label>
-                  ) : (
-                    <Form.Label style={styles.black}>Timeline Impact</Form.Label>
-                  )}
+                  <Form.Label style={styles.black}>Timeline Impact</Form.Label>
                   <InputGroup>
                     <Form.Control
                       {...register('timelineImpact')}

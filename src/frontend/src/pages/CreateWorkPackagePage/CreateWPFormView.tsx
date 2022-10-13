@@ -11,7 +11,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { createTheme } from '@mui/material/styles';
 import { routes } from '../../utils/Routes';
 import { datePipe } from '../../utils/Pipes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
@@ -22,6 +21,7 @@ import PageBlock from '../../layouts/PageBlock';
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
+  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;

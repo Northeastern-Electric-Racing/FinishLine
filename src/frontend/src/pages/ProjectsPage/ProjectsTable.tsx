@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { Col, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/Routes';
-import { useAllProjects } from '../../hooks/Projects.hooks';
+import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 
