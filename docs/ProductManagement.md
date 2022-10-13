@@ -1,6 +1,6 @@
 # Product Management
 
-Product Management documentation for the NER PM Dashboard v2.
+Product Management documentation for the NER FinishLine .
 
 ## Table of Contents
 
