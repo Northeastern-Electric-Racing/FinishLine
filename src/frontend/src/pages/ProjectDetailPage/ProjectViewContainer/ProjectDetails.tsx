@@ -48,7 +48,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             <b>Start Date:</b> {start}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
-            <b>End Date:</b> {project.endDate}
+            <b>End Date:</b> {datePipe(project.endDate)}
           </Col>
         </Row>
         <Row>
