@@ -6,15 +6,17 @@
 import { useHistory } from 'react-router-dom';
 import { Col, Container, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import ActionButton from '../../components/ActionButton';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
+import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
+import IconButton from '@mui/material/IconButton';
+import Add from '@mui/icons-material/Add';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -120,12 +122,14 @@ const ChangeRequestsTable: React.FC = () => {
         title={'Change Requests'}
         previousPages={[]}
         actionButton={
-          <ActionButton
-            link={routes.CHANGE_REQUESTS_NEW}
-            icon={faPlus}
-            text={'New Change Request'}
-            disabled={auth.user?.role === 'GUEST'}
-          />
+          <Link className={'row py-auto px-3 '} to={routes.CHANGE_REQUESTS_NEW} style={{ textDecoration: 'none' }}>
+            <Button variant="text">
+              New Change Request
+              <IconButton onClick={() => (window.location.href = routes.CHANGE_REQUESTS_NEW)}>
+                <Add />
+              </IconButton>
+            </Button>
+          </Link>
         }
       />
       <Row>
