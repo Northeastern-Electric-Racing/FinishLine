@@ -41,5 +41,5 @@ export interface AuthenticatedUser {
 export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;
-  slackId: string | null;
+  slackId: string;
 }
