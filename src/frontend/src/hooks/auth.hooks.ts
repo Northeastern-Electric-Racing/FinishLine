@@ -14,12 +14,11 @@ export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
   const { isLoading: isLoadingDev, mutateAsync: mutateAsyncDev } = useLogUserInDev();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
-  const [whichLoading, setWhichLoading] = useState(isLoading);
 
   const devSignin = async (userId: number) => {
     const user = await mutateAsyncDev(userId);
     setUser(user);
-    setWhichLoading(isLoadingDev);
+    localStorage.setItem('devUserId', userId.toString());
     return user;
   };
 
@@ -30,6 +29,7 @@ export const useProvideAuth = () => {
   };
 
   const signout = () => {
+    localStorage.setItem('devUserId', '');
     setUser(undefined);
   };
 
@@ -38,7 +38,7 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
-    isLoading: whichLoading
+    isLoading: isLoading || isLoadingDev
   } as Auth;
 };
 

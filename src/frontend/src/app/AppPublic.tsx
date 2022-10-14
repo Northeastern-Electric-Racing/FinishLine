@@ -15,6 +15,28 @@ const AppPublic: React.FC = () => {
   const history = useHistory();
   const theme = useTheme();
 
+  const devUserId = localStorage.getItem('devUserId');
+
+  const render = (e: any) => {
+    if (auth.user) {
+      return <AppAuthenticated />;
+    }
+
+    if (process.env.NODE_ENV === 'development' && devUserId) {
+      auth.devSignin(parseInt(devUserId));
+      return <AppAuthenticated />;
+    }
+
+    return (
+      <Redirect
+        to={{
+          pathname: routes.LOGIN,
+          state: { from: e.location }
+        }}
+      />
+    );
+  };
+
   // eslint-disable-next-line prefer-destructuring
   document.body.style.backgroundColor = theme.bgColor;
 
@@ -22,25 +44,9 @@ const AppPublic: React.FC = () => {
     <html className={theme.className}>
       <Switch>
         <Route path={routes.LOGIN}>
-          <Login
-            postLoginRedirect={{ url: history.location.pathname, search: history.location.search }}
-          />
+          <Login postLoginRedirect={{ url: history.location.pathname, search: history.location.search }} />
         </Route>
-        <Route
-          path="*"
-          render={({ location }) =>
-            auth.user === undefined ? (
-              <Redirect
-                to={{
-                  pathname: routes.LOGIN,
-                  state: { from: location }
-                }}
-              />
-            ) : (
-              <AppAuthenticated />
-            )
-          }
-        />
+        <Route path="*" render={render} />
       </Switch>
     </html>
   );

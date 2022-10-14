@@ -31,23 +31,35 @@ const NavUserMenu: React.FC = () => {
         </Link>
       </NavDropdown.Item>
       <NavDropdown.Item className={styles.UserMenuItem}>
-        <GoogleLogout
-          clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-          //jsSrc={'accounts.google.com/gsi/client'}
-          onLogoutSuccess={() => {
-            auth!.signout();
-            history.push(routes.HOME);
-          }}
-          render={(renderProps) => (
-            <button
-              className={'nav-link ' + styles.dropdownItems}
-              onClick={renderProps.onClick}
-              disabled={renderProps.disabled}
-            >
-              Logout
-            </button>
-          )}
-        />
+        {process.env.NODE_ENV === 'development' ? (
+          <GoogleLogout
+            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+            //jsSrc={'accounts.google.com/gsi/client'}
+            onLogoutSuccess={() => {
+              auth!.signout();
+              history.push(routes.HOME);
+            }}
+            render={(renderProps) => (
+              <button
+                className={'nav-link ' + styles.dropdownItems}
+                onClick={renderProps.onClick}
+                disabled={renderProps.disabled}
+              >
+                Logout
+              </button>
+            )}
+          />
+        ) : (
+          <button
+            className={'nav-link ' + styles.dropdownItems}
+            onClick={() => {
+              auth!.signout();
+              history.push(routes.LOGIN);
+            }}
+          >
+            Logout
+          </button>
+        )}
       </NavDropdown.Item>
     </NavDropdown>
   );
