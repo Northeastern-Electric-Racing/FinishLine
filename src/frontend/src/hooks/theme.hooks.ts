@@ -12,6 +12,7 @@ export const useProvideTheme = () => {
   const [theme, setTheme] = useState(themes[0]);
 
   const toggleTheme = (name: string) => {
+    console.log('got here ' + name);
     const t = themes.find((element) => element.name === name);
     if (t) {
       setTheme(t);

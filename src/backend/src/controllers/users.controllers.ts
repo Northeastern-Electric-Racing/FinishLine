@@ -1,11 +1,6 @@
 import prisma from '../prisma/prisma';
 import { OAuth2Client } from 'google-auth-library';
-import {
-  authenticatedUserTransformer,
-  authUserQueryArgs,
-  rankUserRole,
-  userTransformer
-} from '../utils/users.utils';
+import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
 
@@ -114,6 +109,7 @@ export const logUserIn = async (req: Request, res: Response) => {
   return res.status(200).json(authenticatedUserTransformer(user));
 };
 
+// for dev login only!
 export const logUserInDev = async (req: any, res: any) => {
   if (process.env.NODE_ENV === 'production') return res.status(400).json({ message: 'Cant dev login on production!' });
   if (!req.body || !req.body.userId) return res.status(400).json({ message: 'Invalid Body' });
@@ -126,7 +122,6 @@ export const logUserInDev = async (req: any, res: any) => {
     ...authUserQueryArgs
   });
 
-  // if not in database, create user in database
   if (!user) {
     return res.status(400).json({ message: 'That user does not exist' });
   }
@@ -140,7 +135,7 @@ export const logUserInDev = async (req: any, res: any) => {
   });
 
   return res.status(200).json(authenticatedUserTransformer(user));
-
+};
 
 export const updateUserRole = async (req: Request, res: Response) => {
   const errors = validationResult(req);
@@ -172,11 +167,9 @@ export const updateUserRole = async (req: Request, res: Response) => {
   if (rankUserRole(role) > userRole) {
     return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
   }
-  
+
   if (targetUserRole >= userRole) {
-    return res
-      .status(400)
-      .json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
+    return res.status(400).json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
   }
 
   targetUser = await prisma.user.update({

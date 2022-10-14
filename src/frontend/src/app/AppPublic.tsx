@@ -18,15 +18,24 @@ const AppPublic: React.FC = () => {
   const devUserId = localStorage.getItem('devUserId');
 
   const render = (e: any) => {
+    // if logged in, go to authenticated app
     if (auth.user) {
+      if (auth.user.defaultTheme && auth.user.defaultTheme !== theme.name) {
+        console.log('toggled 1');
+        theme.toggleTheme!(auth.user.defaultTheme);
+      }
+
       return <AppAuthenticated />;
     }
 
+    // if we're on development and the userId is stored in localStorage,
+    // then dev login right away (no login page redirect needed!)
     if (process.env.NODE_ENV === 'development' && devUserId) {
       auth.devSignin(parseInt(devUserId));
       return <AppAuthenticated />;
     }
 
+    // otherwise, the user needs to login manually
     return (
       <Redirect
         to={{
