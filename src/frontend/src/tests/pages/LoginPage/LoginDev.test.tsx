@@ -10,7 +10,7 @@ import LoginDev from '../../../pages/LoginPage/LoginDev';
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(<LoginDev devSetRole={(s: string) => {}} devFormSubmit={(e) => e} />);
+  return render(<LoginDev devSetUser={(s: string) => {}} devFormSubmit={(e) => e} />);
 };
 
 describe('login dev-only component', () => {

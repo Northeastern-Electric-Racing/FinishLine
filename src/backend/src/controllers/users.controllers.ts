@@ -1,10 +1,6 @@
 import prisma from '../prisma/prisma';
 import { OAuth2Client } from 'google-auth-library';
-import {
-  authenticatedUserTransformer,
-  authUserQueryArgs,
-  userTransformer
-} from '../utils/users.utils';
+import { authenticatedUserTransformer, authUserQueryArgs, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 
 export const getAllUsers = async (_req: any, res: any) => {
@@ -34,8 +30,7 @@ export const getUserSettings = async (req: any, res: any) => {
     create: { userId }
   });
 
-  if (!settings)
-    return res.status(404).json({ message: `could not find settings for user #${userId}` });
+  if (!settings) return res.status(404).json({ message: `could not find settings for user #${userId}` });
 
   return res.status(200).json(settings);
 };
@@ -87,9 +82,7 @@ export const logUserIn = async (req: any, res: any) => {
 
   // if not in database, create user in database
   if (!user) {
-    const emailId = payload['email']!.includes('@husky.neu.edu')
-      ? payload['email']!.split('@')[0]
-      : null;
+    const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
     const createdUser = await prisma.user.create({
       data: {
         firstName: payload['given_name']!,
@@ -102,6 +95,34 @@ export const logUserIn = async (req: any, res: any) => {
       ...authUserQueryArgs
     });
     user = createdUser;
+  }
+
+  // register a login
+  await prisma.session.create({
+    data: {
+      userId: user.userId,
+      deviceInfo: req.headers['user-agent']
+    }
+  });
+
+  return res.status(200).json(authenticatedUserTransformer(user));
+};
+
+export const logUserInDev = async (req: any, res: any) => {
+  if (process.env.NODE_ENV === 'production') return res.status(400).json({ message: 'Cant dev login on production!' });
+  if (!req.body || !req.body.userId) return res.status(400).json({ message: 'Invalid Body' });
+
+  const { body } = req;
+  const { userId } = body;
+
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    ...authUserQueryArgs
+  });
+
+  // if not in database, create user in database
+  if (!user) {
+    return res.status(400).json({ message: 'That user does not exist' });
   }
 
   // register a login

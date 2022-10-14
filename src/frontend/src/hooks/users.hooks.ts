@@ -9,6 +9,7 @@ import {
   getSingleUser,
   getSingleUserSettings,
   logUserIn,
+  logUserInDev,
   updateUserSettings
 } from '../apis/Users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
@@ -40,13 +41,20 @@ export const useSingleUser = (id: number) => {
  * Custom React Hook to log a user in.
  */
 export const useLogUserIn = () => {
-  return useMutation<AuthenticatedUser, Error, string>(
-    ['users', 'login'],
-    async (id_token: string) => {
-      const { data } = await logUserIn(id_token);
-      return data;
-    }
-  );
+  return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (id_token: string) => {
+    const { data } = await logUserIn(id_token);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to log a dev user in.
+ */
+export const useLogUserInDev = () => {
+  return useMutation<AuthenticatedUser, Error, number>(['users', 'login'], async (userId: number) => {
+    const { data } = await logUserInDev(userId);
+    return data;
+  });
 };
 
 /**

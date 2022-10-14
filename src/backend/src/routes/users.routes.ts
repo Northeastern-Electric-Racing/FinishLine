@@ -6,6 +6,7 @@ import {
   getSingleUser,
   getUserSettings,
   logUserIn,
+  logUserInDev,
   updateUserSettings
 } from '../controllers/users.controllers';
 
@@ -20,6 +21,7 @@ userRouter.post(
   body('slackId').isString(),
   updateUserSettings
 );
-userRouter.post('/auth/:login', logUserIn);
+userRouter.post('/auth/login', logUserIn);
+userRouter.post('/auth/login/dev', logUserInDev);
 
 export default userRouter;
