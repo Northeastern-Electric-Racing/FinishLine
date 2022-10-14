@@ -8,12 +8,9 @@ import { ThemeToggleContext } from '../app/AppContextTheme';
 
 // Provider hook that creates theme object and handles state
 export const useProvideThemeToggle = () => {
-  const [activeTheme, setActiveTheme] = useState<'light' | 'dark'>('light');
+  const [activeTheme, setActiveTheme] = useState<'light' | 'dark'>('dark');
 
-  const toggleTheme = useMemo(
-    () => () => setActiveTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light')),
-    []
-  );
+  const toggleTheme = useMemo(() => () => setActiveTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light')), []);
 
   return { activeTheme, toggleTheme };
 };
