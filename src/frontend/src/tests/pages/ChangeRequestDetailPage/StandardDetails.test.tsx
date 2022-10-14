@@ -30,15 +30,4 @@ describe('Change request details standard cr display element tests', () => {
       expect(screen.getByText(`${explanation.explain}`)).toBeInTheDocument();
     });
   });
-
-  it('Renders impact section', () => {
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`Scope Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.scopeImpact}`)).toBeInTheDocument();
-    expect(screen.getByText(`Timeline Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.timelineImpact} weeks`)).toBeInTheDocument();
-    expect(screen.getByText(`Budget Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`$${cr.budgetImpact}`)).toBeInTheDocument();
-  });
 });

@@ -9,7 +9,7 @@ import { ChangeRequest, ChangeRequestExplanation, StandardChangeRequest } from '
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
-import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { DisplayChangeRequest } from './ChangeRequestsTableView';
 import CRTable from './ChangeRequestsTableView'; // Directly rename the default import
 import ChangeRequestsFilter from './ChangeRequestsFilter';
@@ -17,6 +17,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ActionButton from '../../components/ActionButton';
 import ErrorPage from '../ErrorPage';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { useAuth } from '../../hooks/auth.hooks';
 
 /***
  * Returns a list of change requests that has been filtered according to the given params.
@@ -118,6 +119,8 @@ const ChangeRequestsTable: React.FC = () => {
   const [implemented, setImplemented] = useState('');
   const { isLoading, isError, data, error } = useAllChangeRequests();
 
+  const auth = useAuth();
+
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -160,6 +163,7 @@ const ChangeRequestsTable: React.FC = () => {
             link={routes.CHANGE_REQUESTS_NEW}
             icon={faPlus}
             text={'New Change Request'}
+            disabled={auth.user?.role === 'GUEST'}
           />
         }
       />

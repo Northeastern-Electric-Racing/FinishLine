@@ -9,14 +9,14 @@ import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import styles from '../../../stylesheets/components/RiskLog.module.css';
+import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
   useDeleteSingleRisk,
   useGetRisksForProject
-} from '../../../hooks/Risks.hooks';
-import { useAuth } from '../../../hooks/Auth.hooks';
+} from '../../../hooks/risks.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
@@ -116,22 +116,24 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
   const ConvertToCRButton = (risk: Risk) => {
     return (
-      <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-        <Button
-          variant="success"
-          data-testId="convertButton"
-          onClick={() => {
-            history.push(
-              routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                wbsPipe(wbsNum) +
-                '&riskDetails=' +
-                encodeURIComponent(risk.detail)
-            );
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </Button>
-      </OverlayTrigger>
+      role !== 'GUEST' && (
+        <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+          <Button
+            variant="success"
+            data-testId="convertButton"
+            onClick={() => {
+              history.push(
+                routes.CHANGE_REQUESTS_NEW_WITH_WBS +
+                  wbsPipe(wbsNum) +
+                  '&riskDetails=' +
+                  encodeURIComponent(risk.detail)
+              );
+            }}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </Button>
+        </OverlayTrigger>
+      )
     );
   };
 
@@ -140,8 +142,8 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
       <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
         <Button
           variant="danger"
-          data-testId="deleteButton"
-          disabled={!hasPermissions}
+          data-testId={`deleteButton-${risk.id}`}
+          disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
           <FontAwesomeIcon icon={faTrash} />
@@ -159,13 +161,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               {hasPermissions ? (
                 <Form.Check
                   label={
-                    <p
-                      style={
-                        risk.isResolved
-                          ? { textDecoration: 'line-through' }
-                          : { textDecoration: 'none' }
-                      }
-                    >
+                    <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
                       {risk.detail}
                     </p>
                   }
@@ -175,11 +171,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
                 />
               ) : (
                 <li
-                  style={
-                    risk.isResolved
-                      ? { textDecoration: 'line-through' }
-                      : { textDecoration: 'none' }
-                  }
+                  style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
                   className="mb-3"
                 >
                   {risk.detail}
@@ -188,8 +180,8 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
             </div>
           ))}
-          {hasPermissions && (
-            <Button variant="success" onClick={handleShow}>
+          {role !== 'GUEST' && (
+            <Button variant="success" onClick={handleShow} data-testId="createButton">
               Add New Risk
             </Button>
           )}
@@ -199,10 +191,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             <Modal.Title>Add New Risk</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form.Control
-              placeholder={'Enter New Risk Here'}
-              onChange={(e) => setNewDetail(e.target.value)}
-            />
+            <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={handleClose}>

@@ -1,60 +1,15 @@
 import request from 'supertest';
 import express from 'express';
 import workPackageRouter from '../src/routes/work-packages.routes';
-import { CR_Type, WBS_Element_Status } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
 import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
-
+import { wonderwoman } from './test-data/users.test-data';
+import { createWorkPackagePayload } from './test-data/work-packages.test-data';
+import { changeBatmobile } from './test-data/change-requests.test-data';
 const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
-
-const createWorkPackagePayload = {
-  projectWbsNum: {
-    carNumber: 1,
-    projectNumber: 2,
-    workPackageNumber: 0
-  },
-  name: 'Pack your bags',
-  crId: 1,
-  userId: batman.userId,
-  startDate: '2022-09-18',
-  duration: 5,
-  dependencies: [
-    {
-      wbsElementId: 65,
-      dateCreated: new Date('11/24/2021'),
-      carNumber: 1,
-      projectNumber: 1,
-      workPackageNumber: 1,
-      name: 'prereq',
-      status: WBS_Element_Status.COMPLETE
-    }
-  ],
-  expectedActivities: ['ayo'],
-  deliverables: ['ajdhjakfjafja']
-};
-
-const changeBatmobile = {
-  crId: 1,
-  submitterId: 1,
-  wbsElementId: 65,
-  type: CR_Type.DEFINITION_CHANGE,
-  changes: [
-    {
-      changeRequestId: 1,
-      implementerId: 1,
-      wbsElementId: 65,
-      detail: 'changed batmobile from white (yuck) to black'
-    }
-  ],
-  dateSubmitted: new Date('11/24/2020'),
-  dateReviewed: new Date('11/25/2020'),
-  accepted: true,
-  reviewerId: 1,
-  reviewNotes: 'white sucks'
-};
 
 describe('Work Packages', () => {
   afterEach(() => {
@@ -72,6 +27,7 @@ describe('Work Packages', () => {
         workPackageNumber: 2
       }
     };
+
     const res = await request(app).post('/create').send(proj);
 
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
@@ -90,5 +46,25 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('One of the dependencies was not found.');
+  });
+  test('createWorkPackage fails if user does not have access', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toBe('Access Denied');
+  });
+
+  test('createWorkPackage fails if user does not exist', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`User with id #${createWorkPackagePayload.userId} not found!`);
   });
 });

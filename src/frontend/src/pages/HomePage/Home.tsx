@@ -4,11 +4,11 @@
  */
 
 import { Container } from 'react-bootstrap';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';
-import styles from '../../stylesheets/pages/Home.module.css';
+import styles from '../../stylesheets/pages/home.module.css';
 
 const Home: React.FC = () => {
   const auth = useAuth();
