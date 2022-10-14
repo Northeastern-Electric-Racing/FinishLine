@@ -32,8 +32,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   const theme = useTheme();
 
   if (userSettings.isLoading || update.isLoading) return <LoadingIndicator />;
-  if (userSettings.isError)
-    return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
+  if (userSettings.isError) return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
   const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
@@ -43,7 +42,6 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
     if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.name) {
       theme.toggleTheme!(res.data?.defaultTheme);
     }
-    console.log(res);
   };
 
   return (
