@@ -10,6 +10,13 @@ export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>
   new Error()
 ) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
+export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUser>(
+  false,
+  false,
+  exampleAdminUser as AuthenticatedUser,
+  new Error()
+) as UseMutationResult<AuthenticatedUser, Error, number, unknown>;
+
 export const mockUseAllUsersReturnValue = (users: User[]) => mockUseQueryResult<User[]>(false, false, users, new Error());
 
 export const mockEditProjectReturnValue = mockUseMutationResult<{ message: string }>(
