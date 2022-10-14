@@ -7,8 +7,10 @@ import {
   getUserSettings,
   logUserIn,
   logUserInDev,
-  updateUserSettings
+  updateUserSettings,
+  updateUserRole
 } from '../controllers/users.controllers';
+import { intMinZero, isRole } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
@@ -20,6 +22,12 @@ userRouter.post(
   body('defaultTheme').isIn([Theme.DARK, Theme.LIGHT]),
   body('slackId').isString(),
   updateUserSettings
+);
+userRouter.post(
+  '/:userId/change-role',
+  intMinZero(body('userId')),
+  isRole(body('role')),
+  updateUserRole
 );
 userRouter.post('/auth/login', logUserIn);
 userRouter.post('/auth/login/dev', logUserInDev);
