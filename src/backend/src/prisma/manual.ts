@@ -150,15 +150,19 @@ const migrateToCheckableDescBullets = async () => {
     where: { wbsElement: { status: WBS_Element_Status.COMPLETE } },
     include: { wbsElement: true }
   });
+
   wps.forEach(async (wp) => {
+    // 1 is James' id
+    const projectLeadId = wp.wbsElement.projectLeadId || 1;
+
     await prisma.description_Bullet.updateMany({
       where: { workPackageIdExpectedActivities: wp.workPackageId },
-      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: wp.wbsElement.projectLeadId }
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
     });
 
     await prisma.description_Bullet.updateMany({
       where: { workPackageIdDeliverables: wp.workPackageId },
-      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: wp.wbsElement.projectLeadId }
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
     });
   });
 };
