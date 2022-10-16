@@ -3,9 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, ButtonGroup } from 'react-bootstrap';
+import { Button, ButtonGroup } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import { WbsNumber } from 'shared';
+import { NERButton } from '../../../components/NERButton';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 
@@ -23,12 +24,12 @@ const Dependency: React.FC<DependencyProps> = ({ wbsNumber, handleDelete }) => {
 
   return (
     <ButtonGroup>
-      <Button variant="outline-danger" onClick={handleLinkClick}>
+      <Button variant="outlined" onClick={handleLinkClick}>
         {wbsPipe(wbsNumber)}
       </Button>
-      <Button variant="danger" onClick={() => handleDelete(wbsNumber)}>
+      <NERButton variant="contained" onClick={() => handleDelete(wbsNumber)}>
         X
-      </Button>
+      </NERButton>
     </ButtonGroup>
   );
 };

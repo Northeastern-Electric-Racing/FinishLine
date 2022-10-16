@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import Button from '@mui/material/Button';
+import { NERButton } from '../../../components/NERButton';
 import styles from '../../../stylesheets/pages/project-detail-page/edit-mode-options.module.css';
 
 interface EditModeOptionsProps {
@@ -15,9 +16,9 @@ const EditModeOptions: React.FC<EditModeOptionsProps> = ({ exitEditMode }) => {
       <Button variant="contained" color="success" type="submit">
         Save
       </Button>
-      <Button variant="contained" color="error" onClick={exitEditMode}>
+      <NERButton variant="contained" color="error" onClick={exitEditMode}>
         Cancel
-      </Button>
+      </NERButton>
     </div>
   );
 };
