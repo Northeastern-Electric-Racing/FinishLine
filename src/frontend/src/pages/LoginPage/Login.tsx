@@ -38,7 +38,6 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.name) {
-      console.log('toggle 2');
       theme.toggleTheme!(authedUser.defaultTheme);
     }
     redirectAfterLogin();

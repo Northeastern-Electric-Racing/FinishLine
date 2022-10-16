@@ -21,7 +21,6 @@ const AppPublic: React.FC = () => {
     // if logged in, go to authenticated app
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme !== theme.name) {
-        console.log('toggled 1');
         theme.toggleTheme!(auth.user.defaultTheme);
       }
 
