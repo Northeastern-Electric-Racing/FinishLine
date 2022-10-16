@@ -3,12 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
   getAllUsers,
   getSingleUser,
   getSingleUserSettings,
   logUserIn,
+  logUserInDev,
   updateUserSettings
 } from '../apis/Users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
@@ -40,13 +41,20 @@ export const useSingleUser = (id: number) => {
  * Custom React Hook to log a user in.
  */
 export const useLogUserIn = () => {
-  return useMutation<AuthenticatedUser, Error, string>(
-    ['users', 'login'],
-    async (id_token: string) => {
-      const { data } = await logUserIn(id_token);
-      return data;
-    }
-  );
+  return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (id_token: string) => {
+    const { data } = await logUserIn(id_token);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to log a dev user in.
+ */
+export const useLogUserInDev = () => {
+  return useMutation<AuthenticatedUser, Error, number>(['users', 'login'], async (userId: number) => {
+    const { data } = await logUserInDev(userId);
+    return data;
+  });
 };
 
 /**
@@ -66,12 +74,18 @@ export const useSingleUserSettings = (id: number) => {
  */
 export const useUpdateUserSettings = () => {
   const auth = useAuth();
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, UserSettings>(
     ['users', auth.user?.userId!, 'settings', 'update'],
     async (settings: UserSettings) => {
       if (!auth.user) throw new Error('Update settings not allowed when not logged in');
       const { data } = await updateUserSettings(auth.user.userId, settings);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', auth.user?.userId, 'settings']);
+      }
     }
   );
 };

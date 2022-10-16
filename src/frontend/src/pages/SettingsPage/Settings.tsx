@@ -9,10 +9,13 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel } from '@mui/material';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
+
+  if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
   return (
     <>
@@ -62,7 +65,7 @@ const Settings: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-      <UserSettings userId={auth.user?.userId!} />
+      <UserSettings userId={auth.user.userId} />
     </>
   );
 };
