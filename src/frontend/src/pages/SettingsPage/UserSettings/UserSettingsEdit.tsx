@@ -19,10 +19,7 @@ interface UserSettingsEditProps {
 const schema = yup.object().shape({
   defaultTheme: yup
     .mixed<ThemeName>()
-    .oneOf(
-      themes.map((t) => t.name),
-      'Invalid theme chosen'
-    )
+    .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
     .required('Default theme is required'),
   slackId: yup.string().optional()
 });
