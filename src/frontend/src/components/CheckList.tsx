@@ -4,7 +4,9 @@
  */
 
 import PageBlock from '../layouts/PageBlock';
-import { Form } from 'react-bootstrap';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import styles from '../stylesheets/components/check-list.module.css';
 import { ReactNode } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
@@ -32,21 +34,20 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
 
   return (
     <PageBlock title={title} headerRight={headerRight}>
-      <Form>
+      <FormControl>
         {items.map((check, idx) => (
           <div key={idx} className={styles.container}>
-            <Form.Check
+            <FormControlLabel
+              control={<Checkbox checked={check.resolved} onChange={() => handleCheck(idx)} />}
               label={
                 <p style={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
                   {check.detail}
                 </p>
               }
-              checked={check.resolved}
-              onChange={() => handleCheck(idx)}
             />
           </div>
         ))}
-      </Form>
+      </FormControl>
     </PageBlock>
   );
 };
