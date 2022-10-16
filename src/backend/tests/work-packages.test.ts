@@ -8,6 +8,7 @@ import { wonderwoman } from './test-data/users.test-data';
 import { createWorkPackagePayload } from './test-data/work-packages.test-data';
 import { changeBatmobile, unreviewedCr } from './test-data/change-requests.test-data';
 import { getChangeRequestReviewState } from '../src/utils/projects.utils';
+
 const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
@@ -25,6 +26,7 @@ describe('Work Packages', () => {
   test('createWorkPackage fails if WBS number does not represent a project', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+    mockGetChangeRequestReviewState.mockResolvedValue(true);
     const proj = {
       ...createWorkPackagePayload,
       projectWbsNum: {
@@ -45,6 +47,7 @@ describe('Work Packages', () => {
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(someProject);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
+    mockGetChangeRequestReviewState.mockResolvedValue(true);
 
     const res = await request(app).post('/create').send(createWorkPackagePayload);
 
