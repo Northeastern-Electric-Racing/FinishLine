@@ -12,7 +12,8 @@ const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const usersById = (id: string) => `${users()}/${id}`;
-const usersLogin = () => `${users()}/auth/:login`;
+const usersLogin = () => `${users()}/auth/login`;
+const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 
 /**************** Projects Endpoints ****************/
@@ -58,13 +59,13 @@ const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
 /**************** Other Endpoints ****************/
-const version = () =>
-  `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
+const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
 export const apiUrls = {
   users,
   usersById,
   usersLogin,
+  usersLoginDev,
   userSettingsByUserId,
 
   projects,
