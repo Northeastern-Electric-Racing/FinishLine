@@ -6,7 +6,6 @@
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
-import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
 import { useToggleTheme } from '../../../hooks/theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
@@ -15,6 +14,8 @@ import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import UserSettingsEdit from './UserSettingsEdit';
 import UserSettingsView from './UserSettingsView';
+import { NERButton } from '../../../components/NERButton';
+import { Grid, IconButton } from '@mui/material';
 
 interface UserSettingsProps {
   userId: number;
@@ -49,28 +50,26 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
       title="User Settings"
       headerRight={
         !edit ? (
-          <div role="button" onClick={() => setEdit(true)}>
-            <FontAwesomeIcon icon={faPencilAlt} />
-          </div>
+          <IconButton onClick={() => setEdit(true)}>
+            <FontAwesomeIcon icon={faPencilAlt} size="sm" />
+          </IconButton>
         ) : (
           <div className="d-flex flex-row">
-            <Button className="mr-1" variant="secondary" onClick={() => setEdit(false)}>
-              Cancel
-            </Button>
-            <Button variant="success" type="submit" form="update-user-settings">
+            <NERButton onClick={() => setEdit(false)}>Cancel</NERButton>
+            <NERButton type="submit" form="update-user-settings">
               Save
-            </Button>
+            </NERButton>
           </div>
         )
       }
     >
-      <Container fluid>
+      <Grid container>
         {!edit ? (
           <UserSettingsView settings={userSettings.data!} />
         ) : (
           <UserSettingsEdit currentSettings={userSettings.data!} onSubmit={handleConfirm} />
         )}
-      </Container>
+      </Grid>
     </PageBlock>
   );
 };
