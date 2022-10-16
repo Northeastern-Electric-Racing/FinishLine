@@ -117,6 +117,10 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
+    startDate: project.workPackages.reduce(
+      (min, cur) => (cur.startDate < min ? cur.startDate : min),
+      project.workPackages[0].startDate
+    ), // ???
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
