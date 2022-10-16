@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { ReactNode } from 'react';
 import { LinkItem } from '../../utils/Types';
 import PageBreadcrumbs from './PageBreadcrumbs';
@@ -25,11 +25,13 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButto
     <div>
       <div>
         <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-        <Typography variant="h4" fontSize={30} sx={{ py: 1 }}>
-          {title}
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Typography variant="h4" fontSize={30} sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
+          {actionButton}
+        </Box>
       </div>
-      <div>{actionButton}</div>
     </div>
   );
 };
