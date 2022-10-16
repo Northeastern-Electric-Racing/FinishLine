@@ -12,6 +12,11 @@ const app = express();
 app.use(express.json());
 app.use('/', workPackageRouter);
 
+jest.mock('../src/utils/projects.utils');
+const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<
+  Promise<boolean | null>
+>;
+
 describe('Work Packages', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -68,15 +73,25 @@ describe('Work Packages', () => {
     expect(res.body.message).toBe(`User with id #${createWorkPackagePayload.userId} not found!`);
   });
 
-  test('getChangeRequestReviewState returns null when changeRequest is not found', async () => {
+  test('createWorkPackage fails when changeRequest is not found', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
-    const result = await getChangeRequestReviewState(1);
-    expect(result).toEqual(null);
+    mockGetChangeRequestReviewState.mockResolvedValue(null);
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`change request with id #1 not found!`);
   });
 
-  test('getChangeRequestReviewState returns false when changeRequest has not been reviewed', async () => {
+  test('createWorkPackage fails when changeRequest has not been reviewed', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
-    const result = await getChangeRequestReviewState(1);
-    expect(result).toEqual(false);
+    mockGetChangeRequestReviewState.mockResolvedValue(false);
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe(`Cannot implement an unreviewed change request`);
   });
 });
