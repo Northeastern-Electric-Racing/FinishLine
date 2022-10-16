@@ -4,18 +4,21 @@
  */
 
 import { useState, useContext } from 'react';
-import { AuthenticatedUser, User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 import { AuthContext } from '../app/AppContextAuth';
-import { useLogUserIn } from './users.hooks';
+import { useLogUserIn, useLogUserInDev } from './users.hooks';
 import { Auth } from '../utils/Types';
 
 // Provider hook that creates auth object and handles state
 export const useProvideAuth = () => {
   const { isLoading, mutateAsync } = useLogUserIn();
+  const { isLoading: isLoadingDev, mutateAsync: mutateAsyncDev } = useLogUserInDev();
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
 
-  const devSignin = (user: User) => {
+  const devSignin = async (userId: number) => {
+    const user = await mutateAsyncDev(userId);
     setUser(user);
+    localStorage.setItem('devUserId', userId.toString());
     return user;
   };
 
@@ -26,6 +29,7 @@ export const useProvideAuth = () => {
   };
 
   const signout = () => {
+    localStorage.setItem('devUserId', '');
     setUser(undefined);
   };
 
@@ -34,7 +38,7 @@ export const useProvideAuth = () => {
     devSignin,
     signin,
     signout,
-    isLoading
+    isLoading: isLoading || isLoadingDev
   } as Auth;
 };
 
