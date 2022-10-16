@@ -22,6 +22,7 @@ interface UserSettingsProps {
 
 export interface FormInput {
   defaultTheme: ThemeName;
+  slackId: string;
 }
 
 const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
@@ -34,9 +35,9 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   if (userSettings.isError) return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
-  const handleConfirm = async ({ defaultTheme }: FormInput) => {
+  const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
     setEdit(false);
-    await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme });
+    await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme, slackId });
     const res = await userSettings.refetch();
     if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
