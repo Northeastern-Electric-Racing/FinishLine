@@ -4,7 +4,6 @@
  */
 
 import { createContext, useState, SyntheticEvent } from 'react';
-import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -21,6 +20,7 @@ import DependenciesList from '../WorkPackageViewContainer/DependenciesList';
 import EditModeOptions from './EditModeOptions';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { TextField } from '@mui/material';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
@@ -33,10 +33,7 @@ export const FormContext = createContext({
   setField: (field: string, value: any) => {}
 });
 
-const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
-  workPackage,
-  exitEditMode
-}) => {
+const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
   const auth = useAuth();
   const query = useQuery();
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
@@ -126,10 +123,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   };
 
   const transformDate = (date: Date) => {
-    const month =
-      date.getUTCMonth() + 1 < 10
-        ? `0${date.getUTCMonth() + 1}`
-        : (date.getUTCMonth() + 1).toString();
+    const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
     const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
     return `${date.getUTCFullYear().toString()}-${month}-${day}`;
   };
@@ -179,50 +173,48 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
   return (
-    <Container fluid className="mb-5">
-      <Form onSubmit={handleSubmit}>
-        <PageTitle
-          title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-          previousPages={[
-            { name: 'Projects', route: routes.PROJECTS },
-            { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
-          ]}
-          actionButton={
-            <Form.Control
-              type="number"
-              placeholder="Change Request ID #"
-              min="0"
-              required
-              value={crId}
-              onChange={(e) => setCrId(e.target.value.trim())}
-            />
-          }
-        />
-        <WorkPackageEditDetails
-          workPackage={workPackage}
-          users={userData!.filter((u) => u.role !== 'GUEST')}
-          setters={setters}
-        />
-        <DependenciesList dependencies={workPackage.dependencies} setter={setDeps} />
-        <PageBlock title="Expected Activities">
-          <EditableTextInputList
-            items={ea.map((ea) => ea.detail)}
-            add={expectedActivitiesUtil.add}
-            remove={expectedActivitiesUtil.remove}
-            update={expectedActivitiesUtil.update}
+    <form onSubmit={handleSubmit}>
+      <PageTitle
+        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+        previousPages={[
+          { name: 'Projects', route: routes.PROJECTS },
+          { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
+        ]}
+        actionButton={
+          <TextField
+            type="number"
+            label="Change Request ID #"
+            inputProps={{ min: 0 }}
+            required
+            value={crId}
+            onChange={(e) => setCrId(e.target.value.trim())}
           />
-        </PageBlock>
-        <PageBlock title={'Deliverables'}>
-          <EditableTextInputList
-            items={dels.map((d) => d.detail)}
-            add={deliverablesUtil.add}
-            remove={deliverablesUtil.remove}
-            update={deliverablesUtil.update}
-          />
-        </PageBlock>
-        <EditModeOptions exitEditMode={exitEditMode} />
-      </Form>
-    </Container>
+        }
+      />
+      <WorkPackageEditDetails
+        workPackage={workPackage}
+        users={userData!.filter((u) => u.role !== 'GUEST')}
+        setters={setters}
+      />
+      <DependenciesList dependencies={workPackage.dependencies} setter={setDeps} />
+      <PageBlock title="Expected Activities">
+        <EditableTextInputList
+          items={ea.map((ea) => ea.detail)}
+          add={expectedActivitiesUtil.add}
+          remove={expectedActivitiesUtil.remove}
+          update={expectedActivitiesUtil.update}
+        />
+      </PageBlock>
+      <PageBlock title={'Deliverables'}>
+        <EditableTextInputList
+          items={dels.map((d) => d.detail)}
+          add={deliverablesUtil.add}
+          remove={deliverablesUtil.remove}
+          update={deliverablesUtil.update}
+        />
+      </PageBlock>
+      <EditModeOptions exitEditMode={exitEditMode} />
+    </form>
   );
 };
 
