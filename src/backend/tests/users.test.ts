@@ -51,16 +51,9 @@ describe('Users', () => {
 
   test('updateUserSettings', async () => {
     jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
-    const req = { defaultTheme: 'DARK' };
+    const req = { defaultTheme: 'DARK', slackId: 'Slack' };
     const res = await request(app).post('/1/settings').send(req);
 
     expect(res.status).toBe(200);
-  });
-
-  test('updateUserSettings fails with no default theme', async () => {
-    const req = {};
-    const res = await request(app).post('/1/settings').send(req);
-
-    expect(res.status).toBe(404);
   });
 });
