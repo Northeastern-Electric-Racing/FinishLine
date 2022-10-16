@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid } from '@mui/material';
+import { Grid, Link } from '@mui/material';
 import { UserSettings } from 'shared';
 
 interface UserSettingsViewProps {
@@ -12,12 +12,12 @@ interface UserSettingsViewProps {
 
 const renderSlackId = (settings: UserSettings) => {
   return (
-    <div>
+    <>
       <b>Slack ID: </b>
-      <a target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
+      <Link target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
         {settings.slackId}
-      </a>
-    </div>
+      </Link>
+    </>
   );
 };
 

@@ -3,47 +3,32 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container, Row, Col } from 'react-bootstrap';
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
+import { Grid } from '@mui/material';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
 }
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
-  const spacer = 'mb-2';
   return (
     <PageBlock title={'Activation Change Request Details'}>
-      <Container fluid>
-        <Row>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Project Lead</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {fullNamePipe(cr.projectLead)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Project Manager</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {fullNamePipe(cr.projectManager)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Start Date</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {datePipe(cr.startDate)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Confirm WP Details</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={4} md={2} lg={2} xl={1}>
-            {booleanPipe(cr.confirmDetails)}
-          </Col>
-        </Row>
-      </Container>
+      <Grid container>
+        <Grid item xs={12} md={4}>
+          <b>Project Lead: </b> {fullNamePipe(cr.projectLead)}
+        </Grid>
+        <Grid item xs={12} md={8}>
+          <b>Start Date: </b> {datePipe(cr.startDate)}
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <b>Project Manager: </b> {fullNamePipe(cr.projectManager)}
+        </Grid>
+        <Grid item xs={12} md={8}>
+          <b>Confirm WP Details: </b> {booleanPipe(cr.confirmDetails)}
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };
