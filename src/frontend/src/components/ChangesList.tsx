@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import Tooltip from '@mui/material/Tooltip';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/Pipes';
 import { routes } from '../utils/Routes';
@@ -20,18 +20,19 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>
-          ]{' '}
-          <OverlayTrigger
-            placement="right"
-            overlay={
-              <Tooltip id="tooltip">
+          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
+          <Tooltip
+            id="tooltip"
+            title={
+              <>
                 {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
-              </Tooltip>
+              </>
             }
+            placement="right"
+            arrow
           >
             <span>{ic.detail}</span>
-          </OverlayTrigger>
+          </Tooltip>
         </>
       ))}
       readOnly={true}
