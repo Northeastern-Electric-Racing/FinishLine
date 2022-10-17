@@ -9,6 +9,7 @@ import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';
+import { createChangeJsonNonList } from '../utils/projects.utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -76,8 +77,77 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         approved: true
       }
     });
-  }
+    const element = await prisma.WBS_Element.findUnique({
+      where: {wbsElementId: foundCR.wbsElementId}
+    });
 
+    
+    if(!element.workPackage)
+    {
+      if(element.project != null)
+      {
+        const updatedBudgetImpact = element.project.budgetImpact + foundPs.budgetImpact;
+        const change = {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: 'Budget Impact: '.concat(element.project.budgetImpact.toString, '->', updatedBudgetImpact.toString)
+        };
+        await prisma.project.update({
+          where: { projectId: element.project.projectId },
+          data: {
+            budgetImpact : updatedBudgetImpact,
+            wbsElement: {
+              update: {
+                changes: {
+                  createMany:{
+                    data: [change]
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+    else
+    {
+      const updatedBudgetImpact = element.workPackage.project.budgetImpact + foundPs.budgetImpact;
+      const updatedDuration = element.workPackage.duration + foundPs.timelineImpact
+
+      const changes = [];
+        changes.push({
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: 'Budget Impact: '.concat(element.project.budgetImpact.toString, '->', updatedBudgetImpact.toString)
+        },
+        {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: 'Timeline Impact: '.concat(element.project.budgetImpact.toString, '->', updatedBudgetImpact.toString)
+        });
+
+      await prisma.work_Package.update({
+        where: { projectId: element.workPackage.projectId },
+        data: {
+          project: {
+            update: {
+              budgetImpact: updatedBudgetImpact
+            }
+          },
+          duration: updatedDuration,
+          wbsElement: {
+            update: {
+              changes: {
+                createMany: {
+                  data: changes
+                }
+              }
+            }
+          }
+        } 
+      })
+    }
+    
   // update change request
   const updated = await prisma.change_Request.update({
     where: { crId },
@@ -85,7 +155,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       reviewer: { connect: { userId: reviewerId } },
       reviewNotes,
       accepted,
-      dateReviewed: new Date()
+      dateReviewed: new Date(),
     },
     include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
   });
