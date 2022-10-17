@@ -15,7 +15,7 @@ const styles = {
 };
 
 interface LoginPageProps {
-  devSetRole: (role: string) => void;
+  devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
   prodSuccess: (res: any) => any;
   prodFailure: (res: any) => any;
@@ -25,13 +25,7 @@ interface LoginPageProps {
 /**
  * Page for unauthenticated users to do login.
  */
-const LoginPage: React.FC<LoginPageProps> = ({
-  devSetRole,
-  devFormSubmit,
-  prodSuccess,
-  prodFailure,
-  theme
-}) => {
+const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure, theme }) => {
   return (
     <Card bg={theme.cardBg} className={'mx-auto mt-sm-5 '} style={styles.card}>
       <Card.Body>
@@ -46,13 +40,11 @@ const LoginPage: React.FC<LoginPageProps> = ({
           cookiePolicy={'single_host_origin'}
           isSignedIn={true}
         />
-        {process.env.NODE_ENV === 'development' ? (
-          <LoginDev devSetRole={devSetRole} devFormSubmit={devFormSubmit} />
-        ) : (
-          ''
-        )}
+        {process.env.NODE_ENV === 'development' ? <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} /> : ''}
       </Card.Body>
-      <Card.Footer className="text-muted">By using this app, you consent to cookies and tracking for purposes including security and improving the app.</Card.Footer>
+      <Card.Footer className="text-muted">
+        By using this app, you consent to cookies and tracking for purposes including security and improving the app.
+      </Card.Footer>
     </Card>
   );
 };

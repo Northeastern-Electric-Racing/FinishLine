@@ -47,7 +47,7 @@ const NavUserMenu: React.FC = () => {
               Logout
             </button>
           )}
-        ></GoogleLogout>
+        />
       </NavDropdown.Item>
     </NavDropdown>
   );

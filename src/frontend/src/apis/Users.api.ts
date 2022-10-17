@@ -43,6 +43,19 @@ export const logUserIn = (id_token: string) => {
 };
 
 /**
+ * Log in a dev user.
+ *
+ * @param userId The userId to log in.
+ */
+export const logUserInDev = (userId: number) => {
+  return axios.post<AuthenticatedUser>(
+    apiUrls.usersLoginDev(),
+    { userId },
+    { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
+  );
+};
+
+/**
  * Fetch the user settings for a single user.
  *
  * @param id User ID of the requested user's settings.

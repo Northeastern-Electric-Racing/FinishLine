@@ -8,7 +8,8 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { userTransformer } from './users.utils';
-import { convertStatus, descBulletConverter, wbsNumOf } from './utils';
+import { buildChangeDetail, convertStatus, wbsNumOf } from './utils';
+import { descBulletArgs, descBulletTransformer } from './description-bullets.utils';
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -19,38 +20,30 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
         changes: { include: { implementer: true }, orderBy: { dateImplemented: 'asc' } }
       }
     },
-    expectedActivities: true,
-    deliverables: true,
+    expectedActivities: descBulletArgs,
+    deliverables: descBulletArgs,
     dependencies: true
   }
 });
 
-export const workPackageTransformer = (
-  wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>
-) => {
-  const expectedProgress = calculatePercentExpectedProgress(
-    wpInput.startDate,
-    wpInput.duration,
-    wpInput.wbsElement.status
-  );
+export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
+  const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
+  const bullets = wpInput.deliverables.concat(wpInput.expectedActivities);
+  const progress = Math.floor((bullets.filter((b) => b.userChecked).length / bullets.length) * 100);
   return {
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
     name: wpInput.wbsElement.name,
     orderInProject: wpInput.orderInProject,
-    progress: wpInput.progress,
+    progress,
     startDate: wpInput.startDate,
     duration: wpInput.duration,
-    expectedActivities: wpInput.expectedActivities.map(descBulletConverter),
-    deliverables: wpInput.deliverables.map(descBulletConverter),
+    expectedActivities: wpInput.expectedActivities.map(descBulletTransformer),
+    deliverables: wpInput.deliverables.map(descBulletTransformer),
     dependencies: wpInput.dependencies.map(wbsNumOf),
-    projectManager: wpInput.wbsElement.projectManager
-      ? userTransformer(wpInput.wbsElement.projectManager)
-      : undefined,
-    projectLead: wpInput.wbsElement.projectLead
-      ? userTransformer(wpInput.wbsElement.projectLead)
-      : undefined,
+    projectManager: wpInput.wbsElement.projectManager ? userTransformer(wpInput.wbsElement.projectManager) : undefined,
+    projectLead: wpInput.wbsElement.projectLead ? userTransformer(wpInput.wbsElement.projectLead) : undefined,
     status: convertStatus(wpInput.wbsElement.status),
     wbsNum,
     endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
@@ -105,7 +98,7 @@ export const createChangeJsonNonList = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue}" to "${newValue}"`
+      detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
   return undefined;
@@ -120,12 +113,17 @@ export const createChangeJsonDates = (
   implementerId: number,
   wbsElementId: number
 ) => {
-  if (oldValue.getTime() !== newValue.getTime()) {
+  // toUTCString gives a date like "Fri, 01 Jan 2021 00:00:00 GMT" and we just want to compare those first four words
+  const oldDate = oldValue.toUTCString().split(' ').splice(0, 4).join();
+  const newDate = newValue.toUTCString().split(' ').splice(0, 4).join();
+  if (oldDate !== newDate) {
+    console.log(oldDate);
+    console.log(newDate);
     return {
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue.toUTCString()}" to "${newValue.toUTCString()}"`
+      detail: buildChangeDetail(nameOfField, oldValue.toUTCString(), newValue.toUTCString())
     };
   }
   return undefined;
@@ -220,21 +218,17 @@ export const createDescriptionBulletChangesJson = (
   });
 
   return {
-    deletedIds: changes
-      .filter((element) => element.type === 'Removed')
-      .map((element) => element.element.id),
-    addedDetails: changes
-      .filter((element) => element.type === 'Added new')
-      .map((element) => element.element.detail),
-    editedIdsAndDetails: changes
-      .filter((element) => element.type === 'Edited')
-      .map((element) => element.element),
+    deletedIds: changes.filter((element) => element.type === 'Removed').map((element) => element.element.id),
+    addedDetails: changes.filter((element) => element.type === 'Added new').map((element) => element.element.detail),
+    editedIdsAndDetails: changes.filter((element) => element.type === 'Edited').map((element) => element.element),
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
-          ? `${element.type} ${nameOfField} from "${seenOld.get(
-              element.element.id
-            )}" to "${seenNew.get(element.element.id)}"`
+          ? buildChangeDetail(
+              nameOfField,
+              seenOld.get(element.element.id) || 'null',
+              seenNew.get(element.element.id) || 'null'
+            )
           : `${element.type} ${nameOfField} "${element.element.detail}"`;
       return { changeRequestId: crId, implementerId, wbsElementId, detail };
     })

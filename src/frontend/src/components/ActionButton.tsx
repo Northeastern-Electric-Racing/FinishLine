@@ -20,13 +20,18 @@ interface ActionButtonProps {
   link: string;
   icon: IconDefinition;
   text: string;
+  disabled?: boolean;
 }
 
 // Common component for all major action buttons
-const ActionButton: React.FC<ActionButtonProps> = ({ link, icon, text }) => {
+const ActionButton: React.FC<ActionButtonProps> = ({ link, icon, text, disabled = false }) => {
   return (
-    <Link className={'row py-auto px-3 '} to={link} style={{ textDecoration: 'none' }}>
-      <Button>
+    <Link
+      className={'row py-auto px-3 '}
+      to={link}
+      style={{ textDecoration: 'none', pointerEvents: disabled ? 'none' : undefined }}
+    >
+      <Button disabled={disabled}>
         <div style={styles.button}>
           <FontAwesomeIcon className="mr-2 my-auto" icon={icon} size="1x" color="white" />
           <p className="mb-0" style={styles.buttonText}>

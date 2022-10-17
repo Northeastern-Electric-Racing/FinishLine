@@ -25,13 +25,11 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
   crReviewed,
   crId
 }) => {
-  const [proposedSolutionsList] = useState<ProposedSolution[]>(proposedSolutions);
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
 
   const addProposedSolution = async (data: ProposedSolution) => {
-    proposedSolutionsList.push(data);
     setShowEditableForm(false);
     const { description, timelineImpact, scopeImpact, budgetImpact } = data;
 
@@ -59,7 +57,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
         ''
       )}
       <div className={styles.proposedSolutionsList}>
-        {proposedSolutionsList.map((proposedSolution, i) => (
+        {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
       </div>

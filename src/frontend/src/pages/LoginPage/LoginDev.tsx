@@ -4,30 +4,25 @@
  */
 
 import { Form, InputGroup, FormControl, Button } from 'react-bootstrap';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser,
-  exampleMemberUser,
-  exampleGuestUser
-} from '../../tests/test-support/test-data/users.stub';
-
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useAllUsers } from '../../hooks/users.hooks';
+import { fullNamePipe } from '../../utils/Pipes';
 interface LoginDevProps {
-  devSetRole: (role: string) => void;
+  devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
 }
 
 /**
  * Form for dev users to do login on the dev environment.
  */
-const LoginDev: React.FC<LoginDevProps> = ({ devSetRole, devFormSubmit }) => {
-  const usersList = [
-    exampleAppAdminUser,
-    exampleAdminUser,
-    exampleLeadershipUser,
-    exampleMemberUser,
-    exampleGuestUser
-  ];
+const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
+  if (process.env.NODE_ENV !== 'development') return <></>;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { isLoading, data: usersList } = useAllUsers();
+
+  if (!usersList || isLoading) return <LoadingIndicator />;
+
   return (
     <Form className="pt-3" onSubmit={devFormSubmit}>
       <InputGroup>
@@ -35,14 +30,18 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetRole, devFormSubmit }) => {
           <InputGroup.Text id="user-select">Select User</InputGroup.Text>
         </InputGroup.Append>
         <FormControl
-          onChange={(e: any) => devSetRole(e.target.value)}
+          onChange={(e: any) => devSetUser(parseInt(e.target.value))}
           aria-describedby="user-select"
           as="select"
           custom
         >
-          {usersList.map((user) => (
-            <option key={user.role}>{user.role}</option>
-          ))}
+          {usersList
+            .sort((a, b) => a.userId - b.userId)
+            .map((user) => (
+              <option key={user.role} value={user.userId}>
+                {fullNamePipe(user)} ({user.role.toLowerCase()})
+              </option>
+            ))}
         </FormControl>
         <InputGroup.Append>
           <Button variant="primary" type="submit">
