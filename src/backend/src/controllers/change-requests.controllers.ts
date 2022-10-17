@@ -9,7 +9,6 @@ import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';
-import { createChangeJsonNonList } from '../utils/projects.utils';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -147,7 +146,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         } 
       })
     }
-    
+  }
   // update change request
   const updated = await prisma.change_Request.update({
     where: { crId },
