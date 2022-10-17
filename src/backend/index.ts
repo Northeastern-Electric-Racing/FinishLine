@@ -6,6 +6,9 @@ import teamsRouter from './src/routes/teams.routes';
 import workPackagesRouter from './src/routes/work-packages.routes';
 import risksRouter from './src/routes/risks.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
+import session from 'express-session';
+import connectPg from 'connect-pg-simple';
+import { Pool } from 'pg';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -20,6 +23,33 @@ const options: cors.CorsOptions = {
 
 app.use(cors(options));
 app.use(express.json());
+
+const PgSession = connectPg(session);
+
+const pool = new Pool({
+  host: 'localhost',
+  database: 'nerpm',
+  user: 'shaanhossain',
+  password: ''
+});
+
+// req.session.id = userID
+
+app.use(
+  session({
+    secret: 'ASDASDASDASDASD',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60,
+      httpOnly: false,
+      domain: undefined
+    },
+    store: new PgSession({
+      pool
+    })
+  })
+);
 
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);

@@ -278,3 +278,11 @@ model Risk {
   deletedByUserId  Int?
   deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
 }
+
+model session {
+  sid    String   @id
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
+}

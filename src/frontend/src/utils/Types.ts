@@ -5,6 +5,7 @@
 
 import { AuthenticatedUser, User, ThemeName } from 'shared';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import 'express-session';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -27,4 +28,10 @@ export interface LinkItem {
   name: string;
   icon?: IconProp;
   route: string;
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    emailId: string;
+  }
 }

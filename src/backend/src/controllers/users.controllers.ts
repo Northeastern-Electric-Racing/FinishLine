@@ -94,6 +94,10 @@ export const logUserIn = async (req: any, res: any) => {
     user = createdUser;
   }
 
+  // eslint-disable-next-line prefer-destructuring
+  req.session.emailId = user.emailId;
+  console.log(user.emailId);
+
   // register a login
   await prisma.session.create({
     data: {

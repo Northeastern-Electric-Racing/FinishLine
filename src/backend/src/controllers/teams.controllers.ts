@@ -2,7 +2,8 @@ import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
 
-export const getAllTeams = async (_req: Request, res: Response) => {
+export const getAllTeams = async (_req: any, res: Response) => {
+  console.log(_req.session.emailId);
   const teams = await prisma.team.findMany(teamRelationArgs);
   return res.status(200).json(teams.map(teamTransformer));
 };

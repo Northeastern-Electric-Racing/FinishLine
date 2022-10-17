@@ -7,6 +7,9 @@
     "noEmit": false,
     "esModuleInterop": true
   },
+  "typeRoots": [
+    "src/backend/src/utils/types.ts"
+  ],
   "exclude": ["node_modules", "dist"],
   "include": ["./index.ts", "./src/**/*.ts"]
 }

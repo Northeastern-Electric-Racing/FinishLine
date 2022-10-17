@@ -20,6 +20,7 @@
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
     "customize-cra": "^0.9.1",
+    "express-session": "^1.17.3",
     "google-auth-library": "^8.1.1",
     "react": "^17.0.1",
     "react-app-rewired": "^2.1.6",
@@ -61,6 +62,7 @@
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^8.0.1",
+    "@types/express-session": "^1.17.5",
     "@types/react-bootstrap-table-next": "^4.0.18",
     "@types/react-query": "^1.2.9",
     "msw": "^0.44.2",
