@@ -74,23 +74,26 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const wbs = await prisma.wBS_Element.findUnique({
       where: {
         wbsElementId: foundCR.wbsElementId
-      },
-      include: {
-        workPackage: true,
-        project: true
       }
     });
 
     if (!wbs) {
-      return res.status(404).json({ message: `wbs element with id #${foundCR.wbsElementId} not found` });
+      return res.status(404).json({ message: `WBS element with id #${foundCR.wbsElementId} not found` });
     }
-
-    const wp = { ...wbs.workPackage };
-
-    const proj = { ...wbs.project };
-
+    const wp = await prisma.work_Package.findUnique({
+      where: {
+        workPackageId: wbs.workPackageNumber
+      }
+    });
+    console.log('workPackage: ', wp);
+    const proj = await prisma.project.findUnique({
+      where: {
+        projectId: wbs.projectNumber
+      }
+    });
+    console.log('project: ', proj);
     if (!wp && proj) {
-      const  newBudget = proj.budget! + foundPs.budgetImpact;
+      const newBudget = proj.budget! + foundPs.budgetImpact;
       const change = {
         changeRequestId: crId,
         implementerId: reviewerId,
@@ -112,11 +115,12 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         }
       });
     } else if (wp) {
+      console.log(wp);
       const wpProj = await prisma.project.findUnique({
         where: { projectId: wp.projectId }
       });
       if (!wpProj) {
-        return res.status(400).json({ message: 'Work package project not found' });
+        return res.status(404).json({ message: 'Work package project not found' });
       }
       const newBudget = wpProj.budget + foundPs.budgetImpact;
       const updatedDuration = wp.duration! + foundPs.timelineImpact;

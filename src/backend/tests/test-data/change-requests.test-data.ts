@@ -1,4 +1,5 @@
 import { CR_Type, Scope_CR_Why_Type } from '@prisma/client';
+import { WBS_Element_Status } from '@prisma/client';
 
 export const changeBatmobile = {
   crId: 1,
@@ -27,7 +28,7 @@ export const solutionToRedesignWhip = {
   timelineImpact: 10,
   budgetImpact: 1000,
   scopeImpact: 'huge',
-  changeRequestId: 2,
+  changeRequestId: 1,
   createdByUserId: 3,
   dateCreated: new Date('10/16/2022'),
   approved: false
@@ -53,6 +54,7 @@ export const redesignWhip = {
   crId: 2,
   submitterId: 3,
   wbsElementId: 65,
+  projectId: 2,
   type: CR_Type.OTHER,
   dateSubmitted: new Date('10/10/2022'),
   dateReviewed: new Date('10/18/2022'),
@@ -68,4 +70,27 @@ export const redesignWhip = {
     }
   ],
   scopeChangeRequest: redesignWhipScopeCR
+};
+export const whipWorkPackage = {
+  workPackageId: 1,
+  wbsElementId: 65,
+  projectId: 1,
+  orderInProject: 1,
+  startDate: new Date('10/10/2022'),
+  progress: 20,
+  duration: 10,
+
+};
+
+export const redesignWhipWBSElement = {
+  wbsElementId: 65,
+  dateCreated: new Date('10/18/2022'),
+  carNumber: 1,
+  projectNumber: 1,
+  workPackageNumber: 1,
+  name: 'redesign whip',
+  status: WBS_Element_Status.ACTIVE,
+  projectLeadId: 1,
+  projectManagerId: 2,
+  changeRequests: [redesignWhip]
 };
