@@ -46,7 +46,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
-  if (!foundCR) return res.status(404).json({ message: `change request with id #${crId} not found` });
+  if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
 
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
@@ -61,7 +61,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       where: { proposedSolutionId: psId }
     });
     if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId)
-      return res.status(400).json({
+      return res.status(404).json({
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
     // update proposed solution
@@ -90,26 +90,21 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const proj = { ...wbs.project };
 
     if (!wp && proj) {
-      let updatedBudgetImpact;
-      if (!proj.budget) {
-        updatedBudgetImpact = 0 + foundPs.budgetImpact;
-      } else {
-        updatedBudgetImpact = proj.budget + foundPs.budgetImpact;
-      }
+      const  newBudget = proj.budget! + foundPs.budgetImpact;
       const change = {
         changeRequestId: crId,
         implementerId: reviewerId,
-        detail: buildChangeDetail('Budget Impact', String(proj.budget), String(updatedBudgetImpact))
+        detail: buildChangeDetail('Budget', String(proj.budget), String(newBudget))
       };
       await prisma.project.update({
         where: { projectId: wbs.projectNumber },
         data: {
-          budget: updatedBudgetImpact,
+          budget: newBudget,
           wbsElement: {
             update: {
               changes: {
                 createMany: {
-                  data: [change]
+                  data: change
                 }
               }
             }
@@ -123,24 +118,19 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       if (!wpProj) {
         return res.status(400).json({ message: 'Work package project not found' });
       }
-      const updatedBudgetImpact = wpProj.budget + foundPs.budgetImpact;
-      let updatedDuration;
-      if (!wp.duration) {
-        updatedDuration = 0 + foundPs.timelineImpact;
-      } else {
-        updatedDuration = wp.duration + foundPs.timelineImpact;
-      }
+      const newBudget = wpProj.budget + foundPs.budgetImpact;
+      const updatedDuration = wp.duration! + foundPs.timelineImpact;
 
       const changes = [
         {
           changeRequestId: crId,
           implementerId: reviewerId,
-          detail: buildChangeDetail('Budget Impact', String(wpProj.budget), String(updatedBudgetImpact))
+          detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
         },
         {
           changeRequestId: crId,
           implementerId: reviewerId,
-          detail: buildChangeDetail('Timeline Impact', String(wp.duration), String(updatedDuration))
+          detail: buildChangeDetail('Duration', String(wp.duration), String(updatedDuration))
         }
       ];
 
@@ -149,7 +139,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         data: {
           project: {
             update: {
-              budget: updatedBudgetImpact
+              budget: newBudget
             }
           },
           duration: updatedDuration,
