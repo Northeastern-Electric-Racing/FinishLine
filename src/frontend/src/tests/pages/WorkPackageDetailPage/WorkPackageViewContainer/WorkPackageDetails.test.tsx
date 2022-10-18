@@ -5,7 +5,7 @@
 
 import { render, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { endDatePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/Pipes';
+import { datePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
@@ -51,9 +51,7 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(
       screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.progress}%`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.timelineStatus}`, { exact: false })).toBeInTheDocument();
     expect(
@@ -79,9 +77,7 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(
       screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
     expect(progresses.length).toBe(2);
     expect(screen.getByText(`${wp.timelineStatus}`, { exact: false })).toBeInTheDocument();
@@ -104,9 +100,7 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(
       screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
     expect(progresses.length).toBe(2);
     expect(screen.getByText(`${wp.timelineStatus}`, { exact: false })).toBeInTheDocument();

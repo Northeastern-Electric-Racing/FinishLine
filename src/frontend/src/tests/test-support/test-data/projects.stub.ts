@@ -11,7 +11,11 @@ import {
   exampleProjectManagerUser
 } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
-import { exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3 } from './work-packages.stub';
+import {
+  exampleWorkPackage1,
+  exampleWorkPackage2,
+  exampleWorkPackage3
+} from './work-packages.stub';
 
 export const exampleProject1: Project = {
   id: 4,
@@ -60,6 +64,7 @@ export const exampleProject1: Project = {
     }
   ],
   duration: 8,
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage1, exampleWorkPackage2],
   risks: []
 };
@@ -98,6 +103,7 @@ export const exampleProject2: Project = {
   ],
   changes: [],
   duration: 0,
+  endDate: undefined,
   workPackages: [],
   risks: []
 };
@@ -140,6 +146,7 @@ export const exampleProject3: Project = {
   ],
   changes: [],
   duration: 3,
+  endDate: new Date('01/22/21'),
   workPackages: [exampleWorkPackage1],
   risks: []
 };
@@ -178,6 +185,7 @@ export const exampleProject4: Project = {
   ],
   changes: [],
   duration: 5,
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage2],
   risks: []
 };
@@ -216,6 +224,7 @@ export const exampleProject5: Project = {
   ],
   changes: [],
   duration: 2,
+  endDate: new Date('01/15/21'),
   workPackages: [exampleWorkPackage3],
   risks: []
 };

@@ -5,7 +5,7 @@
 
 import { WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { wbsPipe, listPipe, endDatePipe, datePipe } from '../../../../utils/Pipes';
+import { wbsPipe, listPipe, datePipe } from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
@@ -31,9 +31,7 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wbsPipe(wp.wbsNum)}`)).toBeInTheDocument();
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });
@@ -56,9 +54,7 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${listPipe(wp.dependencies, wbsPipe)}`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });
@@ -81,9 +77,7 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${listPipe(wp.dependencies, wbsPipe)}`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });

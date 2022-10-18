@@ -5,6 +5,7 @@ import {
   WbsElementStatus,
   DescriptionBullet,
   calculateEndDate,
+  calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
   calculateDuration
@@ -118,6 +119,7 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
+    endDate: calculateProjectEndDate(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
