@@ -8,7 +8,8 @@ import {
   calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateDuration
+  calculateDuration,
+  calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
@@ -78,9 +79,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
 });
 
 export const projectTransformer = (
-  payload:
-    | Prisma.ProjectGetPayload<typeof manyRelationArgs>
-    | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
+  payload: Prisma.ProjectGetPayload<typeof manyRelationArgs> | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
 ): Project => {
   const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
   const project = 'project' in payload ? payload.project! : payload;
@@ -119,6 +118,7 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
     endDate: calculateProjectEndDate(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
@@ -138,9 +138,7 @@ export const projectTransformer = (
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
         status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead
-          ? userTransformer(workPackage.wbsElement.projectLead)
-          : undefined,
+        projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
         projectManager: workPackage.wbsElement.projectManager
           ? userTransformer(workPackage.wbsElement.projectManager)
           : undefined,
@@ -187,11 +185,7 @@ export const getHighestProjectNumber = async (carNumber: number) => {
 };
 
 // helper method to add the given description bullets into the database, linked to the given work package
-export const addDescriptionBullets = async (
-  addedDetails: string[],
-  id: number,
-  descriptionBulletIdField: string
-) => {
+export const addDescriptionBullets = async (addedDetails: string[], id: number, descriptionBulletIdField: string) => {
   // add the added bullets
   if (addedDetails.length > 0) {
     await prisma.description_Bullet.createMany({
@@ -206,9 +200,7 @@ export const addDescriptionBullets = async (
 };
 
 // edit descrption bullets in the db for each id and detail pair
-export const editDescriptionBullets = async (
-  editedIdsAndDetails: { id: number; detail: string }[]
-) => {
+export const editDescriptionBullets = async (editedIdsAndDetails: { id: number; detail: string }[]) => {
   if (editedIdsAndDetails.length < 1) return;
   editedIdsAndDetails.forEach(
     async (element) =>

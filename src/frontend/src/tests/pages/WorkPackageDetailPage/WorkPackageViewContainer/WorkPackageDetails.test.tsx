@@ -16,11 +16,7 @@ import { useAllUsers } from '../../../../hooks/users.hooks';
 import { User } from 'shared';
 import { mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
 import { UseQueryResult } from 'react-query';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser
-} from '../../../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 
 jest.mock('../../../../hooks/users.hooks');
 
@@ -40,23 +36,15 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
     expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.name}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
 
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.progress}%`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.timelineStatus}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${percentPipe(wp.expectedProgress)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${percentPipe(wp.expectedProgress)}`, { exact: false })).toBeInTheDocument();
   });
 
   it('renders all the fields, example 2', () => {
@@ -66,17 +54,11 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
     expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.name}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
 
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
     expect(progresses.length).toBe(2);
@@ -90,16 +72,10 @@ describe.skip('Rendering Work Package Details Component', () => {
     expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
     expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${wp.name}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
     expect(progresses.length).toBe(2);
