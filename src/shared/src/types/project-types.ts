@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -70,4 +70,5 @@ export interface DescriptionBullet {
   detail: string;
   dateAdded: Date;
   dateDeleted?: Date;
+  userChecked?: User;
 }

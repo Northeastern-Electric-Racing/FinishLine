@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -17,6 +17,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ActionButton from '../../components/ActionButton';
 import ErrorPage from '../ErrorPage';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { useAuth } from '../../hooks/auth.hooks';
 
 /***
  * Returns a list of change requests that has been filtered according to the given params.
@@ -118,6 +119,8 @@ const ChangeRequestsTable: React.FC = () => {
   const [implemented, setImplemented] = useState('');
   const { isLoading, isError, data, error } = useAllChangeRequests();
 
+  const auth = useAuth();
+
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -160,6 +163,7 @@ const ChangeRequestsTable: React.FC = () => {
             link={routes.CHANGE_REQUESTS_NEW}
             icon={faPlus}
             text={'New Change Request'}
+            disabled={auth.user?.role === 'GUEST'}
           />
         }
       />

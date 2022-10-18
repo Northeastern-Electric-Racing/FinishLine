@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -22,6 +22,9 @@ import ChangeRequestsTable, {
 import { useTheme } from '../../../hooks/theme.hooks';
 import { Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../hooks/change-requests.hooks');
 
@@ -52,6 +55,11 @@ const renderComponent = () => {
 
 describe('change requests table container', () => {
   const NoCRMessage = 'No Change Requests to Display';
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
+  afterAll(() => jest.clearAllMocks());
 
   it('renders the loading indicator', () => {
     mockHook(true, false);

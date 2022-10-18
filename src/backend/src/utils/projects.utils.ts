@@ -13,6 +13,7 @@ import {
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
 import { riskQueryArgs, riskTransformer } from './risks.utils';
+import { buildChangeDetail } from '../utils/utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -240,7 +241,7 @@ export const createChangeJsonNonList = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue}" to "${newValue}"`
+      detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
   return undefined;
@@ -355,9 +356,11 @@ export const createDescriptionBulletChangesJson = (
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
-          ? `${element.type} ${nameOfField} from "${originalElements.get(
-              element.element.id
-            )}" to "${existingElements.get(element.element.id)}"`
+          ? buildChangeDetail(
+              nameOfField,
+              originalElements.get(element.element.id) || 'null',
+              existingElements.get(element.element.id) || 'null'
+            )
           : `${element.type} ${nameOfField} "${element.element.detail}"`;
       return {
         changeRequestId: crId,
