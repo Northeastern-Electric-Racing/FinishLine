@@ -66,9 +66,24 @@ const calculateTimelineStatus = (progress: number, expectedProgress: number): Ti
   return TimelineStatus.VeryBehind;
 };
 
+/**
+ * Calculates the start date for a project
+ * @param wps The array of work packages that project has
+ * @returns the ealiest start date among work packages
+ */
+const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
+  const minDate = wps.reduce(
+    (min, cur) => (cur.startDate < min ? cur.startDate : min),
+    wps[0].startDate
+  );
+  return minDate;
+};
+
 export {
   calculateDuration,
   calculateEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus
+  calculateTimelineStatus,
+  calculateProjectStartDate
 };

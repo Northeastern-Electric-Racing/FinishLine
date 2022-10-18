@@ -5,7 +5,13 @@
 
 import { render, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { endDatePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/Pipes';
+import {
+  endDatePipe,
+  fullNamePipe,
+  weeksPipe,
+  percentPipe,
+  datePipe
+} from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
@@ -48,9 +54,7 @@ describe.skip('Rendering Work Package Details Component', () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
     expect(
       screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
     ).toBeInTheDocument();
@@ -76,9 +80,7 @@ describe.skip('Rendering Work Package Details Component', () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
     expect(
       screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
     ).toBeInTheDocument();
@@ -101,9 +103,7 @@ describe.skip('Rendering Work Package Details Component', () => {
       screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })
     ).toBeInTheDocument();
     expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${wp.startDate.toLocaleDateString()}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
     expect(
       screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
     ).toBeInTheDocument();

@@ -7,7 +7,8 @@ import {
   calculateEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateDuration
+  calculateDuration,
+  calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
@@ -117,10 +118,7 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
-    startDate: project.workPackages.reduce(
-      (min, cur) => (cur.startDate < min ? cur.startDate : min),
-      project.workPackages[0].startDate
-    ), // ???
+    startDate: calculateProjectStartDate(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),

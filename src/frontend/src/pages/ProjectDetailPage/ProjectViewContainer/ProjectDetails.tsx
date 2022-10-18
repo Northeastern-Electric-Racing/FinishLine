@@ -21,15 +21,6 @@ interface ProjectDetailsProps {
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const start =
-    project.workPackages.length > 0
-      ? datePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          )
-        )
-      : 'n/a';
   const end =
     project.workPackages.length > 0
       ? endDatePipe(
@@ -56,7 +47,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             <b>Duration:</b> {weeksPipe(project.duration)}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={4} xl={2}>
-            <b>Start Date:</b> {start}
+            <b>Start Date:</b> {datePipe(project.startDate)}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
             <b>End Date:</b> {end}

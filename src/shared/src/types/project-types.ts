@@ -41,7 +41,7 @@ export interface Project extends WbsElement {
   bomLink?: string;
   rules: string[];
   duration: number;
-  startDate: Date;
+  startDate?: Date;
   goals: DescriptionBullet[];
   features: DescriptionBullet[];
   otherConstraints: DescriptionBullet[];
