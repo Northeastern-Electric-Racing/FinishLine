@@ -4,18 +4,9 @@
  */
 
 import { Project, WbsElementStatus } from 'shared';
-import {
-  exampleAdminUser,
-  exampleLeadershipUser,
-  exampleProjectLeadUser,
-  exampleProjectManagerUser
-} from './users.stub';
+import { exampleAdminUser, exampleLeadershipUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
-import {
-  exampleWorkPackage1,
-  exampleWorkPackage2,
-  exampleWorkPackage3
-} from './work-packages.stub';
+import { exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3 } from './work-packages.stub';
 
 export const exampleProject1: Project = {
   id: 4,
@@ -65,6 +56,7 @@ export const exampleProject1: Project = {
   ],
   duration: 8,
   startDate: new Date('01/01/21'),
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage1, exampleWorkPackage2],
   risks: []
 };
@@ -98,12 +90,11 @@ export const exampleProject2: Project = {
       dateAdded: new Date('06/11/21')
     }
   ],
-  otherConstraints: [
-    { id: 11, detail: 'Compatible with a side-pod chassis design', dateAdded: new Date('06/12/21') }
-  ],
+  otherConstraints: [{ id: 11, detail: 'Compatible with a side-pod chassis design', dateAdded: new Date('06/12/21') }],
   changes: [],
   duration: 0,
   startDate: undefined,
+  endDate: undefined,
   workPackages: [],
   risks: []
 };
@@ -147,6 +138,7 @@ export const exampleProject3: Project = {
   changes: [],
   duration: 3,
   startDate: new Date('01/01/21'),
+  endDate: new Date('01/22/21'),
   workPackages: [exampleWorkPackage1],
   risks: []
 };
@@ -180,12 +172,11 @@ export const exampleProject4: Project = {
       dateAdded: new Date('05/14/21')
     }
   ],
-  otherConstraints: [
-    { id: 13, detail: 'Must be compatible with chain drive', dateAdded: new Date('05/12/21') }
-  ],
+  otherConstraints: [{ id: 13, detail: 'Must be compatible with chain drive', dateAdded: new Date('05/12/21') }],
   changes: [],
   duration: 5,
   startDate: new Date('01/22/21'),
+  endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage2],
   risks: []
 };
@@ -219,12 +210,11 @@ export const exampleProject5: Project = {
       dateAdded: new Date('02/14/21')
     }
   ],
-  otherConstraints: [
-    { id: 14, detail: 'Utilizes 8020 frame construction', dateAdded: new Date('02/16/21') }
-  ],
+  otherConstraints: [{ id: 14, detail: 'Utilizes 8020 frame construction', dateAdded: new Date('02/16/21') }],
   changes: [],
   duration: 2,
   startDate: new Date('01/01/21'),
+  endDate: new Date('01/15/21'),
   workPackages: [exampleWorkPackage3],
   risks: []
 };
