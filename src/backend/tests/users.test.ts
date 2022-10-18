@@ -3,7 +3,7 @@ import express from 'express';
 import userRouter from '../src/routes/users.routes';
 import prisma from '../src/prisma/prisma';
 import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
-import { Role } from '@prisma/client';
+import { Role, Theme } from '@prisma/client';
 
 const app = express();
 app.use(express.json());
@@ -62,16 +62,31 @@ describe('Users', () => {
     const newSuperman = { ...superman, role: Role.MEMBER };
 
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(batman);
-    jest.spyOn(prisma.user, "findUnique").mockResolvedValueOnce(superman);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
     jest.spyOn(prisma.user, 'update').mockResolvedValueOnce(newSuperman);
 
     const body = { userId: 1, role: 'MEMBER' };
 
     const res = await request(app).post('/2/change-role').send(body);
-    
+
     const { googleAuthId, ...restOfSuperman } = newSuperman;
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual( restOfSuperman );
+    expect(res.body).toStrictEqual(restOfSuperman);
     expect(prisma.user.update).toHaveBeenCalledTimes(1);
+  });
+
+  test('updateUserSettings', async () => {
+    const batmanSettings = {
+      id: 'bm',
+      userId: 1,
+      defaultTheme: Theme.DARK,
+      slackId: 'slack'
+    };
+
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
+    const req = { defaultTheme: 'DARK', slackId: 'Slack' };
+    const res = await request(app).post('/1/settings').send(req);
+
+    expect(res.status).toBe(200);
   });
 });
