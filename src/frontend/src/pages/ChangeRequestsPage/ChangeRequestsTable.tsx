@@ -15,7 +15,6 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
 import Add from '@mui/icons-material/Add';
 
 const ChangeRequestsTable: React.FC = () => {
@@ -122,12 +121,13 @@ const ChangeRequestsTable: React.FC = () => {
         title={'Change Requests'}
         previousPages={[]}
         actionButton={
-          <Link className={'row py-auto px-3 '} to={routes.CHANGE_REQUESTS_NEW} style={{ textDecoration: 'none' }}>
-            <Button variant="text">
+          <Link
+            className={'row py-auto px-3 '}
+            to={routes.CHANGE_REQUESTS_NEW}
+            style={{ textDecoration: 'none', pointerEvents: false ? 'none' : undefined }}
+          >
+            <Button disabled={auth.user?.role === 'GUEST'} endIcon={<Add />} variant="text">
               New Change Request
-              <IconButton onClick={() => (window.location.href = routes.CHANGE_REQUESTS_NEW)}>
-                <Add />
-              </IconButton>
             </Button>
           </Link>
         }
