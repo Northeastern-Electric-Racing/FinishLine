@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import { expressjwt } from 'express-jwt';
+import cookieParser from 'cookie-parser';
+import { requireJwtUnlessLogin } from './src/utils/utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
@@ -12,13 +15,31 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const options: cors.CorsOptions = {
-  origin: '*',
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://finishlinebyner.com',
+    'https://magenta-mochi-275e56.netlify.app'
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: false,
+  credentials: true,
   preflightContinue: true,
   allowedHeaders: '*'
 };
 
+app.use(cookieParser());
+app.use(
+  requireJwtUnlessLogin(
+    expressjwt({
+      secret: process.env.TOKEN_SECRET || 'asdfjasdlfjsdlfjaskdjfsadlkjfskj',
+      algorithms: ['HS256'],
+      getToken: (req) => {
+        console.log(req.cookies);
+        return req.cookies.token;
+      }
+    })
+  )
+);
 app.use(cors(options));
 app.use(express.json());
 

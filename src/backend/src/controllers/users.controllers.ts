@@ -3,6 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
+import { generateAccessToken } from '../utils/utils';
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
@@ -105,6 +106,9 @@ export const logUserIn = async (req: Request, res: Response) => {
       deviceInfo: req.headers['user-agent']
     }
   });
+
+  const token = generateAccessToken({ firstName: user.firstName, lastName: user.lastName });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: false });
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };
