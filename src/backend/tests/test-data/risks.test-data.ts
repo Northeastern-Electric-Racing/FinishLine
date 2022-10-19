@@ -1,13 +1,47 @@
 export const editRiskTrue = {
-  userId: 1,
-  id: '4800c304-2f8d-4376-a4c6-d7a157134c83',
+  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+  project: {
+    id: 1,
+    name: 'Impact Attenuator',
+    wbsNum: {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    }
+  },
   detail: 'This one might be a bit too expensive',
-  resolved: true
+  isResolved: true,
+  dateCreated: '2022-10-19T22:50:45.580Z',
+  createdBy: {
+    userId: 1,
+    firstName: 'Thomas',
+    lastName: 'Emrax',
+    email: 'emrax.t@husky.neu.edu',
+    emailId: 'emrax.t',
+    role: 'APP_ADMIN'
+  }
 };
 
 export const editRiskFalse = {
-  userId: 1,
-  id: '4800c304-2f8d-4376-a4c6-d7a157134c83',
+  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+  project: {
+    id: 1,
+    name: 'Impact Attenuator',
+    wbsNum: {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    }
+  },
   detail: 'This one might be a bit too expensive',
-  resolved: false
+  isResolved: false,
+  dateCreated: '2022-10-19T22:50:45.580Z',
+  createdBy: {
+    userId: 1,
+    firstName: 'Thomas',
+    lastName: 'Emrax',
+    email: 'emrax.t@husky.neu.edu',
+    emailId: 'emrax.t',
+    role: 'APP_ADMIN'
+  }
 };
