@@ -19,20 +19,12 @@ interface CreateProjectFormViewProps {
   onSubmit: (e: any) => void;
 }
 
-const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({
-  states,
-  allowSubmit,
-  onCancel,
-  onSubmit
-}) => {
+const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, allowSubmit, onCancel, onSubmit }) => {
   const { name, carNumber, crId, summary } = states;
 
   return (
     <>
-      <PageTitle
-        title={'New Project'}
-        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      />
+      <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>

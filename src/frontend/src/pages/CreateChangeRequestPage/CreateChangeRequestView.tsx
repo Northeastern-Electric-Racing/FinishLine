@@ -6,14 +6,13 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -21,12 +20,14 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
-import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
+  crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
+  proposedSolutions: ProposedSolution[];
+  setProposedSolutions: (ps: ProposedSolution[]) => void;
 }
 
 const wbsTester = (wbsNum: string | undefined) => {
@@ -40,10 +41,7 @@ const wbsTester = (wbsNum: string | undefined) => {
 };
 
 const schema = yup.object().shape({
-  wbsNum: yup
-    .string()
-    .required('WBS number is required')
-    .test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
+  wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
   scopeImpact: yup.string().required('Scope Impact is required'),
@@ -77,10 +75,16 @@ const schema = yup.object().shape({
     )
 });
 
-const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsNum, onSubmit }) => {
+const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
+  wbsNum,
+  crDesc,
+  onSubmit,
+  proposedSolutions,
+  setProposedSolutions
+}) => {
   const { handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema),
-    defaultValues: { wbsNum, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
+    defaultValues: { wbsNum, what: crDesc, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
   });
   const { fields, append, remove } = useFieldArray({ control, name: 'why' });
 
@@ -90,10 +94,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
 
   return (
     <>
-      <PageTitle
-        title={'New Change Request'}
-        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      />
+      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title={''}>
         <form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
@@ -139,9 +140,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                         </MenuItem>
                       ))}
                     </Select>
-                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>
-                      {fieldState.error?.type}
-                    </FormHelperText>
+                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
                   </FormControl>
                 )}
               />
@@ -215,12 +214,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({ wbsN
                         />
                       )}
                     />
-                    <Button
-                      sx={{ maxHeight: '59px' }}
-                      variant="contained"
-                      color="error"
-                      onClick={() => remove(index)}
-                    >
+                    <Button sx={{ maxHeight: '59px' }} variant="contained" color="error" onClick={() => remove(index)}>
                       <DeleteIcon />
                     </Button>
                   </Box>

@@ -6,10 +6,13 @@ import {
   DescriptionBullet,
   calculateEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus, calculateDuration
+  calculateTimelineStatus,
+  calculateDuration
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
+import { riskQueryArgs, riskTransformer } from './risks.utils';
+import { buildChangeDetail } from '../utils/utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -23,6 +26,7 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
     team: true,
     goals: true,
     features: true,
+    risks: riskQueryArgs,
     otherConstraints: true,
     workPackages: {
       include: {
@@ -48,6 +52,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
         team: true,
         goals: true,
         features: true,
+        risks: riskQueryArgs,
         otherConstraints: true,
         workPackages: {
           include: {
@@ -76,7 +81,6 @@ export const projectTransformer = (
     | Prisma.ProjectGetPayload<typeof manyRelationArgs>
     | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
 ): Project => {
-  if (payload === null) throw new TypeError('WBS_Element not found');
   const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
   const project = 'project' in payload ? payload.project! : payload;
   const wbsNum = wbsNumOf(wbsElement);
@@ -117,6 +121,7 @@ export const projectTransformer = (
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
+    risks: project.risks.map(riskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const expectedProgress = calculatePercentExpectedProgress(
@@ -234,7 +239,7 @@ export const createChangeJsonNonList = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue}" to "${newValue}"`
+      detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
   return undefined;
@@ -265,7 +270,6 @@ export const createRulesChangesJson = (
       changes.push({ element, type: 'Added new' });
     }
   });
-
   return changes.map((element) => {
     return {
       changeRequestId: crId,
@@ -350,9 +354,11 @@ export const createDescriptionBulletChangesJson = (
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
-          ? `${element.type} ${nameOfField} from "${originalElements.get(
-              element.element.id
-            )}" to "${existingElements.get(element.element.id)}"`
+          ? buildChangeDetail(
+              nameOfField,
+              originalElements.get(element.element.id) || 'null',
+              existingElements.get(element.element.id) || 'null'
+            )
           : `${element.type} ${nameOfField} "${element.element.detail}"`;
       return {
         changeRequestId: crId,

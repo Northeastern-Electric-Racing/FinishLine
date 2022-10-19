@@ -12,7 +12,8 @@ const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
 const usersById = (id: string) => `${users()}/${id}`;
-const usersLogin = () => `${users()}/auth/:login`;
+const usersLogin = () => `${users()}/auth/login`;
+const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 
 /**************** Projects Endpoints ****************/
@@ -20,6 +21,13 @@ const projects = () => `${API_URL}/projects`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/new`;
 const projectsEdit = () => `${projects()}/edit`;
+
+/**************** Risks Endpoints ********************/
+const risks = () => `${API_URL}/risks`;
+const risksByProjectId = (projectId: number) => `${risks()}/${projectId}`;
+const risksCreate = () => `${risks()}/create`;
+const risksEdit = () => `${risks()}/edit`;
+const risksDelete = () => `${risks()}/delete`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -41,21 +49,35 @@ const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
+const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
+
+/**************** Teams Endpoints ****************/
+const teams = () => `${API_URL}/teams`;
+
+/**************** Description Bullet Endpoints ****************/
+const descriptionBullets = () => `${API_URL}/description-bullets`;
+const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
 /**************** Other Endpoints ****************/
-const version = () =>
-  `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
+const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
 export const apiUrls = {
   users,
   usersById,
   usersLogin,
+  usersLoginDev,
   userSettingsByUserId,
 
   projects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
+
+  risks,
+  risksByProjectId,
+  risksCreate,
+  risksEdit,
+  risksDelete,
 
   workPackages,
   workPackagesByWbsNum,
@@ -69,6 +91,11 @@ export const apiUrls = {
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
+  changeRequestCreateProposeSolution,
+
+  teams,
+
+  descriptionBulletsCheck,
 
   version
 };

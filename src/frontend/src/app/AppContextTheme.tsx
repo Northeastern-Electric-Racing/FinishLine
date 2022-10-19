@@ -8,13 +8,20 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useProvideThemeToggle } from '../hooks/Theme.hooks';
+import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import { nerThemeOptions } from '../utils/Themes';
+import { useAuth } from '../hooks/auth.hooks';
 
-export const ThemeToggleContext = createContext({ activeTheme: 'dark', toggleTheme: () => {} });
+export const ThemeToggleContext = createContext({ activeTheme: 'light', toggleTheme: () => {} });
 
 const AppContextSettings: React.FC = (props) => {
+  const auth = useAuth();
   const theme = useProvideThemeToggle();
+
+  const defaultTheme = auth.user?.defaultTheme;
+
+  if (defaultTheme && defaultTheme.toLocaleLowerCase() !== theme.activeTheme) theme.toggleTheme();
+
   const fullTheme = useMemo(
     () =>
       createTheme(

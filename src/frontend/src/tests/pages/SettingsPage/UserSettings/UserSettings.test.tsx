@@ -5,18 +5,13 @@
 
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { UserSettings } from 'shared';
-import {
-  useLogUserIn,
-  useSingleUserSettings,
-  useUpdateUserSettings
-} from '../../../../hooks/Users.hooks';
-import {
-  mockUseMutationResult,
-  mockUseQueryResult
-} from '../../../TestSupport/TestData/TestUtils.stub';
-import { exampleUserSettingsLight } from '../../../TestSupport/TestData/UserSettings.stub';
-import { fireEvent, render, screen } from '../../../TestSupport/TestUtils';
+import { useLogUserIn, useSingleUserSettings, useUpdateUserSettings } from '../../../../hooks/users.hooks';
+import * as userHooks from '../../../../hooks/users.hooks';
+import { mockUseMutationResult, mockUseQueryResult } from '../../../test-support/test-data/test-utils.stub';
+import { exampleUserSettingsLight } from '../../../test-support/test-data/user-settings.stub';
+import { fireEvent, render, screen } from '../../../test-support/test-utils';
 import UserSettingsComponent from '../../../../pages/SettingsPage/UserSettings/UserSettings';
+import { mockLogUserInReturnValue, mockLogUserInDevReturnValue } from '../../../test-support/mock-hooks';
 
 jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsView', () => {
   return {
@@ -36,21 +31,12 @@ jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => 
   };
 });
 
-jest.mock('../../../../hooks/Users.hooks');
+jest.mock('../../../../hooks/users.hooks');
 
-const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<
-  UseQueryResult<UserSettings>
->;
+const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<UseQueryResult<UserSettings>>;
 
-const mockUserSettingsHook = (
-  isLoading: boolean,
-  isError: boolean,
-  data?: UserSettings,
-  error?: Error
-) => {
-  mockedUseSingleUserSettings.mockReturnValue(
-    mockUseQueryResult<UserSettings>(isLoading, isError, data, error)
-  );
+const mockUserSettingsHook = (isLoading: boolean, isError: boolean, data?: UserSettings, error?: Error) => {
+  mockedUseSingleUserSettings.mockReturnValue(mockUseQueryResult<UserSettings>(isLoading, isError, data, error));
 };
 
 const mockedUseUpdateUserSettings = useUpdateUserSettings as jest.Mock<UseMutationResult>;
@@ -64,9 +50,7 @@ const mockUseUpdateUserSettingsHook = (isLoading: boolean, isError: boolean, err
 const mockedUseLogUserIn = useLogUserIn as jest.Mock<UseMutationResult>;
 
 const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseLogUserIn.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseLogUserIn.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 /**
@@ -79,21 +63,9 @@ const renderComponent = () => {
 };
 
 describe('user settings component', () => {
-  it('renders without error', () => {
-    mockUserSettingsHook(false, false, exampleUserSettingsLight);
-    renderComponent();
-  });
-
-  it('renders loading', () => {
-    mockUserSettingsHook(true, false);
-    renderComponent();
-    expect(screen.getByTestId('loader')).toBeInTheDocument();
-  });
-
-  it('renders error', () => {
-    mockUserSettingsHook(false, true, undefined, new Error('test error'));
-    renderComponent();
-    expect(screen.getByText('test error')).toBeInTheDocument();
+  beforeEach(() => {
+    jest.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
+    jest.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
   });
 
   it('renders title', () => {
@@ -125,17 +97,6 @@ describe('user settings component', () => {
     mockUserSettingsHook(false, false, exampleUserSettingsLight);
     renderComponent();
     fireEvent.click(screen.getByRole('button'));
-    expect(screen.queryAllByRole('button').map((e) => e.innerHTML)).toStrictEqual([
-      'Cancel',
-      'Save'
-    ]);
-  });
-
-  it('renders cancel and save buttons with edit form', () => {
-    mockUserSettingsHook(false, false, exampleUserSettingsLight);
-    renderComponent();
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
-    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.queryAllByRole('button').map((e) => e.innerHTML)).toStrictEqual(['Cancel', 'Save']);
   });
 });

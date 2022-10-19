@@ -9,7 +9,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import { fullNamePipe } from '../../utils/Pipes';
 import NavUserMenu from './NavUserMenu';
 

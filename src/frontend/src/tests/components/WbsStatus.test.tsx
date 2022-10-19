@@ -4,7 +4,7 @@
  */
 
 import { WbsElementStatus } from 'shared';
-import { render, screen } from '../TestSupport/TestUtils';
+import { render, screen } from '../test-support/test-utils';
 import WbsStatus from '../../components/WbsStatus';
 
 const TEST_CLASS = 'badge badge-pill badge-';

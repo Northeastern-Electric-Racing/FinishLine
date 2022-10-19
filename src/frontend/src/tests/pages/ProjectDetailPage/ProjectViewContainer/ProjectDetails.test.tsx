@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { fullNamePipe } from '../../../../utils/Pipes';
-import { exampleProject1, exampleProject3 } from '../../../TestSupport/TestData/Projects.stub';
+import { exampleProject1, exampleProject3 } from '../../../test-support/test-data/projects.stub';
 import ProjectDetails from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectDetails';
 
 describe('project details component', () => {

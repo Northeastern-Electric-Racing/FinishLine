@@ -15,7 +15,9 @@
     "start": "concurrently --kill-others-on-fail \"yarn workspace backend dev\"  \"yarn frontend\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset": "cd src/backend; npx prisma migrate reset",
-    "prisma:migrate": "cd src/backend; npx prisma migrate dev",
+    "prisma:migrate": "yarn prisma:migrate:dev",
+    "prisma:migrate:dev": "cd src/backend; npx prisma migrate dev",
+    "prisma:migrate:prod": "cd src/backend; npx prisma migrate deploy",
     "prisma:generate": "cd src/backend; npx prisma generate",
     "prisma:manual": "yarn workspace backend prisma:manual",
     "lint": "npx eslint .",
@@ -124,5 +126,8 @@
     ]
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@mui/material": "^5.10.9"
+  }
 }

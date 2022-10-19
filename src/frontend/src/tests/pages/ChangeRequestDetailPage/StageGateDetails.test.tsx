@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { StageGateChangeRequest } from 'shared';
-import { exampleStageGateChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
+import { exampleStageGateChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import StageGateDetails from '../../../pages/ChangeRequestDetailPage/StageGateDetails';
 
 /**

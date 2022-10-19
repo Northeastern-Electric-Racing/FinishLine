@@ -4,7 +4,7 @@
  */
 
 import { ReactElement, useState } from 'react';
-import { Button, Col, Container, Dropdown, DropdownButton, Row } from 'react-bootstrap';
+import { Col, Container, Dropdown, DropdownButton, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import {
   ActivationChangeRequest,
@@ -14,7 +14,7 @@ import {
   StandardChangeRequest
 } from 'shared';
 import { routes } from '../../utils/Routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/Pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -23,6 +23,8 @@ import ReviewChangeRequest from './ReviewChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
+import ProposedSolutionsList from './ProposedSolutionsList';
+import { NERButton } from '../../components/NERButton';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -48,6 +50,22 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
   }
 };
 
+const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
+  if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
+    return (
+      <PageBlock title={'Proposed Solutions'}>
+        <ProposedSolutionsList
+          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
+          crReviewed={cr.accepted}
+          crId={cr.crId}
+        />
+      </PageBlock>
+    );
+  } else {
+    return <></>;
+  }
+};
+
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   isUserAllowedToImplement: boolean;
@@ -64,9 +82,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleOpen = () => setModalShow(true);
 
   const reviewBtn = (
-    <Button variant="primary" onClick={handleOpen} disabled={!isUserAllowedToReview}>
+    <NERButton variant="contained" onClick={handleOpen} disabled={!isUserAllowedToReview}>
       Review
-    </Button>
+    </NERButton>
   );
 
   const implementCrDropdown = (
@@ -74,8 +92,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Dropdown.Item as={Link} to={routes.PROJECTS_NEW} disabled={!isUserAllowedToImplement}>
         Create New Project
       </Dropdown.Item>
-      <Dropdown.Item as={Link} to={routes.WORK_PACKAGE_NEW} disabled={!isUserAllowedToImplement}>
+      <Dropdown.Item
+        as={Link}
+        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
+        disabled={!isUserAllowedToImplement}
+      >
         Create New Work Package
+      </Dropdown.Item>
+      <Dropdown.Item
+        as={Link}
+        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
+        disabled={!isUserAllowedToImplement}
+      >
+        Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
       </Dropdown.Item>
     </DropdownButton>
   );
@@ -92,10 +121,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
-      <PageBlock
-        title={'Change Request Details'}
-        headerRight={<b>{convertStatus(changeRequest)}</b>}
-      >
+      <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
         <Container fluid>
           <Row>
             <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
@@ -108,9 +134,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               <b>WBS #</b>
             </Col>
             <Col className={spacer}>
-              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)}
-              </Link>
+              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
             </Col>
           </Row>
           <Row>
@@ -125,6 +149,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </Container>
       </PageBlock>
       {buildDetails(changeRequest)}
+      {buildProposedSolutions(changeRequest)}
       <ReviewNotes
         reviewer={changeRequest.reviewer}
         reviewNotes={changeRequest.reviewNotes}
@@ -134,7 +159,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} />}
+      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
     </Container>
   );
 };

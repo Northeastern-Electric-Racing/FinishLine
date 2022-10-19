@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../TestSupport/TestUtils';
+import { render, screen } from '../test-support/test-utils';
 import PageBlock from '../../layouts/PageBlock';
 
 const renderComponent = (headerRight = false) => {
@@ -15,25 +15,17 @@ const renderComponent = (headerRight = false) => {
 };
 
 describe('card component', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
   it('renders title', () => {
-    renderComponent();
-
-    expect(screen.getByText('test')).toBeInTheDocument();
-  });
-
-  it('renders header right', () => {
     renderComponent(true);
 
+    expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('hi')).toBeInTheDocument();
+    expect(screen.getByText('hello')).toBeInTheDocument();
   });
 
-  it('renders children', () => {
-    renderComponent();
+  it('doesnt render headerRight if none is given', () => {
+    renderComponent(false);
 
-    expect(screen.getByText('hello')).toBeInTheDocument();
+    expect(screen.queryByText('hi')).not.toBeInTheDocument();
   });
 });

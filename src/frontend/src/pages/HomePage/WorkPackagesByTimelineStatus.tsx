@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 import { Container, Form, InputGroup } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
-import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -61,8 +61,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 <Box>Engineering Lead: {fullNamePipe(wp.projectLead)}</Box>
                 <Box>Project Manager: {fullNamePipe(wp.projectManager)}</Box>
                 <Box>
-                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
-                  Deliverables
+                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                 </Box>
               </CardContent>
             </Card>

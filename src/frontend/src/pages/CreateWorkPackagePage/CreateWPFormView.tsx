@@ -11,7 +11,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { createTheme } from '@mui/material/styles';
 import { routes } from '../../utils/Routes';
 import { datePipe } from '../../utils/Pipes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
@@ -22,6 +21,7 @@ import PageBlock from '../../layouts/PageBlock';
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
+  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;
@@ -48,10 +48,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   const [startDateVal, setStartDateVal] = useState<Date | null>(null);
   return (
     <>
-      <PageTitle
-        title={'New Work Package'}
-        previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]}
-      />
+      <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
@@ -104,9 +101,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                   setStartDateVal(val);
                   startDate(datePipe(val!));
                 }}
-                renderInput={(params) => (
-                  <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />
-                )}
+                renderInput={(params) => <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />}
               />
             </Grid>
             <Grid item xs={2}>

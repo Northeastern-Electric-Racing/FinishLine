@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { exampleStandardChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
-import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
+import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import ReviewChangeRequestsView from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequestView';
 
 /**
@@ -24,7 +24,7 @@ const renderComponent = (modalShow: boolean) => {
   return render(
     <RouterWrapper>
       <ReviewChangeRequestsView
-        crId={exampleStandardChangeRequest.crId}
+        cr={exampleStandardChangeRequest}
         modalShow={modalShow}
         onHide={mockHandleHide}
         onSubmit={mockHandleSubmit}

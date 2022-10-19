@@ -5,14 +5,17 @@
 
 import { useState } from 'react';
 import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
+
+  if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
   return (
     <Container fluid>
@@ -62,7 +65,7 @@ const Settings: React.FC = () => {
           </Row>
         </Container>
       </PageBlock>
-      <UserSettings userId={auth.user?.userId!} />
+      <UserSettings userId={auth.user.userId} />
     </Container>
   );
 };
