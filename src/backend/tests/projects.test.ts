@@ -9,8 +9,8 @@ import {
   uniqueRelationArgs
 } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
-import { getSingleProject } from '../src/controllers/projects.controllers';
-import exp from 'constants';
+import { someProject, plz } from './test-data/projects.test-data';
+import { Project, WBS_Element_Status } from '@prisma/client';
 
 const app = express();
 app.use(express.json());
@@ -21,6 +21,8 @@ const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock
   Promise<boolean | null>
 >;
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
+
+const mockProjectTransformer = projectTransformer as jest.Mock;
 
 const newProjectPayload = {
   userId: 1,
@@ -127,25 +129,6 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  //valid wbsNum
-  const testWBSNum = {
-    carNumber: 1,
-    projectNumber: 0,
-    workPackageNumber: 1
-  };
-
-  //equals null
-  const wbsEl = {
-    id: 12345123,
-    wbsNum: testWBSNum,
-    dateCreated: new Date(),
-    name: 'testGetSingleProj',
-    status: 'ACTIVE',
-    // projectLead?: ,
-    // projectManager?: 'asdfasdf',
-    hanges: 'asdfasfd'
-  };
-
   test('getSingleProject fails given invalid project wbs', async () => {
     let res = await request(app).get('/1.0.1');
     expect(res.statusCode).toBe(404);
@@ -167,32 +150,18 @@ describe('Projects', () => {
   });
 
   test('getSingleProject works', async () => {
-    // let res = await request(app).get('/1.1.0');
-    // expect(res.statusCode).toBe(200);
-    // expect(res.body).toBe(projectTransformer(wbsEle));
-
-    // res = await request(app).get('/1.23.0');
-    // expect(res.statusCode).toBe(200);
-
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
-    mockGetHighestProjectNumber.mockResolvedValue(0);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({
-      wbsElementId: 1,
-      status: 'ACTIVE',
-      carNumber: 1,
-      projectNumber: 2,
-      workPackageNumber: 3,
-      dateCreated: new Date(),
-      name: 'car',
-      projectLeadId: 4,
-      projectManagerId: 5
-    });
-
-    const res = await request(app).post('/1.1.0');
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(plz);
+    mockProjectTransformer.mockReturnValue(plz);
+    const res = await request(app).get('/1.2.0');
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({
-      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+    expect(res.body).toBe({
+      ...plz,
+      dateCreated: '2020-07-13T00:00:00.000Z',
+      project: {
+        ...plz.project,
+        workPackages: [{ ...plz.project.workPackages, dateCreated: '2020-07-14T00:00:00.000Z' }]
+      }
     });
   });
 });
