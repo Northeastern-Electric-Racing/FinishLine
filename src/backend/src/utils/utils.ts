@@ -33,7 +33,7 @@ export const generateAccessToken = (user: { firstName: string; lastName: string 
 
 export const requireJwtUnlessLogin = (fn: any) => {
   return function (req: Request, res: Response, next: any) {
-    if (process.env.NODE_ENV !== 'production' || req.path === '/users/auth/login') {
+    if (process.env.NODE_ENV !== 'production' || req.path === '/users/auth/login' || req.path === '/') {
       next();
     } else {
       fn(req, res, next);
