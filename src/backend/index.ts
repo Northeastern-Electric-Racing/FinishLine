@@ -14,17 +14,19 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-const allowedHeaders =
-  process.env.NODE_ENV === 'production'
-    ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
-    : '*';
+// const allowedHeaders =
+//   process.env.NODE_ENV === 'production'
+//     ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
+//     : '*';
+
+export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
-  allowedHeaders
+  allowedHeaders: '*'
 };
 
 // so that we can use cookies and json
@@ -35,7 +37,7 @@ app.use(express.json());
 app.use(
   requireJwtUnlessLogin(
     expressjwt({
-      secret: process.env.TOKEN_SECRET as string,
+      secret: TOKEN_SECRET,
       algorithms: ['HS256'],
       getToken: (req) => req.cookies.token
     })

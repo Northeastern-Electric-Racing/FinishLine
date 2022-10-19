@@ -2,6 +2,7 @@ import { Description_Bullet, WBS_Element, WBS_Element_Status } from '@prisma/cli
 import { DescriptionBullet, WbsElementStatus, WbsNumber } from 'shared';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
+import { TOKEN_SECRET } from '../..';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -28,7 +29,7 @@ export const buildChangeDetail = (thingChanged: string, oldValue: string, newVal
 };
 
 export const generateAccessToken = (user: { firstName: string; lastName: string }) => {
-  return jwt.sign(user, process.env.TOKEN_SECRET as string, { expiresIn: '12h' });
+  return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
 };
 
 export const requireJwtUnlessLogin = (fn: any) => {
