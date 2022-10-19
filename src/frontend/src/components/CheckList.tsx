@@ -6,8 +6,8 @@
 import { ReactNode, useState } from 'react';
 import PageBlock from '../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import styles from '../stylesheets/components/CheckList.module.css';
 
 interface CheckListProps {
@@ -62,13 +62,13 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
             {check.resolved ? (
               <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
                 <Button variant="danger" data-testId="deleteButton">
-                  <DeleteIcon sx={{ fontSize: 18 }} />
+                  <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </OverlayTrigger>
             ) : (
               <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
                 <Button variant="success" data-testId="convertButton">
-                  <ArrowForwardIcon sx={{ fontSize: 18 }} />
+                  <FontAwesomeIcon icon={faArrowRight} />
                 </Button>
               </OverlayTrigger>
             )}
