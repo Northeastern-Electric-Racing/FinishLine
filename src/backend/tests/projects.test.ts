@@ -5,12 +5,10 @@ import prisma from '../src/prisma/prisma';
 import {
   getChangeRequestReviewState,
   getHighestProjectNumber,
-  projectTransformer,
-  uniqueRelationArgs
+  projectTransformer
 } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
-import { someProject, plz } from './test-data/projects.test-data';
-import { Project, WBS_Element_Status } from '@prisma/client';
+import { someProject } from './test-data/projects.test-data';
 
 const app = express();
 app.use(express.json());
