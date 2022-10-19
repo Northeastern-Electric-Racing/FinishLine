@@ -62,13 +62,13 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, listItems }) 
             {check.resolved ? (
               <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
                 <Button variant="danger" data-testId="deleteButton">
-                  <DeleteIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
+                  <DeleteIcon sx={{ fontSize: 18 }} />
                 </Button>
               </OverlayTrigger>
             ) : (
               <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
                 <Button variant="success" data-testId="convertButton">
-                  <ArrowForwardIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
+                  <ArrowForwardIcon sx={{ fontSize: 18 }} />
                 </Button>
               </OverlayTrigger>
             )}
