@@ -14,10 +14,10 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-// const allowedHeaders =
-//   process.env.NODE_ENV === 'production'
-//     ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
-//     : '*';
+const allowedHeaders =
+  process.env.NODE_ENV === 'production'
+    ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
+    : '*';
 
 export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
@@ -26,7 +26,7 @@ const options: cors.CorsOptions = {
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
-  allowedHeaders: '*'
+  allowedHeaders
 };
 
 // so that we can use cookies and json
