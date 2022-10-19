@@ -38,19 +38,16 @@ export const getUserSettings = async (req: Request, res: Response) => {
 };
 
 export const updateUserSettings = async (req: Request, res: Response) => {
-  const userId: number = parseInt(req.params.userId);
-  if (!userId) {
-    return res.status(404).json({ message: `could not find valid userId` });
-  }
   const errors = validationResult(req);
-
-  if (!(await prisma.user.findUnique({ where: { userId } }))) {
-    return res.status(404).json({ message: `could not find user ${userId}` });
-  }
-
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
+  const userId = parseInt(req.params.userId);
+  if (!userId) return res.status(404).json({ message: `could not find valid userId` });
+
+  const user = await prisma.user.findUnique({ where: { userId } });
+  if (!user) return res.status(404).json({ message: `could not find user ${userId}` });
 
   await prisma.user_Settings.upsert({
     where: { userId },
