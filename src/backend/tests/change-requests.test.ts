@@ -11,7 +11,6 @@ import {
   solutionToRedesignWhip,
   whipWorkPackage
 } from './test-data/change-requests.test-data';
-import { createWorkPackagePayload } from './test-data/work-packages.test-data';
 
 const app = express();
 app.use(express.json());
@@ -92,58 +91,64 @@ describe('Projects', () => {
     expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
   });
   test('proposedSolutionIdNotFound', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false});
-      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
-      const psId = 100;
-      const response = await request(app).post('/review').send({...redesignWhip, psId: "100"});
-      expect(response.status).toBe(404);
-      expect(response.body).toStrictEqual({
-         message: `Proposed solution with id #${psId} not found for change request #${redesignWhip.crId}`
-      });
-      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
-   });
-   test('wbsElementNotFound', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false});
-      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
-      jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(solutionToRedesignWhip);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
-      const response = await request(app).post('/review').send({...redesignWhip, psId: solutionToRedesignWhip.proposedSolutionId});
-      expect(response.status).toBe(404);
-      expect(response.body).toStrictEqual({
-         message: `WBS element with id #${redesignWhip.wbsElementId} not found`
-      });
-      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
-   });
-   test('workPackageProjectNotFound', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false});
-      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
-      jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(solutionToRedesignWhip);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
-      jest.spyOn(prisma.work_Package, 'findUnique').mockResolvedValueOnce({...whipWorkPackage, projectId: 100});
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(null);
-      const response = await request(app).post('/review').send({...redesignWhip, psId: solutionToRedesignWhip.proposedSolutionId});
-      expect(response.status).toBe(404);
-      expect(response.body).toStrictEqual({
-         message: `Work package project not found`
-      });
-      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.work_Package.findUnique).toHaveBeenCalledTimes(1);
-   });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false });
+    jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
+    jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
+    const psId = 100;
+    const response = await request(app)
+      .post('/review')
+      .send({ ...redesignWhip, psId: '100' });
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
+      message: `Proposed solution with id #${psId} not found for change request #${redesignWhip.crId}`
+    });
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
+  });
+  test('wbsElementNotFound', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false });
+    jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
+    jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
+    jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(solutionToRedesignWhip);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
+    const response = await request(app)
+      .post('/review')
+      .send({ ...redesignWhip, psId: solutionToRedesignWhip.proposedSolutionId });
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
+      message: `WBS element with id #${redesignWhip.wbsElementId} not found`
+    });
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+  });
+  test('workPackageProjectNotFound', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false });
+    jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
+    jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
+    jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(solutionToRedesignWhip);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
+    jest.spyOn(prisma.work_Package, 'findUnique').mockResolvedValueOnce({ ...whipWorkPackage, projectId: 100 });
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(null);
+    const response = await request(app)
+      .post('/review')
+      .send({ ...redesignWhip, psId: solutionToRedesignWhip.proposedSolutionId });
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
+      message: `Work package project not found`
+    });
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.work_Package.findUnique).toHaveBeenCalledTimes(1);
+  });
 });
