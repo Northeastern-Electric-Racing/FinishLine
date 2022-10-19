@@ -28,10 +28,7 @@ app.use(
     expressjwt({
       secret: process.env.TOKEN_SECRET as string,
       algorithms: ['HS256'],
-      getToken: (req) => {
-        console.log(req.cookies);
-        return req.cookies.token;
-      }
+      getToken: (req) => req.cookies.token
     })
   )
 );

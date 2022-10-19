@@ -31,24 +31,23 @@ export const generateAccessToken = (user: { firstName: string; lastName: string 
   return jwt.sign(user, process.env.TOKEN_SECRET as string, { expiresIn: '10h' });
 };
 
-export const authenticateToken = (req: Request, res: Response, next: any) => {
-  // eslint-disable-next-line prefer-destructuring
-  const token = req.headers['authorization'];
+// export const authenticateToken = (req: Request, res: Response, next: any) => {
+//   // eslint-disable-next-line prefer-destructuring
+//   const token = req.headers['authorization'];
 
-  if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
+//   if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
 
-  jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
-    console.log(err);
-    if (err) return res.status(403).json({ message: 'Authentication Failed!' });
-    next();
-  });
-};
+//   jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
+//     console.log(err);
+//     if (err) return res.status(403).json({ message: 'Authentication Failed!' });
+//     next();
+//   });
+// };
 
 export const requireJwtUnlessLogin = (fn: any) => {
   return function (req: Request, res: Response, next: any) {
-    console.log(`COOKIES: ${JSON.stringify(req.cookies)} | COOKIES TOKEN: ${JSON.stringify(req.cookies.token)}`);
-    return next();
-    if (req.path !== '/users/auth/login') {
+    console.log(`COOKIES: ${JSON.stringify(req.cookies)}`);
+    if (process.env.NODE_ENV !== 'production' || req.path === '/users/auth/login') {
       next();
     } else {
       fn(req, res, next);
