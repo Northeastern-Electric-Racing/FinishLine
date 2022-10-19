@@ -46,6 +46,7 @@ export const authenticateToken = (req: Request, res: Response, next: any) => {
 
 export const requireJwtUnlessLogin = (fn: any) => {
   return function (req: Request, res: Response, next: any) {
+    console.log(`COOKIES: ${JSON.stringify(req.cookies)}`);
     return next();
     if (req.path !== '/users/auth/login') {
       next();

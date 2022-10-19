@@ -15,23 +15,18 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const options: cors.CorsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://finishlinebyner.com',
-    'https://magenta-mochi-275e56.netlify.app'
-  ],
+  origin: ['localhost:3000', '127.0.0.1:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
-  allowedHeaders: '*'
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
 };
 
 app.use(cookieParser());
 app.use(
   requireJwtUnlessLogin(
     expressjwt({
-      secret: process.env.TOKEN_SECRET || 'asdfjasdlfjsdlfjaskdjfsadlkjfskj',
+      secret: process.env.TOKEN_SECRET as string,
       algorithms: ['HS256'],
       getToken: (req) => {
         console.log(req.cookies);

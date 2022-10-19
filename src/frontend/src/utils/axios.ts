@@ -1,7 +1,5 @@
-import { default as axiosStatic } from 'axios';
+import axios from 'axios';
 
-const axios = axiosStatic.create({
-  withCredentials: true
-});
+axios.defaults.withCredentials = true;
 
 export default axios;

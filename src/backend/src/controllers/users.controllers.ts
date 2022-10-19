@@ -135,6 +135,9 @@ export const logUserInDev = async (req: any, res: any) => {
     }
   });
 
+  const token = generateAccessToken({ firstName: user.firstName, lastName: user.lastName });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: false });
+
   return res.status(200).json(authenticatedUserTransformer(user));
 };
 
