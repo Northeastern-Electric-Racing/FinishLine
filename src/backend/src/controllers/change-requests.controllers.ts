@@ -60,10 +60,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
-    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId)
+    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId) {
       return res.status(404).json({
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
+    }
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
@@ -74,48 +75,42 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const wbs = await prisma.wBS_Element.findUnique({
       where: {
         wbsElementId: foundCR.wbsElementId
+      },
+      include: {
+        workPackage: true,
+        project: true
       }
     });
-
     if (!wbs) {
       return res.status(404).json({ message: `WBS element with id #${foundCR.wbsElementId} not found` });
     }
-    const wp = await prisma.work_Package.findUnique({
-      where: {
-        workPackageId: wbs.workPackageNumber
-      }
-    });
-    console.log('workPackage: ', wp);
-    const proj = await prisma.project.findUnique({
-      where: {
-        projectId: wbs.projectNumber
-      }
-    });
-    console.log('project: ', proj);
+    const wp = { ...wbs.workPackage };
+
+    const proj = { ...wbs.project };
+
     if (!wp && proj) {
-      const newBudget = proj.budget! + foundPs.budgetImpact;
+      const { budget } = proj;
+
+      const newBudget = budget! + foundPs.budgetImpact;
       const change = {
         changeRequestId: crId,
         implementerId: reviewerId,
         detail: buildChangeDetail('Budget', String(proj.budget), String(newBudget))
       };
       await prisma.project.update({
-        where: { projectId: wbs.projectNumber },
+        where: { projectId: wbs.project?.projectId },
         data: {
           budget: newBudget,
           wbsElement: {
             update: {
               changes: {
-                createMany: {
-                  data: change
-                }
+                create: change
               }
             }
           }
         }
       });
     } else if (wp) {
-      console.log(wp);
       const wpProj = await prisma.project.findUnique({
         where: { projectId: wp.projectId }
       });

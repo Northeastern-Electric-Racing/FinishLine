@@ -92,5 +92,6 @@ export const redesignWhipWBSElement = {
   status: WBS_Element_Status.ACTIVE,
   projectLeadId: 1,
   projectManagerId: 2,
-  changeRequests: [redesignWhip]
+  changeRequests: [redesignWhip],
+  workPackage: whipWorkPackage
 };
