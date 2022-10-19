@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { ThemeName } from 'shared';
-import { useToggleTheme } from '../../../hooks/theme.hooks';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/PageBlock';
@@ -22,25 +21,21 @@ interface UserSettingsProps {
 
 export interface FormInput {
   defaultTheme: ThemeName;
+  slackId: string;
 }
 
 const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   const [edit, setEdit] = useState(false);
-  const userSettings = useSingleUserSettings(userId);
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
   const update = useUpdateUserSettings();
-  const theme = useToggleTheme();
 
-  if (userSettings.isLoading || update.isLoading) return <LoadingIndicator />;
-  if (userSettings.isError) return <ErrorPage error={userSettings.error} message={userSettings.error.message} />;
+  if (isLoading || !userSettingsData || update.isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
-  const handleConfirm = async ({ defaultTheme }: FormInput) => {
+  const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
     setEdit(false);
-    await update.mutateAsync({ id: userSettings.data?.id!, defaultTheme });
-    const res = await userSettings.refetch();
-    if (res.data?.defaultTheme && res.data?.defaultTheme !== theme.activeTheme.toUpperCase()) {
-      theme.toggleTheme();
-    }
+    await update.mutateAsync({ id: userSettingsData.id!, defaultTheme, slackId });
   };
 
   return (
@@ -65,9 +60,9 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
     >
       <Container fluid>
         {!edit ? (
-          <UserSettingsView settings={userSettings.data!} />
+          <UserSettingsView settings={userSettingsData} />
         ) : (
-          <UserSettingsEdit currentSettings={userSettings.data!} onSubmit={handleConfirm} />
+          <UserSettingsEdit currentSettings={userSettingsData} onSubmit={handleConfirm} />
         )}
       </Container>
     </PageBlock>

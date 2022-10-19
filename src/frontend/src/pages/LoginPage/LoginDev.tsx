@@ -9,30 +9,25 @@ import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import LoginIcon from '@mui/icons-material/Login';
 import FormControl from '@mui/material/FormControl';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser,
-  exampleMemberUser,
-  exampleGuestUser
-} from '../../tests/test-support/test-data/users.stub';
-
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useAllUsers } from '../../hooks/users.hooks';
+import { fullNamePipe } from '../../utils/Pipes';
 interface LoginDevProps {
-  devSetRole: (role: string) => void;
+  devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
 }
 
 /**
  * Form for dev users to do login on the dev environment.
  */
-const LoginDev: React.FC<LoginDevProps> = ({ devSetRole, devFormSubmit }) => {
-  const usersList = [
-    exampleAppAdminUser,
-    exampleAdminUser,
-    exampleLeadershipUser,
-    exampleMemberUser,
-    exampleGuestUser
-  ];
+const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
+  if (process.env.NODE_ENV !== 'development') return <></>;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { isLoading, data: usersList } = useAllUsers();
+
+  if (!usersList || isLoading) return <LoadingIndicator />;
+
   return (
     <form onSubmit={devFormSubmit}>
       <FormControl fullWidth sx={{ marginTop: 2 }}>
@@ -40,18 +35,20 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetRole, devFormSubmit }) => {
         <Select
           label="Local Dev User"
           labelId="localDevUser"
-          onChange={(e: any) => devSetRole(e.target.value)}
+          onChange={(e: any) => devSetUser(e.target.value)}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />
             </IconButton>
           }
         >
-          {usersList.map((user) => (
-            <MenuItem key={user.role} value={user.role}>
-              {user.role}
-            </MenuItem>
-          ))}
+          {usersList
+            .sort((a, b) => a.userId - b.userId)
+            .map((user) => (
+              <MenuItem key={user.userId} value={user.userId}>
+                {fullNamePipe(user)} ({user.role.toLowerCase()})
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
     </form>

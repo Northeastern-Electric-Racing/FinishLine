@@ -29,3 +29,13 @@ export const wonderwoman = {
   role: Role.GUEST,
   googleAuthId: 'w'
 };
+
+export const flash = {
+  userId: 4,
+  firstName: 'Barry',
+  lastName: 'Allen',
+  email: 'b.allen@fast.com',
+  emailId: 'barry.allen',
+  role: Role.ADMIN,
+  googleAuthId: 'b'
+};

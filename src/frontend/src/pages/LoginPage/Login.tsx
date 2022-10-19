@@ -5,9 +5,7 @@
 
 import { useState } from 'react';
 import { useHistory } from 'react-router';
-import { RoleEnum } from 'shared';
 import { useToggleTheme } from '../../hooks/theme.hooks';
-import { exampleAllUsers } from '../../tests/test-support/test-data/users.stub';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/Routes';
 import LoginPage from './LoginPage';
@@ -21,7 +19,7 @@ interface LoginProps {
  * Page for unauthenticated users to do login.
  */
 const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
-  const [devUserRole, setDevUserRole] = useState<string>(RoleEnum.APP_ADMIN as string);
+  const [devUserId, setDevUserId] = useState(1);
   const history = useHistory();
   const theme = useToggleTheme();
   const auth = useAuth();
@@ -36,11 +34,12 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
     }
   };
 
-  const devFormSubmit = (e: any) => {
+  const devFormSubmit = async (e: any) => {
     e.preventDefault();
-    const user = exampleAllUsers.find((u) => u.role === devUserRole);
-    if (!user) throw new Error('user for dev not found from role: ' + devUserRole);
-    auth.devSignin(user!);
+    const authedUser = await auth.devSignin(devUserId);
+    if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
+      theme.toggleTheme();
+    }
     redirectAfterLogin();
   };
 
@@ -60,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
 
   return (
     <LoginPage
-      devSetRole={setDevUserRole}
+      devSetUser={setDevUserId}
       devFormSubmit={devFormSubmit}
       prodSuccess={verifyLogin}
       prodFailure={handleFailure}

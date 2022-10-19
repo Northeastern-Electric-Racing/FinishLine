@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button } from 'react-bootstrap';
+import { Button } from '@mui/material';
 import styles from '../../../stylesheets/pages/project-detail-page/edit-mode-options.module.css';
 
 interface EditModeOptionsProps {
@@ -13,10 +13,10 @@ interface EditModeOptionsProps {
 const EditModeOptions: React.FC<EditModeOptionsProps> = ({ exitEditMode }) => {
   return (
     <div className={styles.editModeOptionsContainer}>
-      <Button type="submit" variant="success">
+      <Button type="submit" variant="contained" color="success">
         Save
       </Button>
-      <Button variant="danger" onClick={exitEditMode}>
+      <Button color="error" variant="contained" onClick={exitEditMode}>
         Cancel
       </Button>
     </div>
