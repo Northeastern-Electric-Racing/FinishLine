@@ -105,7 +105,7 @@ export const logUserIn = async (req: Request, res: Response) => {
   });
 
   const token = generateAccessToken({ firstName: user.firstName, lastName: user.lastName });
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: false });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };
@@ -136,7 +136,7 @@ export const logUserInDev = async (req: any, res: any) => {
   });
 
   const token = generateAccessToken({ firstName: user.firstName, lastName: user.lastName });
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: false });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };
