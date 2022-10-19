@@ -23,8 +23,8 @@ import {
   DialogTitle,
   DialogActions
 } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -143,7 +143,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <FontAwesomeIcon icon={faArrowRight} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
           </Button>
         </OverlayTrigger>
       )
@@ -159,7 +159,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <DeleteIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
         </Button>
       </OverlayTrigger>
     );
