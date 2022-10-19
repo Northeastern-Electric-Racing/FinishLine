@@ -89,4 +89,14 @@ describe('Users', () => {
 
     expect(res.status).toBe(200);
   });
+
+  test('updateUserSettings fails when user does not exist', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    const req = { defaultTheme: 'DARK', slackId: 'Slack' };
+
+    // Note there is no user with an Id:88
+    const res = await request(app).post('/88/settings').send(req);
+
+    expect(res.status).toBe(404);
+  });
 });
