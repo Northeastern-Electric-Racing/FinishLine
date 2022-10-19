@@ -150,18 +150,11 @@ describe('Projects', () => {
   });
 
   test('getSingleProject works', async () => {
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(plz);
-    mockProjectTransformer.mockReturnValue(plz);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(someProject);
+    mockProjectTransformer.mockReturnValue({ message: 'projectTransformer called' });
     const res = await request(app).get('/1.2.0');
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toBe({
-      ...plz,
-      dateCreated: '2020-07-13T00:00:00.000Z',
-      project: {
-        ...plz.project,
-        workPackages: [{ ...plz.project.workPackages, dateCreated: '2020-07-14T00:00:00.000Z' }]
-      }
-    });
+    expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
   });
 });
