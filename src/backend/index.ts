@@ -14,12 +14,17 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
+const allowedHeaders =
+  process.env.NODE_ENV === 'production'
+    ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
+    : '*';
+
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
-  allowedHeaders: '*'
+  allowedHeaders
 };
 
 // so that we can use cookies and json
