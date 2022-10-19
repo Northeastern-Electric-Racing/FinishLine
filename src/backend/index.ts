@@ -15,14 +15,18 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const options: cors.CorsOptions = {
-  origin: ['localhost:3000', '127.0.0.1:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
+  origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
+  allowedHeaders: '*'
 };
 
+// so that we can use cookies and json
 app.use(cookieParser());
+app.use(express.json());
+
+// express jwt setup
 app.use(
   requireJwtUnlessLogin(
     expressjwt({
@@ -32,9 +36,11 @@ app.use(
     })
   )
 );
-app.use(cors(options));
-app.use(express.json());
 
+// cors settings
+app.use(cors(options));
+
+// routes
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);
 app.use('/teams', teamsRouter);
@@ -46,6 +52,7 @@ app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
 
+// start the server
 app.listen(port, () => {
   console.log(`FinishLine listening at http://localhost:${port}`);
   console.log(`\n

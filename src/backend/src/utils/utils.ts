@@ -28,18 +28,18 @@ export const buildChangeDetail = (thingChanged: string, oldValue: string, newVal
 };
 
 export const generateAccessToken = (user: { firstName: string; lastName: string }) => {
-  return jwt.sign(user, process.env.TOKEN_SECRET as string, { expiresIn: '10h' });
+  return jwt.sign(user, process.env.TOKEN_SECRET as string, { expiresIn: 15 });
 };
 
 // export const authenticateToken = (req: Request, res: Response, next: any) => {
 //   // eslint-disable-next-line prefer-destructuring
-//   const token = req.headers['authorization'];
+//   const token = req.cookies.token;
 
-//   if (!token) return res.status(401).json({ message: 'Authentication Failed!' });
+//   if (!token) return res.status(403).json({ message: 'Authentication Failed!' });
 
 //   jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any) => {
 //     console.log(err);
-//     if (err) return res.status(403).json({ message: 'Authentication Failed!' });
+//     if (err) return res.status(401).json({ message: 'Authentication Failed!' });
 //     next();
 //   });
 // };

@@ -1,19 +1,18 @@
 import { default as axiosStatic } from 'axios';
 
 const axios = axiosStatic.create({
-  withCredentials: true
+  withCredentials: process.env.NODE_ENV !== 'development' ? true : undefined
 });
 
-/* 
-  The below is required if you want your API to return 
-  server message errors. Otherwise, you'll just get 
-  generic status errors.
-  
-  res.status(404).json({ message: "You are not authorized to do that." })
-*/
+// This allows us to get good server errors
+// All express statuses must be: res.status(404).json({ message: "You are not authorized to do that." })
 axios.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error.response.data.message)
+  (response) => {
+    return response;
+  },
+  (error) => {
+    throw new Error(error.response.data.message);
+  }
 );
 
 export default axios;
