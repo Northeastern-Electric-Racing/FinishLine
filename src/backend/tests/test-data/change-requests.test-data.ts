@@ -95,3 +95,23 @@ export const redesignWhipWBSElement = {
   changeRequests: [redesignWhip],
   workPackage: whipWorkPackage
 };
+
+export const unreviewedCr = {
+  crId: 69,
+  submitterId: 1,
+  wbsElementId: 65,
+  type: CR_Type.DEFINITION_CHANGE,
+  changes: [
+    {
+      changeRequestId: 1,
+      implementerId: 1,
+      wbsElementId: 65,
+      detail: "this won't get reviewed"
+    }
+  ],
+  dateSubmitted: new Date('11/24/2020'),
+  dateReviewed: null,
+  accepted: null,
+  reviewerId: null,
+  reviewNotes: null
+};

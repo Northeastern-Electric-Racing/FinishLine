@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
 import { WorkPackage } from 'shared';
-import { weeksPipe, wbsPipe, endDatePipe, listPipe, datePipe } from '../../../utils/Pipes';
+import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/Pipes';
 import { useTheme } from '../../../hooks/theme.hooks';
 import { routes } from '../../../utils/Routes';
 import WbsStatus from '../../../components/WbsStatus';
@@ -63,7 +63,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
                 </Col>
                 <Col xs={6} md={4}>
                   <b>Start date:</b> {datePipe(workPackage.startDate)} <br />
-                  <b>End Date:</b> {endDatePipe(workPackage.startDate, workPackage.duration)}
+                  <b>End Date:</b> {datePipe(workPackage.endDate)}
                 </Col>
               </Row>
               <Row>
