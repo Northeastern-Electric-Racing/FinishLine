@@ -104,9 +104,16 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
                 setLastInput(e.target.value);
               }
             }}
-            disabled={disabledItems![index]}
+            disabled={disabledItems && disabledItems[index]}
+            data-testid={`inputField${index}`}
           />
-          <Button type="button" variant="danger" onClick={() => removeButtonOnClick(index)} disabled={disabledItems![index]}>
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => removeButtonOnClick(index)}
+            disabled={disabledItems && disabledItems[index]}
+            data-testid={`removeButton${index}`}
+          >
             X
           </Button>
         </InputGroup>
