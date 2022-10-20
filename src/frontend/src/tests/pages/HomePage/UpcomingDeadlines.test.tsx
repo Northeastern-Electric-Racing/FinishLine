@@ -1,18 +1,18 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import { useAllWorkPackages } from '../../../hooks/WorkPackages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { datePipe, fullNamePipe } from '../../../utils/Pipes';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import UpcomingDeadlines from '../../../pages/HomePage/UpcomingDeadlines';
 
-jest.mock('../../../hooks/WorkPackages.hooks');
+jest.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseAllWPs = useAllWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 

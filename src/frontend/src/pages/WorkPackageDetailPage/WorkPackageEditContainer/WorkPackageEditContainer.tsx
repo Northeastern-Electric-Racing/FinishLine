@@ -1,14 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { createContext, useState, SyntheticEvent } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { useAllUsers } from '../../../hooks/Users.hooks';
-import { useEditWorkPackage } from '../../../hooks/WorkPackages.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import EditableTextInputList from '../../../components/EditableTextInputList';
@@ -20,6 +20,7 @@ import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWP
 import DependenciesList from '../WorkPackageViewContainer/DependenciesList';
 import EditModeOptions from './EditModeOptions';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
@@ -37,6 +38,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   exitEditMode
 }) => {
   const auth = useAuth();
+  const query = useQuery();
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
   const { data: userData, isLoading, isError, error } = useAllUsers();
 
@@ -44,7 +46,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   const [projectLead, setProjectLead] = useState(workPackage.projectLead?.userId);
   const [projectManager, setProjectManager] = useState(workPackage.projectManager?.userId);
   const [name, setName] = useState<string>(workPackage.name);
-  const [crId, setCrId] = useState<string>('');
+  const [crId, setCrId] = useState<string>(query.get('crId') || '');
   const [startDate, setStartDate] = useState<Date>(workPackage.startDate);
   const [duration, setDuration] = useState<number>(workPackage.duration);
   const [deps, setDeps] = useState<WbsNumber[]>(workPackage.dependencies);
@@ -191,6 +193,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
               placeholder="Change Request ID #"
               min="0"
               required
+              value={crId}
               onChange={(e) => setCrId(e.target.value.trim())}
             />
           }

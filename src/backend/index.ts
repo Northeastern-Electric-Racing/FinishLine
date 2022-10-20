@@ -6,6 +6,7 @@ import teamsRouter from './src/routes/teams.routes';
 import workPackagesRouter from './src/routes/work-packages.routes';
 import risksRouter from './src/routes/risks.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
+import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -27,7 +28,7 @@ app.use('/teams', teamsRouter);
 app.use('/work-packages', workPackagesRouter);
 app.use('/risks', risksRouter);
 app.use('/change-requests', changeRequestsRouter);
-
+app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });

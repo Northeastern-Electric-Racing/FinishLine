@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -13,23 +13,26 @@ import {
   exampleStandardChangeRequest
 } from '../../test-support/test-data/change-requests.stub';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { useAllChangeRequests } from '../../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import ChangeRequestsTable, {
   filterCRs
 } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useTheme } from '../../../hooks/theme.hooks';
 import { Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
-jest.mock('../../../hooks/ChangeRequests.hooks');
+jest.mock('../../../hooks/change-requests.hooks');
 
 const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
   UseQueryResult<ChangeRequest[]>
 >;
 
-jest.mock('../../../hooks/Theme.hooks');
+jest.mock('../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {
@@ -52,6 +55,11 @@ const renderComponent = () => {
 
 describe('change requests table container', () => {
   const NoCRMessage = 'No Change Requests to Display';
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
+  afterAll(() => jest.clearAllMocks());
 
   it('renders the loading indicator', () => {
     mockHook(true, false);

@@ -1,16 +1,16 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
 import themes from '../../utils/Themes';
 import { Theme } from '../../utils/Types';
 import { exampleWorkPackage2 } from '../test-support/test-data/work-packages.stub';
 import DescriptionList from '../../components/DescriptionList';
 
-jest.mock('../../hooks/Theme.hooks');
+jest.mock('../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,7 +14,7 @@ import {
   wbsRegex
 } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
-import { useAllProjects } from '../../../hooks/Projects.hooks';
+import { useAllProjects } from '../../../hooks/projects.hooks';
 import {
   exampleAllProjects,
   exampleProject1,
@@ -26,7 +26,7 @@ import {
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectsView, { filterProjects } from '../../../pages/ProjectsPage/ProjectsView';
 
-jest.mock('../../../hooks/Projects.hooks');
+jest.mock('../../../hooks/projects.hooks');
 
 const mockedUseAllProjects = useAllProjects as jest.Mock<UseQueryResult<Project[]>>;
 

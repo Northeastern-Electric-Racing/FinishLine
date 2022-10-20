@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,11 +14,17 @@ const mockHandleSubmit = jest.fn();
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (wbsNum = '') => {
+const renderComponent = (wbsNum = '', crDesc = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CreateChangeRequestsView wbsNum={wbsNum} onSubmit={mockHandleSubmit} />
+      <CreateChangeRequestsView
+        wbsNum={wbsNum}
+        onSubmit={mockHandleSubmit}
+        crDesc={crDesc}
+        proposedSolutions={[]}
+        setProposedSolutions={() => {}}
+      />
     </RouterWrapper>
   );
 };
@@ -37,7 +43,6 @@ describe('create new change request page test suite', () => {
     expect(screen.getByLabelText('Type')).toBeInTheDocument();
     expect(screen.getByLabelText('What')).toBeInTheDocument();
     expect(screen.getByLabelText('Why')).toBeInTheDocument();
-    expect(screen.getAllByLabelText(/Impact/).length).toBe(3);
   });
 
   it('renders all buttons', () => {

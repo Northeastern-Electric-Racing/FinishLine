@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -29,16 +29,5 @@ describe('Change request details standard cr display element tests', () => {
       expect(screen.getByText(`${explanation.type}`)).toBeInTheDocument();
       expect(screen.getByText(`${explanation.explain}`)).toBeInTheDocument();
     });
-  });
-
-  it('Renders impact section', () => {
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`Scope Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.scopeImpact}`)).toBeInTheDocument();
-    expect(screen.getByText(`Timeline Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.timelineImpact} weeks`)).toBeInTheDocument();
-    expect(screen.getByText(`Budget Impact`)).toBeInTheDocument();
-    expect(screen.getByText(`$${cr.budgetImpact}`)).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -13,7 +13,7 @@ import {
   exampleStageGateChangeRequest
 } from '../test-support/test-data/change-requests.stub';
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
-import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
 jest.mock('../../apis/ChangeRequests.api');
 

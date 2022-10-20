@@ -1,12 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Project, User } from 'shared';
-import { useAllProjects } from '../../hooks/Projects.hooks';
+import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
 import LoadingIndicator from '../../components/LoadingIndicator';

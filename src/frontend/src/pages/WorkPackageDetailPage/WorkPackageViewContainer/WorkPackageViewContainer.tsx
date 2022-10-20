@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -10,12 +10,12 @@ import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import DescriptionList from '../../../components/DescriptionList';
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
+import CheckList from '../../../components/CheckList';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -75,6 +75,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   );
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
+
   return (
     <Container fluid>
       <PageTitle
@@ -92,13 +93,21 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           <strong>{wbsPipe(dep)}</strong>
         ))}
       />
-      <DescriptionList
+      <CheckList
         title={'Expected Activities'}
-        items={workPackage.expectedActivities.filter((ea) => ea.dateDeleted === undefined)}
+        items={workPackage.expectedActivities
+          .filter((ea) => !ea.dateDeleted)
+          .map((ea) => {
+            return { ...ea, resolved: !!ea.userChecked };
+          })}
       />
-      <DescriptionList
+      <CheckList
         title={'Deliverables'}
-        items={workPackage.deliverables.filter((del) => del.dateDeleted === undefined)}
+        items={workPackage.deliverables
+          .filter((del) => !del.dateDeleted)
+          .map((del) => {
+            return { ...del, resolved: !!del.userChecked };
+          })}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

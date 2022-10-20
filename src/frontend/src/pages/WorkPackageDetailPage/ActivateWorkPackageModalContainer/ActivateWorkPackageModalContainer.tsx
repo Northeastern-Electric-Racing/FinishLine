@@ -1,13 +1,13 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber } from 'shared';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { useCreateActivationChangeRequest } from '../../../hooks/ChangeRequests.hooks';
-import { useAllUsers } from '../../../hooks/Users.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/Routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';

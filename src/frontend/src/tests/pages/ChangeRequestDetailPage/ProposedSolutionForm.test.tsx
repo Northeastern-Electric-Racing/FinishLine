@@ -19,7 +19,7 @@ const renderComponent = (
   description = '',
   budgetImpact = 0,
   timelineImpact = 0,
-  scope = ''
+  scopeImpact = ''
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -30,7 +30,7 @@ const renderComponent = (
         description={description}
         budgetImpact={budgetImpact}
         timelineImpact={timelineImpact}
-        scope={scope}
+        scopeImpact={scopeImpact}
       />
     </RouterWrapper>
   );
@@ -42,7 +42,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope')).toBeInTheDocument();
+    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
   });
 
   it('Renders labels for inputs correctly when not readOnly', () => {
@@ -50,7 +50,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope')).toBeInTheDocument();
+    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
   });
 
   it('Does not render add button when readOnly', () => {

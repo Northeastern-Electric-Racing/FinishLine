@@ -1,15 +1,16 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
 import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  StageGateChangeRequest,
-  StandardChangeRequest
-} from 'shared';
+  routerWrapperBuilder,
+  fireEvent,
+  render,
+  screen,
+  act
+} from '../../test-support/test-utils';
+import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
@@ -102,12 +103,6 @@ describe('Change request details standard cr display element tests', () => {
   it('Renders why section', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
-  });
-
-  it('Renders impact section', () => {
-    const cr: StandardChangeRequest = exampleStandardChangeRequest;
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
   });
 });
 

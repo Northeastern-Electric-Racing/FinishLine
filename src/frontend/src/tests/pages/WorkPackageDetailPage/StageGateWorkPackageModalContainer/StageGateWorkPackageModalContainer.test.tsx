@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -9,9 +9,9 @@ import { wbsPipe } from '../../../../utils/Pipes';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
-import { useCreateStageGateChangeRequest } from '../../../../hooks/ChangeRequests.hooks';
+import { useCreateStageGateChangeRequest } from '../../../../hooks/change-requests.hooks';
 
-jest.mock('../../../../hooks/ChangeRequests.hooks');
+jest.mock('../../../../hooks/change-requests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;

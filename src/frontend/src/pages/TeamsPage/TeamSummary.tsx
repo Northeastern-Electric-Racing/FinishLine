@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,10 +7,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
 import { Team } from 'shared';
-import { useTheme } from '../../hooks/Theme.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
 import { routes } from '../../utils/Routes';
 import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
-import styles from '../../stylesheets/pages/ProjectDetailPage/WorkPackageSummary.module.scss';
+import styles from '../../stylesheets/pages/project-detail-page/work-package-summary.module.scss';
 
 const renderTeamSummaryHeader = (team: Team, open: boolean, setOpen: (open: boolean) => void) => (
   <Card.Header

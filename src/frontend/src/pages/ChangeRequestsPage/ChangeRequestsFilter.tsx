@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Button, Dropdown, Form } from 'react-bootstrap';
 import { ChangeRequestType, ChangeRequestReason } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import styles from '../../stylesheets/Common.module.scss';
+import styles from '../../stylesheets/common.module.scss';
 
 interface FilterFieldStateProps {
   update: (

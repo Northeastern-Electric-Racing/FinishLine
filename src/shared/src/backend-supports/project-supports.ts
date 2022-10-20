@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,7 +7,7 @@ import { WbsElementStatus } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
 /**
- * This function calculates the end date.
+ * This function calculates the end date for a work package.
  * @param start the start date
  * @param weeks number of weeks
  * @returns the start date after the weeks have passed
@@ -16,6 +16,23 @@ const calculateEndDate = (start: Date, weeks: number) => {
   const end = new Date(start);
   end.setDate(start.getDate() + weeks * 7);
   return end;
+};
+
+/**
+ * This function calculates the end date for a project.
+ * @param wps an array of work packages
+ * @returns the latest end date of the workpackages
+ */
+const calculateProjectEndDate = (wps: { duration: number; startDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
+  const maxDate = wps.reduce(
+    (max, cur) =>
+      calculateEndDate(cur.startDate, cur.duration) > max
+        ? calculateEndDate(cur.startDate, cur.duration)
+        : max,
+    calculateEndDate(wps[0].startDate, wps[0].duration)
+  );
+  return maxDate;
 };
 
 /**
@@ -66,9 +83,25 @@ const calculateTimelineStatus = (progress: number, expectedProgress: number): Ti
   return TimelineStatus.VeryBehind;
 };
 
+/**
+ * Calculates the start date for a project
+ * @param wps The array of work packages that project has
+ * @returns the ealiest start date among work packages
+ */
+const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[]) => {
+  if (wps.length === 0) return undefined;
+  const minDate = wps.reduce(
+    (min, cur) => (cur.startDate < min ? cur.startDate : min),
+    wps[0].startDate
+  );
+  return minDate;
+};
+
 export {
   calculateDuration,
   calculateEndDate,
+  calculateProjectEndDate,
   calculatePercentExpectedProgress,
-  calculateTimelineStatus
+  calculateTimelineStatus,
+  calculateProjectStartDate
 };
