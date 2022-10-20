@@ -23,7 +23,7 @@ export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: '*',
   credentials: true,
   preflightContinue: true,
   allowedHeaders
@@ -46,7 +46,6 @@ app.use(
 
 // cors settings
 app.use(cors(options));
-app.options('*', cors());
 
 // routes
 app.use('/users', userRouter);
