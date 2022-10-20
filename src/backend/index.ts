@@ -1,8 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { expressjwt } from 'express-jwt';
 import cookieParser from 'cookie-parser';
-import { requireJwtUnlessLogin } from './src/utils/utils';
+import { prodHeaders, requireJwt } from './src/utils/utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
@@ -14,28 +13,8 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-const prodHeaders = [
-  'Origin',
-  'X-Requested-With',
-  'Content-Type',
-  'Accept',
-  'Authorization',
-  'XMLHttpRequest',
-  'X-Auth-Token',
-  'Client-Security-Token',
-  'Cookie',
-  'Set-Cookie',
-  'Referer',
-  'User-Agent',
-  'sec-ch-ua-platform',
-  'sec-ch-ua-mobile',
-  'sec-ch-ua'
-];
-
+// cors options
 const allowedHeaders = process.env.NODE_ENV === 'production' ? prodHeaders : '*';
-
-export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
-
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
   methods: 'GET, POST',
@@ -53,16 +32,8 @@ app.use(express.json());
 // cors settings
 app.use(cors(options));
 
-// express jwt setup
-app.use(
-  requireJwtUnlessLogin(
-    expressjwt({
-      secret: TOKEN_SECRET,
-      algorithms: ['HS256'],
-      getToken: (req) => req.cookies.token
-    })
-  )
-);
+// ensure each request is authorized using JWT
+app.use(requireJwt);
 
 // routes
 app.use('/users', userRouter);

@@ -5,7 +5,7 @@ const axios = axiosStatic.create({
 });
 
 // This allows us to get good server errors
-// All express statuses must be: res.status(404).json({ message: "You are not authorized to do that." })
+// All express responses must be: res.status(404).json({ message: "You are not authorized to do that." })
 axios.interceptors.response.use(
   (response) => {
     return response;
