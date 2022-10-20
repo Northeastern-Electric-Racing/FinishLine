@@ -138,6 +138,7 @@ describe('Projects', () => {
   });
 
   test('getSingleProject fails when associated wbsElement doesnt exist', async () => {
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
     let res = await request(app).get('/1.3.0');
     expect(res.statusCode).toBe(404);
     expect(res.body).toStrictEqual({ message: 'project 1.3.0 not found!' });
