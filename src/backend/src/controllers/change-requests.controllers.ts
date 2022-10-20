@@ -46,11 +46,9 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
-  if (!foundCR)
-    return res.status(404).json({ message: `change request with id #${crId} not found` });
+  if (!foundCR) return res.status(404).json({ message: `change request with id #${crId} not found` });
 
-  if (foundCR.accepted)
-    return res.status(400).json({ message: `This change request is already approved!` });
+  if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
@@ -58,10 +56,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   // if Scope CR, make sure that a proposed solution is selected before approving
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
   if (foundScopeCR && accepted === true) {
-    if (!psId)
-      return res
-        .status(400)
-        .json({ message: 'No proposed solution selected for scope change request' });
+    if (!psId) return res.status(400).json({ message: 'No proposed solution selected for scope change request' });
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
@@ -101,16 +96,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   });
 
   if (!wbsElement) {
-    return res
-      .status(404)
-      .json({ message: `wbs element with id #${updated.wbsElementId} not found` });
+    return res.status(404).json({ message: `wbs element with id #${updated.wbsElementId} not found` });
   }
-
-  const progress: number | undefined = wbsElement.workPackage?.progress;
 
   if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
     const shouldChangeStatus = wbsElement.status !== WBS_Element_Status.COMPLETE;
-    const shouldChangeProgress = progress !== 100;
 
     const changesList = [];
     if (shouldChangeStatus) {
@@ -118,14 +108,6 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: crId,
         implementerId: reviewerId,
         detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.COMPLETE)
-      });
-    }
-
-    if (shouldChangeProgress) {
-      changesList.push({
-        changeRequestId: crId,
-        implementerId: reviewerId,
-        detail: buildChangeDetail('progress', progress?.toString() || 'null', '100')
       });
     }
 
@@ -141,8 +123,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
               }
             }
           }
-        },
-        progress: 100
+        }
       }
     });
   }
@@ -153,8 +134,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const shouldUpdateProjLead = actCr.projectLeadId !== wbsElement.projectLeadId;
     const shouldUpdateProjManager = actCr.projectManagerId !== wbsElement.projectManagerId;
     const shouldChangeStartDate =
-      actCr.startDate.setHours(0, 0, 0, 0) !==
-      wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
+      actCr.startDate.setHours(0, 0, 0, 0) !== wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
 
     const changes = [];
     if (shouldUpdateProjLead) {
@@ -212,9 +192,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
 
   // TODO: handle errors
-  return res
-    .status(200)
-    .json({ message: `Change request #${updated.crId} successfully reviewed.` });
+  return res.status(200).json({ message: `Change request #${updated.crId} successfully reviewed.` });
 };
 
 export const createActivationChangeRequest = async (req: Request, res: Response) => {
@@ -297,8 +275,7 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 
   // verify user is allowed to create stage gate change requests
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
-  if (!user)
-    return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
+  if (!user) return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
 
   // verify wbs element exists
@@ -415,12 +392,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
   if (project?.team) {
     const slackMsg = `${body.type} CR submitted by ${user.firstName} ${user.lastName} for the ${project.wbsElement.name} project`;
-    await sendSlackChangeRequestNotification(
-      project.team,
-      slackMsg,
-      createdCR.crId,
-      body.budgetImpact
-    );
+    await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId, body.budgetImpact);
   }
   return res.status(200).json(createdCR.crId);
 };
@@ -444,21 +416,16 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   const foundCR = await prisma.change_Request.findUnique({
     where: { crId: body.crId }
   });
-  if (!foundCR)
-    return res.status(404).json({ message: `change request with id #${body.crId} not found` });
+  if (!foundCR) return res.status(404).json({ message: `change request with id #${body.crId} not found` });
 
   if (foundCR.accepted !== null) {
-    return res
-      .status(400)
-      .json({ message: `cannot create proposed solutions on a reviewed change request!` });
+    return res.status(400).json({ message: `cannot create proposed solutions on a reviewed change request!` });
   }
 
   // ensure existence of scope change request
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: body.crId } });
   if (!foundScopeCR)
-    return res
-      .status(404)
-      .json({ message: `scope change request with change request id #${body.crId} not found` });
+    return res.status(404).json({ message: `scope change request with change request id #${body.crId} not found` });
 
   const createProposedSolution = await prisma.proposed_Solution.create({
     data: {

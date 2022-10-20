@@ -13,6 +13,7 @@ import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
 import { riskQueryArgs, riskTransformer } from './risks.utils';
 import { buildChangeDetail } from '../utils/utils';
+import { calculateWorkPackageProgress } from './work-packages.utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -124,6 +125,7 @@ export const projectTransformer = (
     risks: project.risks.map(riskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
+      const progress = calculateWorkPackageProgress(workPackage.deliverables.concat(workPackage.expectedActivities))
       const expectedProgress = calculatePercentExpectedProgress(
         workPackage.startDate,
         workPackage.duration,
@@ -151,12 +153,12 @@ export const projectTransformer = (
           dateImplemented: change.dateImplemented
         })),
         orderInProject: workPackage.orderInProject,
-        progress: workPackage.progress,
+        progress,
         startDate: workPackage.startDate,
         endDate,
         duration: workPackage.duration,
         expectedProgress,
-        timelineStatus: calculateTimelineStatus(workPackage.progress, expectedProgress),
+        timelineStatus: calculateTimelineStatus(progress, expectedProgress),
         dependencies: workPackage.dependencies.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter)

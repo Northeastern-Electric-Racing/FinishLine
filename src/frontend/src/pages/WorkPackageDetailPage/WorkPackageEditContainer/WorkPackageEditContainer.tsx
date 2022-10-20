@@ -67,7 +67,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
       }))
   );
   const [status, setStatus] = useState<WbsElementStatus>(workPackage.status);
-  const [progress, setProgress] = useState<number>(workPackage.progress);
 
   const expectedActivitiesUtil: EditableTextInputListUtils = {
     add: (val) => {
@@ -122,7 +121,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
     setEa,
     setDels,
     setStatus,
-    setProgress
   };
 
   const transformDate = (date: Date) => {
@@ -160,7 +158,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
       expectedActivities: ea,
       deliverables: dels,
       wbsElementStatus: status,
-      progress
     };
 
     console.log(payload);

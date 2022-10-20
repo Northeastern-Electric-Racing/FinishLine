@@ -5,7 +5,7 @@
 
 import { Form, InputGroup, Container, Row, Col } from 'react-bootstrap';
 import { WorkPackage, User, WbsElementStatus } from 'shared';
-import { fullNamePipe, percentPipe, emDashPipe } from '../../../utils/Pipes';
+import { fullNamePipe, emDashPipe } from '../../../utils/Pipes';
 import PageBlock from '../../../layouts/PageBlock';
 
 interface Props {
@@ -49,9 +49,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
     );
   };
 
-  const statuses = Object.values(WbsElementStatus).filter(
-    (status) => status !== workPackage.status
-  );
+  const statuses = Object.values(WbsElementStatus).filter((status) => status !== workPackage.status);
 
   const transformStatus = (status: string) => {
     switch (status) {
@@ -65,11 +63,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
   };
 
   const statusSelect = (
-    <Form.Control
-      as="select"
-      onChange={(e) => setters.setStatus(transformStatus(e.target.value))}
-      custom
-    >
+    <Form.Control as="select" onChange={(e) => setters.setStatus(transformStatus(e.target.value))} custom>
       <option key={0} value={workPackage.status}>
         {workPackage.status}
       </option>
@@ -81,11 +75,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
     </Form.Control>
   );
 
-  const buildUsersSelect = (
-    title: string,
-    defaultUser: User | undefined,
-    updateUser: (val: number) => void
-  ) => {
+  const buildUsersSelect = (title: string, defaultUser: User | undefined, updateUser: (val: number) => void) => {
     let otherUsers = users;
     if (defaultUser !== undefined) {
       otherUsers = users.filter((user) => user.userId !== defaultUser.userId);
@@ -93,12 +83,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
     return (
       <Form.Group>
         <Form.Label>{title}</Form.Label>
-        <Form.Control
-          as="select"
-          data-testid={title}
-          onChange={(e) => updateUser(parseInt(e.target.value))}
-          custom
-        >
+        <Form.Control as="select" data-testid={title} onChange={(e) => updateUser(parseInt(e.target.value))} custom>
           {defaultUser === undefined ? (
             <option key={-1} value={-1}>
               {emDashPipe('')}
@@ -119,8 +104,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
   };
 
   const transformDate = (date: Date) => {
-    const month =
-      date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
     const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
@@ -129,14 +113,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
     <PageBlock title={'Work Package Details'} headerRight={<b>{statusSelect}</b>}>
       <Container fluid>
         <Row>
-          <Col>
-            {editDetailsInputBuilder(
-              'Work Package Name:',
-              'text',
-              workPackage.name,
-              setters.setName
-            )}
-          </Col>
+          <Col>{editDetailsInputBuilder('Work Package Name:', 'text', workPackage.name, setters.setName)}</Col>
           <Col md={3} lg={2} xl={2}>
             {editDetailsInputBuilder(
               'Start Date:',
@@ -147,16 +124,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
           </Col>
         </Row>
         <Row>
-          <Col md={4}>
-            {buildUsersSelect('Project Lead:', workPackage.projectLead, setters.setProjectLead)}
-          </Col>
-          <Col md={4}>
-            {buildUsersSelect(
-              'Project Manager:',
-              workPackage.projectManager,
-              setters.setProjectManager
-            )}
-          </Col>
+          <Col md={4}>{buildUsersSelect('Project Lead:', workPackage.projectLead, setters.setProjectLead)}</Col>
+          <Col md={4}>{buildUsersSelect('Project Manager:', workPackage.projectManager, setters.setProjectManager)}</Col>
           <Col md={4} lg={2} xl={2}>
             {editDetailsInputBuilder(
               'Duration:',
@@ -166,28 +135,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }
               '',
               'weeks'
             )}
-          </Col>
-          <Col sm={3} md={2} lg={2} xl={2}>
-            <Form.Group>
-              <Form.Label>Progress:</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={(e) => setters.setProgress(parseInt(e.target.value.trim()))}
-                custom
-              >
-                <option key={workPackage.progress} value={workPackage.progress}>
-                  {percentPipe(workPackage.progress)}
-                </option>
-                {[0, 25, 50, 75, 100]
-                  .filter((p) => p !== workPackage.progress)
-                  .map((progress, index) => (
-                    <option key={progress} value={progress}>
-                      {percentPipe(progress)}
-                    </option>
-                  ))}
-              </Form.Control>
-              <Form.Text>Expected: {percentPipe(workPackage.expectedProgress)}</Form.Text>
-            </Form.Group>
           </Col>
         </Row>
       </Container>
