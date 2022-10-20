@@ -127,7 +127,7 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  test('getSingleProject fails given invalid project wbs', async () => {
+  test('getSingleProject fails given invalid project wbs number', async () => {
     let res = await request(app).get('/1.0.1');
     expect(res.statusCode).toBe(404);
     expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
@@ -137,7 +137,7 @@ describe('Projects', () => {
     expect(res.body).toStrictEqual({ message: `2.0.2 is not a valid project WBS #!` });
   });
 
-  test('getSingleProject fails when associated webselement doesnt exist', async () => {
+  test('getSingleProject fails when associated wbsElement doesnt exist', async () => {
     let res = await request(app).get('/1.3.0');
     expect(res.statusCode).toBe(404);
     expect(res.body).toStrictEqual({ message: 'project 1.3.0 not found!' });
