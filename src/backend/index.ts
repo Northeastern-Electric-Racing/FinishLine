@@ -22,7 +22,7 @@ const allowedHeaders =
 export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 const options: cors.CorsOptions = {
-  origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://magenta-mochi-275e56.netlify.app'],
+  origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   preflightContinue: true,
