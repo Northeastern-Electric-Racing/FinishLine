@@ -24,7 +24,12 @@ const prodHeaders = [
   'X-Auth-Token',
   'Client-Security-Token',
   'Cookie',
-  'Set-Cookie'
+  'Set-Cookie',
+  'Referer',
+  'User-Agent',
+  'sec-ch-ua-platform',
+  'sec-ch-ua-mobile',
+  'sec-ch-ua'
 ];
 
 const allowedHeaders = process.env.NODE_ENV === 'production' ? prodHeaders : '*';
