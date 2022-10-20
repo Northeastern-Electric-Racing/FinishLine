@@ -11,7 +11,8 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error && error.response) throw new Error(error.response.data.message);
+    const message = error?.response?.data?.message || 'Something went wrong...';
+    throw new Error(message);
   }
 );
 
