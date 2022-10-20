@@ -16,7 +16,7 @@ const port = process.env.PORT || 3001;
 
 const allowedHeaders =
   process.env.NODE_ENV === 'production'
-    ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest'
+    ? 'Origin, X-Requested-With, Content-Type, Accept, Authorization, XMLHttpRequest, X-Auth-Token, Client-Security-Token'
     : '*';
 
 export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
