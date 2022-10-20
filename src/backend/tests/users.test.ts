@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express from 'express';
 import userRouter from '../src/routes/users.routes';
-import { Role } from '@prisma/client';
+import { Role, Theme } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
 
 const app = express();
@@ -25,10 +25,16 @@ const superman = {
   role: Role.ADMIN
 };
 
+const batmanSettings = {
+  id: '1',
+  userId: batman.userId,
+  user: batman,
+  defaultTheme: Theme.DARK
+};
+
 describe('Users', () => {
-  beforeEach(() => {
-    prisma.user.findMany = jest.fn();
-    prisma.user.findUnique = jest.fn();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   test('getAllUsers', async () => {
@@ -52,5 +58,25 @@ describe('Users', () => {
     expect(res.statusCode).toBe(200);
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.body).toStrictEqual(batman);
+  });
+
+  test('getUserSettings for undefined request user', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    const res = await request(app).get('/null/settings');
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`user #NaN not found!`);
+  });
+
+  test('getUserSettings runs', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest
+      .spyOn(prisma.user_Settings, 'upsert')
+      .mockResolvedValue({ ...batmanSettings, slackId: '5' });
+    const res = await request(app).get('/1/settings');
+
+    expect(res.statusCode).toBe(200);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.user_Settings.upsert).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual({ ...batmanSettings, slackId: '5' });
   });
 });
