@@ -2,8 +2,8 @@ import request from 'supertest';
 import express from 'express';
 import userRouter from '../src/routes/users.routes';
 import prisma from '../src/prisma/prisma';
-import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
-import { Role, Theme } from '@prisma/client';
+import { batman, batmanSettings, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { Role } from '@prisma/client';
 
 const app = express();
 app.use(express.json());
@@ -13,6 +13,7 @@ describe('Users', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   test('getAllUsers', async () => {
     jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
 
@@ -75,14 +76,25 @@ describe('Users', () => {
     expect(prisma.user.update).toHaveBeenCalledTimes(1);
   });
 
-  test('updateUserSettings', async () => {
-    const batmanSettings = {
-      id: 'bm',
-      userId: 1,
-      defaultTheme: Theme.DARK,
-      slackId: 'slack'
-    };
+  test('getUserSettings for undefined request user', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    const res = await request(app).get('/null/settings');
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`user #NaN not found!`);
+  });
 
+  test('getUserSettings runs', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue({ ...batmanSettings, slackId: '5' });
+    const res = await request(app).get('/1/settings');
+
+    expect(res.statusCode).toBe(200);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.user_Settings.upsert).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual({ ...batmanSettings, slackId: '5' });
+  });
+
+  test('updateUserSettings', async () => {
     jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
     const req = { defaultTheme: 'DARK', slackId: 'Slack' };
     const res = await request(app).post('/1/settings').send(req);
