@@ -50,6 +50,9 @@ const options: cors.CorsOptions = {
 app.use(cookieParser());
 app.use(express.json());
 
+// cors settings
+app.use(cors(options));
+
 // express jwt setup
 app.use(
   requireJwtUnlessLogin(
@@ -60,12 +63,6 @@ app.use(
     })
   )
 );
-
-// cors settings
-app.options('*', cors(options), (_, res) => {
-  res.sendStatus(200);
-});
-app.use(cors(options));
 
 // routes
 app.use('/users', userRouter);

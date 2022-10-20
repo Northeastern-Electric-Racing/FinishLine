@@ -34,9 +34,16 @@ export const generateAccessToken = (user: { firstName: string; lastName: string 
 
 export const requireJwtUnlessLogin = (fn: any) => {
   return function (req: Request, res: Response, next: any) {
-    if (process.env.NODE_ENV !== 'production' || req.path === '/users/auth/login' || req.path === '/') {
+    console.log(`PATH: ${req.path} | METHOD: ${req.method}`);
+    if (
+      process.env.NODE_ENV !== 'production' ||
+      req.path === '/users/auth/login' ||
+      req.path === '/' ||
+      req.method === 'OPTIONS'
+    ) {
       next();
     } else {
+      console.log(`TOKEN?: ${req.cookies.token}`);
       fn(req, res, next);
     }
   };
