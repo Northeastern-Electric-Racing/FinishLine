@@ -46,6 +46,7 @@ app.use(
 
 // cors settings
 app.use(cors(options));
+app.options('*', cors());
 
 // routes
 app.use('/users', userRouter);
