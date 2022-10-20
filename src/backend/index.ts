@@ -23,9 +23,9 @@ export const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
-  methods: '*',
+  methods: 'GET, POST',
   credentials: true,
-  preflightContinue: true,
+  preflightContinue: false,
   allowedHeaders
 };
 
