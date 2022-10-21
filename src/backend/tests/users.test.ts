@@ -78,20 +78,20 @@ describe('Users', () => {
 
   test('getUserSettings for undefined request user', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
-    const res = await request(app).get('/null/settings');
+    const res = await request(app).get('/420/settings');
     expect(res.statusCode).toBe(404);
-    expect(res.body.message).toBe(`user #NaN not found!`);
+    expect(res.body.message).toBe(`user #420 not found!`);
   });
 
   test('getUserSettings runs', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
-    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue({ ...batmanSettings, slackId: '5' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
     const res = await request(app).get('/1/settings');
 
     expect(res.statusCode).toBe(200);
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.user_Settings.upsert).toHaveBeenCalledTimes(1);
-    expect(res.body).toStrictEqual({ ...batmanSettings, slackId: '5' });
+    expect(res.body).toStrictEqual(batmanSettings);
   });
 
   test('updateUserSettings', async () => {
