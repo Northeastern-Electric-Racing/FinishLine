@@ -8,23 +8,11 @@ import { useTheme } from '../../../../hooks/theme.hooks';
 import themes from '../../../../utils/Themes';
 import { Theme } from '../../../../utils/Types';
 import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
-import {
-  exampleRisk1,
-  exampleRisk2,
-  exampleRisk3,
-  exampleRisk4
-} from '../../../test-support/test-data/risks.stub';
+import { exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4 } from '../../../test-support/test-data/risks.stub';
 import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/auth.hooks';
-import {
-  mockAuth,
-  mockPromiseAxiosResponse
-} from '../../../test-support/test-data/test-utils.stub';
-import {
-  exampleAdminUser,
-  exampleGuestUser,
-  exampleMemberUser
-} from '../../../test-support/test-data/users.stub';
+import { mockAuth, mockPromiseAxiosResponse } from '../../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../../test-support/test-data/users.stub';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import { getRisksForProject } from '../../../../apis/Risks.api';
 import { AxiosResponse } from 'axios';

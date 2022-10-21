@@ -33,10 +33,7 @@ const wbsTester = (wbsNum: string | undefined) => {
 };
 
 const schema = yup.object().shape({
-  wbsNum: yup
-    .string()
-    .required('WBS number is required')
-    .test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
+  wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
   why: yup
@@ -76,10 +73,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   return (
     <Container fluid>
-      <PageTitle
-        title={'New Change Request'}
-        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      />
+      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title={''}>
         <Form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
           <Row className="mx-2 justify-content-start">
@@ -91,9 +85,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   placeholder="Project or Work Package WBS #"
                   isInvalid={formState.errors.wbsNum?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.wbsNum?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.wbsNum?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
 
@@ -112,9 +104,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     </option>
                   ))}
                 </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.type?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.type?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
@@ -130,9 +120,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   placeholder="What is the situation?"
                   isInvalid={formState.errors.what?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.what?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.what?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col sm={6} md={6} lg={6} xl={6}>

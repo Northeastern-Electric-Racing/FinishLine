@@ -23,12 +23,7 @@ const schema = yup.object().shape({
   confirmDone: yup.boolean().required()
 });
 
-const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({
-  wbsNum,
-  modalShow,
-  onHide,
-  onSubmit
-}) => {
+const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
   const { register, reset, handleSubmit } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
@@ -43,9 +38,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({
 
   return (
     <Modal show={modalShow} onHide={onHide} centered>
-      <Modal.Header className={'font-weight-bold'} closeButton>{`Stage Gate #${wbsPipe(
-        wbsNum
-      )}`}</Modal.Header>
+      <Modal.Header className={'font-weight-bold'} closeButton>{`Stage Gate #${wbsPipe(wbsNum)}`}</Modal.Header>
       <Modal.Body>
         <Form id={'stage-gate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
@@ -92,12 +85,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          className={'ml-3'}
-          variant="secondary"
-          form="stage-gate-work-package-form"
-          onClick={onHide}
-        >
+        <Button className={'ml-3'} variant="secondary" form="stage-gate-work-package-form" onClick={onHide}>
           Cancel
         </Button>
         <Button variant="success" type="submit" form="stage-gate-work-package-form">

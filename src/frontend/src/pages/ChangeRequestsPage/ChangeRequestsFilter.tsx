@@ -10,18 +10,10 @@ import PageBlock from '../../layouts/PageBlock';
 import styles from '../../stylesheets/common.module.scss';
 
 interface FilterFieldStateProps {
-  update: (
-    type: string,
-    impact: number[],
-    reason: string,
-    state: number[],
-    implemented: string
-  ) => void;
+  update: (type: string, impact: number[], reason: string, state: number[], implemented: string) => void;
 }
 
-const ChangeRequestsFilter: React.FC<FilterFieldStateProps> = ({
-  update
-}: FilterFieldStateProps) => {
+const ChangeRequestsFilter: React.FC<FilterFieldStateProps> = ({ update }: FilterFieldStateProps) => {
   const [type, setType] = useState('');
   const [impact, setImpact] = useState<number[]>([]);
   const [reason, setReason] = useState('');
@@ -29,10 +21,7 @@ const ChangeRequestsFilter: React.FC<FilterFieldStateProps> = ({
   const [implemented, setImplemented] = useState('');
 
   // Build a list of dropdown options from the provided strings
-  const genDropdownItems = (
-    values: string[],
-    setter: React.Dispatch<React.SetStateAction<string>>
-  ) => {
+  const genDropdownItems = (values: string[], setter: React.Dispatch<React.SetStateAction<string>>) => {
     const dropdownItemTemplate = (key: string, value: string) => (
       <Dropdown.Item key={key} onClick={() => setter(value)}>
         {key}
@@ -43,11 +32,7 @@ const ChangeRequestsFilter: React.FC<FilterFieldStateProps> = ({
     return <>{dropdownItems}</>;
   };
 
-  const genCheckboxes = (
-    values: string[],
-    value: number[],
-    setter: React.Dispatch<React.SetStateAction<number[]>>
-  ) => {
+  const genCheckboxes = (values: string[], value: number[], setter: React.Dispatch<React.SetStateAction<number[]>>) => {
     const toggleValue = (currVal: string): void => {
       const index = values.indexOf(currVal);
       const present = value.indexOf(index) !== -1;

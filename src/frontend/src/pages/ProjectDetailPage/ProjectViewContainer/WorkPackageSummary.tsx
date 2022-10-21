@@ -80,10 +80,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
                 <Col xs={12} md={6}>
                   <b>Deliverables:</b> {deliverablesList}
                   {numMoreDeliverables > 0 ? (
-                    <Link
-                      to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}
-                      className={styles.showMoreLink}
-                    >
+                    <Link to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`} className={styles.showMoreLink}>
                       Show {numMoreDeliverables} more...
                     </Link>
                   ) : (

@@ -3,13 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  routerWrapperBuilder,
-  fireEvent,
-  render,
-  screen,
-  act
-} from '../../test-support/test-utils';
+import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
 import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
@@ -27,11 +21,7 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ChangeRequestDetailsView
-        changeRequest={cr}
-        isUserAllowedToReview={allowed}
-        isUserAllowedToImplement={allowed}
-      />
+      <ChangeRequestDetailsView changeRequest={cr} isUserAllowedToReview={allowed} isUserAllowedToImplement={allowed} />
     </RouterWrapper>
   );
 };
@@ -50,9 +40,7 @@ describe('Change request details common display element tests', () => {
     (cr: ChangeRequest) => {
       renderComponent(cr);
       expect(screen.getByText(/Submitted by/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(`${cr.submitter.firstName} ${cr.submitter.lastName}`)
-      ).toBeInTheDocument();
+      expect(screen.getByText(`${cr.submitter.firstName} ${cr.submitter.lastName}`)).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(cr.dateSubmitted)}`)).toBeInTheDocument();
     }
   );
@@ -151,9 +139,7 @@ describe('Change request review notes display elements test', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        reviewNotes ? reviewNotes! : 'There are no review notes for this change request.'
-      )
+      screen.getByText(reviewNotes ? reviewNotes! : 'There are no review notes for this change request.')
     ).toBeInTheDocument();
   });
 });

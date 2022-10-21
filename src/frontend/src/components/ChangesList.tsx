@@ -20,8 +20,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>
-          ]{' '}
+          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
           <OverlayTrigger
             placement="right"
             overlay={

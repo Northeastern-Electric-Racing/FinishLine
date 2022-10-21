@@ -9,12 +9,7 @@ import { faBell } from '@fortawesome/free-solid-svg-icons';
 
 const NavNotificationsMenu: React.FC = () => {
   return (
-    <NavDropdown
-      className="m-auto"
-      title={<FontAwesomeIcon icon={faBell} inverse />}
-      id="notifications-dropdown"
-      alignRight
-    >
+    <NavDropdown className="m-auto" title={<FontAwesomeIcon icon={faBell} inverse />} id="notifications-dropdown" alignRight>
       <NavDropdown.ItemText>
         0 Notifications <strong>*Coming Soon*</strong>
       </NavDropdown.ItemText>

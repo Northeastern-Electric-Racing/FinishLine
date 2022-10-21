@@ -14,9 +14,7 @@ app.use(express.json());
 app.use('/', workPackageRouter);
 
 jest.mock('../src/utils/projects.utils');
-const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<
-  Promise<boolean | null>
->;
+const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 
 describe('Work Packages', () => {
   afterEach(() => {

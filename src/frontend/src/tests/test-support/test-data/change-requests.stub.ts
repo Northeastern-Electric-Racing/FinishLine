@@ -12,12 +12,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleProjectLeadUser,
-  exampleProjectManagerUser
-} from './users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 
 export const exampleStandardChangeRequest: StandardChangeRequest = {

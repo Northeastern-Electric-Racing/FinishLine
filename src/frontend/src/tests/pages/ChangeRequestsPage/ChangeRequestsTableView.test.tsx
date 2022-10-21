@@ -8,9 +8,7 @@ import { ChangeRequest } from 'shared';
 import { exampleAllChangeRequests } from '../../test-support/test-data/change-requests.stub';
 import { booleanPipe, fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
-import ChangeRequestsTableView, {
-  DisplayChangeRequest
-} from '../../../pages/ChangeRequestsPage/ChangeRequestsTableView';
+import ChangeRequestsTableView, { DisplayChangeRequest } from '../../../pages/ChangeRequestsPage/ChangeRequestsTableView';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent: (changeRequests?: DisplayChangeRequest[]) => void = (crs) => {

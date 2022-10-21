@@ -21,10 +21,6 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     COMPLETE: WbsElementStatus.Complete
   }[status]);
 
-export const buildChangeDetail = (
-  thingChanged: string,
-  oldValue: string,
-  newValue: string
-): string => {
+export const buildChangeDetail = (thingChanged: string, oldValue: string, newValue: string): string => {
   return `Changed ${thingChanged} from "${oldValue}" to "${newValue}"`;
 };

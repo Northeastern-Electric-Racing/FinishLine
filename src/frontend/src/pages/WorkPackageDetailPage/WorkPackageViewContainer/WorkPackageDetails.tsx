@@ -16,10 +16,7 @@ interface WorkPackageDetailsProps {
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   const allColsStyle = 'mb-2';
   return (
-    <PageBlock
-      title={'Work Package Details'}
-      headerRight={<WbsStatus status={workPackage.status} />}
-    >
+    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Container fluid>
         <Row>
           <Col className={allColsStyle} md={5} lg={4} xl={3}>

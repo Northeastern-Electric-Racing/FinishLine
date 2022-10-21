@@ -45,16 +45,12 @@ describe.skip('review change request', () => {
   it('renders change request review modal', () => {
     renderComponent(true, route);
 
-    expect(
-      screen.getByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
   });
 
   it("doesn't render change request review modal when not shown", () => {
     renderComponent(false, route);
 
-    expect(
-      screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).not.toBeInTheDocument();
   });
 });
