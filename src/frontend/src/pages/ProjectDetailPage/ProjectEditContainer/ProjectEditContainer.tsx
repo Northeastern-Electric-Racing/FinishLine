@@ -45,7 +45,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const allUsers = useAllUsers();
   const { mutateAsync } = useEditSingleProject(proj.wbsNum);
 
-  const [crId, setCrId] = useState(query.get('crId') || -1);
+  const [crId, setCrId] = useState(query.get('crId') || '');
   const [name, setName] = useState(proj.name);
   const [summary, setSummary] = useState(proj.summary);
   const [budget, setBudget] = useState(proj.budget);
@@ -228,7 +228,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
               required
               value={crId}
               min={0}
-              onChange={(e) => setCrId(Number(e.target.value))}
+              onChange={(e) => setCrId(String(e.target.value))}
             />
           }
         />
