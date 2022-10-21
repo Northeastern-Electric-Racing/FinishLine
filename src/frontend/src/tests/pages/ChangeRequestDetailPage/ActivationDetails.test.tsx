@@ -34,17 +34,13 @@ describe('Change request details activation cr display element tests', () => {
   it('Renders project lead', () => {
     renderComponent(cr);
     expect(screen.getByText(`Project Lead`)).toBeInTheDocument();
-    expect(
-      screen.getByText(`${cr.projectLead.firstName} ${cr.projectLead.lastName}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${cr.projectLead.firstName} ${cr.projectLead.lastName}`)).toBeInTheDocument();
   });
 
   it('Renders project manager', () => {
     renderComponent(cr);
     expect(screen.getByText(`Project Manager`)).toBeInTheDocument();
-    expect(
-      screen.getByText(`${cr.projectManager.firstName} ${cr.projectManager.lastName}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${cr.projectManager.firstName} ${cr.projectManager.lastName}`)).toBeInTheDocument();
   });
 
   it('Renders start date', () => {

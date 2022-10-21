@@ -48,11 +48,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     </Dropdown.Item>
   );
   const stageGateBtn = (
-    <Dropdown.Item
-      as={Button}
-      onClick={() => setShowStageGateModal(true)}
-      disabled={!allowStageGate}
-    >
+    <Dropdown.Item as={Button} onClick={() => setShowStageGateModal(true)} disabled={!allowStageGate}>
       Stage Gate
     </Dropdown.Item>
   );

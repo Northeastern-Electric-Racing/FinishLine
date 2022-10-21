@@ -33,10 +33,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
     resolver: yupResolver(schema)
   });
   return (
-    <Form
-      id={'update-user-settings'}
-      onSubmit={handleSubmit(async (data: FormInput) => await onSubmit(data))}
-    >
+    <Form id={'update-user-settings'} onSubmit={handleSubmit(async (data: FormInput) => await onSubmit(data))}>
       <Row>
         <Col xs={4} sm={3} md={2} lg={2} xl={2}>
           <Form.Group controlId="updateUserSettings-defaultTheme">
@@ -53,9 +50,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
                 </option>
               ))}
             </Form.Control>
-            <Form.Control.Feedback type="invalid">
-              {formState.errors.defaultTheme?.message}
-            </Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">{formState.errors.defaultTheme?.message}</Form.Control.Feedback>
           </Form.Group>
         </Col>
 
@@ -63,9 +58,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           <Form.Group controlId="updateUserSettings-defaultTheme">
             <Form.Label>
               {'Slack Id '}
-              <a href="https://www.workast.com/help/article/how-to-find-a-slack-user-id/">
-                (How to find your Slack ID)
-              </a>
+              <a href="https://www.workast.com/help/article/how-to-find-a-slack-user-id/">(How to find your Slack ID)</a>
             </Form.Label>
             <Form.Control
               as="textarea"
@@ -75,9 +68,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
               placeholder="Enter Id Here"
               isInvalid={formState.errors.slackId?.message !== undefined}
             />
-            <Form.Control.Feedback type="invalid">
-              {formState.errors.slackId?.message}
-            </Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">{formState.errors.slackId?.message}</Form.Control.Feedback>
           </Form.Group>
         </Col>
       </Row>

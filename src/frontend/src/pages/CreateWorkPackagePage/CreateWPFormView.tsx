@@ -98,9 +98,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                     <Form.Control
                       id="duration"
                       name="duration"
-                      defaultValue={
-                        initialValues.duration === -1 ? undefined : initialValues.duration
-                      }
+                      defaultValue={initialValues.duration === -1 ? undefined : initialValues.duration}
                       aria-label={'duration'}
                       type="number"
                       min={0}
@@ -158,12 +156,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
               </Row>
               <Row>
                 <Col>
-                  <Button
-                    className={'mr-3'}
-                    variant="primary"
-                    type="submit"
-                    disabled={!allowSubmit}
-                  >
+                  <Button className={'mr-3'} variant="primary" type="submit" disabled={!allowSubmit}>
                     Create
                   </Button>
                   <Button variant="secondary" type="button" onClick={onCancel}>

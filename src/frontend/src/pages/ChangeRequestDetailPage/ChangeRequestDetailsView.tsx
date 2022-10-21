@@ -93,18 +93,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </Dropdown.Item>
       <Dropdown.Item
         as={Link}
-        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(
-          changeRequest.wbsNum
-        )}`}
+        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
         disabled={!isUserAllowedToImplement}
       >
         Create New Work Package
       </Dropdown.Item>
       <Dropdown.Item
         as={Link}
-        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${
-          changeRequest.crId
-        }&edit=${true}`}
+        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
         disabled={!isUserAllowedToImplement}
       >
         Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
@@ -124,10 +120,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
-      <PageBlock
-        title={'Change Request Details'}
-        headerRight={<b>{convertStatus(changeRequest)}</b>}
-      >
+      <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
         <Container fluid>
           <Row>
             <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
@@ -140,9 +133,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               <b>WBS #</b>
             </Col>
             <Col className={spacer}>
-              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)}
-              </Link>
+              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
             </Col>
           </Row>
           <Row>
@@ -167,9 +158,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && (
-        <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />
-      )}
+      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
     </Container>
   );
 };

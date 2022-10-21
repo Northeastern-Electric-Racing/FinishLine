@@ -17,19 +17,11 @@ jest.mock('../../../../hooks/change-requests.hooks');
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;
 
 const mockUseCreateStageGateCRHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseCreateStageGateCR.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseCreateStageGateCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 const renderComponent = () => {
-  return render(
-    <StageGateWorkPackageModalContainer
-      modalShow={true}
-      handleClose={() => null}
-      wbsNum={exampleWbs1}
-    />
-  );
+  return render(<StageGateWorkPackageModalContainer modalShow={true} handleClose={() => null} wbsNum={exampleWbs1} />);
 };
 
 describe('stage gate work package modal container test suite', () => {

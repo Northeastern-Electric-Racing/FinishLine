@@ -17,7 +17,4 @@ export const exampleUserSettingsDark: UserSettings = {
   slackId: 'lalalal'
 };
 
-export const exampleAllUserSettings: UserSettings[] = [
-  exampleUserSettingsLight,
-  exampleUserSettingsDark
-];
+export const exampleAllUserSettings: UserSettings[] = [exampleUserSettingsLight, exampleUserSettingsDark];

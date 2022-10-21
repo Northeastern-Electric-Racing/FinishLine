@@ -25,8 +25,7 @@ const dbSeedWorkPackage1: any = {
   },
   expectedActivities: [
     {
-      detail:
-        'Assess the bodywork captsone and determine what can be learned from their deliverables',
+      detail: 'Assess the bodywork captsone and determine what can be learned from their deliverables',
       dateAdded: new Date('11/15/20')
     },
     {
@@ -129,8 +128,4 @@ const dbSeedWorkPackage3: any = {
   ]
 };
 
-export const dbSeedAllWorkPackages: any[] = [
-  dbSeedWorkPackage1,
-  dbSeedWorkPackage2,
-  dbSeedWorkPackage3
-];
+export const dbSeedAllWorkPackages: any[] = [dbSeedWorkPackage1, dbSeedWorkPackage2, dbSeedWorkPackage3];

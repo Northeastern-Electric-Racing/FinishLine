@@ -67,21 +67,10 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     display: 'block'
   };
 
-  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (
-    scr: StandardChangeRequest
-  ) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
-      <Modal
-        show={modalShow}
-        onHide={onHide}
-        style={{ color: 'black' }}
-        dialogClassName={'modaltheme'}
-        centered
-      >
-        <Modal.Header
-          className={'font-weight-bold'}
-          closeButton
-        >{`Review Change Request #${cr.crId}`}</Modal.Header>
+      <Modal show={modalShow} onHide={onHide} style={{ color: 'black' }} dialogClassName={'modaltheme'} centered>
+        <Modal.Header className={'font-weight-bold'} closeButton>{`Review Change Request #${cr.crId}`}</Modal.Header>
         <Modal.Body>
           <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
             <Form.Label>Select Proposed Solution</Form.Label>
@@ -134,10 +123,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const renderModal: () => JSX.Element = () => {
     return (
       <Modal show={modalShow} onHide={onHide} centered>
-        <Modal.Header
-          className={'font-weight-bold'}
-          closeButton
-        >{`Review Change Request #${cr.crId}`}</Modal.Header>
+        <Modal.Header className={'font-weight-bold'} closeButton>{`Review Change Request #${cr.crId}`}</Modal.Header>
         <Modal.Body>
           <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
             <Form.Group controlId="formReviewNotes">
@@ -147,12 +133,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="success"
-            type="submit"
-            form="review-notes-form"
-            onClick={() => handleAcceptDeny(true)}
-          >
+          <Button variant="success" type="submit" form="review-notes-form" onClick={() => handleAcceptDeny(true)}>
             Accept
           </Button>
           <Button

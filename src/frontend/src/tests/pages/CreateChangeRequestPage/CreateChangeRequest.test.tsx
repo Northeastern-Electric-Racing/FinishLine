@@ -15,9 +15,7 @@ jest.mock('../../../hooks/change-requests.hooks');
 const mockedUseCreateStandardCR = useCreateStandardChangeRequest as jest.Mock<UseMutationResult>;
 
 const mockUseCreateStandardCRHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseCreateStandardCR.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseCreateStandardCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 jest.mock('../../../pages/CreateChangeRequestPage/CreateChangeRequestView', () => {
