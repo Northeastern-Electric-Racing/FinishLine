@@ -4,11 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import BootstrapTable, {
-  ColumnDescription,
-  RowEventHandlerProps,
-  SortOrder
-} from 'react-bootstrap-table-next';
+import BootstrapTable, { ColumnDescription, RowEventHandlerProps, SortOrder } from 'react-bootstrap-table-next';
 import { routes } from '../../utils/Routes';
 
 export interface DisplayChangeRequest {
@@ -29,9 +25,7 @@ interface ChangeRequestsTableProps {
 /**
  * Interactive table for displaying all change request data.
  */
-const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
-  changeRequests
-}: ChangeRequestsTableProps) => {
+const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({ changeRequests }: ChangeRequestsTableProps) => {
   const history = useHistory();
 
   // Configures display options for all data columns

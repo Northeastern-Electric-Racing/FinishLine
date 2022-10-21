@@ -5,14 +5,7 @@
 
 import { UseQueryResult } from 'react-query';
 import { Project, WbsElementStatus } from 'shared';
-import {
-  fireEvent,
-  render,
-  routerWrapperBuilder,
-  screen,
-  waitFor,
-  wbsRegex
-} from '../../test-support/test-utils';
+import { fireEvent, render, routerWrapperBuilder, screen, waitFor, wbsRegex } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import {
@@ -31,9 +24,7 @@ jest.mock('../../../hooks/projects.hooks');
 const mockedUseAllProjects = useAllProjects as jest.Mock<UseQueryResult<Project[]>>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: Project[], error?: Error) => {
-  mockedUseAllProjects.mockReturnValue(
-    mockUseQueryResult<Project[]>(isLoading, isError, data, error)
-  );
+  mockedUseAllProjects.mockReturnValue(mockUseQueryResult<Project[]>(isLoading, isError, data, error));
 };
 
 // Sets up the component under test with the desired values and renders it.
@@ -84,15 +75,9 @@ describe('projects table component', () => {
     await waitFor(() => screen.getByText(wbsPipe(exampleAllProjects[0].wbsNum)));
 
     expect(screen.getByText('5 weeks')).toBeInTheDocument();
-    expect(
-      screen.getAllByText(fullNamePipe(exampleAllProjects[1].projectLead))[0]
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText(fullNamePipe(exampleAllProjects[2].projectLead))[0]
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(fullNamePipe(exampleAllProjects[3].projectManager))
-    ).toBeInTheDocument();
+    expect(screen.getAllByText(fullNamePipe(exampleAllProjects[1].projectLead))[0]).toBeInTheDocument();
+    expect(screen.getAllByText(fullNamePipe(exampleAllProjects[2].projectLead))[0]).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllProjects[3].projectManager))).toBeInTheDocument();
     expect(screen.getByText(wbsPipe(exampleAllProjects[4].wbsNum))).toBeInTheDocument();
 
     expect(screen.getAllByText('Projects').length).toEqual(2);
@@ -113,9 +98,7 @@ describe('projects table component', () => {
 
     fireEvent.click(screen.getByText(column));
     const wbsNumsDesc: HTMLElement[] = await screen.findAllByText(wbsRegex);
-    expect(wbsNumsDesc.map((ele: HTMLElement) => ele.innerHTML)).toEqual(
-      expectedWbsOrder.reverse()
-    );
+    expect(wbsNumsDesc.map((ele: HTMLElement) => ele.innerHTML)).toEqual(expectedWbsOrder.reverse());
   });
 
   it('checking if project filtering with no filters works as expected', async () => {
@@ -133,15 +116,9 @@ describe('projects table component', () => {
     const answer_active = [exampleProject1, exampleProject3];
     const answer_inactive = [exampleProject2, exampleProject4];
     const answer_complete = [exampleProject5];
-    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Active, -1, -1)).toStrictEqual(
-      answer_active
-    );
-    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Inactive, -1, -1)).toStrictEqual(
-      answer_inactive
-    );
-    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Complete, -1, -1)).toStrictEqual(
-      answer_complete
-    );
+    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Active, -1, -1)).toStrictEqual(answer_active);
+    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Inactive, -1, -1)).toStrictEqual(answer_inactive);
+    expect(filterProjects(exampleAllProjects, -1, WbsElementStatus.Complete, -1, -1)).toStrictEqual(answer_complete);
   });
 
   it('checking if project filtering with project lead works as expected', async () => {

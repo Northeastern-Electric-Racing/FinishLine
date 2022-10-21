@@ -34,8 +34,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
 
   const handleConfirm = async ({ leftoverBudget, confirmDone }: FormInput) => {
     handleClose();
-    if (auth.user?.userId === undefined)
-      throw new Error('Cannot create stage gate change request without being logged in');
+    if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
     await mutateAsync({
       submitterId: auth.user?.userId,
       wbsNum,
@@ -50,14 +49,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return (
-    <StageGateWorkPackageModal
-      wbsNum={wbsNum}
-      modalShow={modalShow}
-      onHide={handleClose}
-      onSubmit={handleConfirm}
-    />
-  );
+  return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default StageGateWorkPackageModalContainer;

@@ -8,11 +8,7 @@ import { wbsPipe } from '../../../../utils/Pipes';
 import * as projectHooks from '../../../../hooks/projects.hooks';
 import { exampleProject1 as exPrj1 } from '../../../test-support/test-data/projects.stub';
 import * as userHooks from '../../../../hooks/users.hooks';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser
-} from '../../../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import ProjectEditContainer from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditContainer';
 import {
   mockLogUserInReturnValue,

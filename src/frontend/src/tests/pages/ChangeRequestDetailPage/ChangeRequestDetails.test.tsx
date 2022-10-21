@@ -16,13 +16,7 @@ import {
   exampleGuestUser,
   exampleMemberUser
 } from '../../test-support/test-data/users.stub';
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -30,19 +24,10 @@ import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeR
 
 jest.mock('../../../hooks/change-requests.hooks');
 
-const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<
-  UseQueryResult<ChangeRequest>
->;
+const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<UseQueryResult<ChangeRequest>>;
 
-const mockSingleCRHook = (
-  isLoading: boolean,
-  isError: boolean,
-  data?: ChangeRequest,
-  error?: Error
-) => {
-  mockedUseSingleChangeRequest.mockReturnValue(
-    mockUseQueryResult<ChangeRequest>(isLoading, isError, data, error)
-  );
+const mockSingleCRHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest, error?: Error) => {
+  mockedUseSingleChangeRequest.mockReturnValue(mockUseQueryResult<ChangeRequest>(isLoading, isError, data, error));
 };
 
 jest.mock('../../../hooks/auth.hooks');
@@ -85,12 +70,7 @@ describe.skip('change request details container', () => {
   });
 
   it('handles the error with message', () => {
-    mockSingleCRHook(
-      false,
-      true,
-      undefined,
-      new Error('404 could not find the requested change request')
-    );
+    mockSingleCRHook(false, true, undefined, new Error('404 could not find the requested change request'));
     mockAuthHook();
     renderComponent();
 

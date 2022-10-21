@@ -20,11 +20,7 @@ interface ProposedSolutionsListProps {
   crId: number;
 }
 
-const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
-  proposedSolutions,
-  crReviewed,
-  crId
-}) => {
+const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions, crReviewed, crId }) => {
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();

@@ -2,11 +2,7 @@ import request from 'supertest';
 import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
-import {
-  getChangeRequestReviewState,
-  getHighestProjectNumber,
-  projectTransformer
-} from '../src/utils/projects.utils';
+import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
 
@@ -15,9 +11,7 @@ app.use(express.json());
 app.use('/', projectRouter);
 
 jest.mock('../src/utils/projects.utils');
-const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<
-  Promise<boolean | null>
->;
+const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
 
 const mockProjectTransformer = projectTransformer as jest.Mock;

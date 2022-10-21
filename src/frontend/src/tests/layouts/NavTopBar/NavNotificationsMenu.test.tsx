@@ -3,13 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  routerWrapperBuilder
-} from '../../test-support/test-utils';
+import { render, screen, waitFor, fireEvent, routerWrapperBuilder } from '../../test-support/test-utils';
 import NavNotificationsMenu from '../../../layouts/NavTopBar/NavNotificationsMenu';
 
 /**

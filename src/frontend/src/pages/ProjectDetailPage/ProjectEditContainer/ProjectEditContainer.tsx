@@ -63,15 +63,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const updateBom = (url: string | undefined) => setBom(url);
   const updateGDrive = (url: string | undefined) => setGDrive(url);
 
-  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.goals)
-  );
-  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.features)
-  );
-  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.otherConstraints)
-  );
+  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.goals));
+  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.features));
+  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.otherConstraints));
   const [rules, setRules] = useState(proj.rules);
 
   const notEmptyString = (s: string) => s !== '';
@@ -79,8 +73,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const goalsUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = goals.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setGoals(clone);
     },
     remove: (idx) => {
@@ -98,8 +91,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const featUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = features.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setFeatures(clone);
     },
     remove: (idx) => {
@@ -117,8 +109,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const ocUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = otherConstraints.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setOther(clone);
     },
     remove: (idx) => {
@@ -271,12 +262,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           />
         </PageBlock>
         <PageBlock title={'Rules'}>
-          <EditableTextInputList
-            items={rules}
-            add={rulesUtil.add}
-            remove={rulesUtil.remove}
-            update={rulesUtil.update}
-          />
+          <EditableTextInputList items={rules} add={rulesUtil.add} remove={rulesUtil.remove} update={rulesUtil.update} />
         </PageBlock>
         <ChangesList changes={proj.changes} />
         <PageBlock title={'Work Packages'}>

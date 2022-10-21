@@ -14,11 +14,7 @@ const renderSlackId = (settings: UserSettings) => {
   return (
     <div>
       <b>Slack ID: </b>
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
-      >
+      <a target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
         {settings.slackId}
       </a>
     </div>

@@ -3,13 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  fireEvent,
-  act
-} from '../../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../../test-support/test-utils';
 import { Auth } from '../../../../utils/Types';
 import { useAuth } from '../../../../hooks/auth.hooks';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';

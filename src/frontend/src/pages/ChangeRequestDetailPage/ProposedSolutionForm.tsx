@@ -87,9 +87,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 isInvalid={formState.errors.description?.message !== undefined}
                 readOnly={readOnly}
               />
-              <Form.Control.Feedback type="invalid">
-                {formState.errors.description?.message}
-              </Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{formState.errors.description?.message}</Form.Control.Feedback>
             </Form.Group>
           </Col>
           <Col lg={true}>
@@ -107,9 +105,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 isInvalid={formState.errors.scopeImpact?.message !== undefined}
                 readOnly={readOnly}
               />
-              <Form.Control.Feedback type="invalid">
-                {formState.errors.scopeImpact?.message}
-              </Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{formState.errors.scopeImpact?.message}</Form.Control.Feedback>
             </Form.Group>
           </Col>
         </Row>
@@ -133,9 +129,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                       isInvalid={formState.errors.budgetImpact?.message !== undefined}
                       readOnly={readOnly}
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {formState.errors.budgetImpact?.message}
-                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{formState.errors.budgetImpact?.message}</Form.Control.Feedback>
                   </InputGroup>
                 </Form.Group>
               </Col>
@@ -156,9 +150,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                     <InputGroup.Append>
                       <InputGroup.Text>weeks</InputGroup.Text>
                     </InputGroup.Append>
-                    <Form.Control.Feedback type="invalid">
-                      {formState.errors.timelineImpact?.message}
-                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{formState.errors.timelineImpact?.message}</Form.Control.Feedback>
                   </InputGroup>
                 </Form.Group>
               </Col>
