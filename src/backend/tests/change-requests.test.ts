@@ -184,8 +184,27 @@ describe('Change-Requests', () => {
     expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
+    expect(prisma.work_Package.update).toHaveBeenCalledWith({
+      data: {
+        duration: 20,
+        project: { update: { budget: 1003 } },
+        wbsElement: {
+          update: {
+            changes: {
+              createMany: {
+                data: [
+                  { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 1 },
+                  { changeRequestId: 2, detail: 'Changed Duration from "10" to "20"', implementerId: 1 }
+                ]
+              }
+            }
+          }
+        }
+      },
+      where: { workPackageId: 1 }
     });
-
+    });
+    
     test('proposedSolutionSuccessfullyImplementedForProject', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false });
@@ -220,5 +239,16 @@ describe('Change-Requests', () => {
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledTimes(1);
+      expect(prisma.project.update).toHaveBeenCalledWith({
+        data: {
+          budget: 1003,
+          wbsElement: {
+            update: {
+              changes: { create: { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 1 } }
+            }
+          }
+        },
+        where: { projectId: 2 }
+      });
     });
 });
