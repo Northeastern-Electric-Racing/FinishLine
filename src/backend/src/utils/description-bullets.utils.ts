@@ -5,9 +5,7 @@ export const descBulletArgs = Prisma.validator<Prisma.Description_BulletArgs>()(
   include: { userChecked: true }
 });
 
-export const descBulletTransformer = (
-  descBullet: Prisma.Description_BulletGetPayload<typeof descBulletArgs>
-) => {
+export const descBulletTransformer = (descBullet: Prisma.Description_BulletGetPayload<typeof descBulletArgs>) => {
   return {
     id: descBullet.descriptionId,
     detail: descBullet.detail,

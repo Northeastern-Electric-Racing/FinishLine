@@ -1,14 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useHistory } from 'react-router-dom';
-import BootstrapTable, {
-  ColumnDescription,
-  RowEventHandlerProps,
-  SortOrder
-} from 'react-bootstrap-table-next';
+import BootstrapTable, { ColumnDescription, RowEventHandlerProps, SortOrder } from 'react-bootstrap-table-next';
 import { routes } from '../../utils/Routes';
 
 export interface DisplayChangeRequest {
@@ -29,9 +25,7 @@ interface ChangeRequestsTableProps {
 /**
  * Interactive table for displaying all change request data.
  */
-const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
-  changeRequests
-}: ChangeRequestsTableProps) => {
+const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({ changeRequests }: ChangeRequestsTableProps) => {
   const history = useHistory();
 
   // Configures display options for all data columns

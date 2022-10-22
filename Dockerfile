@@ -9,7 +9,6 @@ COPY ./src/shared/package.json src/shared/
 RUN yarn install
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
-RUN yarn prisma:migrate:prod
 RUN yarn prisma:generate
 RUN yarn build:backend
 RUN yarn build:shared

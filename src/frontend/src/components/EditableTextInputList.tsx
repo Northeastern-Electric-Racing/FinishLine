@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,6 +16,7 @@ interface EditableTextInputListProps {
   update: (idx: number, val: any) => any;
   disabledItems?: boolean[];
 }
+
 
 const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   items,

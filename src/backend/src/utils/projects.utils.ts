@@ -5,9 +5,11 @@ import {
   WbsElementStatus,
   DescriptionBullet,
   calculateEndDate,
+  calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateDuration
+  calculateDuration,
+  calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
@@ -117,6 +119,8 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
+    endDate: calculateProjectEndDate(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
