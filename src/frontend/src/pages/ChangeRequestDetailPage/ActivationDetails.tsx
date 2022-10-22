@@ -16,17 +16,29 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
     <PageBlock title={'Activation Change Request Details'}>
       <Grid container>
-        <Grid item xs={12} md={4}>
-          <b>Project Lead: </b> {fullNamePipe(cr.projectLead)}
+        <Grid item xs={6} md={2}>
+          <b>Project Lead </b>
         </Grid>
-        <Grid item xs={12} md={8}>
-          <b>Start Date: </b> {datePipe(cr.startDate)}
+        <Grid item xs={6} md={2}>
+          {fullNamePipe(cr.projectLead)}
         </Grid>
-        <Grid item xs={12} md={4}>
-          <b>Project Manager: </b> {fullNamePipe(cr.projectManager)}
+        <Grid item xs={6} md={2}>
+          <b>Start Date </b>
         </Grid>
-        <Grid item xs={12} md={8}>
-          <b>Confirm WP Details: </b> {booleanPipe(cr.confirmDetails)}
+        <Grid item xs={6} md={6}>
+          {datePipe(cr.startDate)}
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <b>Project Manager </b>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          {fullNamePipe(cr.projectManager)}
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <b>Confirm WP Details </b>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          {booleanPipe(cr.confirmDetails)}
         </Grid>
       </Grid>
     </PageBlock>

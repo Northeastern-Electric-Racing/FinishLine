@@ -25,7 +25,11 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
           <ListItem key={idx}>
             <Tooltip
               id="tooltip"
-              title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}
+              title={
+                <Typography>
+                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
+                </Typography>
+              }
               placement="right"
             >
               <Typography>
