@@ -26,14 +26,18 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   }
 });
 
-export const calculateWorkPackageProgress = (bullets: Description_Bullet[]) =>
-  Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
+export const calculateWorkPackageProgress = (
+  deliverables: Description_Bullet[],
+  expectedActivities: Description_Bullet[]
+) => {
+  const bullets = deliverables.concat(expectedActivities);
+  return Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
+};
 
 export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
-  const bullets = wpInput.deliverables.concat(wpInput.expectedActivities);
-  const progress = calculateWorkPackageProgress(bullets);
+  const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);
   return {
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
