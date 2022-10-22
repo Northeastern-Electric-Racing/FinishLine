@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -15,9 +15,7 @@ jest.mock('../../../hooks/change-requests.hooks');
 const mockedUseCreateStandardCR = useCreateStandardChangeRequest as jest.Mock<UseMutationResult>;
 
 const mockUseCreateStandardCRHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseCreateStandardCR.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseCreateStandardCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 jest.mock('../../../pages/CreateChangeRequestPage/CreateChangeRequestView', () => {

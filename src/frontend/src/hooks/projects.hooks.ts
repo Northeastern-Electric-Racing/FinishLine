@@ -1,16 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Project, WbsNumber } from 'shared';
-import {
-  editSingleProject,
-  createSingleProject,
-  getAllProjects,
-  getSingleProject
-} from '../apis/Projects.api';
+import { editSingleProject, createSingleProject, getAllProjects, getSingleProject } from '../apis/Projects.api';
 
 /**
  * Custom React Hook to supply all projects.
@@ -39,13 +34,10 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  *
  */
 export const useCreateSingleProject = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['projects', 'create'],
-    async (projectPayload: any) => {
-      const { data } = await createSingleProject(projectPayload);
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['projects', 'create'], async (projectPayload: any) => {
+    const { data } = await createSingleProject(projectPayload);
+    return data;
+  });
 };
 
 /**

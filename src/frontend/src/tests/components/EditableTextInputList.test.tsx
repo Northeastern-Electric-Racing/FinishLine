@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -15,9 +15,7 @@ const mockRemove = jest.fn();
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = (items: any) => {
-  return render(
-    <EditableTextInputList items={items} add={mockAdd} remove={mockRemove} update={() => null} />
-  );
+  return render(<EditableTextInputList items={items} add={mockAdd} remove={mockRemove} update={() => null} />);
 };
 
 describe('editable text input list test suite', () => {

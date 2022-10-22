@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,11 +14,7 @@ const renderSlackId = (settings: UserSettings) => {
   return (
     <div>
       <b>Slack ID: </b>
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
-      >
+      <a target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
         {settings.slackId}
       </a>
     </div>

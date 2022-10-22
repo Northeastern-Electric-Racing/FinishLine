@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -12,12 +12,7 @@ import {
   exampleProjectLeadUser,
   exampleProjectManagerUser
 } from './users.stub';
-import {
-  exampleWbsProject1,
-  exampleWbsProject2,
-  exampleWbsWorkPackage1,
-  exampleWbsWorkPackage2
-} from './wbs-numbers.stub';
+import { exampleWbsProject1, exampleWbsProject2, exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from './wbs-numbers.stub';
 
 export const exampleWorkPackage1: WorkPackage = {
   id: 1,
@@ -38,8 +33,7 @@ export const exampleWorkPackage1: WorkPackage = {
   expectedActivities: [
     {
       id: 1,
-      detail:
-        'Assess the bodywork captsone and determine what can be learned from their deliverables',
+      detail: 'Assess the bodywork captsone and determine what can be learned from their deliverables',
       dateAdded: new Date('11/15/20')
     },
     {
@@ -193,8 +187,4 @@ export const exampleWorkPackage3: WorkPackage = {
   ]
 };
 
-export const exampleAllWorkPackages: WorkPackage[] = [
-  exampleWorkPackage1,
-  exampleWorkPackage2,
-  exampleWorkPackage3
-];
+export const exampleAllWorkPackages: WorkPackage[] = [exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3];

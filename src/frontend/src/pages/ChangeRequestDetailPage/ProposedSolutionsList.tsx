@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -20,11 +20,7 @@ interface ProposedSolutionsListProps {
   crId: number;
 }
 
-const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
-  proposedSolutions,
-  crReviewed,
-  crId
-}) => {
+const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions, crReviewed, crId }) => {
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
