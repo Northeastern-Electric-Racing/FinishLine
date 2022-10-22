@@ -46,7 +46,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
-  if (!foundCR) return res.status(404).json({ message: `change request with id #${crId} not found` });
+  if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
 
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
@@ -60,10 +60,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
-    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId)
-      return res.status(400).json({
+    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId) {
+      return res.status(404).json({
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
+    }
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
@@ -71,8 +72,85 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         approved: true
       }
     });
-  }
+    const wbs = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsElementId: foundCR.wbsElementId
+      },
+      include: {
+        workPackage: true,
+        project: true
+      }
+    });
+    if (!wbs) {
+      return res.status(404).json({ message: `WBS element with id #${foundCR.wbsElementId} not found` });
+    }
+    const { workPackage, project } = wbs;
 
+    if (!workPackage && project) {
+      const newBudget = project.budget + foundPs.budgetImpact;
+      const change = {
+        changeRequestId: crId,
+        implementerId: reviewerId,
+        detail: buildChangeDetail('Budget', String(project.budget), String(newBudget))
+      };
+      await prisma.project.update({
+        where: { projectId: wbs.project?.projectId },
+        data: {
+          budget: newBudget,
+          wbsElement: {
+            update: {
+              changes: {
+                create: change
+              }
+            }
+          }
+        }
+      });
+    } else if (workPackage) {
+      const wpProj = await prisma.project.findUnique({
+        where: { projectId: workPackage.projectId }
+      });
+      if (!wpProj) {
+        return res.status(404).json({ message: 'Work package project not found' });
+      }
+      const newBudget = wpProj.budget + foundPs.budgetImpact;
+      const updatedDuration = workPackage.duration + foundPs.timelineImpact;
+
+      const changes = [
+        {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
+        },
+        {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: buildChangeDetail('Duration', String(workPackage.duration), String(updatedDuration))
+        }
+      ];
+      await prisma.work_Package.update({
+        where: { workPackageId: wbs.workPackageNumber },
+        data: {
+          project: {
+            update: {
+              budget: newBudget
+            }
+          },
+          duration: updatedDuration,
+          wbsElement: {
+            update: {
+              changes: {
+                createMany: {
+                  data: changes
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    return res.status(200).json({ message: `Change request #${crId} successfully implemented` });
+  }
   // update change request
   const updated = await prisma.change_Request.update({
     where: { crId },
