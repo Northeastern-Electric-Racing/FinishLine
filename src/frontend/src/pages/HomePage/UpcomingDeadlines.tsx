@@ -13,7 +13,6 @@ import InputLabel from '@mui/material/InputLabel';
 import CardContent from '@mui/material/CardContent';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Container } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -22,6 +21,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
+import { Grid } from '@mui/material';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -44,7 +44,7 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
-            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content' }}>
+            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"
@@ -100,7 +100,7 @@ const UpcomingDeadlines: React.FC = () => {
         </FormControl>
       }
     >
-      <Container fluid>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Container>
+      <Grid container>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Grid>
     </PageBlock>
   );
 };
