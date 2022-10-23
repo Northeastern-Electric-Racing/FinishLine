@@ -94,7 +94,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         detail: buildChangeDetail('Budget', String(project.budget), String(newBudget))
       };
       await prisma.project.update({
-        where: { projectId: wbs.project?.projectId },
+        where: { projectId: project.projectId },
         data: {
           budget: newBudget,
           wbsElement: {
@@ -128,28 +128,35 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
           detail: buildChangeDetail('Duration', String(workPackage.duration), String(updatedDuration))
         }
       ];
-      await prisma.work_Package.update({
-        where: { workPackageId: wbs.workPackageNumber },
+      await prisma.project.update({
+        where: { projectId: workPackage.projectId },
         data: {
-          project: {
+          budget: newBudget,
+          workPackages: {
             update: {
-              budget: newBudget
+              where: { workPackageId: workPackage.workPackageId },
+              data: {
+                duration: updatedDuration,
+                wbsElement: {
+                  update: {
+                    changes: {
+                      create: changes[1]
+                    }
+                  }
+                }
+              }
             }
           },
-          duration: updatedDuration,
           wbsElement: {
             update: {
               changes: {
-                createMany: {
-                  data: changes
-                }
+                create: changes[0]
               }
             }
           }
         }
       });
     }
-    return res.status(200).json({ message: `Change request #${crId} successfully implemented` });
   }
   // update change request
   const updated = await prisma.change_Request.update({

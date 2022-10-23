@@ -145,65 +145,57 @@ describe('Change-Requests', () => {
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: false });
     jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValueOnce(redesignWhipScopeCR);
     jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
-    const updatedSolution = { ...solutionToRedesignWhip, accepted: true };
+    const updatedSolution = {...solutionToRedesignWhip, accepted: true };
     jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
 
-    const myProject = {... someProject.project, googleDriveFolderLink: 'https://drive.google.com/drive/folders/1', slideDeckLink: 'https://docs.google.com/presentation/d/1', bomLink: 'https://docs.google.com/spreadsheets/d/1', taskListLink: 'https://docs.google.com/spreadsheets/d/1', teamId: "1"};
+    const myProject = {...someProject.project, googleDriveFolderLink: 'https://drive.google.com/drive/folders/1', slideDeckLink: 'https://docs.google.com/presentation/d/1', bomLink: 'https://docs.google.com/spreadsheets/d/1', taskListLink: 'https://docs.google.com/spreadsheets/d/1', teamId: "1"};
 
     jest.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(myProject);
-
-    const updatedProject = { ...someProject, budget: myProject.budget + solutionToRedesignWhip.budgetImpact};
-    const changes = [
-      {
-        changeRequestId: redesignWhip.crId,
-        implementerId: superman.userId,
-        detail: buildChangeDetail('Budget', String(myProject.budget), String(solutionToRedesignWhip.budgetImpact))
-      },
-      {
-        changeRequestId: redesignWhip.crId,
-        implementerId: superman.userId,
-        detail: buildChangeDetail('Duration', String(whipWorkPackage.duration), String(solutionToRedesignWhip.timelineImpact))
-      }
-    ];
-    const updatedWBSElement = {...redesignWhipWBSElement, changes: [changes]};
-    const updatedWorkPackage = { ...whipWorkPackage, project: updatedProject, duration: whipWorkPackage.duration + solutionToRedesignWhip.timelineImpact, wbsElement: updatedWBSElement }; 
-    jest.spyOn(prisma.work_Package, 'update').mockResolvedValueOnce(updatedWorkPackage);
+    jest.spyOn(prisma.work_Package, 'update').mockResolvedValueOnce(whipWorkPackage);
+    jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(myProject);
     jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...redesignWhip, accepted: true });
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
     const response = await request(app)
       .post('/review')
       .send({ ...redesignWhip, psId: '1' });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
-      message: `Change request #${redesignWhip.crId} successfully implemented`
+      message: `Change request #${redesignWhip.crId} successfully reviewed.`
     });
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(2);
     expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
-    expect(prisma.work_Package.update).toHaveBeenCalledWith({
+    expect(prisma.project.update).toHaveBeenCalledTimes(1);
+    expect(prisma.project.update).toHaveBeenCalledWith({
       data: {
-        duration: 20,
-        project: { update: { budget: 1003 } },
+        budget: 1003,
         wbsElement: {
           update: {
-            changes: {
-              createMany: {
-                data: [
-                  { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 1 },
-                  { changeRequestId: 2, detail: 'Changed Duration from "10" to "20"', implementerId: 1 }
-                ]
+            changes: { create: { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 1 } }
+          }
+        },
+        workPackages: {
+          update: {
+            data: {
+              duration: 20,
+              wbsElement: {
+                update: {
+                  changes: { create: { changeRequestId: 2, detail: 'Changed Duration from "10" to "20"', implementerId: 1 } }
+                }
               }
-            }
+            },
+            where: { workPackageId: 1 }
           }
         }
       },
-      where: { workPackageId: 1 }
+      where: { projectId: 1 }
     });
-    });
+    expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+  });
     
     test('proposedSolutionSuccessfullyImplementedForProject', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
@@ -216,28 +208,22 @@ describe('Change-Requests', () => {
 
       const myWBSElement = {... redesignWhipWBSElement, workPackage: null, project: myProject};
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(myWBSElement);
-      const change = {
-        changeRequestId: redesignWhip.crId,
-        implementerId: superman.userId,
-        detail: buildChangeDetail('Budget', String(myProject.budget), String(solutionToRedesignWhip.budgetImpact))
-      };
-      const updatedWBSElement = {...myWBSElement, changes: change};
-      const updatedProject = {...myProject, budget: myProject.budget + solutionToRedesignWhip.budgetImpact, wbsElement: updatedWBSElement};
+      jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(myProject);
+      jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...redesignWhip, accepted: true });
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
 
-      jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(updatedProject);
-      
       const response = await request(app)
         .post('/review')
         .send({ ...redesignWhip, psId: '1' });
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
-        message: `Change request #${redesignWhip.crId} successfully implemented`
+        message: `Change request #${redesignWhip.crId} successfully reviewed.`
       });
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(2);
       expect(prisma.project.update).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledWith({
         data: {
@@ -250,5 +236,7 @@ describe('Change-Requests', () => {
         },
         where: { projectId: 2 }
       });
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+
     });
 });
