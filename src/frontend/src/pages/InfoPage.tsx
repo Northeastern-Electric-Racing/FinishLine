@@ -5,6 +5,7 @@
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { faScroll, faCode, faCommentAlt, faBolt, faCog, faDollarSign, faSearch } from '@fortawesome/free-solid-svg-icons';
 import ExternalLink from '../components/ExternalLink';
 import PageTitle from '../layouts/PageTitle/PageTitle';
@@ -30,7 +31,9 @@ const InfoPage: React.FC = () => {
       </PageBlock>
       <PageBlock title="Support">
         <Box>
-          Any and all questions, comments, suggestions, bugs, or other issues can be directed to the resources below:
+          <Typography>
+            Any and all questions, comments, suggestions, bugs, or other issues can be directed to the resources below:
+          </Typography>
         </Box>
         <Grid container spacing={2}>
           <Grid item sm={5} md={4} lg={3}>
@@ -50,10 +53,11 @@ const InfoPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <PageBlock title="Calendars">
-        <Grid container spacing={1}>
+        <Grid container rowSpacing={2} columnSpacing={1}>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faScroll} className="mx-2" /> Club-Wide Meetings & Events
+              <FontAwesomeIcon icon={faScroll} className="mx-2" />{' '}
+              <Typography display="inline">Club-Wide Meetings & Events</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -70,7 +74,8 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faBolt} className="mx-2" /> Electrical Meetings
+              <FontAwesomeIcon icon={faBolt} className="mx-2" />{' '}
+              <Typography display="inline">Electrical Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -87,7 +92,7 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={6}>
             <Box>
-              <FontAwesomeIcon icon={faCog} className="mx-2" /> Mechanical Meetings
+              <FontAwesomeIcon icon={faCog} className="mx-2" /> <Typography display="inline">Mechanical Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -104,7 +109,8 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faDollarSign} className="mx-2" /> Business Meetings
+              <FontAwesomeIcon icon={faDollarSign} className="mx-2" />{' '}
+              <Typography display="inline">Business Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -121,7 +127,7 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faCode} className="mx-2" /> Software Meetings
+              <FontAwesomeIcon icon={faCode} className="mx-2" /> <Typography display="inline">Software Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -138,7 +144,8 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={6}>
             <Box>
-              <FontAwesomeIcon icon={faSearch} className="mx-2" /> Engineering Reviews
+              <FontAwesomeIcon icon={faSearch} className="mx-2" />{' '}
+              <Typography display="inline">Engineering Reviews</Typography>
             </Box>
             <Box>
               <ExternalLink
