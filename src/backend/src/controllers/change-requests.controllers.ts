@@ -99,11 +99,8 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `wbs element with id #${updated.wbsElementId} not found` });
   }
 
-  const progress: number | undefined = wbsElement.workPackage?.progress;
-
   if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
     const shouldChangeStatus = wbsElement.status !== WBS_Element_Status.COMPLETE;
-    const shouldChangeProgress = progress !== 100;
 
     const changesList = [];
     if (shouldChangeStatus) {
@@ -111,14 +108,6 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         changeRequestId: crId,
         implementerId: reviewerId,
         detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.COMPLETE)
-      });
-    }
-
-    if (shouldChangeProgress) {
-      changesList.push({
-        changeRequestId: crId,
-        implementerId: reviewerId,
-        detail: buildChangeDetail('progress', progress?.toString() || 'null', '100')
       });
     }
 
@@ -134,8 +123,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
               }
             }
           }
-        },
-        progress: 100
+        }
       }
     });
   }

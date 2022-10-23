@@ -47,31 +47,33 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const [startDate, setStartDate] = useState<Date>(workPackage.startDate);
   const [duration, setDuration] = useState<number>(workPackage.duration);
   const [deps, setDeps] = useState<WbsNumber[]>(workPackage.dependencies);
-  const [ea, setEa] = useState<{ id: number; detail: string }[]>(
+  const [ea, setEa] = useState<{ id: number; detail: string; isResolved: boolean }[]>(
     workPackage.expectedActivities
       .filter((ea) => ea.dateDeleted === undefined)
       .map((ea) => ({
         id: ea.id,
-        detail: ea.detail
+        detail: ea.detail,
+        isResolved: !!ea.userChecked
       }))
   );
-  const [dels, setDels] = useState<{ id: number; detail: string }[]>(
+  const [dels, setDels] = useState<{ id: number; detail: string; isResolved: boolean }[]>(
     workPackage.deliverables
       .filter((del) => del.dateDeleted === undefined)
       .map((d) => ({
         id: d.id,
-        detail: d.detail
+        detail: d.detail,
+        isResolved: !!d.userChecked
       }))
   );
   const [status, setStatus] = useState<WbsElementStatus>(workPackage.status);
-  const [progress, setProgress] = useState<number>(workPackage.progress);
 
   const expectedActivitiesUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = ea.slice();
       clone.push({
         id: -1,
-        detail: val
+        detail: val,
+        isResolved: false
       });
       setEa(clone);
     },
@@ -92,7 +94,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       const clone = dels.slice();
       clone.push({
         id: -1,
-        detail: val
+        detail: val,
+        isResolved: false
       });
       setDels(clone);
     },
@@ -118,8 +121,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     setDeps,
     setEa,
     setDels,
-    setStatus,
-    setProgress
+    setStatus
   };
 
   const transformDate = (date: Date) => {
@@ -153,8 +155,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       dependencies: deps.map((dep) => transformWbsNum(dep)),
       expectedActivities: ea,
       deliverables: dels,
-      wbsElementStatus: status,
-      progress
+      wbsElementStatus: status
     };
 
     console.log(payload);
@@ -204,6 +205,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             add={expectedActivitiesUtil.add}
             remove={expectedActivitiesUtil.remove}
             update={expectedActivitiesUtil.update}
+            disabledItems={ea.map((ea) => ea.isResolved)}
           />
         </PageBlock>
         <PageBlock title={'Deliverables'}>
@@ -212,6 +214,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             add={deliverablesUtil.add}
             remove={deliverablesUtil.remove}
             update={deliverablesUtil.update}
+            disabledItems={dels.map((d) => d.isResolved)}
           />
         </PageBlock>
         <EditModeOptions exitEditMode={exitEditMode} />

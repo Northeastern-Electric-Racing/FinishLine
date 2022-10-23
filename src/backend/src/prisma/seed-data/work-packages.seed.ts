@@ -20,7 +20,6 @@ const dbSeedWorkPackage1: any = {
   workPackageFields: {
     orderInProject: 1,
     startDate: new Date('01/01/21'),
-    progress: 25,
     duration: 3
   },
   expectedActivities: [
@@ -57,7 +56,6 @@ const dbSeedWorkPackage2: any = {
   workPackageFields: {
     orderInProject: 2,
     startDate: new Date('01/01/21'),
-    progress: 0,
     duration: 5
   },
   expectedActivities: [
@@ -99,7 +97,6 @@ const dbSeedWorkPackage3: any = {
   workPackageFields: {
     orderInProject: 3,
     startDate: new Date('01/01/21'),
-    progress: 100,
     duration: 2
   },
   expectedActivities: [
