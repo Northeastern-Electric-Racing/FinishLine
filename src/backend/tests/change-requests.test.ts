@@ -12,7 +12,6 @@ import {
   whipWorkPackage
 } from './test-data/change-requests.test-data';
 import { someProject } from './test-data/projects.test-data';
-import { buildChangeDetail } from '../src/utils/utils';
 
 const app = express();
 app.use(express.json());
@@ -204,9 +203,9 @@ describe('Change-Requests', () => {
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
       const updatedSolution = { ...solutionToRedesignWhip, accepted: true };
       jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
-      const myProject = {... someProject.project, googleDriveFolderLink: 'https://drive.google.com/drive/folders/1', slideDeckLink: 'https://docs.google.com/presentation/d/1', bomLink: 'https://docs.google.com/spreadsheets/d/1', taskListLink: 'https://docs.google.com/spreadsheets/d/1', teamId: "1"};
+      const myProject = {...someProject.project, googleDriveFolderLink: 'https://drive.google.com/drive/folders/1', slideDeckLink: 'https://docs.google.com/presentation/d/1', bomLink: 'https://docs.google.com/spreadsheets/d/1', taskListLink: 'https://docs.google.com/spreadsheets/d/1', teamId: "1"};
 
-      const myWBSElement = {... redesignWhipWBSElement, workPackage: null, project: myProject};
+      const myWBSElement = {...redesignWhipWBSElement, workPackage: null, project: myProject};
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(myWBSElement);
       jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(myProject);
       jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...redesignWhip, accepted: true });
