@@ -143,7 +143,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <ArrowForwardIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
         </OverlayTrigger>
       )
@@ -159,7 +159,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <DeleteIcon sx={{ fontSize: 18 }} style={{ marginTop: '2px' }} />
+          <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
       </OverlayTrigger>
     );
