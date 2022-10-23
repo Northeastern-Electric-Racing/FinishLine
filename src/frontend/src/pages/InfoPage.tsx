@@ -56,7 +56,7 @@ const InfoPage: React.FC = () => {
         <Grid container rowSpacing={2} columnSpacing={1}>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faScroll} className="mx-2" />{' '}
+              <FontAwesomeIcon icon={faScroll} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
               <Typography display="inline">Club-Wide Meetings & Events</Typography>
             </Box>
             <Box>
@@ -74,7 +74,7 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faBolt} className="mx-2" />{' '}
+              <FontAwesomeIcon icon={faBolt} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
               <Typography display="inline">Electrical Meetings</Typography>
             </Box>
             <Box>
@@ -92,7 +92,8 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={6}>
             <Box>
-              <FontAwesomeIcon icon={faCog} className="mx-2" /> <Typography display="inline">Mechanical Meetings</Typography>
+              <FontAwesomeIcon icon={faCog} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
+              <Typography display="inline">Mechanical Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -109,7 +110,7 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faDollarSign} className="mx-2" />{' '}
+              <FontAwesomeIcon icon={faDollarSign} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
               <Typography display="inline">Business Meetings</Typography>
             </Box>
             <Box>
@@ -127,7 +128,8 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid item md={4} lg={3}>
             <Box>
-              <FontAwesomeIcon icon={faCode} className="mx-2" /> <Typography display="inline">Software Meetings</Typography>
+              <FontAwesomeIcon icon={faCode} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
+              <Typography display="inline">Software Meetings</Typography>
             </Box>
             <Box>
               <ExternalLink
@@ -144,7 +146,7 @@ const InfoPage: React.FC = () => {
           </Grid>
           <Grid md={4} lg={6}>
             <Box>
-              <FontAwesomeIcon icon={faSearch} className="mx-2" />{' '}
+              <FontAwesomeIcon icon={faSearch} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
               <Typography display="inline">Engineering Reviews</Typography>
             </Box>
             <Box>
