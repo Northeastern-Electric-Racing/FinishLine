@@ -3,53 +3,76 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Col, Container, Row } from 'react-bootstrap';
 import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/Pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
+import { Grid, Typography } from '@mui/material';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
-  const allColsStyle = 'mb-2';
   return (
-    <PageBlock
-      title={'Work Package Details'}
-      headerRight={<WbsStatus status={workPackage.status} />}
-    >
-      <Container fluid>
-        <Row>
-          <Col className={allColsStyle} md={5} lg={4} xl={3}>
-            <b>Project Lead:</b> {fullNamePipe(workPackage.projectLead)}
-          </Col>
-          <Col className={allColsStyle} md={6} lg={4} xl={3}>
-            <b>Project Manager:</b> {fullNamePipe(workPackage.projectManager)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={2} xl={2}>
-            <b>Duration:</b> {weeksPipe(workPackage.duration)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={2}>
-            <b>Start Date:</b> {datePipe(workPackage.startDate)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
-            <b>End Date:</b> {datePipe(workPackage.endDate)}
-          </Col>
-        </Row>
-        <Row>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={3}>
-            <b>Progress:</b> {percentPipe(workPackage.progress)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={3}>
-            <b>Expected Progress:</b> {percentPipe(workPackage.expectedProgress)}
-          </Col>
-          <Col className={allColsStyle} sm={5} md={4} lg={4} xl={3}>
-            <b>Timeline Status:</b> {workPackage.timelineStatus}
-          </Col>
-        </Row>
-      </Container>
+    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
+      <Grid container spacing={1}>
+        <Grid item xs={1}>
+          <Typography>Project Lead: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {fullNamePipe(workPackage.projectLead)}
+        </Grid>
+
+        <Grid item xs={2}>
+          <Typography>Project Manager: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {fullNamePipe(workPackage.projectManager)}
+        </Grid>
+
+        <Grid item xs={1}>
+          <Typography>Duration: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {weeksPipe(workPackage.duration)}
+        </Grid>
+
+        <Grid item xs={1}>
+          <Typography>Start Date: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {datePipe(workPackage.startDate)}
+        </Grid>
+
+        <Grid item xs={1}>
+          <Typography>End Date: </Typography>
+        </Grid>
+        <Grid item xs={2}>
+          {datePipe(workPackage.endDate)}
+        </Grid>
+
+        <Grid item xs={1}>
+          <Typography>Progress: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {percentPipe(workPackage.progress)}
+        </Grid>
+
+        <Grid item xs={2}>
+          <Typography>Expected Progress: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {percentPipe(workPackage.expectedProgress)}
+        </Grid>
+
+        <Grid item xs={2}>
+          <Typography>Timeline Status: </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          {workPackage.timelineStatus}
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };
