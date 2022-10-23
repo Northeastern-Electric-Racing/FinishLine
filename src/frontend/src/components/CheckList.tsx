@@ -8,7 +8,6 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import styles from '../stylesheets/components/check-list.module.css';
 import { ReactNode } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { useAuth } from '../hooks/auth.hooks';
