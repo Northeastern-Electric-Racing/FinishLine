@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -44,7 +44,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
-            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content' }}>
+            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -17,7 +17,4 @@ export const exampleUserSettingsDark: UserSettings = {
   slackId: 'lalalal'
 };
 
-export const exampleAllUserSettings: UserSettings[] = [
-  exampleUserSettingsLight,
-  exampleUserSettingsDark
-];
+export const exampleAllUserSettings: UserSettings[] = [exampleUserSettingsLight, exampleUserSettingsDark];

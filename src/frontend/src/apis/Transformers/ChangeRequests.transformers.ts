@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,12 +16,8 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
     dateSubmitted: new Date(changeRequest.dateSubmitted),
-    dateReviewed: changeRequest.dateReviewed
-      ? new Date(changeRequest.dateReviewed)
-      : changeRequest.dateReviewed,
-    dateImplemented: changeRequest.dateImplemented
-      ? new Date(changeRequest.dateImplemented)
-      : changeRequest.dateImplemented
+    dateReviewed: changeRequest.dateReviewed ? new Date(changeRequest.dateReviewed) : changeRequest.dateReviewed,
+    dateImplemented: changeRequest.dateImplemented ? new Date(changeRequest.dateImplemented) : changeRequest.dateImplemented
   };
   if (changeRequest.type === ChangeRequestType.Activation) {
     data.startDate = new Date(data.startDate);

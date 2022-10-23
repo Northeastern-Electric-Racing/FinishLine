@@ -1,9 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container } from 'react-bootstrap';
+import { Grid } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -20,14 +20,16 @@ const TeamsPage: React.FC = () => {
   console.log(JSON.stringify(teams));
 
   return (
-    <Container fluid className="mb-5">
+    <>
       <PageTitle title={'Teams'} previousPages={[]} />
-      {teams?.map((team) => (
-        <div key={team.teamId} className="mt-3">
-          <TeamSummary team={team} />
-        </div>
-      ))}
-    </Container>
+      <Grid container spacing={2}>
+        {teams?.map((team) => (
+          <Grid item key={team.teamId}>
+            <TeamSummary team={team} />
+          </Grid>
+        ))}
+      </Grid>
+    </>
   );
 };
 

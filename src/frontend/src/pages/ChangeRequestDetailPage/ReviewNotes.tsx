@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,11 +14,7 @@ interface ReviewNotesProps {
   dateReviewed?: Date;
 }
 
-const ReviewNotes: React.FC<ReviewNotesProps> = ({
-  reviewer,
-  reviewNotes,
-  dateReviewed
-}: ReviewNotesProps) => {
+const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
     <PageBlock
       title={'Review Notes'}
@@ -26,9 +22,7 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({
         <OverlayTrigger
           placement="left"
           overlay={
-            <Tooltip id="tooltip">
-              {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
-            </Tooltip>
+            <Tooltip id="tooltip">{'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}</Tooltip>
           }
         >
           <span>{fullNamePipe(reviewer)}</span>

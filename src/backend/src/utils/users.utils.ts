@@ -8,9 +8,7 @@ export const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
   }
 });
 
-export const authenticatedUserTransformer = (
-  user: Prisma.UserGetPayload<typeof authUserQueryArgs>
-): AuthenticatedUser => {
+export const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
   return {
     userId: user.userId,
     firstName: user.firstName,

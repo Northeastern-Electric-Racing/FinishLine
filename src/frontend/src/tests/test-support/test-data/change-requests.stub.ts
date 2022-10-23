@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -12,12 +12,7 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleProjectLeadUser,
-  exampleProjectManagerUser
-} from './users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 
 export const exampleStandardChangeRequest: StandardChangeRequest = {

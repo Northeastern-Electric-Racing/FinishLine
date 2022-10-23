@@ -1,10 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useHistory } from 'react-router-dom';
-import { Col, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/Routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -115,35 +114,32 @@ const ProjectsTable: React.FC = () => {
   return (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
-      <Row>
-        <Col>
-          <DataGrid
-            autoHeight
-            disableSelectionOnClick
-            density="compact"
-            pageSize={15}
-            rowsPerPageOptions={[15, 30, 50, 100]}
-            loading={isLoading}
-            error={error}
-            rows={data || []}
-            columns={columns}
-            onRowClick={(params) => {
-              history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
-            }}
-            components={{ Toolbar: GridToolbar }}
-            initialState={{
-              sorting: {
-                sortModel: [{ field: 'wbsNum', sort: 'asc' }]
-              },
-              columns: {
-                columnVisibilityModel: {
-                  workPackages: false
-                }
-              }
-            }}
-          />
-        </Col>
-      </Row>
+
+      <DataGrid
+        autoHeight
+        disableSelectionOnClick
+        density="compact"
+        pageSize={15}
+        rowsPerPageOptions={[15, 30, 50, 100]}
+        loading={isLoading}
+        error={error}
+        rows={data || []}
+        columns={columns}
+        onRowClick={(params) => {
+          history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
+        }}
+        components={{ Toolbar: GridToolbar }}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'wbsNum', sort: 'asc' }]
+          },
+          columns: {
+            columnVisibilityModel: {
+              workPackages: false
+            }
+          }
+        }}
+      />
     </>
   );
 };
