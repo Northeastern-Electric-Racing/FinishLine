@@ -17,7 +17,9 @@ const InfoPage: React.FC = () => {
     <>
       <PageTitle title="Information" previousPages={[]} />
       <PageBlock title="Resources">
-        <Box>Check out these helpful resources:</Box>
+        <Box>
+          <Typography>Check out these helpful resources:</Typography>
+        </Box>
         <Grid container spacing={2}>
           <Grid item md={4} lg={3}>
             <ExternalLink
