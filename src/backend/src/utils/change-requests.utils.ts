@@ -141,12 +141,7 @@ export const sendSlackChangeRequestNotification = async (
 
   if (budgetImpact && budgetImpact > 100) {
     msgs.push(
-      sendMessage(
-        process.env.SLACK_EBOARD_CHANNEL!,
-        `${fullMsg} with $${budgetImpact} requested`,
-        fullLink,
-        btnText
-      )
+      sendMessage(process.env.SLACK_EBOARD_CHANNEL!, `${fullMsg} with $${budgetImpact} requested`, fullLink, btnText)
     );
   }
   return Promise.all(msgs);

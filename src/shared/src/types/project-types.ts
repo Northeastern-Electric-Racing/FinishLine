@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -40,7 +40,9 @@ export interface Project extends WbsElement {
   slideDeckLink?: string;
   bomLink?: string;
   rules: string[];
+  endDate?: Date;
   duration: number;
+  startDate?: Date;
   goals: DescriptionBullet[];
   features: DescriptionBullet[];
   otherConstraints: DescriptionBullet[];

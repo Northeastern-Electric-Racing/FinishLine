@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -17,19 +17,11 @@ jest.mock('../../../../hooks/change-requests.hooks');
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;
 
 const mockUseCreateStageGateCRHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseCreateStageGateCR.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseCreateStageGateCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 const renderComponent = () => {
-  return render(
-    <StageGateWorkPackageModalContainer
-      modalShow={true}
-      handleClose={() => null}
-      wbsNum={exampleWbs1}
-    />
-  );
+  return render(<StageGateWorkPackageModalContainer modalShow={true} handleClose={() => null} wbsNum={exampleWbs1} />);
 };
 
 describe('stage gate work package modal container test suite', () => {

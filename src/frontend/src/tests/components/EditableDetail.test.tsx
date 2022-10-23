@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -12,13 +12,7 @@ describe.skip('Rendering Editable Detail Component', () => {
   const renderComponent = (editMode: boolean, readOnly?: boolean) => {
     return render(
       <FormContext.Provider value={{ editMode, setField }}>
-        <EditableDetail
-          title="testTitle"
-          value="testValue"
-          readOnly={readOnly}
-          suffix="testSuffix"
-          type="text"
-        />
+        <EditableDetail title="testTitle" value="testValue" readOnly={readOnly} suffix="testSuffix" type="text" />
       </FormContext.Provider>
     );
   };

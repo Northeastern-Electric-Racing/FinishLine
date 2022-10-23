@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -21,6 +21,13 @@ const NavUserMenu: React.FC = () => {
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
+
+  const logout = () => {
+    auth!.signout();
+    history.push(routes.HOME);
+  };
 
   return (
     <>
@@ -66,23 +73,26 @@ const NavUserMenu: React.FC = () => {
           Settings
         </MenuItem>
         <MenuItem onClick={handleClose} component="div" sx={{ py: 0 }}>
-          <GoogleLogout
-            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-            //jsSrc={'accounts.google.com/gsi/client'}
-            onLogoutSuccess={() => {
-              auth!.signout();
-              history.push(routes.HOME);
-            }}
-            render={(renderProps) => (
-              <Button
-                onClick={renderProps.onClick}
-                disabled={renderProps.disabled}
-                sx={{ padding: 0, minHeight: 0, minWidth: 0 }}
-              >
-                Logout
-              </Button>
-            )}
-          />
+          {googleAuthClientId ? (
+            <GoogleLogout
+              clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+              //jsSrc={'accounts.google.com/gsi/client'}
+              onLogoutSuccess={logout}
+              render={(renderProps) => (
+                <Button
+                  onClick={renderProps.onClick}
+                  disabled={renderProps.disabled}
+                  sx={{ padding: 0, minHeight: 0, minWidth: 0 }}
+                >
+                  Logout
+                </Button>
+              )}
+            />
+          ) : (
+            <Button onClick={logout} sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>
+              Logout
+            </Button>
+          )}
         </MenuItem>
       </Menu>
     </>

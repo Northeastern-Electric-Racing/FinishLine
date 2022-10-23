@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -33,10 +33,7 @@ export const FormContext = createContext({
   setField: (field: string, value: any) => {}
 });
 
-const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
-  workPackage,
-  exitEditMode
-}) => {
+const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
   const auth = useAuth();
   const query = useQuery();
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
@@ -126,10 +123,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   };
 
   const transformDate = (date: Date) => {
-    const month =
-      date.getUTCMonth() + 1 < 10
-        ? `0${date.getUTCMonth() + 1}`
-        : (date.getUTCMonth() + 1).toString();
+    const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
     const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
     return `${date.getUTCFullYear().toString()}-${month}-${day}`;
   };
