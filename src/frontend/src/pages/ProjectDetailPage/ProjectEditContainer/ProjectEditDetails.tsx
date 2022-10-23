@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -89,11 +89,7 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
     </Form.Control>
   );
 
-  const buildUsersSelect = (
-    title: string,
-    defaultUser: User | undefined,
-    updateUser: (val: number) => void
-  ) => {
+  const buildUsersSelect = (title: string, defaultUser: User | undefined, updateUser: (val: number) => void) => {
     let otherUsers = users;
     if (defaultUser !== undefined) {
       otherUsers = users.filter((user) => user.userId !== defaultUser.userId);
@@ -101,12 +97,7 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
     return (
       <Form.Group>
         <Form.Label>{title}</Form.Label>
-        <Form.Control
-          as="select"
-          data-testid={title}
-          onChange={(e) => updateUser(parseInt(e.target.value))}
-          custom
-        >
+        <Form.Control as="select" data-testid={title} onChange={(e) => updateUser(parseInt(e.target.value))} custom>
           {defaultUser === undefined ? (
             <option key={-1} value={-1}>
               {emDashPipe('')}
@@ -130,18 +121,14 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
     <PageBlock title={'Project Details (EDIT)'} headerRight={statusSelect}>
       <Container fluid>
         <Row>
-          <Col>
-            {editDetailsInputBuilder('Project Name:', 'text', project.name, updateName, '', '', '')}
-          </Col>
+          <Col>{editDetailsInputBuilder('Project Name:', 'text', project.name, updateName, '', '', '')}</Col>
           <Col lg={3} xl={2}>
             {editDetailsInputBuilder('Budget:', 'number', project.budget, updateBudget, '$')}
           </Col>
         </Row>
         <Row>
           <Col>{buildUsersSelect('Project Lead:', project.projectLead, updateProjectLead)}</Col>
-          <Col>
-            {buildUsersSelect('Project Manager:', project.projectManager, updateProjectManager)}
-          </Col>
+          <Col>{buildUsersSelect('Project Manager:', project.projectManager, updateProjectManager)}</Col>
         </Row>
         <Row>
           <Col>
@@ -154,33 +141,9 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
               '',
               'Slide deck link'
             )}
-            {editDetailsInputBuilder(
-              'Task List',
-              'text',
-              project.taskListLink!,
-              updateTaskList,
-              '',
-              '',
-              'Task list link'
-            )}
-            {editDetailsInputBuilder(
-              'BOM',
-              'text',
-              project.bomLink!,
-              updateBom,
-              '',
-              '',
-              'BOM link'
-            )}
-            {editDetailsInputBuilder(
-              'Google Drive',
-              'text',
-              project.gDriveLink!,
-              updateGDrive,
-              '',
-              '',
-              'Google drive link'
-            )}
+            {editDetailsInputBuilder('Task List', 'text', project.taskListLink!, updateTaskList, '', '', 'Task list link')}
+            {editDetailsInputBuilder('BOM', 'text', project.bomLink!, updateBom, '', '', 'BOM link')}
+            {editDetailsInputBuilder('Google Drive', 'text', project.gDriveLink!, updateGDrive, '', '', 'Google drive link')}
           </Col>
         </Row>
       </Container>

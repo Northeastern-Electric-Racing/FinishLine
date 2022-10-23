@@ -1,11 +1,6 @@
 import prisma from '../prisma/prisma';
 import { OAuth2Client } from 'google-auth-library';
-import {
-  authenticatedUserTransformer,
-  authUserQueryArgs,
-  rankUserRole,
-  userTransformer
-} from '../utils/users.utils';
+import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
 
@@ -36,26 +31,22 @@ export const getUserSettings = async (req: Request, res: Response) => {
     create: { userId }
   });
 
-  if (!settings)
-    return res.status(404).json({ message: `could not find settings for user #${userId}` });
+  if (!settings) return res.status(404).json({ message: `could not find settings for user #${userId}` });
 
   return res.status(200).json(settings);
 };
 
 export const updateUserSettings = async (req: Request, res: Response) => {
-  const userId: number = parseInt(req.params.userId);
-  if (!userId) {
-    return res.status(404).json({ message: `could not find valid userId` });
-  }
   const errors = validationResult(req);
-
-  if (!(await prisma.user.findUnique({ where: { userId } }))) {
-    return res.status(404).json({ message: `could not find user ${userId}` });
-  }
-
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
+  const userId = parseInt(req.params.userId);
+  if (!userId) return res.status(404).json({ message: `could not find valid userId` });
+
+  const user = await prisma.user.findUnique({ where: { userId } });
+  if (!user) return res.status(404).json({ message: `could not find user ${userId}` });
 
   await prisma.user_Settings.upsert({
     where: { userId },
@@ -89,9 +80,7 @@ export const logUserIn = async (req: Request, res: Response) => {
 
   // if not in database, create user in database
   if (!user) {
-    const emailId = payload['email']!.includes('@husky.neu.edu')
-      ? payload['email']!.split('@')[0]
-      : null;
+    const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
     const createdUser = await prisma.user.create({
       data: {
         firstName: payload['given_name']!,
@@ -116,6 +105,35 @@ export const logUserIn = async (req: Request, res: Response) => {
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };
+
+// for dev login only!
+export const logUserInDev = async (req: any, res: any) => {
+  if (process.env.NODE_ENV === 'production') return res.status(400).json({ message: 'Cant dev login on production!' });
+  if (!req.body || !req.body.userId) return res.status(400).json({ message: 'Invalid Body' });
+
+  const { body } = req;
+  const { userId } = body;
+
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    ...authUserQueryArgs
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: 'That user does not exist' });
+  }
+
+  // register a login
+  await prisma.session.create({
+    data: {
+      userId: user.userId,
+      deviceInfo: req.headers['user-agent']
+    }
+  });
+
+  return res.status(200).json(authenticatedUserTransformer(user));
+};
+
 export const updateUserRole = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -146,11 +164,9 @@ export const updateUserRole = async (req: Request, res: Response) => {
   if (rankUserRole(role) > userRole) {
     return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
   }
-  
+
   if (targetUserRole >= userRole) {
-    return res
-      .status(400)
-      .json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
+    return res.status(400).json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
   }
 
   targetUser = await prisma.user.update({

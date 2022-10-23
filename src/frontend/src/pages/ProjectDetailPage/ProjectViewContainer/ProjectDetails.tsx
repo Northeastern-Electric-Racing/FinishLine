@@ -1,17 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Col, Container, Row } from 'react-bootstrap';
-import {
-  faFilePowerpoint,
-  faFolderOpen,
-  faList,
-  faListOl
-} from '@fortawesome/free-solid-svg-icons';
+import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import { datePipe, dollarsPipe, endDatePipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
+import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
@@ -21,26 +16,6 @@ interface ProjectDetailsProps {
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const start =
-    project.workPackages.length > 0
-      ? datePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          )
-        )
-      : 'n/a';
-  const end =
-    project.workPackages.length > 0
-      ? endDatePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          ),
-          project.workPackages.reduce((tot, cur) => tot + cur.duration, 0)
-        )
-      : 'n/a';
-
   const allColsStyle = 'mb-2';
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
@@ -56,10 +31,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             <b>Duration:</b> {weeksPipe(project.duration)}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={4} xl={2}>
-            <b>Start Date:</b> {start}
+            <b>Start Date:</b> {datePipe(project.startDate) || 'n/a'}
           </Col>
           <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
-            <b>End Date:</b> {end}
+            <b>End Date:</b> {datePipe(project.endDate) || 'n/a'}
           </Col>
         </Row>
         <Row>
@@ -69,18 +44,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </Row>
         <Row className={`${allColsStyle} pl-3`}>
           <b>Links:</b>
-          <ExternalLink
-            icon={faFilePowerpoint}
-            link={project.slideDeckLink!}
-            description={'Slide Deck'}
-          />
+          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
           <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
           <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
-          <ExternalLink
-            icon={faFolderOpen}
-            link={project.gDriveLink!}
-            description={'Google Drive'}
-          />
+          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
         </Row>
       </Container>
     </PageBlock>

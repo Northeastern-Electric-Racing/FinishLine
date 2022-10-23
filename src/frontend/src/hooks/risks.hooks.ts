@@ -1,15 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import {
-  createSingleRisk,
-  deleteSingleRisk,
-  editSingleRisk,
-  getRisksForProject
-} from '../apis/Risks.api';
+import { createSingleRisk, deleteSingleRisk, editSingleRisk, getRisksForProject } from '../apis/Risks.api';
 import { Risk } from 'shared';
 
 /**

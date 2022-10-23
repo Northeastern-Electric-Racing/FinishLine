@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -45,7 +45,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const allUsers = useAllUsers();
   const { mutateAsync } = useEditSingleProject(proj.wbsNum);
 
-  const [crId, setCrId] = useState(query.get('crId') || -1);
+  const [crId, setCrId] = useState(query.get('crId') || '');
   const [name, setName] = useState(proj.name);
   const [summary, setSummary] = useState(proj.summary);
   const [budget, setBudget] = useState(proj.budget);
@@ -63,15 +63,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const updateBom = (url: string | undefined) => setBom(url);
   const updateGDrive = (url: string | undefined) => setGDrive(url);
 
-  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.goals)
-  );
-  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.features)
-  );
-  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(
-    bulletsToObject(proj.otherConstraints)
-  );
+  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.goals));
+  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.features));
+  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.otherConstraints));
   const [rules, setRules] = useState(proj.rules);
 
   const notEmptyString = (s: string) => s !== '';
@@ -79,8 +73,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const goalsUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = goals.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setGoals(clone);
     },
     remove: (idx) => {
@@ -98,8 +91,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const featUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = features.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setFeatures(clone);
     },
     remove: (idx) => {
@@ -117,8 +109,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const ocUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = otherConstraints.slice();
-      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString))
-        clone.push({ detail: val });
+      if (clone.length === 0 || clone.map((c) => c.detail).every(notEmptyString)) clone.push({ detail: val });
       setOther(clone);
     },
     remove: (idx) => {
@@ -228,7 +219,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
               required
               value={crId}
               min={0}
-              onChange={(e) => setCrId(Number(e.target.value))}
+              onChange={(e) => setCrId(String(e.target.value))}
             />
           }
         />
@@ -271,12 +262,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           />
         </PageBlock>
         <PageBlock title={'Rules'}>
-          <EditableTextInputList
-            items={rules}
-            add={rulesUtil.add}
-            remove={rulesUtil.remove}
-            update={rulesUtil.update}
-          />
+          <EditableTextInputList items={rules} add={rulesUtil.add} remove={rulesUtil.remove} update={rulesUtil.update} />
         </PageBlock>
         <ChangesList changes={proj.changes} />
         <PageBlock title={'Work Packages'}>

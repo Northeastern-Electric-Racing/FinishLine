@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -40,13 +40,10 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['work packages', 'create'],
-    async (wpPayload: any) => {
-      const { data } = await createSingleWorkPackage(wpPayload);
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['work packages', 'create'], async (wpPayload: any) => {
+    const { data } = await createSingleWorkPackage(wpPayload);
+    return data;
+  });
 };
 
 /**

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -11,7 +11,7 @@ import GoogleLogin from 'react-google-login';
 import LoginDev from './LoginDev';
 
 interface LoginPageProps {
-  devSetRole: (role: string) => void;
+  devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
   prodSuccess: (res: any) => any;
   prodFailure: (res: any) => any;
@@ -20,7 +20,7 @@ interface LoginPageProps {
 /**
  * Page for unauthenticated users to do login.
  */
-const LoginPage: React.FC<LoginPageProps> = ({ devSetRole, devFormSubmit, prodSuccess, prodFailure }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
   return (
     <Card sx={{ marginX: 'auto', maxWidth: '25em', marginTop: 5 }}>
       <CardContent>
@@ -35,7 +35,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetRole, devFormSubmit, prodSu
           cookiePolicy={'single_host_origin'}
           isSignedIn={true}
         />
-        {process.env.NODE_ENV === 'development' ? <LoginDev devSetRole={devSetRole} devFormSubmit={devFormSubmit} /> : ''}
+        {process.env.NODE_ENV === 'development' ? <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} /> : ''}
       </CardContent>
       <CardActions>
         <Typography variant="caption">
