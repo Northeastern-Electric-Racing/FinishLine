@@ -5,8 +5,7 @@ import {
   ChangeRequestReason,
   ProposedSolution,
   StageGateChangeRequest,
-  StandardChangeRequest,
-  UserSettings
+  StandardChangeRequest
 } from 'shared';
 import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
@@ -148,16 +147,13 @@ export const sendSlackChangeRequestNotification = async (
   return Promise.all(msgs);
 };
 
-export const sendSlackCRReviewedNotification = async (
-  settings: UserSettings, 
-  crId: number
-  ) => {
+export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: Your Change Request was just reviewed! Clink the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR Review#${crId}`;
-  msgs.push(sendMessage(settings.slackId, fullMsg, fullLink, btnText));
+  const btnText = `View CR#${crId}`;
+  msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
 };

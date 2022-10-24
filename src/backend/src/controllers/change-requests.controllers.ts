@@ -203,11 +203,10 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       }
     });
   }
-  // find user that submitted the change request
-  //const person = await prisma.user.findUnique({ where: { userId: updated.submitterId } });
-  const person = body.submitter;
-  if (person) {
-    await sendSlackCRReviewedNotification(person.userSettings, updated.crId);
+  // find userSettings that submitted the change request
+  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: updated.submitterId } });
+  if (personSettings) {
+    await sendSlackCRReviewedNotification(personSettings.slackId, updated.crId);
   }
 
   // TODO: handle errors
