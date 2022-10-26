@@ -1,7 +1,7 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { validationResult } from 'express-validator';
+import { validateInputs } from '../utils/utils';
 
 export const getRisksForProject = async (req: Request, res: Response) => {
   const projectId = parseInt(req.params.projectId);
@@ -17,11 +17,6 @@ export const getRisksForProject = async (req: Request, res: Response) => {
 };
 
 export const createRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { projectId, detail, createdById } = body;
 
@@ -42,11 +37,6 @@ export const createRisk = async (req: Request, res: Response) => {
 };
 
 export const editRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   const { userId, id, detail, resolved } = body;
@@ -105,11 +95,6 @@ export const editRisk = async (req: Request, res: Response) => {
 };
 
 export const deleteRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { riskId, deletedByUserId } = body;
 
