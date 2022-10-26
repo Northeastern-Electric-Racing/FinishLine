@@ -6,7 +6,6 @@ import {
   editRisk,
   getRisksForProject
 } from '../controllers/risks.controllers';
-import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const risksRouter = express.Router();
 
