@@ -24,7 +24,6 @@ risksRouter.post(
   nonEmptyString(body('id')),
   nonEmptyString(body('detail')),
   body('resolved').isBoolean(),
-  validateInputs,
   editRisk
 );
 risksRouter.post(
