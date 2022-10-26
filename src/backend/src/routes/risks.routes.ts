@@ -16,7 +16,6 @@ risksRouter.post(
   intMinZero(body('projectId')),
   intMinZero(body('createdById')),
   nonEmptyString(body('detail')),
-  validateInputs,
   createRisk
 );
 risksRouter.post(
@@ -32,7 +31,6 @@ risksRouter.post(
   '/delete',
   nonEmptyString(body('riskId')),
   intMinZero(body('deletedByUserId')),
-  validateInputs,
   deleteRisk
 );
 
