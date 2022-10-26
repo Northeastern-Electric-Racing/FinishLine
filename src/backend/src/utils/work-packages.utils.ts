@@ -31,6 +31,9 @@ export const calculateWorkPackageProgress = (
   expectedActivities: Description_Bullet[]
 ) => {
   const bullets = deliverables.concat(expectedActivities);
+  if (bullets.length === 0) {
+    return 0;
+  }
   return Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
 };
 
