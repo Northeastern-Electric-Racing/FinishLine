@@ -8,6 +8,7 @@ import { wonderwoman } from './test-data/users.test-data';
 import { createWorkPackagePayload } from './test-data/work-packages.test-data';
 import { changeBatmobile, unreviewedCr } from './test-data/change-requests.test-data';
 import { getChangeRequestReviewState } from '../src/utils/projects.utils';
+import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 
 const app = express();
 app.use(express.json());
@@ -95,5 +96,15 @@ describe('Work Packages', () => {
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe(`Cannot implement an unreviewed change request`);
+  });
+
+  test('calculateWorkPackageProgress', async () => {
+    const proj = {
+      ...createWorkPackagePayload,
+      expectedActivities: [],
+      deliverables: []
+    };
+
+    expect(calculateWorkPackageProgress(proj.expectedActivities, proj.deliverables)).toBe(0);
   });
 });
