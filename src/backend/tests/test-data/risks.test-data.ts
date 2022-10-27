@@ -25,3 +25,17 @@ export const editRiskFalse: Risk = {
   resolvedAt: null,
   deletedByUserId: null
 };
+
+export const editRiskTruePayload = {
+  userId: 1,
+  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+  detail: 'This one might be a bit too expensive',
+  resolved: true
+};
+
+export const editRiskFalsePayload = {
+  userId: 1,
+  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+  detail: 'This one might be a bit too expensive',
+  resolved: false
+};
