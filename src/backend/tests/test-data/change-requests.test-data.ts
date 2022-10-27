@@ -51,7 +51,7 @@ export const redesignWhipScopeCR = {
 
 export const redesignWhip = {
   crId: 2,
-  submitterId: 3,
+  submitterId: 100,
   wbsElementId: 65,
   projectId: 2,
   type: CR_Type.OTHER,
