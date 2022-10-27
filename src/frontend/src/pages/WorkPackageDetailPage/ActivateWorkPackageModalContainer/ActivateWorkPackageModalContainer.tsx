@@ -36,15 +36,9 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   const history = useHistory();
   const { isLoading, isError, error, mutateAsync } = useCreateActivationChangeRequest();
 
-  const handleConfirm = async ({
-    projectLeadId,
-    projectManagerId,
-    startDate,
-    confirmDetails
-  }: FormInput) => {
+  const handleConfirm = async ({ projectLeadId, projectManagerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
-    if (auth.user?.userId === undefined)
-      throw new Error('Cannot create activation change request without being logged in');
+    if (auth.user?.userId === undefined) throw new Error('Cannot create activation change request without being logged in');
     await mutateAsync({
       submitterId: auth.user?.userId,
       wbsNum,

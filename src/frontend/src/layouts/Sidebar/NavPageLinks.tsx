@@ -25,11 +25,7 @@ const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProp
           exact={item.route === routes.HOME}
         >
           {item.icon ? (
-            <FontAwesomeIcon
-              icon={item.icon!}
-              size="2x"
-              className={styles.iconsAndText + ' ' + styles.icon}
-            />
+            <FontAwesomeIcon icon={item.icon!} size="2x" className={styles.iconsAndText + ' ' + styles.icon} />
           ) : (
             ''
           )}

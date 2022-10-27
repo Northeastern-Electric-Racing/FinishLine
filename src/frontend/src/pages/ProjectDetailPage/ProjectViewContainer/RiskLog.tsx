@@ -123,10 +123,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             data-testId="convertButton"
             onClick={() => {
               history.push(
-                routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                  wbsPipe(wbsNum) +
-                  '&riskDetails=' +
-                  encodeURIComponent(risk.detail)
+                routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(wbsNum) + '&riskDetails=' + encodeURIComponent(risk.detail)
               );
             }}
           >

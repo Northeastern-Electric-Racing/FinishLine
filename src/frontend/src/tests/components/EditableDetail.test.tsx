@@ -12,13 +12,7 @@ describe.skip('Rendering Editable Detail Component', () => {
   const renderComponent = (editMode: boolean, readOnly?: boolean) => {
     return render(
       <FormContext.Provider value={{ editMode, setField }}>
-        <EditableDetail
-          title="testTitle"
-          value="testValue"
-          readOnly={readOnly}
-          suffix="testSuffix"
-          type="text"
-        />
+        <EditableDetail title="testTitle" value="testValue" readOnly={readOnly} suffix="testSuffix" type="text" />
       </FormContext.Provider>
     );
   };

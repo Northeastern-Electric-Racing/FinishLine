@@ -16,12 +16,7 @@ import styles from '../../stylesheets/common.module.scss';
 interface FilterProps {
   leads: User[];
   managers: User[];
-  onClick: (
-    status: string,
-    projectLeadID: number,
-    projectManagerID: number,
-    carNumber: number
-  ) => void;
+  onClick: (status: string, projectLeadID: number, projectManagerID: number, carNumber: number) => void;
 }
 
 /**
@@ -44,10 +39,7 @@ const ProjectsTableFilter: React.FC<FilterProps> = ({ onClick, leads, managers }
    * @param setter The setter function for the variable the component records.
    * @return An array of dropdown menu items.
    */
-  const genDropdownItemsNum = (
-    values: number[],
-    setter: React.Dispatch<React.SetStateAction<number>>
-  ) => {
+  const genDropdownItemsNum = (values: number[], setter: React.Dispatch<React.SetStateAction<number>>) => {
     const none = (
       <Dropdown.Item key={'None'} onClick={() => setter(-1)}>
         None
@@ -70,10 +62,7 @@ const ProjectsTableFilter: React.FC<FilterProps> = ({ onClick, leads, managers }
    * @param setter The setter function for the variable the component records.
    * @return An array of dropdown menu items.
    */
-  const genDropdownItemsString = (
-    values: string[],
-    setter: React.Dispatch<React.SetStateAction<string>>
-  ) => {
+  const genDropdownItemsString = (values: string[], setter: React.Dispatch<React.SetStateAction<string>>) => {
     const none = (
       <Dropdown.Item key={'None'} onClick={() => setter('')}>
         None
@@ -216,11 +205,7 @@ const ProjectsTableFilter: React.FC<FilterProps> = ({ onClick, leads, managers }
             </Dropdown.Menu>
           </Dropdown>
         </Form.Group>
-        <Button
-          className={'float-left'}
-          variant={'outline-secondary'}
-          onClick={resetFiltersToDefault}
-        >
+        <Button className={'float-left'} variant={'outline-secondary'} onClick={resetFiltersToDefault}>
           Clear
         </Button>
         <Button

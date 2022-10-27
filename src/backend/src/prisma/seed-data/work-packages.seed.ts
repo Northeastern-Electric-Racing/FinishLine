@@ -20,13 +20,11 @@ const dbSeedWorkPackage1: any = {
   workPackageFields: {
     orderInProject: 1,
     startDate: new Date('01/01/21'),
-    progress: 25,
     duration: 3
   },
   expectedActivities: [
     {
-      detail:
-        'Assess the bodywork captsone and determine what can be learned from their deliverables',
+      detail: 'Assess the bodywork captsone and determine what can be learned from their deliverables',
       dateAdded: new Date('11/15/20')
     },
     {
@@ -58,7 +56,6 @@ const dbSeedWorkPackage2: any = {
   workPackageFields: {
     orderInProject: 2,
     startDate: new Date('01/01/21'),
-    progress: 0,
     duration: 5
   },
   expectedActivities: [
@@ -100,7 +97,6 @@ const dbSeedWorkPackage3: any = {
   workPackageFields: {
     orderInProject: 3,
     startDate: new Date('01/01/21'),
-    progress: 100,
     duration: 2
   },
   expectedActivities: [
@@ -129,8 +125,4 @@ const dbSeedWorkPackage3: any = {
   ]
 };
 
-export const dbSeedAllWorkPackages: any[] = [
-  dbSeedWorkPackage1,
-  dbSeedWorkPackage2,
-  dbSeedWorkPackage3
-];
+export const dbSeedAllWorkPackages: any[] = [dbSeedWorkPackage1, dbSeedWorkPackage2, dbSeedWorkPackage3];

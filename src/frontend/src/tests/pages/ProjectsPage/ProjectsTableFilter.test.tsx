@@ -15,12 +15,7 @@ import { WbsElementStatus } from 'shared';
 
 let temp: any[] = [];
 
-const mockOnClick = (
-  status: string,
-  projectLead: number,
-  projectManager: number,
-  carNumber: number
-) => {
+const mockOnClick = (status: string, projectLead: number, projectManager: number, carNumber: number) => {
   temp = [];
   temp.push(status);
   temp.push(projectLead);

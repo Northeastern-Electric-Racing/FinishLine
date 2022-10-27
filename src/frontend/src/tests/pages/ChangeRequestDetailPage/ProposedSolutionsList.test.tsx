@@ -35,18 +35,11 @@ const exampleProposedSolutions = [exampleProposedSolution1, exampleProposedSolut
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (
-  proposedSolutions: ProposedSolution[] = [],
-  crReviewed: boolean | undefined = undefined
-) => {
+const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed: boolean | undefined = undefined) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionsList
-        proposedSolutions={proposedSolutions}
-        crReviewed={crReviewed}
-        crId={0}
-      />
+      <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />
     </RouterWrapper>
   );
 };

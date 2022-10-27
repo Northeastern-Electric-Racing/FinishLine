@@ -49,7 +49,6 @@ workPackagesRouter.post(
   body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('deliverables.*.detail')),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
-  intMinZero(body('progress')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
   editWorkPackage

@@ -16,12 +16,8 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
     dateSubmitted: new Date(changeRequest.dateSubmitted),
-    dateReviewed: changeRequest.dateReviewed
-      ? new Date(changeRequest.dateReviewed)
-      : changeRequest.dateReviewed,
-    dateImplemented: changeRequest.dateImplemented
-      ? new Date(changeRequest.dateImplemented)
-      : changeRequest.dateImplemented
+    dateReviewed: changeRequest.dateReviewed ? new Date(changeRequest.dateReviewed) : changeRequest.dateReviewed,
+    dateImplemented: changeRequest.dateImplemented ? new Date(changeRequest.dateImplemented) : changeRequest.dateImplemented
   };
   if (changeRequest.type === ChangeRequestType.Activation) {
     data.startDate = new Date(data.startDate);

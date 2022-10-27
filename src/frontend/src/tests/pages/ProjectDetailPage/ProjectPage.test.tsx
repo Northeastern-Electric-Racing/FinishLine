@@ -44,9 +44,7 @@ jest.mock('../../../hooks/projects.hooks');
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
 
 const mockProjectHook = (isLoading: boolean, isError: boolean, data?: Project, error?: Error) => {
-  mockedUseSingleProject.mockReturnValue(
-    mockUseQueryResult<Project>(isLoading, isError, data, error)
-  );
+  mockedUseSingleProject.mockReturnValue(mockUseQueryResult<Project>(isLoading, isError, data, error));
 };
 
 // Sets up the component under test with the desired values and renders it.

@@ -239,7 +239,6 @@ model Work_Package {
   project            Project              @relation(fields: [projectId], references: [projectId])
   orderInProject     Int
   startDate          DateTime
-  progress           Int                  @default(0)
   duration           Int
   dependencies       WBS_Element[]        @relation(name: "dependencies")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")

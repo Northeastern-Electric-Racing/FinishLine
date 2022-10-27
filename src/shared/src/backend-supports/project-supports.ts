@@ -27,9 +27,7 @@ const calculateProjectEndDate = (wps: { duration: number; startDate: Date }[]) =
   if (wps.length === 0) return undefined;
   const maxDate = wps.reduce(
     (max, cur) =>
-      calculateEndDate(cur.startDate, cur.duration) > max
-        ? calculateEndDate(cur.startDate, cur.duration)
-        : max,
+      calculateEndDate(cur.startDate, cur.duration) > max ? calculateEndDate(cur.startDate, cur.duration) : max,
     calculateEndDate(wps[0].startDate, wps[0].duration)
   );
   return maxDate;
@@ -44,9 +42,7 @@ const calculateDuration = (wps: { duration: number; startDate: Date }[]) => {
   if (wps.length === 0) return 0;
   if (wps.length === 1) return wps[0].duration;
   const minStart = Math.min(...wps.map((wp) => wp.startDate.getTime()));
-  const maxEnd = Math.max(
-    ...wps.map((wp) => calculateEndDate(wp.startDate, wp.duration).getTime())
-  );
+  const maxEnd = Math.max(...wps.map((wp) => calculateEndDate(wp.startDate, wp.duration).getTime()));
   const durationWeeks = Math.round((maxEnd - minStart) / (1000 * 60 * 60 * 24 * 7));
   return durationWeeks;
 };
@@ -90,10 +86,7 @@ const calculateTimelineStatus = (progress: number, expectedProgress: number): Ti
  */
 const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[]) => {
   if (wps.length === 0) return undefined;
-  const minDate = wps.reduce(
-    (min, cur) => (cur.startDate < min ? cur.startDate : min),
-    wps[0].startDate
-  );
+  const minDate = wps.reduce((min, cur) => (cur.startDate < min ? cur.startDate : min), wps[0].startDate);
   return minDate;
 };
 

@@ -17,11 +17,7 @@ interface ProposedSolutionViewProps {
   onDelete?: (proposedSolution: ProposedSolution) => void;
 }
 
-const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
-  proposedSolution,
-  showDeleteButton,
-  onDelete
-}) => {
+const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
   const spacer = 'mb-2';
   return (
     <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">

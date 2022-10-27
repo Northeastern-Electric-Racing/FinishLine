@@ -56,8 +56,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                     <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
                     <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
                     <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
-                      Deliverables
+                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                     </Row>
                   </Container>
                 </Card.Text>

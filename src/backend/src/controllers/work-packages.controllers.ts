@@ -215,7 +215,6 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     expectedActivities,
     deliverables,
     wbsElementStatus,
-    progress,
     projectLead,
     projectManager
   } = body;
@@ -306,14 +305,7 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     userId,
     wbsElementId!
   );
-  const progressChangeJson = createChangeJsonNonList(
-    'progress',
-    originalWorkPackage.progress,
-    progress,
-    crId,
-    userId,
-    wbsElementId!
-  );
+
   const wbsElementStatusChangeJson = createChangeJsonNonList(
     'status',
     originalWorkPackage.wbsElement.status,
@@ -351,7 +343,6 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   if (nameChangeJson !== undefined) changes.push(nameChangeJson);
   if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
   if (durationChangeJson !== undefined) changes.push(durationChangeJson);
-  if (progressChangeJson !== undefined) changes.push(progressChangeJson);
   if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
 
   if (body.hasOwnProperty('projectManager')) {
@@ -398,7 +389,6 @@ export const editWorkPackage = async (req: Request, res: Response) => {
     data: {
       startDate: date,
       duration,
-      progress,
       wbsElement: {
         update: {
           name,

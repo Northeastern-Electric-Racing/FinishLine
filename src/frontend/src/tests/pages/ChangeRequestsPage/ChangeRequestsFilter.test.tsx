@@ -9,13 +9,7 @@ import ChangeRequestsFilter from '../../../pages/ChangeRequestsPage/ChangeReques
 
 let temp: any[] = [];
 
-const mockUpdate = (
-  type: string,
-  impact: number[],
-  reason: string,
-  state: number[],
-  implemented: string
-) => {
+const mockUpdate = (type: string, impact: number[], reason: string, state: number[], implemented: string) => {
   temp = [];
   temp.push(type);
   temp.push(impact);

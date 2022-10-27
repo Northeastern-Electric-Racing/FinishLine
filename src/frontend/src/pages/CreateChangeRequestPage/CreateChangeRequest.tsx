@@ -6,10 +6,7 @@
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestExplanation, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
-import {
-  useCreateProposeSolution,
-  useCreateStandardChangeRequest
-} from '../../hooks/change-requests.hooks';
+import { useCreateProposeSolution, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/Routes';
 import ErrorPage from '../ErrorPage';

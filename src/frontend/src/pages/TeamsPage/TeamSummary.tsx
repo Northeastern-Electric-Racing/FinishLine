@@ -13,11 +13,7 @@ import { fullNamePipe, listPipe, wbsPipe } from '../../utils/Pipes';
 import styles from '../../stylesheets/pages/project-detail-page/work-package-summary.module.scss';
 
 const renderTeamSummaryHeader = (team: Team, open: boolean, setOpen: (open: boolean) => void) => (
-  <Card.Header
-    className={styles.header + ' pt-2 pb-2'}
-    onClick={() => setOpen(!open)}
-    aria-expanded={open}
-  >
+  <Card.Header className={styles.header + ' pt-2 pb-2'} onClick={() => setOpen(!open)} aria-expanded={open}>
     <div className={'d-flex justify-content-between'}>
       <div className={'h5 mb-0 d-flex align-items-center'}>
         <Link to={`${routes.TEAMS}/${team.teamId}`}>{team.teamName}</Link>
