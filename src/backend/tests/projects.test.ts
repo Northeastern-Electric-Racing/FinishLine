@@ -152,125 +152,13 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
   });
-});
 
-const project1 = {
-  projectId: 1,
-  wbsElementId: 1,
-  wbsElement: {
-    wbsElementId: 1,
-    status: WBS_Element_Status.ACTIVE,
-    carNumber: 1,
-    projectNumber: 1,
-    workPackageNumber: 1,
-    dateCreated: new Date('11/22/2022'),
-    name: 'car',
-    projectLeadId: 1,
-    projectManagerId: 1,
-    projectLead: batman,
-    projectManager: batman,
-    changes: {
-      implementer: batman
-    }
-  },
-  budget: 100,
-  summary: 'we are building a car',
-  googleDriveFolderLink: 'a',
-  slideDeckLink: 'g',
-  bomLink: 'h',
-  taskListLink: 'i',
-  rules: ['a', 'b', 'c'],
-  goals: [{ id: 1, detail: 'd' }],
-  features: [{ id: 1, detail: 'e' }],
-  otherConstraints: [{ id: 1, detail: 'f' }],
-  workPackages: [
-    {
-      workPackageId: 1,
-      wbsElement: {
-        projectLead: batman,
-        projectManager: batman,
-        changes: {
-          implementer: batman
-        }
-      },
-      expectedActivities: [{ id: 1, detail: 'e' }],
-      deliverables: [{ id: 1, detail: 'e' }],
-      dependencies: [
-        {
-          wbsElementId: 1,
-          status: WBS_Element_Status.ACTIVE,
-          carNumber: 1,
-          projectNumber: 1,
-          workPackageNumber: 1,
-          dateCreated: new Date('11/22/2022'),
-          name: 'car',
-          projectLeadId: 1,
-          projectManagerId: 1,
-          projectLead: batman,
-          projectManager: batman,
-          changes: {
-            implementer: batman
-          }
-        }
-      ]
-    }
-  ],
-  teamId: '1',
-  team: {
-    teamId: '1',
-    teamName: 'batman',
-    slackId: '1',
-    description: 'hi',
-    leaderId: '1',
-    leader: batman,
-    projects: [],
-    members: [batman]
-  },
-  risks: {
-    project: {
-      wbsElementId: 1,
-      wbsElement: {
-        wbsElementId: 1,
-        status: WBS_Element_Status.ACTIVE,
-        carNumber: 1,
-        projectNumber: 1,
-        workPackageNumber: 1,
-        dateCreated: new Date('11/22/2022'),
-        name: 'car',
-        projectLeadId: 1,
-        projectManagerId: 1,
-        projectLead: batman,
-        projectManager: batman,
-        changes: {
-          implementer: batman
-        }
-      },
-      status: WBS_Element_Status.ACTIVE,
-      carNumber: 1,
-      projectNumber: 1,
-      workPackageNumber: 1,
-      dateCreated: new Date('11/22/2022'),
-      name: 'car',
-      projectLeadId: 1,
-      projectManagerId: 1,
-      projectLead: batman,
-      projectManager: batman,
-      changes: {
-        implementer: batman
-      }
-    },
-    createdBy: batman,
-    resolvedBy: batman,
-    deletedBy: batman
-  }
-};
+  test('getAllProjects works', async () => {
+    jest.spyOn(prisma.project, 'findMany').mockResolvedValue([]);
+    const res = await request(app).get('');
 
-test('getAllProjects', async () => {
-  jest.spyOn(prisma.project, 'findMany').mockResolvedValue([project1]);
-  const res = await request(app).get('');
-
-  expect(res.statusCode).toBe(200);
-  expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
-  console.log(project1);
-  expect(res.body).toStrictEqual([project1]);
+    expect(res.statusCode).toBe(200);
+    expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual([]);
+  });
 });
