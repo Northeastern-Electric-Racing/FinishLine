@@ -48,11 +48,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     </Dropdown.Item>
   );
   const stageGateBtn = (
-    <Dropdown.Item
-      as={Button}
-      onClick={() => setShowStageGateModal(true)}
-      disabled={!allowStageGate}
-    >
+    <Dropdown.Item as={Button} onClick={() => setShowStageGateModal(true)} disabled={!allowStageGate}>
       Stage Gate
     </Dropdown.Item>
   );
@@ -100,6 +96,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((ea) => {
             return { ...ea, resolved: !!ea.userChecked };
           })}
+        isDisabled={workPackage.status !== WbsElementStatus.Active}
       />
       <CheckList
         title={'Deliverables'}
@@ -108,6 +105,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((del) => {
             return { ...del, resolved: !!del.userChecked };
           })}
+        isDisabled={workPackage.status !== WbsElementStatus.Active}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

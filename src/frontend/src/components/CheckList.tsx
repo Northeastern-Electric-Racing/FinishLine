@@ -20,9 +20,10 @@ interface CheckListProps {
   title: string;
   headerRight?: ReactNode;
   items: CheckListItem[];
+  isDisabled: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
+const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
   const auth = useAuth();
   const { mutateAsync } = useCheckDescriptionBullet();
 
@@ -42,6 +43,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
                 </p>
               }
               checked={check.resolved}
+              disabled={isDisabled}
               onChange={() => handleCheck(idx)}
             />
           </div>
