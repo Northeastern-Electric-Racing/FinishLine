@@ -2,7 +2,6 @@ import request from 'supertest';
 import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
-import { WBS_Element_Status } from '@prisma/client';
 import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
 import { someProject } from './test-data/projects.test-data';
