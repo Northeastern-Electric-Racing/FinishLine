@@ -1,25 +1,23 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import { useAllWorkPackages } from '../../../hooks/WorkPackages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { datePipe, fullNamePipe } from '../../../utils/Pipes';
-import { mockUseQueryResult } from '../../TestSupport/TestData/TestUtils.stub';
-import { exampleAllWorkPackages } from '../../TestSupport/TestData/WorkPackages.stub';
-import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
+import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
+import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import WorkPackagesByTimelineStatus from '../../../pages/HomePage/WorkPackagesByTimelineStatus';
 
-jest.mock('../../../hooks/WorkPackages.hooks');
+jest.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseAllWPs = useAllWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
-  mockedUseAllWPs.mockReturnValue(
-    mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error)
-  );
+  mockedUseAllWPs.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
 };
 
 /**
@@ -58,17 +56,11 @@ describe('upcoming deadlines component', () => {
     mockHook(false, false, exampleAllWorkPackages);
     renderComponent();
     expect(screen.getByText(exampleAllWorkPackages[0].name, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })).toBeInTheDocument();
     expect(screen.getByText(exampleAllWorkPackages[1].name, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })).toBeInTheDocument();
     expect(screen.getAllByText(/Expected Activities/).length).toEqual(3);
-    expect(
-      screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })).toBeInTheDocument();
   });
 
   it('renders when no work packages', () => {

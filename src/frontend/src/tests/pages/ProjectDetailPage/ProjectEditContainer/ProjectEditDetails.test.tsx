@@ -1,22 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { act, render, screen } from '../../../TestSupport/TestUtils';
+import { act, render, screen } from '../../../test-support/test-utils';
 import userEvent from '@testing-library/user-event';
 import { WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../../utils/Pipes';
-import {
-  exampleProject1,
-  exampleProject2,
-  exampleProject3
-} from '../../../TestSupport/TestData/Projects.stub';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser
-} from '../../../TestSupport/TestData/Users.stub';
+import { exampleProject1, exampleProject2, exampleProject3 } from '../../../test-support/test-data/projects.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import ProjectEditDetails from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditDetails';
 
 const projs = [exampleProject1, exampleProject2, exampleProject3];
@@ -171,11 +163,9 @@ describe('project-edit-details', () => {
         expect(screen.getByRole('option', { name: 'INACTIVE' })).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'COMPLETE' })).toBeInTheDocument();
 
-        const textboxInputs = ((await screen.findAllByRole('textbox')) as HTMLInputElement[]).map(
-          (input) => input.value
-        );
-        const numberInputs = ((await screen.findAllByRole('spinbutton')) as HTMLInputElement[]).map(
-          (input) => parseInt(input.value)
+        const textboxInputs = ((await screen.findAllByRole('textbox')) as HTMLInputElement[]).map((input) => input.value);
+        const numberInputs = ((await screen.findAllByRole('spinbutton')) as HTMLInputElement[]).map((input) =>
+          parseInt(input.value)
         );
 
         expect(screen.getByText('Project Name:')).toBeInTheDocument();

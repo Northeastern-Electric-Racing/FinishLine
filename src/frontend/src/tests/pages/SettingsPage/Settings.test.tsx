@@ -1,11 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/Routes';
 import Settings from '../../../pages/SettingsPage/Settings';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../pages/SettingsPage/UserSettings/UserSettings', () => {
   return {
@@ -29,33 +32,14 @@ const renderComponent = () => {
 };
 
 describe('settings page component', () => {
-  it('renders title', () => {
+  beforeEach(() => jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser)));
+  it('renders all the information', () => {
     renderComponent();
     expect(screen.getAllByText('Settings').length).toEqual(2);
-  });
-
-  it('renders organization settings', () => {
-    renderComponent();
     expect(screen.getByText(/Organization/)).toBeInTheDocument();
-  });
-
-  it('renders user', () => {
-    renderComponent();
     expect(screen.getByText(/First Name:/)).toBeInTheDocument();
-  });
-
-  it('renders email', () => {
-    renderComponent();
     expect(screen.getByText(/Email:/)).toBeInTheDocument();
-  });
-
-  it('renders role', () => {
-    renderComponent();
     expect(screen.getByText(/Role:/)).toBeInTheDocument();
-  });
-
-  it('renders user settings component', () => {
-    renderComponent();
     expect(screen.getByText('user-settings')).toBeInTheDocument();
   });
 });

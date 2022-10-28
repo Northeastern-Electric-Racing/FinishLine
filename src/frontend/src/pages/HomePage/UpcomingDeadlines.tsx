@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,14 +7,14 @@ import { useState } from 'react';
 import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
-import { useTheme } from '../../hooks/Theme.hooks';
-import { useAllWorkPackages } from '../../hooks/WorkPackages.hooks';
+import { useTheme } from '../../hooks/theme.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/Home.module.css';
+import styles from '../../stylesheets/pages/home.module.css';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -51,8 +51,7 @@ const UpcomingDeadlines: React.FC = () => {
                     <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
                     <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
                     <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
-                      Deliverables
+                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                     </Row>
                   </Container>
                 </Card.Text>
@@ -70,12 +69,7 @@ const UpcomingDeadlines: React.FC = () => {
           <InputGroup.Prepend>
             <InputGroup.Text>Next</InputGroup.Text>
           </InputGroup.Prepend>
-          <Form.Control
-            custom
-            as="select"
-            value={daysUntilDeadline}
-            onChange={(e) => setDaysUntilDeadline(e.target.value)}
-          >
+          <Form.Control custom as="select" value={daysUntilDeadline} onChange={(e) => setDaysUntilDeadline(e.target.value)}>
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
               <option key={days} value={days}>
                 {days}

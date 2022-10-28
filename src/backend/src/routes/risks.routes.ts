@@ -1,35 +1,25 @@
 import express from 'express';
 import { body } from 'express-validator';
-import {
-  createRisk,
-  deleteRisk,
-  editRisk,
-  getRisksForProject
-} from '../controllers/risks.controllers';
-
+import { createRisk, deleteRisk, editRisk, getRisksForProject } from '../controllers/risks.controllers';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const risksRouter = express.Router();
 
 risksRouter.get('/:projectId', getRisksForProject);
 risksRouter.post(
   '/create',
-  body('projectId').isInt({ min: 0 }).not().isString(),
-  body('createdById').isInt({ min: 0 }).not().isString(),
-  body('detail').isString().not().isEmpty(),
+  intMinZero(body('projectId')),
+  intMinZero(body('createdById')),
+  nonEmptyString(body('detail')),
   createRisk
 );
 risksRouter.post(
   '/edit',
-  body('userId').isInt().not().isString(),
-  body('id').isString().not().isEmpty(),
-  body('detail').isString().not().isEmpty(),
+  intMinZero(body('userId')),
+  nonEmptyString(body('id')),
+  nonEmptyString(body('detail')),
   body('resolved').isBoolean(),
   editRisk
 );
-risksRouter.post(
-  '/delete',
-  body('riskId').isString().not().isEmpty(),
-  body('deletedByUserId').isInt({ min: 0 }).not().isString(),
-  deleteRisk
-);
+risksRouter.post('/delete', nonEmptyString(body('riskId')), intMinZero(body('deletedByUserId')), deleteRisk);
 
 export default risksRouter;

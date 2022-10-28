@@ -1,21 +1,15 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useState, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
-import {
-  faExchangeAlt,
-  faFolder,
-  faHome,
-  faQuestionCircle,
-  faUsers
-} from '@fortawesome/free-solid-svg-icons';
+import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
-import styles from '../../stylesheets/layouts/Sidebar/Sidebar.module.css';
+import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { getReleaseInfo } from '../../apis/misc.api';
 
 const Sidebar: React.FC = () => {

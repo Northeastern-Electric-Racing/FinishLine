@@ -10,71 +10,67 @@ import {
   reviewChangeRequest,
   addProposedSolution
 } from '../controllers/change-requests.controllers';
-
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', getAllChangeRequests);
 changeRequestsRouter.get('/:crId', getChangeRequestByID);
 changeRequestsRouter.post(
   '/review',
-  body('reviewerId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('reviewerId')),
+  intMinZero(body('crId')),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
+  body('psId').optional().isString().not().isEmpty(),
   reviewChangeRequest
 );
 changeRequestsRouter.post(
   '/new/activation',
-  body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('submitterId')),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
   body('startDate').isDate(),
-  body('projectLeadId').isInt({ min: 0 }).not().isString(),
-  body('projectManagerId').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('projectLeadId')),
+  intMinZero(body('projectManagerId')),
   body('confirmDetails').isBoolean(),
   createActivationChangeRequest
 );
 changeRequestsRouter.post(
   '/new/stage-gate',
-  body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('submitterId')),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.StageGate),
-  body('leftoverBudget').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('leftoverBudget')),
   body('confirmDone').isBoolean(),
   createStageGateChangeRequest
 );
 changeRequestsRouter.post(
   '/new/standard',
-  body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.carNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.projectNumber').isInt({ min: 0 }).not().isString(),
-  body('wbsNum.workPackageNumber').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('submitterId')),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom(
     (value) =>
-      value === ChangeRequestType.Other ||
-      value === ChangeRequestType.Issue ||
-      value === ChangeRequestType.Redefinition
+      value === ChangeRequestType.Other || value === ChangeRequestType.Issue || value === ChangeRequestType.Redefinition
   ),
-  body('scopeImpact').isString().not().isEmpty(),
-  body('budgetImpact').isInt({ min: 0 }).not().isString(),
-  body('timelineImpact').isInt({ min: 0 }).not().isString(),
   body('why').isArray(),
-  body('why.*.explain').isString().not().isEmpty(),
+  nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   createStandardChangeRequest
 );
 changeRequestsRouter.post(
   '/new/proposed-solution',
-  body('submitterId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
-  body('description').isString().not().isEmpty(),
-  body('scopeImpact').isString().not().isEmpty(),
-  body('timelineImpact').isInt({ min: 0 }).not().isString(),
-  body('budgetImpact').isInt({ min: 0 }).not().isString(),
+  intMinZero(body('submitterId')),
+  intMinZero(body('crId')),
+  nonEmptyString(body('description')),
+  nonEmptyString(body('scopeImpact')),
+  intMinZero(body('timelineImpact')),
+  intMinZero(body('budgetImpact')),
   addProposedSolution
 );
 

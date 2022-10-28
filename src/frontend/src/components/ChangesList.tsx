@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -20,8 +20,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>
-          ]{' '}
+          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
           <OverlayTrigger
             placement="right"
             overlay={

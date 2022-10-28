@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { AuthenticatedUser, User } from 'shared';
 import prisma from '../prisma/prisma';
 
@@ -8,9 +8,7 @@ export const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
   }
 });
 
-export const authenticatedUserTransformer = (
-  user: Prisma.UserGetPayload<typeof authUserQueryArgs>
-): AuthenticatedUser => {
+export const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
   return {
     userId: user.userId,
     firstName: user.firstName,
@@ -23,8 +21,6 @@ export const authenticatedUserTransformer = (
 };
 
 export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
-  if (user === null) throw new TypeError('User not found');
-
   return {
     userId: user.userId ?? undefined,
     firstName: user.firstName ?? undefined,
@@ -40,4 +36,19 @@ export const getUserFullName = async (userId: number | null) => {
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return 'no one';
   return `${user.firstName} ${user.lastName}`;
+};
+
+export const rankUserRole = (role: Role) => {
+  switch (role) {
+    case 'APP_ADMIN':
+      return 5;
+    case 'ADMIN':
+      return 4;
+    case 'LEADERSHIP':
+      return 3;
+    case 'MEMBER':
+      return 2;
+    default:
+      return 1;
+  }
 };

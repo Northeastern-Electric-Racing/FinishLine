@@ -1,17 +1,17 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { render, screen } from '@testing-library/react';
 import { StageGateChangeRequest } from 'shared';
-import { useTheme } from '../../../hooks/Theme.hooks';
+import { useTheme } from '../../../hooks/theme.hooks';
 import themes from '../../../utils/Themes';
 import { Theme } from '../../../utils/Types';
-import { exampleStageGateChangeRequest } from '../../TestSupport/TestData/ChangeRequests.stub';
+import { exampleStageGateChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import StageGateDetails from '../../../pages/ChangeRequestDetailPage/StageGateDetails';
 
-jest.mock('../../../hooks/Theme.hooks');
+jest.mock('../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = () => {

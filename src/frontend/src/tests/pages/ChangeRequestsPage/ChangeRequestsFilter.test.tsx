@@ -1,21 +1,15 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { ChangeRequestType, ChangeRequestReason } from 'shared';
-import { act, fireEvent, render, screen } from '../../TestSupport/TestUtils';
+import { act, fireEvent, render, screen } from '../../test-support/test-utils';
 import ChangeRequestsFilter from '../../../pages/ChangeRequestsPage/ChangeRequestsFilter';
 
 let temp: any[] = [];
 
-const mockUpdate = (
-  type: string,
-  impact: number[],
-  reason: string,
-  state: number[],
-  implemented: string
-) => {
+const mockUpdate = (type: string, impact: number[], reason: string, state: number[], implemented: string) => {
   temp = [];
   temp.push(type);
   temp.push(impact);

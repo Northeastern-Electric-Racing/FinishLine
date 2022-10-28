@@ -1,26 +1,21 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { act, fireEvent, render, screen } from '../../TestSupport/TestUtils';
+import { act, fireEvent, render, screen } from '../../test-support/test-utils';
 import ProjectsTableFilter from '../../../pages/ProjectsPage/ProjectsTableFilter';
 import {
   exampleAdminUser,
   exampleLeadershipUser,
   exampleProjectLeadUser,
   exampleProjectManagerUser
-} from '../../TestSupport/TestData/Users.stub';
+} from '../../test-support/test-data/users.stub';
 import { WbsElementStatus } from 'shared';
 
 let temp: any[] = [];
 
-const mockOnClick = (
-  status: string,
-  projectLead: number,
-  projectManager: number,
-  carNumber: number
-) => {
+const mockOnClick = (status: string, projectLead: number, projectManager: number, carNumber: number) => {
   temp = [];
   temp.push(status);
   temp.push(projectLead);

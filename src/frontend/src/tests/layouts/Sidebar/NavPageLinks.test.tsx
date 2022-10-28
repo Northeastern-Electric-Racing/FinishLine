@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
-import { testLinkItems } from '../../TestSupport/TestData/TestUtils.stub';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
 import NavPageLinks from '../../../layouts/Sidebar/NavPageLinks';
 
 /**
@@ -20,18 +20,10 @@ const renderComponent = () => {
 };
 
 describe('Navigation Page Links Tests', () => {
-  it('Renders Home Page Link', () => {
+  it('renders all the test link items', () => {
     renderComponent();
     expect(screen.getByText(/Home/i)).toBeInTheDocument();
-  });
-
-  it('Renders Projects Page Link', () => {
-    renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
-  });
-
-  it('Renders Change Requests Page Link', () => {
-    renderComponent();
     expect(screen.getByText(/Change Requests/i)).toBeInTheDocument();
   });
 });

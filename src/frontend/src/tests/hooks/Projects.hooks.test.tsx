@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,11 +7,11 @@ import { renderHook } from '@testing-library/react-hooks';
 import { AxiosResponse } from 'axios';
 import { Project } from 'shared';
 import wrapper from '../../app/AppContextQuery';
-import { mockPromiseAxiosResponse } from '../TestSupport/TestData/TestUtils.stub';
-import { exampleAllProjects, exampleProject1 } from '../TestSupport/TestData/Projects.stub';
-import { exampleWbsProject1 } from '../TestSupport/TestData/WbsNumbers.stub';
+import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
+import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
+import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjects, getSingleProject } from '../../apis/Projects.api';
-import { useAllProjects, useSingleProject } from '../../hooks/Projects.hooks';
+import { useAllProjects, useSingleProject } from '../../hooks/projects.hooks';
 
 jest.mock('../../apis/Projects.api');
 

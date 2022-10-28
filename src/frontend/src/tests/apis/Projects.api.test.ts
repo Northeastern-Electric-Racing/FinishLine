@@ -1,12 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { apiUrls } from '../../utils/Urls';
-import { exampleAllProjects, exampleProject1 } from '../TestSupport/TestData/Projects.stub';
+import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { getAllProjects, getSingleProject } from '../../apis/Projects.api';
 
 // Mock the server endpoint(s) that the component will hit

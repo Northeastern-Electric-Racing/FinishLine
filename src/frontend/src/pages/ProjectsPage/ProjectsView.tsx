@@ -1,12 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Project, User } from 'shared';
-import { useAllProjects } from '../../hooks/Projects.hooks';
+import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PrjsTable, { DisplayProject } from './ProjectsTable'; // Directly rename the default import
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -91,12 +91,7 @@ const ProjectsView: React.FC = () => {
    * @param projectManagerID The project manager of the project.
    * @param carNumber The carNumber of the project.
    */
-  const sendDataToParent = (
-    status: string,
-    projectLeadID: number,
-    projectManagerID: number,
-    carNumber: number
-  ) => {
+  const sendDataToParent = (status: string, projectLeadID: number, projectManagerID: number, carNumber: number) => {
     setStatus(status);
     setProjectLeadID(projectLeadID);
     setProjectManagerID(projectManagerID);
@@ -140,11 +135,7 @@ const ProjectsView: React.FC = () => {
       <PageTitle title={'Projects'} previousPages={[]} />
       <Row>
         <Col sm={4} md={3} lg={3} xl={2}>
-          <ProjectsTableFilter
-            onClick={sendDataToParent}
-            leads={getLeads()}
-            managers={getManagers()}
-          />
+          <ProjectsTableFilter onClick={sendDataToParent} leads={getLeads()} managers={getManagers()} />
         </Col>
         <Col>
           <PrjsTable

@@ -1,6 +1,6 @@
 # Requirements
 
-A document outling the product requirements, mainly focusing on feature categories and features of the NER PM Dashboard v2.
+A document outling the product requirements, mainly focusing on feature categories and features of the NER FinishLine.
 This is a living document that will take the place of an official Product Requirements Document (PRD).
 
 ## Table of Contents

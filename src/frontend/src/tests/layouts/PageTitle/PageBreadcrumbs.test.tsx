@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder, screen } from '../../TestSupport/TestUtils';
-import { testLinkItems } from '../../TestSupport/TestData/TestUtils.stub';
+import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
+import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
 import { LinkItem } from '../../../utils/Types';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 
@@ -19,10 +19,6 @@ const renderComponent = (title = 'test', pages: LinkItem[] = []) => {
 };
 
 describe('page-breadcrumbs component', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
   it('renders current page', () => {
     renderComponent();
 

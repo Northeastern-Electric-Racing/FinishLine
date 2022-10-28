@@ -1,22 +1,17 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../TestSupport/TestUtils';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  StageGateChangeRequest,
-  StandardChangeRequest
-} from 'shared';
+import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
+import { ActivationChangeRequest, ChangeRequest, StageGateChangeRequest } from 'shared';
 import { datePipe } from '../../../utils/Pipes';
 import {
   exampleActivationChangeRequest,
   exampleAllChangeRequests,
   exampleStageGateChangeRequest,
   exampleStandardChangeRequest
-} from '../../TestSupport/TestData/ChangeRequests.stub';
+} from '../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
 
 /**
@@ -26,11 +21,7 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ChangeRequestDetailsView
-        changeRequest={cr}
-        isUserAllowedToReview={allowed}
-        isUserAllowedToImplement={allowed}
-      />
+      <ChangeRequestDetailsView changeRequest={cr} isUserAllowedToReview={allowed} isUserAllowedToImplement={allowed} />
     </RouterWrapper>
   );
 };
@@ -49,9 +40,7 @@ describe('Change request details common display element tests', () => {
     (cr: ChangeRequest) => {
       renderComponent(cr);
       expect(screen.getByText(/Submitted by/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(`${cr.submitter.firstName} ${cr.submitter.lastName}`)
-      ).toBeInTheDocument();
+      expect(screen.getByText(`${cr.submitter.firstName} ${cr.submitter.lastName}`)).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(cr.dateSubmitted)}`)).toBeInTheDocument();
     }
   );
@@ -103,12 +92,6 @@ describe('Change request details standard cr display element tests', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
   });
-
-  it('Renders impact section', () => {
-    const cr: StandardChangeRequest = exampleStandardChangeRequest;
-    renderComponent(cr);
-    expect(screen.getByText(`Impact`)).toBeInTheDocument();
-  });
 });
 
 describe('Change request details activation cr display element tests', () => {
@@ -156,9 +139,7 @@ describe('Change request review notes display elements test', () => {
     renderComponent(exampleStandardChangeRequest);
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        reviewNotes ? reviewNotes! : 'There are no review notes for this change request.'
-      )
+      screen.getByText(reviewNotes ? reviewNotes! : 'There are no review notes for this change request.')
     ).toBeInTheDocument();
   });
 });

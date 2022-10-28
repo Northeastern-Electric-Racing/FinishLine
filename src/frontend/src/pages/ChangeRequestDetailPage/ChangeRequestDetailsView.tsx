@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -23,6 +23,7 @@ import ReviewChangeRequest from './ReviewChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
+import ProposedSolutionsList from './ProposedSolutionsList';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -45,6 +46,22 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
       return <StageGateDetails cr={cr as StageGateChangeRequest} />;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
+  }
+};
+
+const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
+  if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
+    return (
+      <PageBlock title={'Proposed Solutions'}>
+        <ProposedSolutionsList
+          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
+          crReviewed={cr.accepted}
+          crId={cr.crId}
+        />
+      </PageBlock>
+    );
+  } else {
+    return <></>;
   }
 };
 
@@ -76,12 +93,17 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </Dropdown.Item>
       <Dropdown.Item
         as={Link}
-        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(
-          changeRequest.wbsNum
-        )}`}
+        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
         disabled={!isUserAllowedToImplement}
       >
         Create New Work Package
+      </Dropdown.Item>
+      <Dropdown.Item
+        as={Link}
+        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
+        disabled={!isUserAllowedToImplement}
+      >
+        Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
       </Dropdown.Item>
     </DropdownButton>
   );
@@ -98,10 +120,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
-      <PageBlock
-        title={'Change Request Details'}
-        headerRight={<b>{convertStatus(changeRequest)}</b>}
-      >
+      <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
         <Container fluid>
           <Row>
             <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
@@ -114,9 +133,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               <b>WBS #</b>
             </Col>
             <Col className={spacer}>
-              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)}
-              </Link>
+              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
             </Col>
           </Row>
           <Row>
@@ -131,6 +148,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </Container>
       </PageBlock>
       {buildDetails(changeRequest)}
+      {buildProposedSolutions(changeRequest)}
       <ReviewNotes
         reviewer={changeRequest.reviewer}
         reviewNotes={changeRequest.reviewNotes}
@@ -140,7 +158,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} />}
+      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
     </Container>
   );
 };

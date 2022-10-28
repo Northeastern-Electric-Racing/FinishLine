@@ -1,15 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  routerWrapperBuilder
-} from '../../TestSupport/TestUtils';
+import { render, screen, waitFor, fireEvent, routerWrapperBuilder } from '../../test-support/test-utils';
 import NavNotificationsMenu from '../../../layouts/NavTopBar/NavNotificationsMenu';
 
 /**
@@ -25,12 +19,7 @@ const renderComponent = () => {
 };
 
 describe('navigation notifications menu tests', () => {
-  it('renders the bell button', () => {
-    renderComponent();
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
-
-  it('renders the notification menu items', async () => {
+  it('renders the bell button and notification menu items', async () => {
     renderComponent();
     const bell: HTMLElement = screen.getByRole('button');
     expect(bell).toBeInTheDocument();

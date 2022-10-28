@@ -1,16 +1,16 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Nav, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
-import { useAuth } from '../../hooks/Auth.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 import { fullNamePipe } from '../../utils/Pipes';
 import NavUserMenu from './NavUserMenu';
 import NavNotificationsMenu from './NavNotificationsMenu';
-import styles from '../../stylesheets/layouts/NavTopBar/NavTopBar.module.css';
+import styles from '../../stylesheets/layouts/nav-top-bar/nav-top-bar.module.css';
 
 const NavTopBar: React.FC = () => {
   const auth = useAuth();

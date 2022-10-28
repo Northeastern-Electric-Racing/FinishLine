@@ -1,15 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../TestSupport/TestUtils';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/Routes';
 import Home from '../../../pages/HomePage/Home';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { Auth } from '../../../utils/Types';
-import { exampleAdminUser } from '../../TestSupport/TestData/Users.stub';
-import { mockAuth } from '../../TestSupport/TestData/TestUtils.stub';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../pages/HomePage/UsefulLinks', () => {
   return {
@@ -38,14 +37,6 @@ jest.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
   };
 });
 
-jest.mock('../../../hooks/Auth.hooks');
-
-const mockedUseAuth = useAuth as jest.Mock<Auth>;
-
-const mockAuthHook = (user = exampleAdminUser) => {
-  mockedUseAuth.mockReturnValue(mockAuth(false, user));
-};
-
 /**
  * Sets up the component under test with the desired values and renders it.
  */
@@ -60,8 +51,10 @@ const renderComponent = () => {
 
 describe('home component', () => {
   beforeEach(() => {
-    mockAuthHook();
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
+
+  afterAll(() => jest.clearAllMocks());
 
   it('renders welcome', () => {
     renderComponent();
