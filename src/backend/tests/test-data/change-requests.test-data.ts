@@ -113,3 +113,10 @@ export const unreviewedCr = {
   reviewerId: null,
   reviewNotes: null
 };
+
+export const whipPayloadObject = {
+  reviewerId: 1,
+  crId: 2,
+  reviewNotes: 'reviewNotes',
+  accepted: true,
+};
