@@ -1,30 +1,15 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { Form, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  Grid,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  DialogContentText,
-  TextField,
-  DialogTitle,
-  DialogActions
-} from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -13,15 +13,7 @@ interface ProjectGanttProps {
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
-  const rows = workPackages.map((wp) => [
-    wp.id,
-    wp.name,
-    wp.startDate,
-    wp.endDate,
-    wp.duration,
-    wp.progress,
-    null
-  ]);
+  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, wp.progress, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {
     height: 30 * rows.length + 50,
@@ -36,11 +28,7 @@ const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
   };
   return (
     <PageBlock title={'Gantt Chart'}>
-      {workPackages.length > 0 ? (
-        <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} />
-      ) : (
-        ''
-      )}
+      {workPackages.length > 0 ? <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} /> : ''}
     </PageBlock>
   );
 };

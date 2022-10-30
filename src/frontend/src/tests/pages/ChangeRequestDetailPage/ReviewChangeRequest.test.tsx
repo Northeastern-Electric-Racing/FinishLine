@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -45,16 +45,12 @@ describe.skip('review change request', () => {
   it('renders change request review modal', () => {
     renderComponent(true, route);
 
-    expect(
-      screen.getByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
   });
 
   it("doesn't render change request review modal when not shown", () => {
     renderComponent(false, route);
 
-    expect(
-      screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).not.toBeInTheDocument();
   });
 });

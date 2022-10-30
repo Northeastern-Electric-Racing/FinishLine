@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  *
  */
@@ -29,17 +29,11 @@ const UsefulLinks: React.FC = () => {
       description={'Reimbursement Guidelines'}
       link={'https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit'}
     />,
-    <ExternalLink
-      icon={faDollarSign}
-      description={'Procurement Form'}
-      link={'https://forms.gle/6ztRoa1iL7p1KHwP6'}
-    />,
+    <ExternalLink icon={faDollarSign} description={'Procurement Form'} link={'https://forms.gle/6ztRoa1iL7p1KHwP6'} />,
     <ExternalLink
       icon={faReceipt}
       description={'McMaster Order Sheet'}
-      link={
-        'https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit'
-      }
+      link={'https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit'}
     />,
     <ExternalLink
       icon={faFileAlt}
