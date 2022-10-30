@@ -6,10 +6,10 @@
 import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -128,7 +128,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <FontAwesomeIcon icon={faArrowRight} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
         </OverlayTrigger>
       )
@@ -144,7 +144,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
       </OverlayTrigger>
     );
