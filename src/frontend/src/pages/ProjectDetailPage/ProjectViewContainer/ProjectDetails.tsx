@@ -1,11 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import { datePipe, dollarsPipe, endDatePipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
+import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
@@ -16,26 +16,6 @@ interface ProjectDetailsProps {
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const start =
-    project.workPackages.length > 0
-      ? datePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          )
-        )
-      : 'n/a';
-  const end =
-    project.workPackages.length > 0
-      ? endDatePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          ),
-          project.workPackages.reduce((tot, cur) => tot + cur.duration, 0)
-        )
-      : 'n/a';
-
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
       <Grid container spacing={1}>

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -10,8 +10,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
-import { WorkPackage } from 'shared';
-import { weeksPipe, wbsPipe, endDatePipe, listPipe, datePipe } from '../../../utils/Pipes';
+import { calculateEndDate, WorkPackage } from 'shared';
+import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
@@ -69,7 +69,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
                   <Typography fontWeight="bold" paddingRight={1}>
                     End date:
                   </Typography>
-                  <Typography>{endDatePipe(workPackage.startDate, workPackage.duration)}</Typography>
+                  <Typography>{datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}</Typography>
                 </Box>
               </Box>
             </Grid>

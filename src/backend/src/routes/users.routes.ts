@@ -6,6 +6,7 @@ import {
   getSingleUser,
   getUserSettings,
   logUserIn,
+  logUserInDev,
   updateUserSettings,
   updateUserRole
 } from '../controllers/users.controllers';
@@ -22,12 +23,8 @@ userRouter.post(
   body('slackId').isString(),
   updateUserSettings
 );
-userRouter.post('/auth/:login', logUserIn);
-userRouter.post(
-  '/:userId/change-role',
-  intMinZero(body('userId')),
-  isRole(body('role')),
-  updateUserRole
-);
+userRouter.post('/:userId/change-role', intMinZero(body('userId')), isRole(body('role')), updateUserRole);
+userRouter.post('/auth/login', logUserIn);
+userRouter.post('/auth/login/dev', logUserInDev);
 
 export default userRouter;
