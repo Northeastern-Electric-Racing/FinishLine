@@ -95,7 +95,7 @@
           }
         },
         {
-          "enforceForRenamedProperties": false
+          "enforceForRenamedProperties": true
         }
       ],
       "prefer-exponentiation-operator": "error",
