@@ -95,7 +95,7 @@
           }
         },
         {
-          "enforceForRenamedProperties": true
+          "enforceForRenamedProperties": false
         }
       ],
       "prefer-exponentiation-operator": "error",
@@ -126,9 +126,5 @@
     ]
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@mui/icons-material": "^5.10.9",
-    "@mui/material": "^5.10.9"
-  }
+  "license": "ISC"
 }
