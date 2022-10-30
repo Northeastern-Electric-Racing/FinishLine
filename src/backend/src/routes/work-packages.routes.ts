@@ -7,6 +7,7 @@ import {
   getAllWorkPackages,
   getSingleWorkPackage
 } from '../controllers/work-packages.controllers';
+import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
@@ -29,6 +30,7 @@ workPackagesRouter.post(
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
+  validateInputs,
   createWorkPackage
 );
 workPackagesRouter.post(
@@ -52,6 +54,7 @@ workPackagesRouter.post(
   intMinZero(body('progress')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
+  validateInputs,
   editWorkPackage
 );
 

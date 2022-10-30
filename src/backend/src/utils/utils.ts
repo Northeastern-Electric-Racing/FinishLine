@@ -2,7 +2,6 @@ import { Description_Bullet, WBS_Element, WBS_Element_Status } from '@prisma/cli
 import { DescriptionBullet, WbsElementStatus, WbsNumber } from 'shared';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
-import { networkInterfaces } from 'os';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -24,14 +23,10 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     COMPLETE: WbsElementStatus.Complete
   }[status]);
 
-export const validateInputs = (
-  req: Request,
-  res: Response,
-  next: (error?: any) => void
-): Response | void => {
+export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  return next();
+  next();
 };

@@ -1,7 +1,6 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { validateInputs } from '../utils/utils';
 
 export const getRisksForProject = async (req: Request, res: Response) => {
   const projectId = parseInt(req.params.projectId);
@@ -95,34 +94,30 @@ export const editRisk = async (req: Request, res: Response) => {
 };
 
 export const deleteRisk = async (req: Request, res: Response) => {
-  const deleteRiskHelper = async () => {
-    const { body } = req;
-    const { riskId, deletedByUserId } = body;
+  const { body } = req;
+  const { riskId, deletedByUserId } = body;
 
-    const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
+  const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
 
-    if (!targetRisk) return res.status(404).json({ message: `risk with id ${riskId} not found` });
+  if (!targetRisk) return res.status(404).json({ message: `risk with id ${riskId} not found` });
 
-    if (targetRisk.dateDeleted || targetRisk.deletedBy) {
-      return res.status(400).json({ message: 'this risk has already been deleted' });
-    }
+  if (targetRisk.dateDeleted || targetRisk.deletedBy) {
+    return res.status(400).json({ message: 'this risk has already been deleted' });
+  }
 
-    const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
-    if (!hasPerms) {
-      return res.status(401).json({ message: 'Access Denied' });
-    }
+  const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
+  if (!hasPerms) {
+    return res.status(401).json({ message: 'Access Denied' });
+  }
 
-    const updatedRisk = await prisma.risk.update({
-      where: { id: riskId },
-      data: {
-        deletedByUserId,
-        dateDeleted: new Date()
-      },
-      ...riskQueryArgs
-    });
+  const updatedRisk = await prisma.risk.update({
+    where: { id: riskId },
+    data: {
+      deletedByUserId,
+      dateDeleted: new Date()
+    },
+    ...riskQueryArgs
+  });
 
-    return res.status(200).json(riskTransformer(updatedRisk));
-  };
-
-  return validateInputs(req, res, deleteRiskHelper);
+  return res.status(200).json(riskTransformer(updatedRisk));
 };
