@@ -162,13 +162,13 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={10}>
             <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3} md={2}>
             <Typography>Submitted By: </Typography>
           </Grid>
           <Grid item xs={2}>
             {fullNamePipe(changeRequest.submitter)}
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={2}>
             {datePipe(changeRequest.dateSubmitted)}
           </Grid>
         </Grid>

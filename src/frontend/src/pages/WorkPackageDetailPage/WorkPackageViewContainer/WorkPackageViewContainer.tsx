@@ -17,7 +17,7 @@ import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalCont
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Container, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -111,7 +111,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <Container>
+    <>
       <PageTitle
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
@@ -158,7 +158,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           handleClose={() => setShowStageGateModal(false)}
         />
       )}
-    </Container>
+    </>
   );
 };
 
