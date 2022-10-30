@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,7 +14,9 @@ interface EditableTextInputListProps {
   add: (val: any) => any;
   remove: (idx: number) => any;
   update: (idx: number, val: any) => any;
+  disabledItems?: boolean[];
 }
+
 
 const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   items,
@@ -22,13 +24,12 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   ordered,
   add,
   remove,
-  update
+  update,
+  disabledItems
 }) => {
   // last input of the list is being kept track of so that we know if we should add a new input when enter is pressed
   // (only add one when the box is not empty)
-  const [lastInput, setLastInput] = useState(
-    items.length > 0 ? items[items.length - 1].toString() : ''
-  );
+  const [lastInput, setLastInput] = useState(items.length > 0 ? items[items.length - 1].toString() : '');
 
   // this hook is used to prevent auto focusing on something when the page is loaded
   const [hasTyped, setHasTyped] = useState(false);
@@ -104,8 +105,16 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
                 setLastInput(e.target.value);
               }
             }}
+            disabled={disabledItems && disabledItems[index]}
+            data-testid={`inputField${index}`}
           />
-          <Button type="button" variant="danger" onClick={() => removeButtonOnClick(index)}>
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => removeButtonOnClick(index)}
+            disabled={disabledItems && disabledItems[index]}
+            data-testid={`removeButton${index}`}
+          >
             X
           </Button>
         </InputGroup>

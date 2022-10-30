@@ -60,9 +60,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom(
     (value) =>
-      value === ChangeRequestType.Other ||
-      value === ChangeRequestType.Issue ||
-      value === ChangeRequestType.Redefinition
+      value === ChangeRequestType.Other || value === ChangeRequestType.Issue || value === ChangeRequestType.Redefinition
   ),
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),

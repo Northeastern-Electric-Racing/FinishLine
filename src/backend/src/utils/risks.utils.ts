@@ -48,10 +48,7 @@ export const hasRiskPermissions = async (userId: number, projectId: number) => {
 
   if (!project) return false;
 
-  if (
-    project.wbsElement.projectLeadId === user.userId ||
-    project.wbsElement.projectManagerId === user.userId
-  ) {
+  if (project.wbsElement.projectLeadId === user.userId || project.wbsElement.projectManagerId === user.userId) {
     return true;
   }
 

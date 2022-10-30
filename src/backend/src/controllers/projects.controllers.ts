@@ -94,23 +94,11 @@ export const newProject = async (req: Request, res: Response) => {
 
 export const editProject = async (req: Request, res: Response) => {
   const { body } = req;
-  const {
-    projectId,
-    crId,
-    userId,
-    budget,
-    summary,
-    rules,
-    goals,
-    features,
-    otherConstraints,
-    name,
-    wbsElementStatus
-  } = body;
+  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name, wbsElementStatus } =
+    body;
 
   // Create optional arg values
-  const googleDriveFolderLink =
-    body.googleDriveFolderLink === undefined ? null : body.googleDriveFolderLink;
+  const googleDriveFolderLink = body.googleDriveFolderLink === undefined ? null : body.googleDriveFolderLink;
   const slideDeckLink = body.slideDeckLink === undefined ? null : body.slideDeckLink;
   const bomLink = body.bomLink === undefined ? null : body.bomLink;
   const taskListLink = body.taskListLink === undefined ? null : body.taskListLink;
@@ -123,8 +111,7 @@ export const editProject = async (req: Request, res: Response) => {
   if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
   // Verify valid change request
   const crReviewed = await getChangeRequestReviewState(body.crId);
-  if (crReviewed === null)
-    return res.status(404).json({ message: `change request with id ${crId} not found` });
+  if (crReviewed === null) return res.status(404).json({ message: `change request with id ${crId} not found` });
   if (!crReviewed) {
     return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
   }
@@ -151,30 +138,9 @@ export const editProject = async (req: Request, res: Response) => {
 
   let changes = [];
   // get the changes or undefined for each field and add it to changes
-  const nameChangeJson = createChangeJsonNonList(
-    'name',
-    originalProject.wbsElement.name,
-    name,
-    crId,
-    userId,
-    wbsElementId
-  );
-  const budgetChangeJson = createChangeJsonNonList(
-    'budget',
-    originalProject.budget,
-    budget,
-    crId,
-    userId,
-    wbsElementId
-  );
-  const summaryChangeJson = createChangeJsonNonList(
-    'summary',
-    originalProject.summary,
-    summary,
-    crId,
-    userId,
-    wbsElementId
-  );
+  const nameChangeJson = createChangeJsonNonList('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
+  const budgetChangeJson = createChangeJsonNonList('budget', originalProject.budget, budget, crId, userId, wbsElementId);
+  const summaryChangeJson = createChangeJsonNonList('summary', originalProject.summary, summary, crId, userId, wbsElementId);
   const statusChangeJson = createChangeJsonNonList(
     'status',
     originalProject.wbsElement.status,
@@ -199,14 +165,7 @@ export const editProject = async (req: Request, res: Response) => {
     userId,
     wbsElementId
   );
-  const bomChangeJson = createChangeJsonNonList(
-    'bom link',
-    originalProject.bomLink,
-    bomLink,
-    crId,
-    userId,
-    wbsElementId
-  );
+  const bomChangeJson = createChangeJsonNonList('bom link', originalProject.bomLink, bomLink, crId, userId, wbsElementId);
   const taskChangeJson = createChangeJsonNonList(
     'task list link',
     originalProject.taskListLink,
@@ -264,18 +223,9 @@ export const editProject = async (req: Request, res: Response) => {
   }
 
   // Dealing with lists
-  const rulesChangeJson = createRulesChangesJson(
-    'rules',
-    originalProject.rules,
-    rules,
-    crId,
-    userId,
-    wbsElementId
-  );
+  const rulesChangeJson = createRulesChangesJson('rules', originalProject.rules, rules, crId, userId, wbsElementId);
   const goalsChangeJson = createDescriptionBulletChangesJson(
-    originalProject.goals
-      .filter((element) => !element.dateDeleted)
-      .map((element) => descBulletConverter(element)),
+    originalProject.goals.filter((element) => !element.dateDeleted).map((element) => descBulletConverter(element)),
     goals,
     crId,
     userId,
@@ -283,9 +233,7 @@ export const editProject = async (req: Request, res: Response) => {
     'goals'
   );
   const featuresChangeJson = createDescriptionBulletChangesJson(
-    originalProject.features
-      .filter((element) => !element.dateDeleted)
-      .map((element) => descBulletConverter(element)),
+    originalProject.features.filter((element) => !element.dateDeleted).map((element) => descBulletConverter(element)),
     features,
     crId,
     userId,
@@ -350,16 +298,8 @@ export const editProject = async (req: Request, res: Response) => {
     });
   }
   addDescriptionBullets(goalsChangeJson.addedDetails, updatedProject.projectId, 'projectIdGoals');
-  addDescriptionBullets(
-    featuresChangeJson.addedDetails,
-    updatedProject.projectId,
-    'projectIdFeatures'
-  );
-  addDescriptionBullets(
-    otherConstraintsChangeJson.addedDetails,
-    updatedProject.projectId,
-    'projectIdOtherConstraints'
-  );
+  addDescriptionBullets(featuresChangeJson.addedDetails, updatedProject.projectId, 'projectIdFeatures');
+  addDescriptionBullets(otherConstraintsChangeJson.addedDetails, updatedProject.projectId, 'projectIdOtherConstraints');
   editDescriptionBullets(
     goalsChangeJson.editedIdsAndDetails
       .concat(featuresChangeJson.editedIdsAndDetails)

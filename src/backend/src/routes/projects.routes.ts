@@ -1,10 +1,5 @@
 import express from 'express';
-import {
-  editProject,
-  getAllProjects,
-  getSingleProject,
-  newProject
-} from '../controllers/projects.controllers';
+import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';

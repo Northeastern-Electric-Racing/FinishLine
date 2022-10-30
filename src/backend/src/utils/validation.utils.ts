@@ -8,3 +8,7 @@ export const intMinZero = (validationObject: ValidationChain): ValidationChain =
 export const nonEmptyString = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().not().isEmpty();
 };
+
+export const isRole = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(['APP_ADMIN', 'ADMIN', 'LEADERSHIP', 'MEMBER', 'GUEST']);
+};

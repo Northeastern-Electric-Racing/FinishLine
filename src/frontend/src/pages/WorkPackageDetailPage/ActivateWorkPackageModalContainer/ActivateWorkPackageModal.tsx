@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -47,9 +47,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
 
   return (
     <Modal show={modalShow} onHide={onHide} centered>
-      <Modal.Header className={'font-weight-bold'} closeButton>{`Activate #${wbsPipe(
-        wbsNum
-      )}`}</Modal.Header>
+      <Modal.Header className={'font-weight-bold'} closeButton>{`Activate #${wbsPipe(wbsNum)}`}</Modal.Header>
       <Modal.Body>
         <Form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
@@ -107,12 +105,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          className={'ml-3'}
-          variant="secondary"
-          form="activate-work-package-form"
-          onClick={onHide}
-        >
+        <Button className={'ml-3'} variant="secondary" form="activate-work-package-form" onClick={onHide}>
           Cancel
         </Button>
         <Button variant="success" type="submit" form="activate-work-package-form">

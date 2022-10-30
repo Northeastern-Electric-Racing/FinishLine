@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -14,13 +14,7 @@ const mockHandleSubmit = jest.fn();
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (
-  readOnly: boolean,
-  description = '',
-  budgetImpact = 0,
-  timelineImpact = 0,
-  scopeImpact = ''
-) => {
+const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, timelineImpact = 0, scopeImpact = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>

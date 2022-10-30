@@ -1,14 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { wbsPipe } from '../../../utils/Pipes';
 import { mockUtils } from '../../test-support/test-data/test-utils.stub';
-import {
-  exampleWbsWorkPackage1,
-  exampleWbsWorkPackage2
-} from '../../test-support/test-data/wbs-numbers.stub';
+import { exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from '../../test-support/test-data/wbs-numbers.stub';
 import { render, screen } from '../../test-support/test-utils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
 
