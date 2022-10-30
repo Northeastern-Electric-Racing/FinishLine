@@ -11,7 +11,9 @@ import {
   faDollarSign,
   faFileAlt,
   faSortNumericDown,
-  faCogs
+  faCogs,
+  faCalendar,
+  faHome
 } from '@fortawesome/free-solid-svg-icons';
 import { Container, Row } from 'react-bootstrap';
 import ExternalLink from '../../components/ExternalLink';
@@ -55,7 +57,13 @@ const UsefulLinks: React.FC = () => {
       icon={faCogs}
       description={'Hardware Guidelines'}
       link={'https://docs.google.com/document/d/1OD1d1VaIEHCwiFCuU7wfwAPu-UA--0_QzbyJjBsexwg/edit'}
-    />
+    />,
+    <ExternalLink
+      icon={faCalendar}
+      description={'Calendars'}
+      link={'https://nerdocs.atlassian.net/wiki/spaces/NER/pages/6619279/Calendars'}
+    />,
+    <ExternalLink icon={faHome} description={'Confluence'} link={'https://nerdocs.atlassian.net/wiki/spaces/NER/overview'} />
   ];
 
   return (
