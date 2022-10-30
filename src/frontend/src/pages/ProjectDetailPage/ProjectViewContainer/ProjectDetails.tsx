@@ -44,14 +44,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Typography>Start Date: </Typography>
         </Grid>
         <Grid item xs={3} md={2}>
-          {start}
+          {datePipe(project.startDate) || 'n/a'}
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>End Date: </Typography>
         </Grid>
         <Grid item xs={5} md={2}>
-          {end}
+          {datePipe(project.endDate) || 'n/a'}
         </Grid>
         <Grid item xs={2} md={2}>
           <Typography>Budget: </Typography>
