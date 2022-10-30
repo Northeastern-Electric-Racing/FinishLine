@@ -6,23 +6,8 @@
 import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { Form, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  Grid,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  DialogContentText,
-  TextField,
-  DialogTitle,
-  DialogActions
-} from '@mui/material';
+import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import styles from '../../../stylesheets/components/check-list.module.css';
