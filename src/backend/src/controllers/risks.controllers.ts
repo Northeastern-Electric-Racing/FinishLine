@@ -1,7 +1,6 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { validationResult } from 'express-validator';
 import { Role } from '@prisma/client';
 
 export const getRisksForProject = async (req: Request, res: Response) => {

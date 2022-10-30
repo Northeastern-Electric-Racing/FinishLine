@@ -5,7 +5,6 @@ import {
   changeRequestTransformer,
   sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
-import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';

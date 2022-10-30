@@ -15,7 +15,6 @@ import {
 } from '../utils/projects.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import { validationResult } from 'express-validator';
 import { descBulletConverter } from '../utils/utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
