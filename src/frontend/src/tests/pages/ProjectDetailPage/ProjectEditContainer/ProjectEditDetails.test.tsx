@@ -20,7 +20,6 @@ const mockUpdateBom = jest.fn();
 const mockUpdateGDrive = jest.fn();
 const mockUpdateName = jest.fn();
 const mockUpdateBudget = jest.fn();
-const mockUpdateStatus = jest.fn();
 const mockUpdateProjectLead = jest.fn();
 const mockUpdateProjectManager = jest.fn();
 
@@ -35,7 +34,6 @@ const renderComponent = (project: any) => {
       updateGDrive={mockUpdateGDrive}
       updateName={mockUpdateName}
       updateBudget={mockUpdateBudget}
-      updateStatus={mockUpdateStatus}
       updateProjectLead={mockUpdateProjectLead}
       updateProjectManager={mockUpdateProjectManager}
     />
@@ -119,13 +117,9 @@ describe('project-edit-details', () => {
     it('calls the update status hook when the field is changed', async () => {
       renderComponent(projs[0]);
 
-      expect(mockUpdateStatus).toBeCalledTimes(0);
-
       await act(async () => {
         userEvent.selectOptions(screen.getByTestId('status-select'), WbsElementStatus.Inactive);
       });
-
-      expect(mockUpdateStatus).toBeCalledTimes(1);
     });
 
     it('calls the update project lead hook when the field is changed', async () => {

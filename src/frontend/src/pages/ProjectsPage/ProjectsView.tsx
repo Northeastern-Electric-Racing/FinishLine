@@ -33,9 +33,6 @@ export function filterProjects(
   const carNumCheck = (project: Project) => {
     return carNumber === project.wbsNum.carNumber;
   };
-  const statusCheck = (project: Project) => {
-    return project.status === status;
-  };
   const leadCheck = (project: Project) => {
     return project.projectLead?.userId === projectLeadID;
   };
@@ -44,9 +41,6 @@ export function filterProjects(
   };
   if (carNumber !== -1) {
     projects = projects.filter(carNumCheck);
-  }
-  if (status !== '') {
-    projects = projects.filter(statusCheck);
   }
   if (projectLeadID !== -1) {
     projects = projects.filter(leadCheck);

@@ -26,13 +26,23 @@ export interface WbsElement {
   changes: ImplementedChange[];
 }
 
+export interface WbsElementNoStatus {
+  id: number;
+  wbsNum: WbsNumber;
+  dateCreated: Date;
+  name: string;
+  projectLead?: User;
+  projectManager?: User;
+  changes: ImplementedChange[];
+}
+
 export enum WbsElementStatus {
   Inactive = 'INACTIVE',
   Active = 'ACTIVE',
   Complete = 'COMPLETE'
 }
 
-export interface Project extends WbsElement {
+export interface Project extends WbsElementNoStatus {
   summary: string;
   budget: number;
   gDriveLink?: string;

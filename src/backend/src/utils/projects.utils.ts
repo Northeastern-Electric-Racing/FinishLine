@@ -99,7 +99,6 @@ export const projectTransformer = (
     wbsNum,
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
-    status: wbsElement.status as WbsElementStatus,
     projectLead: projectLead ? userTransformer(projectLead) : undefined,
     projectManager: projectManager ? userTransformer(projectManager) : undefined,
     changes: wbsElement.changes.map((change) => ({
