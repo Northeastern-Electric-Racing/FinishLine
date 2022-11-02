@@ -45,6 +45,7 @@ describe('Projects', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   test('newProject fails with invalid userId', async () => {
     const proj = { ...newProjectPayload, userId: -1 };
     const res = await request(app).post('/new').send(proj);
@@ -149,5 +150,14 @@ describe('Projects', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
+  });
+
+  test('getAllProjects works', async () => {
+    jest.spyOn(prisma.project, 'findMany').mockResolvedValue([]);
+    const res = await request(app).get('');
+
+    expect(res.statusCode).toBe(200);
+    expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual([]);
   });
 });
