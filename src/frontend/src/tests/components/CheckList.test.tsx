@@ -13,6 +13,8 @@ import * as descBulletHooks from '../../hooks/description-bullets.hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
+import FormCheckInput from 'react-bootstrap/esm/FormCheckInput';
+import { check } from 'prettier';
 
 const testItems: CheckListItem[] = [
   { id: 1, detail: 'testItem1', resolved: false },
@@ -53,15 +55,17 @@ describe('Rendering CheckList Component', () => {
 
   it('Renders the CheckList items as enabled when isDisabled is false', () => {
     renderComponent(testItems, 'testTitle', false);
-    expect(screen.getByText('testItem1')).toBeEnabled();
-    expect(screen.getByText('testItem2')).toBeEnabled();
+    const checkboxes = screen.getAllByRole('checkbox');
+    for (var c of checkboxes as Array<HTMLElement>) {
+      expect(c).toBeEnabled();
+    }
   });
 
   it('Renders the CheckList items as disabled when isDisabled is true', () => {
     renderComponent(testItems, 'testTitle', true);
-    expect(screen.getByText('testItem1')).toBeDisabled();
-    expect(screen.getByText('testItem2')).toBeDisabled();
-    // expect(screen.getByText('testItem1')).toBeDisabled();
-    // expect(screen.getByText('testItem2')).toBeDisabled();
+    const checkboxes = screen.getAllByRole('checkbox');
+    for (var c of checkboxes as Array<HTMLElement>) {
+      expect(c).toBeDisabled();
+    }
   });
 });
