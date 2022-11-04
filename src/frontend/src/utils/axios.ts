@@ -16,4 +16,14 @@ axios.interceptors.response.use(
   }
 );
 
+axios.interceptors.request.use(
+  (request) => {
+    request.headers!.from = localStorage.getItem('userId') || '';
+    return request;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default axios;

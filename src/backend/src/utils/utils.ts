@@ -2,7 +2,6 @@ import { Description_Bullet, WBS_Element, WBS_Element_Status } from '@prisma/cli
 import { DescriptionBullet, WbsElementStatus, WbsNumber } from 'shared';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
-import { expressjwt } from 'express-jwt';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -31,7 +30,7 @@ export const buildChangeDetail = (thingChanged: string, oldValue: string, newVal
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 // generate a jwt using the user's first and last name
-export const generateAccessToken = (user: { firstName: string; lastName: string }) => {
+export const generateAccessToken = (user: { userId: number; firstName: string; lastName: string }) => {
   return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
 };
 
@@ -57,10 +56,18 @@ export const requireJwt = (req: Request, res: Response, next: any) => {
   ) {
     next();
   } else {
-    expressjwt({
-      secret: TOKEN_SECRET,
-      algorithms: ['HS256'],
-      getToken: (req) => req.cookies.token
-    })(req, res, next);
+    const { token } = req.cookies;
+
+    if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
+
+    const decoded: any = jwt.verify(token, TOKEN_SECRET);
+
+    const { userId } = decoded;
+
+    if (req.method === 'POST' && req.body.userId !== userId) {
+      return res.status(401).json({ message: 'Authentication Failed: userId sent in body does not match token!' });
+    }
+
+    next();
   }
 };
