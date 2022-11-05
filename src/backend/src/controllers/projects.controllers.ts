@@ -15,7 +15,6 @@ import {
 } from '../utils/projects.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import { validationResult } from 'express-validator';
 import { descBulletConverter } from '../utils/utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
@@ -49,11 +48,6 @@ export const getSingleProject = async (req: Request, res: Response) => {
 };
 
 export const newProject = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   // verify user is allowed to create projects
   const user = await prisma.user.findUnique({ where: { userId: req.body.userId } });
   if (!user) return res.status(404).json({ message: `user #${req.body.userId} not found!` });
@@ -98,11 +92,6 @@ export const newProject = async (req: Request, res: Response) => {
 };
 
 export const editProject = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name, wbsElementStatus } =
     body;

@@ -5,7 +5,6 @@ import {
   changeRequestTransformer,
   sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
-import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';
@@ -30,11 +29,6 @@ export const getChangeRequestByID = async (req: Request, res: Response) => {
 
 // handle reviewing of change requests
 export const reviewChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { reviewerId, crId, reviewNotes, accepted, psId } = body;
 
@@ -196,11 +190,6 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
 };
 
 export const createActivationChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create activation change requests
@@ -266,11 +255,6 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
 };
 
 export const createStageGateChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
@@ -331,11 +315,6 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 };
 
 export const createStandardChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
@@ -398,11 +377,6 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
 };
 
 export const addProposedSolution = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
