@@ -54,7 +54,7 @@ describe('Rendering CheckList Component', () => {
   it('Renders the CheckList items as enabled when isDisabled is false', () => {
     renderComponent(testItems, 'testTitle', false);
     const checkboxes = screen.getAllByRole('checkbox');
-    for (const c of checkboxes as Array<HTMLElement>) {
+    for (const c of checkboxes) {
       expect(c).toBeEnabled();
     }
   });
@@ -62,7 +62,7 @@ describe('Rendering CheckList Component', () => {
   it('Renders the CheckList items as disabled when isDisabled is true', () => {
     renderComponent(testItems, 'testTitle', true);
     const checkboxes = screen.getAllByRole('checkbox');
-    for (const c of checkboxes as Array<HTMLElement>) {
+    for (const c of checkboxes) {
       expect(c).toBeDisabled();
     }
   });
