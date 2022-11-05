@@ -13,8 +13,6 @@ import * as descBulletHooks from '../../hooks/description-bullets.hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
-import FormCheckInput from 'react-bootstrap/esm/FormCheckInput';
-import { check } from 'prettier';
 
 const testItems: CheckListItem[] = [
   { id: 1, detail: 'testItem1', resolved: false },
@@ -56,7 +54,7 @@ describe('Rendering CheckList Component', () => {
   it('Renders the CheckList items as enabled when isDisabled is false', () => {
     renderComponent(testItems, 'testTitle', false);
     const checkboxes = screen.getAllByRole('checkbox');
-    for (var c of checkboxes as Array<HTMLElement>) {
+    for (const c of checkboxes as Array<HTMLElement>) {
       expect(c).toBeEnabled();
     }
   });
@@ -64,7 +62,7 @@ describe('Rendering CheckList Component', () => {
   it('Renders the CheckList items as disabled when isDisabled is true', () => {
     renderComponent(testItems, 'testTitle', true);
     const checkboxes = screen.getAllByRole('checkbox');
-    for (var c of checkboxes as Array<HTMLElement>) {
+    for (const c of checkboxes as Array<HTMLElement>) {
       expect(c).toBeDisabled();
     }
   });
