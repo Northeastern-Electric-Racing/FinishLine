@@ -30,6 +30,14 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
     await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
   };
 
+  items.sort((a: CheckListItem, b: CheckListItem) => {
+    if (a.resolved !== b.resolved) {
+      return a.resolved ? 1 : -1;
+    }
+
+    return a.detail.localeCompare(b.detail);
+  });
+
   return (
     <PageBlock title={title} headerRight={headerRight}>
       <Form>
