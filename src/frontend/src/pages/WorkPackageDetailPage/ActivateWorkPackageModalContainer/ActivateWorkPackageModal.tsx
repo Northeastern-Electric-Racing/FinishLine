@@ -5,11 +5,12 @@
 
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Form, Modal } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -46,9 +47,9 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   };
 
   return (
-    <Modal show={modalShow} onHide={onHide} centered>
-      <Modal.Header className={'font-weight-bold'} closeButton>{`Activate #${wbsPipe(wbsNum)}`}</Modal.Header>
-      <Modal.Body>
+    <Dialog open={modalShow} onClose={onHide}>
+      <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
+      <DialogContent>
         <Form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
             <Form.Group controlId="activateWPForm-StartDate">
@@ -103,16 +104,16 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             </Form.Group>
           </div>
         </Form>
-      </Modal.Body>
-      <Modal.Footer>
+      </DialogContent>
+      <DialogActions>
         <Button className={'ml-3'} variant="secondary" form="activate-work-package-form" onClick={onHide}>
           Cancel
         </Button>
         <Button variant="success" type="submit" form="activate-work-package-form">
           Submit
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };
 
