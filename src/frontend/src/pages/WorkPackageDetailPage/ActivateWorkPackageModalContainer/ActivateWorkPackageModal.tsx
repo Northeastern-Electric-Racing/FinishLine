@@ -13,13 +13,14 @@ import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/material';
-import { Select } from '@mui/material';
+import { Select, SelectChangeEvent } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { OutlinedInput } from '@mui/material';
 import { InputLabel } from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
+import { useState } from 'react';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -55,11 +56,22 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     reset({ projectLeadId: -1, projectManagerId: -1, startDate: '', confirmDetails: false });
   };
 
+  const [projectLead, setProjectLead] = useState('');
+  const [projectManager, setProjectManager] = useState('');
+
+  const handleLeadChange = (event: SelectChangeEvent) => {
+    setProjectLead(event.target.value);
+  };
+
+  const handleManagerChange = (event: SelectChangeEvent) => {
+    setProjectManager(event.target.value);
+  };
+
   return (
-    <Dialog open={modalShow} onClose={onHide}>
-      <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
-      <DialogContent>
-        <form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+    <form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+      <Dialog open={modalShow} onClose={onHide}>
+        <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
+        <DialogContent>
           <div className={'px-4'}>
             <Controller
               name="startDate"
@@ -85,7 +97,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>Project Lead</Typography>
-                  <Select variant="outlined" size="small" fullWidth>
+                  <Select onChange={handleLeadChange} value={projectLead} variant="outlined" size="small" fullWidth>
                     {allUsers.map((p) => (
                       <MenuItem key={p.userId} value={p.userId}>
                         {fullNamePipe(p)}
@@ -103,7 +115,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>Project Manager</Typography>
-                  <Select variant="outlined" size="small" fullWidth>
+                  <Select onChange={handleManagerChange} value={projectManager} variant="outlined" size="small" fullWidth>
                     {allUsers.map((p) => (
                       <MenuItem key={p.userId} value={p.userId}>
                         {fullNamePipe(p)}
@@ -121,7 +133,12 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>Are the WP details correct?</Typography>
-                  <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name="row-radio-buttons-group">
+                  <RadioGroup
+                    value={value}
+                    row
+                    aria-labelledby="demo-row-radio-buttons-group-label"
+                    name="row-radio-buttons-group"
+                  >
                     <FormControlLabel value={1} control={<Radio />} label="Yes" />
                     <FormControlLabel value={0} control={<Radio />} label="No" />
                   </RadioGroup>
@@ -129,17 +146,17 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               )}
             />
           </div>
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button color="secondary" variant="outlined" form="activate-work-package-form" onClick={onHide}>
-          Cancel
-        </Button>
-        <Button color="success" variant="contained" type="submit" form="activate-work-package-form">
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </DialogContent>
+        <DialogActions>
+          <Button color="secondary" variant="outlined" form="activate-work-package-form" onClick={onHide}>
+            Cancel
+          </Button>
+          <Button color="success" variant="contained" type="submit" form="activate-work-package-form">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </form>
   );
 };
 
