@@ -10,7 +10,7 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Link, makeStyles, TextField, Typography } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
 import { NERButton } from '../../components/NERButton';
 
 interface ReviewChangeRequestViewProps {
@@ -72,9 +72,26 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     return (
       <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
         <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            }
+          }}
+        >
           <Typography>{'Select Proposed Solution'}</Typography>
-          <div style={overflow}>
+          <Box
+            sx={{
+              mx: 'auto',
+              p: 1,
+              border: 1,
+              borderRadius: 1,
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              }
+            }}
+            style={overflow}
+          >
             {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
                 <div style={proposedSolutionStyle}>
@@ -86,7 +103,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                 </div>
               );
             })}
-          </div>
+          </Box>
           <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
             <Controller
               name="reviewNotes"
@@ -99,13 +116,14 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                     multiline
                     rows={4}
                     required
+                    variant="outlined"
                     id="reviewNotes-input"
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
                     defaultValue={value}
                     fullWidth
-                    sx={{ width: 500 }}
+                    sx={{ width: 400 }}
                   />
                 </>
               )}
@@ -113,26 +131,29 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </form>
         </DialogContent>
         <DialogActions>
-          <NERButton
+          <Button
             color="success"
             variant="contained"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => {
               selected > -1 ? handleAcceptDeny(true) : alert('Please select a proposed solution!');
             }}
           >
             Accept
-          </NERButton>
-          <NERButton
+          </Button>
+          <Button
+            color="error"
             className={'ml-3'}
             variant="contained"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
-          </NERButton>
+          </Button>
         </DialogActions>
       </Dialog>
     );
