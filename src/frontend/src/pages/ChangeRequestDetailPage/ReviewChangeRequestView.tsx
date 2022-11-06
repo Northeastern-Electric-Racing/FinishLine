@@ -11,7 +11,6 @@ import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
-import { NERButton } from '../../components/NERButton';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -190,24 +189,26 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </form>
         </DialogContent>
         <DialogActions>
-          <NERButton
+          <Button
             variant="contained"
             color="success"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(true)}
           >
             Accept
-          </NERButton>
-          <NERButton
+          </Button>
+          <Button
             type="submit"
             form="review-notes-form"
             variant="contained"
             color="error"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
-          </NERButton>
+          </Button>
         </DialogActions>
       </Dialog>
     );
