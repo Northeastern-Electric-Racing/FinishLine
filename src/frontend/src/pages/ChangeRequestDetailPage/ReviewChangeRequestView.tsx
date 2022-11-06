@@ -73,6 +73,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
       <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
         <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
         <DialogContent>
+          <Typography>{'Select Proposed Solution'}</Typography>
           <div style={overflow}>
             {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
