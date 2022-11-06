@@ -3,14 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Form, Modal } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Link, makeStyles, TextField, Typography } from '@mui/material';
+import { NERButton } from '../../components/NERButton';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -32,7 +33,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
 
-  const { register, setValue, getFieldState, reset, handleSubmit } = useForm<FormInput>({
+  const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
 
@@ -69,12 +70,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 
   const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
-      <Modal show={modalShow} onHide={onHide} style={{ color: 'black' }} dialogClassName={'modaltheme'} centered>
-        <Modal.Header className={'font-weight-bold'} closeButton>{`Review Change Request #${cr.crId}`}</Modal.Header>
-        <Modal.Body>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Label>Select Proposed Solution</Form.Label>
-          </Form>
+      <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogContent>
           <div style={overflow}>
             {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
@@ -88,16 +86,35 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               );
             })}
           </div>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Group controlId="formReviewNotes">
-              <Form.Label>Additional Comments</Form.Label>
-              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="success"
+          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Controller
+              name="reviewNotes"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography>{'Additional Comments'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    id="reviewNotes-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 500 }}
+                  />
+                </>
+              )}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <NERButton
+            color="success"
+            variant="contained"
             type="submit"
             form="review-notes-form"
             onClick={() => {
@@ -105,48 +122,72 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             }}
           >
             Accept
-          </Button>
-          <Button
+          </NERButton>
+          <NERButton
             className={'ml-3'}
-            variant="danger"
+            variant="contained"
             type="submit"
             form="review-notes-form"
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </NERButton>
+        </DialogActions>
+      </Dialog>
     );
   };
 
   const renderModal: () => JSX.Element = () => {
     return (
-      <Modal show={modalShow} onHide={onHide} centered>
-        <Modal.Header className={'font-weight-bold'} closeButton>{`Review Change Request #${cr.crId}`}</Modal.Header>
-        <Modal.Body>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Group controlId="formReviewNotes">
-              <Form.Label>Additional Comments</Form.Label>
-              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="success" type="submit" form="review-notes-form" onClick={() => handleAcceptDeny(true)}>
-            Accept
-          </Button>
-          <Button
-            className={'ml-3'}
-            variant="danger"
+      <Dialog open={modalShow} onClose={onHide}>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogContent>
+          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Controller
+              name="reviewNotes"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography>{'Additional Comments'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    id="reviewNotes-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 500 }}
+                  />
+                </>
+              )}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <NERButton
+            variant="contained"
+            color="success"
             type="submit"
             form="review-notes-form"
+            onClick={() => handleAcceptDeny(true)}
+          >
+            Accept
+          </NERButton>
+          <NERButton
+            type="submit"
+            form="review-notes-form"
+            variant="contained"
+            color="error"
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </NERButton>
+        </DialogActions>
+      </Dialog>
     );
   };
 
