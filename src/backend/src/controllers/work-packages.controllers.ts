@@ -18,7 +18,6 @@ import {
   getUserFullName
 } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
-import { validationResult } from 'express-validator';
 
 // Fetch all work packages, optionally filtered by query parameters
 export const getAllWorkPackages = async (req: Request, res: Response) => {
@@ -61,11 +60,6 @@ export const getSingleWorkPackage = async (req: Request, res: Response) => {
 };
 
 export const createWorkPackage = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { projectWbsNum, name, crId, userId, startDate, duration, dependencies, expectedActivities, deliverables } = body;
 
@@ -198,11 +192,6 @@ export const createWorkPackage = async (req: Request, res: Response) => {
 };
 
 export const editWorkPackage = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const {
     workPackageId,

@@ -3,6 +3,7 @@ import { DescriptionBullet, WbsElementStatus, WbsNumber } from 'shared';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { expressjwt } from 'express-jwt';
+import { validationResult } from 'express-validator';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -23,6 +24,14 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     ACTIVE: WbsElementStatus.Active,
     COMPLETE: WbsElementStatus.Complete
   }[status]);
+  
+export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+}; 
 
 export const buildChangeDetail = (thingChanged: string, oldValue: string, newValue: string): string => {
   return `Changed ${thingChanged} from "${oldValue}" to "${newValue}"`;

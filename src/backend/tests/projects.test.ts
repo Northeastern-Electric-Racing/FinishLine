@@ -4,7 +4,7 @@ import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
 import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
 import { batman } from './test-data/users.test-data';
-import { someProject } from './test-data/projects.test-data';
+import { wbsElement1 } from './test-data/projects.test-data';
 
 const app = express();
 app.use(express.json());
@@ -45,6 +45,7 @@ describe('Projects', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   test('newProject fails with invalid userId', async () => {
     const proj = { ...newProjectPayload, userId: -1 };
     const res = await request(app).post('/new').send(proj);
@@ -143,11 +144,20 @@ describe('Projects', () => {
   });
 
   test('getSingleProject works', async () => {
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(someProject);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(wbsElement1);
     mockProjectTransformer.mockReturnValue({ message: 'projectTransformer called' });
     const res = await request(app).get('/1.2.0');
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
+  });
+
+  test('getAllProjects works', async () => {
+    jest.spyOn(prisma.project, 'findMany').mockResolvedValue([]);
+    const res = await request(app).get('');
+
+    expect(res.statusCode).toBe(200);
+    expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual([]);
   });
 });

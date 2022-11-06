@@ -31,7 +31,7 @@ export const calculateWorkPackageProgress = (
   expectedActivities: Description_Bullet[]
 ) => {
   const bullets = deliverables.concat(expectedActivities);
-  return Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
+  return bullets.length === 0 ? 0 : Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
 };
 
 export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
