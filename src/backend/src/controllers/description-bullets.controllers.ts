@@ -37,7 +37,7 @@ export const checkDescriptionBullet = async (req: Request, res: Response) => {
   const hasPerms = await hasBulletCheckingPermissions(userId, descriptionId);
 
   if (!hasPerms) {
-    return res.status(401).json({ message: 'Access Denied' });
+    return res.status(403).json({ message: 'Access Denied' });
   }
 
   let updatedDB;

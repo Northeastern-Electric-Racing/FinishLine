@@ -66,7 +66,7 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   // verify user is allowed to create work packages
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return res.status(404).json({ message: `User with id #${userId} not found!` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   const crReviewed = await getChangeRequestReviewState(crId);
   if (crReviewed === null) {
@@ -211,7 +211,7 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   // verify user is allowed to edit work packages
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return res.status(404).json({ message: `User with id #${userId} not found` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // get the original work package so we can compare things
   const originalWorkPackage = await prisma.work_Package.findUnique({
@@ -329,19 +329,10 @@ export const editWorkPackage = async (req: Request, res: Response) => {
   );
 
   // add to changes if not undefined
-  if (nameChangeJson !== undefined) {
-    changes.push(nameChangeJson);
-  }
-  if (startDateChangeJson !== undefined) {
-    changes.push(startDateChangeJson);
-  }
-  if (durationChangeJson !== undefined) {
-    changes.push(durationChangeJson);
-  }
-
-  if (wbsElementStatusChangeJson !== undefined) {
-    changes.push(wbsElementStatusChangeJson);
-  }
+  if (nameChangeJson !== undefined) changes.push(nameChangeJson);
+  if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
+  if (durationChangeJson !== undefined) changes.push(durationChangeJson);
+  if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
 
   if (body.hasOwnProperty('projectManager')) {
     const projectManagerChangeJson = createChangeJsonNonList(

@@ -51,7 +51,7 @@ export const newProject = async (req: Request, res: Response) => {
   // verify user is allowed to create projects
   const user = await prisma.user.findUnique({ where: { userId: req.body.userId } });
   if (!user) return res.status(404).json({ message: `user #${req.body.userId} not found!` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // check if the change request exists
   const crReviewed = await getChangeRequestReviewState(req.body.crId);
@@ -107,7 +107,7 @@ export const editProject = async (req: Request, res: Response) => {
   // verify user is allowed to edit projects
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return res.status(404).json({ message: `user with id ${userId} not found` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
   // Verify valid change request
   const crReviewed = await getChangeRequestReviewState(body.crId);
   if (crReviewed === null) return res.status(404).json({ message: `change request with id ${crId} not found` });

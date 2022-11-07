@@ -63,7 +63,7 @@ describe('Work Packages', () => {
     const res = await request(app).post('/create').send(createWorkPackagePayload);
 
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(res.statusCode).toBe(401);
+    expect(res.statusCode).toBe(403);
     expect(res.body.message).toBe('Access Denied');
   });
 

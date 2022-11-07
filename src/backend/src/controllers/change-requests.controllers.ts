@@ -36,7 +36,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   const reviewer = await prisma.user.findUnique({ where: { userId: reviewerId } });
   if (!reviewer) return res.status(404).json({ message: `User with id #${reviewerId} not found` });
   if (reviewer.role === Role.GUEST || reviewer.role === Role.MEMBER)
-    return res.status(401).json({ message: 'Access Denied' });
+    return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
@@ -45,7 +45,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
   // verify that the user is not reviewing their own change request
-  if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
+  if (reviewerId === foundCR.submitterId) return res.status(403).json({ message: 'Access Denied' });
 
   // if Scope CR, make sure that a proposed solution is selected before approving
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
@@ -282,7 +282,7 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -345,7 +345,7 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
   // verify user is allowed to create stage gate change requests
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
   if (!user) return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -407,7 +407,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -469,7 +469,7 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({
