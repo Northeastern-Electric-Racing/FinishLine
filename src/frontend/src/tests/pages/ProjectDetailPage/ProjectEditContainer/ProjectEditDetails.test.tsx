@@ -35,7 +35,6 @@ const renderComponent = (project: any) => {
       updateGDrive={mockUpdateGDrive}
       updateName={mockUpdateName}
       updateBudget={mockUpdateBudget}
-      updateStatus={mockUpdateStatus}
       updateProjectLead={mockUpdateProjectLead}
       updateProjectManager={mockUpdateProjectManager}
     />
@@ -116,18 +115,6 @@ describe('project-edit-details', () => {
       expect(mockUpdateBudget).toBeCalledTimes(1);
     });
 
-    it('calls the update status hook when the field is changed', async () => {
-      renderComponent(projs[0]);
-
-      expect(mockUpdateStatus).toBeCalledTimes(0);
-
-      await act(async () => {
-        userEvent.selectOptions(screen.getByTestId('status-select'), WbsElementStatus.Inactive);
-      });
-
-      expect(mockUpdateStatus).toBeCalledTimes(1);
-    });
-
     it('calls the update project lead hook when the field is changed', async () => {
       renderComponent(projs[0]);
 
@@ -159,9 +146,6 @@ describe('project-edit-details', () => {
         renderComponent(proj);
 
         expect(screen.getByText('Project Details (EDIT)')).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'ACTIVE' })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'INACTIVE' })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'COMPLETE' })).toBeInTheDocument();
 
         const textboxInputs = ((await screen.findAllByRole('textbox')) as HTMLInputElement[]).map((input) => input.value);
         const numberInputs = ((await screen.findAllByRole('spinbutton')) as HTMLInputElement[]).map((input) =>
