@@ -5,7 +5,7 @@
 
 import { SyntheticEvent, useState } from 'react';
 import { Container, Form } from 'react-bootstrap';
-import { DescriptionBullet, Project, WorkPackage } from 'shared';
+import { DescriptionBullet, Project, WorkPackage, calculateProjectStatus } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -49,7 +49,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const [name, setName] = useState(proj.name);
   const [summary, setSummary] = useState(proj.summary);
   const [budget, setBudget] = useState(proj.budget);
-  const [wbsElementStatus, setWbsElementStatus] = useState(proj.status);
   const [projectLead, setProjectLead] = useState(proj.projectLead?.userId);
   const [projectManager, setProjectManager] = useState(proj.projectManager?.userId);
 
@@ -181,7 +180,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
       goals,
       features,
       otherConstraints,
-      wbsElementStatus,
+      wbsElementStatus: calculateProjectStatus(proj),
       googleDriveFolderLink: gDrive,
       slideDeckLink: slideDeck,
       bomLink: bom,
@@ -232,7 +231,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           updateGDrive={updateGDrive}
           updateName={setName}
           updateBudget={(val: string) => setBudget(Number(val))}
-          updateStatus={setWbsElementStatus}
           updateProjectLead={setProjectLead}
           updateProjectManager={setProjectManager}
         />

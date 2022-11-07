@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus } from '../types/project-types';
+import { WbsElementStatus, Project } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
 /**
@@ -90,11 +90,29 @@ const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[])
   return minDate;
 };
 
+// calculate the project's status based on its pacakges' status
+const calculateProjectStatus = (proj: Project) => {
+  let isActive = false;
+  let isComplete = true;
+
+  if (proj.workPackages.length === 0) {
+    return WbsElementStatus.Inactive;
+  }
+
+  proj.workPackages.forEach((wp) => {
+    isComplete = isComplete && wp.status === WbsElementStatus.Complete;
+    isActive = isActive || wp.status === WbsElementStatus.Active;
+  });
+
+  return isComplete ? WbsElementStatus.Complete : isActive ? WbsElementStatus.Active : WbsElementStatus.Inactive;
+};
+
 export {
   calculateDuration,
   calculateEndDate,
   calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateProjectStartDate
+  calculateProjectStartDate,
+  calculateProjectStatus
 };
