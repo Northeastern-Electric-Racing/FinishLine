@@ -34,7 +34,6 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
     descriptionBullet.workPackageDeliverables?.wbsElement.projectLead ||
     descriptionBullet.workPackageExpectedActivities?.wbsElement.projectLead;
 
-  console.log(leader);
   if (
     user.role === Role.APP_ADMIN ||
     user.role === Role.ADMIN ||
