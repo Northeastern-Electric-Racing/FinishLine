@@ -78,12 +78,10 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             }
           }}
         >
-          <Typography>{'Select Proposed Solution'}</Typography>
+          <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
           <Box
             sx={{
-              mx: 'auto',
-              p: 1,
-              border: 1,
+              borderBottom: 1,
               borderRadius: 1,
               '&::-webkit-scrollbar': {
                 display: 'none'
@@ -110,7 +108,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography>{'Additional Comments'}</Typography>
+                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Additional Comments'}</Typography>
                   <TextField
                     multiline
                     rows={4}
