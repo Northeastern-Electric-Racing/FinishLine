@@ -22,7 +22,7 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
     where: { descriptionId },
     include: {
       workPackageDeliverables: { include: { wbsElement: { include: { projectLead: true } } } },
-      workPackageExpectedActivities: { include: { wbsElement: {include: {projectLead: true } } } } 
+      workPackageExpectedActivities: { include: { wbsElement: { include: { projectLead: true } } } }
     }
   });
 
@@ -33,14 +33,13 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
   const leader =
     descriptionBullet.workPackageDeliverables?.wbsElement.projectLead ||
     descriptionBullet.workPackageExpectedActivities?.wbsElement.projectLead;
-  
+
   console.log(leader);
   if (
     user.role === Role.APP_ADMIN ||
     user.role === Role.ADMIN ||
     user.role === Role.LEADERSHIP ||
-    (leader &&
-      leader.userId === user.userId)
+    (leader && leader.userId === user.userId)
   ) {
     return true;
   }
