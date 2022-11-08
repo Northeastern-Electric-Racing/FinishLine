@@ -18,7 +18,7 @@ axios.interceptors.response.use(
 
 axios.interceptors.request.use(
   (request) => {
-    request.headers!.from = localStorage.getItem('userId') || '';
+    if (process.env.NODE_ENV === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
     return request;
   },
   (error) => {
