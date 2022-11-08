@@ -172,5 +172,3 @@ describe('ChangeRequests', () => {
     expect(res.body).toStrictEqual(transformedCR);
   });
 });
-
-export {};
