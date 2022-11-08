@@ -86,28 +86,32 @@ const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayPr
       text: 'WBS #',
       align: 'center',
       sort: true,
-      sortFunc: wbsNumSort
+      sortFunc: wbsNumSort,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'name',
       text: 'Name',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'projectLead',
       text: 'Project Lead',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'projectManager',
       text: 'Project Manager',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
@@ -115,7 +119,8 @@ const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayPr
       text: 'Duration',
       align: 'center',
       sort: true,
-      sortFunc: durationSort
+      sortFunc: durationSort,
+      headerStyle: { overflowWrap: 'anywhere' }
     }
   ];
 
@@ -146,7 +151,7 @@ const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayPr
         defaultSorted={defaultSort}
         rowEvents={rowEvents}
         noDataIndication="No Projects to Display"
-        rowStyle={{ cursor: 'pointer' }}
+        rowStyle={{ cursor: 'pointer', overflowWrap: 'anywhere' }}
       />
     </>
   );
