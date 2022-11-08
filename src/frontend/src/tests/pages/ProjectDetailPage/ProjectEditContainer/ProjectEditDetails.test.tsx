@@ -5,7 +5,6 @@
 
 import { act, render, screen } from '../../../test-support/test-utils';
 import userEvent from '@testing-library/user-event';
-import { WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../../utils/Pipes';
 import { exampleProject1, exampleProject2, exampleProject3 } from '../../../test-support/test-data/projects.stub';
 import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
