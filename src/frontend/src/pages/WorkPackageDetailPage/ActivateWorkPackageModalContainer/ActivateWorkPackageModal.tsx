@@ -11,12 +11,11 @@ import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
-import { Select, SelectChangeEvent } from '@mui/material';
+import { Select } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
-import { useState } from 'react';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -29,9 +28,16 @@ interface ActivateWorkPackageModalProps {
 const schema = yup.object().shape({
   projectLeadId: yup.number().required().min(0),
   projectManagerId: yup.number().required().min(0),
-  startDate: yup.string().required(),
+  startDate: yup.date().required(),
   confirmDetails: yup.boolean().required()
 });
+
+const defaultValues = {
+  projectLeadId: -1,
+  projectManagerId: -1,
+  startDate: new Date().toLocaleDateString(),
+  confirmDetails: false
+};
 
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   allUsers,
@@ -40,8 +46,9 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   onHide,
   onSubmit
 }) => {
-  const { register, reset, handleSubmit, control } = useForm<FormInput>({
-    resolver: yupResolver(schema)
+  const { reset, handleSubmit, control } = useForm<FormInput>({
+    resolver: yupResolver(schema),
+    defaultValues
   });
 
   /**
@@ -49,18 +56,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
    */
   const onSubmitWrapper = async (data: FormInput) => {
     await onSubmit(data);
-    reset({ projectLeadId: -1, projectManagerId: -1, startDate: '', confirmDetails: false });
-  };
-
-  const [projectLead, setProjectLead] = useState('');
-  const [projectManager, setProjectManager] = useState('');
-
-  const handleLeadChange = (event: SelectChangeEvent) => {
-    setProjectLead(event.target.value);
-  };
-
-  const handleManagerChange = (event: SelectChangeEvent) => {
-    setProjectManager(event.target.value);
+    reset(defaultValues);
   };
 
   return (
@@ -93,7 +89,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>Project Lead</Typography>
-                  <Select onChange={handleLeadChange} value={projectLead} variant="outlined" size="small" fullWidth>
+                  <Select onChange={onChange} value={value} variant="outlined" size="small" fullWidth>
                     {allUsers.map((p) => (
                       <MenuItem key={p.userId} value={p.userId}>
                         {fullNamePipe(p)}
@@ -111,7 +107,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography>Project Manager</Typography>
-                  <Select onChange={handleManagerChange} value={projectManager} variant="outlined" size="small" fullWidth>
+                  <Select onChange={onChange} value={value} variant="outlined" size="small" fullWidth>
                     {allUsers.map((p) => (
                       <MenuItem key={p.userId} value={p.userId}>
                         {fullNamePipe(p)}
@@ -134,6 +130,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                     row
                     aria-labelledby="demo-row-radio-buttons-group-label"
                     name="row-radio-buttons-group"
+                    onChange={onChange}
                   >
                     <FormControlLabel value={1} control={<Radio />} label="Yes" />
                     <FormControlLabel value={0} control={<Radio />} label="No" />
