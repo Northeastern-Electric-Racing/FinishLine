@@ -60,14 +60,12 @@ export const requireJwt = (req: Request, res: Response, next: any) => {
 
     if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
 
-    const decoded: any = jwt.verify(token, TOKEN_SECRET);
+    jwt.verify(token, TOKEN_SECRET, (err: any, decoded: any) => {
+      if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
 
-    const { userId } = decoded;
+      res.locals.userId = decoded.userId;
 
-    if (req.method === 'POST' && req.body.userId !== userId) {
-      return res.status(401).json({ message: 'Authentication Failed: userId sent in body does not match token!' });
-    }
-
-    next();
+      next();
+    });
   }
 };
