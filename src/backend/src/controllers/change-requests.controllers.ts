@@ -21,7 +21,7 @@ export const getChangeRequestByID = async (req: Request, res: Response) => {
     where: { crId },
     ...changeRequestRelationArgs
   });
-  if (requestedCR === null) {
+  if (!requestedCR) {
     return res.status(404).json({ message: `change request with id ${crId} not found!` });
   }
   return res.status(200).json(changeRequestTransformer(requestedCR));
