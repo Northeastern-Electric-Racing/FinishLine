@@ -99,8 +99,12 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
   }
 };
 
-// get the user making the request. returns null if they dont exist for some reason
-export const getUser = async (res: Response): Promise<User | null> => {
+/**
+ * get the user making the request.
+ * @param res - we use the response because that's where we stored the userId data during jwt validation
+ * @returns the user or null if not found for some reason (although that should really never happen because of the validation)
+ */
+export const getCurrentUser = async (res: Response): Promise<User | null> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({ where: { userId } });
   return user;
