@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import ProjectsTable from '../../../pages/ProjectsPage/ProjectsTable';
 import { Project } from 'shared';
 import { wbsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
-import { wbsRegex } from '../../TestSupport/TestUtils';
+import { wbsRegex } from '../../test-support/test-utils';
 import {
   exampleProject1,
   exampleProject2,
@@ -15,7 +15,7 @@ import {
   exampleProject4,
   exampleProject5,
   exampleAllProjects
-} from '../../TestSupport/TestData/Projects.stub';
+} from '../../test-support/test-data/projects.stub';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (prjs: Project[]) => {

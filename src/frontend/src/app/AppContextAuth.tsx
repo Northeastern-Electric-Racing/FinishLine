@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { createContext } from 'react';
-import { useProvideAuth } from '../hooks/Auth.hooks';
+import { useProvideAuth } from '../hooks/auth.hooks';
 import { Auth } from '../utils/Types';
 
 export const AuthContext = createContext<Auth | undefined>(undefined);

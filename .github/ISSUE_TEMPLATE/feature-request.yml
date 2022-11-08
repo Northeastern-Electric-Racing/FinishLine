@@ -1,0 +1,26 @@
+name: Feature Request
+description: Suggest a new feature for the project
+title: '[Area] - Short Description'
+labels: [new feature]
+body:
+  - type: textarea
+    id: current-features
+    attributes:
+      label: Current Features
+      description: What exists currently?
+    validations:
+      required: true
+  - type: textarea
+    id: desired-features
+    attributes:
+      label: Desired Additional Features
+      description: What features do you want to add?
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (as needed)
+      description: Add screenshots of the current or desired state if applicable
+    validations:
+      required: false

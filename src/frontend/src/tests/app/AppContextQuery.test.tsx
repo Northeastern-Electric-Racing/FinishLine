@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { render, screen } from '@testing-library/react'; // avoid circular dependency
-import { useAllChangeRequests } from '../../hooks/ChangeRequests.hooks';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import AppContextQuery from '../../app/AppContextQuery';
 
 describe('app context', () => {

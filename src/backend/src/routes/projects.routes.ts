@@ -1,12 +1,9 @@
 import express from 'express';
-import {
-  editProject,
-  getAllProjects,
-  getSingleProject,
-  newProject
-} from '../controllers/projects.controllers';
+import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { validateInputs } from '../utils/utils';
 
 const projectRouter = express.Router();
 
@@ -14,39 +11,41 @@ projectRouter.get('/', getAllProjects);
 projectRouter.get('/:wbsNum', getSingleProject);
 projectRouter.post(
   '/new',
-  body('userId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
-  body('name').isString().not().isEmpty(),
-  body('carNumber').isInt({ min: 0 }).not().isString(),
-  body('summary').isString().not().isEmpty(),
+  intMinZero(body('userId')),
+  intMinZero(body('crId')),
+  nonEmptyString(body('name')),
+  intMinZero(body('carNumber')),
+  nonEmptyString(body('summary')),
+  validateInputs,
   newProject
 );
 projectRouter.post(
   '/edit',
-  body('projectId').isInt({ min: 0 }).not().isString(),
-  body('crId').isInt({ min: 0 }).not().isString(),
-  body('name').isString().not().isEmpty(),
-  body('userId').isInt({ min: 0 }).not().isString(),
-  body('budget').isInt({ min: 0 }).not().isString(),
-  body('summary').isString().not().isEmpty(),
+  intMinZero(body('projectId')),
+  intMinZero(body('crId')),
+  nonEmptyString(body('name')),
+  intMinZero(body('userId')),
+  intMinZero(body('budget')),
+  nonEmptyString(body('summary')),
   body('rules').isArray(),
-  body('rules.*').isString().not().isEmpty(),
+  nonEmptyString(body('rules.*')),
   body('goals').isArray(),
-  body('goals.*.id').optional().isInt({ min: 0 }).not().isString(),
-  body('goals.*.detail').isString().not().isEmpty(),
+  intMinZero(body('goals.*.id').optional()),
+  nonEmptyString(body('goals.*.detail')),
   body('features').isArray(),
-  body('features.*.id').optional().isInt({ min: 0 }).not().isString(),
-  body('features.*.detail').isString().not().isEmpty(),
+  intMinZero(body('features.*.id').optional()),
+  nonEmptyString(body('features.*.detail')),
   body('otherConstraints').isArray(),
-  body('otherConstraints.*.id').optional().isInt({ min: 0 }).not().isString(),
-  body('otherConstraints.*.detail').isString().not().isEmpty(),
+  intMinZero(body('otherConstraints.*.id').optional()),
+  nonEmptyString(body('otherConstraints.*.detail')),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
-  body('googleDriveFolderLink').isString().not().isEmpty(),
-  body('slideDeckLink').isString().not().isEmpty(),
-  body('bomLink').isString().not().isEmpty(),
-  body('taskListLink').isString().not().isEmpty(),
-  body('projectLead').optional().isInt({ min: 0 }).not().isString(),
-  body('projectManager').optional().isInt({ min: 0 }).not().isString(),
+  nonEmptyString(body('googleDriveFolderLink')),
+  nonEmptyString(body('slideDeckLink')),
+  nonEmptyString(body('bomLink')),
+  nonEmptyString(body('taskListLink')),
+  intMinZero(body('projectLead').optional()),
+  intMinZero(body('projectManager').optional()),
+  validateInputs,
   editProject
 );
 

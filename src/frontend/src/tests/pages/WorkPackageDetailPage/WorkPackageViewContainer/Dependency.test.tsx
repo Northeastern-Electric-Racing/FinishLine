@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../TestSupport/TestUtils';
-import { exampleWbsWorkPackage1 } from '../../../TestSupport/TestData/WbsNumbers.stub';
+import { render, screen } from '../../../test-support/test-utils';
+import { exampleWbsWorkPackage1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import { wbsPipe } from '../../../../utils/Pipes';
 import Dependency from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/Dependency';
 

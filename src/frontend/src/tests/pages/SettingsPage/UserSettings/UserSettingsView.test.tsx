@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../../TestSupport/TestUtils';
-import { exampleUserSettingsLight } from '../../../TestSupport/TestData/UserSettings.stub';
+import { render, screen } from '../../../test-support/test-utils';
+import { exampleUserSettingsLight } from '../../../test-support/test-data/user-settings.stub';
 import UserSettingsView from '../../../../pages/SettingsPage/UserSettings/UserSettingsView';
 
 /**

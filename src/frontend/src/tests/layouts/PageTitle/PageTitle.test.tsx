@@ -1,9 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen } from '../../TestSupport/TestUtils';
+import { render, screen } from '../../test-support/test-utils';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 
 jest.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
@@ -16,19 +16,10 @@ jest.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 });
 
 describe('error page', () => {
-  it('renders without error', () => {
-    render(<PageTitle title={'test'} previousPages={[]} />);
-  });
-
-  it('renders title', () => {
+  it('renders title and breadcrumbs', () => {
     render(<PageTitle title={'test'} previousPages={[]} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();
-  });
-
-  it('renders breadcrumbs', () => {
-    render(<PageTitle title={'test'} previousPages={[]} />);
-
     expect(screen.getByText('page-breadcrumbs')).toBeInTheDocument();
   });
 });

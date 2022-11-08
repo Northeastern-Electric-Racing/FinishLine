@@ -1,22 +1,25 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import * as yup from 'yup';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { routes } from '../../utils/Routes';
 import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
   crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
+  proposedSolutions: ProposedSolution[];
+  setProposedSolutions: (ps: ProposedSolution[]) => void;
 }
 
 const wbsTester = (wbsNum: string | undefined) => {
@@ -30,25 +33,9 @@ const wbsTester = (wbsNum: string | undefined) => {
 };
 
 const schema = yup.object().shape({
-  wbsNum: yup
-    .string()
-    .required('WBS number is required')
-    .test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
+  wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
-  scopeImpact: yup.string().required('Scope Impact is required'),
-  timelineImpact: yup
-    .number()
-    .typeError('Timeline Impact must be a number')
-    .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
-    .required('Timeline Impact is required')
-    .integer('Timeline Impact must be an integer'),
-  budgetImpact: yup
-    .number()
-    .typeError('Budget Impact must be a number')
-    .min(0, 'Budget Impact must be greater than or equal to $0')
-    .required('Budget Impact is required')
-    .integer('Budget Impact must be an integer'),
   why: yup
     .array()
     .min(1, 'At least one Why is required')
@@ -70,7 +57,9 @@ const schema = yup.object().shape({
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
   crDesc,
-  onSubmit
+  onSubmit,
+  proposedSolutions,
+  setProposedSolutions
 }) => {
   const { register, handleSubmit, control, formState } = useForm<FormInput>({
     resolver: yupResolver(schema),
@@ -83,11 +72,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   );
 
   return (
-    <>
-      <PageTitle
-        title={'New Change Request'}
-        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      />
+    <Container fluid>
+      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title={''}>
         <Form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
           <Row className="mx-2 justify-content-start">
@@ -99,9 +85,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   placeholder="Project or Work Package WBS #"
                   isInvalid={formState.errors.wbsNum?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.wbsNum?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.wbsNum?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
 
@@ -120,13 +104,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     </option>
                   ))}
                 </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.type?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.type?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
-
           <Row className="mx-2 justify-content-start">
             <Col>
               <Form.Group controlId="formWhat" className="mx-2">
@@ -139,9 +120,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   placeholder="What is the situation?"
                   isInvalid={formState.errors.what?.message !== undefined}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.what?.message}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formState.errors.what?.message}</Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col sm={6} md={6} lg={6} xl={6}>
@@ -186,68 +165,25 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Form.Group>
             </Col>
           </Row>
-
-          <Row className="mx-2 justify-content-start">
-            <Col>
-              <Form.Group controlId="formScopeImpact" className="mx-2">
-                <Form.Label>Scope Impact</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  cols={50}
-                  {...register('scopeImpact')}
-                  placeholder="What do you think the impact to scope is?"
-                  isInvalid={formState.errors.scopeImpact?.message !== undefined}
+          <PageBlock title="Proposed Solutions">
+            {' '}
+            <Row className="mx-2 justify-content-start">
+              <Col className="mx-2">
+                <CreateProposedSolutionsList
+                  proposedSolutions={proposedSolutions}
+                  setProposedSolutions={setProposedSolutions}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {formState.errors.scopeImpact?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={4} md={4} lg={4} xl={4}>
-              <Form.Group controlId="formTimelineImpact" className="mx-2">
-                <Form.Label>Timeline Impact</Form.Label>
-                <InputGroup>
-                  <Form.Control
-                    {...register('timelineImpact')}
-                    placeholder="# needed"
-                    isInvalid={formState.errors.timelineImpact?.message !== undefined}
-                  />
-                  <InputGroup.Append>
-                    <InputGroup.Text>weeks</InputGroup.Text>
-                  </InputGroup.Append>
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.timelineImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-
-              <Form.Group controlId="formBudgetImpact" className="mx-2">
-                <Form.Label>Budget Impact</Form.Label>
-                <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text>$</InputGroup.Text>
-                  </InputGroup.Prepend>
-                  <Form.Control
-                    {...register('budgetImpact')}
-                    placeholder="$ needed"
-                    isInvalid={formState.errors.budgetImpact?.message !== undefined}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {formState.errors.budgetImpact?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mx-2 justify-content-end">
+              </Col>
+            </Row>
+          </PageBlock>
+          <Row className="mx-2 mt-2 justify-content-end">
             <Button variant="success" type="submit">
               Submit
             </Button>
           </Row>
         </Form>
       </PageBlock>
-    </>
+    </Container>
   );
 };
 

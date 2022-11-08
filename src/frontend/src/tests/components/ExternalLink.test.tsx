@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { faScroll } from '@fortawesome/free-solid-svg-icons';
-import { render, screen, fireEvent } from '../TestSupport/TestUtils';
+import { render, screen, fireEvent } from '../test-support/test-utils';
 import ExternalLink from '../../components/ExternalLink';
 
 const TEST_DESCRIPTION = 'test';

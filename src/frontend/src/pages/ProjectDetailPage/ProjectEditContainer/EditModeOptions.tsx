@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Button } from 'react-bootstrap';
-import styles from '../../../stylesheets/pages/ProjectDetailPage/EditModeOptions.module.css';
+import styles from '../../../stylesheets/pages/project-detail-page/edit-mode-options.module.css';
 
 interface EditModeOptionsProps {
   exitEditMode: () => void;

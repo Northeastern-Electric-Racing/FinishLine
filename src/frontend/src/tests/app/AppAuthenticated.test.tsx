@@ -1,9 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fireEvent, render, routerWrapperBuilder, screen } from '../TestSupport/TestUtils';
+import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
 import AppAuthenticated from '../../app/AppAuthenticated';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {

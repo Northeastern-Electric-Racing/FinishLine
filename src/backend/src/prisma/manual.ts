@@ -1,10 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import prisma from './prisma';
-import { Role } from '@prisma/client';
+import { Role, WBS_Element_Status } from '@prisma/client';
+import { calculateEndDate } from 'shared';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -142,19 +143,28 @@ const migrateToProposedSolutions = async () => {
 };
 
 /**
- * Manually create a team via direct db.
+ * Migrate all complete wps to have checked description bullets
  */
-const createTeam = async (name: string, slackChannel: string) => {
-  const res = await prisma.team.create({
-    data: {
-      teamName: name,
-      slackId: slackChannel,
-      leader: { connect: { userId: 1 } },
-      projects: { connect: [{ projectId: 1 }, { projectId: 2 }] },
-      members: { connect: [{ userId: 2 }, { userId: 3 }] }
-    }
+const migrateToCheckableDescBullets = async () => {
+  const wps = await prisma.work_Package.findMany({
+    where: { wbsElement: { status: WBS_Element_Status.COMPLETE } },
+    include: { wbsElement: true }
   });
-  console.log(res);
+
+  wps.forEach(async (wp) => {
+    // 1 is James' id
+    const projectLeadId = wp.wbsElement.projectLeadId || 1;
+
+    await prisma.description_Bullet.updateMany({
+      where: { workPackageIdExpectedActivities: wp.workPackageId },
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
+    });
+
+    await prisma.description_Bullet.updateMany({
+      where: { workPackageIdDeliverables: wp.workPackageId },
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
+    });
+  });
 };
 
 executeScripts()

@@ -1,14 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { createContext, useState, SyntheticEvent } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { WbsNumber, WorkPackage, WbsElementStatus } from 'shared';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { useAllUsers } from '../../../hooks/Users.hooks';
-import { useEditWorkPackage } from '../../../hooks/WorkPackages.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import EditableTextInputList from '../../../components/EditableTextInputList';
@@ -20,6 +20,7 @@ import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWP
 import DependenciesList from '../WorkPackageViewContainer/DependenciesList';
 import EditModeOptions from './EditModeOptions';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
@@ -32,11 +33,9 @@ export const FormContext = createContext({
   setField: (field: string, value: any) => {}
 });
 
-const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
-  workPackage,
-  exitEditMode
-}) => {
+const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
   const auth = useAuth();
+  const query = useQuery();
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
   const { data: userData, isLoading, isError, error } = useAllUsers();
 
@@ -44,35 +43,37 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
   const [projectLead, setProjectLead] = useState(workPackage.projectLead?.userId);
   const [projectManager, setProjectManager] = useState(workPackage.projectManager?.userId);
   const [name, setName] = useState<string>(workPackage.name);
-  const [crId, setCrId] = useState<string>('');
+  const [crId, setCrId] = useState<string>(query.get('crId') || '');
   const [startDate, setStartDate] = useState<Date>(workPackage.startDate);
   const [duration, setDuration] = useState<number>(workPackage.duration);
   const [deps, setDeps] = useState<WbsNumber[]>(workPackage.dependencies);
-  const [ea, setEa] = useState<{ id: number; detail: string }[]>(
+  const [ea, setEa] = useState<{ id: number; detail: string; isResolved: boolean }[]>(
     workPackage.expectedActivities
       .filter((ea) => ea.dateDeleted === undefined)
       .map((ea) => ({
         id: ea.id,
-        detail: ea.detail
+        detail: ea.detail,
+        isResolved: !!ea.userChecked
       }))
   );
-  const [dels, setDels] = useState<{ id: number; detail: string }[]>(
+  const [dels, setDels] = useState<{ id: number; detail: string; isResolved: boolean }[]>(
     workPackage.deliverables
       .filter((del) => del.dateDeleted === undefined)
       .map((d) => ({
         id: d.id,
-        detail: d.detail
+        detail: d.detail,
+        isResolved: !!d.userChecked
       }))
   );
   const [status, setStatus] = useState<WbsElementStatus>(workPackage.status);
-  const [progress, setProgress] = useState<number>(workPackage.progress);
 
   const expectedActivitiesUtil: EditableTextInputListUtils = {
     add: (val) => {
       const clone = ea.slice();
       clone.push({
         id: -1,
-        detail: val
+        detail: val,
+        isResolved: false
       });
       setEa(clone);
     },
@@ -93,7 +94,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
       const clone = dels.slice();
       clone.push({
         id: -1,
-        detail: val
+        detail: val,
+        isResolved: false
       });
       setDels(clone);
     },
@@ -119,15 +121,11 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
     setDeps,
     setEa,
     setDels,
-    setStatus,
-    setProgress
+    setStatus
   };
 
   const transformDate = (date: Date) => {
-    const month =
-      date.getUTCMonth() + 1 < 10
-        ? `0${date.getUTCMonth() + 1}`
-        : (date.getUTCMonth() + 1).toString();
+    const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
     const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
     return `${date.getUTCFullYear().toString()}-${month}-${day}`;
   };
@@ -157,8 +155,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
       dependencies: deps.map((dep) => transformWbsNum(dep)),
       expectedActivities: ea,
       deliverables: dels,
-      wbsElementStatus: status,
-      progress
+      wbsElementStatus: status
     };
 
     console.log(payload);
@@ -191,6 +188,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
               placeholder="Change Request ID #"
               min="0"
               required
+              value={crId}
               onChange={(e) => setCrId(e.target.value.trim())}
             />
           }
@@ -207,6 +205,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
             add={expectedActivitiesUtil.add}
             remove={expectedActivitiesUtil.remove}
             update={expectedActivitiesUtil.update}
+            disabledItems={ea.map((ea) => ea.isResolved)}
           />
         </PageBlock>
         <PageBlock title={'Deliverables'}>
@@ -215,6 +214,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({
             add={deliverablesUtil.add}
             remove={deliverablesUtil.remove}
             update={deliverablesUtil.update}
+            disabledItems={dels.map((d) => d.isResolved)}
           />
         </PageBlock>
         <EditModeOptions exitEditMode={exitEditMode} />

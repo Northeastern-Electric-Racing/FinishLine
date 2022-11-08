@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -13,7 +13,7 @@ import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Settings from '../pages/SettingsPage/Settings';
 import InfoPage from '../pages/InfoPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
-import TeamsPage from '../pages/TeamsPage';
+import TeamsPage from '../pages/TeamsPage/TeamsPage';
 
 const styles = {
   content: {

@@ -1,11 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import userEvent from '@testing-library/user-event';
-import { exampleProject1 } from '../../../TestSupport/TestData/Projects.stub';
-import { act, render, screen } from '../../../TestSupport/TestUtils';
+import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
+import { act, render, screen } from '../../../test-support/test-utils';
 import ProjectEditSummary from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditSummary';
 
 const proj = exampleProject1;

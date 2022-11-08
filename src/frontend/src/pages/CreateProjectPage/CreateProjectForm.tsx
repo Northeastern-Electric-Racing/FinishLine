@@ -1,12 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/Auth.hooks';
-import { useCreateSingleProject } from '../../hooks/Projects.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useCreateSingleProject } from '../../hooks/projects.hooks';
 import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateProjectFormView from './CreateProjectFormView';

@@ -1,15 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  routerWrapperBuilder
-} from '../../TestSupport/TestUtils';
+import { render, screen, waitFor, fireEvent, routerWrapperBuilder } from '../../test-support/test-utils';
 import NavUserMenu from '../../../layouts/NavTopBar/NavUserMenu';
 
 /**
@@ -25,12 +19,7 @@ const renderComponent = () => {
 };
 
 describe('navigation user menu tests', () => {
-  it('renders user icon dropdown menu button', () => {
-    renderComponent();
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
-
-  it('renders the user menu items', async () => {
+  it('renders the button and user menu items', async () => {
     renderComponent();
     const user: HTMLElement = screen.getByRole('button');
     expect(user).toBeInTheDocument();

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -48,13 +48,6 @@ export const listPipe = <T>(array: T[], transform: (ele: T) => string) => {
   return array.map(transform).join(', ');
 };
 
-/** Formats the end date as a string. */
-export const endDatePipe = (startDate: Date, durWeeks: number) => {
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + durWeeks * 7);
-  return datePipe(endDate);
-};
-
 /** Replaces an empty string with an EM dash. */
 export const emDashPipe = (str: string) => {
   return str.trim() === '' ? '—' : str;
@@ -63,8 +56,14 @@ export const emDashPipe = (str: string) => {
 /**
  * Return a given date as a string in the local en-US format,
  * with single digit numbers starting with a zero.
+ *
+ * Prisma sends date in UTC but TypeScript assumes it's in your local time,
+ * so to get around that we do the toDateString() of the time and pass it into the Date constructor
+ * where the constructor assumes it's in UTC and makes the correct Date object finally
  */
-export const datePipe = (date: Date) => {
+export const datePipe = (date?: Date) => {
+  if (!date) return '';
+  date = new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
