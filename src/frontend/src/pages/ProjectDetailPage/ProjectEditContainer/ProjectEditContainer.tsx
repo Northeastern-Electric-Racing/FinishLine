@@ -3,38 +3,30 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
-import { DescriptionBullet, Project, WorkPackage, WbsElementStatus } from 'shared';
+import { DescriptionBullet, Project, WbsElementStatus } from 'shared';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { EditableTextInputListUtils } from '../../CreateWorkPackagePage/CreateWPForm';
-import EditableTextInputList from '../../../components/EditableTextInputList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
-import EditModeOptions from './EditModeOptions';
 import PageBlock from '../../../layouts/PageBlock';
-import ChangesList from '../../../components/ChangesList';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import WorkPackageSummary from '../ProjectViewContainer/WorkPackageSummary';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, FieldArrayWithId, useFieldArray, UseFieldArrayRemove, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Grid, Select, MenuItem, Button, Box, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { NERButton } from '../../../components/NERButton';
 
-/**
- * Helper function to turn DescriptionBullets into a list of { id:number, detail:string }.
- */
 const bulletsToObject = (bullets: DescriptionBullet[]) =>
   bullets
     .filter((bullet) => !bullet.dateDeleted)
     .map((bullet) => {
-      return { id: bullet.id, detail: bullet.detail };
+      return { bulletId: bullet.id, detail: bullet.detail };
     });
 
 const isValidURL = (url: string | undefined) => {
@@ -47,6 +39,39 @@ const isValidURL = (url: string | undefined) => {
     }
   }
   return false;
+};
+
+const buildEditableBulletList = (
+  title: string,
+  ls: FieldArrayWithId[],
+  register: any,
+  name: string,
+  append: any,
+  remove: UseFieldArrayRemove
+) => {
+  return (
+    <PageBlock title={title}>
+      {ls.map((_element, i) => {
+        return (
+          <Grid item>
+            <TextField required sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
+            <Button type="button" onClick={() => remove(i)}>
+              X
+            </Button>
+          </Grid>
+        );
+      })}
+      <Button variant="contained" color="success" onClick={() => append({ bulletId: -1, detail: '' })}>
+        New Goal
+      </Button>
+    </PageBlock>
+  );
+};
+
+const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
+  return ls.map((ele) => {
+    return { id: ele.bulletId !== -1 ? ele.bulletId : undefined, detail: ele.detail };
+  });
 };
 
 const schema = yup.object().shape({
@@ -78,27 +103,36 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
-  const { register, handleSubmit, control } = useForm({
+  const { register, handleSubmit, control, formState } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      crId: query.get('crId') || '',
-      summary,
-      rules: project.rules.map((rule) => {
-        return { rule };
-      }),
-      projectLeadId: project.projectLead?.userId,
-      projectManagerId: project.projectManager?.userId,
-      wbsElementStatus: project.status,
       name,
       budget,
       slideDeckLink,
       bomLink,
       taskListLink,
-      googleDriveFolderLink: gDriveLink
+      googleDriveFolderLink: gDriveLink,
+      summary,
+      wbsElementStatus: project.status,
+      projectLeadId: project.projectLead?.userId,
+      projectManagerId: project.projectManager?.userId,
+      crId: query.get('crId') || '',
+      rules: project.rules.map((rule) => {
+        return { rule };
+      }),
+      goals: bulletsToObject(project.goals),
+      features: bulletsToObject(project.features),
+      constraints: bulletsToObject(project.otherConstraints)
     }
   });
   const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
-
+  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
+  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
+  const {
+    fields: constraints,
+    append: appendConstraint,
+    remove: removeConstraint
+  } = useFieldArray({ control, name: 'constraints' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
   if (allUsers.isLoading || !allUsers.data || !auth.user) return <LoadingIndicator />;
@@ -106,36 +140,36 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
-  const users = allUsers.data!.filter((u) => u.role !== 'GUEST');
+  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
   const statuses = Object.values(WbsElementStatus);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: any, e: any) => {
     const { userId } = auth.user!;
-
-    // const payload = {
-    //   projectId: project.id,
-    //   crId: Number(crId),
-    //   name,
-    //   userId,
-    //   budget,
-    //   summary,
-    //   rules,
-    //   goals,
-    //   features,
-    //   otherConstraints,
-    //   wbsElementStatus,
-    //   googleDriveFolderLink: gDrive,
-    //   slideDeckLink: slideDeck,
-    //   bomLink: bom,
-    //   taskListLink: taskList,
-    //   projectLead: projectLead === -1 ? undefined : projectLead,
-    //   projectManager: projectManager === -1 ? undefined : projectManager
-    // };
-
+    const { name, budget, summary, wbsElementStatus, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
+    const goals = mapBulletsToPayload(data.goals);
+    const features = mapBulletsToPayload(data.features);
+    const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload = { ...data, userId, projectId: project.id, crId: parseInt(data.crId), rules };
-    console.log(JSON.stringify(payload));
+    const payload = {
+      name,
+      budget: parseInt(budget),
+      summary,
+      bomLink,
+      googleDriveFolderLink,
+      taskListLink,
+      slideDeckLink,
+      userId,
+      wbsElementStatus,
+      projectId: project.id,
+      crId: parseInt(data.crId),
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      projectLead: data.projectLeadId,
+      projectManager: data.projectManagerId
+    };
 
     try {
       await mutateAsync(payload);
@@ -148,7 +182,17 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <form id={'project-edit-form'} onSubmit={handleSubmit(onSubmit)}>
+    <form
+      id={'project-edit-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
       <PageTitle
         title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
@@ -230,7 +274,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           />
         </Grid>
         <Grid item>
-          <ReactHookTextField name="bomLink" control={control} sx={{ width: '50%' }} label="Bom Link" />
+          <ReactHookTextField
+            name="bomLink"
+            control={control}
+            sx={{ width: '50%' }}
+            label="Bom Link"
+            errorMessage={formState.errors.bomLink}
+          />
         </Grid>
         <Grid item>
           <ReactHookTextField name="taskListLink" control={control} sx={{ width: '50%' }} label="Task List Link" />
@@ -248,29 +298,22 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           />
         </Grid>
       </PageBlock>
+      {buildEditableBulletList('Goals', goals, register, 'goals', appendGoal, removeGoal)}
+      {buildEditableBulletList('Features', features, register, 'features', appendFeature, removeFeature)}
+      {buildEditableBulletList(
+        'Other Constraints',
+        constraints,
+        register,
+        'constraints',
+        appendConstraint,
+        removeConstraint
+      )}
       <PageBlock title="Rules">
-        {rules.map((rule, i) => {
+        {rules.map((_rule, i) => {
           return (
             <Grid item>
               <TextField required {...register(`rules.${i}.rule`)} />
-
-              {/* <Controller
-                name={`rules.${i}.rule`}
-                control={control}
-                rules={{ required: true }}
-                defaultValue={rule.rule}
-                render={({ field: { onChange, value } }) => (
-                  <TextField required key={rule.id} autoComplete="off" onChange={onChange} value={value} />
-                )}
-              /> */}
-              <Button
-                type="button"
-                onClick={() => {
-                  console.log(i);
-                  console.log(`RULES: ${JSON.stringify(rules)}`);
-                  removeRule(i);
-                }}
-              >
+              <Button type="button" onClick={() => removeRule(i)}>
                 X
               </Button>
             </Grid>
@@ -285,6 +328,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         <Button variant="contained" color="success" type="submit">
           Submit
         </Button>
+        <NERButton variant="contained" color="error" onClick={exitEditMode}>
+          Cancel
+        </NERButton>
       </Box>
     </form>
   );

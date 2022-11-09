@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Controller } from 'react-hook-form';
+import { Controller, FieldError } from 'react-hook-form';
 import { TextField, InputAdornment } from '@mui/material';
 
 interface ReactHookTextFieldProps {
@@ -18,6 +18,7 @@ interface ReactHookTextFieldProps {
   icon?: any;
   multiline?: boolean;
   rows?: number;
+  errorMessage?: FieldError;
 }
 
 const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
@@ -60,7 +61,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
           label={label}
           placeholder={placeholder}
           size={size}
-          sx={sx}
+          sx={{ ...sx, my: 2 }}
           type={type}
           InputProps={inputProps}
           multiline={multiline}
