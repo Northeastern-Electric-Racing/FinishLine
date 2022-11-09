@@ -23,7 +23,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProjectEditContainer proj={exPrj1} exitEditMode={() => null} />
+      <ProjectEditContainer project={exPrj1} exitEditMode={() => null} />
     </RouterWrapper>
   );
 };

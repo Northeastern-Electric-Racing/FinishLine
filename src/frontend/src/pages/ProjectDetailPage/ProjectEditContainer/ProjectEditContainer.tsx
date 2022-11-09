@@ -5,8 +5,8 @@
 
 import { SyntheticEvent, useState } from 'react';
 import { Container, Form } from 'react-bootstrap';
-import { DescriptionBullet, Project, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
+import { DescriptionBullet, Project, WorkPackage, WbsElementStatus } from 'shared';
+import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -23,6 +23,10 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import WorkPackageSummary from '../ProjectViewContainer/WorkPackageSummary';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { Controller, useForm } from 'react-hook-form';
+import { Grid, TextField, Select, MenuItem } from '@mui/material';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 /**
  * Helper function to turn DescriptionBullets into a list of { id:number, detail:string }.
@@ -34,39 +38,56 @@ const bulletsToObject = (bullets: DescriptionBullet[]) =>
       return { id: bullet.id, detail: bullet.detail };
     });
 
+const isValidURL = (url: string | undefined) => {
+  if (url !== undefined) {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      alert('Invalid URL provided.');
+    }
+  } else {
+    alert('URL not provided.');
+  }
+  return false;
+};
+
 interface ProjectEditContainerProps {
-  proj: Project;
+  project: Project;
   exitEditMode: () => void;
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitEditMode }) => {
+const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
-  const { mutateAsync } = useEditSingleProject(proj.wbsNum);
+  const { handleSubmit, control } = useForm();
+  const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
   const [crId, setCrId] = useState(query.get('crId') || '');
-  const [name, setName] = useState(proj.name);
-  const [summary, setSummary] = useState(proj.summary);
-  const [budget, setBudget] = useState(proj.budget);
-  const [wbsElementStatus, setWbsElementStatus] = useState(proj.status);
-  const [projectLead, setProjectLead] = useState(proj.projectLead?.userId);
-  const [projectManager, setProjectManager] = useState(proj.projectManager?.userId);
+  const [name, setName] = useState(project.name);
+  const [summary, setSummary] = useState(project.summary);
+  const [budget, setBudget] = useState(project.budget);
+  const [wbsElementStatus, setWbsElementStatus] = useState(project.status);
+  const [projectLead, setProjectLead] = useState(project.projectLead?.userId);
+  const [projectManager, setProjectManager] = useState(project.projectManager?.userId);
 
-  const [slideDeck, setSlideDeck] = useState(proj.slideDeckLink);
-  const [taskList, setTaskList] = useState(proj.taskListLink);
-  const [bom, setBom] = useState(proj.bomLink);
-  const [gDrive, setGDrive] = useState(proj.gDriveLink);
+  const [slideDeck, setSlideDeck] = useState(project.slideDeckLink);
+  const [taskList, setTaskList] = useState(project.taskListLink);
+  const [bom, setBom] = useState(project.bomLink);
+  const [gDrive, setGDrive] = useState(project.gDriveLink);
 
   const updateSlideDeck = (url: string | undefined) => setSlideDeck(url);
   const updateTaskList = (url: string | undefined) => setTaskList(url);
   const updateBom = (url: string | undefined) => setBom(url);
   const updateGDrive = (url: string | undefined) => setGDrive(url);
 
-  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.goals));
-  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.features));
-  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(bulletsToObject(proj.otherConstraints));
-  const [rules, setRules] = useState(proj.rules);
+  const [goals, setGoals] = useState<{ id?: number; detail: string }[]>(bulletsToObject(project.goals));
+  const [features, setFeatures] = useState<{ id?: number; detail: string }[]>(bulletsToObject(project.features));
+  const [otherConstraints, setOther] = useState<{ id?: number; detail: string }[]>(
+    bulletsToObject(project.otherConstraints)
+  );
+  const [rules, setRules] = useState(project.rules);
 
   const notEmptyString = (s: string) => s !== '';
 
@@ -142,36 +163,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
     }
   };
 
-  const isValidURL = (url: string | undefined) => {
-    if (url !== undefined) {
-      try {
-        new URL(url);
-        return true;
-      } catch (_) {
-        alert('Invalid URL provided.');
-      }
-    } else {
-      alert('URL not provided.');
-    }
-    return false;
-  };
-
   const checkValidity = () => {
     return [slideDeck, taskList, bom, gDrive].every(isValidURL);
   };
 
-  const handleSubmit = async (event: SyntheticEvent) => {
-    event.preventDefault();
-
+  const onSubmit = async (data: any) => {
     if (checkValidity() === false) {
-      event.stopPropagation();
       return;
     }
 
     const { userId } = auth.user!;
 
     const payload = {
-      projectId: proj.id,
+      projectId: project.id,
       crId: Number(crId),
       name,
       userId,
@@ -200,17 +204,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
     }
   };
 
-  if (allUsers.isLoading) return <LoadingIndicator />;
+  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
 
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
-  return (
+  const users = allUsers.data!.filter((u) => u.role !== 'GUEST');
+
+  const old = (
     <Container fluid className="mb-5">
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit(onSubmit)}>
         <PageTitle
-          title={`${wbsPipe(proj.wbsNum)} - ${proj.name}`}
+          title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
           previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
           actionButton={
             <Form.Control
@@ -224,7 +230,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           }
         />
         <ProjectEditDetails
-          project={proj}
+          project={project}
           users={allUsers.data!.filter((u) => u.role !== 'GUEST')}
           updateSlideDeck={updateSlideDeck}
           updateTaskList={updateTaskList}
@@ -236,7 +242,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           updateProjectLead={setProjectLead}
           updateProjectManager={setProjectManager}
         />
-        <ProjectEditSummary project={proj} updateSummary={setSummary} />
+        <ProjectEditSummary project={project} updateSummary={setSummary} />
         <PageBlock title={'Goals'}>
           <EditableTextInputList
             items={goals.map((goal) => goal.detail)}
@@ -264,9 +270,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
         <PageBlock title={'Rules'}>
           <EditableTextInputList items={rules} add={rulesUtil.add} remove={rulesUtil.remove} update={rulesUtil.update} />
         </PageBlock>
-        <ChangesList changes={proj.changes} />
+        <ChangesList changes={project.changes} />
         <PageBlock title={'Work Packages'}>
-          {proj.workPackages.map((ele: WorkPackage) => (
+          {project.workPackages.map((ele: WorkPackage) => (
             <div key={wbsPipe(ele.wbsNum)} className="mt-3">
               <WorkPackageSummary workPackage={ele} />
             </div>
@@ -275,6 +281,96 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
         <EditModeOptions exitEditMode={exitEditMode} />
       </Form>
     </Container>
+  );
+
+  const statuses = Object.values(WbsElementStatus);
+  const statusSelect = (
+    <Grid item sx={{ mb: 1 }}>
+      <Controller
+        name="status"
+        control={control}
+        rules={{ required: true }}
+        defaultValue={project.status}
+        render={({ field: { onChange, value } }) => (
+          <Select onChange={onChange} value={value}>
+            {statuses.map((t) => (
+              <MenuItem key={t} value={t}>
+                {t}
+              </MenuItem>
+            ))}
+          </Select>
+        )}
+      />
+    </Grid>
+  );
+
+  return (
+    <form>
+      <PageTitle
+        title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
+        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+        actionButton={
+          <ReactHookTextField name="crId" control={control} label="Change Request Id" sx={{}} type="number" size="small" />
+        }
+      />
+      <PageBlock title={'Project Details'}>
+        <Grid item xs={12} sm={12}>
+          {statusSelect}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ReactHookTextField
+            name="name"
+            control={control}
+            defaultValue={project.name}
+            sx={{ width: '50%' }}
+            label="Project Name"
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ReactHookTextField
+            name="budget"
+            control={control}
+            defaultValue={project.budget}
+            sx={{ width: '15%' }}
+            type="number"
+            label="Budget"
+            icon={<AttachMoneyIcon />}
+          />
+        </Grid>
+        <Grid item>
+          <Controller
+            name="projectLeadId"
+            control={control}
+            rules={{ required: true }}
+            defaultValue={project.projectLead?.userId}
+            render={({ field: { onChange, value } }) => (
+              <Select onChange={onChange} value={value}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
+          <Controller
+            name="projectManagerId"
+            control={control}
+            rules={{ required: true }}
+            defaultValue={project.projectManager?.userId}
+            render={({ field: { onChange, value } }) => (
+              <Select onChange={onChange} value={value}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
+        </Grid>
+      </PageBlock>
+    </form>
   );
 };
 

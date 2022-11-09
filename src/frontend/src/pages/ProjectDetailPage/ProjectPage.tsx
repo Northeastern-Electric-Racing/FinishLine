@@ -21,13 +21,13 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
   const { isLoading, isError, data, error } = useSingleProject(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   if (editMode) {
-    return <ProjectEditContainer proj={data!} exitEditMode={() => setEditMode(false)} />;
+    return <ProjectEditContainer project={data} exitEditMode={() => setEditMode(false)} />;
   }
-  return <ProjectViewContainer proj={data!} enterEditMode={() => setEditMode(true)} />;
+  return <ProjectViewContainer proj={data} enterEditMode={() => setEditMode(true)} />;
 };
 
 export default ProjectPage;
