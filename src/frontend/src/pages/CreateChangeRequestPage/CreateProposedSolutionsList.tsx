@@ -6,10 +6,11 @@
 import { ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Dialog } from '@mui/material';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -51,9 +52,9 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
         ))}
       </div>
       {showEditableForm ? (
-        <Modal size="xl" centered show={showEditableForm} onHide={() => setShowEditableForm(false)}>
+        <Dialog open={showEditableForm} onClose={() => setShowEditableForm(false)} style={{ color: 'black' }}>
           <ProposedSolutionForm onAdd={addProposedSolution} />
-        </Modal>
+        </Dialog>
       ) : null}
     </>
   );

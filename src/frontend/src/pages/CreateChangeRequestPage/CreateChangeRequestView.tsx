@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
+import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -229,6 +230,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Button>
             </Grid>
           </Grid>
+          <PageBlock title="Proposed Solutions">
+            <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
+          </PageBlock>
           <Box display="flex" flexDirection="row-reverse">
             <Button variant="contained" color="success" type="submit">
               Submit
