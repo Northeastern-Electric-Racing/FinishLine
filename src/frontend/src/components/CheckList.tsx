@@ -22,9 +22,10 @@ interface CheckListProps {
   title: string;
   headerRight?: ReactNode;
   items: CheckListItem[];
+  isDisabled: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
+const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
   const auth = useAuth();
   const { mutateAsync } = useCheckDescriptionBullet();
 
@@ -32,13 +33,21 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
     await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
   };
 
+  items.sort((a: CheckListItem, b: CheckListItem) => {
+    if (a.resolved !== b.resolved) {
+      return a.resolved ? 1 : -1;
+    }
+
+    return a.detail.localeCompare(b.detail);
+  });
+
   return (
     <PageBlock title={title} headerRight={headerRight}>
       <FormControl>
         {items.map((check, idx) => (
           <FormControlLabel
             key={idx}
-            control={<Checkbox checked={check.resolved} onChange={() => handleCheck(idx)} />}
+            control={<Checkbox checked={check.resolved} disabled={isDisabled} onChange={() => handleCheck(idx)} />}
             label={
               <Typography
                 variant="body1"

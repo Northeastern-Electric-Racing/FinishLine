@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { prodHeaders, requireJwt } from './src/utils/utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
@@ -11,17 +13,29 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
+// cors options
+const allowedHeaders = process.env.NODE_ENV === 'production' ? prodHeaders : '*';
 const options: cors.CorsOptions = {
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: false,
+  origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
+  methods: 'GET, POST',
+  credentials: true,
   preflightContinue: true,
-  allowedHeaders: '*'
+  exposedHeaders: '*',
+  optionsSuccessStatus: 204,
+  allowedHeaders
 };
 
-app.use(cors(options));
+// so that we can use cookies and json
+app.use(cookieParser());
 app.use(express.json());
 
+// cors settings
+app.use(cors(options));
+
+// ensure each request is authorized using JWT
+app.use(requireJwt);
+
+// routes
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);
 app.use('/teams', teamsRouter);
@@ -33,6 +47,7 @@ app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
 
+// start the server
 app.listen(port, () => {
   console.log(`FinishLine listening at http://localhost:${port}`);
   console.log(`\n

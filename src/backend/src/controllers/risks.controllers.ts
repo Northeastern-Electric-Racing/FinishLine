@@ -1,7 +1,6 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { validationResult } from 'express-validator';
 import { Role } from '@prisma/client';
 
 export const getRisksForProject = async (req: Request, res: Response) => {
@@ -18,18 +17,13 @@ export const getRisksForProject = async (req: Request, res: Response) => {
 };
 
 export const createRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { projectId, detail, createdById } = body;
 
   const createdByUser = await prisma.user.findUnique({ where: { userId: createdById } });
   if (createdByUser) {
     if (createdByUser.role === Role.GUEST) {
-      return res.status(401).json({ message: 'Access Denied' });
+      return res.status(403).json({ message: 'Access Denied' });
     }
   } else {
     return res.status(404).json({ message: 'User Not Found' });
@@ -47,13 +41,7 @@ export const createRisk = async (req: Request, res: Response) => {
 };
 
 export const editRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
-
   const { userId, id, detail, resolved } = body;
 
   // get the original risk and check if it exists
@@ -64,9 +52,7 @@ export const editRisk = async (req: Request, res: Response) => {
   }
 
   const hasPerms = await hasRiskPermissions(userId, originalRisk.projectId);
-  if (!hasPerms) {
-    return res.status(401).json({ message: 'Access Denied' });
-  }
+  if (!hasPerms) return res.status(403).json({ message: 'Access Denied' });
 
   let updatedRisk;
 
@@ -110,11 +96,6 @@ export const editRisk = async (req: Request, res: Response) => {
 };
 
 export const deleteRisk = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { riskId, deletedByUserId } = body;
 
@@ -128,9 +109,7 @@ export const deleteRisk = async (req: Request, res: Response) => {
 
   const selfDelete = targetRisk.createdByUserId === deletedByUserId;
   const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
-  if (!selfDelete && !hasPerms) {
-    return res.status(401).json({ message: 'Access Denied' });
-  }
+  if (!selfDelete && !hasPerms) return res.status(403).json({ message: 'Access Denied' });
 
   const updatedRisk = await prisma.risk.update({
     where: { id: riskId },
