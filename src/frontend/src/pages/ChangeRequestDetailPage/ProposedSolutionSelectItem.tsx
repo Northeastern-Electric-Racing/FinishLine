@@ -4,9 +4,8 @@
  */
 
 import { ProposedSolution } from 'shared';
-import { Badge, Col, Container, Row, Card } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import { Box } from '@mui/material';
+import { Box, Card, CardContent, Chip, Grid } from '@mui/material';
 
 interface ProposedSolutionSelectItemProps {
   proposedSolution: ProposedSolution;
@@ -19,61 +18,43 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
   selected,
   onClick: setter
 }) => {
-  const spacer = 'mb-1';
-
-  const selectedStyle = { marginLeft: '66%', alignContent: 'right' };
-  const unselectedStyle = { marginLeft: '65%', alignContent: 'auto' };
+  const selectedStyle = { position: 'relative', left: 431 };
+  const unselectedStyle = { position: 'relative', left: 425 };
 
   const component = (
     <Box
       sx={{
-        mx: 'auto',
-        p: 1,
-        border: 1,
-        borderRadius: 1
+        marginTop: 1,
+        marginBottom: 1,
+        p: 1
       }}
     >
-      <Card className={'mb-3'} bg={'light'} border={'dark'}>
-        <Card.Body>
-          <Container onClick={setter} fluid>
-            <Row className={spacer}>
-              <b>Description</b>
-              {selected ? (
-                <Badge className={'mr-3'} variant="success" style={selectedStyle}>
-                  Selected
-                </Badge>
-              ) : (
-                <Badge variant="danger" style={unselectedStyle}>
-                  Unselected
-                </Badge>
-              )}
-            </Row>
-            <Row className={spacer}>
-              <Col>{proposedSolution.description}</Col>
-            </Row>
-            <Row className={spacer}>
-              <b>Impact</b>
-            </Row>
-            <Row>
-              <Col className={spacer} xs={7} sm={6} md={4} lg={6} xl={6}>
-                <b>Budget Impact</b>
-              </Col>
-              <Col className={spacer}>{dollarsPipe(proposedSolution.budgetImpact)}</Col>
-            </Row>
-            <Row>
-              <Col className={spacer} xs={7} sm={6} md={4} lg={6} xl={6}>
-                <b>Timeline Impact</b>
-              </Col>
-              <Col className={spacer}>{weeksPipe(proposedSolution.timelineImpact)}</Col>
-            </Row>
-            <Row>
-              <Col className={spacer} xs={7} sm={6} md={4} lg={6} xl={6}>
-                <b>Scope Impact</b>
-              </Col>
-              <Col className={spacer}>{proposedSolution.scopeImpact}</Col>
-            </Row>
-          </Container>
-        </Card.Body>
+      <Card onClick={setter}>
+        <CardContent>
+          {selected ? (
+            <Chip label="Selected" color="success" sx={selectedStyle} />
+          ) : (
+            <Chip label="Unselected" color="error" sx={unselectedStyle} />
+          )}
+          <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            <Grid item xs={6}>
+              <b>Description: </b>
+              {proposedSolution.description}
+            </Grid>
+            <Grid item xs={6}>
+              <b>Budget Impact: </b>
+              {dollarsPipe(proposedSolution.budgetImpact)}
+            </Grid>
+            <Grid item xs={6}>
+              <b>Timeline Impact: </b>
+              {weeksPipe(proposedSolution.timelineImpact)}
+            </Grid>
+            <Grid item xs={6}>
+              <b>Scope Impact: </b>
+              {proposedSolution.scopeImpact}
+            </Grid>
+          </Grid>
+        </CardContent>
       </Card>
     </Box>
   );

@@ -51,7 +51,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   });
 
   return (
-    <PageBlock title="">
+    <PageBlock title="" style={{ my: 0 }}>
       <form
         id={'individual-proposed-solution-form'}
         onSubmit={(e) => {
