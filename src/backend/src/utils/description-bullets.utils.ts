@@ -21,8 +21,10 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
   const descriptionBullet = await prisma.description_Bullet.findUnique({
     where: { descriptionId },
     include: {
-      workPackageDeliverables: { include: { wbsElement: { include: { projectLead: true } } } },
-      workPackageExpectedActivities: { include: { wbsElement: { include: { projectLead: true } } } }
+      workPackageDeliverables: { include: { wbsElement: { include: { projectLead: true,
+      projectManager: true } } } },
+      workPackageExpectedActivities: { include: { wbsElement: { include: { projectLead: true,
+      projectManager: true } } } }
     }
   });
 
@@ -33,12 +35,15 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
   const leader =
     descriptionBullet.workPackageDeliverables?.wbsElement.projectLead ||
     descriptionBullet.workPackageExpectedActivities?.wbsElement.projectLead;
+  const manager =
+    descriptionBullet.workPackageDeliverables?.wbsElement.projectManager ||
+    descriptionBullet.workPackageExpectedActivities?.wbsElement.projectManager;
 
   if (
     user.role === Role.APP_ADMIN ||
     user.role === Role.ADMIN ||
     user.role === Role.LEADERSHIP ||
-    (leader && leader.userId === user.userId)
+    (leader && leader.userId === user.userId) || (manager && manager.userId === user.userId)
   ) {
     return true;
   }
