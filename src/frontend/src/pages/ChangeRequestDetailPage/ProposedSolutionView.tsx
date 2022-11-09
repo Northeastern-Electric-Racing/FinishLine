@@ -20,24 +20,25 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
   return (
     <PageBlock title="">
       {proposedSolution.approved ? (
-        <b style={{ position: 'absolute', right: 50 }}>
+        <b style={{ position: 'absolute', right: 75 }}>
           <Chip label="Approved" color="success" />
         </b>
+      ) : null}
+      {showDeleteButton && onDelete !== undefined ? (
+        <Button
+          color="error"
+          variant="outlined"
+          onClick={() => {
+            onDelete(proposedSolution);
+          }}
+          sx={{ position: 'absolute', right: 75 }}
+        >
+          <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+        </Button>
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={6}>
           <b>Description: </b>
-          {showDeleteButton && onDelete !== undefined ? (
-            <Button
-              color="error"
-              variant="outlined"
-              onClick={() => {
-                onDelete(proposedSolution);
-              }}
-            >
-              <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
-            </Button>
-          ) : null}
           {proposedSolution.description}
         </Grid>
         <Grid item xs={6}>
