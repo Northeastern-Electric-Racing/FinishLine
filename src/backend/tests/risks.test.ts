@@ -54,7 +54,7 @@ describe('Risks', () => {
           email: 'emrax.t@husky.neu.edu',
           emailId: 'emrax.t',
           role: 'APP_ADMIN'
-        }``
+        }
       }
     ]);
     expect(res.statusCode).toBe(200);
@@ -67,3 +67,4 @@ describe('Risks', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+console.log('hello');
