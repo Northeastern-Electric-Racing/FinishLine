@@ -12,7 +12,7 @@ import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Button, Dialog } from '@mui/material';
+import { Button } from '@mui/material';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -46,7 +46,12 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
   return (
     <>
       {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
-        <Button onClick={() => setShowEditableForm(true)} color="success" sx={{ marginTop: 2, marginBottom: 2 }}>
+        <Button
+          onClick={() => setShowEditableForm(true)}
+          variant="contained"
+          color="success"
+          sx={{ marginTop: 2, marginBottom: 2 }}
+        >
           + Add Proposed Solution
         </Button>
       ) : (
@@ -58,9 +63,11 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         ))}
       </div>
       {showEditableForm ? (
-        <Dialog open={showEditableForm} onClose={() => setShowEditableForm(false)} style={{ color: 'black' }}>
-          <ProposedSolutionForm onAdd={addProposedSolution} />
-        </Dialog>
+        <ProposedSolutionForm
+          onAdd={addProposedSolution}
+          open={showEditableForm}
+          onClose={() => setShowEditableForm(false)}
+        />
       ) : null}
     </>
   );

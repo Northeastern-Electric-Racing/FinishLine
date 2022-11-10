@@ -3,8 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../../layouts/PageBlock';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -18,6 +17,8 @@ interface ProposedSolutionFormProps {
   scopeImpact?: string;
   readOnly?: boolean;
   onAdd: (data: ProposedSolution) => void;
+  open: boolean;
+  onClose: () => void;
 }
 
 const schema = yup.object().shape({
@@ -43,7 +44,9 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   timelineImpact,
   scopeImpact,
   readOnly,
-  onAdd
+  onAdd,
+  open,
+  onClose
 }) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
@@ -51,140 +54,145 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   });
 
   return (
-    <PageBlock title="" style={{ my: 0 }}>
-      <form
-        id={'individual-proposed-solution-form'}
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onAdd)(e);
-        }}
-      >
-        <Controller
-          name="description"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Description'}</Typography>
-              <TextField
-                multiline
-                rows={4}
-                required
-                variant="outlined"
-                id="description-input"
-                autoComplete="off"
-                onChange={onChange}
-                value={value}
-                defaultValue={value}
-                fullWidth
-                sx={{ width: 400 }}
-                disabled={readOnly}
-                placeholder="Describe the proposed solution..."
-                error={!!formState.errors.description}
-                helperText={formState.errors.description?.message}
-              />
-            </>
-          )}
-        />
-        <Controller
-          name="scopeImpact"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Scope Impact'}</Typography>
-              <TextField
-                multiline
-                rows={4}
-                required
-                variant="outlined"
-                id="scopeImpact-input"
-                autoComplete="off"
-                onChange={onChange}
-                value={value}
-                defaultValue={value}
-                fullWidth
-                sx={{ width: 400 }}
-                disabled={readOnly}
-                placeholder="What changes to the scope does this entail?"
-                error={!!formState.errors.scopeImpact}
-                helperText={formState.errors.scopeImpact?.message}
-              />
-            </>
-          )}
-        />
-        <Controller
-          name="budgetImpact"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Budget Impact'}</Typography>
-              <TextField
-                multiline
-                rows={1}
-                required
-                variant="outlined"
-                id="budgetImpact-input"
-                autoComplete="off"
-                onChange={onChange}
-                value={value}
-                defaultValue={value}
-                fullWidth
-                sx={{ width: 400 }}
-                disabled={readOnly}
-                placeholder="$ needed"
-                error={!!formState.errors.budgetImpact}
-                helperText={formState.errors.budgetImpact?.message}
-              />
-            </>
-          )}
-        />
-        <Controller
-          name="timelineImpact"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Timeline Impact'}</Typography>
-              <TextField
-                multiline
-                rows={1}
-                required
-                variant="outlined"
-                id="timelineImpact-input"
-                autoComplete="off"
-                onChange={onChange}
-                value={value}
-                defaultValue={value}
-                fullWidth
-                sx={{ width: 400 }}
-                disabled={readOnly}
-                placeholder="# needed"
-                error={!!formState.errors.timelineImpact}
-                helperText={formState.errors.timelineImpact?.message}
-              />
-            </>
-          )}
-        />
-        {readOnly ? (
-          ''
-        ) : (
-          <Box display="flex" flexDirection="row-reverse">
-            <Button
-              color="success"
-              variant="contained"
-              type="submit"
-              form="individual-proposed-solution-form"
-              sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
-            >
-              Add
-            </Button>
-          </Box>
-        )}
-      </form>
-    </PageBlock>
+    <Dialog open={open} onClose={onClose}>
+      <Box>
+        <DialogTitle>Propose a Solution</DialogTitle>
+        <DialogContent>
+          <form
+            id={'individual-proposed-solution-form'}
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(onAdd)(e);
+            }}
+          >
+            <Controller
+              name="description"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Description'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    variant="outlined"
+                    id="description-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 400 }}
+                    disabled={readOnly}
+                    placeholder="Describe the proposed solution..."
+                    error={!!formState.errors.description}
+                    helperText={formState.errors.description?.message}
+                  />
+                </>
+              )}
+            />
+            <Controller
+              name="scopeImpact"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Scope Impact'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    variant="outlined"
+                    id="scopeImpact-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 400 }}
+                    disabled={readOnly}
+                    placeholder="What changes to the scope does this entail?"
+                    error={!!formState.errors.scopeImpact}
+                    helperText={formState.errors.scopeImpact?.message}
+                  />
+                </>
+              )}
+            />
+            <Controller
+              name="budgetImpact"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Budget Impact'}</Typography>
+                  <TextField
+                    multiline
+                    rows={1}
+                    required
+                    variant="outlined"
+                    id="budgetImpact-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 400 }}
+                    disabled={readOnly}
+                    placeholder="$ needed"
+                    error={!!formState.errors.budgetImpact}
+                    helperText={formState.errors.budgetImpact?.message}
+                  />
+                </>
+              )}
+            />
+            <Controller
+              name="timelineImpact"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Timeline Impact'}</Typography>
+                  <TextField
+                    multiline
+                    rows={1}
+                    required
+                    variant="outlined"
+                    id="timelineImpact-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 400 }}
+                    disabled={readOnly}
+                    placeholder="# needed"
+                    error={!!formState.errors.timelineImpact}
+                    helperText={formState.errors.timelineImpact?.message}
+                  />
+                </>
+              )}
+            />
+            {readOnly ? (
+              ''
+            ) : (
+              <Box display="flex" flexDirection="row-reverse">
+                <Button
+                  color="success"
+                  variant="contained"
+                  type="submit"
+                  form="individual-proposed-solution-form"
+                  sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
+                >
+                  Add
+                </Button>
+              </Box>
+            )}
+          </form>
+        </DialogContent>
+      </Box>
+    </Dialog>
   );
 };
 

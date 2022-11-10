@@ -13,7 +13,6 @@ import { SxProps, Theme, useTheme } from '@mui/material';
 interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
-  children?: ReactNode;
   style?: SxProps<Theme>;
 }
 
