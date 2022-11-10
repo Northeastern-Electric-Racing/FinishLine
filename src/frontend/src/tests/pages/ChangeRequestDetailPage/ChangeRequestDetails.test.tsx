@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,36 +16,21 @@ import {
   exampleGuestUser,
   exampleMemberUser
 } from '../../test-support/test-data/users.stub';
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { useSingleChangeRequest } from '../../../hooks/ChangeRequests.hooks';
-import { useAuth } from '../../../hooks/Auth.hooks';
+import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
 
-jest.mock('../../../hooks/ChangeRequests.hooks');
+jest.mock('../../../hooks/change-requests.hooks');
 
-const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<
-  UseQueryResult<ChangeRequest>
->;
+const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<UseQueryResult<ChangeRequest>>;
 
-const mockSingleCRHook = (
-  isLoading: boolean,
-  isError: boolean,
-  data?: ChangeRequest,
-  error?: Error
-) => {
-  mockedUseSingleChangeRequest.mockReturnValue(
-    mockUseQueryResult<ChangeRequest>(isLoading, isError, data, error)
-  );
+const mockSingleCRHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest, error?: Error) => {
+  mockedUseSingleChangeRequest.mockReturnValue(mockUseQueryResult<ChangeRequest>(isLoading, isError, data, error));
 };
 
-jest.mock('../../../hooks/Auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
@@ -85,12 +70,7 @@ describe.skip('change request details container', () => {
   });
 
   it('handles the error with message', () => {
-    mockSingleCRHook(
-      false,
-      true,
-      undefined,
-      new Error('404 could not find the requested change request')
-    );
+    mockSingleCRHook(false, true, undefined, new Error('404 could not find the requested change request'));
     mockAuthHook();
     renderComponent();
 

@@ -1,16 +1,16 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useState } from 'react';
 import { WbsNumber } from 'shared';
-import { useSingleProject } from '../../hooks/Projects.hooks';
+import { useSingleProject } from '../../hooks/projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
 import ProjectEditContainer from './ProjectEditContainer/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useQuery } from '../../hooks/Utils.hooks';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;

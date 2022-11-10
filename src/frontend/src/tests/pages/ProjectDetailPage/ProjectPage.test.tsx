@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,12 +7,12 @@ import React from 'react';
 import { UseQueryResult } from 'react-query';
 import { Project } from 'shared';
 import { render, screen } from '../../test-support/test-utils';
-import { useSingleProject } from '../../../hooks/Projects.hooks';
+import { useSingleProject } from '../../../hooks/projects.hooks';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import ProjectPage from '../../../pages/ProjectDetailPage/ProjectPage';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
-import { useQuery } from '../../../hooks/Utils.hooks';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 jest.mock('../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer', () => {
   return {
@@ -32,21 +32,19 @@ jest.mock('../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditCont
   };
 });
 
-jest.mock('../../../hooks/Utils.hooks');
+jest.mock('../../../hooks/utils.hooks');
 const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
 
 const mockUseQuery = () => {
   mockedUseQuery.mockReturnValue(new URLSearchParams(''));
 };
 
-jest.mock('../../../hooks/Projects.hooks');
+jest.mock('../../../hooks/projects.hooks');
 
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
 
 const mockProjectHook = (isLoading: boolean, isError: boolean, data?: Project, error?: Error) => {
-  mockedUseSingleProject.mockReturnValue(
-    mockUseQueryResult<Project>(isLoading, isError, data, error)
-  );
+  mockedUseSingleProject.mockReturnValue(mockUseQueryResult<Project>(isLoading, isError, data, error));
 };
 
 // Sets up the component under test with the desired values and renders it.

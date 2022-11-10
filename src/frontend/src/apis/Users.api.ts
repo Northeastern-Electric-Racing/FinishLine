@@ -1,9 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { User } from 'shared';
 import { apiUrls } from '../utils/Urls';
 import { authUserTransformer, userTransformer } from './Transformers/Users.transformers';
@@ -38,6 +38,19 @@ export const logUserIn = (id_token: string) => {
   return axios.post<AuthenticatedUser>(
     apiUrls.usersLogin(),
     { id_token },
+    { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
+  );
+};
+
+/**
+ * Log in a dev user.
+ *
+ * @param userId The userId to log in.
+ */
+export const logUserInDev = (userId: number) => {
+  return axios.post<AuthenticatedUser>(
+    apiUrls.usersLoginDev(),
+    { userId },
     { transformResponse: (data) => authUserTransformer(JSON.parse(data)) }
   );
 };

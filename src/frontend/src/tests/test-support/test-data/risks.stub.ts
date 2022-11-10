@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -34,4 +34,13 @@ export const exampleRisk3: Risk = {
   isResolved: false,
   dateCreated: new Date('2021-04-20'),
   createdBy: exampleProjectManagerUser
+};
+
+export const exampleRisk4: Risk = {
+  id: 'risk4',
+  project: exampleProject1,
+  detail: 'Risk #4',
+  isResolved: true,
+  dateCreated: new Date('2022-08-10'),
+  createdBy: exampleMemberUser
 };

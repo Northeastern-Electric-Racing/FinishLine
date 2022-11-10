@@ -5,13 +5,17 @@ import {
   WbsElementStatus,
   DescriptionBullet,
   calculateEndDate,
+  calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateDuration
+  calculateDuration,
+  calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
 import { riskQueryArgs, riskTransformer } from './risks.utils';
+import { buildChangeDetail } from '../utils/utils';
+import { calculateWorkPackageProgress } from './work-packages.utils';
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -76,9 +80,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
 });
 
 export const projectTransformer = (
-  payload:
-    | Prisma.ProjectGetPayload<typeof manyRelationArgs>
-    | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
+  payload: Prisma.ProjectGetPayload<typeof manyRelationArgs> | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
 ): Project => {
   const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
   const project = 'project' in payload ? payload.project! : payload;
@@ -117,12 +119,15 @@ export const projectTransformer = (
     bomLink: project.bomLink ?? undefined,
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
+    endDate: calculateProjectEndDate(project.workPackages),
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
     risks: project.risks.map(riskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
+      const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
       const expectedProgress = calculatePercentExpectedProgress(
         workPackage.startDate,
         workPackage.duration,
@@ -135,9 +140,7 @@ export const projectTransformer = (
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
         status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead
-          ? userTransformer(workPackage.wbsElement.projectLead)
-          : undefined,
+        projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
         projectManager: workPackage.wbsElement.projectManager
           ? userTransformer(workPackage.wbsElement.projectManager)
           : undefined,
@@ -150,12 +153,12 @@ export const projectTransformer = (
           dateImplemented: change.dateImplemented
         })),
         orderInProject: workPackage.orderInProject,
-        progress: workPackage.progress,
+        progress,
         startDate: workPackage.startDate,
         endDate,
         duration: workPackage.duration,
         expectedProgress,
-        timelineStatus: calculateTimelineStatus(workPackage.progress, expectedProgress),
+        timelineStatus: calculateTimelineStatus(progress, expectedProgress),
         dependencies: workPackage.dependencies.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter)
@@ -184,11 +187,7 @@ export const getHighestProjectNumber = async (carNumber: number) => {
 };
 
 // helper method to add the given description bullets into the database, linked to the given work package
-export const addDescriptionBullets = async (
-  addedDetails: string[],
-  id: number,
-  descriptionBulletIdField: string
-) => {
+export const addDescriptionBullets = async (addedDetails: string[], id: number, descriptionBulletIdField: string) => {
   // add the added bullets
   if (addedDetails.length > 0) {
     await prisma.description_Bullet.createMany({
@@ -203,9 +202,7 @@ export const addDescriptionBullets = async (
 };
 
 // edit descrption bullets in the db for each id and detail pair
-export const editDescriptionBullets = async (
-  editedIdsAndDetails: { id: number; detail: string }[]
-) => {
+export const editDescriptionBullets = async (editedIdsAndDetails: { id: number; detail: string }[]) => {
   if (editedIdsAndDetails.length < 1) return;
   editedIdsAndDetails.forEach(
     async (element) =>
@@ -238,7 +235,7 @@ export const createChangeJsonNonList = (
       changeRequestId: crId,
       implementerId,
       wbsElementId,
-      detail: `Edited ${nameOfField} from "${oldValue}" to "${newValue}"`
+      detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
   return undefined;
@@ -269,7 +266,6 @@ export const createRulesChangesJson = (
       changes.push({ element, type: 'Added new' });
     }
   });
-
   return changes.map((element) => {
     return {
       changeRequestId: crId,
@@ -354,9 +350,11 @@ export const createDescriptionBulletChangesJson = (
     changes: changes.map((element) => {
       const detail =
         element.type === 'Edited'
-          ? `${element.type} ${nameOfField} from "${originalElements.get(
-              element.element.id
-            )}" to "${existingElements.get(element.element.id)}"`
+          ? buildChangeDetail(
+              nameOfField,
+              originalElements.get(element.element.id) || 'null',
+              existingElements.get(element.element.id) || 'null'
+            )
           : `${element.type} ${nameOfField} "${element.element.detail}"`;
       return {
         changeRequestId: crId,

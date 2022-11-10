@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -7,7 +7,7 @@ import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { Badge, Button, Col, Container, Row } from 'react-bootstrap';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionView.module.css';
+import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solution-view.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
@@ -17,11 +17,7 @@ interface ProposedSolutionViewProps {
   onDelete?: (proposedSolution: ProposedSolution) => void;
 }
 
-const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
-  proposedSolution,
-  showDeleteButton,
-  onDelete
-}) => {
+const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
   const spacer = 'mb-2';
   return (
     <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">

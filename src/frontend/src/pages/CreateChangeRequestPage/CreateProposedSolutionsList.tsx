@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -8,7 +8,8 @@ import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionFor
 import { useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import styles from '../../stylesheets/pages/ChangeRequestDetailPage/ProposedSolutionsList.module.css';
+import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
+import { useAuth } from '../../hooks/auth.hooks';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -32,9 +33,13 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
-        + Add Proposed Solution
-      </Button>
+      {useAuth().user?.role !== 'GUEST' ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView

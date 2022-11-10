@@ -1,13 +1,9 @@
 import express from 'express';
-import {
-  editProject,
-  getAllProjects,
-  getSingleProject,
-  newProject
-} from '../controllers/projects.controllers';
+import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import { intMinZero } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { validateInputs } from '../utils/utils';
 
 const projectRouter = express.Router();
 
@@ -17,37 +13,39 @@ projectRouter.post(
   '/new',
   intMinZero(body('userId')),
   intMinZero(body('crId')),
-  body('name').isString().not().isEmpty(),
+  nonEmptyString(body('name')),
   intMinZero(body('carNumber')),
-  body('summary').isString().not().isEmpty(),
+  nonEmptyString(body('summary')),
+  validateInputs,
   newProject
 );
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),
   intMinZero(body('crId')),
-  body('name').isString().not().isEmpty(),
+  nonEmptyString(body('name')),
   intMinZero(body('userId')),
   intMinZero(body('budget')),
-  body('summary').isString().not().isEmpty(),
+  nonEmptyString(body('summary')),
   body('rules').isArray(),
-  body('rules.*').isString().not().isEmpty(),
+  nonEmptyString(body('rules.*')),
   body('goals').isArray(),
   intMinZero(body('goals.*.id').optional()),
-  body('goals.*.detail').isString().not().isEmpty(),
+  nonEmptyString(body('goals.*.detail')),
   body('features').isArray(),
   intMinZero(body('features.*.id').optional()),
-  body('features.*.detail').isString().not().isEmpty(),
+  nonEmptyString(body('features.*.detail')),
   body('otherConstraints').isArray(),
   intMinZero(body('otherConstraints.*.id').optional()),
-  body('otherConstraints.*.detail').isString().not().isEmpty(),
+  nonEmptyString(body('otherConstraints.*.detail')),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
-  body('googleDriveFolderLink').isString().not().isEmpty(),
-  body('slideDeckLink').isString().not().isEmpty(),
-  body('bomLink').isString().not().isEmpty(),
-  body('taskListLink').isString().not().isEmpty(),
+  nonEmptyString(body('googleDriveFolderLink')),
+  nonEmptyString(body('slideDeckLink')),
+  nonEmptyString(body('bomLink')),
+  nonEmptyString(body('taskListLink')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
+  validateInputs,
   editProject
 );
 

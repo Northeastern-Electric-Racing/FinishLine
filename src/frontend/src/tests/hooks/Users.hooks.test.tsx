@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -11,7 +11,7 @@ import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
 import { getAllUsers, getSingleUser, logUserIn } from '../../apis/Users.api';
-import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/Users.hooks';
+import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
 
 jest.mock('../../apis/Users.api');
 

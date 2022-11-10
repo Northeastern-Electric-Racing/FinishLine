@@ -1,12 +1,12 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber } from 'shared';
-import { useAuth } from '../../../hooks/Auth.hooks';
-import { useCreateStageGateChangeRequest } from '../../../hooks/ChangeRequests.hooks';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
 import { routes } from '../../../utils/Routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -34,8 +34,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
 
   const handleConfirm = async ({ leftoverBudget, confirmDone }: FormInput) => {
     handleClose();
-    if (auth.user?.userId === undefined)
-      throw new Error('Cannot create stage gate change request without being logged in');
+    if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
     await mutateAsync({
       submitterId: auth.user?.userId,
       wbsNum,
@@ -50,14 +49,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return (
-    <StageGateWorkPackageModal
-      wbsNum={wbsNum}
-      modalShow={modalShow}
-      onHide={handleClose}
-      onSubmit={handleConfirm}
-    />
-  );
+  return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default StageGateWorkPackageModalContainer;

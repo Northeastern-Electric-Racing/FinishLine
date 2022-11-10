@@ -7,7 +7,8 @@ import {
   getAllWorkPackages,
   getSingleWorkPackage
 } from '../controllers/work-packages.controllers';
-import { intMinZero } from '../utils/validation.utils';
+import { validateInputs } from '../utils/utils';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', getAllWorkPackages);
@@ -16,7 +17,7 @@ workPackagesRouter.post(
   '/create',
   intMinZero(body('userId')),
   intMinZero(body('crId')),
-  body('name').isString().not().isEmpty(),
+  nonEmptyString(body('name')),
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
   intMinZero(body('projectWbsNum.workPackageNumber')),
@@ -26,9 +27,10 @@ workPackagesRouter.post(
   intMinZero(body('dependencies.*.projectNumber')),
   intMinZero(body('dependencies.*.workPackageNumber')),
   body('expectedActivities').isArray(),
-  body('expectedActivities.*').isString().not().isEmpty(),
+  nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
-  body('deliverables.*').isString().not().isEmpty(),
+  nonEmptyString(body('deliverables.*')),
+  validateInputs,
   createWorkPackage
 );
 workPackagesRouter.post(
@@ -36,7 +38,7 @@ workPackagesRouter.post(
   intMinZero(body('workPackageId')),
   intMinZero(body('userId')),
   intMinZero(body('crId')),
-  body('name').isString().not().isEmpty(),
+  nonEmptyString(body('name')),
   body('startDate').isDate(),
   intMinZero(body('duration')),
   intMinZero(body('dependencies.*.carNumber')),
@@ -44,14 +46,14 @@ workPackagesRouter.post(
   intMinZero(body('dependencies.*.workPackageNumber')),
   body('expectedActivities').isArray(),
   body('expectedActivities.*.id').isInt({ min: -1 }).not().isString(),
-  body('expectedActivities.*.detail').isString().not().isEmpty(),
+  nonEmptyString(body('expectedActivities.*.detail')),
   body('deliverables').isArray(),
   body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
-  body('deliverables.*.detail').isString().not().isEmpty(),
+  nonEmptyString(body('deliverables.*.detail')),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
-  intMinZero(body('progress')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
+  validateInputs,
   editWorkPackage
 );
 
