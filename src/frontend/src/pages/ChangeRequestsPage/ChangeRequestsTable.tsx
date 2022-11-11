@@ -117,28 +117,30 @@ const ChangeRequestsTable: React.FC = () => {
 
   return (
     <Container fluid>
-      <PageTitle
-        title={'Change Requests'}
-        previousPages={[]}
-        actionButton={
-          <Button
-            style={{
-              textTransform: 'none',
-              fontSize: 16,
-              backgroundColor: '#ff0000',
-              borderColor: '#0062cc',
-              boxShadow: 'none'
-            }}
-            component={Link}
-            to={routes.CHANGE_REQUESTS_NEW}
-            variant="contained"
-            disabled={auth.user?.role === 'GUEST'}
-            startIcon={<Add />}
-          >
-            New Change Request
-          </Button>
-        }
-      />
+      <div style={{ marginBottom: 15 }}>
+        <PageTitle
+          title={'Change Requests'}
+          previousPages={[]}
+          actionButton={
+            <Button
+              style={{
+                textTransform: 'none',
+                fontSize: 16,
+                backgroundColor: '#ff0000',
+                borderColor: '#0062cc',
+                boxShadow: 'none'
+              }}
+              component={Link}
+              to={routes.CHANGE_REQUESTS_NEW}
+              variant="contained"
+              disabled={auth.user?.role === 'GUEST'}
+              startIcon={<Add />}
+            >
+              New Change Request
+            </Button>
+          }
+        />
+      </div>
       <Row>
         <Col>
           <DataGrid
