@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,26 +16,23 @@ import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
-import ChangeRequestsTable, {
-  filterCRs
-} from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
+import ChangeRequestsTable, { filterCRs } from '../../../pages/ChangeRequestsPage/ChangeRequestsTable';
 import { useTheme } from '../../../hooks/theme.hooks';
 import { Theme } from '../../../utils/Types';
 import themes from '../../../utils/Themes';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
 jest.mock('../../../hooks/change-requests.hooks');
 
-const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<
-  UseQueryResult<ChangeRequest[]>
->;
+const mockedUseAllChangeRequests = useAllChangeRequests as jest.Mock<UseQueryResult<ChangeRequest[]>>;
 
 jest.mock('../../../hooks/theme.hooks');
 const mockTheme = useTheme as jest.Mock<Theme>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: ChangeRequest[], error?: Error) => {
-  mockedUseAllChangeRequests.mockReturnValue(
-    mockUseQueryResult<ChangeRequest[]>(isLoading, isError, data, error)
-  );
+  mockedUseAllChangeRequests.mockReturnValue(mockUseQueryResult<ChangeRequest[]>(isLoading, isError, data, error));
 
   mockTheme.mockReturnValue(themes[0]);
 };
@@ -52,6 +49,11 @@ const renderComponent = () => {
 
 describe('change requests table container', () => {
   const NoCRMessage = 'No Change Requests to Display';
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
+  afterAll(() => jest.clearAllMocks());
 
   it('renders the loading indicator', () => {
     mockHook(true, false);
@@ -92,9 +94,7 @@ describe('change requests table container', () => {
     renderComponent();
     await waitFor(() => screen.getByText(exampleAllChangeRequests[0].crId));
 
-    expect(
-      screen.getAllByText(fullNamePipe(exampleAllChangeRequests[1].submitter))[0]
-    ).toBeInTheDocument();
+    expect(screen.getAllByText(fullNamePipe(exampleAllChangeRequests[1].submitter))[0]).toBeInTheDocument();
     expect(screen.getByText(exampleAllChangeRequests[1].crId)).toBeInTheDocument();
     expect(screen.getAllByText(wbsPipe(exampleAllChangeRequests[2].wbsNum))[0]).toBeInTheDocument();
 
@@ -102,23 +102,15 @@ describe('change requests table container', () => {
   });
 
   it('checking if change request filtering with no filters works as expected', async () => {
-    expect(filterCRs(exampleAllChangeRequests, '', [], '', [], '')).toStrictEqual(
-      exampleAllChangeRequests
-    );
+    expect(filterCRs(exampleAllChangeRequests, '', [], '', [], '')).toStrictEqual(exampleAllChangeRequests);
   });
 
   it('checking if change request filtering with type works as expected', async () => {
     const answer1: ChangeRequest[] = [exampleStandardChangeRequest];
     const answer2: ChangeRequest[] = [exampleActivationChangeRequest];
-    expect(
-      filterCRs(exampleAllChangeRequests, ChangeRequestType.Issue, [], '', [], '')
-    ).toStrictEqual(answer1);
-    expect(
-      filterCRs(exampleAllChangeRequests, ChangeRequestType.Activation, [], '', [], '')
-    ).toStrictEqual(answer2);
-    expect(
-      filterCRs(exampleAllChangeRequests, ChangeRequestType.Other, [], '', [], '')
-    ).toStrictEqual([]);
+    expect(filterCRs(exampleAllChangeRequests, ChangeRequestType.Issue, [], '', [], '')).toStrictEqual(answer1);
+    expect(filterCRs(exampleAllChangeRequests, ChangeRequestType.Activation, [], '', [], '')).toStrictEqual(answer2);
+    expect(filterCRs(exampleAllChangeRequests, ChangeRequestType.Other, [], '', [], '')).toStrictEqual([]);
   });
 
   it('checking if change request filtering with impact works as expected', async () => {
@@ -129,26 +121,17 @@ describe('change requests table container', () => {
 
   it('checking if change request filtering with whyType works as expected', async () => {
     const filtered: ChangeRequest[] = [exampleStandardChangeRequest];
-    expect(
-      filterCRs(exampleAllChangeRequests, '', [], ChangeRequestReason.School, [], '')
-    ).toStrictEqual(filtered);
-    expect(
-      filterCRs(exampleAllChangeRequests, '', [], ChangeRequestReason.Rules, [], '')
-    ).toStrictEqual(filtered);
+    expect(filterCRs(exampleAllChangeRequests, '', [], ChangeRequestReason.School, [], '')).toStrictEqual(filtered);
+    expect(filterCRs(exampleAllChangeRequests, '', [], ChangeRequestReason.Rules, [], '')).toStrictEqual(filtered);
   });
   it('checking if change request filtering with state works as expected', async () => {
-    const notReivewed: ChangeRequest[] = [
-      exampleActivationChangeRequest,
-      exampleStageGateChangeRequest
-    ];
+    const notReivewed: ChangeRequest[] = [exampleActivationChangeRequest, exampleStageGateChangeRequest];
     const accepted: ChangeRequest[] = [exampleStandardChangeRequest];
     const denied: ChangeRequest[] = [];
     expect(filterCRs(exampleAllChangeRequests, '', [], '', [0], '')).toStrictEqual(notReivewed);
     expect(filterCRs(exampleAllChangeRequests, '', [], '', [1], '')).toStrictEqual(accepted);
     expect(filterCRs(exampleAllChangeRequests, '', [], '', [2], '')).toStrictEqual(denied);
-    expect(filterCRs(exampleAllChangeRequests, '', [], '', [0, 1], '')).toStrictEqual(
-      exampleAllChangeRequests
-    );
+    expect(filterCRs(exampleAllChangeRequests, '', [], '', [0, 1], '')).toStrictEqual(exampleAllChangeRequests);
   });
 
   it('checking if change request filtering with implemented works as expected', async () => {
@@ -160,14 +143,7 @@ describe('change requests table container', () => {
 
   it('checking if change request filtering with multiple filters works as expected', async () => {
     expect(
-      filterCRs(
-        exampleAllChangeRequests,
-        ChangeRequestType.Issue,
-        [0],
-        ChangeRequestReason.School,
-        [1],
-        'Yes'
-      )
+      filterCRs(exampleAllChangeRequests, ChangeRequestType.Issue, [0], ChangeRequestReason.School, [1], 'Yes')
     ).toStrictEqual([exampleStandardChangeRequest]);
   });
 });

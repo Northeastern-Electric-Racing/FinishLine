@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -9,7 +9,7 @@ import PageBlock from '../../../layouts/PageBlock';
 import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import styles from '../../../stylesheets/components/risk-log.module.css';
+import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
   useEditSingleRisk,
@@ -36,7 +36,16 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
 const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
   const history = useHistory();
   const auth = useAuth();
-  const { userId, role } = auth.user!;
+  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
+  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
+  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
+  const [newDetail, setNewDetail] = useState('');
+  const [show, setShow] = useState(false);
+  const risksQuery = useGetRisksForProject(projectId);
+
+  if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
+
+  const { userId, role } = auth.user;
 
   const hasPermissions =
     role === 'ADMIN' ||
@@ -44,16 +53,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     role === 'LEADERSHIP' ||
     projLead?.userId === userId ||
     projManager?.userId === userId;
-
-  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
-  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
-  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
-
-  const [newDetail, setNewDetail] = useState('');
-  const [show, setShow] = useState(false);
-  const risksQuery = useGetRisksForProject(projectId);
-
-  if (risksQuery.isLoading) return <LoadingIndicator />;
 
   const risks = [
     ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
@@ -116,22 +115,21 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
   const ConvertToCRButton = (risk: Risk) => {
     return (
-      <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
-        <Button
-          variant="success"
-          data-testId="convertButton"
-          onClick={() => {
-            history.push(
-              routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                wbsPipe(wbsNum) +
-                '&riskDetails=' +
-                encodeURIComponent(risk.detail)
-            );
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </Button>
-      </OverlayTrigger>
+      role !== 'GUEST' && (
+        <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+          <Button
+            variant="success"
+            data-testId="convertButton"
+            onClick={() => {
+              history.push(
+                routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(wbsNum) + '&riskDetails=' + encodeURIComponent(risk.detail)
+              );
+            }}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </Button>
+        </OverlayTrigger>
+      )
     );
   };
 
@@ -159,13 +157,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               {hasPermissions ? (
                 <Form.Check
                   label={
-                    <p
-                      style={
-                        risk.isResolved
-                          ? { textDecoration: 'line-through' }
-                          : { textDecoration: 'none' }
-                      }
-                    >
+                    <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
                       {risk.detail}
                     </p>
                   }
@@ -175,11 +167,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
                 />
               ) : (
                 <li
-                  style={
-                    risk.isResolved
-                      ? { textDecoration: 'line-through' }
-                      : { textDecoration: 'none' }
-                  }
+                  style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
                   className="mb-3"
                 >
                   {risk.detail}
@@ -199,10 +187,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             <Modal.Title>Add New Risk</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form.Control
-              placeholder={'Enter New Risk Here'}
-              onChange={(e) => setNewDetail(e.target.value)}
-            />
+            <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={handleClose}>

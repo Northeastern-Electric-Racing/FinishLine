@@ -1,11 +1,11 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { wbsPipe, listPipe, endDatePipe, datePipe } from '../../../../utils/Pipes';
+import { wbsPipe, listPipe, datePipe } from '../../../../utils/Pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,
@@ -31,21 +31,15 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wbsPipe(wp.wbsNum)}`)).toBeInTheDocument();
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })).not.toBeInTheDocument();
     wp.deliverables.slice(0, 3).forEach((deliverable) => {
       expect(screen.getByText(`${deliverable.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })).not.toBeInTheDocument();
   });
 
   it('renders all the fields, example 2', () => {
@@ -56,21 +50,15 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${listPipe(wp.dependencies, wbsPipe)}`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })).not.toBeInTheDocument();
     wp.deliverables.slice(0, 3).forEach((deliverable) => {
       expect(screen.getByText(`${deliverable.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })).not.toBeInTheDocument();
   });
 
   it('renders all the fields, example 3', () => {
@@ -81,20 +69,14 @@ describe('Rendering Work Package Summary Test', () => {
     expect(screen.getByText(`${wp.duration} weeks`)).toBeInTheDocument();
     expect(screen.getByText(`${listPipe(wp.dependencies, wbsPipe)}`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`${endDatePipe(wp.startDate, wp.duration)}`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
     wp.expectedActivities.slice(0, 3).forEach((expectedActivity) => {
       expect(screen.getByText(`${expectedActivity.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.getByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(`Show ${wp.expectedActivities.length - 3} more...`, { exact: false })).toBeInTheDocument();
     wp.deliverables.slice(0, 3).forEach((deliverable) => {
       expect(screen.getByText(`${deliverable.detail}`)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Show ${wp.deliverables.length - 3} more...`, { exact: false })).not.toBeInTheDocument();
   });
 });

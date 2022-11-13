@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -35,11 +35,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </Dropdown.Item>
   );
   const createCRBtn = (
-    <Dropdown.Item
-      as={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(proj.wbsNum)}
-      disabled={isGuest}
-    >
+    <Dropdown.Item as={Link} to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(proj.wbsNum)} disabled={isGuest}>
       Request Change
     </Dropdown.Item>
   );
@@ -59,18 +55,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       />
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog
-        projectId={proj.id}
-        wbsNum={proj.wbsNum}
-        projLead={proj.projectLead}
-        projManager={proj.projectManager}
-      />
+      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
-      <DescriptionList
-        title={'Features'}
-        items={proj.features.filter((feature) => !feature.dateDeleted)}
-      />
+      <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />
       <DescriptionList
         title={'Other Constraints'}
         items={proj.otherConstraints.filter((constraint) => !constraint.dateDeleted)}

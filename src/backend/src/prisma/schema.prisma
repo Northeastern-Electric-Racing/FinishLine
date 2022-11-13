@@ -1,4 +1,4 @@
-// This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+// This file is part of NER's FinishLine and licensed under GNU AGPLv3.
 // See the LICENSE file in the repository root folder for details.
 
 datasource db {
@@ -61,20 +61,21 @@ model User {
   userSettings User_Settings?
 
   // Relation references
-  submittedChangeRequests  Change_Request[]    @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests   Change_Request[]    @relation(name: "reviewedChangeRequests")
-  markedAsProjectLead      Activation_CR[]     @relation(name: "markAsProjectLead")
-  markedAsProjectManager   Activation_CR[]     @relation(name: "markAsProjectManager")
-  changes                  Change[]
-  projectLead              WBS_Element[]       @relation(name: "projectLead")
-  projectManager           WBS_Element[]       @relation(name: "projectManager")
-  Session                  Session[]
-  teams                    Team[]              @relation(name: "teamsAsMember")
-  teamAsLead               Team?               @relation(name: "teamAsLead")
-  createdRisks             Risk[]              @relation(name: "createdBy")
-  resolvedRisks            Risk[]              @relation(name: "resolvedBy")
-  deletedRisks             Risk[]              @relation(name: "deletedBy")
-  createdProposedSolutions Proposed_Solution[]
+  submittedChangeRequests   Change_Request[]     @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests    Change_Request[]     @relation(name: "reviewedChangeRequests")
+  markedAsProjectLead       Activation_CR[]      @relation(name: "markAsProjectLead")
+  markedAsProjectManager    Activation_CR[]      @relation(name: "markAsProjectManager")
+  changes                   Change[]
+  projectLead               WBS_Element[]        @relation(name: "projectLead")
+  projectManager            WBS_Element[]        @relation(name: "projectManager")
+  Session                   Session[]
+  teams                     Team[]               @relation(name: "teamsAsMember")
+  teamAsLead                Team?                @relation(name: "teamAsLead")
+  checkedDescriptionBullets Description_Bullet[] @relation(name: "checkDescriptionBullets")
+  createdRisks              Risk[]               @relation(name: "createdBy")
+  resolvedRisks             Risk[]               @relation(name: "resolvedBy")
+  deletedRisks              Risk[]               @relation(name: "deletedBy")
+  createdProposedSolutions  Proposed_Solution[]
 }
 
 model Team {
@@ -238,7 +239,6 @@ model Work_Package {
   project            Project              @relation(fields: [projectId], references: [projectId])
   orderInProject     Int
   startDate          DateTime
-  progress           Int                  @default(0)
   duration           Int
   dependencies       WBS_Element[]        @relation(name: "dependencies")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
@@ -248,6 +248,9 @@ model Work_Package {
 model Description_Bullet {
   descriptionId                   Int           @id @default(autoincrement())
   dateAdded                       DateTime      @default(now())
+  userCheckedId                   Int?
+  userChecked                     User?         @relation(name: "checkDescriptionBullets", fields: [userCheckedId], references: [userId])
+  dateTimeChecked                 DateTime?
   dateDeleted                     DateTime?
   detail                          String
   // Relation references
