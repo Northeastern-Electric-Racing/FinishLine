@@ -29,7 +29,7 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) =
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper }} variant="outlined">
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>

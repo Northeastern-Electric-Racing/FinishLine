@@ -17,9 +17,9 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Button, Box, TextField } from '@mui/material';
+import { Grid, Button, Box, TextField, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { NERButton } from '../../../components/NERButton';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 
@@ -114,10 +114,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
+  const { userId } = auth.user;
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: any, e: any) => {
-    const { userId } = auth.user!;
     const { name, budget, summary, wbsElementStatus, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
     const goals = mapBulletsToPayload(data.goals);
@@ -173,9 +173,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <ProjectEditDetails project={project} users={users} control={control} />
+      <ProjectEditDetails users={users} control={control} />
       <PageBlock title="Project Summary">
-        <Grid item>
+        <Grid item sx={{ mt: 2 }}>
           <ReactHookTextField
             name="summary"
             control={control}
@@ -210,26 +210,26 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       <PageBlock title="Rules">
         {rules.map((_rule, i) => {
           return (
-            <Grid item>
-              <TextField required {...register(`rules.${i}.rule`)} />
-              <Button type="button" onClick={() => removeRule(i)}>
-                X
-              </Button>
+            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField required {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
+              <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
+                <DeleteIcon />
+              </IconButton>
             </Grid>
           );
         })}
-        <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })}>
-          New Rule
+        <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
+          + ADD NEW RULE
         </Button>
       </PageBlock>
 
-      <Box display="flex">
-        <Button variant="contained" color="success" type="submit">
+      <Box textAlign="center" sx={{ my: 2 }}>
+        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
           Submit
         </Button>
-        <NERButton variant="contained" color="error" onClick={exitEditMode}>
+        <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
           Cancel
-        </NERButton>
+        </Button>
       </Box>
     </form>
   );

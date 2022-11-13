@@ -1,99 +1,96 @@
-import { Project, User, WbsElementStatus } from 'shared';
+import { User, WbsElementStatus } from 'shared';
 import { Controller } from 'react-hook-form';
-import { Grid, Select, MenuItem } from '@mui/material';
+import { Grid, MenuItem, TextField } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/Pipes';
 
 interface ProjectEditDetailsProps {
-  project: Project;
   users: User[];
   control: any;
 }
 
 const statuses = Object.values(WbsElementStatus);
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ project, users, control }) => {
+const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control }) => {
   return (
     <PageBlock title="Project Details">
-      <Grid item xs={12} sm={12}>
-        <Grid item sx={{ mb: 1 }}>
+      <Grid container spacing={1}>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <ReactHookTextField name="name" control={control} sx={{ width: 10 / 10 }} label="Project Name" />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <ReactHookTextField
+            name="budget"
+            control={control}
+            type="number"
+            label="Budget"
+            sx={{ width: 3 / 10 }}
+            icon={<AttachMoneyIcon />}
+          />
+        </Grid>
+        <Grid item xs={12}>
           <Controller
             name="wbsElementStatus"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <Select onChange={onChange} value={value}>
+              <TextField select onChange={onChange} value={value} label="Status" sx={{ my: 1 }}>
                 {statuses.map((t) => (
                   <MenuItem key={t} value={t}>
                     {t}
                   </MenuItem>
                 ))}
-              </Select>
+              </TextField>
+            )}
+          />
+          <Controller
+            name="projectLeadId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1 }}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            name="projectManagerId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1 }}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
           />
         </Grid>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <ReactHookTextField name="name" control={control} sx={{ width: '50%' }} label="Project Name" />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <ReactHookTextField
-          name="budget"
-          control={control}
-          sx={{ width: '15%' }}
-          type="number"
-          label="Budget"
-          icon={<AttachMoneyIcon />}
-        />
-      </Grid>
-      <Grid item>
-        <Controller
-          name="projectLeadId"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <Select onChange={onChange} value={value}>
-              {users.map((t) => (
-                <MenuItem key={t.userId} value={t.userId}>
-                  {fullNamePipe(t)}
-                </MenuItem>
-              ))}
-            </Select>
-          )}
-        />
-        <Controller
-          name="projectManagerId"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <Select onChange={onChange} value={value}>
-              {users.map((t) => (
-                <MenuItem key={t.userId} value={t.userId}>
-                  {fullNamePipe(t)}
-                </MenuItem>
-              ))}
-            </Select>
-          )}
-        />
-      </Grid>
-      <Grid item>
-        <ReactHookTextField name="slideDeckLink" control={control} sx={{ width: '50%' }} label="Slide Deck Link" />
-      </Grid>
-      <Grid item>
-        <ReactHookTextField
-          name="googleDriveFolderLink"
-          control={control}
-          sx={{ width: '50%' }}
-          label="Google Drive Folder Link"
-        />
-      </Grid>
-      <Grid item>
-        <ReactHookTextField name="bomLink" control={control} sx={{ width: '50%' }} label="Bom Link" />
-      </Grid>
-      <Grid item>
-        <ReactHookTextField name="taskListLink" control={control} sx={{ width: '50%' }} label="Task List Link" />
+        <Grid item xs={12} sx={{ my: 1 }}>
+          <ReactHookTextField name="slideDeckLink" control={control} sx={{ width: '50%' }} label="Slide Deck Link" />
+        </Grid>
+        <Grid item xs={12} sx={{ my: 1 }}>
+          <ReactHookTextField
+            name="googleDriveFolderLink"
+            control={control}
+            sx={{ width: '50%' }}
+            label="Google Drive Folder Link"
+          />
+        </Grid>
+        <Grid item xs={12} sx={{ my: 1 }}>
+          <ReactHookTextField name="bomLink" control={control} sx={{ width: '50%' }} label="Bom Link" />
+        </Grid>
+        <Grid item xs={12} sx={{ my: 1 }}>
+          <ReactHookTextField name="taskListLink" control={control} sx={{ width: '50%' }} label="Task List Link" />
+        </Grid>
       </Grid>
     </PageBlock>
   );
