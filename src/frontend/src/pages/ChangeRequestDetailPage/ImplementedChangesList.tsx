@@ -24,9 +24,9 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
         <>
           [<Link to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>]{' '}
           <OverlayTrigger
-            placement="right"
+            placement={`${window.innerWidth < 600 ? 'top' : 'right'}`}
             overlay={
-              <Tooltip id="tooltip">
+              <Tooltip id="tooltip" style={{ maxWidth: '170px' }}>
                 {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
               </Tooltip>
             }
