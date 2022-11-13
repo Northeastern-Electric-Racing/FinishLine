@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { prodHeaders, requireJwt } from './src/utils/utils';
+import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
@@ -12,9 +12,10 @@ import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
+const isProd = process.env.NODE_ENV === 'production';
 
 // cors options
-const allowedHeaders = process.env.NODE_ENV === 'production' ? prodHeaders : '*';
+const allowedHeaders = isProd ? prodHeaders : '*';
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
   methods: 'GET, POST',
@@ -33,7 +34,7 @@ app.use(express.json());
 app.use(cors(options));
 
 // ensure each request is authorized using JWT
-app.use(requireJwt);
+app.use(isProd ? requireJwtProd : requireJwtDev);
 
 // routes
 app.use('/users', userRouter);
