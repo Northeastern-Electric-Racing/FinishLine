@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Project, WbsElementStatus } from 'shared';
-import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
+import { DescriptionBullet, Project } from 'shared';
+import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -14,13 +14,14 @@ import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { Controller, FieldArrayWithId, useFieldArray, UseFieldArrayRemove, useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Select, MenuItem, Button, Box, TextField } from '@mui/material';
+import { Grid, Button, Box, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { NERButton } from '../../../components/NERButton';
+import ProjectEditDetails from './ProjectEditDetails';
+import ReactHookEditableList from '../../../components/ReactHookEditableList';
 
 const bulletsToObject = (bullets: DescriptionBullet[]) =>
   bullets
@@ -39,33 +40,6 @@ const isValidURL = (url: string | undefined) => {
     }
   }
   return false;
-};
-
-const buildEditableBulletList = (
-  title: string,
-  ls: FieldArrayWithId[],
-  register: any,
-  name: string,
-  append: any,
-  remove: UseFieldArrayRemove
-) => {
-  return (
-    <PageBlock title={title}>
-      {ls.map((_element, i) => {
-        return (
-          <Grid item>
-            <TextField required sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
-            <Button type="button" onClick={() => remove(i)}>
-              X
-            </Button>
-          </Grid>
-        );
-      })}
-      <Button variant="contained" color="success" onClick={() => append({ bulletId: -1, detail: '' })}>
-        New Goal
-      </Button>
-    </PageBlock>
-  );
 };
 
 const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
@@ -103,7 +77,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
-  const { register, handleSubmit, control, formState } = useForm({
+  const { register, handleSubmit, control } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name,
@@ -141,7 +115,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   }
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
-  const statuses = Object.values(WbsElementStatus);
 
   const onSubmit = async (data: any, e: any) => {
     const { userId } = auth.user!;
@@ -183,7 +156,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   return (
     <form
-      id={'project-edit-form'}
+      id="project-edit-form"
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -200,92 +173,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <PageBlock title="Project Details">
-        <Grid item xs={12} sm={12}>
-          <Grid item sx={{ mb: 1 }}>
-            <Controller
-              name="wbsElementStatus"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <Select onChange={onChange} value={value}>
-                  {statuses.map((t) => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            />
-          </Grid>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <ReactHookTextField name="name" control={control} sx={{ width: '50%' }} label="Project Name" />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <ReactHookTextField
-            name="budget"
-            control={control}
-            sx={{ width: '15%' }}
-            type="number"
-            label="Budget"
-            icon={<AttachMoneyIcon />}
-          />
-        </Grid>
-        <Grid item>
-          <Controller
-            name="projectLeadId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Select onChange={onChange} value={value}>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-          />
-          <Controller
-            name="projectManagerId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Select onChange={onChange} value={value}>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-          />
-        </Grid>
-        <Grid item>
-          <ReactHookTextField name="slideDeckLink" control={control} sx={{ width: '50%' }} label="Slide Deck Link" />
-        </Grid>
-        <Grid item>
-          <ReactHookTextField
-            name="googleDriveFolderLink"
-            control={control}
-            sx={{ width: '50%' }}
-            label="Google Drive Folder Link"
-          />
-        </Grid>
-        <Grid item>
-          <ReactHookTextField
-            name="bomLink"
-            control={control}
-            sx={{ width: '50%' }}
-            label="Bom Link"
-            errorMessage={formState.errors.bomLink}
-          />
-        </Grid>
-        <Grid item>
-          <ReactHookTextField name="taskListLink" control={control} sx={{ width: '50%' }} label="Task List Link" />
-        </Grid>
-      </PageBlock>
+      <ProjectEditDetails project={project} users={users} control={control} />
       <PageBlock title="Project Summary">
         <Grid item>
           <ReactHookTextField
@@ -298,16 +186,27 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           />
         </Grid>
       </PageBlock>
-      {buildEditableBulletList('Goals', goals, register, 'goals', appendGoal, removeGoal)}
-      {buildEditableBulletList('Features', features, register, 'features', appendFeature, removeFeature)}
-      {buildEditableBulletList(
-        'Other Constraints',
-        constraints,
-        register,
-        'constraints',
-        appendConstraint,
-        removeConstraint
-      )}
+      <PageBlock title="Goals">
+        <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
+      </PageBlock>
+      <PageBlock title="Features">
+        <ReactHookEditableList
+          name="features"
+          register={register}
+          ls={features}
+          append={appendFeature}
+          remove={removeFeature}
+        />
+      </PageBlock>
+      <PageBlock title="Other Constraints">
+        <ReactHookEditableList
+          name="constraints"
+          register={register}
+          ls={constraints}
+          append={appendConstraint}
+          remove={removeConstraint}
+        />
+      </PageBlock>
       <PageBlock title="Rules">
         {rules.map((_rule, i) => {
           return (
