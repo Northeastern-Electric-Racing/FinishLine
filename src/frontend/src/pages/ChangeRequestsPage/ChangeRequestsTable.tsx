@@ -4,7 +4,6 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { Col, Container, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/Routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
@@ -116,7 +115,7 @@ const ChangeRequestsTable: React.FC = () => {
   ];
 
   return (
-    <Container fluid>
+    <div>
       <div style={{ marginBottom: 15 }}>
         <PageTitle
           title={'Change Requests'}
@@ -141,37 +140,33 @@ const ChangeRequestsTable: React.FC = () => {
           }
         />
       </div>
-      <Row>
-        <Col>
-          <DataGrid
-            autoHeight
-            disableSelectionOnClick
-            density="compact"
-            pageSize={15}
-            rowsPerPageOptions={[15, 30, 50, 100]}
-            loading={isLoading}
-            error={error}
-            rows={data || []}
-            columns={columns}
-            getRowId={(row) => row.crId}
-            onRowClick={(params) => {
-              history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
-            }}
-            components={{ Toolbar: GridToolbar }}
-            initialState={{
-              sorting: {
-                sortModel: [{ field: 'crId', sort: 'desc' }]
-              },
-              columns: {
-                columnVisibilityModel: {
-                  implementedChanges: false
-                }
-              }
-            }}
-          />
-        </Col>
-      </Row>
-    </Container>
+      <DataGrid
+        autoHeight
+        disableSelectionOnClick
+        density="compact"
+        pageSize={15}
+        rowsPerPageOptions={[15, 30, 50, 100]}
+        loading={isLoading}
+        error={error}
+        rows={data || []}
+        columns={columns}
+        getRowId={(row) => row.crId}
+        onRowClick={(params) => {
+          history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
+        }}
+        components={{ Toolbar: GridToolbar }}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'crId', sort: 'desc' }]
+          },
+          columns: {
+            columnVisibilityModel: {
+              implementedChanges: false
+            }
+          }
+        }}
+      />
+    </div>
   );
 };
 
