@@ -16,7 +16,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
       {ls.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
+            <TextField required autoComplete="off" sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
             <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />
             </IconButton>

@@ -23,6 +23,10 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 
+/*
+ * maps a description bullet list to the object needed for forms
+ * can't use `id` instead of `bulletId` because react-hook-forms uses id built in for arrays of objects
+ */
 const bulletsToObject = (bullets: DescriptionBullet[]) =>
   bullets
     .filter((bullet) => !bullet.dateDeleted)
@@ -30,18 +34,7 @@ const bulletsToObject = (bullets: DescriptionBullet[]) =>
       return { bulletId: bullet.id, detail: bullet.detail };
     });
 
-const isValidURL = (url: string | undefined) => {
-  if (url) {
-    try {
-      new URL(url);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-  return false;
-};
-
+// transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
 const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   return ls.map((ele) => {
     return { id: ele.bulletId !== -1 ? ele.bulletId : undefined, detail: ele.detail };
@@ -49,22 +42,13 @@ const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
 };
 
 const schema = yup.object().shape({
-  slideDeckLink: yup
-    .string()
-    .required('Slide deck link is required!')
-    .test('slide-deck-is-url', 'Slide deck is not a valid link!', isValidURL),
-  googleDriveFolderLink: yup
-    .string()
-    .required('Google Drive folder link is required!')
-    .test('google-drive-folder-is-url', 'Google Drive folder is not a valid link!', isValidURL),
-  bomLink: yup
-    .string()
-    .required('Bom link is required!')
-    .test('bom-link-is-url', 'Bom link is not a valid link!', isValidURL),
-  taskListLink: yup
-    .string()
-    .required('Task list link is required!')
-    .test('task-list-is-url', 'Task list is not a valid link!', isValidURL)
+  name: yup.string().required('Name is required!'),
+  budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+  slideDeckLink: yup.string().required('Slide deck link is required!').url('Invalid URL'),
+  googleDriveFolderLink: yup.string().required('Google Drive folder link is required!').url('Invalid URL'),
+  bomLink: yup.string().url('Invalid URL').required('Bom link is required!'),
+  taskListLink: yup.string().required('Task list link is required!').url('Invalid URL'),
+  summary: yup.string().required('Summary is required!')
 });
 
 interface ProjectEditContainerProps {
@@ -77,7 +61,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
-  const { register, handleSubmit, control } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name,
@@ -117,7 +106,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const { userId } = auth.user;
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
-  const onSubmit = async (data: any, e: any) => {
+  const onSubmit = async (data: any) => {
     const { name, budget, summary, wbsElementStatus, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
     const goals = mapBulletsToPayload(data.goals);
@@ -173,7 +162,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <ProjectEditDetails users={users} control={control} />
+      <ProjectEditDetails users={users} control={control} errors={errors} />
       <PageBlock title="Project Summary">
         <Grid item sx={{ mt: 2 }}>
           <ReactHookTextField
@@ -183,6 +172,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             label="Summary"
             multiline={true}
             rows={5}
+            errorMessage={errors.summary}
           />
         </Grid>
       </PageBlock>
@@ -211,7 +201,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         {rules.map((_rule, i) => {
           return (
             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
+              <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
               <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>

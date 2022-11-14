@@ -33,7 +33,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   type,
   icon,
   multiline,
-  rows
+  rows,
+  errorMessage
 }) => {
   const defaultRules = { required: true };
 
@@ -66,6 +67,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
           InputProps={inputProps}
           multiline={multiline}
           rows={rows}
+          error={!!errorMessage}
+          helperText={errorMessage?.message}
         />
       )}
     />

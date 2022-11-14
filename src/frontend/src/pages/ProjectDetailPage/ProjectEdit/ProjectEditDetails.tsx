@@ -9,16 +9,23 @@ import { fullNamePipe } from '../../../utils/Pipes';
 interface ProjectEditDetailsProps {
   users: User[];
   control: any;
+  errors: any;
 }
 
 const statuses = Object.values(WbsElementStatus);
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control }) => {
+const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
   return (
     <PageBlock title="Project Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <ReactHookTextField name="name" control={control} sx={{ width: 10 / 10 }} label="Project Name" />
+          <ReactHookTextField
+            name="name"
+            control={control}
+            sx={{ width: 10 / 10 }}
+            label="Project Name"
+            errorMessage={errors.name}
+          />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <ReactHookTextField
@@ -28,6 +35,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control 
             label="Budget"
             sx={{ width: 3 / 10 }}
             icon={<AttachMoneyIcon />}
+            errorMessage={errors.budget}
           />
         </Grid>
         <Grid item xs={12}>
@@ -75,7 +83,13 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control 
           />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <ReactHookTextField name="slideDeckLink" control={control} sx={{ width: '50%' }} label="Slide Deck Link" />
+          <ReactHookTextField
+            name="slideDeckLink"
+            control={control}
+            sx={{ width: '50%' }}
+            label="Slide Deck Link"
+            errorMessage={errors.slideDeckLink}
+          />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <ReactHookTextField
@@ -83,13 +97,26 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control 
             control={control}
             sx={{ width: '50%' }}
             label="Google Drive Folder Link"
+            errorMessage={errors.googleDriveFolderLink}
           />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <ReactHookTextField name="bomLink" control={control} sx={{ width: '50%' }} label="Bom Link" />
+          <ReactHookTextField
+            name="bomLink"
+            control={control}
+            sx={{ width: '50%' }}
+            label="Bom Link"
+            errorMessage={errors.bomLink}
+          />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <ReactHookTextField name="taskListLink" control={control} sx={{ width: '50%' }} label="Task List Link" />
+          <ReactHookTextField
+            name="taskListLink"
+            control={control}
+            sx={{ width: '50%' }}
+            label="Task List Link"
+            errorMessage={errors.taskListLink}
+          />
         </Grid>
       </Grid>
     </PageBlock>
