@@ -83,7 +83,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
               render={({ field: { onChange, value } }) => (
                 <>
                   <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
-                  <ul style={{ margin: 0 }}>
+                  <ul style={{ marginTop: 0, marginBottom: 2 }}>
                     <li>Updated slide deck & documentation</li>
                     <li>Creating any outstanding change requests</li>
                     <li>Submitted all receipts to the procurement form</li>
