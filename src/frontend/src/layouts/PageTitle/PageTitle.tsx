@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Typography, Grid } from '@mui/material';
 import { ReactNode } from 'react';
 import { LinkItem } from '../../utils/Types';
 import PageBreadcrumbs from './PageBreadcrumbs';
@@ -22,17 +22,21 @@ interface PageTitleProps {
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton }) => {
   return (
-    <div>
-      <div>
-        <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-          <Typography variant="h4" fontSize={30} sx={{ flexGrow: 1 }}>
+    <>
+      <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
+      <Grid container sx={{ mt: 1, mb: 2 }}>
+        <Grid item>
+          <Typography variant="h4" fontSize={30} sx={{ verticalAlign: 'middle', display: 'inline-flex' }}>
             {title}
           </Typography>
-          {actionButton}
-        </Box>
-      </div>
-    </div>
+        </Grid>
+        <Grid item sx={{ mx: 0 }} xs>
+          <Grid container direction="row-reverse">
+            <Grid item>{actionButton}</Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 };
 

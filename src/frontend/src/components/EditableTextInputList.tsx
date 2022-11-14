@@ -18,6 +18,7 @@ interface EditableTextInputListProps {
   remove: (idx: number) => any;
   update: (idx: number, val: any) => any;
   disabledItems?: boolean[];
+  label?: string;
 }
 
 const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
@@ -27,7 +28,8 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   add,
   remove,
   update,
-  disabledItems
+  disabledItems,
+  label
 }) => {
   // last input of the list is being kept track of so that we know if we should add a new input when enter is pressed
   // (only add one when the box is not empty)
@@ -99,9 +101,8 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
             id={`bullet-${index}`}
             name={`bullet-${index}`}
             value={item.toString()}
-            label="Work Package Name"
+            label={label}
             placeholder="Input new bullet here..."
-            sx={{ backgroundColor: 'white' }}
             ref={isLastElement(index) ? focusRef : null}
             autoFocus={hasTyped && isLastElement(index)}
             onKeyDown={(e: any) => handleKeyDown(e, index)}
