@@ -59,7 +59,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Leftover Budget $'}</Typography>
+                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Leftover Budget'}</Typography>
                   <TextField
                     required
                     variant="outlined"
@@ -68,6 +68,9 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
                     value={value}
                     defaultValue={value}
                     fullWidth
+                    InputProps={{
+                      startAdornment: <Typography sx={{ paddingRight: 1 }}>$</Typography>
+                    }}
                   />
                 </>
               )}
@@ -79,8 +82,8 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography>Is everything done?</Typography>
-                  <ul>
+                  <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
+                  <ul style={{ margin: 0 }}>
                     <li>Updated slide deck & documentation</li>
                     <li>Creating any outstanding change requests</li>
                     <li>Submitted all receipts to the procurement form</li>
