@@ -6,15 +6,16 @@
 import { useHistory } from 'react-router-dom';
 import { Col, Container, Row } from 'react-bootstrap';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/Routes';
 import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import ActionButton from '../../components/ActionButton';
+import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Link } from 'react-router-dom';
+import { Button } from '@mui/material';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -116,18 +117,30 @@ const ChangeRequestsTable: React.FC = () => {
 
   return (
     <Container fluid>
-      <PageTitle
-        title={'Change Requests'}
-        previousPages={[]}
-        actionButton={
-          <ActionButton
-            link={routes.CHANGE_REQUESTS_NEW}
-            icon={faPlus}
-            text={'New Change Request'}
-            disabled={auth.user?.role === 'GUEST'}
-          />
-        }
-      />
+      <div style={{ marginBottom: 15 }}>
+        <PageTitle
+          title={'Change Requests'}
+          previousPages={[]}
+          actionButton={
+            <Button
+              style={{
+                textTransform: 'none',
+                fontSize: 16,
+                backgroundColor: '#ff0000',
+                borderColor: '#0062cc',
+                boxShadow: 'none'
+              }}
+              component={Link}
+              to={routes.CHANGE_REQUESTS_NEW}
+              variant="contained"
+              disabled={auth.user?.role === 'GUEST'}
+              startIcon={<Add />}
+            >
+              New Change Request
+            </Button>
+          }
+        />
+      </div>
       <Row>
         <Col>
           <DataGrid
