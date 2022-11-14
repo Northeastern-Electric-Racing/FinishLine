@@ -10,7 +10,7 @@ import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages, exampleWorkPackage1 } from '../test-support/test-data/work-packages.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
-import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/WorkPackages.api';
+import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 
 jest.mock('../../apis/WorkPackages.api');
