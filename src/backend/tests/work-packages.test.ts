@@ -111,36 +111,28 @@ describe('Work Packages', () => {
   });
 });
 
-
-
-test('createWorkPackage fails if the associated wbsElem returns null', 
-async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
-
-    const res = await request(app).post('/create').send(createWorkPackagePayload);
-
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(res.statusCode).toBe(404);
-    expect(res.body.message).toBe(
-      `Could not find element with wbs number: 1.2.0`);
-});
-
-
-test('createWorkPackage fails if the associated wbsElem does not have a project object', 
-async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+test('createWorkPackage fails if the associated wbsElem returns null', async () => {
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+  jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+  mockGetChangeRequestReviewState.mockResolvedValue(true);
+  jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
   const res = await request(app).post('/create').send(createWorkPackagePayload);
 
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
-    expect(res.statusCode).toBe(404);
-    expect(res.body.message).toBe(
-      `Could not find element with wbs number: 1.2.0`);
+  expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+  expect(res.statusCode).toBe(404);
+  expect(res.body.message).toBe(`Could not find element with wbs number: 1.2.0`);
 });
 
+test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+  jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+  mockGetChangeRequestReviewState.mockResolvedValue(true);
+  jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+  const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+  expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
+  expect(res.statusCode).toBe(404);
+  expect(res.body.message).toBe(`Could not find element with wbs number: 1.2.0`);
+});
