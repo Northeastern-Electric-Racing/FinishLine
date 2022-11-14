@@ -20,15 +20,24 @@ interface CheckListProps {
   title: string;
   headerRight?: ReactNode;
   items: CheckListItem[];
+  isDisabled: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
+const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
   const auth = useAuth();
   const { mutateAsync } = useCheckDescriptionBullet();
 
   const handleCheck = async (idx: number) => {
     await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
   };
+
+  items.sort((a: CheckListItem, b: CheckListItem) => {
+    if (a.resolved !== b.resolved) {
+      return a.resolved ? 1 : -1;
+    }
+
+    return a.detail.localeCompare(b.detail);
+  });
 
   return (
     <PageBlock title={title} headerRight={headerRight}>
@@ -42,6 +51,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items }) => {
                 </p>
               }
               checked={check.resolved}
+              disabled={isDisabled}
               onChange={() => handleCheck(idx)}
             />
           </div>

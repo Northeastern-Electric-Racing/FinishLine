@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -60,9 +60,7 @@ const DependenciesList: React.FC<DependenciesListProps> = ({ dependencies, sette
     </InputGroup>
   );
 
-  const items = dependenciesState.map((e) => (
-    <Dependency wbsNumber={e} handleDelete={handleDelete} />
-  ));
+  const items = dependenciesState.map((e) => <Dependency wbsNumber={e} handleDelete={handleDelete} />);
 
   return <HorizontalList title={'Dependencies'} items={[...items, AddButton]} />;
 };

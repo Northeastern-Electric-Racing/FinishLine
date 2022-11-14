@@ -1,13 +1,9 @@
 import express from 'express';
-import {
-  editProject,
-  getAllProjects,
-  getSingleProject,
-  newProject
-} from '../controllers/projects.controllers';
+import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { validateInputs } from '../utils/utils';
 
 const projectRouter = express.Router();
 
@@ -20,6 +16,7 @@ projectRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('carNumber')),
   nonEmptyString(body('summary')),
+  validateInputs,
   newProject
 );
 projectRouter.post(
@@ -48,6 +45,7 @@ projectRouter.post(
   nonEmptyString(body('taskListLink')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
+  validateInputs,
   editProject
 );
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -38,8 +38,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
     handleClose();
-    if (auth.user?.userId === undefined)
-      throw new Error('Cannot review change request without being logged in');
+    if (auth.user?.userId === undefined) throw new Error('Cannot review change request without being logged in');
     await mutateAsync({
       reviewerId: auth.user?.userId,
       crId,
@@ -53,14 +52,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return (
-    <ReviewChangeRequestsView
-      cr={cr}
-      modalShow={modalShow}
-      onHide={handleClose}
-      onSubmit={handleConfirm}
-    />
-  );
+  return <ReviewChangeRequestsView cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default ReviewChangeRequest;

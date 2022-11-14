@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -51,8 +51,7 @@ const UpcomingDeadlines: React.FC = () => {
                     <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
                     <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
                     <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length}{' '}
-                      Deliverables
+                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                     </Row>
                   </Container>
                 </Card.Text>
@@ -70,12 +69,7 @@ const UpcomingDeadlines: React.FC = () => {
           <InputGroup.Prepend>
             <InputGroup.Text>Next</InputGroup.Text>
           </InputGroup.Prepend>
-          <Form.Control
-            custom
-            as="select"
-            value={daysUntilDeadline}
-            onChange={(e) => setDaysUntilDeadline(e.target.value)}
-          >
+          <Form.Control custom as="select" value={daysUntilDeadline} onChange={(e) => setDaysUntilDeadline(e.target.value)}>
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
               <option key={days} value={days}>
                 {days}

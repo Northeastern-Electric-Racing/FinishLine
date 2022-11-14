@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role, Theme } from '@prisma/client';
 
 export const batman = {
   userId: 1,
@@ -28,4 +28,21 @@ export const wonderwoman = {
   emailId: 'amazonian1',
   role: Role.GUEST,
   googleAuthId: 'w'
+};
+
+export const flash = {
+  userId: 4,
+  firstName: 'Barry',
+  lastName: 'Allen',
+  email: 'b.allen@fast.com',
+  emailId: 'barry.allen',
+  role: Role.ADMIN,
+  googleAuthId: 'b'
+};
+
+export const batmanSettings = {
+  id: 'bm',
+  userId: 1,
+  defaultTheme: Theme.DARK,
+  slackId: 'slack'
 };

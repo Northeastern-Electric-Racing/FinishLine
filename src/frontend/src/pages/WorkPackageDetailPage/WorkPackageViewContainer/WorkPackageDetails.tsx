@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,10 +16,7 @@ interface WorkPackageDetailsProps {
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   const allColsStyle = 'mb-2';
   return (
-    <PageBlock
-      title={'Work Package Details'}
-      headerRight={<WbsStatus status={workPackage.status} />}
-    >
+    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Container fluid>
         <Row>
           <Col className={allColsStyle} md={5} lg={4} xl={3}>

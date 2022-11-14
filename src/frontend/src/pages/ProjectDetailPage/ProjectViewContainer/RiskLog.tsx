@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -36,7 +36,16 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
 const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
   const history = useHistory();
   const auth = useAuth();
-  const { userId, role } = auth.user!;
+  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
+  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
+  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
+  const [newDetail, setNewDetail] = useState('');
+  const [show, setShow] = useState(false);
+  const risksQuery = useGetRisksForProject(projectId);
+
+  if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
+
+  const { userId, role } = auth.user;
 
   const hasPermissions =
     role === 'ADMIN' ||
@@ -44,16 +53,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     role === 'LEADERSHIP' ||
     projLead?.userId === userId ||
     projManager?.userId === userId;
-
-  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
-  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
-  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
-
-  const [newDetail, setNewDetail] = useState('');
-  const [show, setShow] = useState(false);
-  const risksQuery = useGetRisksForProject(projectId);
-
-  if (risksQuery.isLoading) return <LoadingIndicator />;
 
   const risks = [
     ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
@@ -123,10 +122,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             data-testId="convertButton"
             onClick={() => {
               history.push(
-                routes.CHANGE_REQUESTS_NEW_WITH_WBS +
-                  wbsPipe(wbsNum) +
-                  '&riskDetails=' +
-                  encodeURIComponent(risk.detail)
+                routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(wbsNum) + '&riskDetails=' + encodeURIComponent(risk.detail)
               );
             }}
           >

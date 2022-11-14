@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -16,11 +16,7 @@ interface ExternalLinkProps {
 const ExternalLink: React.FC<ExternalLinkProps> = ({ icon, link, description }) => {
   return (
     <div key={description} className="d-flex flex-row align-items-center px-3">
-      {icon !== undefined ? (
-        <FontAwesomeIcon icon={icon} size="lg" className="pr-1" data-testid={'icon'} />
-      ) : (
-        ''
-      )}
+      {icon !== undefined ? <FontAwesomeIcon icon={icon} size="lg" className="pr-1" data-testid={'icon'} /> : ''}
       <a href={link} target="_blank" rel="noopener noreferrer">
         {description}
       </a>
