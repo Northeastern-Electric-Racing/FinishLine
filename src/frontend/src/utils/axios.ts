@@ -16,4 +16,14 @@ axios.interceptors.response.use(
   }
 );
 
+axios.interceptors.request.use(
+  (request) => {
+    if (process.env.NODE_ENV === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
+    return request;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default axios;
