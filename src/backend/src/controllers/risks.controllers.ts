@@ -1,40 +1,31 @@
 import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { Role } from '@prisma/client';
 import { getCurrentUser } from '../utils/utils';
+import { createRisk, getRisksForProject } from '../services/risks.services';
+import { sendErrorResponse, sendSuccessJsonResponse, sendSuccessMessageResponse } from '../utils/response.utils';
 
-export const getRisksForProject = async (req: Request, res: Response) => {
-  const projectId = parseInt(req.params.projectId);
-  const requestedProject = await prisma.project.findUnique({ where: { projectId } });
-
-  if (!requestedProject) {
-    return res.status(404).json({ message: `Project with id ${projectId} not found!` });
+export const getRisksForProjectController = async (req: Request, res: Response) => {
+  try {
+    const projectId = parseInt(req.params.projectId);
+    const risks = await getRisksForProject(projectId);
+    sendSuccessJsonResponse(res, risks);
+  } catch (error: unknown) {
+    sendErrorResponse(res, error);
   }
-
-  const risks = await prisma.risk.findMany({ where: { projectId }, ...riskQueryArgs });
-
-  return res.status(200).json(risks.map(riskTransformer));
 };
 
-export const createRisk = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { projectId, detail } = body;
+export const createRiskController = async (req: Request, res: Response) => {
+  try {
+    const { projectId, detail } = req.body;
+    const user = await getCurrentUser(res);
 
-  const user = await getCurrentUser(res);
-  if (!user) return res.status(404).json({ message: 'User Not Found' });
+    const riskId = await createRisk(user, projectId, detail);
 
-  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
-
-  const createdRisk = await prisma.risk.create({
-    data: {
-      project: { connect: { projectId } },
-      detail,
-      createdBy: { connect: { userId: user.userId } }
-    }
-  });
-
-  return res.status(200).json({ message: `Successfully created risk #${createdRisk.id}.` });
+    sendSuccessMessageResponse(res, 200, `Successfully created risk #${riskId}.`);
+  } catch (error: unknown) {
+    sendErrorResponse(res, error);
+  }
 };
 
 export const editRisk = async (req: Request, res: Response) => {

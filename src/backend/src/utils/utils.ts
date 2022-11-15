@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { validationResult } from 'express-validator';
+import { throwNotFoundError } from './response.utils';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -102,10 +103,12 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
 /**
  * get the user making the request.
  * @param res - we use the response because that's where we stored the userId data during jwt validation
- * @returns the user or null if not found for some reason (although that should really never happen because of the validation)
+ * @returns the user
+ * @throws if no user with the userId exists
  */
-export const getCurrentUser = async (res: Response): Promise<User | null> => {
+export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({ where: { userId } });
+  if (!user) return throwNotFoundError('User', userId);
   return user;
 };
