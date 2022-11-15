@@ -2,7 +2,7 @@ import { Team } from 'shared';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import prisma from '../prisma/prisma';
 import { teamTransformer } from '../transformers/teams.transformer';
-import { teamRelationArgs } from './prisma.relation.args/team.args';
+import { teamRelationArgs } from '../prisma.relation-args/team.args';
 
 export class TeamsService {
   static async getAllTeams(): Promise<Team[]> {

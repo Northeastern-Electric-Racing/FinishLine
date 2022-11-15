@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
-import { teamRelationArgs } from '../services/prisma.relation.args/team.args';
+import { teamRelationArgs } from '../prisma.relation-args/team.args';
 import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
