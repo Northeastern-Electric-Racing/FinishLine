@@ -1,19 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
-import { userTransformer } from './users.utils';
-import { wbsNumOf } from './utils';
-
-export const teamRelationArgs = Prisma.validator<Prisma.TeamArgs>()({
-  include: {
-    members: true,
-    leader: true,
-    projects: {
-      include: {
-        wbsElement: true
-      }
-    }
-  }
-});
+import { teamRelationArgs } from '../services/prisma.relation.args/team.args';
+import { userTransformer } from '../utils/users.utils';
+import { wbsNumOf } from '../utils/utils';
 
 export const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamRelationArgs>): Team => {
   return {
