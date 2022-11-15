@@ -22,7 +22,7 @@ export const createRiskController = async (req: Request, res: Response) => {
 
     const riskId = await createRisk(user, projectId, detail);
 
-    sendSuccessMessageResponse(res, 200, `Successfully created risk #${riskId}.`);
+    sendSuccessMessageResponse(res, `Successfully created risk #${riskId}.`);
   } catch (error: unknown) {
     sendErrorResponse(res, error);
   }
