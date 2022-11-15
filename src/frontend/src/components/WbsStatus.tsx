@@ -12,22 +12,22 @@ interface WbsStatusProps {
 
 type WbsStatusColor = 'primary' | 'secondary' | 'success';
 
+// maps status to the desired color state
+const colorMap: Record<WbsElementStatus, WbsStatusColor> = {
+  [WbsElementStatus.Active]: 'primary',
+  [WbsElementStatus.Inactive]: 'secondary',
+  [WbsElementStatus.Complete]: 'success'
+};
+
+// maps status to the desired badge display text
+const textMap: Record<WbsElementStatus, string> = {
+  [WbsElementStatus.Active]: 'Active',
+  [WbsElementStatus.Inactive]: 'Inactive',
+  [WbsElementStatus.Complete]: 'Complete'
+};
+
 // Convert WBS Element status into badge for display
 const WbsStatus: React.FC<WbsStatusProps> = ({ status }) => {
-  // maps status to the desired color state
-  const colorMap: Record<WbsElementStatus, WbsStatusColor> = {
-    [WbsElementStatus.Active]: 'primary',
-    [WbsElementStatus.Inactive]: 'secondary',
-    [WbsElementStatus.Complete]: 'success'
-  };
-
-  // maps status to the desired badge display text
-  const textMap: Record<WbsElementStatus, string> = {
-    [WbsElementStatus.Active]: 'Active',
-    [WbsElementStatus.Inactive]: 'Inactive',
-    [WbsElementStatus.Complete]: 'Complete'
-  };
-
   const color: WbsStatusColor = colorMap[status];
   const text: string = textMap[status];
 
