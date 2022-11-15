@@ -15,16 +15,11 @@ interface ImplementedChangesListProps {
   overallDateImplemented?: Date;
 }
 
-const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({
-  changes,
-  overallDateImplemented
-}) => {
+const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
   return (
     <BulletList
       title={'Implemented Changes'}
-      headerRight={
-        <>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>
-      }
+      headerRight={<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
       list={changes.map((ic) => (
         <>
           [<Link to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>]{' '}

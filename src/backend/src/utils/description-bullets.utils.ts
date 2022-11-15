@@ -5,9 +5,7 @@ export const descBulletArgs = Prisma.validator<Prisma.Description_BulletArgs>()(
   include: { userChecked: true }
 });
 
-export const descBulletTransformer = (
-  descBullet: Prisma.Description_BulletGetPayload<typeof descBulletArgs>
-) => {
+export const descBulletTransformer = (descBullet: Prisma.Description_BulletGetPayload<typeof descBulletArgs>) => {
   return {
     id: descBullet.descriptionId,
     detail: descBullet.detail,
@@ -21,14 +19,31 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
   const user = await prisma.user.findUnique({ where: { userId } });
 
   const descriptionBullet = await prisma.description_Bullet.findUnique({
-    where: { descriptionId }
+    where: { descriptionId },
+    include: {
+      workPackageDeliverables: { include: { wbsElement: { include: { projectLead: true, projectManager: true } } } },
+      workPackageExpectedActivities: { include: { wbsElement: { include: { projectLead: true, projectManager: true } } } }
+    }
   });
 
   if (!descriptionBullet) return false;
 
   if (!user) return false;
 
-  if (user.role === Role.APP_ADMIN || user.role === Role.ADMIN || user.role === Role.LEADERSHIP) {
+  const leader =
+    descriptionBullet.workPackageDeliverables?.wbsElement.projectLead ||
+    descriptionBullet.workPackageExpectedActivities?.wbsElement.projectLead;
+  const manager =
+    descriptionBullet.workPackageDeliverables?.wbsElement.projectManager ||
+    descriptionBullet.workPackageExpectedActivities?.wbsElement.projectManager;
+
+  if (
+    user.role === Role.APP_ADMIN ||
+    user.role === Role.ADMIN ||
+    user.role === Role.LEADERSHIP ||
+    (leader && leader.userId === user.userId) ||
+    (manager && manager.userId === user.userId)
+  ) {
     return true;
   }
   return false;

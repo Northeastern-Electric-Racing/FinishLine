@@ -11,9 +11,7 @@ import UserSettingsEdit from '../../../../pages/SettingsPage/UserSettings/UserSe
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(
-    <UserSettingsEdit currentSettings={exampleUserSettingsLight} onSubmit={jest.fn()} />
-  );
+  return render(<UserSettingsEdit currentSettings={exampleUserSettingsLight} onSubmit={jest.fn()} />);
 };
 
 describe('user settings edit component', () => {

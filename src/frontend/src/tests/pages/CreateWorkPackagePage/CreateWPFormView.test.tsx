@@ -5,10 +5,7 @@
 
 import { wbsPipe } from '../../../utils/Pipes';
 import { mockUtils } from '../../test-support/test-data/test-utils.stub';
-import {
-  exampleWbsWorkPackage1,
-  exampleWbsWorkPackage2
-} from '../../test-support/test-data/wbs-numbers.stub';
+import { exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from '../../test-support/test-data/wbs-numbers.stub';
 import { render, screen } from '../../test-support/test-utils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
 

@@ -64,9 +64,4 @@ const calculateTimelineStatus = (progress: number, expectedProgress: number): Ti
   return TimelineStatus.VeryBehind;
 };
 
-export {
-  projectDurationBuilder,
-  calculateEndDate,
-  calculatePercentExpectedProgress,
-  calculateTimelineStatus
-};
+export { projectDurationBuilder, calculateEndDate, calculatePercentExpectedProgress, calculateTimelineStatus };

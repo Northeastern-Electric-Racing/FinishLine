@@ -4,12 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import {
-  createSingleRisk,
-  deleteSingleRisk,
-  editSingleRisk,
-  getRisksForProject
-} from '../apis/Risks.api';
+import { createSingleRisk, deleteSingleRisk, editSingleRisk, getRisksForProject } from '../apis/Risks.api';
 import { Risk } from 'shared';
 
 /**

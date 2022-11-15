@@ -18,12 +18,7 @@ const mockStates = {
  */
 const renderComponent = (allowSubmit = true) => {
   return render(
-    <CreateProjectFormView
-      states={mockStates}
-      onCancel={() => null}
-      onSubmit={() => null}
-      allowSubmit={allowSubmit}
-    />
+    <CreateProjectFormView states={mockStates} onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
   );
 };
 

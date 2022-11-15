@@ -14,13 +14,7 @@ const mockHandleSubmit = jest.fn();
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (
-  readOnly: boolean,
-  description = '',
-  budgetImpact = 0,
-  timelineImpact = 0,
-  scopeImpact = ''
-) => {
+const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, timelineImpact = 0, scopeImpact = '') => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>

@@ -25,9 +25,7 @@ const ChangeRequestDetails: React.FC = () => {
   return (
     <ChangeRequestDetailsView
       isUserAllowedToReview={
-        auth.user?.role !== 'GUEST' &&
-        auth.user?.role !== 'MEMBER' &&
-        auth.user?.userId !== data?.submitter.userId
+        auth.user?.role !== 'GUEST' && auth.user?.role !== 'MEMBER' && auth.user?.userId !== data?.submitter.userId
       }
       isUserAllowedToImplement={auth.user?.role !== 'GUEST'}
       changeRequest={data!}

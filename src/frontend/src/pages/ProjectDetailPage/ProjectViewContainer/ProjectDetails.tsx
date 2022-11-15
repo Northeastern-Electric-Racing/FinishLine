@@ -4,12 +4,7 @@
  */
 
 import { Col, Container, Row } from 'react-bootstrap';
-import {
-  faFilePowerpoint,
-  faFolderOpen,
-  faList,
-  faListOl
-} from '@fortawesome/free-solid-svg-icons';
+import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
@@ -49,18 +44,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </Row>
         <Row className={`${allColsStyle} pl-3`}>
           <b>Links:</b>
-          <ExternalLink
-            icon={faFilePowerpoint}
-            link={project.slideDeckLink!}
-            description={'Slide Deck'}
-          />
+          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
           <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
           <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
-          <ExternalLink
-            icon={faFolderOpen}
-            link={project.gDriveLink!}
-            description={'Google Drive'}
-          />
+          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
         </Row>
       </Container>
     </PageBlock>

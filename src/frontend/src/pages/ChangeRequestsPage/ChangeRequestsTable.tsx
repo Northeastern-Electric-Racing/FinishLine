@@ -39,9 +39,7 @@ export function filterCRs(
 ): ChangeRequest[] {
   // Type filter
   if (type !== '') {
-    changeRequests = changeRequests.filter(
-      (changeRequest: ChangeRequest) => changeRequest.type === type
-    );
+    changeRequests = changeRequests.filter((changeRequest: ChangeRequest) => changeRequest.type === type);
   }
 
   // Impact Filter
@@ -50,16 +48,13 @@ export function filterCRs(
       let filterBool = false;
       const standard = changeRequest as StandardChangeRequest;
       if (impact.indexOf(0) !== -1) {
-        filterBool =
-          filterBool || (standard.scopeImpact !== '' && standard.scopeImpact !== undefined);
+        filterBool = filterBool || (standard.scopeImpact !== '' && standard.scopeImpact !== undefined);
       }
       if (impact.indexOf(1) !== -1) {
-        filterBool =
-          filterBool || (standard.budgetImpact !== 0 && standard.budgetImpact !== undefined);
+        filterBool = filterBool || (standard.budgetImpact !== 0 && standard.budgetImpact !== undefined);
       }
       if (impact.indexOf(2) !== -1) {
-        filterBool =
-          filterBool || (standard.timelineImpact !== 0 && standard.timelineImpact !== undefined);
+        filterBool = filterBool || (standard.timelineImpact !== 0 && standard.timelineImpact !== undefined);
       }
       return filterBool;
     });
@@ -103,8 +98,7 @@ export function filterCRs(
   // Implemented Filter
   if (implemented !== '') {
     changeRequests = changeRequests.filter(
-      (changeRequest: ChangeRequest) =>
-        (implemented === 'Yes') === (changeRequest.dateImplemented !== undefined)
+      (changeRequest: ChangeRequest) => (implemented === 'Yes') === (changeRequest.dateImplemented !== undefined)
     );
   }
 
@@ -140,13 +134,7 @@ const ChangeRequestsTable: React.FC = () => {
     }) as DisplayChangeRequest[];
   };
 
-  const sendDataToParent = (
-    type: string,
-    impact: number[],
-    whyType: string,
-    state: number[],
-    implemented: string
-  ) => {
+  const sendDataToParent = (type: string, impact: number[], whyType: string, state: number[], implemented: string) => {
     setType(type);
     setImpact(impact);
     setWhyType(whyType);
@@ -173,9 +161,7 @@ const ChangeRequestsTable: React.FC = () => {
         </Col>
         <Col>
           <CRTable
-            changeRequests={transformToDisplayChangeRequests(
-              filterCRs(data!, type, impact, whyType, state, implemented)
-            )}
+            changeRequests={transformToDisplayChangeRequests(filterCRs(data!, type, impact, whyType, state, implemented))}
           />
         </Col>
       </Row>

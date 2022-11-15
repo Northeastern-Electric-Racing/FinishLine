@@ -91,12 +91,7 @@ const ProjectsView: React.FC = () => {
    * @param projectManagerID The project manager of the project.
    * @param carNumber The carNumber of the project.
    */
-  const sendDataToParent = (
-    status: string,
-    projectLeadID: number,
-    projectManagerID: number,
-    carNumber: number
-  ) => {
+  const sendDataToParent = (status: string, projectLeadID: number, projectManagerID: number, carNumber: number) => {
     setStatus(status);
     setProjectLeadID(projectLeadID);
     setProjectManagerID(projectManagerID);
@@ -140,11 +135,7 @@ const ProjectsView: React.FC = () => {
       <PageTitle title={'Projects'} previousPages={[]} />
       <Row>
         <Col sm={4} md={3} lg={3} xl={2}>
-          <ProjectsTableFilter
-            onClick={sendDataToParent}
-            leads={getLeads()}
-            managers={getManagers()}
-          />
+          <ProjectsTableFilter onClick={sendDataToParent} leads={getLeads()} managers={getManagers()} />
         </Col>
         <Col>
           <PrjsTable

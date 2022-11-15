@@ -4,11 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import BootstrapTable, {
-  ColumnDescription,
-  RowEventHandlerProps,
-  SortOrder
-} from 'react-bootstrap-table-next';
+import BootstrapTable, { ColumnDescription, RowEventHandlerProps, SortOrder } from 'react-bootstrap-table-next';
 import { validateWBS } from 'shared';
 
 export interface DisplayProject {
@@ -56,6 +52,27 @@ export function wbsNumSort(a: string, b: string, order: SortOrder) {
 }
 
 /**
+ * Custom sorting for durations. Converts durations to int
+ * @param a First duration, as string
+ * @param b Second duration, as string
+ * @param order Imported SortOrder values 'asc' or 'desc'
+ * @returns positive/0/negative number to represent the order
+ */
+export function durationSort(a: string, b: string, order: SortOrder) {
+  const aSplit = a.split(' ');
+  const bSplit = b.split(' ');
+
+  const aNum = parseInt(aSplit[0]);
+  const bNum = parseInt(bSplit[0]);
+
+  if (order === 'asc') {
+    return aNum - bNum;
+  } else {
+    return bNum - aNum;
+  }
+}
+
+/**
  * Interactive table for displaying all projects table data.
  */
 const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayProjectProps) => {
@@ -69,35 +86,41 @@ const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayPr
       text: 'WBS #',
       align: 'center',
       sort: true,
-      sortFunc: wbsNumSort
+      sortFunc: wbsNumSort,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'name',
       text: 'Name',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'projectLead',
       text: 'Project Lead',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'projectManager',
       text: 'Project Manager',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'duration',
       text: 'Duration',
       align: 'center',
-      sort: true
+      sort: true,
+      sortFunc: durationSort,
+      headerStyle: { overflowWrap: 'anywhere' }
     }
   ];
 
@@ -128,7 +151,7 @@ const ProjectsTable: React.FC<DisplayProjectProps> = ({ allProjects }: DisplayPr
         defaultSorted={defaultSort}
         rowEvents={rowEvents}
         noDataIndication="No Projects to Display"
-        rowStyle={{ cursor: 'pointer' }}
+        rowStyle={{ cursor: 'pointer', overflowWrap: 'anywhere' }}
       />
     </>
   );

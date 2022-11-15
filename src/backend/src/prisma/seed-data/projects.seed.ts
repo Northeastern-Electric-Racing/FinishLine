@@ -204,10 +204,4 @@ const dbSeedProject5: any = {
   ]
 };
 
-export const dbSeedAllProjects: any[] = [
-  dbSeedProject1,
-  dbSeedProject2,
-  dbSeedProject3,
-  dbSeedProject4,
-  dbSeedProject5
-];
+export const dbSeedAllProjects: any[] = [dbSeedProject1, dbSeedProject2, dbSeedProject3, dbSeedProject4, dbSeedProject5];

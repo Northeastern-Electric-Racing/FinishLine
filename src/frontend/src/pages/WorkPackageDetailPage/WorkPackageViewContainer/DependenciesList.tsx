@@ -60,9 +60,7 @@ const DependenciesList: React.FC<DependenciesListProps> = ({ dependencies, sette
     </InputGroup>
   );
 
-  const items = dependenciesState.map((e) => (
-    <Dependency wbsNumber={e} handleDelete={handleDelete} />
-  ));
+  const items = dependenciesState.map((e) => <Dependency wbsNumber={e} handleDelete={handleDelete} />);
 
   return <HorizontalList title={'Dependencies'} items={[...items, AddButton]} />;
 };

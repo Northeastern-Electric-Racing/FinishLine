@@ -4,11 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import BootstrapTable, {
-  ColumnDescription,
-  RowEventHandlerProps,
-  SortOrder
-} from 'react-bootstrap-table-next';
+import BootstrapTable, { ColumnDescription, RowEventHandlerProps, SortOrder } from 'react-bootstrap-table-next';
 import { routes } from '../../utils/Routes';
 
 export interface DisplayChangeRequest {
@@ -29,9 +25,7 @@ interface ChangeRequestsTableProps {
 /**
  * Interactive table for displaying all change request data.
  */
-const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
-  changeRequests
-}: ChangeRequestsTableProps) => {
+const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({ changeRequests }: ChangeRequestsTableProps) => {
   const history = useHistory();
 
   // Configures display options for all data columns
@@ -41,56 +35,64 @@ const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
       dataField: 'id',
       text: 'ID',
       align: 'center',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateSubmitted',
       text: 'Date Submitted',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'submitterName',
       text: 'Submitter',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'wbsNum',
       text: 'WBS #',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'type',
       text: 'Type',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateReviewed',
       text: 'Reviewed',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'accepted',
       text: 'Accepted',
       align: 'center',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateImplemented',
       text: 'Implemented',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     }
   ];
 
@@ -121,7 +123,7 @@ const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({
         defaultSorted={defaultSort}
         rowEvents={rowEvents}
         noDataIndication="No Change Requests to Display"
-        rowStyle={{ cursor: 'pointer' }}
+        rowStyle={{ cursor: 'pointer', overflowWrap: 'anywhere' }}
       />
     </>
   );
