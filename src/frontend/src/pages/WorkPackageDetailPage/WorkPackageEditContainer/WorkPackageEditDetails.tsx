@@ -3,141 +3,114 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Form, InputGroup, Container, Row, Col } from 'react-bootstrap';
-import { WorkPackage, User, WbsElementStatus } from 'shared';
-import { fullNamePipe, emDashPipe } from '../../../utils/Pipes';
+import { User, WbsElementStatus } from 'shared';
+import { fullNamePipe } from '../../../utils/Pipes';
 import PageBlock from '../../../layouts/PageBlock';
+import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { Controller } from 'react-hook-form';
+import { DatePicker } from '@mui/x-date-pickers';
 
 interface Props {
-  workPackage: WorkPackage;
   users: User[];
-  setters: any;
+  control: any;
+  errors: any;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({ workPackage, users, setters }) => {
-  const editDetailsInputBuilder = (
-    title: string,
-    type: string,
-    defaultValue: any,
-    updateState: ((val: string) => void) | null,
-    prefix = '',
-    suffix = '',
-    placeholder = '',
-    readOnly = false
-  ) => {
-    return (
-      <Form.Group>
-        <Form.Label>{title}</Form.Label>
-        <InputGroup>
-          {prefix ? <InputGroup.Text>{prefix}</InputGroup.Text> : <></>}
-          <Form.Control
-            required
-            type={type}
-            min={0}
-            defaultValue={defaultValue}
-            placeholder={placeholder}
-            readOnly={readOnly}
-            onChange={(e) => {
-              if (updateState !== null) {
-                updateState(e.target.value);
-              }
-            }}
-          />
-          {suffix ? <InputGroup.Text>{suffix}</InputGroup.Text> : <></>}
-        </InputGroup>
-      </Form.Group>
-    );
-  };
+const statuses = Object.values(WbsElementStatus);
 
-  const statuses = Object.values(WbsElementStatus).filter((status) => status !== workPackage.status);
-
-  const transformStatus = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return WbsElementStatus.Active;
-      case 'INACTIVE':
-        return WbsElementStatus.Inactive;
-      default:
-        return WbsElementStatus.Complete;
-    }
-  };
-
+const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
   const statusSelect = (
-    <Form.Control as="select" onChange={(e) => setters.setStatus(transformStatus(e.target.value))} custom>
-      <option key={0} value={workPackage.status}>
-        {workPackage.status}
-      </option>
-      {statuses.map((status, index) => (
-        <option key={index + 1} value={status}>
-          {status}
-        </option>
-      ))}
-    </Form.Control>
+    <Controller
+      name="wbsElementStatus"
+      control={control}
+      rules={{ required: true }}
+      render={({ field: { onChange, value } }) => (
+        <TextField select onChange={onChange} value={value} label="Status" sx={{ my: 1 }}>
+          {statuses.map((t) => (
+            <MenuItem key={t} value={t}>
+              {t}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+    />
   );
 
-  const buildUsersSelect = (title: string, defaultUser: User | undefined, updateUser: (val: number) => void) => {
-    let otherUsers = users;
-    if (defaultUser !== undefined) {
-      otherUsers = users.filter((user) => user.userId !== defaultUser.userId);
-    }
-    return (
-      <Form.Group>
-        <Form.Label>{title}</Form.Label>
-        <Form.Control as="select" data-testid={title} onChange={(e) => updateUser(parseInt(e.target.value))} custom>
-          {defaultUser === undefined ? (
-            <option key={-1} value={-1}>
-              {emDashPipe('')}
-            </option>
-          ) : (
-            <option key={defaultUser.userId} value={defaultUser.userId}>
-              {fullNamePipe(defaultUser)}
-            </option>
-          )}
-          {otherUsers.map((user) => (
-            <option key={user.userId} value={user.userId}>
-              {fullNamePipe(user)}
-            </option>
-          ))}
-        </Form.Control>
-      </Form.Group>
-    );
-  };
-
-  const transformDate = (date: Date) => {
-    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-    const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
-    return `${date.getFullYear().toString()}-${month}-${day}`;
-  };
-
   return (
-    <PageBlock title={'Work Package Details'} headerRight={<b>{statusSelect}</b>}>
-      <Container fluid>
-        <Row>
-          <Col>{editDetailsInputBuilder('Work Package Name:', 'text', workPackage.name, setters.setName)}</Col>
-          <Col md={3} lg={2} xl={2}>
-            {editDetailsInputBuilder(
-              'Start Date:',
-              'date',
-              transformDate(workPackage.startDate),
-              (val) => setters.setStartDate(new Date(val.replace(/-/g, '/'))) // must use / for date format to prevent day being behind by 1
+    <PageBlock title="Work Package Details" headerRight={statusSelect}>
+      <Grid container spacing={1}>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <ReactHookTextField
+            name="name"
+            control={control}
+            sx={{ width: 10 / 10 }}
+            label="Work Package Name"
+            errorMessage={errors.name}
+          />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <Controller
+            name="startDate"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <Typography>Start Date (YYYY-MM-DD)</Typography>
+                <DatePicker
+                  inputFormat="yyyy-MM-dd"
+                  onChange={onChange}
+                  className={'padding: 10'}
+                  value={value}
+                  renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                />
+              </>
             )}
-          </Col>
-        </Row>
-        <Row>
-          <Col md={4}>{buildUsersSelect('Project Lead:', workPackage.projectLead, setters.setProjectLead)}</Col>
-          <Col md={4}>{buildUsersSelect('Project Manager:', workPackage.projectManager, setters.setProjectManager)}</Col>
-          <Col md={4} lg={2} xl={2}>
-            {editDetailsInputBuilder(
-              'Duration:',
-              'number',
-              workPackage.duration,
-              (val) => setters.setDuration(parseInt(val.trim())),
-              '',
-              'weeks'
+          />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <Controller
+            name="projectLeadId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1 }}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
-          </Col>
-        </Row>
-      </Container>
+          />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <Controller
+            name="projectManagerId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1 }}>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <ReactHookTextField
+            name="duration"
+            control={control}
+            type="number"
+            label="Duration"
+            sx={{ width: 3 / 10 }}
+            errorMessage={errors.budget}
+          />
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };
