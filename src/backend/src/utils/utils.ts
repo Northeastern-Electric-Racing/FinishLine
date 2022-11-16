@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { validationResult } from 'express-validator';
-import { throwNotFoundError } from './response.utils';
+import { throwNotFoundError } from './errors.utils';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
