@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express from 'express';
 import prisma from '../src/prisma/prisma';
-import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, batmanSettings, superman, wonderwoman } from './test-data/users.test-data';
 import changeRequestsRouter from '../src/routes/change-requests.routes';
 import {
   whipPayloadObject,
@@ -166,6 +166,8 @@ describe('Change Requests', () => {
       jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(project1);
       jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...redesignWhip, accepted: true });
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(redesignWhipWBSElement);
+      jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
+
       const response = await request(app)
         .post('/review')
         .send({ ...whipPayloadObject, psId: '1' });
@@ -173,6 +175,7 @@ describe('Change Requests', () => {
       expect(response.body).toStrictEqual({
         message: `Change request #${redesignWhip.crId} successfully reviewed.`
       });
+      expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
@@ -215,6 +218,7 @@ describe('Change Requests', () => {
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
       const updatedSolution = { ...solutionToRedesignWhip, accepted: true };
       jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
+      jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
 
       const myWBSElement = { ...redesignWhipWBSElement, workPackage: null, project: project1 };
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(myWBSElement);
@@ -235,6 +239,7 @@ describe('Change Requests', () => {
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(2);
       expect(prisma.project.update).toHaveBeenCalledTimes(1);
+      expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledWith({
         data: {
           budget: 1003,
