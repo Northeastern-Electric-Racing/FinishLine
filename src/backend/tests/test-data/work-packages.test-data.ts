@@ -2,6 +2,9 @@ import { batman } from './users.test-data';
 import { WBS_Element_Status } from '@prisma/client';
 
 export const createWorkPackagePayload = {
+  projectId: 1,
+  workPackageId: 22,
+  wbsElementId: 5,
   projectWbsNum: {
     carNumber: 1,
     projectNumber: 2,
