@@ -6,7 +6,7 @@
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../utils/Pipes';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -56,8 +56,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography>Start Date (YYYY-MM-DD)</Typography>
                 <DatePicker
+                  label={'Start Date (YYYY-MM-DD)'}
                   inputFormat="yyyy-MM-dd"
                   onChange={onChange}
                   className={'padding: 10'}
@@ -74,7 +74,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1 }}>
+              <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
@@ -90,7 +90,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1 }}>
+              <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
