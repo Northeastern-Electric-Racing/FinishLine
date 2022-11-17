@@ -4,16 +4,10 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import * as themeHooks from '../../../../hooks/theme.hooks';
-import themes from '../../../../utils/Themes';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
 import RulesList from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RulesList';
 
 describe('Rendering Work Package Rules Component', () => {
-  beforeEach(() => {
-    jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]);
-  });
-
   it('renders the component title', () => {
     render(<RulesList rules={exampleProject1.rules} />);
 

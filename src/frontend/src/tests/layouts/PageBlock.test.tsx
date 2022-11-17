@@ -4,8 +4,6 @@
  */
 
 import { render, screen } from '../test-support/test-utils';
-import * as themeHooks from '../../hooks/theme.hooks';
-import themes from '../../utils/Themes';
 import PageBlock from '../../layouts/PageBlock';
 
 const renderComponent = (headerRight = false) => {
@@ -17,8 +15,6 @@ const renderComponent = (headerRight = false) => {
 };
 
 describe('card component', () => {
-  beforeEach(() => jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]));
-
   it('renders title', () => {
     renderComponent(true);
 

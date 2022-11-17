@@ -6,9 +6,10 @@
 import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -118,7 +119,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
       role !== 'GUEST' && (
         <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
           <Button
-            variant="success"
+            color="success"
             data-testId="convertButton"
             onClick={() => {
               history.push(
@@ -126,7 +127,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <FontAwesomeIcon icon={faArrowRight} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
         </OverlayTrigger>
       )
@@ -137,12 +138,12 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     return (
       <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
         <Button
-          variant="danger"
+          color="error"
           data-testId={`deleteButton-${risk.id}`}
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
       </OverlayTrigger>
     );
@@ -177,12 +178,35 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             </div>
           ))}
           {role !== 'GUEST' && (
-            <Button variant="success" onClick={handleShow} data-testId="createButton">
+            <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton">
               Add New Risk
             </Button>
           )}
         </div>
-        <Modal show={show} onHide={handleClose}>
+        <Dialog open={show} onClose={handleClose}>
+          <DialogTitle>Add New Risk</DialogTitle>
+          <DialogContent>
+            {/* <DialogContentText>aefjedfjbavkbjfabvwlbfekhbjvakherwbhvwahbhfabhjvkbw</DialogContentText> */}
+            <TextField
+              required
+              autoFocus
+              margin="dense"
+              id="newRisk"
+              label="Add New Risk"
+              type="text"
+              maxRows={5}
+              multiline
+              fullWidth
+              onChange={(e) => setNewDetail(e.target.value)}
+              sx={{ minWidth: '50%' }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Close</Button>
+            <Button onClick={handleCreate}>Save Changes</Button>
+          </DialogActions>
+        </Dialog>
+        {/* <Modal open={show} onClose={handleClose}>
           <Modal.Header closeButton>
             <Modal.Title>Add New Risk</Modal.Title>
           </Modal.Header>
@@ -190,14 +214,14 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="danger" onClick={handleClose}>
+            <Button color="error" onClick={handleClose}>
               Close
             </Button>
-            <Button variant="success" onClick={handleCreate}>
+            <Button color="error" variant="outlined" onClick={handleCreate}>
               Save Changes
             </Button>
           </Modal.Footer>
-        </Modal>
+        </Modal> */}
       </Form>
     </PageBlock>
   );

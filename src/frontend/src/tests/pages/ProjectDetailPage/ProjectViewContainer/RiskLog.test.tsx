@@ -4,9 +4,6 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../../../hooks/theme.hooks';
-import themes from '../../../../utils/Themes';
-import { Theme } from '../../../../utils/Types';
 import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
 import { exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4 } from '../../../test-support/test-data/risks.stub';
 import { Auth } from '../../../../utils/Types';
@@ -21,13 +18,6 @@ import { useGetRisksForProject } from '../../../../hooks/risks.hooks';
 import { renderHook } from '@testing-library/react-hooks';
 import wrapper from '../../../../app/AppContextQuery';
 
-jest.mock('../../../../hooks/theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
-
 jest.mock('../../../../hooks/auth.hooks');
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
@@ -40,7 +30,6 @@ const mockAuthHook = (user = exampleAdminUser) => {
 const testRisks = [exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4];
 
 describe.skip('Rendering Project Risk Log Component', () => {
-  beforeEach(() => mockHook());
   it('Renders the RiskLog title', async () => {
     mockAuthHook();
     const mockRisks = getRisksForProject as jest.Mock<Promise<AxiosResponse<Risk[]>>>;
