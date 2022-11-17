@@ -15,6 +15,7 @@
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
     "customize-cra": "^0.9.1",
+    "gantt": "1.0.0",
     "google-auth-library": "^8.1.1",
     "react": "^17.0.1",
     "react-app-rewired": "^2.1.6",

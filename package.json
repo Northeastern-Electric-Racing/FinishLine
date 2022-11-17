@@ -6,7 +6,8 @@
   "workspaces": [
     "src/backend",
     "src/frontend",
-    "src/shared"
+    "src/shared",
+    "src/gantt"
   ],
   "scripts": {
     "prettier-all": "prettier --write \"**/*{ts,js,css,html,jsx,tsx}\"",
