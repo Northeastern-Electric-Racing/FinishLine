@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import {
   changeRequestRelationArgs,
   changeRequestTransformer,
-  checkDBChecked,
   sendSlackChangeRequestNotification
 } from '../utils/change-requests.utils';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
@@ -364,13 +363,25 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
   if (wbsElement === null) {
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
-  if (wbsElement.workPackage?.expectedActivities || wbsElement.workPackage?.deliverables) {
-    const uncheckedEADBs = wbsElement.workPackage?.expectedActivities.map(checkDBChecked);
-    const uncheckedDSDB = wbsElement.workPackage?.deliverables.map(checkDBChecked);
-    if (uncheckedEADBs.length === 0 && uncheckedDSDB.length === 0) {
-      return res.status(400).json({ message: `Work Package has unchecked deliverables or expected activities` });
-    }
-  }
+
+  // const wbsWorkPackage = wbsElement.workPackage;
+  // if (wbsWorkPackage) {
+  //   const wpExpectedActivities = wbsWorkPackage.expectedActivities;
+  //   const wpDeliverables = wbsWorkPackage.deliverables;
+  //   //checks for any unchecked expected activities, if there are any it will return an error
+  //   const uncheckedExpectedActivitiy = wpExpectedActivities.map(checkForUncheckedDescriptionBullets);
+
+  //   if (uncheckedExpectedActivitiy.length > 0) {
+  //     return res.status(400).json({ message: `Work Package has unchecked expected activities` });
+  //   }
+
+  //   //Checks for any unchecked deliverables, if there are any it will return an error
+
+  //   const uncheckedDeliverables = wpDeliverables.map(checkForUncheckedDescriptionBullets);
+  //   if (uncheckedDeliverables.length > 0) {
+  //     return res.status(400).json({ message: `Work Package has unchecked deliverables` });
+  //   }
+  // }
 
   const createdChangeRequest = await prisma.change_Request.create({
     data: {

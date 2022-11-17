@@ -1,4 +1,4 @@
-import { Prisma, Scope_CR_Why_Type, Team, User, Description_Bullet } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -10,7 +10,6 @@ import {
 import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
-
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
     ESTIMATION: ChangeRequestReason.Estimation,
@@ -145,8 +144,4 @@ export const sendSlackChangeRequestNotification = async (
     );
   }
   return Promise.all(msgs);
-};
-
-export const checkDBChecked = (element: Description_Bullet, index: number, array: Description_Bullet[]) => {
-  return element.dateTimeChecked === null;
 };
