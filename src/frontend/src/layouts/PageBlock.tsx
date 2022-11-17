@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -29,7 +29,7 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children }) =
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper }} variant="outlined">
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>

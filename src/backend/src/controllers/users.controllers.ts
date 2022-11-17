@@ -3,6 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
+import { generateAccessToken } from '../utils/utils';
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
@@ -37,19 +38,16 @@ export const getUserSettings = async (req: Request, res: Response) => {
 };
 
 export const updateUserSettings = async (req: Request, res: Response) => {
-  const userId: number = parseInt(req.params.userId);
-  if (!userId) {
-    return res.status(404).json({ message: `could not find valid userId` });
-  }
   const errors = validationResult(req);
-
-  if (!(await prisma.user.findUnique({ where: { userId } }))) {
-    return res.status(404).json({ message: `could not find user ${userId}` });
-  }
-
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
+  const userId = parseInt(req.params.userId);
+  if (!userId) return res.status(404).json({ message: `could not find valid userId` });
+
+  const user = await prisma.user.findUnique({ where: { userId } });
+  if (!user) return res.status(404).json({ message: `could not find user ${userId}` });
 
   await prisma.user_Settings.upsert({
     where: { userId },
@@ -105,6 +103,9 @@ export const logUserIn = async (req: Request, res: Response) => {
       deviceInfo: req.headers['user-agent']
     }
   });
+
+  const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
+  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
 
   return res.status(200).json(authenticatedUserTransformer(user));
 };

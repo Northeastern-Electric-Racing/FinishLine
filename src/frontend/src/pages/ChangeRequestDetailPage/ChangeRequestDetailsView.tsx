@@ -1,10 +1,9 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { ReactElement, useState } from 'react';
-import { Col, Container, Dropdown, DropdownButton, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import {
   ActivationChangeRequest,
@@ -25,6 +24,8 @@ import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Grid, Menu, MenuItem, Typography } from '@mui/material';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -80,6 +81,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [modalShow, setModalShow] = useState<boolean>(false);
   const handleClose = () => setModalShow(false);
   const handleOpen = () => setModalShow(true);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const dropdownOpen = Boolean(anchorEl);
 
   const reviewBtn = (
     <NERButton variant="contained" onClick={handleOpen} disabled={!isUserAllowedToReview}>
@@ -87,66 +90,88 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     </NERButton>
   );
 
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
   const implementCrDropdown = (
-    <DropdownButton id="implement-cr-dropdown" title="Implement Change Request">
-      <Dropdown.Item as={Link} to={routes.PROJECTS_NEW} disabled={!isUserAllowedToImplement}>
-        Create New Project
-      </Dropdown.Item>
-      <Dropdown.Item
-        as={Link}
-        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
-        disabled={!isUserAllowedToImplement}
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="implement-cr-dropdown"
+        onClick={handleClick}
       >
-        Create New Work Package
-      </Dropdown.Item>
-      <Dropdown.Item
-        as={Link}
-        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
-        disabled={!isUserAllowedToImplement}
-      >
-        Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
-      </Dropdown.Item>
-    </DropdownButton>
+        Implement Change Request
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem
+          component={Link}
+          to={routes.PROJECTS_NEW}
+          onClick={handleDropdownClose}
+          disabled={!isUserAllowedToImplement}
+        >
+          Create New Project
+        </MenuItem>
+        <MenuItem
+          component={Link}
+          to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
+          disabled={!isUserAllowedToImplement}
+          onClick={handleDropdownClose}
+        >
+          Create New Work Package
+        </MenuItem>
+        <MenuItem
+          component={Link}
+          to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
+          disabled={!isUserAllowedToImplement}
+          onClick={handleDropdownClose}
+        >
+          Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
+        </MenuItem>
+      </Menu>
+    </div>
   );
 
   let actionDropdown = <></>;
   if (changeRequest.accepted === undefined) actionDropdown = reviewBtn;
   if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
-  const spacer = 'mb-2';
 
   return (
-    <Container fluid>
+    <>
       <PageTitle
         title={`Change Request #${changeRequest.crId}`}
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
       <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
-        <Container fluid>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>Type</b>
-            </Col>
-            <Col className={spacer}>{changeRequest.type}</Col>
-          </Row>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>WBS #</b>
-            </Col>
-            <Col className={spacer}>
-              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
-            </Col>
-          </Row>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>Submitted By</b>
-            </Col>
-            <Col className={spacer} xs={5} sm={5} md={4} lg={3} xl={2}>
-              {fullNamePipe(changeRequest.submitter)}
-            </Col>
-            <Col className={spacer}>{datePipe(changeRequest.dateSubmitted)}</Col>
-          </Row>
-        </Container>
+        <Grid container spacing={1}>
+          <Grid item xs={2}>
+            <Typography sx={{ maxWidth: '140px' }}>Type: </Typography>
+          </Grid>
+          <Grid item xs={10}>
+            {changeRequest.type}
+          </Grid>
+          <Grid item xs={2}>
+            <Typography>WBS #: </Typography>
+          </Grid>
+          <Grid item xs={10}>
+            <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
+          </Grid>
+          <Grid item xs={3} md={2}>
+            <Typography>Submitted By: </Typography>
+          </Grid>
+          <Grid item xs={2}>
+            {fullNamePipe(changeRequest.submitter)}
+          </Grid>
+          <Grid item xs={2}>
+            {datePipe(changeRequest.dateSubmitted)}
+          </Grid>
+        </Grid>
       </PageBlock>
       {buildDetails(changeRequest)}
       {buildProposedSolutions(changeRequest)}
@@ -160,7 +185,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         overallDateImplemented={changeRequest.dateImplemented}
       />
       {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
-    </Container>
+    </>
   );
 };
 

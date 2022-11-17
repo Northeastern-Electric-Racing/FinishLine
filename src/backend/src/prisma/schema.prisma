@@ -1,4 +1,4 @@
-// This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+// This file is part of NER's FinishLine and licensed under GNU AGPLv3.
 // See the LICENSE file in the repository root folder for details.
 
 datasource db {
@@ -239,7 +239,6 @@ model Work_Package {
   project            Project              @relation(fields: [projectId], references: [projectId])
   orderInProject     Int
   startDate          DateTime
-  progress           Int                  @default(0)
   duration           Int
   dependencies       WBS_Element[]        @relation(name: "dependencies")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")

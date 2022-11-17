@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -8,11 +8,7 @@ import { wbsPipe } from '../../../../utils/Pipes';
 import * as projectHooks from '../../../../hooks/projects.hooks';
 import { exampleProject1 as exPrj1 } from '../../../test-support/test-data/projects.stub';
 import * as userHooks from '../../../../hooks/users.hooks';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleLeadershipUser
-} from '../../../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import ProjectEditContainer from '../../../../pages/ProjectDetailPage/ProjectEditContainer/ProjectEditContainer';
 import {
   mockLogUserInReturnValue,
@@ -27,7 +23,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProjectEditContainer proj={exPrj1} exitEditMode={() => null} />
+      <ProjectEditContainer project={exPrj1} exitEditMode={() => null} />
     </RouterWrapper>
   );
 };

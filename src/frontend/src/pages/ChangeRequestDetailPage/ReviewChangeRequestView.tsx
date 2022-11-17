@@ -1,16 +1,16 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Form, Modal } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -32,7 +32,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
 
-  const { register, setValue, getFieldState, reset, handleSubmit } = useForm<FormInput>({
+  const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
 
@@ -67,26 +67,28 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     display: 'block'
   };
 
-  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (
-    scr: StandardChangeRequest
-  ) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
-      <Modal
-        show={modalShow}
-        onHide={onHide}
-        style={{ color: 'black' }}
-        dialogClassName={'modaltheme'}
-        centered
-      >
-        <Modal.Header
-          className={'font-weight-bold'}
-          closeButton
-        >{`Review Change Request #${cr.crId}`}</Modal.Header>
-        <Modal.Body>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Label>Select Proposed Solution</Form.Label>
-          </Form>
-          <div style={overflow}>
+      <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogContent
+          sx={{
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            }
+          }}
+        >
+          <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderRadius: 1,
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              }
+            }}
+            style={overflow}
+          >
             {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
                 <div style={proposedSolutionStyle}>
@@ -98,19 +100,40 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                 </div>
               );
             })}
-          </div>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Group controlId="formReviewNotes">
-              <Form.Label>Additional Comments</Form.Label>
-              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
+          </Box>
+          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Controller
+              name="reviewNotes"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Additional Comments'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    variant="outlined"
+                    id="reviewNotes-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 400 }}
+                  />
+                </>
+              )}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
           <Button
-            variant="success"
+            color="success"
+            variant="contained"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => {
               selected > -1 ? handleAcceptDeny(true) : alert('Please select a proposed solution!');
             }}
@@ -118,54 +141,74 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             Accept
           </Button>
           <Button
+            color="error"
             className={'ml-3'}
-            variant="danger"
+            variant="contained"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
           </Button>
-        </Modal.Footer>
-      </Modal>
+        </DialogActions>
+      </Dialog>
     );
   };
 
   const renderModal: () => JSX.Element = () => {
     return (
-      <Modal show={modalShow} onHide={onHide} centered>
-        <Modal.Header
-          className={'font-weight-bold'}
-          closeButton
-        >{`Review Change Request #${cr.crId}`}</Modal.Header>
-        <Modal.Body>
-          <Form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Form.Group controlId="formReviewNotes">
-              <Form.Label>Additional Comments</Form.Label>
-              <Form.Control {...register('reviewNotes')} as="textarea" rows={3} cols={50} />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
+      <Dialog open={modalShow} onClose={onHide}>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogContent>
+          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+            <Controller
+              name="reviewNotes"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography>{'Additional Comments'}</Typography>
+                  <TextField
+                    multiline
+                    rows={4}
+                    required
+                    id="reviewNotes-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    defaultValue={value}
+                    fullWidth
+                    sx={{ width: 500 }}
+                  />
+                </>
+              )}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
           <Button
-            variant="success"
+            variant="contained"
+            color="success"
             type="submit"
             form="review-notes-form"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(true)}
           >
             Accept
           </Button>
           <Button
-            className={'ml-3'}
-            variant="danger"
             type="submit"
             form="review-notes-form"
+            variant="contained"
+            color="error"
+            sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
           </Button>
-        </Modal.Footer>
-      </Modal>
+        </DialogActions>
+      </Dialog>
     );
   };
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -17,7 +17,7 @@ interface PageTitleProps {
 // Common component for adding breadcrumbs to a page
 const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousPages }) => {
   return (
-    <Breadcrumbs>
+    <Breadcrumbs sx={{ my: 1 }}>
       <Link href={routes.HOME}>Home</Link>
       {previousPages.map((page) => (
         <Link href={page.route}>{page.name}</Link>

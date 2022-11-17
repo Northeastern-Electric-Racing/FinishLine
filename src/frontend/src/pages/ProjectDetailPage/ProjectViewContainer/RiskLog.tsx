@@ -1,30 +1,15 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
 import { Risk } from 'shared';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { Form, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  Grid,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  DialogContentText,
-  TextField,
-  DialogTitle,
-  DialogActions
-} from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -52,7 +37,16 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
 const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
   const history = useHistory();
   const auth = useAuth();
-  const { userId, role } = auth.user!;
+  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
+  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
+  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
+  const [newDetail, setNewDetail] = useState('');
+  const [show, setShow] = useState(false);
+  const risksQuery = useGetRisksForProject(projectId);
+
+  if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
+
+  const { userId, role } = auth.user;
 
   const hasPermissions =
     role === 'ADMIN' ||
@@ -60,16 +54,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     role === 'LEADERSHIP' ||
     projLead?.userId === userId ||
     projManager?.userId === userId;
-
-  const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
-  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
-  const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
-
-  const [newDetail, setNewDetail] = useState('');
-  const [show, setShow] = useState(false);
-  const risksQuery = useGetRisksForProject(projectId);
-
-  if (risksQuery.isLoading) return <LoadingIndicator />;
 
   const risks = [
     ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
@@ -143,7 +127,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <FontAwesomeIcon icon={faArrowRight} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
         </OverlayTrigger>
       )
@@ -159,7 +143,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
       </OverlayTrigger>
     );

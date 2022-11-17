@@ -1,19 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../../test-support/test-utils';
-import {
-  exampleWorkPackage1,
-  exampleWorkPackage2
-} from '../../../test-support/test-data/work-packages.stub';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../../test-support/test-utils';
+import { exampleWorkPackage1, exampleWorkPackage2 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
 
 // Sets up the component under test with the desired values and renders it.

@@ -1,88 +1,80 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Col, Container, Row } from 'react-bootstrap';
-import {
-  faFilePowerpoint,
-  faFolderOpen,
-  faList,
-  faListOl
-} from '@fortawesome/free-solid-svg-icons';
+import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import { datePipe, dollarsPipe, endDatePipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
+import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
+import { Grid, Typography } from '@mui/material';
 
 interface ProjectDetailsProps {
   project: Project;
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const start =
-    project.workPackages.length > 0
-      ? datePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          )
-        )
-      : 'n/a';
-  const end =
-    project.workPackages.length > 0
-      ? endDatePipe(
-          project.workPackages.reduce(
-            (min, cur) => (cur.startDate < min ? cur.startDate : min),
-            project.workPackages[0].startDate
-          ),
-          project.workPackages.reduce((tot, cur) => tot + cur.duration, 0)
-        )
-      : 'n/a';
-
-  const allColsStyle = 'mb-2';
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
-      <Container fluid>
-        <Row>
-          <Col className={allColsStyle} md={5} lg={4} xl={3}>
-            <b>Project Lead:</b> {fullNamePipe(project.projectLead)}
-          </Col>
-          <Col className={allColsStyle} md={6} lg={4} xl={3}>
-            <b>Project Manager:</b> {fullNamePipe(project.projectManager)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={2} xl={2}>
-            <b>Duration:</b> {weeksPipe(project.duration)}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={2}>
-            <b>Start Date:</b> {start}
-          </Col>
-          <Col className={allColsStyle} sm={4} md={4} lg={3} xl={2}>
-            <b>End Date:</b> {end}
-          </Col>
-        </Row>
-        <Row>
-          <Col className={allColsStyle} sm={4} md={4} lg={4} xl={3}>
-            <b>Budget:</b> {dollarsPipe(project.budget)}
-          </Col>
-        </Row>
-        <Row className={`${allColsStyle} pl-3`}>
-          <b>Links:</b>
-          <ExternalLink
-            icon={faFilePowerpoint}
-            link={project.slideDeckLink!}
-            description={'Slide Deck'}
-          />
+      <Grid container spacing={1}>
+        <Grid item xs={2} md={2}>
+          <Typography>Project Lead: </Typography>
+        </Grid>
+        <Grid item xs={2} md={2}>
+          {fullNamePipe(project.projectLead)}
+        </Grid>
+
+        <Grid item xs={2} md={2}>
+          <Typography>Project Manager: </Typography>
+        </Grid>
+        <Grid item xs={2} md={2}>
+          {fullNamePipe(project.projectManager)}
+        </Grid>
+
+        <Grid item xs={2} md={2}>
+          <Typography>Duration: </Typography>
+        </Grid>
+        <Grid item xs={2} md={2}>
+          {weeksPipe(project.duration)}
+        </Grid>
+
+        <Grid item xs={2} md={2}>
+          <Typography>Start Date: </Typography>
+        </Grid>
+        <Grid item xs={3} md={2}>
+          {datePipe(project.startDate) || 'n/a'}
+        </Grid>
+
+        <Grid item xs={2} md={2}>
+          <Typography>End Date: </Typography>
+        </Grid>
+        <Grid item xs={5} md={2}>
+          {datePipe(project.endDate) || 'n/a'}
+        </Grid>
+        <Grid item xs={2} md={2}>
+          <Typography>Budget: </Typography>
+        </Grid>
+        <Grid item xs={10} md={2}>
+          {dollarsPipe(project.budget)}
+        </Grid>
+        <Grid item xs={2} md={2}>
+          <Typography>Links: </Typography>
+        </Grid>
+        <Grid item xs={2} md={2}>
+          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
+        </Grid>
+        <Grid item xs={2} md={2}>
           <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
+        </Grid>
+        <Grid item xs={2} md={2}>
           <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
-          <ExternalLink
-            icon={faFolderOpen}
-            link={project.gDriveLink!}
-            description={'Google Drive'}
-          />
-        </Row>
-      </Container>
+        </Grid>
+        <Grid item xs={2} md={2}>
+          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };
