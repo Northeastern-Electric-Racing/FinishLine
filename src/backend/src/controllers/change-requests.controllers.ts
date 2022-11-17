@@ -367,7 +367,7 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
   if (wbsElement.workPackage?.expectedActivities || wbsElement.workPackage?.deliverables) {
     const uncheckedEADBs = wbsElement.workPackage?.expectedActivities.map(checkDBChecked);
     const uncheckedDSDB = wbsElement.workPackage?.deliverables.map(checkDBChecked);
-    if (uncheckedEADBs.length === 0 || uncheckedDSDB.length === 0) {
+    if (uncheckedEADBs.length === 0 && uncheckedDSDB.length === 0) {
       return res.status(400).json({ message: `Work Package has unchecked deliverables or expected activities` });
     }
   }
