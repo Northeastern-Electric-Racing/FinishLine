@@ -4,12 +4,21 @@
  */
 
 import { Risk } from 'shared';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { Button, Dialog, DialogContent, TextField, DialogTitle, DialogActions } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  TextField,
+  DialogTitle,
+  DialogActions,
+  Tooltip,
+  FormControlLabel,
+  Checkbox
+} from '@mui/material';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -80,7 +89,9 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+
     const payload = {
       projectId: projectId,
       createdById: userId,
@@ -90,6 +101,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     try {
       await createMutateAsync(payload);
       handleClose();
+      setNewDetail('');
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -112,13 +124,12 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     }
   };
 
-  const renderTooltip = (message: string) => <Tooltip id="button-tooltip">{message}</Tooltip>;
-
   const ConvertToCRButton = (risk: Risk) => {
     return (
       role !== 'GUEST' && (
-        <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+        <Tooltip title="Convert to CR" placement="top">
           <Button
+            variant="contained"
             color="success"
             data-testId="convertButton"
             onClick={() => {
@@ -129,15 +140,16 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           >
             <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
-        </OverlayTrigger>
+        </Tooltip>
       )
     );
   };
 
   const DeleteRiskButton = (risk: Risk) => {
     return (
-      <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
+      <Tooltip title="Delete Risk" placement="top">
         <Button
+          variant="contained"
           color="error"
           data-testId={`deleteButton-${risk.id}`}
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
@@ -145,48 +157,48 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
         >
           <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
-      </OverlayTrigger>
+      </Tooltip>
     );
   };
 
   return (
     <PageBlock title={'Risk Log'}>
-      <Form>
-        <div className={styles.parentContainer}>
-          {risks.map((risk, idx) => (
-            <div key={idx} className={styles.container}>
-              {hasPermissions ? (
-                <Form.Check
-                  label={
-                    <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
-                      {risk.detail}
-                    </p>
-                  }
-                  checked={risk.isResolved}
-                  data-testId={`testCheckbox${idx}`}
-                  onChange={() => handleCheck(risk)}
-                />
-              ) : (
-                <li
-                  style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
-                  className="mb-3"
-                >
-                  {risk.detail}
-                </li>
-              )}
-              {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
-            </div>
-          ))}
-          {role !== 'GUEST' && (
-            <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton">
-              Add New Risk
-            </Button>
-          )}
-        </div>
-        <Dialog open={show} onClose={handleClose}>
+      <div className={styles.parentContainer}>
+        {risks.map((risk, idx) => (
+          <div key={idx} className={styles.container}>
+            {hasPermissions ? (
+              <FormControlLabel
+                label={
+                  <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
+                    {risk.detail}
+                  </p>
+                }
+                control={
+                  <Checkbox
+                    checked={risk.isResolved}
+                    data-testId={`testCheckbox${idx}`}
+                    onChange={() => handleCheck(risk)}
+                  />
+                }
+              />
+            ) : (
+              <li style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }} className="mb-3">
+                {risk.detail}
+              </li>
+            )}
+            {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
+          </div>
+        ))}
+        {role !== 'GUEST' && (
+          <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton">
+            Add New Risk
+          </Button>
+        )}
+      </div>
+      <Dialog open={show} onClose={handleClose}>
+        <form onSubmit={handleCreate}>
           <DialogTitle>Add New Risk</DialogTitle>
           <DialogContent>
-            {/* <DialogContentText>aefjedfjbavkbjfabvwlbfekhbjvakherwbhvwahbhfabhjvkbw</DialogContentText> */}
             <TextField
               required
               autoFocus
@@ -203,26 +215,10 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Close</Button>
-            <Button onClick={handleCreate}>Save Changes</Button>
+            <Button type="submit">Save Changes</Button>
           </DialogActions>
-        </Dialog>
-        {/* <Modal open={show} onClose={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Add New Risk</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button color="error" onClick={handleClose}>
-              Close
-            </Button>
-            <Button color="error" variant="outlined" onClick={handleCreate}>
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Modal> */}
-      </Form>
+        </form>
+      </Dialog>
     </PageBlock>
   );
 };
