@@ -93,7 +93,6 @@ const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[])
 
 // calculate the project's status based on its pacakges' status
 const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WBS_Element_Status } }[] }) => {
-  // works for ProjectLead: User | null inside wbsElement
   let isActive = false;
   let isComplete = true;
 
