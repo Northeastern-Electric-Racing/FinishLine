@@ -272,7 +272,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
   // find userSettings that submitted the change request
   const personSettings = await prisma.user_Settings.findUnique({ where: { userId: updated.submitterId } });
-  if (personSettings) {
+  if (personSettings && personSettings.slackId) {
     await sendSlackCRReviewedNotification(personSettings.slackId, updated.crId);
   }
 
