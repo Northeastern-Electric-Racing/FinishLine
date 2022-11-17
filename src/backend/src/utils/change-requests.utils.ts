@@ -149,4 +149,4 @@ export const sendSlackChangeRequestNotification = async (
 
 export const checkDBChecked = (element: Description_Bullet, index: number, array: Description_Bullet[]) => {
   return element.dateTimeChecked === null;
-}
+};

@@ -358,20 +358,20 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
       }
     },
     include: {
-      workPackage: {include: {expectedActivities: true, deliverables: true}}
+      workPackage: { include: { expectedActivities: true, deliverables: true } }
     }
   });
   if (wbsElement === null) {
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
-  if(wbsElement.workPackage?.expectedActivities || wbsElement.workPackage?.deliverables){
-    const uncheckedEADBs = wbsElement.workPackage?.expectedActivities.map(checkDBChecked)
-    const uncheckedDSDB = wbsElement.workPackage?.deliverables.map(checkDBChecked)
-    if(uncheckedEADBs || uncheckedDSDB){
-      return res.status(400).json({message: `Work Package has unchecked deliverables or expected activities`})
+  if (wbsElement.workPackage?.expectedActivities || wbsElement.workPackage?.deliverables) {
+    const uncheckedEADBs = wbsElement.workPackage?.expectedActivities.map(checkDBChecked);
+    const uncheckedDSDB = wbsElement.workPackage?.deliverables.map(checkDBChecked);
+    if (uncheckedEADBs || uncheckedDSDB) {
+      return res.status(400).json({ message: `Work Package has unchecked deliverables or expected activities` });
     }
   }
-  
+
   const createdChangeRequest = await prisma.change_Request.create({
     data: {
       submitter: { connect: { userId: body.submitterId } },
