@@ -18,7 +18,7 @@ interface WorkPackagePageProps {
 }
 
 const checkForUncheckedDescriptionBullets = (value: DescriptionBullet, index: number, array: DescriptionBullet[]) => {
-  return value.userChecked === null;
+  return value.userChecked == null;
 };
 
 const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
@@ -27,14 +27,12 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
   const auth = useAuth();
   const isGuest = auth.user?.role === 'GUEST';
-  let hasUncheckedDescriptionBullets = false;
+  let hasUncheckedDescriptionBullets = true;
   if (data) {
     const expectedActivities = data.expectedActivities;
     const deliverables = data.deliverables;
-    if (expectedActivities.filter(checkForUncheckedDescriptionBullets).length > 0) {
-      hasUncheckedDescriptionBullets = true;
-    } else if (deliverables.filter(checkForUncheckedDescriptionBullets).length > 0) {
-      hasUncheckedDescriptionBullets = true;
+    if (expectedActivities.filter(checkForUncheckedDescriptionBullets).length === 0 && deliverables.filter(checkForUncheckedDescriptionBullets).length === 0) {
+      hasUncheckedDescriptionBullets = false;
     }
   }
   if (isLoading) return <LoadingIndicator />;
@@ -50,7 +48,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
       enterEditMode={() => setEditMode(true)}
       allowEdit={!isGuest}
       allowActivate={!isGuest}
-      allowStageGate={!isGuest && hasUncheckedDescriptionBullets}
+      allowStageGate={!isGuest && !hasUncheckedDescriptionBullets}
       allowRequestChange={!isGuest}
     />
   );
