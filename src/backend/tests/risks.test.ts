@@ -14,7 +14,7 @@ describe('Risks', () => {
     jest.clearAllMocks();
   });
 
-  test('test1', async () => {
+  test('test-works', async () => {
     const res = await request(app).get('/1');
     console.log(res.body);
     expect(res.body).toStrictEqual([
@@ -60,7 +60,7 @@ describe('Risks', () => {
     expect(res.statusCode).toBe(200);
   });
 
-  test('test2', async () => {
+  test('not-projectid', async () => {
     const res = await request(app).get('/123123123');
     console.log(res.body);
     expect(res.body.message).toBe('Project with id 123123123 not found!');
