@@ -8,7 +8,7 @@ export default class RisksController {
     try {
       const projectId = parseInt(req.params.projectId);
       const risks = await RisksService.getRisksForProject(projectId);
-      sendSuccessJsonResponse(res, risks);
+      sendSuccessJsonResponse(res, 200, risks);
     } catch (error: unknown) {
       next(error);
     }
@@ -21,7 +21,7 @@ export default class RisksController {
 
       const riskId = await RisksService.createRisk(user, projectId, detail);
 
-      sendSuccessMessageResponse(res, `Successfully created risk #${riskId}.`);
+      sendSuccessMessageResponse(res, 201, `Successfully created risk #${riskId}.`);
     } catch (error: unknown) {
       next(error);
     }
@@ -34,7 +34,7 @@ export default class RisksController {
 
       const updatedRisk = await RisksService.editRisk(user, id, detail, resolved);
 
-      sendSuccessJsonResponse(res, updatedRisk);
+      sendSuccessJsonResponse(res, 200, updatedRisk);
     } catch (error: unknown) {
       next(error);
     }
@@ -47,7 +47,7 @@ export default class RisksController {
 
       const deletedRisk = await RisksService.deleteRisk(user, riskId);
 
-      sendSuccessJsonResponse(res, deletedRisk);
+      sendSuccessJsonResponse(res, 200, deletedRisk);
     } catch (error: unknown) {
       next(error);
     }

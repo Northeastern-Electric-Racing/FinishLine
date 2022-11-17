@@ -3,9 +3,8 @@ import { Risk } from 'shared';
 import prisma from '../prisma/prisma';
 import { throwAccessDeniedError, throwError, throwNotFoundError } from '../utils/errors.utils';
 import { hasRiskPermissions } from '../utils/risks.utils';
-import { riskQueryArgs } from '../prisma-query-args/risks.query-args';
-import { riskTransformer } from '../transformers/risks.transformer';
-
+import riskQueryArgs from '../prisma-query-args/risks.query-args';
+import riskTransformer from '../transformers/risks.transformer';
 export default class RisksService {
   /**
    * Gets all the risks for the given project

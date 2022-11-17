@@ -1,6 +1,9 @@
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
 
-export class Exception extends Error {
+/**
+ * Custom Error type that has a status code we can use
+ */
+export class HttpException extends Error {
   public status: number;
 
   constructor(status: number, message: string) {
@@ -9,15 +12,18 @@ export class Exception extends Error {
   }
 }
 
-export const errorHandler: ErrorRequestHandler = (error: unknown, req: Request, res: Response, next: NextFunction) => {
+/*
+ * Error handling middleware. Takes the error and sends back the status of it and the message
+ */
+export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {
     return next(error);
   }
 
-  if (error instanceof Exception) {
+  if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
-    res.status(400).json({ message: 'Something went very wrong...' });
+    res.status(500).json({ message: 'Something went very wrong...' });
   }
 };
 
@@ -27,7 +33,7 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, req: Request, 
  * @param message the message to send with the error
  */
 export const throwError = (status: number, message: string): never => {
-  throw new Exception(status, message);
+  throw new HttpException(status, message);
 };
 
 // type so that the not found error messages are consistent
@@ -48,6 +54,6 @@ export const throwNotFoundError = (name: NotFoundObjectNames, id: number | strin
  * @param message the optional message to add to the 'Access Denied' message
  * @returns nothing, this is more for type checking stuff
  */
-export const throwAccessDeniedError = (message?: string) => {
+export const throwAccessDeniedError = (message?: string): never => {
   return throwError(403, 'Access Denied' + (message ? `: ${message}` : '!'));
 };

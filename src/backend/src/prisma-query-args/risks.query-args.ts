@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const riskQueryArgs = Prisma.validator<Prisma.RiskArgs>()({
+const riskQueryArgs = Prisma.validator<Prisma.RiskArgs>()({
   include: {
     project: { include: { wbsElement: true } },
     createdBy: true,
@@ -8,3 +8,5 @@ export const riskQueryArgs = Prisma.validator<Prisma.RiskArgs>()({
     deletedBy: true
   }
 });
+
+export default riskQueryArgs;

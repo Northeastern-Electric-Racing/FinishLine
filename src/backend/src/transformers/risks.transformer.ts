@@ -2,9 +2,9 @@ import { Prisma } from '@prisma/client';
 import { Risk } from 'shared';
 import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
-import { riskQueryArgs } from '../prisma-query-args/risks.query-args';
+import riskQueryArgs from '../prisma-query-args/risks.query-args';
 
-export const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs>): Risk => {
+const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs>): Risk => {
   return {
     id: risk.id,
     project: {
@@ -22,3 +22,5 @@ export const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs
     deletedBy: risk.deletedBy ? userTransformer(risk.deletedBy) : undefined
   };
 };
+
+export default riskTransformer;
