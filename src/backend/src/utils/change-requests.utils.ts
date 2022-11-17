@@ -1,4 +1,4 @@
-import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User, Description_Bullet } from '@prisma/client';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -146,3 +146,7 @@ export const sendSlackChangeRequestNotification = async (
   }
   return Promise.all(msgs);
 };
+
+export const checkDBChecked = (element: Description_Bullet, index: number, array: Description_Bullet[]) => {
+  return element.dateTimeChecked === null;
+}
