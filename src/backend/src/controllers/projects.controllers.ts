@@ -151,14 +151,6 @@ export const editProject = async (req: Request, res: Response) => {
   const nameChangeJson = createChangeJsonNonList('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
   const budgetChangeJson = createChangeJsonNonList('budget', originalProject.budget, budget, crId, userId, wbsElementId);
   const summaryChangeJson = createChangeJsonNonList('summary', originalProject.summary, summary, crId, userId, wbsElementId);
-  const statusChangeJson = createChangeJsonNonList(
-    'status',
-    originalProject.wbsElement.status,
-    wbsElementStatus,
-    crId,
-    userId,
-    wbsElementId
-  );
   const driveChangeJson = createChangeJsonNonList(
     'google drive folder link',
     originalProject.googleDriveFolderLink,
@@ -209,9 +201,6 @@ export const editProject = async (req: Request, res: Response) => {
   }
   if (summaryChangeJson !== undefined) {
     changes.push(summaryChangeJson);
-  }
-  if (statusChangeJson !== undefined) {
-    changes.push(statusChangeJson);
   }
   if (driveChangeJson !== undefined) {
     changes.push(driveChangeJson);

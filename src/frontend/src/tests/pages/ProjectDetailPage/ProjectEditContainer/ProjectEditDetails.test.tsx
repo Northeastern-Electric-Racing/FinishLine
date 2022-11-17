@@ -19,7 +19,6 @@ const mockUpdateBom = jest.fn();
 const mockUpdateGDrive = jest.fn();
 const mockUpdateName = jest.fn();
 const mockUpdateBudget = jest.fn();
-const mockUpdateStatus = jest.fn();
 const mockUpdateProjectLead = jest.fn();
 const mockUpdateProjectManager = jest.fn();
 

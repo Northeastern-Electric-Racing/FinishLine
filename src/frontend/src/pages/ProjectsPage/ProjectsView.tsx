@@ -13,7 +13,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ProjectsTableFilter from './ProjectsTableFilter';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
-import { calculateProjectStatus } from 'shared';
 
 /***
  * Returns a list of projects that has been filtered according to the given params.
@@ -35,7 +34,7 @@ export function filterProjects(
     return carNumber === project.wbsNum.carNumber;
   };
   const statusCheck = (project: Project) => {
-    return calculateProjectStatus(project) === status;
+    return project.status === status;
   };
   const leadCheck = (project: Project) => {
     return project.projectLead?.userId === projectLeadID;

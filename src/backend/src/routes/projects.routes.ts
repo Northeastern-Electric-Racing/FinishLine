@@ -36,7 +36,6 @@ projectRouter.post(
   body('otherConstraints').isArray(),
   intMinZero(body('otherConstraints.*.id').optional()),
   nonEmptyString(body('otherConstraints.*.detail')),
-  body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
   nonEmptyString(body('googleDriveFolderLink')),
   nonEmptyString(body('slideDeckLink')),
   nonEmptyString(body('bomLink')),

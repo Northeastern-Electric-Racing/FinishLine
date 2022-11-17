@@ -9,7 +9,8 @@ import {
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
   calculateDuration,
-  calculateProjectStartDate
+  calculateProjectStartDate,
+  calculateProjectStatus
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
@@ -99,7 +100,7 @@ export const projectTransformer = (
     wbsNum,
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
-    status: wbsElement.status as WbsElementStatus,
+    status: calculateProjectStatus(project),
     projectLead: projectLead ? userTransformer(projectLead) : undefined,
     projectManager: projectManager ? userTransformer(projectManager) : undefined,
     changes: wbsElement.changes.map((change) => ({

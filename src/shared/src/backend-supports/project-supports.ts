@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus, Project } from '../types/project-types';
+import { WbsElementStatus } from '../types/project-types';
+import { WBS_Element_Status } from '@prisma/client';
 import { TimelineStatus } from '../types/work-package-types';
 
 /**
@@ -91,7 +92,8 @@ const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[])
 };
 
 // calculate the project's status based on its pacakges' status
-const calculateProjectStatus = (proj: Project) => {
+const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WBS_Element_Status } }[] }) => {
+  // works for ProjectLead: User | null inside wbsElement
   let isActive = false;
   let isComplete = true;
 
@@ -100,8 +102,8 @@ const calculateProjectStatus = (proj: Project) => {
   }
 
   proj.workPackages.forEach((wp) => {
-    isComplete = isComplete && wp.status === WbsElementStatus.Complete;
-    isActive = isActive || wp.status === WbsElementStatus.Active;
+    isComplete = isComplete && wp.wbsElement.status === WbsElementStatus.Complete;
+    isActive = isActive || wp.wbsElement.status === WbsElementStatus.Active;
   });
 
   return isComplete ? WbsElementStatus.Complete : isActive ? WbsElementStatus.Active : WbsElementStatus.Inactive;

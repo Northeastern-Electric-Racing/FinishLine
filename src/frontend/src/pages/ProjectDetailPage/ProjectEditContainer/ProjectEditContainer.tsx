@@ -5,7 +5,7 @@
 
 import { SyntheticEvent, useState } from 'react';
 import { Container, Form } from 'react-bootstrap';
-import { DescriptionBullet, Project, WorkPackage, calculateProjectStatus } from 'shared';
+import { DescriptionBullet, Project, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -180,7 +180,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
       goals,
       features,
       otherConstraints,
-      wbsElementStatus: calculateProjectStatus(proj),
+      wbsElementStatus: proj.status,
       googleDriveFolderLink: gDrive,
       slideDeckLink: slideDeck,
       bomLink: bom,

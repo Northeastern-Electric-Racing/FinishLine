@@ -10,7 +10,6 @@ import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/P
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { calculateProjectStatus } from 'shared';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -19,7 +18,7 @@ interface ProjectDetailsProps {
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   const allColsStyle = 'mb-2';
   return (
-    <PageBlock title={'Project Details'} headerRight={<WbsStatus status={calculateProjectStatus(project)} />}>
+    <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
       <Container fluid>
         <Row>
           <Col className={allColsStyle} md={5} lg={4} xl={3}>
