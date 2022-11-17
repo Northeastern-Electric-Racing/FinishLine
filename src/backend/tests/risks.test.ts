@@ -1,9 +1,6 @@
 import request from 'supertest';
 import express from 'express';
 import risksRouter from '../src/routes/risks.routes';
-import prisma from '../src/prisma/prisma';
-// import { Role } from '@prisma/client';
-// import { getChangeRequestReviewState, getHighestProjectNumber } from '../src/utils/projects.utils';
 
 const app = express();
 app.use(express.json());
@@ -16,7 +13,6 @@ describe('Risks', () => {
 
   test('test-works', async () => {
     const res = await request(app).get('/1');
-    console.log(res.body);
     expect(res.body).toStrictEqual([
       {
         id: '458c5e95-b06c-47d9-8399-dcd409f9ff5a',
@@ -62,9 +58,7 @@ describe('Risks', () => {
 
   test('not-projectid', async () => {
     const res = await request(app).get('/123123123');
-    console.log(res.body);
     expect(res.body.message).toBe('Project with id 123123123 not found!');
     expect(res.statusCode).toBe(404);
   });
 });
-console.log('hello');
