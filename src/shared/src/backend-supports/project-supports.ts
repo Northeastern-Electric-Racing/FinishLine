@@ -105,7 +105,7 @@ const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WB
 
   if (isComplete) return WbsElementStatus.Complete;
   else if (isActive) return WbsElementStatus.Active;
-  else return WbsElementStatus.Inactive;
+  return WbsElementStatus.Inactive;
 };
 
 export {
