@@ -14,7 +14,7 @@ import { useAuth } from '../../../../hooks/auth.hooks';
 import { mockAuth, mockPromiseAxiosResponse } from '../../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../../test-support/test-data/users.stub';
 import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
-import { getRisksForProject } from '../../../../apis/Risks.api';
+import { getRisksForProject } from '../../../../apis/risks.api';
 import { AxiosResponse } from 'axios';
 import { Risk } from 'shared';
 import { useGetRisksForProject } from '../../../../hooks/risks.hooks';
