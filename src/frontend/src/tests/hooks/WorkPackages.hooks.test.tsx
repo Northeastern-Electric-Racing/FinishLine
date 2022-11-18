@@ -13,7 +13,7 @@ import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.st
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 
-jest.mock('../../apis/work-packages.api');
+jest.mock('../../apis/WorkPackages.api');
 
 describe('work package hooks', () => {
   it('handles getting a list of work packages', async () => {
