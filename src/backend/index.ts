@@ -5,7 +5,7 @@ import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
-import Router from './src/routes/work-packages.routes';
+import workPackagesRouter from './src/routes/work-packages.routes';
 import risksRouter from './src/routes/risks.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
