@@ -31,7 +31,7 @@ const mockHook = () => {
 jest.mock('../../../../hooks/auth.hooks');
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-jest.mock('../../../../apis/Risks.api');
+jest.mock('../../../../apis/risks.api');
 
 const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
