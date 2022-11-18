@@ -96,16 +96,16 @@ const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WB
   let isActive = false;
   let isComplete = true;
 
-  if (proj.workPackages.length === 0) {
-    return WbsElementStatus.Inactive;
-  }
+  if (proj.workPackages.length === 0) return WbsElementStatus.Inactive;
 
   proj.workPackages.forEach((wp) => {
     isComplete = isComplete && wp.wbsElement.status === WbsElementStatus.Complete;
     isActive = isActive || wp.wbsElement.status === WbsElementStatus.Active;
   });
 
-  return isComplete ? WbsElementStatus.Complete : isActive ? WbsElementStatus.Active : WbsElementStatus.Inactive;
+  if (isComplete) return WbsElementStatus.Complete;
+  else if (isActive) return WbsElementStatus.Active;
+  else return WbsElementStatus.Inactive;
 };
 
 export {
