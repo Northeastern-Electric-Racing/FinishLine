@@ -20,6 +20,7 @@
     "prisma:migrate:prod": "cd src/backend; npx prisma migrate deploy",
     "prisma:generate": "cd src/backend; npx prisma generate",
     "prisma:manual": "yarn workspace backend prisma:manual",
+    "prisma:studio": "cd src/backend; npx prisma studio",
     "lint": "npx eslint .",
     "test:frontend": "yarn workspace frontend test",
     "test:backend": "yarn workspace backend test",
