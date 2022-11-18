@@ -195,7 +195,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </Button>
         )}
       </div>
-      <Dialog open={show} onClose={handleClose}>
+      <Dialog open={show} onClose={handleClose} fullWidth>
         <form onSubmit={handleCreate}>
           <DialogTitle>Add New Risk</DialogTitle>
           <DialogContent>
@@ -210,7 +210,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               multiline
               fullWidth
               onChange={(e) => setNewDetail(e.target.value)}
-              sx={{ minWidth: '50%' }}
             />
           </DialogContent>
           <DialogActions>
