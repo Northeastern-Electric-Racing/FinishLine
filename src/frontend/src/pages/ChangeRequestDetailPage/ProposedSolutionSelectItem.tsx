@@ -31,25 +31,25 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
     >
       <Card onClick={setter}>
         <CardContent>
-          {selected ? (
-            <Chip label="Selected" color="success" sx={selectedStyle} />
-          ) : (
-            <Chip label="Unselected" color="error" sx={unselectedStyle} />
-          )}
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
+              <Box display="flex" justifyContent="flex-end">
+                {selected ? <Chip label="Selected" color="success" /> : <Chip label="Unselected" color="error" />}
+              </Box>
+            </Grid>
+            <Grid item xs={12}>
               <b>Description: </b>
               {proposedSolution.description}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <b>Budget Impact: </b>
               {dollarsPipe(proposedSolution.budgetImpact)}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <b>Timeline Impact: </b>
               {weeksPipe(proposedSolution.timelineImpact)}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <b>Scope Impact: </b>
               {proposedSolution.scopeImpact}
             </Grid>
