@@ -189,7 +189,7 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
   const wp = await prisma.work_Package.findUnique({
     where: {
-      workPackageId: wbsElement.workPackage?.workPackageId
+      wbsElementId: wbsElement.wbsElementId
     },
     include: {
       expectedActivities: true,
