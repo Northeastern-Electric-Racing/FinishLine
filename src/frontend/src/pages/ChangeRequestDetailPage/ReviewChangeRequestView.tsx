@@ -2,13 +2,15 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
+import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
-import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
+import { ChangeRequest, ProposedSolution, StandardChangeRequest, DescriptionBullet } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
 
@@ -55,6 +57,25 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     reset({ reviewNotes: '' });
   };
 
+  const { isLoading, isError, data, error } = useSingleWorkPackage(cr.wbsNum);
+  let canAccept = true;
+  if (cr.type === 'STAGE_GATE') {
+    if (isLoading) return <LoadingIndicator />;
+
+    if (isError || !data) return <ErrorPage message={error?.message} />;
+    const checkForUncheckedDescriptionBullets = (value: DescriptionBullet, index: number, array: DescriptionBullet[]) => {
+      return value.userChecked == null;
+    };
+
+    const expectedActivities = data.expectedActivities;
+    const deliverables = data.deliverables;
+    if (
+      expectedActivities.filter(checkForUncheckedDescriptionBullets).length !== 0 ||
+      deliverables.filter(checkForUncheckedDescriptionBullets).length !== 0
+    ) {
+      canAccept = false;
+    }
+  }
   const overflow: object = {
     'overflow-y': 'scroll',
     'max-height': '300px'
@@ -133,7 +154,13 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="success" type="submit" form="review-notes-form" onClick={() => handleAcceptDeny(true)}>
+          <Button
+            variant="success"
+            type="submit"
+            form="review-notes-form"
+            disabled={!canAccept}
+            onClick={() => handleAcceptDeny(true)}
+          >
             Accept
           </Button>
           <Button

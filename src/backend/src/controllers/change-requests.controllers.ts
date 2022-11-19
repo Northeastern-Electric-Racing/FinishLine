@@ -8,6 +8,7 @@ import {
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';
+import { Description_Bullet } from '@prisma/client';
 
 export const getAllChangeRequests = async (req: Request, res: Response) => {
   const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
@@ -25,6 +26,15 @@ export const getChangeRequestByID = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `change request with id ${crId} not found!` });
   }
   return res.status(200).json(changeRequestTransformer(requestedCR));
+};
+
+//returns whether the given description bullet it checked
+export const checkForUncheckedDescriptionBullets = (
+  value: Description_Bullet,
+  index: number,
+  array: Description_Bullet[]
+) => {
+  return value.dateTimeChecked == null;
 };
 
 // handle reviewing of change requests
@@ -177,9 +187,37 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   if (!wbsElement) {
     return res.status(404).json({ message: `wbs element with id #${updated.wbsElementId} not found` });
   }
+  const wp = await prisma.work_Package.findUnique({
+    where: {
+      workPackageId: wbsElement.workPackage?.workPackageId
+    },
+    include: {
+      expectedActivities: true,
+      deliverables: true
+    }
+  });
 
   if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
     const shouldChangeStatus = wbsElement.status !== WBS_Element_Status.COMPLETE;
+
+    if (wp) {
+      const wpExpectedActivities = wp.expectedActivities;
+      const wpDeliverables = wp.deliverables;
+
+      //checks for any unchecked expected activities, if there are any it will return an error
+      const uncheckedExpectedActivitiy = wpExpectedActivities.map(checkForUncheckedDescriptionBullets);
+
+      if (uncheckedExpectedActivitiy.length > 0) {
+        return res.status(400).json({ message: `Work Package has unchecked expected activities` });
+      }
+
+      //Checks for any unchecked deliverables, if there are any it will return an error
+
+      const uncheckedDeliverables = wpDeliverables.map(checkForUncheckedDescriptionBullets);
+      if (uncheckedDeliverables.length > 0) {
+        return res.status(400).json({ message: `Work Package has unchecked deliverables` });
+      }
+    }
 
     const changesList = [];
     if (shouldChangeStatus) {
@@ -355,33 +393,11 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
         projectNumber: body.wbsNum.projectNumber,
         workPackageNumber: body.wbsNum.workPackageNumber
       }
-    },
-    include: {
-      workPackage: { include: { expectedActivities: true, deliverables: true } }
     }
   });
   if (wbsElement === null) {
     return res.status(404).json({ message: `wbs number ${body.wbsNum} not found` });
   }
-
-  // const wbsWorkPackage = wbsElement.workPackage;
-  // if (wbsWorkPackage) {
-  //   const wpExpectedActivities = wbsWorkPackage.expectedActivities;
-  //   const wpDeliverables = wbsWorkPackage.deliverables;
-  //   //checks for any unchecked expected activities, if there are any it will return an error
-  //   const uncheckedExpectedActivitiy = wpExpectedActivities.map(checkForUncheckedDescriptionBullets);
-
-  //   if (uncheckedExpectedActivitiy.length > 0) {
-  //     return res.status(400).json({ message: `Work Package has unchecked expected activities` });
-  //   }
-
-  //   //Checks for any unchecked deliverables, if there are any it will return an error
-
-  //   const uncheckedDeliverables = wpDeliverables.map(checkForUncheckedDescriptionBullets);
-  //   if (uncheckedDeliverables.length > 0) {
-  //     return res.status(400).json({ message: `Work Package has unchecked deliverables` });
-  //   }
-  // }
 
   const createdChangeRequest = await prisma.change_Request.create({
     data: {

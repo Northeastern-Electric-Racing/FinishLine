@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { DescriptionBullet, WbsNumber } from 'shared';
+import { WbsNumber } from 'shared';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -17,24 +17,13 @@ interface WorkPackagePageProps {
   wbsNum: WbsNumber;
 }
 
-const checkForUncheckedDescriptionBullets = (value: DescriptionBullet, index: number, array: DescriptionBullet[]) => {
-  return value.userChecked == null;
-};
-
 const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   const query = useQuery();
   const { isLoading, isError, data, error } = useSingleWorkPackage(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
   const auth = useAuth();
   const isGuest = auth.user?.role === 'GUEST';
-  let hasUncheckedDescriptionBullets = true;
-  if (data) {
-    const expectedActivities = data.expectedActivities;
-    const deliverables = data.deliverables;
-    if (expectedActivities.filter(checkForUncheckedDescriptionBullets).length === 0 && deliverables.filter(checkForUncheckedDescriptionBullets).length === 0) {
-      hasUncheckedDescriptionBullets = false;
-    }
-  }
+
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
@@ -48,7 +37,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
       enterEditMode={() => setEditMode(true)}
       allowEdit={!isGuest}
       allowActivate={!isGuest}
-      allowStageGate={!isGuest && !hasUncheckedDescriptionBullets}
+      allowStageGate={!isGuest}
       allowRequestChange={!isGuest}
     />
   );

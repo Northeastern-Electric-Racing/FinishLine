@@ -10,6 +10,7 @@ import {
 import { sendMessage } from '../integrations/slack.utils';
 import { userTransformer } from './users.utils';
 import { wbsNumOf } from './utils';
+
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
     ESTIMATION: ChangeRequestReason.Estimation,
