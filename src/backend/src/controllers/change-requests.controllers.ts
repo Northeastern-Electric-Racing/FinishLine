@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import {
   changeRequestRelationArgs,
   changeRequestTransformer,
-  sendSlackChangeRequestNotification
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
@@ -306,6 +307,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         status: WBS_Element_Status.ACTIVE
       }
     });
+  }
+  // find userSettings that submitted the change request
+  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: updated.submitterId } });
+  if (personSettings && personSettings.slackId) {
+    await sendSlackCRReviewedNotification(personSettings.slackId, updated.crId);
   }
 
   // TODO: handle errors
