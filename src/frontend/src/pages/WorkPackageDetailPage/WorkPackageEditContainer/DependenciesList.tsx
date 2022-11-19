@@ -3,39 +3,90 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useEffect, useState } from 'react';
-import { validateWBS, WbsNumber } from 'shared';
-import HorizontalList from '../../../components/HorizontalList';
-import Dependency from '../WorkPackageViewContainer/Dependency';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, Grid, IconButton, TextField } from '@mui/material';
+import { Grid, IconButton, TextField } from '@mui/material';
+import { FieldArrayWithId, UseFieldArrayRemove } from 'react-hook-form';
+import PageBlock from '../../../layouts/PageBlock';
+import AddIcon from '@mui/icons-material/Add';
 
 interface DependenciesListProps {
-  name?: string;
-  ls: WbsNumber[];
+  ls: FieldArrayWithId[];
   register: any;
   append: any;
-  remove: any;
+  remove: UseFieldArrayRemove;
 }
 
-const DependenciesList: React.FC<DependenciesListProps> = ({ name, ls, register, append, remove }) => {
+const DependenciesList: React.FC<DependenciesListProps> = ({ ls, register, append, remove }) => {
+  const [newDependency, setNewDependency] = useState('');
+
+  const handleAdd = () => {
+    append({ wbsNumId: newDependency });
+    setNewDependency('');
+  };
+
   return (
-    <>
+    <PageBlock title="Dependencies">
       {ls.map((_element, i) => {
         return (
-          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
-              <DeleteIcon />
-            </IconButton>
+          <Grid item sx={{ display: 'flex' }}>
+            <TextField
+              required
+              autoComplete="off"
+              sx={{ width: 3 / 10, padding: 0 }}
+              variant="outlined"
+              {...register(`dependencies.${i}.wbsNumId`)}
+              disabled
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    sx={{
+                      width: 60,
+                      height: 56,
+                      borderRadius: 0,
+                      border: '1px solid',
+                      borderColor: 'red',
+                      backgroundColor: 'red'
+                    }}
+                    type="button"
+                    onClick={() => remove(i)}
+                  >
+                    <DeleteIcon sx={{ color: 'black' }} />
+                  </IconButton>
+                )
+              }}
+            />
           </Grid>
         );
       })}
-      <Button variant="contained" color="success" onClick={() => append({ bulletId: -1, detail: '' })} sx={{ mt: 2 }}>
-        + Add New Bullet
-      </Button>
-    </>
+      <TextField
+        autoComplete="off"
+        variant="outlined"
+        sx={{ width: 3 / 10 }}
+        onChange={(newValue) => setNewDependency(newValue.target.value)}
+        value={newDependency}
+        InputProps={{
+          endAdornment: (
+            <IconButton
+              sx={{
+                width: 60,
+                height: 56,
+                borderRadius: 0,
+                border: '1px solid',
+                borderColor: 'green',
+                backgroundColor: 'green'
+              }}
+              size="large"
+              edge="end"
+              type="button"
+              onClick={handleAdd}
+            >
+              <AddIcon sx={{ color: 'white' }} />
+            </IconButton>
+          )
+        }}
+      />
+    </PageBlock>
   );
 };
 

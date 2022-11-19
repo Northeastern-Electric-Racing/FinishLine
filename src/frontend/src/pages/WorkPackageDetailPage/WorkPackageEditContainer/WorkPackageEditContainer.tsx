@@ -41,7 +41,23 @@ const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   });
 };
 
-const schema = yup.object().shape({});
+const wbsNumToObject = (wbsNums: WbsNumber[]) =>
+  wbsNums.map((wbsNum) => {
+    return { wbsNumId: wbsNum.carNumber + '.' + wbsNum.projectNumber + '.' + wbsNum.workPackageNumber };
+  });
+
+const mapWBSNumToPayLoad = (ls: { wbsNumId: string }[]) => {
+  return ls.map((ele) => {
+    const nums = ele.wbsNumId.split('.');
+    return { carNumber: nums[0], projectNumber: nums[1], workPackageNumber: nums[2] };
+  });
+};
+
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required!'),
+  startDate: yup.date().required('Start Date is required!'),
+  duration: yup.number().required()
+});
 
 interface WorkPackageEditContainerProps {
   workPackage: WorkPackage;
@@ -52,7 +68,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
-  const { name, startDate, duration, dependencies, status } = workPackage;
+  const { name, startDate, duration, status } = workPackage;
   const { userId } = auth.user!;
   const {
     register,
@@ -70,7 +86,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       crId: query.get('crId') || '',
       startDate: startDate,
       duration,
-      dependencies: dependencies,
+      dependencies: wbsNumToObject(workPackage.dependencies),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
       deliverables: bulletsToObject(workPackage.deliverables),
       wbsElementStatus: status
@@ -87,6 +103,11 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
+  const {
+    fields: dependencies,
+    append: appendDependency,
+    remove: removeDependency
+  } = useFieldArray({ control, name: 'dependencies' });
 
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
 
@@ -97,14 +118,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
-  const transformWbsNum = (wbsNum: WbsNumber) => {
-    return {
-      carNumber: wbsNum.carNumber,
-      projectNumber: wbsNum.projectNumber,
-      workPackageNumber: wbsNum.workPackageNumber
-    };
-  };
-
   const transformDate = (date: Date) => {
     const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
     const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
@@ -112,9 +125,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLeadId, projectManagerId, startDate, duration, status, dependencies } = data;
+    const { name, projectLeadId, projectManagerId, startDate, duration, status } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
+    const dependencies = mapWBSNumToPayLoad(data.dependencies);
 
     const payload = {
       projectLeadId,
@@ -125,7 +139,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       crId: parseInt(data.crId),
       startDate: transformDate(startDate),
       duration,
-      dependencies: dependencies.map((dep: any) => transformWbsNum(dep)),
+      dependencies: dependencies,
       expectedActivities: expectedActivities,
       deliverables: deliverables,
       wbsElementStatus: status
@@ -166,9 +180,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         }
       />
       <WorkPackageEditDetails control={control} errors={errors} users={users} />
-      {
-        //<DependenciesList register={register} ls={deliverables} append={appendDeliverable} remove={removeDeliverable} />
-      }
+      {<DependenciesList register={register} ls={dependencies} append={appendDependency} remove={removeDependency} />}
       <PageBlock title="Expected Activities">
         <ReactHookEditableList
           name="expectedActivities"
