@@ -18,9 +18,6 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
   selected,
   onClick: setter
 }) => {
-  const selectedStyle = { position: 'relative', left: 431 };
-  const unselectedStyle = { position: 'relative', left: 425 };
-
   const component = (
     <Box
       sx={{
