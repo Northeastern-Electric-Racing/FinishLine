@@ -28,18 +28,16 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
             <b>Why</b>
           </Typography>
         </Grid>
-        <Grid item xs={10}>
-          {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
-            <Grid item xs={10} key={idx}>
-              <Typography sx={{ maxWidth: '140px' }}>
-                <b>{ele.type}</b>
-              </Typography>
-              <Grid item xs={10}>
-                {ele.explain}
-              </Grid>
-            </Grid>
-          ))}
-        </Grid>
+        {cr.why.map((ele: ChangeRequestExplanation, idx: number) => [
+          <Grid item xs={2}>
+            <Typography sx={{ maxWidth: '140px' }}>
+              <b>{ele.type}</b>
+            </Typography>
+          </Grid>,
+          <Grid item xs={8}>
+            {ele.explain}
+          </Grid>
+        ])}
       </Grid>
     </PageBlock>
   );
