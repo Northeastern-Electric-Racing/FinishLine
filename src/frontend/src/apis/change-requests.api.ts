@@ -6,7 +6,7 @@
 import axios from '../utils/axios';
 import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/Urls';
-import { changeRequestTransformer } from './Transformers/change-requests.transformers';
+import { changeRequestTransformer } from './transformers/change-requests.transformers';
 
 /**
  * Fetches all change requests.

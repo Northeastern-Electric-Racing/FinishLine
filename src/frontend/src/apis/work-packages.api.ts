@@ -7,7 +7,7 @@ import axios from '../utils/axios';
 import { WbsNumber, WorkPackage } from 'shared';
 import { wbsPipe } from '../utils/Pipes';
 import { apiUrls } from '../utils/Urls';
-import { workPackageTransformer } from './Transformers/work-packages.transformers';
+import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 /**
  * Fetch all work packages.
