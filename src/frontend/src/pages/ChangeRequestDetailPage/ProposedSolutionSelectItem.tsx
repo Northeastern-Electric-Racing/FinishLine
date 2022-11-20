@@ -29,14 +29,18 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
       <Card onClick={setter}>
         <CardContent>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end">
-                {selected ? <Chip label="Selected" color="success" /> : <Chip label="Unselected" color="error" />}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <b>Description: </b>
               {proposedSolution.description}
+            </Grid>
+            <Grid item xs={6}>
+              <Box display="flex" justifyContent="flex-end" sx={{ maxHeight: 32 }}>
+                {selected ? (
+                  <Chip size="small" label="Selected" color="success" />
+                ) : (
+                  <Chip size="small" label="Unselected" color="error" />
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <b>Budget Impact: </b>
