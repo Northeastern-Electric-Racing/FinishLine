@@ -65,6 +65,16 @@ export const nerThemeOptions: ThemeOptions = {
         disableRipple: true
       }
     },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          color: 'white'
+        },
+        colorSecondary: {
+          backgroundColor: 'gray'
+        }
+      }
+    },
     MuiList: {
       defaultProps: {
         dense: true
@@ -78,13 +88,6 @@ export const nerThemeOptions: ThemeOptions = {
     MuiTable: {
       defaultProps: {
         size: 'small'
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        colorSecondary: {
-          backgroundColor: 'gray'
-        }
       }
     }
   }
