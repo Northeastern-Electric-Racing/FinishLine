@@ -82,9 +82,9 @@ export const nerThemeOptions: ThemeOptions = {
     },
     MuiChip: {
       styleOverrides: {
-        colorSecondary: ({ theme }) => ({
+        colorSecondary: {
           backgroundColor: 'gray'
-        })
+        }
       }
     }
   }
