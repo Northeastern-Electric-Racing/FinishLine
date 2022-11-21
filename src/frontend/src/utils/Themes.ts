@@ -79,6 +79,13 @@ export const nerThemeOptions: ThemeOptions = {
       defaultProps: {
         size: 'small'
       }
+    },
+    MuiChip: {
+      styleOverrides: {
+        colorSecondary: ({ theme }) => ({
+          backgroundColor: 'gray'
+        })
+      }
     }
   }
 };
