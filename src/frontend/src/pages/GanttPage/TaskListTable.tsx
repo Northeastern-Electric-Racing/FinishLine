@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Task } from 'gantt-task-react';
+import { Task } from './temp/types/public-types';
 import styles from '../../stylesheets/pages/gantt-page.module.css';
 
 const TaskListTable: React.FC<{

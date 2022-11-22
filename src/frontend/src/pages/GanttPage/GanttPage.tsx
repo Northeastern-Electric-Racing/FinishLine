@@ -3,10 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Gantt, Task, ViewMode } from 'gantt-task-react';
+import { Gantt } from './temp/components/gantt/gantt';
+import { Task, ViewMode } from './temp/types/public-types';
 import TaskListHeader from './TaskListHeader';
 import TaskListTable from './TaskListTable';
 import { useState } from 'react';
+import TooltipContent from './TooltipContent';
 
 interface GanttPageProps {
   tasks: Task[];
@@ -17,19 +19,22 @@ const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
 
   const handleExpanderClick = (task: Task) => {
     setTaskList(taskList.map((t) => (t.id === task.id ? task : t)));
-    console.log('On expander click Id:' + task.id);
   };
 
   return (
     <Gantt
       tasks={taskList}
-      viewMode={ViewMode.Month}
+      viewMode={ViewMode.Week}
       preStepsCount={1}
       locale={'US'}
       onExpanderClick={handleExpanderClick}
       TaskListHeader={TaskListHeader}
       TaskListTable={TaskListTable}
-      columnWidth={50}
+      columnWidth={67}
+      TooltipContent={TooltipContent}
+      onClick={(task) => {
+        if (task.onClick) task.onClick();
+      }}
     />
   );
 };
