@@ -104,8 +104,7 @@ export const editProject = async (req: Request, res: Response) => {
   }
 
   const { body } = req;
-  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name, wbsElementStatus } =
-    body;
+  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name } = body;
 
   // Create optional arg values
   const googleDriveFolderLink = body.googleDriveFolderLink === undefined ? null : body.googleDriveFolderLink;
