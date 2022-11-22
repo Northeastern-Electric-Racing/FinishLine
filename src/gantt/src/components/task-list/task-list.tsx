@@ -75,7 +75,7 @@ export const TaskList: React.FC<TaskListProps> = ({
     fontSize,
     tasks,
     locale,
-    selectedTaskId: selectedTaskId,
+    selectedTaskId,
     setSelectedTask,
     onExpanderClick
   };
