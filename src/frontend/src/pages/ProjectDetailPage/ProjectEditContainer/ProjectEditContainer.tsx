@@ -180,7 +180,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
       goals,
       features,
       otherConstraints,
-      wbsElementStatus: proj.status,
       googleDriveFolderLink: gDrive,
       slideDeckLink: slideDeck,
       bomLink: bom,
