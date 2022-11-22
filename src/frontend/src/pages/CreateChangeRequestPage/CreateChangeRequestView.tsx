@@ -12,8 +12,6 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -22,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
+import { NativeSelect } from '@mui/material';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -123,13 +122,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               rules={{ required: true }}
               render={({ field, fieldState }) => (
                 <FormControl>
-                  <Select {...field} variant="outlined" labelId={`${field.name}Label`} error={!!fieldState.error}>
+                  <NativeSelect {...field} variant="outlined" error={!!fieldState.error}>
                     {permittedTypes.map((type) => (
-                      <MenuItem key={type} value={type}>
+                      <option key={type} value={type}>
                         {type}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </Select>
+                  </NativeSelect>
                   <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
                 </FormControl>
               )}
@@ -156,13 +155,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             <Box>
               {whys.map((_element, index) => (
                 <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                  <select {...register(`why.${index}.type`)}>
+                  <NativeSelect {...register(`why.${index}.type`)}>
                     {Object.values(ChangeRequestReason).map((type) => (
                       <option key={type} value={type}>
                         {type}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                   <TextField
                     required
                     autoComplete="off"
