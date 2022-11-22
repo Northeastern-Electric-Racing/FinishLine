@@ -8,7 +8,6 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { routes } from '../../utils/Routes';
-import { FormInput } from './CreateChangeRequest';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
@@ -22,13 +21,15 @@ import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
+import ReactHookTextField from '../../components/ReactHookTextField';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
   crDesc: string;
-  onSubmit: (data: FormInput) => Promise<void>;
+  onSubmit: (data: any) => Promise<void>;
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
+  handleCancel: () => void;
 }
 
 const wbsTester = (wbsNum: string | undefined) => {
@@ -45,19 +46,6 @@ const schema = yup.object().shape({
   wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
-  scopeImpact: yup.string().required('Scope Impact is required'),
-  timelineImpact: yup
-    .number()
-    .typeError('Timeline Impact must be a number')
-    .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
-    .required('Timeline Impact is required')
-    .integer('Timeline Impact must be an integer'),
-  budgetImpact: yup
-    .number()
-    .typeError('Budget Impact must be a number')
-    .min(0, 'Budget Impact must be greater than or equal to $0')
-    .required('Budget Impact is required')
-    .integer('Budget Impact must be an integer'),
   why: yup
     .array()
     .min(1, 'At least one Why is required')
@@ -81,166 +69,141 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   crDesc,
   onSubmit,
   proposedSolutions,
-  setProposedSolutions
+  setProposedSolutions,
+  handleCancel
 }) => {
-  const { handleSubmit, control } = useForm<FormInput>({
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    register
+  } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { wbsNum, what: crDesc, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
+    defaultValues: {
+      wbsNum,
+      what: crDesc,
+      why: [{ type: ChangeRequestReason.Other, explain: '' }],
+      type: ChangeRequestType.Issue
+    }
   });
-  const { fields, append, remove } = useFieldArray({ control, name: 'why' });
+  const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
 
   return (
-    <>
-      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
-      <PageBlock title={''}>
-        <form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={2}>
-            <Grid item xs={6} md={6}>
-              <Controller
-                name="wbsNum"
-                defaultValue={wbsNum}
-                control={control}
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label="WBS Number"
-                    sx={{ backgroundColor: 'white' }}
-                    autoComplete="off"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.type}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <Box>
-                <Typography variant="caption">Type</Typography>
-              </Box>
-              <Controller
-                name="type"
-                defaultValue={ChangeRequestType.Issue}
-                control={control}
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <FormControl>
-                    <Select
-                      {...field}
-                      sx={{ backgroundColor: 'white' }}
-                      variant="outlined"
-                      labelId={`${field.name}Label`}
-                      error={!!fieldState.error}
-                    >
-                      {permittedTypes.map((type) => (
-                        <MenuItem key={type} value={type}>
-                          {type}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
-                  </FormControl>
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <Controller
-                name="what"
-                control={control}
-                defaultValue=""
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label={'What'}
-                    multiline
-                    rows={4}
-                    fullWidth
-                    sx={{ backgroundColor: 'white' }}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.type}
-                    placeholder="What is the situation?"
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <Box>
-                <Typography variant="caption">Why</Typography>
-              </Box>
-              <Box>
-                {fields.map((field, index) => (
-                  <Box display="flex" flexDirection="row">
-                    <Controller
-                      name={`why.${index}.type` as const}
-                      defaultValue={ChangeRequestReason.Other}
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field, fieldState }) => (
-                        <FormControl>
-                          <Select
-                            {...field}
-                            labelId={`${field.name}Label`}
-                            sx={{ backgroundColor: 'white' }}
-                            error={!!fieldState.error}
-                            autoWidth
-                          >
-                            {Object.values(ChangeRequestReason).map((type) => (
-                              <MenuItem key={type} value={type}>
-                                {type}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                          <FormHelperText>{fieldState.error?.type}</FormHelperText>
-                        </FormControl>
-                      )}
-                    />
-                    <Controller
-                      name={`why.${index}.explain` as const}
-                      defaultValue=""
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field, fieldState }) => (
-                        <TextField
-                          {...field}
-                          label="Explain"
-                          error={!!fieldState.error}
-                          helperText={fieldState.error?.type}
-                          placeholder="Why details"
-                          autoComplete="off"
-                          sx={{ flexGrow: 1, backgroundColor: 'white' }}
-                        />
-                      )}
-                    />
-                    <Button sx={{ maxHeight: '59px' }} variant="contained" color="error" onClick={() => remove(index)}>
-                      <DeleteIcon />
-                    </Button>
-                  </Box>
-                ))}
-              </Box>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => append({ type: ChangeRequestReason.Design, explain: '' })}
-              >
-                Add Reason
-              </Button>
-            </Grid>
+    <form
+      id={'create-standard-change-request-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
+      <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
+      <PageBlock title="Details">
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="caption">WBS Number</Typography>
+            </Box>
+            <ReactHookTextField name="wbsNum" control={control} placeholder="1.1.0" errorMessage={errors.wbsNum} />
           </Grid>
-          <PageBlock title="Proposed Solutions">
-            <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
-          </PageBlock>
-          <Box display="flex" flexDirection="row-reverse">
-            <Button variant="contained" color="success" type="submit">
-              Submit
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="caption">Type</Typography>
+            </Box>
+            <Controller
+              name="type"
+              control={control}
+              rules={{ required: true }}
+              render={({ field, fieldState }) => (
+                <FormControl>
+                  <Select {...field} variant="outlined" labelId={`${field.name}Label`} error={!!fieldState.error}>
+                    {permittedTypes.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
+                </FormControl>
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="caption">What</Typography>
+            </Box>
+            <ReactHookTextField
+              name="what"
+              control={control}
+              multiline
+              rows={4}
+              fullWidth
+              errorMessage={errors.what}
+              placeholder="What is the situation?"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="caption">Why</Typography>
+            </Box>
+            <Box>
+              {whys.map((_element, index) => (
+                <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                  <select {...register(`why.${index}.type`)}>
+                    {Object.values(ChangeRequestReason).map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                  <TextField
+                    required
+                    autoComplete="off"
+                    label="Explain"
+                    sx={{ flexGrow: 1, mx: 1 }}
+                    {...register(`why.${index}.explain`)}
+                  />
+                  <Button
+                    sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
+                    variant="contained"
+                    color="error"
+                    onClick={() => removeWhy(index)}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ mt: 1 }}
+              onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
+            >
+              Add Reason
             </Button>
-          </Box>
-        </form>
+          </Grid>
+        </Grid>
       </PageBlock>
-    </>
+      <PageBlock title="Proposed Solutions">
+        <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
+      </PageBlock>
+      <Box textAlign="center">
+        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
+          Submit
+        </Button>
+        <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
+          Cancel
+        </Button>
+      </Box>
+    </form>
   );
 };
 

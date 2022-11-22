@@ -33,18 +33,6 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      {useAuth().user?.role !== 'GUEST' ? (
-        <Button
-          onClick={() => setShowEditableForm(true)}
-          variant="contained"
-          color="success"
-          sx={{ marginTop: 2, marginBottom: 2 }}
-        >
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
@@ -55,6 +43,13 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
+      {useAuth().user?.role !== 'GUEST' ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       {showEditableForm ? (
         <ProposedSolutionForm
           onAdd={addProposedSolution}

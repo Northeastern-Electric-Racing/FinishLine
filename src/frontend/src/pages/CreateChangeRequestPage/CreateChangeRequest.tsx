@@ -39,10 +39,13 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
 
-  const handleConfirm = async (data: FormInput) => {
-    if (auth.user?.userId === undefined) {
-      throw new Error('Cannot review change request without being logged in');
-    }
+  if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
+
+  const { userId } = auth.user;
+
+  const handleConfirm = async (data: any) => {
     const crId = await mutateAsync({
       ...data,
       wbsNum: validateWBS(data.wbsNum),
@@ -53,7 +56,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
       await cpsMutateAsync({
         crId,
-        submitterId: auth.user!.userId,
+        submitterId: userId,
         description,
         timelineImpact,
         scopeImpact,
@@ -64,9 +67,9 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     history.push(routes.CHANGE_REQUESTS);
   };
 
-  if (isLoading || cpsIsLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
+  const handleCancel = () => {
+    history.push(routes.CHANGE_REQUESTS);
+  };
 
   return (
     <CreateChangeRequestsView
@@ -75,6 +78,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
       onSubmit={handleConfirm}
       proposedSolutions={proposedSolutions}
       setProposedSolutions={setProposedSolutions}
+      handleCancel={handleCancel}
     />
   );
 };
