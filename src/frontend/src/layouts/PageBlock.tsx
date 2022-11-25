@@ -7,13 +7,17 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { ReactNode } from 'react';
+import Collapse from '@mui/material/Collapse';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { ReactNode, useState } from 'react';
 import { SxProps, Theme, useTheme } from '@mui/material';
 
 interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
   style?: SxProps<Theme>;
+  defaultOpen?: boolean;
 }
 
 /**
@@ -22,9 +26,11 @@ interface PageBlockProps {
  * @param headerRight The optional stuff to display on the right side of the header
  * @param children The children of the pageblock
  * @param style Optional styling for the pageblock
+ * @param defaultOpen Sets the pageblock to be open (uncollapsed) by default.
  */
-const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style }) => {
+const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultOpen }) => {
   const theme = useTheme();
+  const [collapsed, setCollapsed] = useState(!defaultOpen);
 
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
@@ -34,8 +40,13 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
             {title}
           </Typography>
           {headerRight}
+          {collapsed ? (
+            <ExpandMoreIcon sx={{ ml: 2 }} onClick={() => setCollapsed(false)} />
+          ) : (
+            <ExpandLessIcon sx={{ ml: 2 }} onClick={() => setCollapsed(true)} />
+          )}
         </Box>
-        {children}
+        <Collapse in={!collapsed}>{children}</Collapse>
       </CardContent>
     </Card>
   );
