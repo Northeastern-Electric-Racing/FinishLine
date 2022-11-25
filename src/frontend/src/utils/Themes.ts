@@ -95,6 +95,13 @@ export const nerThemeOptions: ThemeOptions = {
       defaultProps: {
         size: 'small'
       }
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          overflowWrap: 'anywhere'
+        }
+      }
     }
   }
 };

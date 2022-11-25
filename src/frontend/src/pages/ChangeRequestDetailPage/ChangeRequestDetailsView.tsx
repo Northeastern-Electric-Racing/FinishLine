@@ -166,10 +166,10 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Typography>Submitted By: </Typography>
           </Grid>
           <Grid item xs={2}>
-            {fullNamePipe(changeRequest.submitter)}
+            <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
           </Grid>
           <Grid item xs={2}>
-            {datePipe(changeRequest.dateSubmitted)}
+            <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
           </Grid>
         </Grid>
       </PageBlock>
