@@ -17,7 +17,7 @@ interface PageBlockProps {
   title: string;
   headerRight?: ReactNode;
   style?: SxProps<Theme>;
-  defaultOpen?: boolean;
+  defaultClosed?: boolean;
 }
 
 /**
@@ -26,11 +26,11 @@ interface PageBlockProps {
  * @param headerRight The optional stuff to display on the right side of the header
  * @param children The children of the pageblock
  * @param style Optional styling for the pageblock
- * @param defaultOpen Sets the pageblock to be open (uncollapsed) by default.
+ * @param defaultClosed Sets the pageblock to be closed (collapsed) by default.
  */
-const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultOpen }) => {
+const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultClosed }) => {
   const theme = useTheme();
-  const [collapsed, setCollapsed] = useState(!defaultOpen);
+  const [collapsed, setCollapsed] = useState(defaultClosed);
 
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">

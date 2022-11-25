@@ -13,6 +13,7 @@ interface BulletListProps {
   ordered?: boolean;
   readOnly?: boolean;
   fieldName?: string;
+  defaultClosed?: boolean;
 }
 
 const styles = {
@@ -22,14 +23,14 @@ const styles = {
   }
 };
 
-const BulletList: React.FC<BulletListProps> = ({ title, headerRight, list, ordered }) => {
+const BulletList: React.FC<BulletListProps> = ({ title, headerRight, list, ordered, defaultClosed }) => {
   const listPrepared = list.map((bullet, idx) => <li key={idx}>{bullet}</li>);
   let builtList = <ul style={styles.bulletList}>{listPrepared}</ul>;
   if (ordered) {
     builtList = <ol style={styles.bulletList}>{listPrepared}</ol>;
   }
   return (
-    <PageBlock title={title} headerRight={headerRight}>
+    <PageBlock title={title} headerRight={headerRight} defaultClosed={!!defaultClosed}>
       {builtList}
     </PageBlock>
   );
