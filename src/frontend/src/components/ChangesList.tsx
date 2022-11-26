@@ -39,6 +39,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
         </>
       ))}
       readOnly={true}
+      defaultClosed
     />
   );
 };
