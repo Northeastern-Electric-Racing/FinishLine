@@ -30,7 +30,7 @@ const BulletList: React.FC<BulletListProps> = ({ title, headerRight, list, order
     builtList = <ol style={styles.bulletList}>{listPrepared}</ol>;
   }
   return (
-    <PageBlock title={title} headerRight={headerRight} defaultClosed={!!defaultClosed}>
+    <PageBlock title={title} headerRight={headerRight} defaultClosed={defaultClosed}>
       {builtList}
     </PageBlock>
   );
