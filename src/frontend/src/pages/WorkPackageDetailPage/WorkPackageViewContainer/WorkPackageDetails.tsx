@@ -21,56 +21,56 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
           <Typography>Project Lead: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {fullNamePipe(workPackage.projectLead)}
+          <Typography>{fullNamePipe(workPackage.projectLead)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Project Manager: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {fullNamePipe(workPackage.projectManager)}
+          <Typography>{fullNamePipe(workPackage.projectManager)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Duration: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {weeksPipe(workPackage.duration)}
+          <Typography>{weeksPipe(workPackage.duration)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Start Date: </Typography>
         </Grid>
         <Grid item xs={3} md={2}>
-          {datePipe(workPackage.startDate)}
+          <Typography>{datePipe(workPackage.startDate)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>End Date: </Typography>
         </Grid>
         <Grid item xs={5} md={2}>
-          {datePipe(workPackage.endDate)}
+          <Typography>{datePipe(workPackage.endDate)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Progress: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {percentPipe(workPackage.progress)}
+          <Typography>{percentPipe(workPackage.progress)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Expected Progress: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {percentPipe(workPackage.expectedProgress)}
+          <Typography>{percentPipe(workPackage.expectedProgress)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Timeline Status: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {workPackage.timelineStatus}
+          <Typography>{workPackage.timelineStatus}</Typography>
         </Grid>
       </Grid>
     </PageBlock>

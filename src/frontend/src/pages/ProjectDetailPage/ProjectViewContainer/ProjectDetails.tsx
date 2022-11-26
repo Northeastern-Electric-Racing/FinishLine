@@ -23,41 +23,41 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Typography>Project Lead: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {fullNamePipe(project.projectLead)}
+          <Typography>{fullNamePipe(project.projectLead)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Project Manager: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {fullNamePipe(project.projectManager)}
+          <Typography>{fullNamePipe(project.projectManager)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Duration: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          {weeksPipe(project.duration)}
+          <Typography>{weeksPipe(project.duration)}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>Start Date: </Typography>
         </Grid>
         <Grid item xs={3} md={2}>
-          {datePipe(project.startDate) || 'n/a'}
+          <Typography>{datePipe(project.startDate) || 'n/a'}</Typography>
         </Grid>
 
         <Grid item xs={2} md={2}>
           <Typography>End Date: </Typography>
         </Grid>
         <Grid item xs={5} md={2}>
-          {datePipe(project.endDate) || 'n/a'}
+          <Typography>{datePipe(project.endDate) || 'n/a'}</Typography>
         </Grid>
         <Grid item xs={2} md={2}>
           <Typography>Budget: </Typography>
         </Grid>
         <Grid item xs={10} md={2}>
-          {dollarsPipe(project.budget)}
+          <Typography>{dollarsPipe(project.budget)}</Typography>
         </Grid>
         <Grid item xs={2} md={2}>
           <Typography>Links: </Typography>

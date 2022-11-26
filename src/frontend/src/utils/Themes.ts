@@ -7,6 +7,16 @@ import { ThemeOptions } from '@mui/material/styles';
 
 export const themeChoices = ['light', 'dark'];
 
+const headingCommonTheme = {
+  fontFamily: ['Barlow Semi Condensed', 'sans-serif'].join(','),
+  fontWeight: 600 /* semi bold */
+};
+
+// cannot directly add typography: { fontFamily: ... } in nerThemeOptions
+const defaultFontTheme = {
+  fontFamily: ['Lato', 'sans-serif'].join(',')
+};
+
 export const nerThemeOptions: ThemeOptions = {
   palette: {
     mode: 'dark',
@@ -19,45 +29,44 @@ export const nerThemeOptions: ThemeOptions = {
   },
   typography: {
     h1: {
-      fontFamily: 'Anton'
+      ...headingCommonTheme
     },
     h2: {
-      fontFamily: 'Anton'
+      ...headingCommonTheme
     },
     h3: {
-      fontFamily: 'Anton'
-    },
-    button: {
-      fontFamily: 'Oswald'
-    },
-    caption: {
-      fontFamily: 'Oswald'
-    },
-    overline: {
-      fontFamily: 'Oswald'
-    },
-    body2: {
-      fontFamily: 'Oswald'
-    },
-    body1: {
-      fontFamily: 'Oswald'
-    },
-    subtitle2: {
-      fontFamily: 'Anton'
-    },
-    subtitle1: {
-      fontFamily: 'Anton'
-    },
-    h6: {
-      fontFamily: 'Anton'
-    },
-    h5: {
-      fontFamily: 'Anton'
+      ...headingCommonTheme
     },
     h4: {
-      fontFamily: 'Anton'
+      ...headingCommonTheme
     },
-    fontFamily: 'Oswald'
+    h5: {
+      ...headingCommonTheme
+    },
+    h6: {
+      ...headingCommonTheme
+    },
+    subtitle1: {
+      ...headingCommonTheme
+    },
+    subtitle2: {
+      ...headingCommonTheme
+    },
+    body1: {
+      ...defaultFontTheme
+    },
+    body2: {
+      ...defaultFontTheme
+    },
+    button: {
+      ...defaultFontTheme
+    },
+    caption: {
+      ...defaultFontTheme
+    },
+    overline: {
+      ...defaultFontTheme
+    }
   },
   components: {
     MuiButtonBase: {
@@ -85,6 +94,13 @@ export const nerThemeOptions: ThemeOptions = {
     MuiTable: {
       defaultProps: {
         size: 'small'
+      }
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          overflowWrap: 'anywhere'
+        }
       }
     }
   }
