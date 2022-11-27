@@ -84,7 +84,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       userId,
       name,
       crId: query.get('crId') || '',
-      startDate: startDate,
+      startDate,
       duration,
       dependencies: wbsNumToObject(workPackage.dependencies),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
@@ -125,7 +125,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLeadId, projectManagerId, startDate, duration, status } = data;
+    const { name, projectLeadId, projectManagerId, startDate, duration, status, crId } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
     const dependencies = mapWBSNumToPayLoad(data.dependencies);
@@ -136,7 +136,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       workPackageId: workPackage.id,
       userId,
       name,
-      crId: parseInt(data.crId),
+      crId: parseInt(crId),
       startDate: transformDate(startDate),
       duration,
       dependencies: dependencies,

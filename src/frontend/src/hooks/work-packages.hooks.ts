@@ -60,9 +60,6 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
       return data;
     },
     {
-      onError: (error) => {
-        alert(error.message + " but it's probably invalid cr id"); // very scuffed, find a better way to surface errors on front end
-      },
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages', wbsNum]);
       }

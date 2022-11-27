@@ -26,7 +26,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       control={control}
       rules={{ required: true }}
       render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Status" sx={{ my: 1 }}>
+        <TextField select onChange={onChange} value={value} label="Status">
           {statuses.map((t) => (
             <MenuItem key={t} value={t}>
               {t}
@@ -38,7 +38,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
   );
 
   return (
-    <PageBlock title="Work Package Details" headerRight={statusSelect}>
+    <PageBlock title="Work Package Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <ReactHookTextField
@@ -49,7 +49,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             errorMessage={errors.name}
           />
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           <Controller
             name="startDate"
             control={control}
@@ -67,6 +67,9 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               </>
             )}
           />
+        </Grid>
+        <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
+          {statusSelect}
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
