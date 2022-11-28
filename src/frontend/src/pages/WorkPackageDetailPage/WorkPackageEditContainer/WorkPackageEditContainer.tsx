@@ -86,7 +86,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       crId: query.get('crId') || '',
       startDate,
       duration,
-      dependencies: wbsNumToObject(workPackage.dependencies),
+      dependencies: workPackage.dependencies.map((dep) => {
+        const wbsNum = dep.carNumber + '.' + dep.projectNumber + '.' + dep.workPackageNumber;
+        return { wbsNum };
+      }),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
       deliverables: bulletsToObject(workPackage.deliverables),
       wbsElementStatus: status
