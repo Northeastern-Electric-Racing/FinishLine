@@ -125,10 +125,12 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLeadId, projectManagerId, startDate, duration, status, crId } = data;
+    const { name, projectLeadId, projectManagerId, startDate, duration, wbsElementStatus, crId } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
     const dependencies = mapWBSNumToPayLoad(data.dependencies);
+
+    console.log(wbsElementStatus);
 
     const payload = {
       projectLeadId,
@@ -142,7 +144,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       dependencies: dependencies,
       expectedActivities: expectedActivities,
       deliverables: deliverables,
-      wbsElementStatus: status
+      wbsElementStatus: wbsElementStatus
     };
 
     try {
