@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, WbsNumber, WorkPackage } from 'shared';
+import { DescriptionBullet, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -41,15 +41,10 @@ const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   });
 };
 
-const wbsNumToObject = (wbsNums: WbsNumber[]) =>
-  wbsNums.map((wbsNum) => {
-    return { wbsNumId: wbsNum.carNumber + '.' + wbsNum.projectNumber + '.' + wbsNum.workPackageNumber };
-  });
-
 const mapWBSNumToPayLoad = (ls: { wbsNumId: string }[]) => {
   return ls.map((ele) => {
     const nums = ele.wbsNumId.split('.');
-    return { carNumber: nums[0], projectNumber: nums[1], workPackageNumber: nums[2] };
+    return { carNumber: parseInt(nums[0]), projectNumber: parseInt(nums[1]), workPackageNumber: parseInt(nums[2]) };
   });
 };
 
