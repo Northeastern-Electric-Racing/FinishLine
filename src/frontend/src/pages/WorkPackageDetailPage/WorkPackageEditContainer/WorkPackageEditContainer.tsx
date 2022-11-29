@@ -37,7 +37,7 @@ const bulletsToObject = (bullets: DescriptionBullet[]) =>
 // transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
 const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   return ls.map((ele) => {
-    return { id: ele.bulletId !== -1 ? ele.bulletId : undefined, detail: ele.detail };
+    return { id: ele.bulletId, detail: ele.detail };
   });
 };
 
