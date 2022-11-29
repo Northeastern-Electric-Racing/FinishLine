@@ -81,8 +81,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
           <Box
             sx={{
-              borderBottom: 1,
-              borderRadius: 1,
+              width: 400,
               '&::-webkit-scrollbar': {
                 display: 'none'
               }

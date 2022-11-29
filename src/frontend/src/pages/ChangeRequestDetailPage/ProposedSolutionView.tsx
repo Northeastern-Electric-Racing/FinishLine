@@ -5,9 +5,8 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Badge, Button, Grid } from '@mui/material';
+import { Chip, Button, Grid } from '@mui/material';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solution-view.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,49 +17,41 @@ interface ProposedSolutionViewProps {
 }
 
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
-  const spacer = 'mb-2';
   return (
-    <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">
-      <Grid container spacing={2}>
-        <Grid className={spacer + ' ' + styles.descLabelContainer}>
-          <b>Description</b>
-          {proposedSolution.approved ? (
-            <b>
-              <Badge variant="standard">Approved</Badge>
-            </b>
-          ) : null}
-          {showDeleteButton && onDelete !== undefined ? (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                onDelete(proposedSolution);
-              }}
-            >
-              <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
-            </Button>
-          ) : null}
+    <PageBlock title="">
+      {proposedSolution.approved ? (
+        <b style={{ position: 'absolute', right: 75 }}>
+          <Chip label="Approved" color="success" />
+        </b>
+      ) : null}
+      {showDeleteButton && onDelete !== undefined ? (
+        <Button
+          color="error"
+          variant="outlined"
+          onClick={() => {
+            onDelete(proposedSolution);
+          }}
+          sx={{ position: 'absolute', right: 75 }}
+        >
+          <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+        </Button>
+      ) : null}
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={6}>
+          <b>Description: </b>
+          {proposedSolution.description}
         </Grid>
-        <Grid className={spacer}>{proposedSolution.description}</Grid>
-        <Grid className={spacer}>
-          <b>Impact</b>
+        <Grid item xs={6}>
+          <b>Budget Impact: </b>
+          {dollarsPipe(proposedSolution.budgetImpact)}
         </Grid>
-        <Grid>
-          <Grid className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
-            <b>Budget Impact</b>
-          </Grid>
-          <Grid className={spacer}>{dollarsPipe(proposedSolution.budgetImpact)}</Grid>
+        <Grid item xs={6}>
+          <b>Timeline Impact: </b>
+          {weeksPipe(proposedSolution.timelineImpact)}
         </Grid>
-        <Grid>
-          <Grid className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
-            <b>Timeline Impact</b>
-          </Grid>
-          <Grid className={spacer}>{weeksPipe(proposedSolution.timelineImpact)}</Grid>
-        </Grid>
-        <Grid>
-          <Grid className={spacer} md={4} lg={3} xl={2}>
-            <b>Scope Impact</b>
-          </Grid>
-          <Grid className={spacer}>{proposedSolution.scopeImpact}</Grid>
+        <Grid item xs={6}>
+          <b>Scope Impact: </b>
+          {proposedSolution.scopeImpact}
         </Grid>
       </Grid>
     </PageBlock>

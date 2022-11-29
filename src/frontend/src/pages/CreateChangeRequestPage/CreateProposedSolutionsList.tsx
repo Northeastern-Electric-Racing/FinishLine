@@ -6,10 +6,10 @@
 import { ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Button } from '@mui/material';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -34,7 +34,12 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   return (
     <>
       {useAuth().user?.role !== 'GUEST' ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
+        <Button
+          onClick={() => setShowEditableForm(true)}
+          variant="contained"
+          color="success"
+          sx={{ marginTop: 2, marginBottom: 2 }}
+        >
           + Add Proposed Solution
         </Button>
       ) : (
@@ -51,9 +56,11 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
         ))}
       </div>
       {showEditableForm ? (
-        <Modal size="xl" centered show={showEditableForm} onHide={() => setShowEditableForm(false)}>
-          <ProposedSolutionForm onAdd={addProposedSolution} />
-        </Modal>
+        <ProposedSolutionForm
+          onAdd={addProposedSolution}
+          open={showEditableForm}
+          onClose={() => setShowEditableForm(false)}
+        />
       ) : null}
     </>
   );
