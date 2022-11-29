@@ -11,7 +11,6 @@ import { routes } from '../../utils/Routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -20,7 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { NativeSelect } from '@mui/material';
+import { MenuItem, NativeSelect } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
@@ -121,17 +120,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               name="type"
               control={control}
               rules={{ required: true }}
-              render={({ field, fieldState }) => (
-                <FormControl>
-                  <NativeSelect {...field} variant="outlined" error={!!fieldState.error}>
-                    {permittedTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                  <FormHelperText sx={{ backgroundColor: '#f0f1f8' }}>{fieldState.error?.type}</FormHelperText>
-                </FormControl>
+              render={({ field: { onChange, value } }) => (
+                <TextField select onChange={onChange} value={value}>
+                  {permittedTypes.map((t) => (
+                    <MenuItem key={t} value={t}>
+                      {t}
+                    </MenuItem>
+                  ))}
+                </TextField>
               )}
             />
           </Grid>
