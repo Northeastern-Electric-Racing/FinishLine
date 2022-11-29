@@ -57,7 +57,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const query = useQuery();
   const allUsers = useAllUsers();
   const { name, startDate, duration, status } = workPackage;
-  const { userId } = auth.user!;
   const {
     register,
     handleSubmit,
@@ -69,13 +68,12 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       projectLeadId: workPackage.projectLead?.userId,
       projectManagerId: workPackage.projectManager?.userId,
       workPackageId: workPackage.id,
-      userId,
       name,
       crId: query.get('crId') || '',
       startDate,
       duration,
       dependencies: workPackage.dependencies.map((dep) => {
-        const wbsNum = dep.carNumber + '.' + dep.projectNumber + '.' + dep.workPackageNumber;
+        const wbsNum = wbsPipe(dep);
         return { wbsNum };
       }),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
@@ -106,6 +104,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
   }
+  const { userId } = auth.user;
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
@@ -133,9 +132,9 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         dependencies: dependencies.map((dep: any) => {
           return validateWBS(dep.wbsNum);
         }),
-        expectedActivities: expectedActivities,
-        deliverables: deliverables,
-        wbsElementStatus: wbsElementStatus
+        expectedActivities,
+        deliverables,
+        wbsElementStatus
       };
       await mutateAsync(payload);
       exitEditMode();
