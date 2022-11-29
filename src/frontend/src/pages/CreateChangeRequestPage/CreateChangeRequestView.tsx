@@ -21,11 +21,12 @@ import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { NativeSelect } from '@mui/material';
+import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
   crDesc: string;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: FormInput) => Promise<void>;
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;
@@ -106,13 +107,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title="Details">
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={3}>
             <Box>
               <Typography variant="caption">WBS Number</Typography>
             </Box>
             <ReactHookTextField name="wbsNum" control={control} placeholder="1.1.0" errorMessage={errors.wbsNum} />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={9}>
             <Box>
               <Typography variant="caption">Type</Typography>
             </Box>
@@ -134,7 +135,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               )}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Box>
               <Typography variant="caption">What</Typography>
             </Box>
@@ -143,11 +144,12 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               control={control}
               multiline
               rows={4}
-              fullWidth
+              sx={{ width: 1 / 2 }}
               errorMessage={errors.what}
               placeholder="What is the situation?"
             />
           </Grid>
+
           <Grid item xs={12} md={6}>
             <Box>
               <Typography variant="caption">Why</Typography>
@@ -188,6 +190,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             >
               Add Reason
             </Button>
+            <FormHelperText>{errors.why?.message}</FormHelperText>
           </Grid>
         </Grid>
       </PageBlock>

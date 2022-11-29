@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestExplanation, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateProposeSolution, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
@@ -20,10 +20,7 @@ export interface FormInput {
   wbsNum: string;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   what: string;
-  scopeImpact: string;
-  timelineImpact: number;
-  budgetImpact: number;
-  why: ChangeRequestExplanation[];
+  why: { type: ChangeRequestReason; explain: string }[];
 }
 
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
@@ -45,7 +42,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
 
   const { userId } = auth.user;
 
-  const handleConfirm = async (data: any) => {
+  const handleConfirm = async (data: FormInput) => {
     const crId = await mutateAsync({
       ...data,
       wbsNum: validateWBS(data.wbsNum),
