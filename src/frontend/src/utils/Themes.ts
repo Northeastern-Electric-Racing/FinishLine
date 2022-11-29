@@ -8,7 +8,7 @@ import { ThemeOptions } from '@mui/material/styles';
 export const themeChoices = ['light', 'dark'];
 
 const headingCommonTheme = {
-  fontFamily: ['Barlow Semi Condensed', 'sans-serif'].join(','),
+  fontFamily: ['Oswald', 'sans-serif'].join(','),
   fontWeight: 600 /* semi bold */
 };
 
