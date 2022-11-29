@@ -29,6 +29,7 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
           </Typography>
         </Grid>
         {cr.why.map((ele: ChangeRequestExplanation, idx: number) => [
+          idx !== 0 ? <Grid item xs={2}></Grid> : <></>,
           <Grid item xs={2}>
             <Typography sx={{ maxWidth: '140px' }}>
               <b>{ele.type}</b>
