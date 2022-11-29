@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, WorkPackage } from 'shared';
+import { DescriptionBullet, validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -16,12 +16,12 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Button, Box } from '@mui/material';
+import { Button, Box, TextField, Grid, IconButton } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import DependenciesList from './DependenciesList';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 /*
  * maps a description bullet list to the object needed for forms
@@ -38,13 +38,6 @@ const bulletsToObject = (bullets: DescriptionBullet[]) =>
 const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   return ls.map((ele) => {
     return { id: ele.bulletId !== -1 ? ele.bulletId : undefined, detail: ele.detail };
-  });
-};
-
-const mapWBSNumToPayLoad = (ls: { wbsNumId: string }[]) => {
-  return ls.map((ele) => {
-    const nums = ele.wbsNumId.split('.');
-    return { carNumber: parseInt(nums[0]), projectNumber: parseInt(nums[1]), workPackageNumber: parseInt(nums[2]) };
   });
 };
 
@@ -123,34 +116,33 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLeadId, projectManagerId, startDate, duration, wbsElementStatus, crId } = data;
+    const { name, projectLeadId, projectManagerId, startDate, duration, wbsElementStatus, crId, dependencies } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
-    const dependencies = mapWBSNumToPayLoad(data.dependencies);
-
-    console.log(wbsElementStatus);
-
-    const payload = {
-      projectLeadId,
-      projectManagerId,
-      workPackageId: workPackage.id,
-      userId,
-      name,
-      crId: parseInt(crId),
-      startDate: transformDate(startDate),
-      duration,
-      dependencies: dependencies,
-      expectedActivities: expectedActivities,
-      deliverables: deliverables,
-      wbsElementStatus: wbsElementStatus
-    };
 
     try {
+      const payload = {
+        projectLeadId,
+        projectManagerId,
+        workPackageId: workPackage.id,
+        userId,
+        name,
+        crId: parseInt(crId),
+        startDate: transformDate(startDate),
+        duration,
+        dependencies: dependencies.map((dep: any) => {
+          return validateWBS(dep.wbsNum);
+        }),
+        expectedActivities: expectedActivities,
+        deliverables: deliverables,
+        wbsElementStatus: wbsElementStatus
+      };
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
+        return;
       }
     }
   };
@@ -180,7 +172,22 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         }
       />
       <WorkPackageEditDetails control={control} errors={errors} users={users} />
-      {<DependenciesList register={register} ls={dependencies} append={appendDependency} remove={removeDependency} />}
+      <PageBlock title="Dependencies">
+        {dependencies.map((_element, i) => {
+          return (
+            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
+          );
+        })}
+        <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ mt: 2 }}>
+          + ADD NEW DEPENDENCY
+        </Button>
+      </PageBlock>
+
       <PageBlock title="Expected Activities">
         <ReactHookEditableList
           name="expectedActivities"
