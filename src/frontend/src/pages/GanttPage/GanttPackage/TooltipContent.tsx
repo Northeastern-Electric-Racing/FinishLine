@@ -1,6 +1,6 @@
-import { Task } from './temp/types/public-types';
-import styles from './temp/components/other/tooltip.module.css';
-import { BarTask } from './temp/types/bar-task';
+import { Task } from './types/public-types';
+import styles from './components/other/tooltip.module.css';
+import { BarTask } from './types/bar-task';
 
 export type TooltipProps = {
   task: BarTask;

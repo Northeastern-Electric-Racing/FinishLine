@@ -1,14 +1,14 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Gantt } from './temp/components/gantt/gantt';
-import { Task, ViewMode } from './temp/types/public-types';
-import TaskListHeader from './TaskListHeader';
-import TaskListTable from './TaskListTable';
+import { Gantt } from './GanttPackage/components/gantt/gantt';
+import { Task, ViewMode } from './GanttPackage/types/public-types';
+import TaskListHeader from './GanttPackage/TaskListHeader';
+import TaskListTable from './GanttPackage/TaskListTable';
 import { useState } from 'react';
-import TooltipContent from './TooltipContent';
+import TooltipContent from './GanttPackage/TooltipContent';
 
 interface GanttPageProps {
   tasks: Task[];

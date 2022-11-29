@@ -18,11 +18,6 @@ const Sidebar: React.FC = () => {
       route: routes.HOME
     },
     {
-      name: 'Gantt',
-      icon: faChartGantt,
-      route: routes.GANTT
-    },
-    {
       name: 'Projects',
       icon: faFolder,
       route: routes.PROJECTS
@@ -31,6 +26,11 @@ const Sidebar: React.FC = () => {
       name: 'Change Requests',
       icon: faExchangeAlt,
       route: routes.CHANGE_REQUESTS
+    },
+    {
+      name: 'Gantt',
+      icon: faChartGantt,
+      route: routes.GANTT
     },
     {
       name: 'Teams',

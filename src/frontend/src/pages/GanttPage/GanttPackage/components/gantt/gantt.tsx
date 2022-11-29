@@ -21,9 +21,9 @@ import styles from './gantt.module.css';
 export const Gantt: React.FunctionComponent<GanttProps> = ({
   tasks,
   headerHeight = 50,
-  columnWidth = 60,
-  listCellWidth = '155px',
-  rowHeight = 50,
+  columnWidth = 30,
+  listCellWidth = '320px',
+  rowHeight = 25,
   ganttHeight = 0,
   viewMode = ViewMode.Day,
   preStepsCount = 1,
@@ -35,7 +35,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   barBackgroundColor = '#ffffff',
   barBackgroundSelectedColor = '#aeb8c2',
   projectProgressColor = '#ff0000',
-  projectProgressSelectedColor = '#ff0000',
+  projectProgressSelectedColor = '#aeb8c2',
   projectBackgroundColor = '#ffffff',
   projectBackgroundSelectedColor = '#aeb8c2',
   milestoneBackgroundColor = '#ffffff',
@@ -254,6 +254,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       passive: false
     });
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       wrapperRef.current?.removeEventListener('wheel', handleWheel);
     };
   }, [wrapperRef, scrollY, scrollX, ganttHeight, svgWidth, rtl, ganttFullHeight]);

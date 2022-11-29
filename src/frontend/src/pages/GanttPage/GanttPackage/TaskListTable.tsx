@@ -1,10 +1,10 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Task } from './temp/types/public-types';
-import styles from '../../stylesheets/pages/gantt-page.module.css';
+import { Task } from './types/public-types';
+import styles from '../../../stylesheets/pages/gantt-page.module.css';
 
 const TaskListTable: React.FC<{
   rowHeight: number;
