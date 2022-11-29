@@ -73,7 +73,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
-            name="projectLeadId"
+            name="projectLead"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
@@ -89,7 +89,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
-            name="projectManagerId"
+            name="projectManager"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (

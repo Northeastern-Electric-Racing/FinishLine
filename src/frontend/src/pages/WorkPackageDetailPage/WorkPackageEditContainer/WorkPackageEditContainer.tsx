@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, validateWBS, WorkPackage } from 'shared';
+import { validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -22,24 +22,7 @@ import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
 import DeleteIcon from '@mui/icons-material/Delete';
-
-/*
- * maps a description bullet list to the object needed for forms
- * can't use `id` instead of `bulletId` because react-hook-forms uses id built in for arrays of objects
- */
-const bulletsToObject = (bullets: DescriptionBullet[]) =>
-  bullets
-    .filter((bullet) => !bullet.dateDeleted)
-    .map((bullet) => {
-      return { bulletId: bullet.id, detail: bullet.detail };
-    });
-
-// transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
-const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
-  return ls.map((ele) => {
-    return { id: ele.bulletId, detail: ele.detail };
-  });
-};
+import { bulletsToObject, mapBulletsToPayload } from '../../../utils/Form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -65,8 +48,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      projectLeadId: workPackage.projectLead?.userId,
-      projectManagerId: workPackage.projectManager?.userId,
+      projectLead: workPackage.projectLead?.userId,
+      projectManager: workPackage.projectManager?.userId,
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
@@ -115,14 +98,14 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLeadId, projectManagerId, startDate, duration, wbsElementStatus, crId, dependencies } = data;
+    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
     try {
       const payload = {
-        projectLeadId,
-        projectManagerId,
+        projectLead,
+        projectManager,
         workPackageId: workPackage.id,
         userId,
         name,
