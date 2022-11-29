@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/Urls';
-import { changeRequestTransformer } from './Transformers/ChangeRequests.transformers';
+import { changeRequestTransformer } from './transformers/change-requests.transformers';
 
 /**
  * Fetches all change requests.

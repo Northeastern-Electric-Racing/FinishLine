@@ -22,14 +22,15 @@ const testItems: CheckListItem[] = [
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (items: CheckListItem[] = [], title: string = '') => {
+const renderComponent = (items: CheckListItem[] = [], title: string = '', isDisabled: boolean) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CheckList items={items} title={title} />
+      <CheckList items={items} title={title} isDisabled={isDisabled} />
     </RouterWrapper>
   );
 };
+
 describe('Rendering CheckList Component', () => {
   beforeEach(() => {
     jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]);
@@ -38,16 +39,31 @@ describe('Rendering CheckList Component', () => {
   });
 
   it('Renders the CheckList correctly when empty', () => {
-    renderComponent([], 'testTitle');
+    renderComponent([], 'testTitle', false);
     expect(screen.getByText('testTitle')).toBeInTheDocument();
     expect(screen.queryByText('testItem1')).not.toBeInTheDocument();
     expect(screen.queryByText('testItem2')).not.toBeInTheDocument();
   });
 
   it('Renders the CheckList correctly when not empty', () => {
-    renderComponent(testItems, 'testTitle');
+    renderComponent(testItems, 'testTitle', false);
     expect(screen.getByText('testTitle')).toBeInTheDocument();
     expect(screen.getByText('testItem1')).toBeInTheDocument();
-    expect(screen.getByText('testItem2')).toBeInTheDocument();
+  });
+
+  it('Renders the CheckList items as enabled when isDisabled is false', () => {
+    renderComponent(testItems, 'testTitle', false);
+    const checkboxes = screen.getAllByRole('checkbox');
+    for (const c of checkboxes) {
+      expect(c).toBeEnabled();
+    }
+  });
+
+  it('Renders the CheckList items as disabled when isDisabled is true', () => {
+    renderComponent(testItems, 'testTitle', true);
+    const checkboxes = screen.getAllByRole('checkbox');
+    for (const c of checkboxes) {
+      expect(c).toBeDisabled();
+    }
   });
 });

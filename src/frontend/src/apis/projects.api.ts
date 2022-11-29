@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Project, WbsNumber } from 'shared';
 import { wbsPipe } from '../utils/Pipes';
 import { apiUrls } from '../utils/Urls';
-import { projectTransformer } from './Transformers/Projects.transformers';
+import { projectTransformer } from './transformers/projects.transformers';
 
 /**
  * Fetches all projects.

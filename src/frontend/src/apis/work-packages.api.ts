@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { WbsNumber, WorkPackage } from 'shared';
 import { wbsPipe } from '../utils/Pipes';
 import { apiUrls } from '../utils/Urls';
-import { workPackageTransformer } from './Transformers/WorkPackages.transformers';
+import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 /**
  * Fetch all work packages.

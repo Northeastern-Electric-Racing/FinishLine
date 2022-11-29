@@ -3,9 +3,9 @@ import { Request, Response } from 'express';
 import {
   changeRequestRelationArgs,
   changeRequestTransformer,
-  sendSlackChangeRequestNotification
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
-import { validationResult } from 'express-validator';
 import { CR_Type, Role, WBS_Element_Status } from '@prisma/client';
 import { getUserFullName } from '../utils/users.utils';
 import { buildChangeDetail } from '../utils/utils';
@@ -30,11 +30,6 @@ export const getChangeRequestByID = async (req: Request, res: Response) => {
 
 // handle reviewing of change requests
 export const reviewChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
   const { reviewerId, crId, reviewNotes, accepted, psId } = body;
 
@@ -42,16 +37,16 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   const reviewer = await prisma.user.findUnique({ where: { userId: reviewerId } });
   if (!reviewer) return res.status(404).json({ message: `User with id #${reviewerId} not found` });
   if (reviewer.role === Role.GUEST || reviewer.role === Role.MEMBER)
-    return res.status(401).json({ message: 'Access Denied' });
+    return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
-  if (!foundCR) return res.status(404).json({ message: `change request with id #${crId} not found` });
+  if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
 
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
   // verify that the user is not reviewing their own change request
-  if (reviewerId === foundCR.submitterId) return res.status(401).json({ message: 'Access Denied' });
+  if (reviewerId === foundCR.submitterId) return res.status(403).json({ message: 'Access Denied' });
 
   // if Scope CR, make sure that a proposed solution is selected before approving
   const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
@@ -60,10 +55,11 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
-    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId)
-      return res.status(400).json({
+    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId) {
+      return res.status(404).json({
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
+    }
     // update proposed solution
     await prisma.proposed_Solution.update({
       where: { proposedSolutionId: psId },
@@ -71,8 +67,92 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         approved: true
       }
     });
-  }
+    const wbs = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsElementId: foundCR.wbsElementId
+      },
+      include: {
+        workPackage: true,
+        project: true
+      }
+    });
+    if (!wbs) {
+      return res.status(404).json({ message: `WBS element with id #${foundCR.wbsElementId} not found` });
+    }
+    const { workPackage, project } = wbs;
 
+    if (!workPackage && project) {
+      const newBudget = project.budget + foundPs.budgetImpact;
+      const change = {
+        changeRequestId: crId,
+        implementerId: reviewerId,
+        detail: buildChangeDetail('Budget', String(project.budget), String(newBudget))
+      };
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          budget: newBudget,
+          wbsElement: {
+            update: {
+              changes: {
+                create: change
+              }
+            }
+          }
+        }
+      });
+    } else if (workPackage) {
+      const wpProj = await prisma.project.findUnique({
+        where: { projectId: workPackage.projectId }
+      });
+      if (!wpProj) {
+        return res.status(404).json({ message: 'Work package project not found' });
+      }
+      const newBudget = wpProj.budget + foundPs.budgetImpact;
+      const updatedDuration = workPackage.duration + foundPs.timelineImpact;
+
+      const changes = [
+        {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
+        },
+        {
+          changeRequestId: crId,
+          implementerId: reviewerId,
+          detail: buildChangeDetail('Duration', String(workPackage.duration), String(updatedDuration))
+        }
+      ];
+      await prisma.project.update({
+        where: { projectId: workPackage.projectId },
+        data: {
+          budget: newBudget,
+          workPackages: {
+            update: {
+              where: { workPackageId: workPackage.workPackageId },
+              data: {
+                duration: updatedDuration,
+                wbsElement: {
+                  update: {
+                    changes: {
+                      create: changes[1]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          wbsElement: {
+            update: {
+              changes: {
+                create: changes[0]
+              }
+            }
+          }
+        }
+      });
+    }
+  }
   // update change request
   const updated = await prisma.change_Request.update({
     where: { crId },
@@ -190,17 +270,17 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       }
     });
   }
+  // find userSettings that submitted the change request
+  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: updated.submitterId } });
+  if (personSettings && personSettings.slackId) {
+    await sendSlackCRReviewedNotification(personSettings.slackId, updated.crId);
+  }
 
   // TODO: handle errors
   return res.status(200).json({ message: `Change request #${updated.crId} successfully reviewed.` });
 };
 
 export const createActivationChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create activation change requests
@@ -208,7 +288,7 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -266,17 +346,12 @@ export const createActivationChangeRequest = async (req: Request, res: Response)
 };
 
 export const createStageGateChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
   if (!user) return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -331,11 +406,6 @@ export const createStageGateChangeRequest = async (req: Request, res: Response) 
 };
 
 export const createStandardChangeRequest = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
@@ -343,7 +413,7 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // verify wbs element exists
   const wbsElement = await prisma.wBS_Element.findUnique({
@@ -398,11 +468,6 @@ export const createStandardChangeRequest = async (req: Request, res: Response) =
 };
 
 export const addProposedSolution = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { body } = req;
 
   // verify user is allowed to create stage gate change requests
@@ -410,7 +475,7 @@ export const addProposedSolution = async (req: Request, res: Response) => {
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST) return res.status(401).json({ message: 'Access Denied' });
+  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
   const foundCR = await prisma.change_Request.findUnique({

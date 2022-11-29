@@ -83,10 +83,10 @@ const dbSeedWorkPackage2: any = {
 };
 
 const dbSeedWorkPackage3: any = {
-  projectId: 3,
+  projectId: 5,
   wbsElementFields: {
     carNumber: 1,
-    projectNumber: 23,
+    projectNumber: 25,
     workPackageNumber: 3,
     dateCreated: new Date('09/27/20'),
     name: 'Manufacture Wiring Harness',
