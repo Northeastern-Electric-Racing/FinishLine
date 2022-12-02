@@ -255,5 +255,78 @@ describe('Change Requests', () => {
       });
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
+
+    test('Stage Gate CR has unchecked expected activities', async () => {
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      jest
+        .spyOn(prisma.change_Request, 'findUnique')
+        .mockResolvedValue({ ...redesignWhip, accepted: false, type: 'STAGE_GATE' });
+      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...redesignWhip, accepted: true });
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(redesignWhipWBSElement);
+      const uncheckedExpectedActivities = {
+        ...whipWorkPackage.expectedActivities[0],
+        userCheckedId: null,
+        dateTimeChecked: null
+      };
+      const uncheckedExpectedActivitiesWP = { ...whipWorkPackage, expectedActivities: [uncheckedExpectedActivities] };
+      jest.spyOn(prisma.work_Package, 'findUnique').mockResolvedValue(uncheckedExpectedActivitiesWP);
+
+      const response = await request(app).post('/review').send(whipPayloadObject);
+      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.work_Package.findUnique).toHaveBeenCalledTimes(1);
+      expect(response.body).toStrictEqual({ message: 'Work Package has unchecked expected activities' });
+      expect(response.status).toBe(400);
+    });
+  });
+  test('Stage Gate CR has unchecked deliverables', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest
+      .spyOn(prisma.change_Request, 'findUnique')
+      .mockResolvedValue({ ...redesignWhip, accepted: false, type: 'STAGE_GATE' });
+    jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...redesignWhip, accepted: true });
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(redesignWhipWBSElement);
+    const uncheckedDeliverables = { ...whipWorkPackage.deliverables[0], userCheckedId: null, dateTimeChecked: null };
+    const uncheckedDeliverablesWP = { ...whipWorkPackage, deliverables: [uncheckedDeliverables] };
+    jest.spyOn(prisma.work_Package, 'findUnique').mockResolvedValue(uncheckedDeliverablesWP);
+
+    const response = await request(app).post('/review').send(whipPayloadObject);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.work_Package.findUnique).toHaveBeenCalledTimes(1);
+    expect(response.body).toStrictEqual({ message: 'Work Package has unchecked deliverables' });
+    expect(response.status).toBe(400);
+  });
+
+  test('Stage Gate CR Succeeds', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest
+      .spyOn(prisma.change_Request, 'findUnique')
+      .mockResolvedValue({ ...redesignWhip, accepted: false, type: 'STAGE_GATE' });
+    jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...redesignWhip, accepted: true });
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(redesignWhipWBSElement);
+    jest.spyOn(prisma.work_Package, 'findUnique').mockResolvedValue(whipWorkPackage);
+    jest.spyOn(prisma.work_Package, 'update').mockResolvedValue(whipWorkPackage);
+    jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(batmanSettings);
+    const response = await request(app).post('/review').send(whipPayloadObject);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.work_Package.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
+    expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
+    expect(response.body).toStrictEqual({ message: 'Change request #2 successfully reviewed.' });
+    expect(response.status).toBe(200);
   });
 });
