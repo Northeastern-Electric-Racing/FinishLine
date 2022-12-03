@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Project } from 'shared';
+import { Project } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -22,24 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
-
-/*
- * maps a description bullet list to the object needed for forms
- * can't use `id` instead of `bulletId` because react-hook-forms uses id built in for arrays of objects
- */
-const bulletsToObject = (bullets: DescriptionBullet[]) =>
-  bullets
-    .filter((bullet) => !bullet.dateDeleted)
-    .map((bullet) => {
-      return { bulletId: bullet.id, detail: bullet.detail };
-    });
-
-// transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
-const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
-  return ls.map((ele) => {
-    return { id: ele.bulletId !== -1 ? ele.bulletId : undefined, detail: ele.detail };
-  });
-};
+import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
