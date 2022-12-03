@@ -64,6 +64,7 @@ export interface WorkPackage extends WbsElement {
   dependencies: WbsNumber[];
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
+  projectName: string;
 }
 
 export interface DescriptionBullet {
