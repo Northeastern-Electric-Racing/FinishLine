@@ -1,14 +1,40 @@
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
 
 /**
- * Custom Error type that has a status code we can use
+ * Custom Error type that has a status code and a message (from the default Error class)
  */
 export class HttpException extends Error {
   public status: number;
 
+  /**
+   * Constructs an error with a status and message.
+   * @param status the status code of the error (e.g., 400, 404, 403)
+   * @param message the message to send with the error
+   */
   constructor(status: number, message: string) {
     super(message);
     this.status = status;
+  }
+}
+
+export class NotFoundException extends HttpException {
+  /**
+   * Constructs a not found error
+   * @param name the name of the thing that can't be found
+   * @param id the id of the thing that can't be found
+   */
+  constructor(name: NotFoundObjectNames, id: number | string) {
+    super(404, `${name} with id: ${id} not found!`);
+  }
+}
+
+export class AccessDeniedException extends HttpException {
+  /**
+   * Constructs an access denied error
+   * @param message the optional message to add to the 'Access Denied' message
+   */
+  constructor(message?: string) {
+    super(403, 'Access Denied' + (message ? `: ${message}` : '!'));
   }
 }
 
@@ -27,33 +53,5 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
   }
 };
 
-/**
- * Throw an error with a status and message.
- * @param status the status code of the error (e.g., 400, 404, 403)
- * @param message the message to send with the error
- */
-export const throwError = (status: number, message: string): never => {
-  throw new HttpException(status, message);
-};
-
 // type so that the not found error messages are consistent
 type NotFoundObjectNames = 'User' | 'Risk' | 'Work Package' | 'Project' | 'Description Bullet';
-
-/**
- * Throw a not found error response
- * @param name the name of the thing that can't be found
- * @param id the id of the thing that can't be found
- * @returns nothing, this is more for type checking stuff
- */
-export const throwNotFoundError = (name: NotFoundObjectNames, id: number | string): never => {
-  return throwError(404, `${name} with id: ${id} not found!`);
-};
-
-/**
- * Throw an access denied error
- * @param message the optional message to add to the 'Access Denied' message
- * @returns nothing, this is more for type checking stuff
- */
-export const throwAccessDeniedError = (message?: string): never => {
-  return throwError(403, 'Access Denied' + (message ? `: ${message}` : '!'));
-};

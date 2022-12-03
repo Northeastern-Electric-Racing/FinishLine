@@ -1,7 +1,7 @@
 import { Role, User } from '@prisma/client';
 import { Risk } from 'shared';
 import prisma from '../prisma/prisma';
-import { throwAccessDeniedError, throwError, throwNotFoundError } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { hasRiskPermissions } from '../utils/risks.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
@@ -14,7 +14,7 @@ export default class RisksService {
    */
   static async getRisksForProject(projectId: number): Promise<Risk[]> {
     const requestedProject = await prisma.project.findUnique({ where: { projectId } });
-    if (!requestedProject) throwNotFoundError('Project', projectId);
+    if (!requestedProject) throw new NotFoundException('Project', projectId);
 
     const risks = await prisma.risk.findMany({ where: { projectId }, ...riskQueryArgs });
 
@@ -30,7 +30,7 @@ export default class RisksService {
    * @throws if the user does not have access to create a risk
    */
   static async createRisk(user: User, projectId: number, detail: string): Promise<string> {
-    if (user.role === Role.GUEST) throwAccessDeniedError('Guests cannot create risks!');
+    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create risks!');
 
     const createdRisk = await prisma.risk.create({
       data: {
@@ -55,11 +55,11 @@ export default class RisksService {
   static async editRisk(user: User, riskId: string, detail: string, resolved: boolean): Promise<Risk> {
     // get the original risk and check if it exists
     const originalRisk = await prisma.risk.findUnique({ where: { id: riskId } });
-    if (!originalRisk) return throwNotFoundError('Risk', riskId);
-    if (originalRisk.dateDeleted) throwError(400, 'Cant edit a deleted Risk!');
+    if (!originalRisk) throw new NotFoundException('Risk', riskId);
+    if (originalRisk.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Risk!');
 
     const hasPerms = await hasRiskPermissions(user.userId, originalRisk.projectId);
-    if (!hasPerms) throwAccessDeniedError();
+    if (!hasPerms) throw new AccessDeniedException();
 
     let updatedRisk;
 
@@ -111,13 +111,13 @@ export default class RisksService {
    */
   static async deleteRisk(user: User, riskId: string): Promise<Risk> {
     const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
-    if (!targetRisk) return throwNotFoundError('Risk', riskId);
+    if (!targetRisk) throw new NotFoundException('Risk', riskId);
 
-    if (targetRisk.dateDeleted || targetRisk.deletedBy) return throwError(400, 'This risk has already been deleted!');
+    if (targetRisk.dateDeleted || targetRisk.deletedBy) throw new HttpException(400, 'This risk has already been deleted!');
 
     const selfDelete = targetRisk.createdByUserId === user.userId;
     const hasPerms = await hasRiskPermissions(user.userId, targetRisk.projectId);
-    if (!selfDelete && !hasPerms) return throwAccessDeniedError();
+    if (!selfDelete && !hasPerms) throw new AccessDeniedException();
 
     const updatedRisk = await prisma.risk.update({
       where: { id: riskId },
