@@ -25,13 +25,18 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
 
+  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const { userId } = auth.user;
+
   const addProposedSolution = async (data: ProposedSolution) => {
     setShowEditableForm(false);
     const { description, timelineImpact, scopeImpact, budgetImpact } = data;
 
     // send the details of new proposed solution to the backend database
     await mutateAsync({
-      submitterId: auth.user?.userId,
+      submitterId: userId,
       crId,
       description,
       scopeImpact,
@@ -40,28 +45,20 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
     });
   };
 
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-
   return (
     <>
-      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
-        <Button
-          onClick={() => setShowEditableForm(true)}
-          variant="contained"
-          color="success"
-          sx={{ marginTop: 2, marginBottom: 2 }}
-        >
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
       </div>
+      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       {showEditableForm ? (
         <ProposedSolutionForm
           onAdd={addProposedSolution}
