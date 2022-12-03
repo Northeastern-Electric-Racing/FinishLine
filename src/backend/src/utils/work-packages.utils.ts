@@ -13,6 +13,11 @@ import { descBulletArgs, descBulletTransformer } from './description-bullets.uti
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
+    project: {
+      include: {
+        wbsElement: true
+      }
+    },
     wbsElement: {
       include: {
         projectLead: true,
@@ -22,7 +27,8 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
     },
     expectedActivities: descBulletArgs,
     deliverables: descBulletArgs,
-    dependencies: true
+    dependencies: true,
+    
   }
 });
 
@@ -63,7 +69,8 @@ export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<ty
       implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
-    }))
+    })),
+    projectName: wpInput.project.wbsElement.name
   } as WorkPackage;
 };
 
