@@ -22,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/Form';
+import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),

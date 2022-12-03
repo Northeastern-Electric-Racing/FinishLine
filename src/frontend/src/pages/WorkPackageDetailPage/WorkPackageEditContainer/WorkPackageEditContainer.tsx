@@ -17,12 +17,12 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button, Box, TextField, Grid, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/Form';
+import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
