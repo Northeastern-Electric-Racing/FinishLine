@@ -14,9 +14,7 @@ import { workPackageTransformer } from './transformers/work-packages.transformer
  */
 export const getAllWorkPackages = (queryParams?: { [field: string]: string }) => {
   return axios.get<WorkPackage[]>(apiUrls.workPackages(queryParams), {
-    transformResponse: (data) => {
-      console.log(JSON.parse(data).map(workPackageTransformer));
-      return JSON.parse(data).map(workPackageTransformer)}
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
 };
 
