@@ -14,6 +14,7 @@ export const riskQueryArgs = Prisma.validator<Prisma.RiskArgs>()({
 });
 
 export const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs>): Risk => {
+  console.log('shouldnt get here');
   return {
     id: risk.id,
     project: {

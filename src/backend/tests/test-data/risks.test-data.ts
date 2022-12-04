@@ -1,8 +1,7 @@
-import { Risk } from '@prisma/client';
-import { WBS_Element_Status } from '@prisma/client';
+import { Risk, RoleEnum } from 'shared';
 
-export const editRiskTrue: Risk = {
-  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+export const editRiskTrue = {
+  id: 'id2',
   projectId: 1,
   detail: 'This one might be a bit too expensive',
   isResolved: true,
@@ -14,8 +13,8 @@ export const editRiskTrue: Risk = {
   deletedByUserId: null
 };
 
-export const editRiskFalse: Risk = {
-  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
+export const editRiskFalse = {
+  id: 'id1',
   projectId: 1,
   detail: 'This one might be a bit too expensive',
   isResolved: false,
@@ -41,36 +40,21 @@ export const editRiskFalsePayload = {
   resolved: false
 };
 
-export const someProject = {
-  wbsElementId: 1,
-  status: WBS_Element_Status.ACTIVE,
-  carNumber: 1,
-  projectNumber: 2,
-  workPackageNumber: 0,
-  dateCreated: new Date(),
-  name: 'car',
-  projectLeadId: 4,
-  projectManagerId: 5,
+export const transformedRisk: Risk = {
+  id: 'abc',
   project: {
-    projectId: 2,
-    wbsElementId: 3,
-    budget: 3,
-    summary: 'ajsjdfk',
-    rules: ['a'],
-    workPackages: [
-      {
-        workPackageId: 2,
-        wbsElementId: 7,
-        projectId: 6,
-        orderInProject: 0,
-        startDate: new Date('2020-07-14'),
-        progress: 5,
-        duration: 4,
-        wbsElement: {
-          workPackageNumber: 9
-        },
-        dependencies: []
-      }
-    ]
+    id: 1,
+    name: 'project name',
+    wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+  },
+  detail: 'detail',
+  isResolved: true,
+  dateCreated: new Date('2022-12-25'),
+  createdBy: {
+    userId: 2,
+    firstName: 'a',
+    lastName: 'b',
+    email: 'a@b.com',
+    role: RoleEnum.ADMIN
   }
 };

@@ -6,10 +6,11 @@ import {
   editRiskFalse,
   editRiskTruePayload,
   editRiskFalsePayload,
-  someProject
+  transformedRisk
 } from './test-data/risks.test-data';
 import { wonderwoman } from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
+import * as riskUtils from '../src/utils/risks.utils';
 
 const app = express();
 app.use(express.json());
@@ -21,50 +22,59 @@ describe('Risks', () => {
   });
 
   test(`the original risk wasn't resolved and the payload is trying to resolve it`, async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(someProject);
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskFalse);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskFalse);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+    jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskTruePayload);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.isResolved).toBe(true);
+    // eslint-disable-next-line prefer-destructuring
+    const { dateCreated, ...rest } = res.body;
+    const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(200);
+    expect(restOfTransformedRisk).toEqual(rest);
+
+    expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.risk.update).toHaveBeenCalledTimes(1);
   });
 
   test('the original risk was resolved and the payload is trying to unresolve it', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(someProject);
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskTrue);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskTrue);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
+    jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.isResolved).toBe(false);
+    // eslint-disable-next-line prefer-destructuring
+    const { dateCreated, ...rest } = res.body;
+    const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(200);
+    expect(restOfTransformedRisk).toEqual(rest);
+
+    expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.risk.update).toHaveBeenCalledTimes(1);
   });
 
   test('the original risk and payload have the same resolved value', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(someProject);
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskFalse);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskFalse);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(False);
+    jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.isResolved).toBe(false);
+    // eslint-disable-next-line prefer-destructuring
+    const { dateCreated, ...rest } = res.body;
+    const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(200);
+    expect(restOfTransformedRisk).toEqual(rest);
+
+    expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.risk.update).toHaveBeenCalledTimes(1);
   });
 });
