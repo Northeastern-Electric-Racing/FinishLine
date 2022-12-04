@@ -256,7 +256,14 @@ export const editProject = async (req: Request, res: Response) => {
       slideDeckLink,
       bomLink,
       taskListLink,
-      rules
+      rules,
+      wbsElement: {
+        update: {
+          name,
+          projectLeadId: projectLead,
+          projectManagerId: projectManager
+        }
+      }
     }
   });
 

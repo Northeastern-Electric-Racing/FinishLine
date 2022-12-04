@@ -19,8 +19,8 @@ import { calculateWorkPackageProgress } from './work-packages.utils';
 
 /**
  * calculate the project's status based on its workpacakges' status
- * @param proj a project where its status will be updated based on its workpackges' status
- * @returns the updated project status as either complete, active, or incomplete
+ * @param proj a given project to be calculated on its status
+ * @returns the project's calculated wbs element status as either complete, active, or incomplete
  */
 export const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WBS_Element_Status } }[] }) => {
   if (proj.workPackages.length === 0) return WbsElementStatus.Inactive;
