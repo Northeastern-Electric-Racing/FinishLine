@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -21,23 +21,15 @@ const renderComponent = (changes: ImplementedChange[] = [], overallDate?: Date) 
 };
 
 describe('Rendering Implemented Changes List Component', () => {
-  it('renders the component title', () => {
-    renderComponent();
+  it('renders everything', () => {
+    renderComponent(exampleStandardImplementedChangeRequest.implementedChanges, new Date('2020-01-02 12:00:00'));
 
     expect(screen.getByText(`Implemented Changes`)).toBeInTheDocument();
-  });
-
-  it('renders the implemented changes list', () => {
-    renderComponent(exampleStandardImplementedChangeRequest.implementedChanges);
 
     expect(screen.getByText('1.23.3')).toBeInTheDocument();
     expect(screen.getByText(/Increase budget to 200/i)).toBeInTheDocument();
     expect(screen.getByText('1.23.4')).toBeInTheDocument();
     expect(screen.getByText(/Adjust description/i)).toBeInTheDocument();
-  });
-
-  it('renders the overall date implemented', () => {
-    renderComponent([], new Date('2020-01-02'));
 
     expect(screen.getByText('01/02/2020')).toBeInTheDocument();
   });

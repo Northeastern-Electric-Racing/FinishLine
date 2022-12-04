@@ -1,5 +1,5 @@
 /*
- * This file is part of NER's PM Dashboard and licensed under GNU AGPLv3.
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
@@ -9,10 +9,13 @@ import { useAuth } from '../../hooks/auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const Settings: React.FC = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
+
+  if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
   return (
     <Container fluid>
@@ -62,7 +65,7 @@ const Settings: React.FC = () => {
           </Row>
         </Container>
       </PageBlock>
-      <UserSettings userId={auth.user?.userId!} />
+      <UserSettings userId={auth.user.userId} />
     </Container>
   );
 };
