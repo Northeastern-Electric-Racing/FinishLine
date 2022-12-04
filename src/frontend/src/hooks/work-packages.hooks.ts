@@ -10,7 +10,7 @@ import {
   editWorkPackage,
   getAllWorkPackages,
   getSingleWorkPackage
-} from '../apis/WorkPackages.api';
+} from '../apis/work-packages.api';
 
 /**
  * Custom React Hook to supply all work packages.
