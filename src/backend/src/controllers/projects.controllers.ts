@@ -82,13 +82,9 @@ export const newProject = async (req: Request, res: Response) => {
     include: { project: true, changes: true }
   });
 
-  return res.status(200).json({
-    wbsNumber: {
-      carNumber: createdProject.carNumber,
-      projectNumber: createdProject.projectNumber,
-      workPackageNumber: createdProject.workPackageNumber
-    }
-  });
+  return res
+    .status(200)
+    .json(`${createdProject.carNumber}.${createdProject.projectNumber}.${createdProject.workPackageNumber}`);
 };
 
 export const editProject = async (req: Request, res: Response) => {

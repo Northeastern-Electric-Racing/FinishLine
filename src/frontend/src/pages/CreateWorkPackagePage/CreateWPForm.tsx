@@ -24,7 +24,7 @@ export interface FormStates {
   name: Dispatch<SetStateAction<string>>;
   wbsNum: Dispatch<SetStateAction<string>>;
   crId: Dispatch<SetStateAction<number>>;
-  startDate: Dispatch<SetStateAction<string>>;
+  startDate: Dispatch<SetStateAction<Date>>;
   duration: Dispatch<SetStateAction<number>>;
 }
 
@@ -36,7 +36,7 @@ const CreateWPForm: React.FC = () => {
   const [name, setName] = useState(query.get('name') ?? '');
   const [projectWbsNum, setWbsNum] = useState(query.get('wbs') ?? '');
   const [crId, setCrId] = useState(numberParamPipe(query.get('crId')) ?? -1);
-  const [startDate, setStartDate] = useState('');
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [duration, setDuration] = useState(numberParamPipe(query.get('duration')) ?? -1);
   const [dependencies, setDependencies] = useState<string[]>([]);
   const [expectedActivities, setExpectedActivities] = useState<string[]>([]);
@@ -124,7 +124,7 @@ const CreateWPForm: React.FC = () => {
 
       const { userId } = auth.user!;
 
-      if (!isProject(wbsNum!)) {
+      if (!isProject(wbsNum)) {
         alert('Please enter a valid Project WBS Number.');
         return;
       }
@@ -136,7 +136,7 @@ const CreateWPForm: React.FC = () => {
           workPackageNumber: depWbsNum.workPackageNumber
         };
       });
-      await mutateAsync({
+      const createdWbsNum = await mutateAsync({
         userId,
         name: name.trim(),
         crId,
@@ -151,10 +151,12 @@ const CreateWPForm: React.FC = () => {
         expectedActivities,
         deliverables
       });
-      history.push(routes.CHANGE_REQUESTS);
-    } catch (e) {
+      history.push(`${routes.PROJECTS}/${createdWbsNum}`);
+    } catch (e: unknown) {
       console.log(e);
-      alert('something went wrong');
+      if (e instanceof Error) {
+        alert(e.message);
+      }
     }
 
     /**
@@ -186,6 +188,7 @@ const CreateWPForm: React.FC = () => {
       onSubmit={handleSubmit}
       onCancel={() => history.goBack()}
       allowSubmit={auth.user?.role !== 'GUEST'}
+      startDate={startDate}
     />
   );
 };

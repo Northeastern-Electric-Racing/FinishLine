@@ -28,62 +28,62 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
       <PageBlock title={''}>
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={2}>
-              <TextField
-                required
-                id="name"
-                name="name"
-                type="text"
-                label="Project Name"
-                sx={{ backgroundColor: 'white' }}
-                autoComplete="off"
-                placeholder="Enter project name..."
-                onChange={(e) => name(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <TextField
-                required
-                id="carNumber"
-                name="carNumber"
-                type="text"
-                label="Car Number"
-                sx={{ backgroundColor: 'white' }}
-                placeholder="Enter car number..."
-                onChange={(e) => carNumber(parseInt(e.target.value))}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-              />
-            </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={12} md={2}>
               <TextField
                 required
                 id="crId"
                 name="crId"
                 type="text"
                 label="Change Request ID"
-                sx={{ backgroundColor: 'white' }}
                 placeholder="Enter change request ID..."
+                autoComplete="off"
                 onChange={(e) => crId(parseInt(e.target.value))}
                 inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
               />
             </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={12} md={10}>
               <TextField
                 required
-                fullWidth
+                id="carNumber"
+                name="carNumber"
+                type="text"
+                label="Car Number"
+                placeholder="Enter car number..."
+                autoComplete="off"
+                onChange={(e) => carNumber(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                id="name"
+                name="name"
+                type="text"
+                label="Project Name"
+                autoComplete="off"
+                sx={{ width: 1 / 2 }}
+                placeholder="Enter project name..."
+                onChange={(e) => name(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                sx={{ width: 1 / 2 }}
                 multiline
-                minRows={2}
+                minRows={4}
                 id="summary"
                 name="summary"
                 type="text"
                 label="Project Summary"
-                sx={{ backgroundColor: 'white' }}
+                autoComplete="off"
                 placeholder="Enter summary..."
                 onChange={(e) => summary(e.target.value)}
               />
             </Grid>
           </Grid>
-          <Box display="flex" flexDirection="row-reverse" gap={2}>
+          <Box display="flex" gap={2} sx={{ mt: 2 }}>
             <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
               Create
             </Button>

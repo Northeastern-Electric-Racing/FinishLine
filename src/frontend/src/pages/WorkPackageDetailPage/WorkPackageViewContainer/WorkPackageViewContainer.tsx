@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { WbsElementStatus, WorkPackage } from 'shared';
+import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
@@ -18,6 +18,8 @@ import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
+import { useAuth } from '../../../hooks/auth.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -36,10 +38,15 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowStageGate,
   allowRequestChange
 }) => {
+  const auth = useAuth();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
+
+  if (!auth.user) return <LoadingIndicator />;
+
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || auth.user.role === RoleEnum.GUEST;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -134,7 +141,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((ea) => {
             return { ...ea, resolved: !!ea.userChecked };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={checkListDisabled}
       />
       <CheckList
         title={'Deliverables'}
@@ -143,7 +150,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((del) => {
             return { ...del, resolved: !!del.userChecked };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={checkListDisabled}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

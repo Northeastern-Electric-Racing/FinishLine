@@ -190,7 +190,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </div>
         ))}
         {role !== 'GUEST' && (
-          <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton">
+          <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton" sx={{ mt: 1 }}>
             Add New Risk
           </Button>
         )}
