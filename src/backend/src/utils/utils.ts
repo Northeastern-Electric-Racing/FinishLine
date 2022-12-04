@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { validationResult } from 'express-validator';
-import { throwNotFoundError } from './errors.utils';
+import { NotFoundException } from './errors.utils';
 
 export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
   id: descBullet.descriptionId,
@@ -109,6 +109,6 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return throwNotFoundError('User', userId);
+  if (!user) throw new NotFoundException('User', userId);
   return user;
 };
