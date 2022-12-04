@@ -5,7 +5,6 @@
 
 import { act, render, screen } from '../../../test-support/test-utils';
 import userEvent from '@testing-library/user-event';
-import { WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../../utils/Pipes';
 import { exampleProject1, exampleProject2, exampleProject3 } from '../../../test-support/test-data/projects.stub';
 import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
@@ -20,7 +19,6 @@ const mockUpdateBom = jest.fn();
 const mockUpdateGDrive = jest.fn();
 const mockUpdateName = jest.fn();
 const mockUpdateBudget = jest.fn();
-const mockUpdateStatus = jest.fn();
 const mockUpdateProjectLead = jest.fn();
 const mockUpdateProjectManager = jest.fn();
 
@@ -35,7 +33,6 @@ const renderComponent = (project: any) => {
       updateGDrive={mockUpdateGDrive}
       updateName={mockUpdateName}
       updateBudget={mockUpdateBudget}
-      updateStatus={mockUpdateStatus}
       updateProjectLead={mockUpdateProjectLead}
       updateProjectManager={mockUpdateProjectManager}
     />
@@ -116,18 +113,6 @@ describe('project-edit-details', () => {
       expect(mockUpdateBudget).toBeCalledTimes(1);
     });
 
-    it('calls the update status hook when the field is changed', async () => {
-      renderComponent(projs[0]);
-
-      expect(mockUpdateStatus).toBeCalledTimes(0);
-
-      await act(async () => {
-        userEvent.selectOptions(screen.getByTestId('status-select'), WbsElementStatus.Inactive);
-      });
-
-      expect(mockUpdateStatus).toBeCalledTimes(1);
-    });
-
     it('calls the update project lead hook when the field is changed', async () => {
       renderComponent(projs[0]);
 
@@ -159,9 +144,6 @@ describe('project-edit-details', () => {
         renderComponent(proj);
 
         expect(screen.getByText('Project Details (EDIT)')).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'ACTIVE' })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'INACTIVE' })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: 'COMPLETE' })).toBeInTheDocument();
 
         const textboxInputs = ((await screen.findAllByRole('textbox')) as HTMLInputElement[]).map((input) => input.value);
         const numberInputs = ((await screen.findAllByRole('spinbutton')) as HTMLInputElement[]).map((input) =>

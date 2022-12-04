@@ -49,7 +49,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
   const [name, setName] = useState(proj.name);
   const [summary, setSummary] = useState(proj.summary);
   const [budget, setBudget] = useState(proj.budget);
-  const [wbsElementStatus, setWbsElementStatus] = useState(proj.status);
   const [projectLead, setProjectLead] = useState(proj.projectLead?.userId);
   const [projectManager, setProjectManager] = useState(proj.projectManager?.userId);
 
@@ -181,7 +180,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
       goals,
       features,
       otherConstraints,
-      wbsElementStatus,
       googleDriveFolderLink: gDrive,
       slideDeckLink: slideDeck,
       bomLink: bom,
@@ -232,7 +230,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ proj, exitE
           updateGDrive={updateGDrive}
           updateName={setName}
           updateBudget={(val: string) => setBudget(Number(val))}
-          updateStatus={setWbsElementStatus}
           updateProjectLead={setProjectLead}
           updateProjectManager={setProjectManager}
         />

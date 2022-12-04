@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, User, WbsElementStatus } from 'shared';
+import { Project, User } from 'shared';
 import { Col, Container, Row, Form, InputGroup } from 'react-bootstrap';
 import { fullNamePipe, emDashPipe } from '../../../utils/Pipes';
 import PageBlock from '../../../layouts/PageBlock';
@@ -18,7 +18,6 @@ interface projectDetailsProps {
   updateGDrive: (val: string) => void;
   updateName: (val: string) => void;
   updateBudget: (val: string) => void;
-  updateStatus: (val: WbsElementStatus) => void;
   updateProjectLead: (val: number) => void;
   updateProjectManager: (val: number) => void;
 }
@@ -32,11 +31,9 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
   updateGDrive,
   updateName,
   updateBudget,
-  updateStatus,
   updateProjectLead,
   updateProjectManager
 }) => {
-  const statuses = Object.values(WbsElementStatus).filter((status) => status !== project.status);
   const editDetailsInputBuilder = (
     title: string,
     type: string,
@@ -71,24 +68,6 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
     );
   };
 
-  const statusSelect = (
-    <Form.Control
-      as="select"
-      data-testid="status-select"
-      onChange={(e) => updateStatus(e.target.value as WbsElementStatus)}
-      custom
-    >
-      <option key={0} value={project.status}>
-        {project.status}
-      </option>
-      {statuses.map((status, index) => (
-        <option key={index + 1} value={status}>
-          {status}
-        </option>
-      ))}
-    </Form.Control>
-  );
-
   const buildUsersSelect = (title: string, defaultUser: User | undefined, updateUser: (val: number) => void) => {
     let otherUsers = users;
     if (defaultUser !== undefined) {
@@ -118,7 +97,7 @@ const ProjectEditDetails: React.FC<projectDetailsProps> = ({
   };
 
   return (
-    <PageBlock title={'Project Details (EDIT)'} headerRight={statusSelect}>
+    <PageBlock title={'Project Details (EDIT)'}>
       <Container fluid>
         <Row>
           <Col>{editDetailsInputBuilder('Project Name:', 'text', project.name, updateName, '', '', '')}</Col>

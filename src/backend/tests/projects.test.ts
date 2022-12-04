@@ -91,16 +91,6 @@ describe('Projects', () => {
     });
   });
 
-  test('editProject fails with bad status', async () => {
-    const proj = { ...editProjectPayload, wbsElementStatus: 'alksdjflaksdfj' };
-    const res = await request(app).post('/edit').send(proj);
-
-    expect(res.statusCode).toBe(400);
-    expect(res.body.errors).toStrictEqual([
-      { location: 'body', msg: 'Invalid value', param: 'wbsElementStatus', value: 'alksdjflaksdfj' }
-    ]);
-  });
-
   test('editProject fails with feature with no detail', async () => {
     const proj = { ...editProjectPayload, features: [{ id: 4 }] };
     const res = await request(app).post('/edit').send(proj);
