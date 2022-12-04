@@ -10,10 +10,10 @@ import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllProjects, exampleProject1 } from '../test-support/test-data/projects.stub';
 import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
-import { getAllProjects, getSingleProject } from '../../apis/Projects.api';
+import { getAllProjects, getSingleProject } from '../../apis/projects.api';
 import { useAllProjects, useSingleProject } from '../../hooks/projects.hooks';
 
-jest.mock('../../apis/Projects.api');
+jest.mock('../../apis/projects.api');
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {

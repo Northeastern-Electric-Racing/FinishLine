@@ -35,56 +35,64 @@ const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({ changeReq
       dataField: 'id',
       text: 'ID',
       align: 'center',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateSubmitted',
       text: 'Date Submitted',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'submitterName',
       text: 'Submitter',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'wbsNum',
       text: 'WBS #',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'type',
       text: 'Type',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateReviewed',
       text: 'Reviewed',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'accepted',
       text: 'Accepted',
       align: 'center',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     },
     {
       headerAlign: 'center',
       dataField: 'dateImplemented',
       text: 'Implemented',
       align: 'left',
-      sort: true
+      sort: true,
+      headerStyle: { overflowWrap: 'anywhere' }
     }
   ];
 
@@ -115,7 +123,7 @@ const ChangeRequestsTableView: React.FC<ChangeRequestsTableProps> = ({ changeReq
         defaultSorted={defaultSort}
         rowEvents={rowEvents}
         noDataIndication="No Change Requests to Display"
-        rowStyle={{ cursor: 'pointer' }}
+        rowStyle={{ cursor: 'pointer', overflowWrap: 'anywhere' }}
       />
     </>
   );

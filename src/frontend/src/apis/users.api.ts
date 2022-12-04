@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { User } from 'shared';
 import { apiUrls } from '../utils/Urls';
-import { authUserTransformer, userTransformer } from './Transformers/Users.transformers';
+import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 
 /**

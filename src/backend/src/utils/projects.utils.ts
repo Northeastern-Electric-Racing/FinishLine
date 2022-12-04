@@ -175,7 +175,8 @@ export const projectTransformer = (
         timelineStatus: calculateTimelineStatus(progress, expectedProgress),
         dependencies: workPackage.dependencies.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
-        deliverables: workPackage.deliverables.map(descBulletConverter)
+        deliverables: workPackage.deliverables.map(descBulletConverter),
+        projectName: wbsElement.name
       };
     })
   };

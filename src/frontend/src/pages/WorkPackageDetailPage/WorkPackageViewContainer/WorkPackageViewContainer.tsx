@@ -96,6 +96,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((ea) => {
             return { ...ea, resolved: !!ea.userChecked };
           })}
+        isDisabled={workPackage.status !== WbsElementStatus.Active}
       />
       <CheckList
         title={'Deliverables'}
@@ -104,6 +105,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((del) => {
             return { ...del, resolved: !!del.userChecked };
           })}
+        isDisabled={workPackage.status !== WbsElementStatus.Active}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

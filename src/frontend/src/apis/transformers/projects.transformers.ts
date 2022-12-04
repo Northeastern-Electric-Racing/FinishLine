@@ -4,8 +4,8 @@
  */
 
 import { DescriptionBullet, Project } from 'shared';
-import { implementedChangeTransformer } from './ChangeRequests.transformers';
-import { workPackageTransformer } from './WorkPackages.transformers';
+import { implementedChangeTransformer } from './change-requests.transformers';
+import { workPackageTransformer } from './work-packages.transformers';
 
 /**
  * Transforms a description bullet to ensure deep field transformation of date objects.
