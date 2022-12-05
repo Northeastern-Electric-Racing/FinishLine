@@ -9,7 +9,7 @@ import { LinkItem } from '../../utils/Types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
