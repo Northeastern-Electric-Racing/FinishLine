@@ -299,3 +299,52 @@ export const editProject = async (req: Request, res: Response) => {
   // return the updated work package
   return res.status(200).json(updatedProject);
 };
+
+export const setProjectTeam = async (req: Request, res: Response) => {
+  const { body } = req;
+
+  // check for valid WBS number
+  const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
+
+  if (!isProject(parsedWbs)) {
+    return res.status(404).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
+  }
+
+  const wbsEle = await prisma.wBS_Element.findUnique({
+    where: {
+      wbsNumber: {
+        carNumber: parsedWbs.carNumber,
+        projectNumber: parsedWbs.projectNumber,
+        workPackageNumber: parsedWbs.workPackageNumber
+      }
+    }
+  });
+
+  if (wbsEle === null) {
+    return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
+  }
+
+  // check for project
+  const project = await prisma.project.findUnique({
+    where: { projectId: body.projectId }
+  });
+
+  if (project === null) {
+    return res.status(404).json({ message: `project ${project} not found!` });
+  }
+
+  // check for user and user permission
+  const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
+  if (!user) {
+    return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
+  }
+  if (user.role === Role.GUEST || user.role === Role.MEMBER) return res.status(403).json({ message: 'Access Denied' });
+
+  // if everything is fine, then update the given project to assign to provided team ID
+  await prisma.project.update({
+    where: { projectId: body.projectId },
+    data: { teamId: body.teamId }
+  });
+
+  return res.status(200).json({ message: `Project ${body.projectId} successfully assigned to team ${body.teamId}.` });
+};
