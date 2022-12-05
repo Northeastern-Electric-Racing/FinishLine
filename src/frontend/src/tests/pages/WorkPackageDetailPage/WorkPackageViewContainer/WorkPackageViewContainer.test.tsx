@@ -72,7 +72,7 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).toBeDisabled();
+    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
   });
 
   it('disables activate button when not allowed', () => {
@@ -81,7 +81,7 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Activate')).toBeDisabled();
+    expect(screen.getByText('Activate')).toHaveAttribute('aria-disabled');
   });
 
   it('disables stage gate button when not allowed', () => {
@@ -90,7 +90,7 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Stage Gate')).toBeDisabled();
+    expect(screen.getByText('Stage Gate')).toHaveAttribute('aria-disabled');
   });
 
   it('disables request change button when not allowed', () => {
@@ -99,6 +99,6 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Request Change')).toHaveClass('disabled');
+    expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled');
   });
 });

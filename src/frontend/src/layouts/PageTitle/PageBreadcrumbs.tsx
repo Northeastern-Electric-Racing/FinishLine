@@ -19,8 +19,10 @@ const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousP
   return (
     <Breadcrumbs sx={{ my: 1 }}>
       <Link href={routes.HOME}>Home</Link>
-      {previousPages.map((page) => (
-        <Link href={page.route}>{page.name}</Link>
+      {previousPages.map((page, i) => (
+        <Link key={i} href={page.route}>
+          {page.name}
+        </Link>
       ))}
       <Typography>{currentPageTitle}</Typography>
     </Breadcrumbs>

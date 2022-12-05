@@ -10,6 +10,7 @@ import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionVie
 import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
 import { Button } from '@mui/material';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -20,7 +21,10 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   proposedSolutions,
   setProposedSolutions
 }) => {
+  const auth = useAuth();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
+
+  if (!auth.user) return <LoadingIndicator />;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
@@ -43,7 +47,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
-      {useAuth().user?.role !== 'GUEST' ? (
+      {auth.user.role !== 'GUEST' ? (
         <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
           + Add Proposed Solution
         </Button>
