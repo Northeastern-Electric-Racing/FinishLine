@@ -23,7 +23,7 @@ export interface EditableTextInputListUtils {
 export interface FormStates {
   name: Dispatch<SetStateAction<string>>;
   wbsNum: Dispatch<SetStateAction<string>>;
-  crId: Dispatch<SetStateAction<number>>;
+  crId: Dispatch<SetStateAction<string>>;
   startDate: Dispatch<SetStateAction<Date>>;
   duration: Dispatch<SetStateAction<number>>;
 }
@@ -35,7 +35,7 @@ const CreateWPForm: React.FC = () => {
 
   const [name, setName] = useState(query.get('name') ?? '');
   const [projectWbsNum, setWbsNum] = useState(query.get('wbs') ?? '');
-  const [crId, setCrId] = useState(numberParamPipe(query.get('crId')) ?? -1);
+  const [crId, setCrId] = useState(query.get('crId') || '');
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [duration, setDuration] = useState(numberParamPipe(query.get('duration')) ?? -1);
   const [dependencies, setDependencies] = useState<string[]>([]);
@@ -139,7 +139,7 @@ const CreateWPForm: React.FC = () => {
       const createdWbsNum = await mutateAsync({
         userId,
         name: name.trim(),
-        crId,
+        crId: parseInt(crId),
         projectWbsNum: {
           carNumber: wbsNum.carNumber,
           projectNumber: wbsNum.projectNumber,

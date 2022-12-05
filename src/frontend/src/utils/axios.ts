@@ -21,7 +21,7 @@ axios.interceptors.response.use(
     const errors = error?.response?.data?.errors;
     if (errors) {
       let messages = 'ERRORS:';
-      errors.forEach((element: any) => {
+      errors.forEach((element: { msg: string; value: string; param: string; location: string }) => {
         const errorMessage = `\n${element.msg}: ${element.value} for "${element.param}" in ${element.location}`;
         messages += errorMessage;
       });

@@ -19,7 +19,7 @@ import PageBlock from '../../layouts/PageBlock';
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
-  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
+  initialValues: { name: string; wbsNum: string; crId: string; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;
@@ -76,7 +76,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 autoComplete="off"
                 label="Change Request ID"
                 placeholder="Enter change request ID..."
-                onChange={(e) => crId(parseInt(e.target.value))}
+                onChange={(e) => crId(e.target.value)}
                 inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
                 defaultValue={initialValues.crId}
               />
