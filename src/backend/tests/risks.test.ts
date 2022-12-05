@@ -8,7 +8,6 @@ import {
   editRiskFalsePayload,
   transformedRisk
 } from './test-data/risks.test-data';
-import { wonderwoman } from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
 import * as riskUtils from '../src/utils/risks.utils';
 
@@ -62,7 +61,7 @@ describe('Risks', () => {
   test('the original risk and payload have the same resolved value', async () => {
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskFalse);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskFalse);
-    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(False);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
     jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
