@@ -1,7 +1,7 @@
 import { Risk, RoleEnum } from 'shared';
 
 export const editRiskTrue = {
-  id: 'id2',
+  id: 'id1',
   projectId: 1,
   detail: 'This one might be a bit too expensive',
   isResolved: true,

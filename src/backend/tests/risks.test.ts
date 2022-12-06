@@ -42,7 +42,7 @@ describe('Risks', () => {
   test('the original risk was resolved and the payload is trying to unresolve it', async () => {
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskTrue);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskTrue);
-    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
     jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
@@ -61,7 +61,7 @@ describe('Risks', () => {
   test('the original risk and payload have the same resolved value', async () => {
     jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(editRiskFalse);
     jest.spyOn(prisma.risk, 'update').mockResolvedValue(editRiskFalse);
-    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
     jest.spyOn(riskUtils, 'riskTransformer').mockReturnValue(transformedRisk);
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
