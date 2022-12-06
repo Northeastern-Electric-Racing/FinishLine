@@ -28,7 +28,6 @@ describe('Risks', () => {
 
     const res = await request(app).post('/edit').send(editRiskTruePayload);
 
-    // eslint-disable-next-line prefer-destructuring
     const { dateCreated, ...rest } = res.body;
     const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
@@ -47,7 +46,6 @@ describe('Risks', () => {
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
 
-    // eslint-disable-next-line prefer-destructuring
     const { dateCreated, ...rest } = res.body;
     const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
@@ -66,7 +64,6 @@ describe('Risks', () => {
 
     const res = await request(app).post('/edit').send(editRiskFalsePayload);
 
-    // eslint-disable-next-line prefer-destructuring
     const { dateCreated, ...rest } = res.body;
     const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
 
