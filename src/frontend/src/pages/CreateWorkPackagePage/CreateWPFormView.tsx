@@ -47,6 +47,11 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
 }) => {
   const { name, wbsNum, crId, startDate: setStartDate, duration } = states;
 
+  const dateOnChange = (val: Date | null | undefined) => {
+    if (!val) return;
+    setStartDate(val);
+  };
+
   return (
     <>
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
@@ -99,10 +104,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 label="Start Date"
                 inputFormat="yyyy-MM-dd"
                 value={startDate}
-                onChange={(val) => {
-                  if (!val) return;
-                  setStartDate(val);
-                }}
+                onChange={dateOnChange}
                 renderInput={(params) => <TextField autoComplete="off" {...params} />}
               />
             </Grid>
