@@ -193,6 +193,7 @@ model Change {
 model WBS_Element {
   wbsElementId          Int                @id @default(autoincrement())
   dateCreated           DateTime           @default(now())
+  isDeleted             Boolean            @default(false)
   carNumber             Int
   projectNumber         Int
   workPackageNumber     Int
