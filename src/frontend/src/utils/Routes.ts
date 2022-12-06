@@ -8,13 +8,16 @@ const HOME = `/`;
 const LOGIN = `/login`;
 const SETTINGS = `/settings`;
 const INFO = `/info`;
-const TEAMS = `/teams`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
+
+/**************** Teams Section ****************/
+const TEAMS = `/teams`;
+const TEAMS_BY_ID = TEAMS + `/:teamId`;
 
 /**************** Change Requests Section ****************/
 const CHANGE_REQUESTS = `/change-requests`;
@@ -28,7 +31,9 @@ export const routes = {
   LOGIN,
   SETTINGS,
   INFO,
+
   TEAMS,
+  TEAMS_BY_ID,
 
   PROJECTS,
   PROJECTS_BY_WBS,

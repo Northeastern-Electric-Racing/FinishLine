@@ -12,3 +12,9 @@ export const getAllTeams = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const getSingleTeam = (id: string) => {
+  return axios.get<Team>(apiUrls.teamsById(id), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+}
