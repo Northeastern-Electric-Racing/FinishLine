@@ -83,6 +83,7 @@ export const whipWorkPackage = {
 export const redesignWhipWBSElement = {
   wbsElementId: 65,
   dateCreated: new Date('10/18/2022'),
+  isDeleted: false,
   carNumber: 1,
   projectNumber: 1,
   workPackageNumber: 1,
@@ -118,5 +119,5 @@ export const whipPayloadObject = {
   reviewerId: 1,
   crId: 2,
   reviewNotes: 'reviewNotes',
-  accepted: true,
+  accepted: true
 };

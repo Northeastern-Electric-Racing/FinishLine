@@ -74,6 +74,7 @@ describe('Projects', () => {
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
       wbsElementId: 1,
       status: 'ACTIVE',
+      isDeleted: false,
       carNumber: 1,
       projectNumber: 2,
       workPackageNumber: 3,
