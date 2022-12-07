@@ -8,23 +8,16 @@ import { AxiosResponse } from 'axios';
 import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import {
-  exampleAllChangeRequests,
-  exampleStageGateChangeRequest
-} from '../test-support/test-data/change-requests.stub';
-import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
+import { exampleAllChangeRequests, exampleStageGateChangeRequest } from '../test-support/test-data/change-requests.stub';
+import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
-jest.mock('../../apis/ChangeRequests.api');
+jest.mock('../../apis/change-requests.api');
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {
-    const mockedGetAllChangeRequests = getAllChangeRequests as jest.Mock<
-      Promise<AxiosResponse<ChangeRequest[]>>
-    >;
-    mockedGetAllChangeRequests.mockReturnValue(
-      mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests)
-    );
+    const mockedGetAllChangeRequests = getAllChangeRequests as jest.Mock<Promise<AxiosResponse<ChangeRequest[]>>>;
+    mockedGetAllChangeRequests.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest[]>(exampleAllChangeRequests));
 
     const { result, waitFor } = renderHook(() => useAllChangeRequests(), { wrapper });
     await waitFor(() => result.current.isSuccess);
@@ -32,12 +25,8 @@ describe('change request hooks', () => {
   });
 
   it('handles getting a single change request', async () => {
-    const mockedGetSingleChangeRequest = getSingleChangeRequest as jest.Mock<
-      Promise<AxiosResponse<ChangeRequest>>
-    >;
-    mockedGetSingleChangeRequest.mockReturnValue(
-      mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest)
-    );
+    const mockedGetSingleChangeRequest = getSingleChangeRequest as jest.Mock<Promise<AxiosResponse<ChangeRequest>>>;
+    mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
     const { result, waitFor } = renderHook(() => useSingleChangeRequest(1), { wrapper });
     await waitFor(() => result.current.isSuccess);

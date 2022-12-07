@@ -17,9 +17,7 @@ jest.mock('../../../hooks/work-packages.hooks');
 const mockedUseAllWPs = useAllWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 
 const mockHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
-  mockedUseAllWPs.mockReturnValue(
-    mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error)
-  );
+  mockedUseAllWPs.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
 };
 
 /**
@@ -58,17 +56,11 @@ describe('upcoming deadlines component', () => {
     mockHook(false, false, exampleAllWorkPackages);
     renderComponent();
     expect(screen.getByText(exampleAllWorkPackages[0].name, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })).toBeInTheDocument();
     expect(screen.getByText(exampleAllWorkPackages[1].name, { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })).toBeInTheDocument();
     expect(screen.getAllByText(/Expected Activities/).length).toEqual(3);
-    expect(
-      screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })
-    ).toBeInTheDocument();
+    expect(screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })).toBeInTheDocument();
   });
 
   it('renders when no upcoming deadlines', () => {

@@ -141,13 +141,19 @@ export const sendSlackChangeRequestNotification = async (
 
   if (budgetImpact && budgetImpact > 100) {
     msgs.push(
-      sendMessage(
-        process.env.SLACK_EBOARD_CHANNEL!,
-        `${fullMsg} with $${budgetImpact} requested`,
-        fullLink,
-        btnText
-      )
+      sendMessage(process.env.SLACK_EBOARD_CHANNEL!, `${fullMsg} with $${budgetImpact} requested`, fullLink, btnText)
     );
   }
+  return Promise.all(msgs);
+};
+
+export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const msgs = [];
+  const fullMsg = `:tada: Your Change Request was just reviewed! Clink the link to view! :tada:`;
+  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
+  const btnText = `View CR#${crId}`;
+  msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
+
   return Promise.all(msgs);
 };

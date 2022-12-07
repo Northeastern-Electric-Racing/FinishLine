@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Description_Bullet, Prisma } from '@prisma/client';
 import {
   calculateEndDate,
   calculatePercentExpectedProgress,
@@ -13,6 +13,11 @@ import { descBulletArgs, descBulletTransformer } from './description-bullets.uti
 
 export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
+    project: {
+      include: {
+        wbsElement: true
+      }
+    },
     wbsElement: {
       include: {
         projectLead: true,
@@ -22,15 +27,23 @@ export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
     },
     expectedActivities: descBulletArgs,
     deliverables: descBulletArgs,
-    dependencies: true
+    dependencies: true,
+    
   }
 });
+
+export const calculateWorkPackageProgress = (
+  deliverables: Description_Bullet[],
+  expectedActivities: Description_Bullet[]
+) => {
+  const bullets = deliverables.concat(expectedActivities);
+  return bullets.length === 0 ? 0 : Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
+};
 
 export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
-  const bullets = wpInput.deliverables.concat(wpInput.expectedActivities);
-  const progress = Math.floor((bullets.filter((b) => b.userChecked).length / bullets.length) * 100);
+  const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);
   return {
     id: wpInput.workPackageId,
     dateCreated: wpInput.wbsElement.dateCreated,
@@ -48,7 +61,7 @@ export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<ty
     wbsNum,
     endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
     expectedProgress,
-    timelineStatus: calculateTimelineStatus(wpInput.progress, expectedProgress),
+    timelineStatus: calculateTimelineStatus(progress, expectedProgress),
     changes: wpInput.wbsElement.changes.map((change) => ({
       wbsNum,
       changeId: change.changeId,
@@ -56,7 +69,8 @@ export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<ty
       implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
-    }))
+    })),
+    projectName: wpInput.project.wbsElement.name
   } as WorkPackage;
 };
 
@@ -117,8 +131,6 @@ export const createChangeJsonDates = (
   const oldDate = oldValue.toUTCString().split(' ').splice(0, 4).join();
   const newDate = newValue.toUTCString().split(' ').splice(0, 4).join();
   if (oldDate !== newDate) {
-    console.log(oldDate);
-    console.log(newDate);
     return {
       changeRequestId: crId,
       implementerId,

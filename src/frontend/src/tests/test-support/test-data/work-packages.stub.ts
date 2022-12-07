@@ -12,12 +12,7 @@ import {
   exampleProjectLeadUser,
   exampleProjectManagerUser
 } from './users.stub';
-import {
-  exampleWbsProject1,
-  exampleWbsProject2,
-  exampleWbsWorkPackage1,
-  exampleWbsWorkPackage2
-} from './wbs-numbers.stub';
+import { exampleWbsProject1, exampleWbsProject2, exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from './wbs-numbers.stub';
 
 export const exampleWorkPackage1: WorkPackage = {
   id: 1,
@@ -38,8 +33,7 @@ export const exampleWorkPackage1: WorkPackage = {
   expectedActivities: [
     {
       id: 1,
-      detail:
-        'Assess the bodywork captsone and determine what can be learned from their deliverables',
+      detail: 'Assess the bodywork captsone and determine what can be learned from their deliverables',
       dateAdded: new Date('11/15/20')
     },
     {
@@ -65,7 +59,8 @@ export const exampleWorkPackage1: WorkPackage = {
       detail: 'Increased funding by $500.',
       dateImplemented: new Date('11/15/2003')
     }
-  ]
+  ],
+  projectName: "project1"
 };
 
 export const exampleWorkPackage2: WorkPackage = {
@@ -132,7 +127,8 @@ export const exampleWorkPackage2: WorkPackage = {
       detail: 'Added "jet fuel burns hot" bullet.',
       dateImplemented: new Date('03/24/21')
     }
-  ]
+  ],
+  projectName: "project2"
 };
 
 export const exampleWorkPackage3: WorkPackage = {
@@ -190,11 +186,8 @@ export const exampleWorkPackage3: WorkPackage = {
       detail: 'Increased budget from $10 to $200.',
       dateImplemented: new Date('03/24/21')
     }
-  ]
+  ],
+  projectName: "project3"
 };
 
-export const exampleAllWorkPackages: WorkPackage[] = [
-  exampleWorkPackage1,
-  exampleWorkPackage2,
-  exampleWorkPackage3
-];
+export const exampleAllWorkPackages: WorkPackage[] = [exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3];

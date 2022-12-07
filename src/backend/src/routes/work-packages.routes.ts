@@ -7,7 +7,8 @@ import {
   getAllWorkPackages,
   getSingleWorkPackage
 } from '../controllers/work-packages.controllers';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { validateInputs } from '../utils/utils';
+import { intMinZero, isDate, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', getAllWorkPackages);
@@ -20,7 +21,7 @@ workPackagesRouter.post(
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
   intMinZero(body('projectWbsNum.workPackageNumber')),
-  body('startDate').isDate(),
+  isDate(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('dependencies.*.carNumber')),
   intMinZero(body('dependencies.*.projectNumber')),
@@ -29,6 +30,7 @@ workPackagesRouter.post(
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
+  validateInputs,
   createWorkPackage
 );
 workPackagesRouter.post(
@@ -49,9 +51,9 @@ workPackagesRouter.post(
   body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('deliverables.*.detail')),
   body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
-  intMinZero(body('progress')),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
+  validateInputs,
   editWorkPackage
 );
 

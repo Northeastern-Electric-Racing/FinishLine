@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Team } from 'shared';
 import { apiUrls } from '../utils/Urls';
 

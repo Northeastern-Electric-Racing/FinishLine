@@ -10,6 +10,7 @@ import {
   reviewChangeRequest,
   addProposedSolution
 } from '../controllers/change-requests.controllers';
+import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const changeRequestsRouter = express.Router();
 
@@ -22,6 +23,7 @@ changeRequestsRouter.post(
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
   body('psId').optional().isString().not().isEmpty(),
+  validateInputs,
   reviewChangeRequest
 );
 changeRequestsRouter.post(
@@ -31,10 +33,11 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').isDate(),
+  body('startDate').custom((value) => !isNaN(Date.parse(value))),
   intMinZero(body('projectLeadId')),
   intMinZero(body('projectManagerId')),
   body('confirmDetails').isBoolean(),
+  validateInputs,
   createActivationChangeRequest
 );
 changeRequestsRouter.post(
@@ -46,6 +49,7 @@ changeRequestsRouter.post(
   body('type').custom((value) => value === ChangeRequestType.StageGate),
   intMinZero(body('leftoverBudget')),
   body('confirmDone').isBoolean(),
+  validateInputs,
   createStageGateChangeRequest
 );
 changeRequestsRouter.post(
@@ -56,13 +60,12 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom(
     (value) =>
-      value === ChangeRequestType.Other ||
-      value === ChangeRequestType.Issue ||
-      value === ChangeRequestType.Redefinition
+      value === ChangeRequestType.Other || value === ChangeRequestType.Issue || value === ChangeRequestType.Redefinition
   ),
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
+  validateInputs,
   createStandardChangeRequest
 );
 changeRequestsRouter.post(
@@ -73,6 +76,7 @@ changeRequestsRouter.post(
   nonEmptyString(body('scopeImpact')),
   intMinZero(body('timelineImpact')),
   intMinZero(body('budgetImpact')),
+  validateInputs,
   addProposedSolution
 );
 

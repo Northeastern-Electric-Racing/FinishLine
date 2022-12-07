@@ -10,7 +10,7 @@ import {
   editWorkPackage,
   getAllWorkPackages,
   getSingleWorkPackage
-} from '../apis/WorkPackages.api';
+} from '../apis/work-packages.api';
 
 /**
  * Custom React Hook to supply all work packages.
@@ -40,13 +40,10 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['work packages', 'create'],
-    async (wpPayload: any) => {
-      const { data } = await createSingleWorkPackage(wpPayload);
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['work packages', 'create'], async (wpPayload: any) => {
+    const { data } = await createSingleWorkPackage(wpPayload);
+    return data;
+  });
 };
 
 /**
@@ -63,9 +60,6 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
       return data;
     },
     {
-      onError: (error) => {
-        alert(error.message + " but it's probably invalid cr id"); // very scuffed, find a better way to surface errors on front end
-      },
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages', wbsNum]);
       }

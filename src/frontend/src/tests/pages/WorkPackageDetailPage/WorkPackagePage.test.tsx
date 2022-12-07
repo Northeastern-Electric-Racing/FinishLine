@@ -5,13 +5,7 @@
 
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { Auth } from '../../../utils/Types';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -25,15 +19,8 @@ jest.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
 
-const mockSingleWPHook = (
-  isLoading: boolean,
-  isError: boolean,
-  data?: WorkPackage,
-  error?: Error
-) => {
-  mockedUseSingleWorkPackage.mockReturnValue(
-    mockUseQueryResult<WorkPackage>(isLoading, isError, data, error)
-  );
+const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPackage, error?: Error) => {
+  mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
 };
 
 jest.mock('../../../hooks/auth.hooks');
@@ -77,12 +64,7 @@ describe('work package container', () => {
   });
 
   it('handles the error with message', () => {
-    mockSingleWPHook(
-      false,
-      true,
-      undefined,
-      new Error('404 could not find the requested work package')
-    );
+    mockSingleWPHook(false, true, undefined, new Error('404 could not find the requested work package'));
     mockAuthHook();
     renderComponent();
 
@@ -120,6 +102,6 @@ describe('work package container', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).toBeDisabled();
+    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
   });
 });

@@ -17,19 +17,11 @@ jest.mock('../../../../hooks/change-requests.hooks');
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;
 
 const mockUseCreateStageGateCRHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedUseCreateStageGateCR.mockReturnValue(
-    mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error)
-  );
+  mockedUseCreateStageGateCR.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
 };
 
 const renderComponent = () => {
-  return render(
-    <StageGateWorkPackageModalContainer
-      modalShow={true}
-      handleClose={() => null}
-      wbsNum={exampleWbs1}
-    />
-  );
+  return render(<StageGateWorkPackageModalContainer modalShow={true} handleClose={() => null} wbsNum={exampleWbs1} />);
 };
 
 describe('stage gate work package modal container test suite', () => {
@@ -38,19 +30,5 @@ describe('stage gate work package modal container test suite', () => {
     renderComponent();
 
     expect(screen.getByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
-  });
-
-  it('renders loading indicator when loading', () => {
-    mockUseCreateStageGateCRHook(true, false);
-    renderComponent();
-
-    expect(screen.getByTestId('loader')).toBeInTheDocument();
-  });
-
-  it('renders error page when error', () => {
-    mockUseCreateStageGateCRHook(false, true, new Error('some error'));
-    renderComponent();
-
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
   });
 });

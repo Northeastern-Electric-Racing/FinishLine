@@ -3,18 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  render,
-  screen,
-  routerWrapperBuilder,
-  act,
-  fireEvent
-} from '../../../test-support/test-utils';
-import {
-  exampleWorkPackage1,
-  exampleWorkPackage2
-} from '../../../test-support/test-data/work-packages.stub';
+import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../../test-support/test-utils';
+import { exampleWorkPackage1, exampleWorkPackage2 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
+import * as authHooks from '../../../../hooks/auth.hooks';
+import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -40,6 +34,10 @@ const renderComponent = (
 };
 
 describe('work package container view', () => {
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
   it('renders the project', () => {
     renderComponent();
 
@@ -81,7 +79,7 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).toBeDisabled();
+    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
   });
 
   it('disables activate button when not allowed', () => {
@@ -90,7 +88,7 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Activate')).toBeDisabled();
+    expect(screen.getByText('Activate')).toHaveAttribute('aria-disabled');
   });
 
   it('disables stage gate button when not allowed', () => {
@@ -99,15 +97,15 @@ describe('work package container view', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Stage Gate')).toBeDisabled();
+    expect(screen.getByText('Stage Gate')).toHaveAttribute('aria-disabled');
   });
 
   it('disables request change button when not allowed', () => {
     renderComponent(exampleWorkPackage1, true, true, true, false);
 
     act(() => {
-      fireEvent.click(screen.getByText('Actions'));
+      fireEvent.click(screen.getByText(/Actions/));
     });
-    expect(screen.getByText('Request Change')).toHaveClass('disabled');
+    expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled');
   });
 });

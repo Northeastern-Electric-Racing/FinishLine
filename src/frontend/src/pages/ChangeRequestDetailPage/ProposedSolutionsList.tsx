@@ -6,13 +6,13 @@
 import { ProposedSolution } from 'shared';
 import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from './ProposedSolutionView';
 import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Button } from '@mui/material';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -20,14 +20,15 @@ interface ProposedSolutionsListProps {
   crId: number;
 }
 
-const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
-  proposedSolutions,
-  crReviewed,
-  crId
-}) => {
+const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions, crReviewed, crId }) => {
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
+
+  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const { userId } = auth.user;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setShowEditableForm(false);
@@ -35,7 +36,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
 
     // send the details of new proposed solution to the backend database
     await mutateAsync({
-      submitterId: auth.user?.userId,
+      submitterId: userId,
       crId,
       description,
       scopeImpact,
@@ -44,27 +45,26 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({
     });
   };
 
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-
   return (
     <>
-      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
         ))}
       </div>
+      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       {showEditableForm ? (
-        <Modal size="xl" centered show={showEditableForm} onHide={() => setShowEditableForm(false)}>
-          <ProposedSolutionForm onAdd={addProposedSolution} />
-        </Modal>
+        <ProposedSolutionForm
+          onAdd={addProposedSolution}
+          open={showEditableForm}
+          onClose={() => setShowEditableForm(false)}
+        />
       ) : null}
     </>
   );

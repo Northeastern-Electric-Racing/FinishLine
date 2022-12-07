@@ -13,7 +13,7 @@ import {
   getSingleChangeRequest,
   reviewChangeRequest,
   addProposedSolution
-} from '../apis/ChangeRequests.api';
+} from '../apis/change-requests.api';
 
 /**
  * Custom React Hook to supply all change requests.
@@ -66,51 +66,42 @@ export const useReviewChangeRequest = () => {
  * Custom React Hook to create a standard change request.
  */
 export const useCreateStandardChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['change requests', 'create', 'standard'],
-    async (payload: any) => {
-      const { data } = await createStandardChangeRequest(payload);
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'standard'], async (payload: any) => {
+    const { data } = await createStandardChangeRequest(payload);
+    return data;
+  });
 };
 
 /**
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['change requests', 'create', 'activation'],
-    async (payload: any) => {
-      const { data } = await createActivationChangeRequest(
-        payload.submitterId,
-        payload.wbsNum,
-        payload.projectLeadId,
-        payload.projectManagerId,
-        payload.startDate,
-        payload.confirmDetails
-      );
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'activation'], async (payload: any) => {
+    const { data } = await createActivationChangeRequest(
+      payload.submitterId,
+      payload.wbsNum,
+      payload.projectLeadId,
+      payload.projectManagerId,
+      payload.startDate,
+      payload.confirmDetails
+    );
+    return data;
+  });
 };
 
 /**
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['change requests', 'create', 'stage gate'],
-    async (payload: any) => {
-      const { data } = await createStageGateChangeRequest(
-        payload.submitterId,
-        payload.wbsNum,
-        payload.leftoverBudget,
-        payload.confirmDone
-      );
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'stage gate'], async (payload: any) => {
+    const { data } = await createStageGateChangeRequest(
+      payload.submitterId,
+      payload.wbsNum,
+      payload.leftoverBudget,
+      payload.confirmDone
+    );
+    return data;
+  });
 };
 
 /**

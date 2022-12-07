@@ -5,10 +5,7 @@
 
 import { ChangeRequest } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/Pipes';
-import {
-  exampleAllChangeRequests,
-  exampleStandardChangeRequest
-} from '../../test-support/test-data/change-requests.stub';
+import { exampleAllChangeRequests, exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import { exampleAppAdminUser } from '../../test-support/test-data/users.stub';
 import { render, screen, fireEvent } from '../../test-support/test-utils';
 import ReviewNotes from '../../../pages/ChangeRequestDetailPage/ReviewNotes';
@@ -17,13 +14,7 @@ import ReviewNotes from '../../../pages/ChangeRequestDetailPage/ReviewNotes';
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = (cr: ChangeRequest) => {
-  return render(
-    <ReviewNotes
-      reviewer={cr.reviewer}
-      reviewNotes={cr.reviewNotes}
-      dateReviewed={cr.dateReviewed}
-    />
-  );
+  return render(<ReviewNotes reviewer={cr.reviewer} reviewNotes={cr.reviewNotes} dateReviewed={cr.dateReviewed} />);
 };
 
 describe('Change request review notes test', () => {
@@ -36,32 +27,22 @@ describe('Change request review notes test', () => {
     renderComponent(cr[0]);
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
-    expect(
-      screen.getByText(cr[0].reviewNotes ? cr[0].reviewNotes! : NO_REVIEW_NOTES_MSG)
-    ).toBeInTheDocument();
+    expect(screen.getByText(cr[0].reviewNotes ? cr[0].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAppAdminUser))).toBeInTheDocument();
   });
 
   it('activation change request render review notes', () => {
     renderComponent(cr[1]);
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
-    expect(
-      screen.getByText(cr[1].reviewNotes ? cr[1].reviewNotes! : NO_REVIEW_NOTES_MSG)
-    ).toBeInTheDocument();
+    expect(screen.getByText(cr[1].reviewNotes ? cr[1].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
   });
 
   it('stage gate change request render review notes', () => {
     renderComponent(cr[2]);
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
-    expect(
-      screen.getByText(cr[2].reviewNotes ? cr[2].reviewNotes! : NO_REVIEW_NOTES_MSG)
-    ).toBeInTheDocument();
-  });
-
-  it('renders reviewer', () => {
-    renderComponent(cr[0]);
-    expect(screen.getByText(fullNamePipe(exampleAppAdminUser))).toBeInTheDocument();
+    expect(screen.getByText(cr[2].reviewNotes ? cr[2].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
   });
 
   it('renders tooltip on hover', async () => {
@@ -83,9 +64,7 @@ describe('Change request review notes test', () => {
     fireEvent.mouseOver(screen.getByText(fullNamePipe(exampleAppAdminUser)));
 
     expect(
-      await screen.findByText(
-        `Reviewed on: ${datePipe(exampleStandardChangeRequest.dateReviewed!)}`
-      )
+      await screen.findByText(`Reviewed on: ${datePipe(exampleStandardChangeRequest.dateReviewed!)}`)
     ).toBeInTheDocument();
   });
 });

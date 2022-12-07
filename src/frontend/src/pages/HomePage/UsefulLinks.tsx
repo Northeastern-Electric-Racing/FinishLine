@@ -13,7 +13,7 @@ import {
   faSortNumericDown,
   faCogs
 } from '@fortawesome/free-solid-svg-icons';
-import { Container, Row } from 'react-bootstrap';
+import Box from '@mui/material/Box';
 import ExternalLink from '../../components/ExternalLink';
 import PageBlock from '../../layouts/PageBlock';
 
@@ -29,17 +29,11 @@ const UsefulLinks: React.FC = () => {
       description={'Reimbursement Guidelines'}
       link={'https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit'}
     />,
-    <ExternalLink
-      icon={faDollarSign}
-      description={'Procurement Form'}
-      link={'https://forms.gle/6ztRoa1iL7p1KHwP6'}
-    />,
+    <ExternalLink icon={faDollarSign} description={'Procurement Form'} link={'https://forms.gle/6ztRoa1iL7p1KHwP6'} />,
     <ExternalLink
       icon={faReceipt}
       description={'McMaster Order Sheet'}
-      link={
-        'https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit'
-      }
+      link={'https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit'}
     />,
     <ExternalLink
       icon={faFileAlt}
@@ -60,9 +54,11 @@ const UsefulLinks: React.FC = () => {
 
   return (
     <PageBlock title={'Useful Links'}>
-      <Container fluid>
-        <Row>{links}</Row>
-      </Container>
+      <Box display="flex" flexWrap="wrap" flexDirection="row" sx={{ p: 0 }}>
+        {links.map((ele) => (
+          <Box padding={1}>{ele}</Box>
+        ))}
+      </Box>
     </PageBlock>
   );
 };

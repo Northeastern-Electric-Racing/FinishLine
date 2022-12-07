@@ -37,26 +37,9 @@ describe('review change request page test suite', () => {
   it('renders accept title', () => {
     renderComponent(true);
 
-    expect(
-      screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).toBeInTheDocument();
-  });
-
-  it('renders label for textbox', () => {
-    renderComponent(true);
-
-    expect(screen.getByLabelText('Additional Comments')).toBeInTheDocument();
-  });
-
-  it('renders textbox', () => {
-    renderComponent(true);
-
+    expect(screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
+    expect(screen.getByText('Additional Comments')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
-
-  it('renders buttons', () => {
-    renderComponent(true);
-
     expect(screen.getByText('Accept')).toBeInTheDocument();
     expect(screen.getByText('Deny')).toBeInTheDocument();
   });
@@ -64,8 +47,6 @@ describe('review change request page test suite', () => {
   it("doesn't display modal", () => {
     renderComponent(false);
 
-    expect(
-      screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).not.toBeInTheDocument();
   });
 });

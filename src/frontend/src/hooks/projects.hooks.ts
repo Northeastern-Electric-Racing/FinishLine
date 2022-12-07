@@ -5,12 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Project, WbsNumber } from 'shared';
-import {
-  editSingleProject,
-  createSingleProject,
-  getAllProjects,
-  getSingleProject
-} from '../apis/Projects.api';
+import { editSingleProject, createSingleProject, getAllProjects, getSingleProject } from '../apis/projects.api';
 
 /**
  * Custom React Hook to supply all projects.
@@ -39,13 +34,10 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  *
  */
 export const useCreateSingleProject = () => {
-  return useMutation<{ message: string }, Error, any>(
-    ['projects', 'create'],
-    async (projectPayload: any) => {
-      const { data } = await createSingleProject(projectPayload);
-      return data;
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['projects', 'create'], async (projectPayload: any) => {
+    const { data } = await createSingleProject(projectPayload);
+    return data;
+  });
 };
 
 /**
