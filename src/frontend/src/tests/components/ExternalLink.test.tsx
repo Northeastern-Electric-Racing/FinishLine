@@ -16,37 +16,13 @@ const renderComponent = () => {
 };
 
 describe('external link', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
-  it('renders description', () => {
-    renderComponent();
-    expect(screen.getByText(TEST_DESCRIPTION)).toBeInTheDocument();
-  });
-
-  it('is clickable', async () => {
-    renderComponent();
-    await fireEvent.click(screen.getByText(TEST_DESCRIPTION));
-  });
-
-  it('has icon', () => {
-    renderComponent();
-    expect(screen.getByTestId('icon')).toHaveAttribute('data-icon', 'scroll');
-  });
-
   it('has correct href', () => {
     renderComponent();
+    expect(screen.getByText(TEST_DESCRIPTION)).toBeInTheDocument();
+    expect(screen.getByTestId('icon')).toHaveAttribute('data-icon', 'scroll');
     expect(screen.getByText(TEST_DESCRIPTION)).toHaveAttribute('href', TEST_LINK);
-  });
-
-  it('has correct target', () => {
-    renderComponent();
     expect(screen.getByText(TEST_DESCRIPTION)).toHaveAttribute('target', '_blank');
-  });
-
-  it('has correct rel', () => {
-    renderComponent();
     expect(screen.getByText(TEST_DESCRIPTION)).toHaveAttribute('rel', 'noopener noreferrer');
+    fireEvent.click(screen.getByText(TEST_DESCRIPTION)); // is clickable
   });
 });

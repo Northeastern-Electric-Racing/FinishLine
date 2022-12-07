@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container } from 'react-bootstrap';
+import Container from '@mui/material/Container';
 import PageBlock from '../layouts/PageBlock';
 import styles from '../stylesheets/pages/error-page.module.css';
 

@@ -31,18 +31,4 @@ describe('stage gate work package modal container test suite', () => {
 
     expect(screen.getByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
   });
-
-  it('renders loading indicator when loading', () => {
-    mockUseCreateStageGateCRHook(true, false);
-    renderComponent();
-
-    expect(screen.getByTestId('loader')).toBeInTheDocument();
-  });
-
-  it('renders error page when error', () => {
-    mockUseCreateStageGateCRHook(false, true, new Error('some error'));
-    renderComponent();
-
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
-  });
 });

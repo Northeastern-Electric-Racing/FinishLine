@@ -82,19 +82,14 @@ export const newProject = async (req: Request, res: Response) => {
     include: { project: true, changes: true }
   });
 
-  return res.status(200).json({
-    wbsNumber: {
-      carNumber: createdProject.carNumber,
-      projectNumber: createdProject.projectNumber,
-      workPackageNumber: createdProject.workPackageNumber
-    }
-  });
+  return res
+    .status(200)
+    .json(`${createdProject.carNumber}.${createdProject.projectNumber}.${createdProject.workPackageNumber}`);
 };
 
 export const editProject = async (req: Request, res: Response) => {
   const { body } = req;
-  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name, wbsElementStatus } =
-    body;
+  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name } = body;
 
   // Create optional arg values
   const googleDriveFolderLink = body.googleDriveFolderLink === undefined ? null : body.googleDriveFolderLink;
@@ -140,14 +135,6 @@ export const editProject = async (req: Request, res: Response) => {
   const nameChangeJson = createChangeJsonNonList('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
   const budgetChangeJson = createChangeJsonNonList('budget', originalProject.budget, budget, crId, userId, wbsElementId);
   const summaryChangeJson = createChangeJsonNonList('summary', originalProject.summary, summary, crId, userId, wbsElementId);
-  const statusChangeJson = createChangeJsonNonList(
-    'status',
-    originalProject.wbsElement.status,
-    wbsElementStatus,
-    crId,
-    userId,
-    wbsElementId
-  );
   const driveChangeJson = createChangeJsonNonList(
     'google drive folder link',
     originalProject.googleDriveFolderLink,
@@ -198,9 +185,6 @@ export const editProject = async (req: Request, res: Response) => {
   }
   if (summaryChangeJson !== undefined) {
     changes.push(summaryChangeJson);
-  }
-  if (statusChangeJson !== undefined) {
-    changes.push(statusChangeJson);
   }
   if (driveChangeJson !== undefined) {
     changes.push(driveChangeJson);
@@ -272,7 +256,6 @@ export const editProject = async (req: Request, res: Response) => {
       wbsElement: {
         update: {
           name,
-          status: wbsElementStatus,
           projectLeadId: projectLead,
           projectManagerId: projectManager
         }

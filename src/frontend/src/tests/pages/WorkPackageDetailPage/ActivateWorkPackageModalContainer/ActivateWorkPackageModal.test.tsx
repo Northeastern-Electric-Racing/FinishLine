@@ -37,31 +37,14 @@ const renderComponent = (modalShow: boolean) => {
 };
 
 describe('activate work package modal test suite', () => {
-  it('renders accept title', () => {
+  it('renders all the info', () => {
     renderComponent(true);
 
     expect(screen.queryByText(`Activate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
-  });
-
-  it('renders label for inputs', () => {
-    renderComponent(true);
-
-    expect(screen.getByLabelText(/Date/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Lead/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Manager/)).toBeInTheDocument();
+    expect(screen.getByText(/Date/)).toBeInTheDocument();
+    expect(screen.getByText(/Lead/)).toBeInTheDocument();
+    expect(screen.getByText(/Manager/)).toBeInTheDocument();
     expect(screen.getByText(/WP details/)).toBeInTheDocument();
-  });
-
-  it('renders form elements', () => {
-    renderComponent(true);
-
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-    expect(screen.getAllByRole('combobox').length).toBe(2);
-    expect(screen.getAllByRole('radio').length).toBe(2);
-  });
-
-  it('renders buttons', () => {
-    renderComponent(true);
 
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByText('Submit')).toBeInTheDocument();
