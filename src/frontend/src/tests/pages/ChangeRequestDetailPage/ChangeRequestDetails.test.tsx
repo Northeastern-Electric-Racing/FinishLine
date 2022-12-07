@@ -51,42 +51,13 @@ const renderComponent = () => {
 };
 
 describe.skip('change request details container', () => {
-  it('renders the loading indicator', () => {
-    mockSingleCRHook(true, false);
-    mockAuthHook();
-    renderComponent();
-
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    expect(screen.queryByText('Date Submitted')).not.toBeInTheDocument();
-  });
-
-  it('renders the loaded change request', () => {
+  it('renders the change request', () => {
     mockSingleCRHook(false, false, exStandardCR);
     mockAuthHook();
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     expect(screen.getAllByText(exStandardCR.crId, { exact: false }).length).toEqual(2);
-  });
-
-  it('handles the error with message', () => {
-    mockSingleCRHook(false, true, undefined, new Error('404 could not find the requested change request'));
-    mockAuthHook();
-    renderComponent();
-
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
-    expect(screen.getByText('404 could not find the requested change request')).toBeInTheDocument();
-  });
-
-  it('handles the error with no message', () => {
-    mockSingleCRHook(false, true, undefined);
-    mockAuthHook();
-    renderComponent();
-
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    expect(screen.queryByText('Change Request')).not.toBeInTheDocument();
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
   });
 
   it('enables review if the user is an admin', () => {

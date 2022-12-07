@@ -8,7 +8,7 @@ import PageBlock from '../../layouts/PageBlock';
 
 const renderComponent = (headerRight = false, defaultOpen: boolean) => {
   return render(
-    <PageBlock title={'test'} headerRight={headerRight ? <p>hi</p> : undefined} defaultOpen={defaultOpen}>
+    <PageBlock title={'test'} headerRight={headerRight ? <p>hi</p> : undefined}>
       hello
     </PageBlock>
   );
