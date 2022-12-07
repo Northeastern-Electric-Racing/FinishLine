@@ -1,4 +1,4 @@
-import { User, WbsElementStatus } from 'shared';
+import { User } from 'shared';
 import { Controller } from 'react-hook-form';
 import { Grid, MenuItem, TextField } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
@@ -11,8 +11,6 @@ interface ProjectEditDetailsProps {
   control: any;
   errors: any;
 }
-
-const statuses = Object.values(WbsElementStatus);
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
   return (
@@ -40,25 +38,11 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
         </Grid>
         <Grid item xs={12}>
           <Controller
-            name="wbsElementStatus"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Status" sx={{ my: 1 }}>
-                {statuses.map((t) => (
-                  <MenuItem key={t} value={t}>
-                    {t}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
-          <Controller
             name="projectLeadId"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1, minWidth: '8%' }}>
+              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mr: 4, my: 1, minWidth: '8%' }}>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
