@@ -14,7 +14,7 @@ import { ReactNode, useState } from 'react';
 import { SxProps, Theme, useTheme } from '@mui/material';
 
 interface PageBlockProps {
-  title: string;
+  title?: string;
   headerRight?: ReactNode;
   style?: SxProps<Theme>;
   defaultClosed?: boolean;
@@ -35,17 +35,19 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
-          <Typography variant="h5" sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
-          {headerRight}
-          {collapsed ? (
-            <ExpandMoreIcon sx={{ ml: 2 }} onClick={() => setCollapsed(false)} />
-          ) : (
-            <ExpandLessIcon sx={{ ml: 2 }} onClick={() => setCollapsed(true)} />
-          )}
-        </Box>
+        {title && (
+          <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
+            <Typography variant="h5" sx={{ flexGrow: 1 }}>
+              {title}
+            </Typography>
+            {headerRight}
+            {collapsed ? (
+              <ExpandMoreIcon sx={{ ml: 2 }} onClick={() => setCollapsed(false)} />
+            ) : (
+              <ExpandLessIcon sx={{ ml: 2 }} onClick={() => setCollapsed(true)} />
+            )}
+          </Box>
+        )}
         <Collapse in={!collapsed}>{children}</Collapse>
       </CardContent>
     </Card>

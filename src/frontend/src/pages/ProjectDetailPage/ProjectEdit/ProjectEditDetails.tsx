@@ -58,7 +58,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1 }}>
+              <TextField select onChange={onChange} value={value} label="Project Lead" sx={{ mx: 4, my: 1, minWidth: '8%' }}>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
@@ -72,7 +72,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1 }}>
+              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1, minWidth: '8%' }}>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
