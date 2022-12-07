@@ -1,5 +1,6 @@
 import React, { SyntheticEvent, useRef, useEffect } from 'react';
 import styles from './horizontal-scroll.module.css';
+import { useAuth } from '../../../../../hooks/auth.hooks';
 
 export const HorizontalScroll: React.FC<{
   scroll: number;
@@ -16,13 +17,15 @@ export const HorizontalScroll: React.FC<{
     }
   }, [scroll]);
 
+  const theme = useAuth().user?.defaultTheme;
+
   return (
     <div
       dir="ltr"
       style={{
         margin: rtl ? `0px ${taskListWidth}px 0px 0px` : `0px 0px 0px ${taskListWidth}px`
       }}
-      className={styles.scrollWrapper}
+      className={theme === 'LIGHT' ? styles.scrollWrapper : styles.scrollWrapperDark}
       onScroll={onScroll}
       ref={scrollRef}
     >

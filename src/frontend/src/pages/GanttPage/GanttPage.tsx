@@ -21,7 +21,7 @@ const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
     setTaskList(taskList.map((t) => (t.id === task.id ? task : t)));
   };
 
-  return (
+  return taskList.length > 0 ? (
     <Gantt
       tasks={taskList}
       viewMode={ViewMode.Week}
@@ -36,6 +36,8 @@ const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
         if (task.onClick) task.onClick();
       }}
     />
+  ) : (
+    <b>No Tasks To Display</b>
   );
 };
 

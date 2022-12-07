@@ -36,7 +36,7 @@ const GanttPageWrapper: React.FC = () => {
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
         100,
       type: 'project',
-      hideChildren: false,
+      hideChildren: true,
       styles: { progressColor: '#e50000', backgroundColor: '#ff0000' },
       displayOrder: project.id,
       onClick: () => {
@@ -62,9 +62,9 @@ const GanttPageWrapper: React.FC = () => {
     };
   };
 
-  const projTasks = projects.filter((p) => p.wbsNum.carNumber === 2).map(transformProjectToTask);
+  const projTasks = projects.map(transformProjectToTask);
 
-  const wpTasks = workPackages.filter((wp) => wp.wbsNum.carNumber === 2).map((wp) => transformWPToTask(wp, projects));
+  const wpTasks = workPackages.map((wp) => transformWPToTask(wp, projects));
 
   const tasks = [...projTasks, ...wpTasks];
 
