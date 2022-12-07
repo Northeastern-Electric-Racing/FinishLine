@@ -94,7 +94,7 @@ describe.skip('change request details container', () => {
     mockAuthHook(exampleAdminUser2);
     renderComponent();
 
-    expect(screen.getByText('Review')).not.toBeDisabled();
+    expect(screen.getByText('Review')).not.toHaveAttribute('aria-disabled');
   });
 
   it('disables reviewing change requests for guests', () => {
@@ -102,7 +102,7 @@ describe.skip('change request details container', () => {
     mockAuthHook(exampleGuestUser);
     renderComponent();
 
-    expect(screen.getByText('Review')).toBeDisabled();
+    expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
   });
 
   it('disables reviewing change requests for member users', () => {
@@ -110,7 +110,7 @@ describe.skip('change request details container', () => {
     mockAuthHook(exampleMemberUser);
     renderComponent();
 
-    expect(screen.getByText('Review')).toBeDisabled();
+    expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
   });
 
   it('enables implementing if the user is an admin', () => {
