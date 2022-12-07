@@ -13,6 +13,7 @@ import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Settings from '../pages/SettingsPage/Settings';
 import InfoPage from '../pages/InfoPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
+import { Container } from '@mui/material';
 import TeamsPage from '../pages/TeamsPage/TeamsPage';
 
 const styles = {
@@ -29,16 +30,18 @@ const AppAuthenticated: React.FC = () => {
       <div>
         <Sidebar />
         <div style={styles.content}>
-          <Switch>
-            <Route path={routes.PROJECTS} component={Projects} />
-            <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-            <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-            <Route path={routes.TEAMS} component={TeamsPage} />
-            <Route path={routes.SETTINGS} component={Settings} />
-            <Route path={routes.INFO} component={InfoPage} />
-            <Route exact path={routes.HOME} component={Home} />
-            <Route path="*" component={PageNotFound} />
-          </Switch>
+          <Container maxWidth={false} sx={{ p: 1 }}>
+            <Switch>
+              <Route path={routes.PROJECTS} component={Projects} />
+              <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+              <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+              <Route path={routes.TEAMS} component={TeamsPage} />
+              <Route path={routes.SETTINGS} component={Settings} />
+              <Route path={routes.INFO} component={InfoPage} />
+              <Route exact path={routes.HOME} component={Home} />
+              <Route path="*" component={PageNotFound} />
+            </Switch>
+          </Container>
         </div>
       </div>
     </>

@@ -102,6 +102,6 @@ describe('work package container', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).toBeDisabled();
+    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
   });
 });

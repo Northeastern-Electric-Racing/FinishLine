@@ -4,21 +4,9 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { useTheme } from '../../hooks/theme.hooks';
-import { Theme } from '../../utils/Types';
-import themes from '../../utils/Themes';
 import HorizontalList from '../../components/HorizontalList';
 
-jest.mock('../../hooks/theme.hooks');
-const mockTheme = useTheme as jest.Mock<Theme>;
-
-const mockHook = () => {
-  mockTheme.mockReturnValue(themes[0]);
-};
-
 describe('Horizontal List Component', () => {
-  beforeEach(() => mockHook());
-
   it('renders the title', () => {
     render(<HorizontalList title={'test'} items={[<>one</>, <>two</>]} />);
 
