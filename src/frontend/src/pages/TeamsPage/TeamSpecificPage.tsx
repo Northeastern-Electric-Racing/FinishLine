@@ -6,6 +6,8 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/Pipes';
+import { Block } from '@mui/icons-material';
+import { spacing } from '@mui/system';
 
 const TeamSpecificPage: React.FC = () => {
   interface ParamTypes {
@@ -24,21 +26,19 @@ const TeamSpecificPage: React.FC = () => {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <PageBlock title={'People'}>
-            <Grid container>
-              <Grid item xs={6} md={2}>
-                <b>Lead: </b>
+            <Grid container spacing={1}>
+              <Grid item xs={12} md={12}>
+                <b style={{ display: 'inline' }}>Lead: </b>
+                <p style={{ display: 'inline' }}>{fullNamePipe(data.leader)}</p>
               </Grid>
-              <Grid item xs={6} md={2}>
-                {fullNamePipe(data.leader)}
-              </Grid>
-              <Grid item xs={6} md={2}>
-                <b>Members: </b>
-              </Grid>
-              <Grid item xs={6} md={2}>
-                {data.members.map((member, idx) => {
-                  const seperator = idx === data.members.length - 1 ? '' : ', ';
-                  return fullNamePipe(member) + seperator;
-                })}
+              <Grid item xs={12} md={12}>
+                <b style={{ display: 'inline'}}>Members: </b>
+                <p style={{ display: 'inline' }}>
+                  {data.members.map((member, idx) => {
+                    const seperator = idx === data.members.length - 1 ? '' : ', ';
+                    return fullNamePipe(member) + seperator;
+                  })}
+                </p>
               </Grid>
             </Grid>
           </PageBlock>
