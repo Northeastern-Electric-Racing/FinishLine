@@ -3,7 +3,7 @@ import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
 import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
-import { batman } from './test-data/users.test-data';
+import { batman, wonderwoman } from './test-data/users.test-data';
 import { wbsElement1 } from './test-data/projects.test-data';
 
 const app = express();
@@ -149,5 +149,24 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(200);
     expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
     expect(res.body).toStrictEqual([]);
+  });
+
+  test('setProjectTeam fails given invalid project wbs number', async () => {
+    const res = await request(app).post('/1.0.1/set-team').send({ submitterId: 1, teamId: 'test' });
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
+  });
+
+  test('setProjectTeam fails with invalid submitterId', async () => {
+    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: -1, teamId: 'test' });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('setProjectTeam fails with no permission from submitter', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, googleAuthId: 'b' });
+    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 6, teamId: 'test' });
+
+    expect(res.statusCode).toBe(403);
   });
 });

@@ -317,6 +317,9 @@ export const setProjectTeam = async (req: Request, res: Response) => {
         projectNumber: parsedWbs.projectNumber,
         workPackageNumber: parsedWbs.workPackageNumber
       }
+    },
+    include: {
+      project: true
     }
   });
 
@@ -324,14 +327,8 @@ export const setProjectTeam = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
   }
 
-  // check for project
-  const project = await prisma.project.findUnique({
-    where: { projectId: body.projectId }
-  });
-
-  if (project === null) {
-    return res.status(404).json({ message: `project ${project} not found!` });
-  }
+  // find the associated project
+  const projectID = wbsEle.project?.projectId;
 
   // check for user and user permission
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
@@ -342,9 +339,9 @@ export const setProjectTeam = async (req: Request, res: Response) => {
 
   // if everything is fine, then update the given project to assign to provided team ID
   await prisma.project.update({
-    where: { projectId: body.projectId },
+    where: { projectId: projectID },
     data: { teamId: body.teamId }
   });
 
-  return res.status(200).json({ message: `Project ${body.projectId} successfully assigned to team ${body.teamId}.` });
+  return res.status(200).json({ message: `Project ${projectID} successfully assigned to team ${body.teamId}.` });
 };

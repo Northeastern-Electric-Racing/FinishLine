@@ -55,7 +55,6 @@ projectRouter.post(
 projectRouter.post(
   '/:wbsNum/set-team',
   intMinZero(body('submitterId')),
-  intMinZero(body('projectId')),
   nonEmptyString(body('teamId')),
   validateInputs,
   setProjectTeam
