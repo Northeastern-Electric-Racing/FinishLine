@@ -5,6 +5,7 @@ import prisma from '../src/prisma/prisma';
 import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
 import { batman, wonderwoman } from './test-data/users.test-data';
 import { wbsElement1 } from './test-data/projects.test-data';
+import { team1 } from './test-data/team.test-data';
 
 const app = express();
 app.use(express.json());
@@ -163,8 +164,15 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  test('setProjectTeam fails with invalid team', async () => {
+    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 1, teamId: 'test' });
+
+    expect(res.statusCode).toBe(404);
+  });
+
   test('setProjectTeam fails with no permission from submitter', async () => {
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, googleAuthId: 'b' });
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...team1 });
     const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 6, teamId: 'test' });
 
     expect(res.statusCode).toBe(403);

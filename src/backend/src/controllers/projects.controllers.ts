@@ -330,6 +330,11 @@ export const setProjectTeam = async (req: Request, res: Response) => {
   // find the associated project
   const projectID = wbsEle.project?.projectId;
 
+  // check for valid team
+  const team = await prisma.team.findUnique({ where: { teamId: body.teamId } });
+  if (!team) {
+    return res.status(404).json({ message: `team with id ${body.teamId} not found.` });
+  }
   // check for user and user permission
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
   if (!user) {
