@@ -307,7 +307,7 @@ export const setProjectTeam = async (req: Request, res: Response) => {
   const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
 
   if (!isProject(parsedWbs)) {
-    return res.status(404).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
+    return res.status(400).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
   }
 
   const wbsEle = await prisma.wBS_Element.findUnique({
@@ -324,29 +324,47 @@ export const setProjectTeam = async (req: Request, res: Response) => {
   });
 
   if (wbsEle === null) {
-    return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
+    return res.status(404).json({ message: `project WBS ${req.params.wbsNum} not found!` });
   }
 
   // find the associated project
-  const projectID = wbsEle.project?.projectId;
+  const project = await prisma.project.findFirst({
+    where: {
+      wbsElement: {
+        carNumber: parsedWbs.carNumber,
+        projectNumber: parsedWbs.projectNumber,
+        workPackageNumber: parsedWbs.workPackageNumber
+      }
+    }
+  });
+
+  if (!project) {
+    return res.status(404).json({ message: `no associated project for ${req.params.wbsNum}` });
+  }
 
   // check for valid team
   const team = await prisma.team.findUnique({ where: { teamId: body.teamId } });
   if (!team) {
     return res.status(404).json({ message: `team with id ${body.teamId} not found.` });
   }
-  // check for user and user permission
+
+  // check for user and user permission (admin, app admin, or leader of the team)
   const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
-  if (user.role === Role.GUEST || user.role === Role.MEMBER) return res.status(403).json({ message: 'Access Denied' });
+  if (
+    user.role === Role.GUEST ||
+    user.role === Role.MEMBER ||
+    (user.role === Role.LEADERSHIP && user.userId !== team.leaderId)
+  )
+    return res.status(403).json({ message: 'Access Denied' });
 
   // if everything is fine, then update the given project to assign to provided team ID
   await prisma.project.update({
-    where: { projectId: projectID },
+    where: { projectId: project.projectId },
     data: { teamId: body.teamId }
   });
 
-  return res.status(200).json({ message: `Project ${projectID} successfully assigned to team ${body.teamId}.` });
+  return res.status(200).json({ message: `Project ${project.projectId} successfully assigned to team ${body.teamId}.` });
 };

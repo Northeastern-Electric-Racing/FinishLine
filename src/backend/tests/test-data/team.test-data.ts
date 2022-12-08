@@ -2,8 +2,8 @@ import { Team } from '@prisma/client';
 
 export const team1: Team = {
   teamId: 'team1Id',
-  teamName: 'DC',
-  leaderId: 1,
-  slackId: 'test slack',
-  description: 'DC heroes'
+  teamName: 'Green Lantern Corps',
+  leaderId: 5,
+  slackId: 'gl',
+  description: 'Green Lantern Corporation'
 };
