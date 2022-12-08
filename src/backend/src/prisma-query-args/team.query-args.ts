@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const teamRelationArgs = Prisma.validator<Prisma.TeamArgs>()({
+const teamQueryArgs = Prisma.validator<Prisma.TeamArgs>()({
   include: {
     members: true,
     leader: true,
@@ -11,3 +11,5 @@ export const teamRelationArgs = Prisma.validator<Prisma.TeamArgs>()({
     }
   }
 });
+
+export default teamQueryArgs;

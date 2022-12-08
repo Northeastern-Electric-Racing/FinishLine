@@ -1,25 +1,35 @@
 import { Team } from 'shared';
-import { NotFoundException } from '../exceptions/NotFoundException';
+import teamQueryArgs from '../prisma-query-args/team.query-args';
 import prisma from '../prisma/prisma';
-import { teamTransformer } from '../transformers/teams.transformer';
-import { teamRelationArgs } from '../prisma.relation-args/team.args';
+import teamsTransformer from '../transformers/teams.transformer';
+import { NotFoundException } from '../utils/errors.utils';
 
-export class TeamsService {
+export default class TeamsService {
+  /**
+   * Gets all of the teams across the side
+   * @returns a list of teams
+   */
   static async getAllTeams(): Promise<Team[]> {
-    const teams = await prisma.team.findMany(teamRelationArgs);
-    return teams.map(teamTransformer);
+    const teams = await prisma.team.findMany(teamQueryArgs);
+    return teams.map(teamsTransformer);
   }
 
+  /**
+   * Gets a team by id
+   * @param teamId of team to retrieve
+   * @returns a team
+   */
   static async getSingleTeam(teamId: string): Promise<Team> {
     const team = await prisma.team.findUnique({
       where: { teamId },
-      ...teamRelationArgs
+      ...teamQueryArgs
     });
 
     if (!team) {
-      throw new NotFoundException(`Team with id ${teamId} not found!`);
+      throw new Error();
+      // throw new NotFoundException('Team', teamId);
     }
 
-    return teamTransformer(team);
+    return teamsTransformer(team);
   }
 }

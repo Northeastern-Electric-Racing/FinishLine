@@ -1,9 +1,9 @@
 import express from 'express';
-import { getAllTeams, getSingleTeam } from '../controllers/teams.controllers';
+import TeamController from '../controllers/teams.controllers';
 
 const teamsRouter = express.Router();
 
-teamsRouter.get('/', getAllTeams);
-teamsRouter.get('/:teamId', getSingleTeam);
+teamsRouter.get('/', TeamController.getAllTeams);
+teamsRouter.get('/:teamId', TeamController.getSingleTeam);
 
 export default teamsRouter;
