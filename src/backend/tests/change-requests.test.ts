@@ -6,7 +6,6 @@ import changeRequestsRouter from '../src/routes/change-requests.routes';
 import {
   whipPayloadObject,
   redesignWhip,
-  redesignWhipScopeCR,
   redesignWhipWBSElement,
   solutionToRedesignWhip,
   whipWorkPackage
