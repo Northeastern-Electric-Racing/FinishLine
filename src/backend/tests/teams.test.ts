@@ -5,10 +5,8 @@ import { prismaTeam1, sharedTeam1 } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/team.query-args';
 
 describe('Teams', () => {
-  const mockDate = new Date('2022-12-25T00:00:00.000Z');
   beforeEach(() => {
     jest.spyOn(teamsTransformer, 'default').mockReturnValue(sharedTeam1);
-    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
   });
 
   afterEach(() => {
