@@ -86,19 +86,7 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(newProjectPayload);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({
-      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
-    });
-  });
-
-  test('editProject fails with bad status', async () => {
-    const proj = { ...editProjectPayload, wbsElementStatus: 'alksdjflaksdfj' };
-    const res = await request(app).post('/edit').send(proj);
-
-    expect(res.statusCode).toBe(400);
-    expect(res.body.errors).toStrictEqual([
-      { location: 'body', msg: 'Invalid value', param: 'wbsElementStatus', value: 'alksdjflaksdfj' }
-    ]);
+    expect(res.body).toStrictEqual('1.2.3');
   });
 
   test('editProject fails with feature with no detail', async () => {

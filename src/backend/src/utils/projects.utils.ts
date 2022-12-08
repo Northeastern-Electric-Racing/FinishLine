@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import {
   Project,
@@ -17,6 +17,20 @@ import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
 import { calculateWorkPackageProgress } from './work-packages.utils';
+
+/**
+ * calculate the project's status based on its workpacakges' status
+ * @param proj a given project to be calculated on its status
+ * @returns the project's calculated wbs element status as either complete, active, or incomplete
+ */
+export const calculateProjectStatus = (proj: { workPackages: { wbsElement: { status: WBS_Element_Status } }[] }) => {
+  if (proj.workPackages.length === 0) return WbsElementStatus.Inactive;
+
+  if (proj.workPackages.every((wp) => wp.wbsElement.status === WbsElementStatus.Complete)) return WbsElementStatus.Complete;
+  else if (proj.workPackages.findIndex((wp) => wp.wbsElement.status === WbsElementStatus.Active) !== -1)
+    return WbsElementStatus.Active;
+  return WbsElementStatus.Inactive;
+};
 
 export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -100,7 +114,7 @@ export const projectTransformer = (
     wbsNum,
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
-    status: wbsElement.status as WbsElementStatus,
+    status: calculateProjectStatus(project),
     projectLead: projectLead ? userTransformer(projectLead) : undefined,
     projectManager: projectManager ? userTransformer(projectManager) : undefined,
     changes: wbsElement.changes.map((change) => ({
@@ -132,7 +146,7 @@ export const projectTransformer = (
       const expectedProgress = calculatePercentExpectedProgress(
         workPackage.startDate,
         workPackage.duration,
-        wbsElement.status
+        workPackage.wbsElement.status
       );
 
       return {

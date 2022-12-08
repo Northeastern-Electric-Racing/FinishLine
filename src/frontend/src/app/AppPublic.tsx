@@ -5,23 +5,23 @@
 
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/auth.hooks';
-import { useTheme } from '../hooks/theme.hooks';
 import { routes } from '../utils/Routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
+import { useProvideThemeToggle } from '../hooks/theme.hooks';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
   const history = useHistory();
-  const theme = useTheme();
+  const theme = useProvideThemeToggle();
 
   const devUserId = localStorage.getItem('devUserId');
 
   const render = (e: any) => {
     // if logged in, go to authenticated app
     if (auth.user) {
-      if (auth.user.defaultTheme && auth.user.defaultTheme !== theme.name) {
-        theme.toggleTheme!(auth.user.defaultTheme);
+      if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
+        theme.toggleTheme();
       }
 
       return <AppAuthenticated />;
@@ -45,18 +45,13 @@ const AppPublic: React.FC = () => {
     );
   };
 
-  // eslint-disable-next-line prefer-destructuring
-  document.body.style.backgroundColor = theme.bgColor;
-
   return (
-    <html className={theme.className}>
-      <Switch>
-        <Route path={routes.LOGIN}>
-          <Login postLoginRedirect={{ url: history.location.pathname, search: history.location.search }} />
-        </Route>
-        <Route path="*" render={render} />
-      </Switch>
-    </html>
+    <Switch>
+      <Route path={routes.LOGIN}>
+        <Login postLoginRedirect={{ url: history.location.pathname, search: history.location.search }} />
+      </Route>
+      <Route path="*" render={render} />
+    </Switch>
   );
 };
 

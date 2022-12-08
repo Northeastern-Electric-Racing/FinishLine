@@ -46,20 +46,8 @@ describe('app context', () => {
   it('renders the app context query component', () => {
     renderComponent();
     expect(screen.getByText('app context query')).toBeInTheDocument();
-  });
-
-  it('renders the app context auth component', () => {
-    renderComponent();
     expect(screen.getByText('app context auth')).toBeInTheDocument();
-  });
-
-  it('renders the app context theme component', () => {
-    renderComponent();
     expect(screen.getByText('app context theme')).toBeInTheDocument();
-  });
-
-  it('renders the app context text', () => {
-    renderComponent();
     expect(screen.getByText('full context')).toBeInTheDocument();
   });
 });

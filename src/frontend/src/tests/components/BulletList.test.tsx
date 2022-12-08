@@ -4,13 +4,9 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import * as themeHooks from '../../hooks/theme.hooks';
-import themes from '../../utils/Themes';
 import BulletList from '../../components/BulletList';
 
 describe('Bullet List Component', () => {
-  beforeEach(() => jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]));
-
   it('renders the component title', () => {
     render(<BulletList title={'test'} list={[<></>]} />);
 
