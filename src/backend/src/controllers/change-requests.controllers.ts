@@ -40,16 +40,24 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
-  const foundCR = await prisma.change_Request.findUnique({ where: { crId }, include: {activationChangeRequest: true, scopeChangeRequest: true, wbsElement: {include: { workPackage: {include: { expectedActivities: true, deliverables: true}}, project: true}}}});
-  if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
+  const foundCR = await prisma.change_Request.findUnique({
+    where: { crId },
+    include: {
+      activationChangeRequest: true,
+      scopeChangeRequest: true,
+      wbsElement: { include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, project: true } }
+    }
+  });
 
+  if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(403).json({ message: 'Access Denied' });
-  
-  // if Scope CR, make sure that a proposed solution is selected before approving
+
+  // If approving a scope CR
   if (foundCR.scopeChangeRequest && accepted) {
+    // ensure a proposed solution is being approved and exists
     if (!psId) return res.status(400).json({ message: 'No proposed solution selected for scope change request' });
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
@@ -59,13 +67,10 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
     }
-    // update proposed solution
-    await prisma.proposed_Solution.update({
-      where: { proposedSolutionId: psId },
-      data: {
-        approved: true
-      }
-    });
+
+    // automate the changes for the proposed solution
+    // if cr is for a project: update the budget based off of the proposed solution
+    // else if cr is for a wp: update the budget and duration based off of the proposed solution
     if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
       const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
       const change = {
@@ -137,25 +142,36 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         }
       });
     }
+
+    // finally update the proposed solution
+    await prisma.proposed_Solution.update({
+      where: { proposedSolutionId: psId },
+      data: {
+        approved: true
+      }
+    });
   }
 
+  // if accepting a stage gate change request
   if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-
+    // if it's a work package, all deliverables and expected activities must be checked
     if (foundCR.wbsElement.workPackage) {
       const wpExpectedActivities = foundCR.wbsElement.workPackage.expectedActivities;
       const wpDeliverables = foundCR.wbsElement.workPackage.deliverables;
 
-      //checks for any unchecked expected activities, if there are any it will return an error
+      // checks for any unchecked expected activities, if there are any it will return an error
       if (wpExpectedActivities.some((element) => element.dateTimeChecked === null)) {
         return res.status(400).json({ message: `Work Package has unchecked expected activities` });
       }
 
-      //Checks for any unchecked deliverables, if there are any it will return an error
+      // checks for any unchecked deliverables, if there are any it will return an error
       const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null);
       if (uncheckedDeliverables) {
         return res.status(400).json({ message: `Work Package has unchecked deliverables` });
       }
     }
+
+    // update the status of the associated wp to be complete if needed
     const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
     const changesList = [];
     if (shouldChangeStatus) {
@@ -245,12 +261,14 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       }
     });
   }
-  // find userSettings that submitted the change request
-  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
-  if (personSettings && personSettings.slackId) {
-    await sendSlackCRReviewedNotification(personSettings.slackId, foundCR.crId);
+
+  // send the creator of the cr a slack notification that their cr was reviewed
+  const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
+  if (creatorUserSettings && creatorUserSettings.slackId) {
+    await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
   }
-  // update change request
+
+  // finally we can update change request
   const updated = await prisma.change_Request.update({
     where: { crId },
     data: {
@@ -262,7 +280,6 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
   });
 
-  // TODO: handle errors
   return res.status(200).json({ message: `Change request #${updated.crId} successfully reviewed.` });
 };
 
