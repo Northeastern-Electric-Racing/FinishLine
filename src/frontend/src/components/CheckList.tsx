@@ -84,26 +84,24 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
           />
         ))}
       </FormControl>
-      {showConfirm ? (
-        <Dialog open={showConfirm} onClose={() => setShowConfirm(false)}>
-          <DialogTitle>Are you sure you want to mark this completed task as NOT completed?</DialogTitle>
-          <DialogActions className="justify-content-around">
-            <Button
-              onClick={() => handleUncheck(currIdx)}
-              type="submit"
-              className="mb-3"
-              autoFocus
-              variant="contained"
-              color="success"
-            >
-              Yes
-            </Button>
-            <Button onClick={() => setShowConfirm(false)} className="mb-3" variant="contained" color="error">
-              No
-            </Button>
-          </DialogActions>
-        </Dialog>
-      ) : null}
+      <Dialog open={showConfirm} onClose={() => setShowConfirm(false)}>
+        <DialogTitle>Are you sure you want to mark this completed task as NOT completed?</DialogTitle>
+        <DialogActions className="justify-content-around">
+          <Button
+            onClick={() => handleUncheck(currIdx)}
+            type="submit"
+            className="mb-3"
+            autoFocus
+            variant="contained"
+            color="success"
+          >
+            Yes
+          </Button>
+          <Button onClick={() => setShowConfirm(false)} className="mb-3" variant="contained" color="error">
+            No
+          </Button>
+        </DialogActions>
+      </Dialog>
     </PageBlock>
   );
 };
