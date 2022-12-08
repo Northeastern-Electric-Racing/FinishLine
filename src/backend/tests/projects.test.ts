@@ -165,6 +165,8 @@ describe('Projects', () => {
   });
 
   test('setProjectTeam fails with invalid team', async () => {
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+
     const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 1, teamId: 'test' });
 
     expect(res.statusCode).toBe(404);
