@@ -40,22 +40,21 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     return res.status(403).json({ message: 'Access Denied' });
 
   // ensure existence of change request
-  const foundCR = await prisma.change_Request.findUnique({ where: { crId } });
+  const foundCR = await prisma.change_Request.findUnique({ where: { crId }, include: {activationChangeRequest: true, scopeChangeRequest: true, wbsElement: {include: { workPackage: {include: { expectedActivities: true, deliverables: true}}, project: true}}}});
   if (!foundCR) return res.status(404).json({ message: `Change request with id #${crId} not found` });
 
   if (foundCR.accepted) return res.status(400).json({ message: `This change request is already approved!` });
 
   // verify that the user is not reviewing their own change request
   if (reviewerId === foundCR.submitterId) return res.status(403).json({ message: 'Access Denied' });
-
+  
   // if Scope CR, make sure that a proposed solution is selected before approving
-  const foundScopeCR = await prisma.scope_CR.findUnique({ where: { changeRequestId: crId } });
-  if (foundScopeCR && accepted === true) {
+  if (foundCR.scopeChangeRequest && accepted) {
     if (!psId) return res.status(400).json({ message: 'No proposed solution selected for scope change request' });
     const foundPs = await prisma.proposed_Solution.findUnique({
       where: { proposedSolutionId: psId }
     });
-    if (!foundPs || foundPs.changeRequestId !== foundScopeCR.scopeCrId) {
+    if (!foundPs || foundPs.changeRequestId !== foundCR.scopeChangeRequest.scopeCrId) {
       return res.status(404).json({
         message: `Proposed solution with id #${psId} not found for change request #${crId}`
       });
@@ -67,29 +66,15 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         approved: true
       }
     });
-    const wbs = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: foundCR.wbsElementId
-      },
-      include: {
-        workPackage: true,
-        project: true
-      }
-    });
-    if (!wbs) {
-      return res.status(404).json({ message: `WBS element with id #${foundCR.wbsElementId} not found` });
-    }
-    const { workPackage, project } = wbs;
-
-    if (!workPackage && project) {
-      const newBudget = project.budget + foundPs.budgetImpact;
+    if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
+      const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
       const change = {
         changeRequestId: crId,
         implementerId: reviewerId,
-        detail: buildChangeDetail('Budget', String(project.budget), String(newBudget))
+        detail: buildChangeDetail('Budget', String(foundCR.wbsElement.project.budget), String(newBudget))
       };
       await prisma.project.update({
-        where: { projectId: project.projectId },
+        where: { projectId: foundCR.wbsElement.project.projectId },
         data: {
           budget: newBudget,
           wbsElement: {
@@ -101,15 +86,15 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
           }
         }
       });
-    } else if (workPackage) {
+    } else if (foundCR.wbsElement.workPackage) {
       const wpProj = await prisma.project.findUnique({
-        where: { projectId: workPackage.projectId }
+        where: { projectId: foundCR.wbsElement.workPackage.projectId }
       });
       if (!wpProj) {
         return res.status(404).json({ message: 'Work package project not found' });
       }
       const newBudget = wpProj.budget + foundPs.budgetImpact;
-      const updatedDuration = workPackage.duration + foundPs.timelineImpact;
+      const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
       const changes = [
         {
@@ -120,16 +105,16 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
         {
           changeRequestId: crId,
           implementerId: reviewerId,
-          detail: buildChangeDetail('Duration', String(workPackage.duration), String(updatedDuration))
+          detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
         }
       ];
       await prisma.project.update({
-        where: { projectId: workPackage.projectId },
+        where: { projectId: foundCR.wbsElement.workPackage.projectId },
         data: {
           budget: newBudget,
           workPackages: {
             update: {
-              where: { workPackageId: workPackage.workPackageId },
+              where: { workPackageId: foundCR.wbsElement.workPackage.workPackageId },
               data: {
                 duration: updatedDuration,
                 wbsElement: {
@@ -153,70 +138,36 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
       });
     }
   }
-  // update change request
-  const updated = await prisma.change_Request.update({
-    where: { crId },
-    data: {
-      reviewer: { connect: { userId: reviewerId } },
-      reviewNotes,
-      accepted,
-      dateReviewed: new Date()
-    },
-    include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
-  });
 
-  // verify wbs element exists
-  const wbsElement = await prisma.wBS_Element.findUnique({
-    where: {
-      wbsElementId: updated.wbsElementId
-    },
-    include: {
-      workPackage: true
-    }
-  });
+  if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
 
-  if (!wbsElement) {
-    return res.status(404).json({ message: `wbs element with id #${updated.wbsElementId} not found` });
-  }
-  const wp = await prisma.work_Package.findUnique({
-    where: {
-      wbsElementId: wbsElement.wbsElementId
-    },
-    include: {
-      expectedActivities: true,
-      deliverables: true
-    }
-  });
+    if (foundCR.wbsElement.workPackage) {
+      const wpExpectedActivities = foundCR.wbsElement.workPackage.expectedActivities;
+      const wpDeliverables = foundCR.wbsElement.workPackage.deliverables;
 
-  if (updated.accepted && foundCR.type === CR_Type.STAGE_GATE) {
-    const shouldChangeStatus = wbsElement.status !== WBS_Element_Status.COMPLETE;
-    if (wp) {
-      const wpExpectedActivities = wp.expectedActivities;
-      const wpDeliverables = wp.deliverables;
       //checks for any unchecked expected activities, if there are any it will return an error
       if (wpExpectedActivities.some((element) => element.dateTimeChecked === null)) {
         return res.status(400).json({ message: `Work Package has unchecked expected activities` });
       }
 
       //Checks for any unchecked deliverables, if there are any it will return an error
-
       const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null);
       if (uncheckedDeliverables) {
         return res.status(400).json({ message: `Work Package has unchecked deliverables` });
       }
     }
-
+    const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
     const changesList = [];
     if (shouldChangeStatus) {
       changesList.push({
         changeRequestId: crId,
         implementerId: reviewerId,
-        detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.COMPLETE)
+        detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
       });
     }
 
     await prisma.work_Package.update({
-      where: { wbsElementId: wbsElement.wbsElementId },
+      where: { wbsElementId: foundCR.wbsElement.wbsElementId },
       data: {
         wbsElement: {
           update: {
@@ -233,59 +184,59 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
   }
 
   // if it's an activation cr and being accepted, we can do some stuff to the associated work package
-  if (updated.type === CR_Type.ACTIVATION && updated.activationChangeRequest && accepted) {
-    const { activationChangeRequest: actCr, wbsElement } = updated;
-    const shouldUpdateProjLead = actCr.projectLeadId !== wbsElement.projectLeadId;
-    const shouldUpdateProjManager = actCr.projectManagerId !== wbsElement.projectManagerId;
+  if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
+    const { activationChangeRequest: actCr } = foundCR;
+    const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.projectLeadId;
+    const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.projectManagerId;
     const shouldChangeStartDate =
-      actCr.startDate.setHours(0, 0, 0, 0) !== wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
+      actCr.startDate.setHours(0, 0, 0, 0) !== foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
 
     const changes = [];
     if (shouldUpdateProjLead) {
-      const oldPL = await getUserFullName(wbsElement.projectLeadId);
+      const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
       const newPL = await getUserFullName(actCr.projectLeadId);
       changes.push({
-        changeRequestId: updated.crId,
+        changeRequestId: foundCR.crId,
         implementerId: reviewerId,
-        wbsElementId: updated.wbsElementId,
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail('Project Lead', oldPL, newPL)
       });
     }
 
     if (shouldUpdateProjManager) {
-      const oldPM = await getUserFullName(wbsElement.projectManagerId);
+      const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
       const newPM = await getUserFullName(actCr.projectManagerId);
       changes.push({
-        changeRequestId: updated.crId,
+        changeRequestId: foundCR.crId,
         implementerId: reviewerId,
-        wbsElementId: updated.wbsElementId,
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail('Project Manager', oldPM, newPM)
       });
     }
 
     if (shouldChangeStartDate) {
       changes.push({
-        changeRequestId: updated.crId,
+        changeRequestId: foundCR.crId,
         implementerId: reviewerId,
-        wbsElementId: updated.wbsElementId,
+        wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail(
           'Start Date',
-          wbsElement.workPackage?.startDate.toLocaleDateString() || 'null',
+          foundCR.wbsElement.workPackage?.startDate.toLocaleDateString() || 'null',
           actCr.startDate.toLocaleDateString()
         )
       });
     }
 
     changes.push({
-      changeRequestId: updated.crId,
+      changeRequestId: foundCR.crId,
       implementerId: reviewerId,
-      wbsElementId: updated.wbsElementId,
-      detail: buildChangeDetail('status', wbsElement.status, WBS_Element_Status.ACTIVE)
+      wbsElementId: foundCR.wbsElementId,
+      detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.ACTIVE)
     });
 
     await prisma.change.createMany({ data: changes });
     await prisma.wBS_Element.update({
-      where: { wbsElementId: updated.wbsElementId },
+      where: { wbsElementId: foundCR.wbsElementId },
       data: {
         projectLeadId: actCr.projectLeadId,
         projectManagerId: actCr.projectManagerId,
@@ -295,10 +246,21 @@ export const reviewChangeRequest = async (req: Request, res: Response) => {
     });
   }
   // find userSettings that submitted the change request
-  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: updated.submitterId } });
+  const personSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
   if (personSettings && personSettings.slackId) {
-    await sendSlackCRReviewedNotification(personSettings.slackId, updated.crId);
+    await sendSlackCRReviewedNotification(personSettings.slackId, foundCR.crId);
   }
+  // update change request
+  const updated = await prisma.change_Request.update({
+    where: { crId },
+    data: {
+      reviewer: { connect: { userId: reviewerId } },
+      reviewNotes,
+      accepted,
+      dateReviewed: new Date()
+    },
+    include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
+  });
 
   // TODO: handle errors
   return res.status(200).json({ message: `Change request #${updated.crId} successfully reviewed.` });

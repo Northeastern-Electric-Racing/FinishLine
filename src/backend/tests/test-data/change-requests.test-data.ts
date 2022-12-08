@@ -49,33 +49,6 @@ export const redesignWhipScopeCR = {
   proposedSolutions: solutionToRedesignWhip
 };
 
-export const redesignWhip = {
-  crId: 2,
-  submitterId: 100,
-  wbsElementId: 65,
-  projectId: 2,
-  type: CR_Type.OTHER,
-  dateSubmitted: new Date('10/10/2022'),
-  dateReviewed: new Date('10/18/2022'),
-  accepted: true,
-  reviewerId: 1,
-  reviewNotes: 'orange sucks',
-  changes: [
-    {
-      changeRequestId: 2,
-      implementerId: 3,
-      wbsElementId: 65,
-      detail: 'changed whip from orange (yuck) to Red'
-    }
-  ],
-  scopeChangeRequest: redesignWhipScopeCR
-};
-export const redesignWhipStageGate = {
-  stageGateCrId: 1,
-  changeRequestId: 2,
-  leftoverBudget: 1000,
-  confirmDone: true
-};
 export const whipWorkPackage = {
   workPackageId: 1,
   wbsElementId: 65,
@@ -116,9 +89,38 @@ export const redesignWhipWBSElement = {
   status: WBS_Element_Status.ACTIVE,
   projectLeadId: 1,
   projectManagerId: 2,
-  changeRequests: [redesignWhip],
   workPackage: whipWorkPackage
 };
+export const redesignWhip = {
+  crId: 2,
+  submitterId: 100,
+  wbsElementId: 65,
+  wbsElement: redesignWhipWBSElement,
+  projectId: 2,
+  type: CR_Type.OTHER,
+  dateSubmitted: new Date('10/10/2022'),
+  dateReviewed: new Date('10/18/2022'),
+  accepted: true,
+  reviewerId: 1,
+  reviewNotes: 'orange sucks',
+  changes: [
+    {
+      changeRequestId: 2,
+      implementerId: 3,
+      wbsElementId: 65,
+      detail: 'changed whip from orange (yuck) to Red'
+    }
+  ],
+  scopeChangeRequest: redesignWhipScopeCR
+};
+export const redesignWhipStageGate = {
+  stageGateCrId: 1,
+  changeRequestId: 2,
+  leftoverBudget: 1000,
+  confirmDone: true
+};
+
+
 
 export const unreviewedCr = {
   crId: 69,
