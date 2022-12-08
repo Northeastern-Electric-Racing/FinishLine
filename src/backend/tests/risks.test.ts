@@ -2,13 +2,22 @@ import { project1 } from './test-data/projects.test-data';
 import RisksService from '../src/services/risks.services';
 import prisma from '../src/prisma/prisma';
 import riskQueryArgs from '../src/prisma-query-args/risks.query-args';
-import request from 'supertest';
-import { risk1, risk2, editRiskFalsePayload, transformedRisk } from './test-data/risks.test-data';
+import { prismaRisk1, prismaRisk2, sharedRisk1 } from './test-data/risks.test-data';
 import { batman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
+import * as riskTransformer from '../src/transformers/risks.transformer';
 
 describe('Risks', () => {
-  beforeEach(() => jest.clearAllMocks());
+  const mockDate = new Date('2022-12-25T00:00:00.000Z');
+  beforeEach(() => {
+    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+    jest.spyOn(riskTransformer, 'default').mockReturnValue(sharedRisk1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   test('getRisksForProject works', async () => {
     const { projectId } = project1;
@@ -24,61 +33,76 @@ describe('Risks', () => {
     expect(prisma.project.findUnique).toHaveBeenCalledWith({ where: { projectId } });
   });
 
-  test(`the original risk wasn't resolved and the payload is trying to resolve it`, async () => {
-    jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(risk2);
-    jest.spyOn(prisma.risk, 'update').mockResolvedValue(risk2);
-    jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+  describe('editRisk', () => {
+    test(`the original risk wasn't resolved and the payload is trying to resolve it`, async () => {
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
 
-    const resolved = true;
-    const detail = 'detail';
-    const res = await RisksService.editRisk(batman, 'riskId', detail, resolved);
+      const riskId = 'riskId';
+      const resolved = true;
+      const detail = 'detail';
+      const res = await RisksService.editRisk(batman, riskId, detail, resolved);
 
-    expect(res).toStrictEqual(risk2);
-    expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.risk.update).toHaveBeenCalledTimes(1);
-    expect(prisma.risk.update).toHaveBeenCalledWith({
-      where: { id: risk2.id },
-      data: {
-        detail,
-        isResolved: resolved,
-        resolvedByUserId: batman.userId,
-        resolvedAt: new Date()
-      },
-      ...riskQueryArgs
+      expect(res).toStrictEqual(sharedRisk1);
+      expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledWith({
+        where: { id: riskId },
+        data: {
+          detail,
+          isResolved: resolved,
+          resolvedByUserId: batman.userId,
+          resolvedAt: new Date()
+        },
+        ...riskQueryArgs
+      });
+    });
+
+    test('the original risk was resolved and the payload is trying to unresolve it', async () => {
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk1);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+
+      const riskId = 'riskId';
+      const resolved = false;
+      const detail = 'detail';
+      const res = await RisksService.editRisk(batman, riskId, detail, resolved);
+
+      expect(res).toStrictEqual(sharedRisk1);
+      expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledWith({
+        where: { id: riskId },
+        data: {
+          detail,
+          isResolved: resolved,
+          resolvedByUserId: null,
+          resolvedAt: null
+        },
+        ...riskQueryArgs
+      });
+    });
+
+    test('the original risk and payload have the same resolved value', async () => {
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+
+      const riskId = 'riskId';
+      const resolved = false;
+      const detail = 'detail';
+      const res = await RisksService.editRisk(batman, riskId, detail, resolved);
+
+      expect(res).toStrictEqual(sharedRisk1);
+      expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledWith({
+        where: { id: riskId },
+        data: {
+          detail
+        },
+        ...riskQueryArgs
+      });
     });
   });
-
-  // test('the original risk was resolved and the payload is trying to unresolve it', async () => {
-  //   jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(risk1);
-  //   jest.spyOn(prisma.risk, 'update').mockResolvedValue(risk1);
-  //   jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
-
-  //   const res = await request(app).post('/edit').send(editRiskFalsePayload);
-
-  //   const { dateCreated, ...rest } = res.body;
-  //   const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
-
-  //   expect(res.statusCode).toBe(200);
-  //   expect(restOfTransformedRisk).toEqual(rest);
-
-  //   expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-  //   expect(prisma.risk.update).toHaveBeenCalledTimes(1);
-  // });
-
-  // test('the original risk and payload have the same resolved value', async () => {
-  //   jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(risk2);
-  //   jest.spyOn(prisma.risk, 'update').mockResolvedValue(risk2);
-  //   jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
-
-  //   const res = await request(app).post('/edit').send(editRiskFalsePayload);
-
-  //   const { dateCreated, ...rest } = res.body;
-  //   const { dateCreated: aaa, ...restOfTransformedRisk } = transformedRisk;
-
-  //   expect(res.statusCode).toBe(200);
-  //   expect(restOfTransformedRisk).toEqual(rest);
-
-  //   expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-  //   expect(prisma.risk.update).toHaveBeenCalledTimes(1);
-  // });
 });
