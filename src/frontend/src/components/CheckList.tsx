@@ -11,11 +11,15 @@ import Typography from '@mui/material/Typography';
 import { ReactNode } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { useAuth } from '../hooks/auth.hooks';
+import { Tooltip } from '@mui/material';
+import { User } from 'shared';
 
 export type CheckListItem = {
   id: number;
   detail: string;
   resolved: boolean;
+  user?: User;
+  dateAdded?: Date;
 };
 
 interface CheckListProps {
@@ -45,19 +49,30 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
     <PageBlock title={title} headerRight={headerRight}>
       <FormControl>
         {items.map((check, idx) => (
-          <FormControlLabel
-            key={idx}
-            control={<Checkbox checked={check.resolved} disabled={isDisabled} onChange={() => handleCheck(idx)} />}
-            label={
-              <Typography
-                variant="body1"
-                component="p"
-                sx={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
-              >
-                {check.detail}
-              </Typography>
+          <Tooltip
+            id={`check-item-${idx}`}
+            title={
+              check.resolved
+                ? `${check.user?.firstName} ${check.user?.lastName} on ${check.dateAdded?.toLocaleDateString()}`
+                : ''
             }
-          />
+            placement="right"
+            arrow
+          >
+            <FormControlLabel
+              key={idx}
+              control={<Checkbox checked={check.resolved} disabled={isDisabled} onChange={() => handleCheck(idx)} />}
+              label={
+                <Typography
+                  variant="body1"
+                  component="p"
+                  sx={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
+                >
+                  {check.detail}
+                </Typography>
+              }
+            />
+          </Tooltip>
         ))}
       </FormControl>
     </PageBlock>
