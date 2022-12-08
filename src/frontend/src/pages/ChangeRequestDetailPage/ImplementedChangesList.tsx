@@ -3,12 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
 import { routes } from '../../utils/Routes';
-import BulletList from '../../components/BulletList';
+import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
+import PageBlock from '../../layouts/PageBlock';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -17,25 +16,30 @@ interface ImplementedChangesListProps {
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
   return (
-    <BulletList
+    <PageBlock
       title={'Implemented Changes'}
       headerRight={<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
-      list={changes.map((ic) => (
-        <>
-          [<Link to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>]{' '}
-          <OverlayTrigger
-            placement="right"
-            overlay={
-              <Tooltip id="tooltip">
-                {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
-              </Tooltip>
-            }
-          >
-            <span>{ic.detail}</span>
-          </OverlayTrigger>
-        </>
-      ))}
-    />
+    >
+      <List>
+        {changes.map((ic, idx) => (
+          <ListItem key={idx}>
+            <Tooltip
+              id="tooltip"
+              title={
+                <Typography>
+                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
+                </Typography>
+              }
+              placement="right"
+            >
+              <Typography>
+                [{<Link href={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>}] {ic.detail}
+              </Typography>
+            </Tooltip>
+          </ListItem>
+        ))}
+      </List>
+    </PageBlock>
   );
 };
 

@@ -3,15 +3,23 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Form, Row, Col, InputGroup, Button } from 'react-bootstrap';
-import PageBlock from '../../layouts/PageBlock';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import InputAdornment from '@mui/material/InputAdornment';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { routes } from '../../utils/Routes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
 import EditableTextInputList from '../../components/EditableTextInputList';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
+import PageBlock from '../../layouts/PageBlock';
 
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
-  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
+  initialValues: { name: string; wbsNum: string; crId: string; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;
@@ -20,12 +28,12 @@ interface CreateWPFormViewProps {
   allowSubmit: boolean;
   onSubmit: (e: any) => void;
   onCancel: (e: any) => void;
+  startDate: Date | undefined;
 }
 
 const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   states,
   dependencies,
-  initialValues,
   depUtils,
   expectedActivities,
   eaUtils,
@@ -33,140 +41,135 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   delUtils,
   allowSubmit,
   onSubmit,
-  onCancel
+  onCancel,
+  initialValues,
+  startDate
 }) => {
-  const { name, wbsNum, crId, startDate, duration } = states;
+  const { name, wbsNum, crId, startDate: setStartDate, duration } = states;
+
+  const dateOnChange = (val: Date | null | undefined) => {
+    if (!val) return;
+    setStartDate(val);
+  };
+
   return (
     <>
-      <PageBlock title={'Create New Work Package'}>
-        <Form onSubmit={onSubmit}>
-          <Row>
-            <Col>
-              <Row>
-                <Form.Group as={Col}>
-                  <Form.Label htmlFor="wp-name">Work Package Name</Form.Label>
-                  <Form.Control
-                    id="wp-name"
-                    name="name"
-                    defaultValue={initialValues.name}
-                    type="text"
-                    onChange={(e) => name(e.target.value)}
-                    required
-                  />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col}>
-                  <Form.Label htmlFor="project-wbs-num">Project WBS Number</Form.Label>
-                  <Form.Control
-                    id="project-wbs-num"
-                    name="wbsNum"
-                    defaultValue={initialValues.wbsNum}
-                    type="text"
-                    onChange={(e) => wbsNum(e.target.value)}
-                    required
-                  ></Form.Control>
-                </Form.Group>
-                <Form.Group as={Col}>
-                  <Form.Label htmlFor="crId">Change Request ID</Form.Label>
-                  <Form.Control
-                    id="crId"
-                    name="crId"
-                    defaultValue={initialValues.crId === -1 ? undefined : initialValues.crId}
-                    type="number"
-                    min={1}
-                    onChange={(e) => crId(parseInt(e.target.value))}
-                    required
-                  ></Form.Control>
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col}>
-                  <Form.Label htmlFor="start-date">Start Date (YYYY-MM-DD)</Form.Label>
-                  <Form.Control
-                    id="start-date"
-                    name="startDate"
-                    aria-label={'start date input'}
-                    type="date"
-                    onChange={(e) => startDate(e.target.value)}
-                    required
-                  ></Form.Control>
-                </Form.Group>
-                <Form.Group as={Col}>
-                  <Form.Label htmlFor="duration">Duration</Form.Label>
-                  <InputGroup>
-                    <Form.Control
-                      id="duration"
-                      name="duration"
-                      defaultValue={initialValues.duration === -1 ? undefined : initialValues.duration}
-                      aria-label={'duration'}
-                      type="number"
-                      min={0}
-                      onChange={(e) => duration(parseInt(e.target.value))}
-                      required
-                    ></Form.Control>
-                    <InputGroup.Text>Weeks</InputGroup.Text>
-                  </InputGroup>
-                </Form.Group>
-              </Row>
-              <Row>
-                <Col>
-                  <Form.Group>
-                    <Form.Label htmlFor="dependencies-text-input-list">Dependencies</Form.Label>
-                    <Form.Group id="dependencies-text-input-list">
-                      <EditableTextInputList
-                        items={dependencies}
-                        add={depUtils.add}
-                        remove={depUtils.remove}
-                        update={depUtils.update}
-                      />
-                    </Form.Group>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Expected Activities</Form.Label>
-                    <Form.Group id="ea-text-input-list">
-                      <EditableTextInputList
-                        items={expectedActivities}
-                        add={eaUtils.add}
-                        remove={eaUtils.remove}
-                        update={eaUtils.update}
-                      />
-                    </Form.Group>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <Form.Group>
-                    <Form.Label htmlFor="deliverables-text-input-list">Deliverables</Form.Label>
-                    <Form.Group id="deliverables-text-input-list">
-                      <EditableTextInputList
-                        items={deliverables}
-                        add={delUtils.add}
-                        remove={delUtils.remove}
-                        update={delUtils.update}
-                      />
-                    </Form.Group>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <Button className={'mr-3'} variant="primary" type="submit" disabled={!allowSubmit}>
-                    Create
-                  </Button>
-                  <Button variant="secondary" type="button" onClick={onCancel}>
-                    Cancel
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Form>
+      <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
+      <PageBlock title={''}>
+        <form onSubmit={onSubmit}>
+          <Grid container spacing={2}>
+            <Grid item xs={9}>
+              <TextField
+                required
+                fullWidth
+                id=""
+                name="name"
+                type="text"
+                autoComplete="off"
+                label="Work Package Name"
+                placeholder="Enter work package name..."
+                onChange={(e) => name(e.target.value)}
+                defaultValue={initialValues.name}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                required
+                id="crId"
+                name="crId"
+                type="text"
+                autoComplete="off"
+                label="Change Request ID"
+                placeholder="Enter change request ID..."
+                onChange={(e) => crId(e.target.value)}
+                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
+                defaultValue={initialValues.crId}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <TextField
+                required
+                id="wbsNum"
+                name="wbsNum"
+                type="text"
+                label="Project WBS Number"
+                autoComplete="off"
+                placeholder="Enter project WBS number..."
+                onChange={(e) => wbsNum(e.target.value)}
+                defaultValue={initialValues.wbsNum}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <DatePicker
+                label="Start Date"
+                inputFormat="yyyy-MM-dd"
+                value={startDate}
+                onChange={dateOnChange}
+                renderInput={(params) => <TextField autoComplete="off" {...params} />}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <TextField
+                required
+                id="duration"
+                name="duration"
+                type="text"
+                autoComplete="off"
+                label="Duration"
+                placeholder="Enter duration..."
+                onChange={(e) => duration(parseInt(e.target.value))}
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[1-9][0-9]*'
+                }}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">weeks</InputAdornment>
+                }}
+                defaultValue={initialValues.duration === -1 ? undefined : initialValues.duration}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Box marginBottom={1}>
+                <Typography variant="caption">Dependencies</Typography>
+              </Box>
+              <EditableTextInputList
+                items={dependencies}
+                add={depUtils.add}
+                remove={depUtils.remove}
+                update={depUtils.update}
+              />
+
+              <Box marginBottom={1}>
+                <Typography variant="caption">Expected Activities</Typography>
+              </Box>
+              <EditableTextInputList
+                items={expectedActivities}
+                add={eaUtils.add}
+                remove={eaUtils.remove}
+                update={eaUtils.update}
+              />
+
+              <Box marginBottom={1}>
+                <Typography variant="caption">Deliverabless</Typography>
+              </Box>
+              <EditableTextInputList
+                items={deliverables}
+                add={delUtils.add}
+                remove={delUtils.remove}
+                update={delUtils.update}
+              />
+            </Grid>
+          </Grid>
+
+          <Box display="flex" flexDirection="row-reverse" gap={2}>
+            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+              Create
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          </Box>
+        </form>
       </PageBlock>
     </>
   );

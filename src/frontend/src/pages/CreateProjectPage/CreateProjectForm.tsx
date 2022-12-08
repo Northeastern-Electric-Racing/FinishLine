@@ -27,7 +27,9 @@ const CreateProjectForm: React.FC = () => {
   const [summary, setSummary] = useState('');
   const { isLoading, mutateAsync } = useCreateSingleProject();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !auth.user) return <LoadingIndicator />;
+
+  const { userId } = auth.user;
 
   const states = {
     name: setName,
@@ -38,12 +40,8 @@ const CreateProjectForm: React.FC = () => {
 
   const handleCancel = () => history.goBack();
 
-  const redirectToCrTable = () => history.push(routes.CHANGE_REQUESTS);
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-
-    const { userId } = auth.user!;
 
     const payload = {
       userId,
@@ -53,9 +51,9 @@ const CreateProjectForm: React.FC = () => {
       summary
     };
 
-    await mutateAsync(payload);
+    const createdWbsNum = await mutateAsync(payload);
 
-    redirectToCrTable();
+    history.push(`${routes.PROJECTS}/${createdWbsNum}`);
   };
 
   return (
@@ -63,7 +61,7 @@ const CreateProjectForm: React.FC = () => {
       states={states}
       onCancel={handleCancel}
       onSubmit={handleSubmit}
-      allowSubmit={auth.user?.role !== 'GUEST'}
+      allowSubmit={auth.user.role !== 'GUEST'}
     />
   );
 };

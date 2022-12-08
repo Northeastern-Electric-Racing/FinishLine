@@ -9,10 +9,10 @@ import { ChangeRequest } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllChangeRequests, exampleStageGateChangeRequest } from '../test-support/test-data/change-requests.stub';
-import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/ChangeRequests.api';
+import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
-jest.mock('../../apis/ChangeRequests.api');
+jest.mock('../../apis/change-requests.api');
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {
