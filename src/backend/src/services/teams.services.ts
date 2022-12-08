@@ -26,8 +26,7 @@ export default class TeamsService {
     });
 
     if (!team) {
-      throw new Error();
-      // throw new NotFoundException('Team', teamId);
+      throw new NotFoundException('Team', teamId);
     }
 
     return teamsTransformer(team);
