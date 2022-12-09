@@ -21,6 +21,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-decoration: none;
 }
 
 .row:hover {
@@ -37,7 +38,6 @@
 
 .row:hover .iconsAndText {
   color: #ef4345;
-  text-decoration: underline;
   text-decoration-color: inherit;
 }
 

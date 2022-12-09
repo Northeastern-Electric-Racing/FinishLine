@@ -33,7 +33,7 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').isDate(),
+  body('startDate').custom((value) => !isNaN(Date.parse(value))),
   intMinZero(body('projectLeadId')),
   intMinZero(body('projectManagerId')),
   body('confirmDetails').isBoolean(),

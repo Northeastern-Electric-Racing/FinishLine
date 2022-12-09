@@ -5,7 +5,7 @@
 
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
-import ProjectsView from './ProjectsView';
+import ProjectsTable from './ProjectsTable';
 import WBSDetails from '../WBSDetails';
 import CreateProjectForm from '../CreateProjectPage/CreateProjectForm';
 import CreateWPForm from '../CreateWorkPackagePage/CreateWPForm';
@@ -16,7 +16,7 @@ const Projects: React.FC = () => {
       <Route path={routes.WORK_PACKAGE_NEW} component={CreateWPForm} />
       <Route path={routes.PROJECTS_NEW} component={CreateProjectForm} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
-      <Route path={routes.PROJECTS} component={ProjectsView} />
+      <Route path={routes.PROJECTS} component={ProjectsTable} />
     </Switch>
   );
 };

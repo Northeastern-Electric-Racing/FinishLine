@@ -68,21 +68,11 @@ describe('user settings component', () => {
     jest.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
   });
 
-  it('renders title', () => {
+  it('renders everything', () => {
     mockUserSettingsHook(false, false, exampleUserSettingsLight);
     renderComponent();
     expect(screen.getByText('User Settings')).toBeInTheDocument();
-  });
-
-  it('renders user settings view', () => {
-    mockUserSettingsHook(false, false, exampleUserSettingsLight);
-    renderComponent();
     expect(screen.getByText('user-settings-view')).toBeInTheDocument();
-  });
-
-  it('renders edit pencil icon button', () => {
-    mockUserSettingsHook(false, false, exampleUserSettingsLight);
-    renderComponent();
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 

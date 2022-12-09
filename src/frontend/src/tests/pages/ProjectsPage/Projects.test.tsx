@@ -38,13 +38,6 @@ const renderComponent = (route: string) => {
 };
 
 describe('projects page component', () => {
-  it.skip('renders the projects table page title', () => {
-    renderComponent(routes.PROJECTS);
-
-    // idk why this test is failing
-    expect(screen.getByText('Projects Table')).toBeInTheDocument();
-  });
-
   it('renders the wbs element page title', () => {
     renderComponent(`${routes.PROJECTS}/1.8.1`);
     expect(screen.getByText('WBS Details')).toBeInTheDocument();

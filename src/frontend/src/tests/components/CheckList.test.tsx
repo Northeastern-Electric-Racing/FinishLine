@@ -6,8 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import CheckList, { CheckListItem } from '../../components/CheckList';
 import { routerWrapperBuilder } from '../test-support/test-utils';
-import themes from '../../utils/Themes';
-import * as themeHooks from '../../hooks/theme.hooks';
 import * as authHooks from '../../hooks/auth.hooks';
 import * as descBulletHooks from '../../hooks/description-bullets.hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
@@ -33,7 +31,6 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '', isDisa
 
 describe('Rendering CheckList Component', () => {
   beforeEach(() => {
-    jest.spyOn(themeHooks, 'useTheme').mockReturnValue(themes[0]);
     jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     jest.spyOn(descBulletHooks, 'useCheckDescriptionBullet').mockReturnValue(mockCheckDescBulletReturnValue);
   });

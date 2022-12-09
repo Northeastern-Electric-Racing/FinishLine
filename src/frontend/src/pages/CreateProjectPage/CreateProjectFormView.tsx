@@ -3,8 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import PageBlock from '../../layouts/PageBlock';
+import Grid from '@mui/material/Grid';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { routes } from '../../utils/Routes';
 import { CreateProjectFormStates } from './CreateProjectForm';
 
 interface CreateProjectFormViewProps {
@@ -19,77 +24,74 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
 
   return (
     <>
-      <PageBlock title={'Create New Project'}>
-        <Form onSubmit={onSubmit}>
-          <Row>
-            <Col>
-              <Row>
-                <Form.Group as={Col} aria-required>
-                  <Form.Label htmlFor="project-name">Project Name</Form.Label>
-                  <Form.Control
-                    id="project-name"
-                    type="text"
-                    placeholder="Enter project name..."
-                    onChange={(e) => name(e.target.value)}
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">Please provide a project name.</Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} aria-required>
-                  <Form.Label htmlFor="car-number">Car Number</Form.Label>
-                  <Form.Control
-                    id="car-number"
-                    type="number"
-                    min={0}
-                    placeholder="Enter car number..."
-                    onChange={(e) => carNumber(parseInt(e.target.value))}
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">Please provide a valid car number.</Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} aria-required>
-                  <Form.Label htmlFor="cr-id">Change Request ID</Form.Label>
-                  <Form.Control
-                    id="cr-id"
-                    type="number"
-                    min={1}
-                    placeholder="Enter change request ID..."
-                    onChange={(e) => crId(parseInt(e.target.value))}
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">Please provide a valid change request ID.</Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} aria-required>
-                  <Form.Label htmlFor="project-summary">Project Summary</Form.Label>
-                  <Form.Control
-                    id="project-summary"
-                    as="textarea"
-                    rows={4}
-                    cols={50}
-                    placeholder="Enter summary..."
-                    onChange={(e) => summary(e.target.value)}
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">Please provide a project summary.</Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-              <Row>
-                <Col className={'d-flex'}>
-                  <Button className={'mr-3'} variant="primary" type="submit" disabled={!allowSubmit}>
-                    Create
-                  </Button>
-                  <Button variant="secondary" type="button" onClick={onCancel}>
-                    Cancel
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Form>
+      <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
+      <PageBlock title={''}>
+        <form onSubmit={onSubmit}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={2}>
+              <TextField
+                required
+                id="crId"
+                name="crId"
+                type="text"
+                label="Change Request ID"
+                placeholder="Enter change request ID..."
+                autoComplete="off"
+                onChange={(e) => crId(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
+              />
+            </Grid>
+            <Grid item xs={12} md={10}>
+              <TextField
+                required
+                id="carNumber"
+                name="carNumber"
+                type="text"
+                label="Car Number"
+                placeholder="Enter car number..."
+                autoComplete="off"
+                onChange={(e) => carNumber(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                id="name"
+                name="name"
+                type="text"
+                label="Project Name"
+                autoComplete="off"
+                sx={{ width: 1 / 2 }}
+                placeholder="Enter project name..."
+                onChange={(e) => name(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                sx={{ width: 1 / 2 }}
+                multiline
+                minRows={4}
+                id="summary"
+                name="summary"
+                type="text"
+                label="Project Summary"
+                autoComplete="off"
+                placeholder="Enter summary..."
+                onChange={(e) => summary(e.target.value)}
+              />
+            </Grid>
+          </Grid>
+          <Box display="flex" gap={2} sx={{ mt: 2 }}>
+            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+              Create
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          </Box>
+        </form>
       </PageBlock>
     </>
   );
