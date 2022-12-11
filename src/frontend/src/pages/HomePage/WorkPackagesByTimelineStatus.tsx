@@ -16,7 +16,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -54,12 +54,32 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-                <Box>End Date: {datePipe(wp.endDate)}</Box>
                 <Box>
-                  Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    End Date:{' '}
+                  </Typography>
+                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
                 </Box>
-                <Box>Engineering Lead: {fullNamePipe(wp.projectLead)}</Box>
-                <Box>Project Manager: {fullNamePipe(wp.projectManager)}</Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Progress:
+                  </Typography>
+                  <Typography display="inline">
+                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Engineering Lead:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Project Manager:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                </Box>
                 <Box>
                   {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                 </Box>

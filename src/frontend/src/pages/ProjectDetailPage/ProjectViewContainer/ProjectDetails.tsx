@@ -28,9 +28,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
 
         <Grid item xs={4} md={4}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Manager:{' '}
+            Start Date:{' '}
           </Typography>
-          <Typography display="inline">{fullNamePipe(project.projectManager)}</Typography>
+          <Typography display="inline">{datePipe(project.startDate) || 'n/a'}</Typography>
         </Grid>
 
         <Grid item xs={3} md={3}>
@@ -42,9 +42,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
 
         <Grid item xs={4} md={4}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Start Date:{' '}
+            Project Manager:{' '}
           </Typography>
-          <Typography display="inline">{datePipe(project.startDate) || 'n/a'}</Typography>
+          <Typography display="inline">{fullNamePipe(project.projectManager)}</Typography>
         </Grid>
 
         <Grid item xs={4} md={4}>
