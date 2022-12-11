@@ -1,12 +1,7 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
-import { Task } from './types/public-types';
-import styles from '../../../stylesheets/pages/gantt-page.module.css';
-
-const TaskListTable: React.FC<{
+import React from 'react';
+import styles from '../../../../../stylesheets/pages/gantt-page.module.css';
+import { Task } from '../../types/public-types';
+export const TaskListTableDefault: React.FC<{
   rowHeight: number;
   rowWidth: string;
   fontFamily: string;
@@ -58,5 +53,3 @@ const TaskListTable: React.FC<{
     </div>
   );
 };
-
-export default TaskListTable;

@@ -4,9 +4,9 @@ import { GridProps } from '../grid/grid';
 import { ganttDateRange, seedDates } from '../../helpers/date-helper';
 import { CalendarProps } from '../calendar/calendar';
 import { TaskGanttContentProps } from './task-gantt-content';
-import { TaskListHeaderDefault } from '../task-list/task-list-header';
-import { TaskListTableDefault } from '../task-list/task-list-table';
-import { StandardTooltipContent, Tooltip } from '../other/tooltip';
+import { TaskListHeaderDefault } from '../task-list/TaskListHeader';
+import { TaskListTableDefault } from '../task-list/TaskListTable';
+import { StandardTooltipContent, Tooltip } from '../other/Tooltip';
 import { VerticalScroll } from '../other/vertical-scroll';
 import { TaskListProps, TaskList } from '../task-list/task-list';
 import { TaskGantt } from './task-gantt';
@@ -30,16 +30,16 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   locale = 'en-GB',
   barFill = 60,
   barCornerRadius = 3,
-  barProgressColor = '#ff0000',
-  barProgressSelectedColor = '#ff0000',
-  barBackgroundColor = '#ffffff',
-  barBackgroundSelectedColor = '#aeb8c2',
+  barProgressColor = '#c4c4c4',
+  barProgressSelectedColor = '#c4c4c4',
+  barBackgroundColor = '#7f7f7f',
+  barBackgroundSelectedColor = '#7f7f7f',
   projectProgressColor = '#ff0000',
-  projectProgressSelectedColor = '#aeb8c2',
-  projectBackgroundColor = '#ffffff',
-  projectBackgroundSelectedColor = '#aeb8c2',
-  milestoneBackgroundColor = '#ffffff',
-  milestoneBackgroundSelectedColor = '#aeb8c2',
+  projectProgressSelectedColor = '#ff0000',
+  projectBackgroundColor = '#ef4345',
+  projectBackgroundSelectedColor = '#ef4345',
+  milestoneBackgroundColor = '#c4c4c4',
+  milestoneBackgroundSelectedColor = '#c4c4c4',
   rtl = false,
   handleWidth = 8,
   timeStep = 300000,

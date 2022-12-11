@@ -1,11 +1,7 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
+import React from 'react';
+import styles from '../../../../../stylesheets/pages/gantt-page.module.css';
 
-import styles from '../../../stylesheets/pages/gantt-page.module.css';
-
-const TaskListHeader: React.FC<{
+export const TaskListHeaderDefault: React.FC<{
   headerHeight: number;
   rowWidth: string;
   fontFamily: string;
@@ -37,5 +33,3 @@ const TaskListHeader: React.FC<{
     </div>
   );
 };
-
-export default TaskListHeader;

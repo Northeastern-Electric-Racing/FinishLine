@@ -5,10 +5,7 @@
 
 import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
-import TaskListHeader from './GanttPackage/TaskListHeader';
-import TaskListTable from './GanttPackage/TaskListTable';
 import { useState } from 'react';
-import TooltipContent from './GanttPackage/TooltipContent';
 
 interface GanttPageProps {
   tasks: Task[];
@@ -28,10 +25,7 @@ const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
       preStepsCount={1}
       locale={'US'}
       onExpanderClick={handleExpanderClick}
-      TaskListHeader={TaskListHeader}
-      TaskListTable={TaskListTable}
       columnWidth={67}
-      TooltipContent={TooltipContent}
       onClick={(task) => {
         if (task.onClick) task.onClick();
       }}
