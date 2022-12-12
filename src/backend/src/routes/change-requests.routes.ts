@@ -1,21 +1,13 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
-import {
-  createActivationChangeRequest,
-  createStageGateChangeRequest,
-  createStandardChangeRequest,
-  getAllChangeRequests,
-  getChangeRequestByID,
-  reviewChangeRequest,
-  addProposedSolution
-} from '../controllers/change-requests.controllers';
+import CRController from '../controllers/change-requests.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const changeRequestsRouter = express.Router();
 
-changeRequestsRouter.get('/', getAllChangeRequests);
-changeRequestsRouter.get('/:crId', getChangeRequestByID);
+changeRequestsRouter.get('/', CRController.getAllChangeRequests);
+changeRequestsRouter.get('/:crId', CRController.getChangeRequestByID);
 changeRequestsRouter.post(
   '/review',
   intMinZero(body('reviewerId')),
@@ -24,7 +16,7 @@ changeRequestsRouter.post(
   body('accepted').isBoolean(),
   body('psId').optional().isString().not().isEmpty(),
   validateInputs,
-  reviewChangeRequest
+  CRController.reviewChangeRequest
 );
 changeRequestsRouter.post(
   '/new/activation',
@@ -38,7 +30,7 @@ changeRequestsRouter.post(
   intMinZero(body('projectManagerId')),
   body('confirmDetails').isBoolean(),
   validateInputs,
-  createActivationChangeRequest
+  CRController.createActivationChangeRequest
 );
 changeRequestsRouter.post(
   '/new/stage-gate',
@@ -50,7 +42,7 @@ changeRequestsRouter.post(
   intMinZero(body('leftoverBudget')),
   body('confirmDone').isBoolean(),
   validateInputs,
-  createStageGateChangeRequest
+  CRController.createStageGateChangeRequest
 );
 changeRequestsRouter.post(
   '/new/standard',
@@ -66,7 +58,7 @@ changeRequestsRouter.post(
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   validateInputs,
-  createStandardChangeRequest
+  CRController.createStandardChangeRequest
 );
 changeRequestsRouter.post(
   '/new/proposed-solution',
@@ -77,7 +69,7 @@ changeRequestsRouter.post(
   intMinZero(body('timelineImpact')),
   intMinZero(body('budgetImpact')),
   validateInputs,
-  addProposedSolution
+  CRController.addProposedSolution
 );
 
 export default changeRequestsRouter;
