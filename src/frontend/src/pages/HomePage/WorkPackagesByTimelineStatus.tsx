@@ -16,7 +16,21 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography } from '@mui/material';
+
+const NERInput = styled(InputBase)(({ theme }) => ({
+  'label + &': {
+    marginTop: theme.spacing(1)
+  },
+  '& .MuiInputBase-input': {
+    borderRadius: 6,
+    position: 'relative',
+    backgroundColor: theme.palette.background.paper,
+    border: '1px solid ' + theme.palette.divider,
+    fontSize: 16,
+    padding: '10px 26px 10px 12px'
+  }
+}));
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -44,7 +58,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
-            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
+            <Card variant="outlined" key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"
@@ -100,6 +114,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
             labelId="selectTimelineStatus"
             value={timelineStatus}
             onChange={(e) => setTimelineStatus(e.target.value as TimelineStatus)}
+            input={<NERInput />}
           >
             {Object.values(TimelineStatus).map((status) => (
               <MenuItem key={status} value={status}>

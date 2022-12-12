@@ -21,11 +21,12 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, daysUntilDeadline });
+  const theme = useTheme();
 
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
@@ -44,7 +45,7 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
-            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
+            <Card variant="outlined" key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"
@@ -108,6 +109,8 @@ const UpcomingDeadlines: React.FC = () => {
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
             startAdornment={<InputAdornment position="start">Next</InputAdornment>}
             autoWidth
+            variant="standard"
+            sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2, padding: 1 }}
             endAdornment={
               <InputAdornment position="end" sx={{ marginLeft: -2, marginRight: 2 }}>
                 Days
