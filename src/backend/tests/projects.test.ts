@@ -87,9 +87,7 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(newProjectPayload);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({
-      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
-    });
+    expect(res.body).toStrictEqual('1.2.3');
   });
 
   test('editProject fails with feature with no detail', async () => {

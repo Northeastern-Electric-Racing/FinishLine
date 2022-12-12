@@ -3,9 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React from 'react';
-import { useState, useRef } from 'react';
-import { Button, Form, InputGroup } from 'react-bootstrap';
+import React, { useState, useRef } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 
 interface EditableTextInputListProps {
   items: any[];
@@ -15,8 +18,8 @@ interface EditableTextInputListProps {
   remove: (idx: number) => any;
   update: (idx: number, val: any) => any;
   disabledItems?: boolean[];
+  label?: string;
 }
-
 
 const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   items,
@@ -25,7 +28,8 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   add,
   remove,
   update,
-  disabledItems
+  disabledItems,
+  label
 }) => {
   // last input of the list is being kept track of so that we know if we should add a new input when enter is pressed
   // (only add one when the box is not empty)
@@ -89,14 +93,18 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   let listPrepared = items.map((item, index: number) =>
     !readOnly ? (
       <li key={index} className={'mb-2'}>
-        <InputGroup>
-          <Form.Control
+        <Box marginBottom={1}>
+          <TextField
             required
-            autoFocus={hasTyped && isLastElement(index)}
+            fullWidth
             type="text"
-            ref={isLastElement(index) ? focusRef : null}
+            id={`bullet-${index}`}
+            name={`bullet-${index}`}
             value={item.toString()}
-            placeholder={'Input new bullet here...'}
+            label={label}
+            placeholder="Input new bullet here..."
+            ref={isLastElement(index) ? focusRef : null}
+            autoFocus={hasTyped && isLastElement(index)}
             onKeyDown={(e: any) => handleKeyDown(e, index)}
             onChange={(e: any) => {
               setHasTyped(true);
@@ -105,19 +113,19 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
                 setLastInput(e.target.value);
               }
             }}
-            disabled={disabledItems && disabledItems[index]}
-            data-testid={`inputField${index}`}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  aria-label="delete"
+                  disabled={disabledItems && disabledItems[index]}
+                  onClick={() => removeButtonOnClick(index)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            }}
           />
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => removeButtonOnClick(index)}
-            disabled={disabledItems && disabledItems[index]}
-            data-testid={`removeButton${index}`}
-          >
-            X
-          </Button>
-        </InputGroup>
+        </Box>
       </li>
     ) : (
       <li key={index}>{item}</li>
@@ -125,7 +133,7 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   );
 
   const addButton = (
-    <Button type="button" variant="success" onClick={addButtonOnClick}>
+    <Button variant="outlined" color="secondary" onClick={addButtonOnClick}>
       + Add New Bullet
     </Button>
   );
@@ -140,7 +148,7 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
     builtList = <ol style={style}>{listPrepared}</ol>;
   }
 
-  return <Form.Group>{builtList}</Form.Group>;
+  return <Box>{builtList}</Box>;
 };
 
 export default EditableTextInputList;

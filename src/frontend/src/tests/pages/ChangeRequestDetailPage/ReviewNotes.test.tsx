@@ -28,6 +28,7 @@ describe('Change request review notes test', () => {
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
     expect(screen.getByText(cr[0].reviewNotes ? cr[0].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAppAdminUser))).toBeInTheDocument();
   });
 
   it('activation change request render review notes', () => {
@@ -42,11 +43,6 @@ describe('Change request review notes test', () => {
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
     expect(screen.getByText(cr[2].reviewNotes ? cr[2].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
-  });
-
-  it('renders reviewer', () => {
-    renderComponent(cr[0]);
-    expect(screen.getByText(fullNamePipe(exampleAppAdminUser))).toBeInTheDocument();
   });
 
   it('renders tooltip on hover', async () => {

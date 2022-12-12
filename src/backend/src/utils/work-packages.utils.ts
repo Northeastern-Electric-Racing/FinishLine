@@ -131,8 +131,6 @@ export const createChangeJsonDates = (
   const oldDate = oldValue.toUTCString().split(' ').splice(0, 4).join();
   const newDate = newValue.toUTCString().split(' ').splice(0, 4).join();
   if (oldDate !== newDate) {
-    console.log(oldDate);
-    console.log(newDate);
     return {
       changeRequestId: crId,
       implementerId,

@@ -33,14 +33,6 @@ const renderComponent = () => {
 };
 
 describe('create wp form test suite', () => {
-  it('render view component', () => {
-    mockAuthHook();
-    mockUseQuery();
-    renderComponent();
-
-    expect(screen.getByText('Create New Work Package')).toBeInTheDocument();
-  });
-
   it('disables submit button for guest users', () => {
     mockAuthHook(exampleGuestUser);
     mockUseQuery();

@@ -27,13 +27,6 @@ const renderComponent = () => {
 };
 
 describe('create project form test suite', () => {
-  it('render view component', () => {
-    mockAuthHook(exampleAdminUser);
-    renderComponent();
-
-    expect(screen.getByText('Create New Project')).toBeInTheDocument();
-  });
-
   it('disables the submit button for guest users', () => {
     mockAuthHook(exampleGuestUser);
     renderComponent();

@@ -15,10 +15,6 @@ const renderComponent = () => {
 };
 
 describe('user settings view component', () => {
-  it('renders without error', () => {
-    renderComponent();
-  });
-
   it('renders default theme', () => {
     renderComponent();
     expect(screen.getByText(exampleUserSettingsLight.defaultTheme)).toBeInTheDocument();
