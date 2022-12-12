@@ -13,7 +13,8 @@ import {
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
 import { userTransformer } from './users.utils';
-import { riskQueryArgs, riskTransformer } from './risks.utils';
+import riskQueryArgs from '../prisma-query-args/risks.query-args';
+import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
 import { calculateWorkPackageProgress } from './work-packages.utils';
 

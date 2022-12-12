@@ -45,6 +45,9 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       reviewNotes,
       accepted,
       psId
+    }).catch((error) => {
+      alert(error);
+      throw new Error(error);
     });
   };
 

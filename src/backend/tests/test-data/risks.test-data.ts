@@ -1,6 +1,8 @@
-import { Risk, RoleEnum } from 'shared';
+import { Risk as PrismaRisk } from '@prisma/client';
+import { Risk as SharedRisk } from 'shared';
+import { batman } from './users.test-data';
 
-export const editRiskTrue = {
+export const prismaRisk1: PrismaRisk = {
   id: 'id1',
   projectId: 1,
   detail: 'This one might be a bit too expensive',
@@ -13,7 +15,7 @@ export const editRiskTrue = {
   deletedByUserId: null
 };
 
-export const editRiskFalse = {
+export const prismaRisk2: PrismaRisk = {
   id: 'id1',
   projectId: 1,
   detail: 'This one might be a bit too expensive',
@@ -26,35 +28,19 @@ export const editRiskFalse = {
   deletedByUserId: null
 };
 
-export const editRiskTruePayload = {
-  userId: 1,
-  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
-  detail: 'This one might be a bit too expensive',
-  resolved: true
-};
-
-export const editRiskFalsePayload = {
-  userId: 1,
-  id: '56c939bf-d95a-4e43-b0bc-0f0581db9cfb',
-  detail: 'This one might be a bit too expensive',
-  resolved: false
-};
-
-export const transformedRisk: Risk = {
-  id: 'abc',
-  project: {
-    id: 1,
-    name: 'project name',
-    wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
-  },
+export const sharedRisk1: SharedRisk = {
+  id: 'riskId',
   detail: 'detail',
   isResolved: true,
-  dateCreated: new Date('2022-12-25'),
-  createdBy: {
-    userId: 2,
-    firstName: 'a',
-    lastName: 'b',
-    email: 'a@b.com',
-    role: RoleEnum.ADMIN
+  dateCreated: new Date(),
+  createdBy: batman,
+  project: {
+    id: 1,
+    name: 'preview project',
+    wbsNum: {
+      carNumber: 1,
+      projectNumber: 2,
+      workPackageNumber: 3
+    }
   }
 };
