@@ -335,7 +335,7 @@ export const setProjectTeam = async (req: Request, res: Response) => {
   const user = await getCurrentUser(res);
   // check for user and user permission (admin, app admin, or leader of the team)
   if (!user) {
-    return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
+    return res.status(404).json({ message: `user not found` });
   }
   if (
     user.role === Role.GUEST ||
