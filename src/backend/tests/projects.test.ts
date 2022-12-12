@@ -156,15 +156,6 @@ describe('Projects', () => {
     expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
   });
 
-  test('setProjectTeam fails with invalid user', async () => {
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
-    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
-
-    expect(res.statusCode).toBe(404);
-  });
-
   test('setProjectTeam fails with invalid team id', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
