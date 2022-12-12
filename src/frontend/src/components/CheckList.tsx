@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography';
 import { ReactNode, useState } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { useAuth } from '../hooks/auth.hooks';
+import { Tooltip } from '@mui/material';
+import { User } from 'shared';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -20,6 +22,8 @@ export type CheckListItem = {
   id: number;
   detail: string;
   resolved: boolean;
+  user?: User;
+  dateAdded?: Date;
 };
 
 interface CheckListProps {
@@ -73,13 +77,24 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
               />
             }
             label={
-              <Typography
-                variant="body1"
-                component="p"
-                sx={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
+              <Tooltip
+                id={`check-item-${idx}`}
+                title={
+                  check.resolved
+                    ? `${check.user?.firstName} ${check.user?.lastName} on ${check.dateAdded?.toLocaleDateString()}`
+                    : ''
+                }
+                placement="right"
+                arrow
               >
-                {check.detail}
-              </Typography>
+                <Typography
+                  variant="body1"
+                  component="p"
+                  sx={check.resolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
+                >
+                  {check.detail}
+                </Typography>
+              </Tooltip>
             }
           />
         ))}
