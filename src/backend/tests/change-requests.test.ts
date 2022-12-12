@@ -31,9 +31,9 @@ describe('Change Requests', () => {
           whipPayloadObject.crId,
           whipPayloadObject.reviewNotes,
           whipPayloadObject.accepted,
-          '1');
-      }
-      catch (e) {
+          '1'
+        );
+      } catch (e) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toBeInstanceOf(NotFoundException);
         // eslint-disable-next-line jest/no-conditional-expect
@@ -51,14 +51,13 @@ describe('Change Requests', () => {
           whipPayloadObject.crId,
           whipPayloadObject.reviewNotes,
           whipPayloadObject.accepted,
-          '1');
-      }
-      catch (e) {
+          '1'
+        );
+      } catch (e) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toBeInstanceOf(AccessDeniedException);
         // eslint-disable-next-line jest/no-conditional-expect
-        expect(e).toEqual(new AccessDeniedException
-          ());
+        expect(e).toEqual(new AccessDeniedException());
       }
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -72,9 +71,9 @@ describe('Change Requests', () => {
           whipPayloadObject.crId,
           whipPayloadObject.reviewNotes,
           whipPayloadObject.accepted,
-          '1');
-      }
-      catch (e) {
+          '1'
+        );
+      } catch (e) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toBeInstanceOf(NotFoundException);
         // eslint-disable-next-line jest/no-conditional-expect
@@ -152,7 +151,9 @@ describe('Change Requests', () => {
     test('proposed solution id not found', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...redesignWhip, accepted: null });
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce({...solutionToRedesignWhip, changeRequestId: 10});
+      jest
+        .spyOn(prisma.proposed_Solution, 'findUnique')
+        .mockResolvedValueOnce({ ...solutionToRedesignWhip, changeRequestId: 10 });
       try {
         await ChangeRequestService.reviewChangeRequest(
           whipPayloadObject.reviewerId,
@@ -165,7 +166,9 @@ describe('Change Requests', () => {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(e).toBeInstanceOf(HttpException);
         // eslint-disable-next-line jest/no-conditional-expect
-        expect(e).toEqual(new HttpException(404, `Proposed solution with id #1 not found for change request #${redesignWhip.crId}`));
+        expect(e).toEqual(
+          new HttpException(404, `Proposed solution with id #1 not found for change request #${redesignWhip.crId}`)
+        );
       }
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -273,8 +276,7 @@ describe('Change Requests', () => {
         whipPayloadObject.accepted,
         '1'
       );
-      expect(response).toStrictEqual(redesignWhip.crId
-      );
+      expect(response).toStrictEqual(redesignWhip.crId);
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
@@ -302,10 +304,14 @@ describe('Change Requests', () => {
       };
       const uncheckedExpectedActivitiesWP = { ...whipWorkPackage, expectedActivities: [uncheckedExpectedActivities] };
       const uncheckedExpectedActivitesWBS = { ...redesignWhipWBSElement, workPackage: uncheckedExpectedActivitiesWP };
-      const uncheckedExpectedActivitiesCR = { ...redesignWhip, wbsElement: uncheckedExpectedActivitesWBS, accepted: false, type: CR_Type.STAGE_GATE, scopeChangeRequest: null };
-      jest
-        .spyOn(prisma.change_Request, 'findUnique')
-        .mockResolvedValue(uncheckedExpectedActivitiesCR);
+      const uncheckedExpectedActivitiesCR = {
+        ...redesignWhip,
+        wbsElement: uncheckedExpectedActivitesWBS,
+        accepted: false,
+        type: CR_Type.STAGE_GATE,
+        scopeChangeRequest: null
+      };
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedExpectedActivitiesCR);
 
       try {
         await ChangeRequestService.reviewChangeRequest(
@@ -379,6 +385,6 @@ describe('Change Requests', () => {
       expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(response).toStrictEqual(whipPayloadObject.crId);
+    });
   });
-});
 });

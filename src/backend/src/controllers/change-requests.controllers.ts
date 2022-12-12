@@ -26,7 +26,7 @@ export default class CRController {
       const { body } = req;
       const { reviewerId, crId, reviewNotes, accepted, psId } = body;
       const id = await ChangeRequestService.reviewChangeRequest(reviewerId, crId, reviewNotes, accepted, psId);
-      return res.status(200).json({message: `Change request #${id} successfully reviewed.`});
+      return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
       next(error);
     }
@@ -45,8 +45,7 @@ export default class CRController {
         body.startDate,
         body.confirmDetails
       );
-      return res.status(200).json({message: `Successfully created activation change request with id #${id}`
-    });
+      return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -63,7 +62,7 @@ export default class CRController {
         body.leftoverBudget,
         body.confirmDone
       );
-      return res.status(200).json({message: `Successfully created stage gate request with id #${id}`});
+      return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -81,7 +80,7 @@ export default class CRController {
         body.why,
         body.budgetImpact
       );
-      return res.status(200).json({message: `Successfully created standard change request with id #${id}`});
+      return res.status(200).json({ message: `Successfully created standard change request with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -97,7 +96,7 @@ export default class CRController {
         body.timelineImpact,
         body.scopeImpact
       );
-      return res.status(200).json({message: `Successfully added proposed solution with id #${id}`});
+      return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
