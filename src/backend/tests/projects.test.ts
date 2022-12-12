@@ -153,48 +153,51 @@ describe('Projects', () => {
   });
 
   test('setProjectTeam fails given invalid project wbs number', async () => {
-    const res = await request(app).post('/1.0.1/set-team').send({ submitterId: 1, teamId: 'test' });
+    const res = await request(app).post('/1.0.1/set-team').send({ teamId: 'test' });
     expect(res.statusCode).toBe(400);
     expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
   });
 
-  test('setProjectTeam fails with invalid submitterId', async () => {
-    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: -1, teamId: 'test' });
+  test('setProjectTeam fails with invalid user', async () => {
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
 
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(404);
   });
 
   test('setProjectTeam fails with invalid team id', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
-    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 1, teamId: 123 });
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 123 });
 
     expect(res.statusCode).toBe(400);
   });
 
   test('setProjectTeam fails with team that does not exist', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...project1 });
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
 
-    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 1, teamId: 'test' });
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
 
     expect(res.statusCode).toBe(404);
   });
 
   test('setProjectTeam fails with no permission from submitter (guest)', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, googleAuthId: 'b' });
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...team1 });
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...project1 });
-    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 6, teamId: 'test' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
 
     expect(res.statusCode).toBe(403);
   });
 
   test('setProjectTeam fails with no permission from submitter (leadership)', async () => {
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...aquaman, googleAuthId: 'a' });
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...team1 });
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...project1 });
-    const res = await request(app).post('/1.2.0/set-team').send({ submitterId: 6, teamId: 'test' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(aquaman);
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
 
     expect(res.statusCode).toBe(403);
   });
