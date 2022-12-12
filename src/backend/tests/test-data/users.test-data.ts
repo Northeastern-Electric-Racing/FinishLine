@@ -40,6 +40,26 @@ export const flash: User = {
   googleAuthId: 'b'
 };
 
+export const greenlantern: User = {
+  userId: 5,
+  firstName: 'Hal',
+  lastName: 'Jordan',
+  email: 'h.jordam@pilot.com',
+  emailId: 'hal.jordan',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'g'
+};
+
+export const aquaman: User = {
+  userId: 6,
+  firstName: 'Arthur',
+  lastName: 'Curry',
+  email: 'a.curry@water.com',
+  emailId: 'arhur.curry',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'a'
+};
+
 export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: 1,
