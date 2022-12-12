@@ -33,7 +33,7 @@ const WbsStatus: React.FC<WbsStatusProps> = ({ status }) => {
 
   return (
     <b>
-      <Chip label={text} color={color} sx={{ fontSize: 14 }} />
+      <Chip size="small" label={text} color={color} sx={{ fontSize: 14 }} />
     </b>
   );
 };

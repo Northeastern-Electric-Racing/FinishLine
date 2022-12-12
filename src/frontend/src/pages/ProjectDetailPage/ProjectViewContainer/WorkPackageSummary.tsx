@@ -15,6 +15,7 @@ import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/Pipes';
 import { routes } from '../../../utils/Routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material';
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
@@ -38,8 +39,10 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
 
+  const theme = useTheme();
+
   return (
-    <Accordion>
+    <Accordion sx={{ border: '1px solid ' + theme.palette.divider }}>
       <AccordionSummary
         id={`${wbsPipe(workPackage.wbsNum)}-summary-header`}
         aria-controls={`${wbsPipe(workPackage.wbsNum)}-summary-content`}

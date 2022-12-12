@@ -36,6 +36,7 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'wbsNum',
       headerName: 'WBS #',
+      align: 'center',
       valueFormatter: (params) => wbsPipe(params.value),
       maxWidth: 100,
       sortComparator: (v1, v2, param1, param2) => {
@@ -54,13 +55,13 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'name',
       headerName: 'Project Name',
-      align: 'left'
+      align: 'center'
     },
     {
       ...baseColDef,
       field: 'projectLead',
       headerName: 'Project Lead',
-      align: 'left',
+      align: 'center',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
@@ -68,7 +69,7 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'projectManager',
       headerName: 'Project Manager',
-      align: 'left',
+      align: 'center',
       valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
@@ -76,7 +77,7 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'team',
       headerName: 'Team',
-      align: 'left',
+      align: 'center',
       valueFormatter: (params) => params.value?.teamName || 'No Team',
       maxWidth: 200
     },
@@ -85,13 +86,14 @@ const ProjectsTable: React.FC = () => {
       field: 'duration',
       headerName: 'Duration',
       valueFormatter: (params) => weeksPipe(params.value),
-      maxWidth: 100
+      maxWidth: 100,
+      align: 'center'
     },
     {
       ...baseColDef,
       field: 'budget',
       headerName: 'Budget',
-      align: 'right',
+      align: 'center',
       valueFormatter: (params) => dollars(params.value),
       maxWidth: 100
     },
@@ -101,13 +103,15 @@ const ProjectsTable: React.FC = () => {
       headerName: '# Work Packages',
       type: 'number',
       maxWidth: 150,
+      align: 'center',
       valueFormatter: (params) => params.value.length
     },
     {
       ...baseColDef,
       field: 'status',
       headerName: 'Status',
-      maxWidth: 100
+      maxWidth: 100,
+      align: 'center'
     }
   ];
 
