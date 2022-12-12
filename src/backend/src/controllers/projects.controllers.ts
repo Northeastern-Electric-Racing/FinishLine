@@ -16,7 +16,6 @@ import {
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
 import { descBulletConverter, getCurrentUser } from '../utils/utils';
-import { getUserAgent } from '@slack/web-api/dist/instrument';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
   const projects = await prisma.project.findMany(manyRelationArgs);
