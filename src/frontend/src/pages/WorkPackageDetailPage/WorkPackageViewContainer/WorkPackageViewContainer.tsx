@@ -139,7 +139,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         items={workPackage.expectedActivities
           .filter((ea) => !ea.dateDeleted)
           .map((ea) => {
-            return { ...ea, resolved: !!ea.userChecked };
+            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
           })}
         isDisabled={checkListDisabled}
       />
@@ -148,7 +148,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         items={workPackage.deliverables
           .filter((del) => !del.dateDeleted)
           .map((del) => {
-            return { ...del, resolved: !!del.userChecked };
+            return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
           })}
         isDisabled={checkListDisabled}
       />
