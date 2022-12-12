@@ -15,7 +15,8 @@ import {
 } from '../utils/projects.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import { descBulletConverter } from '../utils/utils';
+import { descBulletConverter, getCurrentUser } from '../utils/utils';
+import { getUserAgent } from '@slack/web-api/dist/instrument';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
   const projects = await prisma.project.findMany(manyRelationArgs);
@@ -310,23 +311,6 @@ export const setProjectTeam = async (req: Request, res: Response) => {
     return res.status(400).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
   }
 
-  const wbsEle = await prisma.wBS_Element.findUnique({
-    where: {
-      wbsNumber: {
-        carNumber: parsedWbs.carNumber,
-        projectNumber: parsedWbs.projectNumber,
-        workPackageNumber: parsedWbs.workPackageNumber
-      }
-    },
-    include: {
-      project: true
-    }
-  });
-
-  if (wbsEle === null) {
-    return res.status(404).json({ message: `project WBS ${req.params.wbsNum} not found!` });
-  }
-
   // find the associated project
   const project = await prisma.project.findFirst({
     where: {
@@ -348,8 +332,8 @@ export const setProjectTeam = async (req: Request, res: Response) => {
     return res.status(404).json({ message: `team with id ${body.teamId} not found.` });
   }
 
+  const user = await getCurrentUser(res);
   // check for user and user permission (admin, app admin, or leader of the team)
-  const user = await prisma.user.findUnique({ where: { userId: body.submitterId } });
   if (!user) {
     return res.status(404).json({ message: `user with id #${body.submitterId} not found` });
   }
