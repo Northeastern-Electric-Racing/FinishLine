@@ -7,6 +7,7 @@ import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/Pipes';
 import ReactMarkdown from 'react-markdown';
+import styles from '../../stylesheets/pages/teams.module.css';
 
 interface ParamTypes {
   teamId: string;
@@ -32,16 +33,18 @@ const TeamSpecificPage: React.FC = () => {
               <Grid item xs={12} md={12}>
                 <b style={{ display: 'inline' }}>Members: </b>
                 <p style={{ display: 'inline' }}>
-                  {data.members.map((member) => {
-                    return fullNamePipe(member)
-                  }).join(', ')}
+                  {data.members
+                    .map((member) => {
+                      return fullNamePipe(member);
+                    })
+                    .join(', ')}
                 </p>
               </Grid>
             </Grid>
           </PageBlock>
           <PageBlock title={'Active Projects'}></PageBlock>
           <PageBlock title={'Description'}>
-            <ReactMarkdown>{data.description}</ReactMarkdown>
+            <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>
           </PageBlock>
         </Grid>
       </Grid>

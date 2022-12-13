@@ -18,6 +18,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
       {idx + 1 !== team.projects.length ? ', ' : ''}
     </>
   ));
+
   return (
     <Card sx={{ minWidth: 300, maxWidth: 400, minHeight: 200 }}>
       <CardContent>
