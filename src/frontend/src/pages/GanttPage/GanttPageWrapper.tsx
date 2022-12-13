@@ -11,7 +11,7 @@ import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { Project, WbsElementStatus, WorkPackage } from 'shared';
 import GanttPage from './GanttPage';
-import { projectWbsPipe, wbsPipe } from '../../utils/Pipes';
+import { projectWbsPipe, wbsPipe } from '../../utils/pipes';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
