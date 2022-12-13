@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 

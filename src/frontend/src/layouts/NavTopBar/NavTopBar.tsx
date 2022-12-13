@@ -8,9 +8,9 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { useAuth } from '../../hooks/auth.hooks';
-import { fullNamePipe } from '../../utils/Pipes';
+import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
 
 const textColor = 'white';

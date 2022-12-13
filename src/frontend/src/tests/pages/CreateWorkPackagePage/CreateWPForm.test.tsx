@@ -5,7 +5,7 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
