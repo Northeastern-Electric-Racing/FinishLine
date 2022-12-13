@@ -5,7 +5,6 @@
 
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
 import { wbsPipe } from '../../../../utils/Pipes';
-import { exampleAllUsers } from '../../../test-support/test-data/users.stub';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModal';
 
@@ -29,7 +28,6 @@ const renderComponent = (modalShow: boolean) => {
         modalShow={modalShow}
         onHide={mockHandleHide}
         onSubmit={mockHandleSubmit}
-        allUsers={exampleAllUsers}
         wbsNum={exampleWbs1}
       />
     </RouterWrapper>
@@ -37,29 +35,14 @@ const renderComponent = (modalShow: boolean) => {
 };
 
 describe('stage gate work package modal test suite', () => {
-  it('renders accept title', () => {
+  it('renders the info if the modal is shown', () => {
     renderComponent(true);
 
     expect(screen.queryByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
-  });
-
-  it('renders label for inputs', () => {
-    renderComponent(true);
-
-    expect(screen.getByLabelText(/Budget/)).toBeInTheDocument();
+    expect(screen.getByText(/Leftover Budget/)).toBeInTheDocument();
     expect(screen.getByText(/done/)).toBeInTheDocument();
-  });
-
-  it('renders form elements', () => {
-    renderComponent(true);
-
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getAllByRole('radio').length).toBe(2);
-  });
-
-  it('renders buttons', () => {
-    renderComponent(true);
-
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByText('Submit')).toBeInTheDocument();
   });

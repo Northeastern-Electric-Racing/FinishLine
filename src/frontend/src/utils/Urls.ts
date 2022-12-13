@@ -53,6 +53,7 @@ const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/prop
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
+const teamsById = (id: string) => `${teams()}/${id}`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -94,6 +95,7 @@ export const apiUrls = {
   changeRequestCreateProposeSolution,
 
   teams,
+  teamsById,
 
   descriptionBulletsCheck,
 

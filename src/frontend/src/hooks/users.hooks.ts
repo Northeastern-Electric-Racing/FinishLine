@@ -11,7 +11,7 @@ import {
   logUserIn,
   logUserInDev,
   updateUserSettings
-} from '../apis/Users.api';
+} from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
 import { useAuth } from './auth.hooks';
 
