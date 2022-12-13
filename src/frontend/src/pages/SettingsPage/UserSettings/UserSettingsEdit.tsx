@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
 import { FormInput } from './UserSettings';
-import { themeChoices } from '../../../utils/Types';
+import { themeChoices } from '../../../utils/types';
 import { Grid, Select, MenuItem, TextField, Link, Typography } from '@mui/material';
 
 interface UserSettingsEditProps {

@@ -5,7 +5,7 @@
 
 import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
-import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/Pipes';
+import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';

@@ -1,5 +1,5 @@
 import { Route, Switch } from 'react-router-dom';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import TeamsPage from './TeamsPage';
 import TeamSpecificPage from './TeamSpecificPage';
 
@@ -12,4 +12,4 @@ const Teams: React.FC = () => {
   );
 };
 
-export default Teams
+export default Teams;

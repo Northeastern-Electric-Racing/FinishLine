@@ -9,7 +9,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
-import { fullNamePipe, wbsPipe } from '../../../utils/Pipes';
+import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import { Select } from '@mui/material';
 import { MenuItem } from '@mui/material';

@@ -6,7 +6,7 @@
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { Chip, Button, Grid } from '@mui/material';
-import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
+import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 

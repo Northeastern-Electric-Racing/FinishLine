@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { ActivationChangeRequest } from 'shared';
-import { datePipe } from '../../../utils/Pipes';
+import { datePipe } from '../../../utils/pipes';
 import { exampleActivationChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ActivationDetails from '../../../pages/ChangeRequestDetailPage/ActivationDetails';
 

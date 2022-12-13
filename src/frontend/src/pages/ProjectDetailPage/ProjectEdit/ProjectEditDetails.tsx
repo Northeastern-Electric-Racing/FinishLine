@@ -4,7 +4,7 @@ import { Grid, MenuItem, TextField } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { fullNamePipe } from '../../../utils/Pipes';
+import { fullNamePipe } from '../../../utils/pipes';
 
 interface ProjectEditDetailsProps {
   users: User[];
