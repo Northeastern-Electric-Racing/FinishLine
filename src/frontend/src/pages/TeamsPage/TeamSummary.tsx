@@ -4,8 +4,8 @@
  */
 
 import { Team } from 'shared';
-import { routes } from '../../utils/Routes';
-import { fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
 interface TeamSummaryProps {
   team: Team;

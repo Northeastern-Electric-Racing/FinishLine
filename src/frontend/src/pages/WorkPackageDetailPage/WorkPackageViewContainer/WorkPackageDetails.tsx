@@ -4,7 +4,7 @@
  */
 
 import { WorkPackage } from 'shared';
-import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/Pipes';
+import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid, Typography } from '@mui/material';

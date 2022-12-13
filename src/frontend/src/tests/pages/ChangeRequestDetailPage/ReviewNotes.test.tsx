@@ -4,7 +4,7 @@
  */
 
 import { ChangeRequest } from 'shared';
-import { datePipe, fullNamePipe } from '../../../utils/Pipes';
+import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { exampleAllChangeRequests, exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import { exampleAppAdminUser } from '../../test-support/test-data/users.stub';
 import { render, screen, fireEvent } from '../../test-support/test-utils';

@@ -4,8 +4,8 @@
  */
 
 import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers, faChartGantt } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../utils/Routes';
-import { LinkItem } from '../../utils/Types';
+import { routes } from '../../utils/routes';
+import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 

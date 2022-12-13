@@ -4,7 +4,7 @@
  */
 
 import { User } from 'shared';
-import { datePipe, emDashPipe, fullNamePipe } from '../../utils/Pipes';
+import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
 import { Tooltip, Typography } from '@mui/material';
 
