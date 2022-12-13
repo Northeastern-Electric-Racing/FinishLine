@@ -4,7 +4,7 @@
  */
 
 import { ProposedSolution } from 'shared';
-import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
+import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { Box, Card, CardContent, Chip, Grid } from '@mui/material';
 
 interface ProposedSolutionSelectItemProps {

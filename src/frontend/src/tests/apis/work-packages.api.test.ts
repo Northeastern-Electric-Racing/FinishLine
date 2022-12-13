@@ -5,7 +5,7 @@
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { apiUrls } from '../../utils/Urls';
+import { apiUrls } from '../../utils/urls';
 import { exampleAllWorkPackages, exampleWorkPackage1 } from '../test-support/test-data/work-packages.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 

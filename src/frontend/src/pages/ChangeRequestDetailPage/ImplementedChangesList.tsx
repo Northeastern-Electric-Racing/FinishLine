@@ -4,8 +4,8 @@
  */
 
 import { ImplementedChange } from 'shared';
-import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
-import { routes } from '../../utils/Routes';
+import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
 import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 

@@ -5,7 +5,7 @@
 
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/auth.hooks';
-import { routes } from '../utils/Routes';
+import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';

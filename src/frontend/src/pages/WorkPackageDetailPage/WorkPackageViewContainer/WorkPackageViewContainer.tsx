@@ -6,8 +6,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
-import { routes } from '../../../utils/Routes';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
@@ -139,7 +139,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         items={workPackage.expectedActivities
           .filter((ea) => !ea.dateDeleted)
           .map((ea) => {
-            return { ...ea, resolved: !!ea.userChecked };
+            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
           })}
         isDisabled={checkListDisabled}
       />
@@ -148,7 +148,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         items={workPackage.deliverables
           .filter((del) => !del.dateDeleted)
           .map((del) => {
-            return { ...del, resolved: !!del.userChecked };
+            return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
           })}
         isDisabled={checkListDisabled}
       />

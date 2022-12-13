@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import { Risk } from 'shared';
-import { apiUrls } from '../utils/Urls';
+import { apiUrls } from '../utils/urls';
 
 /**
  * Get the risks for a given project.

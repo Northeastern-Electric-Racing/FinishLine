@@ -5,7 +5,7 @@
 
 import { useQuery } from 'react-query';
 import { Team } from 'shared';
-import { getAllTeams } from '../apis/teams.api';
+import { getAllTeams, getSingleTeam } from '../apis/teams.api';
 
 export const useAllTeams = () => {
   return useQuery<Team[], Error>(['temas'], async () => {
@@ -13,3 +13,9 @@ export const useAllTeams = () => {
     return data;
   });
 };
+export const useSingleTeam = (teamId: string) => {
+  return useQuery<Team, Error>(['temas', teamId], async () => {
+    const { data } = await getSingleTeam(teamId);
+    return data
+  });
+}

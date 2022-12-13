@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
 import EditableTextInputList from '../../components/EditableTextInputList';
 import PageTitle from '../../layouts/PageTitle/PageTitle';

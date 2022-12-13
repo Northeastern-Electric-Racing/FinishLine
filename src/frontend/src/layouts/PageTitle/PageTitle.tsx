@@ -5,7 +5,7 @@
 
 import { Typography, Grid } from '@mui/material';
 import { ReactNode } from 'react';
-import { LinkItem } from '../../utils/Types';
+import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
 
 interface PageTitleProps {

@@ -6,7 +6,7 @@
 import { render, screen } from '@testing-library/react';
 import RiskLog from '../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
 import { exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4 } from '../../test-support/test-data/risks.stub';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../test-support/test-data/users.stub';
