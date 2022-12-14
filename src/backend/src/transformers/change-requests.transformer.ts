@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { ChangeRequest, StandardChangeRequest, ActivationChangeRequest, StageGateChangeRequest } from 'shared';
-import changeRequestRelationArgs from '../prisma-query-args/change-request.query-args';
+import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
 import { userTransformer } from '../utils/users.utils';
 import { convertCRScopeWhyType } from '../utils/change-requests.utils';
-import proposedSolutionTransformer from './proposed-solution.transformer';
+import proposedSolutionTransformer from './proposed-solutions.transformer';
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>

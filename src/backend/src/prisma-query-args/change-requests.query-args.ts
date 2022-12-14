@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import scopeCRArgs from './scope-change-request.query-args';
+import scopeCRArgs from './scope-change-requests.query-args';
 
-const changeRequestRelationArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
+const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
   include: {
     submitter: true,
     wbsElement: true,
@@ -18,4 +18,4 @@ const changeRequestRelationArgs = Prisma.validator<Prisma.Change_RequestArgs>()(
   }
 });
 
-export default changeRequestRelationArgs;
+export default changeRequestQueryArgs;
