@@ -71,16 +71,17 @@ const Settings: React.FC = () => {
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <PageBlock title={'Organization Settings'}>
         <Grid container>
-          <Grid item md={12}>
+          <Grid item xs={6} md={12}>
             <b>Name:</b> Northeastern Electric Racing
           </Grid>
-          <Grid item>
-            <FormGroup sx={{ paddingLeft: 2 }}>
+          <Grid item xs={6} md={12}>
+            <FormGroup>
               <FormControlLabel
                 label="Trickster Mode"
                 control={
                   <NERSwitch
                     id="trick-switch"
+                    sx={{ m: 1 }}
                     onClick={() => {
                       setShowAlert(true);
                       setTimeout(() => {

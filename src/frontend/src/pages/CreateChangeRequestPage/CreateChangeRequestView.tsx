@@ -87,11 +87,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
+  const theme = useTheme();
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
+
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
-
-  const theme = useTheme();
 
   return (
     <form
@@ -117,7 +119,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               control={control}
               placeholder="1.1.0"
               errorMessage={errors.wbsNum}
-              sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
+              sx={style}
             />
           </Grid>
           <Grid item xs={12} md={9}>
@@ -129,12 +131,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <TextField
-                  select
-                  onChange={onChange}
-                  value={value}
-                  sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
-                >
+                <TextField select onChange={onChange} value={value} sx={style}>
                   {permittedTypes.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}

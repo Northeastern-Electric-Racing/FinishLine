@@ -33,9 +33,9 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
 
         <Grid item xs={4} md={4}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Duration:{' '}
+            Progress:{' '}
           </Typography>
-          <Typography display="inline">{weeksPipe(workPackage.duration)}</Typography>
+          <Typography display="inline">{percentPipe(workPackage.progress)}</Typography>
         </Grid>
 
         <Grid item xs={4} md={4}>
@@ -54,16 +54,16 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
 
         <Grid item xs={4} md={4}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Progress:{' '}
+            Expected Progress:{' '}
           </Typography>
-          <Typography display="inline">{percentPipe(workPackage.progress)}</Typography>
+          <Typography display="inline">{percentPipe(workPackage.expectedProgress)}</Typography>
         </Grid>
 
         <Grid item xs={4} md={4}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Expected Progress:{' '}
+            Duration:{' '}
           </Typography>
-          <Typography display="inline">{percentPipe(workPackage.expectedProgress)}</Typography>
+          <Typography display="inline">{weeksPipe(workPackage.duration)}</Typography>
         </Grid>
 
         <Grid item xs={4} md={4}>
