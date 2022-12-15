@@ -16,7 +16,9 @@ export const changeBatmobile = {
   ],
   dateSubmitted: new Date('11/24/2020'),
   dateReviewed: new Date('11/25/2020'),
+  dateDeleted: null,
   accepted: true,
+  deletedByUserId: null,
   reviewerId: 1,
   reviewNotes: 'white sucks'
 };
@@ -82,15 +84,18 @@ export const whipWorkPackage = {
 export const redesignWhipWBSElement = {
   wbsElementId: 65,
   dateCreated: new Date('10/18/2022'),
+  dateDeleted: null,
   carNumber: 1,
   projectNumber: 1,
   workPackageNumber: 1,
   name: 'redesign whip',
   status: WBS_Element_Status.ACTIVE,
+  deletedByUserId: null,
   projectLeadId: 1,
   projectManagerId: 2,
   workPackage: whipWorkPackage
 };
+
 export const redesignWhip = {
   crId: 2,
   submitterId: 100,
@@ -100,6 +105,8 @@ export const redesignWhip = {
   type: CR_Type.OTHER,
   dateSubmitted: new Date('10/10/2022'),
   dateReviewed: new Date('10/18/2022'),
+  dateDeleted: null,
+  deletedByUserId: null,
   accepted: true,
   reviewerId: 1,
   reviewNotes: 'orange sucks',
@@ -113,27 +120,12 @@ export const redesignWhip = {
   ],
   scopeChangeRequest: redesignWhipScopeCR
 };
+
 export const redesignWhipStageGate = {
   stageGateCrId: 1,
   changeRequestId: 2,
   leftoverBudget: 1000,
   confirmDone: true
-};
-
-export const redesignWhipWBSElement = {
-  wbsElementId: 65,
-  dateCreated: new Date('10/18/2022'),
-  dateDeleted: null,
-  carNumber: 1,
-  projectNumber: 1,
-  workPackageNumber: 1,
-  name: 'redesign whip',
-  status: WBS_Element_Status.ACTIVE,
-  deletedByUserId: null,
-  projectLeadId: 1,
-  projectManagerId: 2,
-  changeRequests: [redesignWhip],
-  workPackage: whipWorkPackage
 };
 
 export const unreviewedCr = {
@@ -151,7 +143,9 @@ export const unreviewedCr = {
   ],
   dateSubmitted: new Date('11/24/2020'),
   dateReviewed: null,
+  dateDeleted: null,
   accepted: null,
+  deletedByUserId: null,
   reviewerId: null,
   reviewNotes: null
 };
