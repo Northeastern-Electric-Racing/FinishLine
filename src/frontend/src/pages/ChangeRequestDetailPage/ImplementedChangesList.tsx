@@ -6,8 +6,10 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Link, ListItem, List, Tooltip, Typography, TooltipProps, tooltipClasses } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -15,6 +17,31 @@ interface ImplementedChangesListProps {
 }
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
+  function useWindowSize() {
+    const [size, setSize] = useState(0);
+    useLayoutEffect(() => {
+      function updateSize() {
+        setSize(window.innerWidth);
+      }
+      window.addEventListener('resize', updateSize);
+      updateSize();
+      return () => window.removeEventListener('resize', updateSize);
+    }, []);
+    return size;
+  }
+
+  const width = useWindowSize();
+
+  // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
+  const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }}/>
+  ))({
+    [`& .${tooltipClasses.tooltip}`]: {
+      maxWidth: `${width/2}px`,
+      overflowWrap: 'break-word',
+    },
+  });
+
   return (
     <PageBlock
       title={'Implemented Changes'}
@@ -23,19 +50,19 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
-            <Tooltip
+            <CustomWidthTooltip
               id="tooltip"
               title={
                 <Typography>
                   {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
                 </Typography>
               }
-              placement="right"
+              placement="top"
             >
               <Typography>
                 [{<Link href={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>}] {ic.detail}
               </Typography>
-            </Tooltip>
+            </CustomWidthTooltip>
           </ListItem>
         ))}
       </List>
