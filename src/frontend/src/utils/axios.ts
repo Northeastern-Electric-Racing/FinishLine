@@ -11,8 +11,34 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    const message = error?.response?.data?.message || 'Something went wrong...';
-    throw new Error(message);
+    // this is how normal errors get sent (e.g., res.status(400).json({message: 'blah blah'}))
+    const message = error?.response?.data?.message;
+    if (message) {
+      throw new Error(message);
+    }
+
+    // this is how validation errors get sent
+    const errors = error?.response?.data?.errors;
+    if (errors) {
+      let messages = 'ERRORS:';
+      errors.forEach((element: { msg: string; value: string; param: string; location: string }) => {
+        const errorMessage = `\n${element.msg}: ${element.value} for "${element.param}" in ${element.location}`;
+        messages += errorMessage;
+      });
+      throw new Error(messages);
+    }
+
+    throw new Error('Unknown Error!');
+  }
+);
+
+axios.interceptors.request.use(
+  (request) => {
+    if (process.env.NODE_ENV === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
+    return request;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
 );
 

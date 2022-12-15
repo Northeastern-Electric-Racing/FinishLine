@@ -8,7 +8,7 @@ import {
   getSingleWorkPackage
 } from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isDate, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', getAllWorkPackages);
@@ -21,7 +21,7 @@ workPackagesRouter.post(
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
   intMinZero(body('projectWbsNum.workPackageNumber')),
-  body('startDate').isDate(),
+  isDate(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('dependencies.*.carNumber')),
   intMinZero(body('dependencies.*.projectNumber')),

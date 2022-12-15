@@ -3,8 +3,9 @@ import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
 import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
-import { batman } from './test-data/users.test-data';
-import { wbsElement1 } from './test-data/projects.test-data';
+import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
+import { project1, wbsElement1 } from './test-data/projects.test-data';
+import { team1 } from './test-data/team.test-data';
 
 const app = express();
 app.use(express.json());
@@ -86,19 +87,7 @@ describe('Projects', () => {
     const res = await request(app).post('/new').send(newProjectPayload);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({
-      wbsNumber: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
-    });
-  });
-
-  test('editProject fails with bad status', async () => {
-    const proj = { ...editProjectPayload, wbsElementStatus: 'alksdjflaksdfj' };
-    const res = await request(app).post('/edit').send(proj);
-
-    expect(res.statusCode).toBe(400);
-    expect(res.body.errors).toStrictEqual([
-      { location: 'body', msg: 'Invalid value', param: 'wbsElementStatus', value: 'alksdjflaksdfj' }
-    ]);
+    expect(res.body).toStrictEqual('1.2.3');
   });
 
   test('editProject fails with feature with no detail', async () => {
@@ -159,5 +148,46 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(200);
     expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
     expect(res.body).toStrictEqual([]);
+  });
+
+  test('setProjectTeam fails given invalid project wbs number', async () => {
+    const res = await request(app).post('/1.0.1/set-team').send({ teamId: 'test' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toStrictEqual({ message: `1.0.1 is not a valid project WBS #!` });
+  });
+
+  test('setProjectTeam fails with invalid team id', async () => {
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 123 });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('setProjectTeam fails with team that does not exist', async () => {
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
+
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('setProjectTeam fails with no permission from submitter (guest)', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
+
+    expect(res.statusCode).toBe(403);
+  });
+
+  test('setProjectTeam fails with no permission from submitter (leadership)', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(aquaman);
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(team1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    const res = await request(app).post('/1.2.0/set-team').send({ teamId: 'test' });
+
+    expect(res.statusCode).toBe(403);
   });
 });

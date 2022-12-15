@@ -157,11 +157,11 @@ export const createWorkPackage = async (req: Request, res: Response) => {
   }
 
   // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-  const date = new Date(startDate);
+  const date = new Date(startDate.split('T')[0]);
   date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
   // add to the database
-  await prisma.work_Package.create({
+  const created = await prisma.work_Package.create({
     data: {
       wbsElement: {
         create: {
@@ -185,10 +185,15 @@ export const createWorkPackage = async (req: Request, res: Response) => {
       dependencies: { connect: dependenciesIds.map((ele) => ({ wbsElementId: ele })) },
       expectedActivities: { create: expectedActivities.map((ele: string) => ({ detail: ele })) },
       deliverables: { create: deliverables.map((ele: string) => ({ detail: ele })) }
+    },
+    include: {
+      wbsElement: true
     }
   });
 
-  return res.status(200).json({ message: 'Work Package Created' });
+  return res
+    .status(200)
+    .json(`${created.wbsElement.carNumber}.${created.wbsElement.projectNumber}.${created.wbsElement.workPackageNumber}`);
 };
 
 export const editWorkPackage = async (req: Request, res: Response) => {

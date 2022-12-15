@@ -1,18 +1,18 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { validateInputs } from '../utils/utils';
-import { createRisk, deleteRisk, editRisk, getRisksForProject } from '../controllers/risks.controllers';
+import RisksController from '../controllers/risks.controllers';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 const risksRouter = express.Router();
 
-risksRouter.get('/:projectId', getRisksForProject);
+risksRouter.get('/:projectId', RisksController.getRisksForProject);
 risksRouter.post(
   '/create',
   intMinZero(body('projectId')),
   intMinZero(body('createdById')),
   nonEmptyString(body('detail')),
   validateInputs,
-  createRisk
+  RisksController.createRisk
 );
 risksRouter.post(
   '/edit',
@@ -21,14 +21,14 @@ risksRouter.post(
   nonEmptyString(body('detail')),
   body('resolved').isBoolean(),
   validateInputs,
-  editRisk
+  RisksController.editRisk
 );
 risksRouter.post(
   '/delete',
   nonEmptyString(body('riskId')),
   intMinZero(body('deletedByUserId')),
   validateInputs,
-  deleteRisk
+  RisksController.deleteRisk
 );
 
 export default risksRouter;

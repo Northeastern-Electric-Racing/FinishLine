@@ -16,14 +16,11 @@ const renderComponent = (cr: StandardChangeRequest) => {
 };
 
 describe('Change request details standard cr display element tests', () => {
-  it('Renders what section', () => {
+  it('Renders what and why section', () => {
     renderComponent(cr);
     expect(screen.getByText(`What`)).toBeInTheDocument();
     expect(screen.getByText(`${cr.what}`)).toBeInTheDocument();
-  });
 
-  it('Renders why section', () => {
-    renderComponent(cr);
     expect(screen.getByText(`Why`)).toBeInTheDocument();
     cr.why.forEach((explanation: ChangeRequestExplanation) => {
       expect(screen.getByText(`${explanation.type}`)).toBeInTheDocument();
