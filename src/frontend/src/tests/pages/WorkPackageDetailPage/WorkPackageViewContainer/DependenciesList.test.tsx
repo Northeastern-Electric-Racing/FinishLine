@@ -5,7 +5,7 @@
 
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
 import { exampleWorkPackage2 } from '../../../test-support/test-data/work-packages.stub';
-import { wbsPipe } from '../../../../utils/Pipes';
+import { wbsPipe } from '../../../../utils/pipes';
 // import DependenciesList from './dependencies-list';
 // import { FormContext } from '../../work-package-container';
 

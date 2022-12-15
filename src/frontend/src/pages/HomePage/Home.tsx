@@ -3,22 +3,23 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container } from 'react-bootstrap';
+import Typography from '@mui/material/Typography';
 import { useAuth } from '../../hooks/auth.hooks';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';
-import styles from '../../stylesheets/pages/home.module.css';
 
 const Home: React.FC = () => {
   const auth = useAuth();
   return (
-    <Container fluid>
-      <h1 className={styles.title}>Welcome, {auth.user?.firstName}!</h1>
+    <>
+      <Typography variant="h3" sx={{ textAlign: 'center', pt: 3 }}>
+        Welcome, {auth.user?.firstName}!
+      </Typography>
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-    </Container>
+    </>
   );
 };
 

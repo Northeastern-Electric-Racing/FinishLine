@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import { User } from 'shared';
-import { apiUrls } from '../utils/Urls';
+import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 

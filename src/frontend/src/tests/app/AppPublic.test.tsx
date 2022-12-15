@@ -8,8 +8,8 @@ import { render, screen, routerWrapperBuilder } from '../test-support/test-utils
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { useAuth } from '../../hooks/auth.hooks';
-import { routes } from '../../utils/Routes';
-import { Auth } from '../../utils/Types';
+import { routes } from '../../utils/routes';
+import { Auth } from '../../utils/types';
 import AppPublic from '../../app/AppPublic';
 
 jest.mock('../../app/AppAuthenticated', () => {

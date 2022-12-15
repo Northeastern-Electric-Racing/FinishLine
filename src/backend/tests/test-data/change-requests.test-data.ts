@@ -49,10 +49,53 @@ export const redesignWhipScopeCR = {
   proposedSolutions: solutionToRedesignWhip
 };
 
+export const whipWorkPackage = {
+  workPackageId: 1,
+  wbsElementId: 65,
+  projectId: 1,
+  orderInProject: 1,
+  startDate: new Date('10/10/2022'),
+  expectedActivities: [
+    {
+      descriptionId: 1,
+      dateAdded: new Date('10/10/2022'),
+      userCheckedId: 1,
+      dateTimeChecked: new Date('10/10/2022'),
+      detail: 'redesign whip',
+      workPackageIdExpectedActivities: 1
+    }
+  ],
+  deliverables: [
+    {
+      descriptionId: 2,
+      dateAdded: new Date('10/10/2022'),
+      userCheckedId: 1,
+      dateTimeChecked: new Date('10/10/2022'),
+      detail: 'Gotta Finish',
+      workPackageIdDeliverables: 1
+    }
+  ],
+  progress: 20,
+  duration: 10
+};
+
+export const redesignWhipWBSElement = {
+  wbsElementId: 65,
+  dateCreated: new Date('10/18/2022'),
+  carNumber: 1,
+  projectNumber: 1,
+  workPackageNumber: 1,
+  name: 'redesign whip',
+  status: WBS_Element_Status.ACTIVE,
+  projectLeadId: 1,
+  projectManagerId: 2,
+  workPackage: whipWorkPackage
+};
 export const redesignWhip = {
   crId: 2,
   submitterId: 100,
   wbsElementId: 65,
+  wbsElement: redesignWhipWBSElement,
   projectId: 2,
   type: CR_Type.OTHER,
   dateSubmitted: new Date('10/10/2022'),
@@ -70,14 +113,11 @@ export const redesignWhip = {
   ],
   scopeChangeRequest: redesignWhipScopeCR
 };
-export const whipWorkPackage = {
-  workPackageId: 1,
-  wbsElementId: 65,
-  projectId: 1,
-  orderInProject: 1,
-  startDate: new Date('10/10/2022'),
-  progress: 20,
-  duration: 10
+export const redesignWhipStageGate = {
+  stageGateCrId: 1,
+  changeRequestId: 2,
+  leftoverBudget: 1000,
+  confirmDone: true
 };
 
 export const redesignWhipWBSElement = {
