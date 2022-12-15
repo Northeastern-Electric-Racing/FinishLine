@@ -16,7 +16,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography } from '@mui/material';
+import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
 
 const NERInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -35,6 +35,7 @@ const NERInput = styled(InputBase)(({ theme }) => ({
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, timelineStatus });
+  const theme = useTheme();
 
   useEffect(() => {
     workPackages.refetch();
@@ -58,7 +59,11 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
-            <Card variant="outlined" key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
+            <Card
+              variant="outlined"
+              key={wbsPipe(wp.wbsNum)}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
+            >
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"

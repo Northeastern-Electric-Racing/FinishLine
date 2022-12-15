@@ -42,7 +42,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const theme = useTheme();
 
   return (
-    <Accordion sx={{ border: '1px solid ' + theme.palette.divider }}>
+    <Accordion sx={{ border: '1px solid ' + theme.palette.divider, background: theme.palette.background.default }}>
       <AccordionSummary
         id={`${wbsPipe(workPackage.wbsNum)}-summary-header`}
         aria-controls={`${wbsPipe(workPackage.wbsNum)}-summary-content`}

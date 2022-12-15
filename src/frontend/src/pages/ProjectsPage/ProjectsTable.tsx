@@ -9,6 +9,7 @@ import { routes } from '../../utils/Routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { useTheme } from '@mui/material';
 
 /**
  * Table of all projects.
@@ -115,6 +116,8 @@ const ProjectsTable: React.FC = () => {
     }
   ];
 
+  const theme = useTheme();
+
   return (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
@@ -129,6 +132,7 @@ const ProjectsTable: React.FC = () => {
         error={error}
         rows={data || []}
         columns={columns}
+        sx={{ background: theme.palette.background.paper }}
         onRowClick={(params) => {
           history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
         }}

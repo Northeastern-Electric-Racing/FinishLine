@@ -45,7 +45,11 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
-            <Card variant="outlined" key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
+            <Card
+              variant="outlined"
+              key={wbsPipe(wp.wbsNum)}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
+            >
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"

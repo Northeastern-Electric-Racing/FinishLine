@@ -27,7 +27,11 @@ const AppContextSettings: React.FC = (props) => {
       createTheme(
         {
           palette: {
-            mode: theme.activeTheme
+            mode: theme.activeTheme,
+            background: {
+              default: theme.activeTheme === 'light' ? '#FFFFFF' : '#333333',
+              paper: theme.activeTheme === 'light' ? '#FAF9F6' : '#464646'
+            }
           }
         },
         nerThemeOptions
