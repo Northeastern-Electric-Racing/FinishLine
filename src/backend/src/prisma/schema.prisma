@@ -63,6 +63,7 @@ model User {
   // Relation references
   submittedChangeRequests   Change_Request[]     @relation(name: "submittedChangeRequests")
   reviewedChangeRequests    Change_Request[]     @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests     Change_Request[]     @relation(name: "deletedChangeRequests")
   markedAsProjectLead       Activation_CR[]      @relation(name: "markAsProjectLead")
   markedAsProjectManager    Activation_CR[]      @relation(name: "markAsProjectManager")
   changes                   Change[]
@@ -71,6 +72,7 @@ model User {
   Session                   Session[]
   teams                     Team[]               @relation(name: "teamsAsMember")
   teamAsLead                Team?                @relation(name: "teamAsLead")
+  deletedWBSElements        WBS_Element[]        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets Description_Bullet[] @relation(name: "checkDescriptionBullets")
   createdRisks              Risk[]               @relation(name: "createdBy")
   resolvedRisks             Risk[]               @relation(name: "resolvedBy")
@@ -110,11 +112,14 @@ model Change_Request {
   submitterId             Int
   submitter               User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
   dateSubmitted           DateTime       @default(now())
+  dateDeleted             DateTime?
   wbsElementId            Int
   wbsElement              WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
   type                    CR_Type
   reviewerId              Int?
   reviewer                User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  deletedByUserId         Int?
+  deletedBy               User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed            DateTime?
   accepted                Boolean?
   reviewNotes             String?
@@ -193,7 +198,7 @@ model Change {
 model WBS_Element {
   wbsElementId          Int                @id @default(autoincrement())
   dateCreated           DateTime           @default(now())
-  isDeleted             Boolean            @default(false)
+  dateDeleted           DateTime?
   carNumber             Int
   projectNumber         Int
   workPackageNumber     Int
@@ -205,6 +210,8 @@ model WBS_Element {
   projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
   changeRequests        Change_Request[]
   changes               Change[]
+  deletedByUserId       Int?
+  deletedBy             User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
   project               Project?
   workPackage           Work_Package?
   dependentWorkPackages Work_Package[]     @relation("dependencies")
