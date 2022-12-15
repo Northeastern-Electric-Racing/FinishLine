@@ -31,12 +31,13 @@ export const project1 = {
 export const wbsElement1 = {
   wbsElementId: 1,
   status: WBS_Element_Status.ACTIVE,
-  isDeleted: false,
   carNumber: 1,
   projectNumber: 2,
   workPackageNumber: 0,
   dateCreated: new Date(),
+  dateDeleted: null,
   name: 'car',
+  deletedByUserId: null,
   projectLeadId: 4,
   projectManagerId: 5,
   project: project1
