@@ -9,7 +9,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
-import { nerThemeOptions } from '../utils/themes';
+import { darkThemeOptions, lightThemeOptions, nerThemeOptions } from '../utils/themes';
 import { useAuth } from '../hooks/auth.hooks';
 
 export const ThemeToggleContext = createContext({ activeTheme: 'light', toggleTheme: () => {} });
@@ -27,14 +27,11 @@ const AppContextSettings: React.FC = (props) => {
       createTheme(
         {
           palette: {
-            mode: theme.activeTheme,
-            background: {
-              default: theme.activeTheme === 'light' ? '#FFFFFF' : '#333333',
-              paper: theme.activeTheme === 'light' ? '#FAF9F6' : '#464646'
-            }
+            mode: theme.activeTheme
           }
         },
-        nerThemeOptions
+        nerThemeOptions,
+        theme.activeTheme === 'light' ? lightThemeOptions : darkThemeOptions
       ),
     [theme]
   );
