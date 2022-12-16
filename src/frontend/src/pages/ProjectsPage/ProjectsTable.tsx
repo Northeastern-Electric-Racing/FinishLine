@@ -5,9 +5,9 @@
 
 import { useHistory } from 'react-router-dom';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
-import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/Pipes';
+import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useTheme } from '@mui/material';
 

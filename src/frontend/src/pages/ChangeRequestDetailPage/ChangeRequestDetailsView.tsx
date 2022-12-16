@@ -12,8 +12,8 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { routes } from '../../utils/Routes';
-import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';

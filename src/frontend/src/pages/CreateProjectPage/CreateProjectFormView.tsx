@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { CreateProjectFormStates } from './CreateProjectForm';
 import { styled, useTheme } from '@mui/material';
 

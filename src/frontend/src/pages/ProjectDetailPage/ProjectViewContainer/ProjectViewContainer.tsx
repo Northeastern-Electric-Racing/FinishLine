@@ -5,7 +5,7 @@
 
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
+import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
@@ -15,7 +15,7 @@ import PageBlock from '../../../layouts/PageBlock';
 import ProjectDetails from './ProjectDetails';
 import RulesList from './RulesList';
 import RiskLog from './RiskLog';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';

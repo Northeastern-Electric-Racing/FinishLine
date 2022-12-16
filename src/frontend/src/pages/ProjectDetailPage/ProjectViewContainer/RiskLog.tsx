@@ -28,8 +28,8 @@ import {
 } from '../../../hooks/risks.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { routes } from '../../../utils/Routes';
-import { wbsPipe } from '../../../utils/Pipes';
+import { routes } from '../../../utils/routes';
+import { wbsPipe } from '../../../utils/pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
 import { NERButton } from '../../../components/NERButton';

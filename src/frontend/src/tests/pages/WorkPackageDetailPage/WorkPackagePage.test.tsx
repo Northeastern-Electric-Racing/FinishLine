@@ -6,7 +6,7 @@
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';

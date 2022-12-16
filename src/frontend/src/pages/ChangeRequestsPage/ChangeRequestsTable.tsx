@@ -5,8 +5,8 @@
 
 import { useHistory } from 'react-router-dom';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { routes } from '../../utils/Routes';
-import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';

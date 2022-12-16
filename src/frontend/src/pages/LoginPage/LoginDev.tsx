@@ -11,7 +11,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import FormControl from '@mui/material/FormControl';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { fullNamePipe } from '../../utils/Pipes';
+import { fullNamePipe } from '../../utils/pipes';
 interface LoginDevProps {
   devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;

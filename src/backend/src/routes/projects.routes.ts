@@ -1,5 +1,11 @@
 import express from 'express';
-import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
+import {
+  editProject,
+  getAllProjects,
+  getSingleProject,
+  newProject,
+  setProjectTeam
+} from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
@@ -46,5 +52,6 @@ projectRouter.post(
   validateInputs,
   editProject
 );
+projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, setProjectTeam);
 
 export default projectRouter;

@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';

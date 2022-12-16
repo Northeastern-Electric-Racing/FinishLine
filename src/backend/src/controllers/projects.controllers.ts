@@ -15,7 +15,7 @@ import {
 } from '../utils/projects.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import { descBulletConverter } from '../utils/utils';
+import { descBulletConverter, getCurrentUser } from '../utils/utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
   const projects = await prisma.project.findMany(manyRelationArgs);
@@ -294,4 +294,53 @@ export const editProject = async (req: Request, res: Response) => {
 
   // return the updated work package
   return res.status(200).json(updatedProject);
+};
+
+export const setProjectTeam = async (req: Request, res: Response) => {
+  const { body } = req;
+
+  // check for valid WBS number
+  const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
+
+  if (!isProject(parsedWbs)) {
+    return res.status(400).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
+  }
+
+  // find the associated project
+  const project = await prisma.project.findFirst({
+    where: {
+      wbsElement: {
+        carNumber: parsedWbs.carNumber,
+        projectNumber: parsedWbs.projectNumber,
+        workPackageNumber: parsedWbs.workPackageNumber
+      }
+    }
+  });
+
+  if (!project) {
+    return res.status(404).json({ message: `no associated project for ${req.params.wbsNum}` });
+  }
+
+  // check for valid team
+  const team = await prisma.team.findUnique({ where: { teamId: body.teamId } });
+  if (!team) {
+    return res.status(404).json({ message: `team with id ${body.teamId} not found.` });
+  }
+
+  const user = await getCurrentUser(res);
+  // check for user and user permission (admin, app admin, or leader of the team)
+  if (
+    user.role === Role.GUEST ||
+    user.role === Role.MEMBER ||
+    (user.role === Role.LEADERSHIP && user.userId !== team.leaderId)
+  )
+    return res.status(403).json({ message: 'Access Denied' });
+
+  // if everything is fine, then update the given project to assign to provided team ID
+  await prisma.project.update({
+    where: { projectId: project.projectId },
+    data: { teamId: body.teamId }
+  });
+
+  return res.status(200).json({ message: `Project ${project.projectId} successfully assigned to team ${body.teamId}.` });
 };

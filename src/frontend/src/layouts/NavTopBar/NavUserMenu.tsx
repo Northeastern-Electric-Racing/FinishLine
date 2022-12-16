@@ -11,7 +11,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import Button from '@mui/material/Button';
 
 const NavUserMenu: React.FC = () => {
