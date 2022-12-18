@@ -104,7 +104,7 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.accepted,
           '1'
         )
-      ).rejects.toThrow(new HttpException(404, 'Proposed solution with id #1 not found for change request #2'));
+      ).rejects.toThrow(new HttpException(404, 'Proposed Solution with id: 1 not found!'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -283,7 +283,7 @@ describe('Change Requests', () => {
       ).rejects.toThrow(new HttpException(400, 'Work Package has unchecked deliverables'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
-    
+
     test('Stage Gate CR Succeeds', async () => {
       const validWP = {
         ...whipWorkPackage,
