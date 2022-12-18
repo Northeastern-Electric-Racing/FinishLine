@@ -1,16 +1,16 @@
 import { ChangeRequest } from 'shared';
 import prisma from '../prisma/prisma';
-import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
+import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
-import { Role, CR_Type, WBS_Element_Status, User } from '@prisma/client';
+import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
 import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 
 export default class ChangeRequestsService {
   /**
-   * 
+   * Gets the change request for the given Id
    * @param crId The change request id
    * @returns The change request with the given id
    * @throws if the change request does not exist
@@ -18,31 +18,31 @@ export default class ChangeRequestsService {
   static async getChangeRequestByID(crId: number): Promise<ChangeRequest> {
     const requestedCR = await prisma.change_Request.findUnique({
       where: { crId },
-      ...changeRequestRelationArgs
+      ...changeRequestQueryArgs
     });
     if (requestedCR === null) throw new NotFoundException('Change Request', crId);
 
     return changeRequestTransformer(requestedCR);
   }
   /**
-   * 
+   * gets all the change requests in the database
    * @returns All of the change requests
    */
   static async getAllChangeRequests(): Promise<ChangeRequest[]> {
-    const changeRequests = await prisma.change_Request.findMany(changeRequestRelationArgs);
+    const changeRequests = await prisma.change_Request.findMany(changeRequestQueryArgs);
     return changeRequests.map(changeRequestTransformer);
   }
 
- /**
-  * 
-  * @param reviewer The user reviewing the change request
-  * @param crId the change request id
-  * @param reviewNotes any notes passed in by the reviewer
-  * @param accepted whether or not the change request is accepted
-  * @param psId an optional psId to be passed in if the change request is a scope change request
-  * @returns the id of the reviewed change request
-  * @throws if the user does not have perms, the change request does not exist, the change request is already approved, 
-  */
+  /**
+   * reviews the change request for the given Id and automates any changes that are made
+   * @param reviewer The user reviewing the change request
+   * @param crId the change request id
+   * @param reviewNotes any notes passed in by the reviewer
+   * @param accepted whether or not the change request is accepted
+   * @param psId an optional psId to be passed in if the change request is a scope change request
+   * @returns the id of the reviewed change request
+   * @throws if the user does not have perms, the change request does not exist, the change request is already approved,
+   */
   static async reviewChangeRequest(
     reviewer: User,
     crId: number,
@@ -79,7 +79,7 @@ export default class ChangeRequestsService {
         where: { proposedSolutionId: psId }
       });
       if (!foundPs || foundPs.changeRequestId !== foundCR.scopeChangeRequest.scopeCrId)
-        throw new HttpException(404, `Proposed solution with id #${psId} not found for change request #${crId}`);
+        throw new NotFoundException('Proposed Solution', psId);
 
       // automate the changes for the proposed solution
       // if cr is for a project: update the budget based off of the proposed solution
@@ -258,11 +258,13 @@ export default class ChangeRequestsService {
         }
       });
     }
+
     // send the creator of the cr a slack notification that their cr was reviewed
     const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
     if (creatorUserSettings && creatorUserSettings.slackId) {
       await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
     }
+
     // finally we can update change request
     const updated = await prisma.change_Request.update({
       where: { crId },
@@ -274,12 +276,12 @@ export default class ChangeRequestsService {
       },
       include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
     });
-    // TODO: handle errors
+
     return updated.crId;
   }
 
   /**
-   * 
+   * Validates and creates an activation change request
    * @param submitter The user creating the cr
    * @param carNumber the car number for the wbs element
    * @param projectNumber the project number for the wbs element
@@ -358,7 +360,7 @@ export default class ChangeRequestsService {
     return createdCR.crId;
   }
   /**
-   * 
+   * Validates and creates a stage gate change request
    * @param submitter The user creating the cr
    * @param carNumber  the car number for the wbs element
    * @param projectNumber  the project number for the wbs element
@@ -430,7 +432,7 @@ export default class ChangeRequestsService {
   }
 
   /**
-   * 
+   * Validates and creates a standard change request
    * @param submitter  The user creating the cr
    * @param carNumber  the car number for the wbs element
    * @param projectNumber  the project number for the wbs element
@@ -449,7 +451,7 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: any,
+    why: Scope_CR_Why[],
     budgetImpact: number
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
@@ -505,17 +507,17 @@ export default class ChangeRequestsService {
     return createdCR.crId;
   }
 
-/**
- * 
- * @param submitter  The user creating the cr
- * @param crId  the id of the change request
- * @param budgetImpact  the impact on the budget
- * @param description  the description of the proposed solution
- * @param timelineImpact  the impact on the timeline
- * @param scopeImpact  the impact on the scope
- * @returns  the id of the created cr
- * @throws if user is not allowed to create crs, if the change request is not found, or if the change request has already been reviewed
- */
+  /**
+   * valides and adds a proposed solution to a change request
+   * @param submitter  The user creating the cr
+   * @param crId  the id of the change request
+   * @param budgetImpact  the impact on the budget
+   * @param description  the description of the proposed solution
+   * @param timelineImpact  the impact on the timeline
+   * @param scopeImpact  the impact on the scope
+   * @returns  the id of the created cr
+   * @throws if user is not allowed to create crs, if the change request is not found, or if the change request has already been reviewed
+   */
   static async addProposedSolution(
     submitter: User,
     crId: number,

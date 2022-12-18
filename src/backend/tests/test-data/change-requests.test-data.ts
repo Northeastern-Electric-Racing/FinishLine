@@ -13,7 +13,6 @@ import {
   Scope_CR_Why_Type as PrismaScopeCRWhyType
 } from '@prisma/client';
 
-
 export const changeBatmobileChange: PrismaChange = {
   changeId: 3,
   dateImplemented: new Date('11/26/2020'),
@@ -21,7 +20,7 @@ export const changeBatmobileChange: PrismaChange = {
   implementerId: 1,
   wbsElementId: 65,
   detail: 'changed batmobile from white (yuck) to black'
-}
+};
 
 export const changeBatmobile: PrismaChangeRequest = {
   crId: 1,
@@ -35,7 +34,7 @@ export const changeBatmobile: PrismaChangeRequest = {
   reviewNotes: 'white sucks'
 };
 
-export const solutionToRedesignWhip : PrismaProposedSolution = {
+export const solutionToRedesignWhip: PrismaProposedSolution = {
   proposedSolutionId: '1',
   description: 'Change Color from Orange to Black',
   timelineImpact: 10,
@@ -46,52 +45,52 @@ export const solutionToRedesignWhip : PrismaProposedSolution = {
   dateCreated: new Date('10/16/2022'),
   approved: false
 };
+
 export const redesignWhipWhy: PrismaScopeCRWhy = {
   scopeCrWhyId: 1,
   scopeCrId: 1,
   type: PrismaScopeCRWhyType.DESIGN,
   explain: 'because it looks better'
 };
-export const redesignWhipScopeCR : PrismaScopeCR = {
+
+export const redesignWhipScopeCR: PrismaScopeCR = {
   scopeCrId: 1,
   changeRequestId: 2,
   what: 'redesign whip',
-  //why: redesignWhipWhy,
   scopeImpact: 'huge',
   timelineImpact: 10,
-  budgetImpact: 1000,
+  budgetImpact: 1000
 };
 
-export const whipExpectedActivites: PrismaDescriptionBullet = 
-  {
-    descriptionId: 1,
-    dateAdded: new Date('10/10/2022'),
-    userCheckedId: 1,
-    dateTimeChecked: new Date('10/10/2022'),
-    dateDeleted: null,
-    projectIdGoals: null,
-    projectIdFeatures: null,
-    projectIdOtherConstraints: null,
-    workPackageIdDeliverables: null,
-    detail: 'redesign whip',
-    workPackageIdExpectedActivities: 1
-  };
-export const whipDeliverables: PrismaDescriptionBullet = 
-  {
-    descriptionId: 2,
-    dateAdded: new Date('10/10/2022'),
-    userCheckedId: 1,
-    dateTimeChecked: new Date('10/10/2022'),
-    detail: 'Gotta Finish',
-    workPackageIdDeliverables: 1,
-    projectIdGoals: null,
-    projectIdFeatures: null,
-    projectIdOtherConstraints: null,
-    workPackageIdExpectedActivities: null,
-    dateDeleted: null  
-  };
+export const whipExpectedActivites: PrismaDescriptionBullet = {
+  descriptionId: 1,
+  dateAdded: new Date('10/10/2022'),
+  userCheckedId: 1,
+  dateTimeChecked: new Date('10/10/2022'),
+  dateDeleted: null,
+  projectIdGoals: null,
+  projectIdFeatures: null,
+  projectIdOtherConstraints: null,
+  workPackageIdDeliverables: null,
+  detail: 'redesign whip',
+  workPackageIdExpectedActivities: 1
+};
 
-export const whipWorkPackage : PrismaWorkPackage = {
+export const whipDeliverables: PrismaDescriptionBullet = {
+  descriptionId: 2,
+  dateAdded: new Date('10/10/2022'),
+  userCheckedId: 1,
+  dateTimeChecked: new Date('10/10/2022'),
+  detail: 'Gotta Finish',
+  workPackageIdDeliverables: 1,
+  projectIdGoals: null,
+  projectIdFeatures: null,
+  projectIdOtherConstraints: null,
+  workPackageIdExpectedActivities: null,
+  dateDeleted: null
+};
+
+export const whipWorkPackage: PrismaWorkPackage = {
   workPackageId: 1,
   wbsElementId: 65,
   projectId: 1,
@@ -100,7 +99,7 @@ export const whipWorkPackage : PrismaWorkPackage = {
   duration: 10
 };
 
-export const redesignWhipWBSElement : PrismaWBSElement = {
+export const redesignWhipWBSElement: PrismaWBSElement = {
   wbsElementId: 65,
   dateCreated: new Date('10/18/2022'),
   carNumber: 1,
@@ -109,18 +108,18 @@ export const redesignWhipWBSElement : PrismaWBSElement = {
   name: 'redesign whip',
   status: PrismaWBSElementStatus.ACTIVE,
   projectLeadId: 1,
-  projectManagerId: 2,
+  projectManagerId: 2
 };
 
-export const redesignWhipChange : PrismaChange = {
+export const redesignWhipChange: PrismaChange = {
   changeId: 1,
   changeRequestId: 2,
   implementerId: 3,
   dateImplemented: new Date('10/18/2022'),
   wbsElementId: 65,
   detail: 'changed whip from orange (yuck) to Red'
-}
-export const redesignWhip : PrismaChangeRequest= {
+};
+export const redesignWhip: PrismaChangeRequest = {
   crId: 2,
   submitterId: 1,
   wbsElementId: 65,
@@ -129,15 +128,15 @@ export const redesignWhip : PrismaChangeRequest= {
   dateReviewed: new Date('10/18/2022'),
   accepted: true,
   reviewerId: 2,
-  reviewNotes: 'orange sucks',
+  reviewNotes: 'orange sucks'
 };
-export const redesignWhipStageGate : PrismaStageGateCR = {
+
+export const redesignWhipStageGate: PrismaStageGateCR = {
   stageGateCrId: 1,
   changeRequestId: 2,
   leftoverBudget: 1000,
   confirmDone: true
 };
-
 
 export const unreviewedCrChange: PrismaChange = {
   changeId: 2,
@@ -147,7 +146,8 @@ export const unreviewedCrChange: PrismaChange = {
   wbsElementId: 65,
   detail: "this won't get reviewed"
 };
-export const unreviewedCr : PrismaChangeRequest= {
+
+export const unreviewedCr: PrismaChangeRequest = {
   crId: 69,
   submitterId: 1,
   wbsElementId: 65,

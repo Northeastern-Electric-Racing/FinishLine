@@ -19,17 +19,20 @@ describe('Change Requests', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   describe('reviewChangeRequest', () => {
     const scopeCR = { ...redesignWhip, accepted: false, scopeChangeRequest: redesignWhipScopeCR };
+
     test('reviewer doesnt have access errors', async () => {
       await expect(() =>
-      ChangeRequestsService.reviewChangeRequest(
+        ChangeRequestsService.reviewChangeRequest(
           wonderwoman,
           reviewChangeRequestParams.crId,
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new AccessDeniedException());
+        )
+      ).rejects.toThrow(new AccessDeniedException());
     });
 
     test('change request not found errors', async () => {
@@ -41,7 +44,8 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new NotFoundException('Change Request', reviewChangeRequestParams.crId));
+        )
+      ).rejects.toThrow(new NotFoundException('Change Request', reviewChangeRequestParams.crId));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
@@ -54,7 +58,8 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new HttpException(400, 'This change request is already approved!'));
+        )
+      ).rejects.toThrow(new HttpException(400, 'This change request is already approved!'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
@@ -67,12 +72,12 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new AccessDeniedException());
+        )
+      ).rejects.toThrow(new AccessDeniedException());
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
     test('did not select proposed solution', async () => {
-      
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(scopeCR);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(
@@ -81,15 +86,16 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           null
-        )).rejects.toThrow(new HttpException(400, 'No proposed solution selected for scope change request'));
+        )
+      ).rejects.toThrow(new HttpException(400, 'No proposed solution selected for scope change request'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
     test('proposed solution id not found', async () => {
-
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(scopeCR);
-
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce({ ...solutionToRedesignWhip, changeRequestId: 10 });
+      jest
+        .spyOn(prisma.proposed_Solution, 'findUnique')
+        .mockResolvedValueOnce({ ...solutionToRedesignWhip, changeRequestId: 10 });
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(
           superman,
@@ -97,7 +103,8 @@ describe('Change Requests', () => {
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new HttpException(404, 'Proposed solution with id #1 not found for change request #2'));
+        )
+      ).rejects.toThrow(new HttpException(404, 'Proposed solution with id #1 not found for change request #2'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -105,22 +112,33 @@ describe('Change Requests', () => {
     test('work package project not found', async () => {
       const invalidWP = { ...whipWorkPackage, projectId: 100 };
       const invalidWBSElement = { ...redesignWhipWBSElement, workPackage: invalidWP, project: null };
-      const invalidCR = { ...redesignWhip, wbsElement: invalidWBSElement, accepted: false, scopeChangeRequest: redesignWhipScopeCR };
+      const invalidCR = {
+        ...redesignWhip,
+        wbsElement: invalidWBSElement,
+        accepted: false,
+        scopeChangeRequest: redesignWhipScopeCR
+      };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(invalidCR);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
       const updatedSolution = { ...solutionToRedesignWhip, accepted: true };
       jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
       jest.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(null);
-
-      await expect(() => ChangeRequestsService.reviewChangeRequest(superman, reviewChangeRequestParams.crId, reviewChangeRequestParams.reviewNotes, reviewChangeRequestParams.accepted, '1')).rejects.toThrow(new NotFoundException('Project', 100));
-
+      await expect(() =>
+        ChangeRequestsService.reviewChangeRequest(
+          superman,
+          reviewChangeRequestParams.crId,
+          reviewChangeRequestParams.reviewNotes,
+          reviewChangeRequestParams.accepted,
+          '1'
+        )
+      ).rejects.toThrow(new NotFoundException('Project', 100));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
     });
 
     test('proposed solution successfully implemented for work package change', async () => {
-      const validWPCR = {...scopeCR, wbsElement: {...redesignWhipWBSElement, workPackage: whipWorkPackage }}
+      const validWPCR = { ...scopeCR, wbsElement: { ...redesignWhipWBSElement, workPackage: whipWorkPackage } };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(validWPCR);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(solutionToRedesignWhip);
       const updatedSolution = { ...solutionToRedesignWhip, accepted: true };
@@ -218,17 +236,19 @@ describe('Change Requests', () => {
         ...redesignWhip,
         wbsElement: uncheckedExpectedActivitesWBS,
         accepted: false,
-        type: CR_Type.STAGE_GATE,
+        type: CR_Type.STAGE_GATE
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedExpectedActivitiesCR);
 
-      await expect(() => ChangeRequestsService.reviewChangeRequest(
+      await expect(() =>
+        ChangeRequestsService.reviewChangeRequest(
           superman,
           reviewChangeRequestParams.crId,
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new HttpException(400, 'Work Package has unchecked expected activities'));
+        )
+      ).rejects.toThrow(new HttpException(400, 'Work Package has unchecked expected activities'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
     test('Stage Gate CR has unchecked deliverables', async () => {
@@ -238,26 +258,32 @@ describe('Change Requests', () => {
         userCheckedId: null,
         dateTimeChecked: null
       };
-      const uncheckedDeliverablesWP = { ...whipWorkPackage, expectedActivities: [whipExpectedActivites], deliverables: [uncheckedDeliverables] };
+      const uncheckedDeliverablesWP = {
+        ...whipWorkPackage,
+        expectedActivities: [whipExpectedActivites],
+        deliverables: [uncheckedDeliverables]
+      };
       const uncheckedDeliverablesWBS = { ...redesignWhipWBSElement, workPackage: uncheckedDeliverablesWP };
       const uncheckedDeliverablesCR = {
         ...redesignWhip,
         wbsElement: uncheckedDeliverablesWBS,
         accepted: false,
-        type: CR_Type.STAGE_GATE,
+        type: CR_Type.STAGE_GATE
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedDeliverablesCR);
 
-      await expect(() => 
+      await expect(() =>
         ChangeRequestsService.reviewChangeRequest(
           superman,
           reviewChangeRequestParams.crId,
           reviewChangeRequestParams.reviewNotes,
           reviewChangeRequestParams.accepted,
           '1'
-        )).rejects.toThrow(new HttpException(400, 'Work Package has unchecked deliverables'));
+        )
+      ).rejects.toThrow(new HttpException(400, 'Work Package has unchecked deliverables'));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
+    
     test('Stage Gate CR Succeeds', async () => {
       const validWP = {
         ...whipWorkPackage,
@@ -269,7 +295,7 @@ describe('Change Requests', () => {
         ...redesignWhip,
         wbsElement: validWBS,
         accepted: false,
-        type: CR_Type.STAGE_GATE,
+        type: CR_Type.STAGE_GATE
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(validSGCR);
       jest.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...redesignWhip, accepted: true });

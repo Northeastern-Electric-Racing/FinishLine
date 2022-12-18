@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-request.services';
 import { getCurrentUser } from '../utils/utils';
 
-export default class ChangeRequestController {
+export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
       const crId: number = parseInt(req.params.crId);
