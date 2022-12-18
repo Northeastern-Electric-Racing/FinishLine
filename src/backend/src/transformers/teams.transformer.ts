@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
-import teamQueryArgs from '../prisma-query-args/team.query-args';
+import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
-const teamsTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Team => {
+const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Team => {
   return {
     teamId: team.teamId,
     teamName: team.teamName,
@@ -20,4 +20,4 @@ const teamsTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Te
   };
 };
 
-export default teamsTransformer;
+export default teamTransformer;
