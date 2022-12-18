@@ -160,7 +160,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
           <Grid item xs={10}>
-            <MUILink href={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</MUILink>
+            <MUILink component={Link} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              {wbsPipe(changeRequest.wbsNum)}
+            </MUILink>
           </Grid>
           <Grid item xs={3} md={2}>
             <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>

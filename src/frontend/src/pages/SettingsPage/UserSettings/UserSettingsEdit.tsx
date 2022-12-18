@@ -9,7 +9,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
 import { FormInput } from './UserSettings';
 import { themeChoices } from '../../../utils/types';
-import { Grid, Select, MenuItem, TextField, Link, Typography } from '@mui/material';
+import { Grid, Select, MenuItem, TextField, Typography } from '@mui/material';
+import ExternalLink from '../../../components/ExternalLink';
 
 interface UserSettingsEditProps {
   currentSettings: { slackId: string; defaultTheme: ThemeName };
@@ -61,12 +62,13 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           defaultValue={currentSettings.slackId}
           render={({ field: { onChange, value } }) => (
             <>
-              <Typography>
-                {'Slack Id '}
-                <Link href="https://www.workast.com/help/article/how-to-find-a-slack-user-id/">
-                  (How to find your Slack ID)
-                </Link>
-              </Typography>
+              <Grid container>
+                <Typography>{'Slack Id '}</Typography>
+                <ExternalLink
+                  link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
+                  description="(How to find your Slack ID)"
+                ></ExternalLink>
+              </Grid>
               <TextField
                 required
                 id="slackid-input"

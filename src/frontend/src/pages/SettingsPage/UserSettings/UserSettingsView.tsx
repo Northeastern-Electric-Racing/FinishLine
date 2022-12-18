@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link } from '@mui/material';
+import { Grid } from '@mui/material';
 import { UserSettings } from 'shared';
+import ExternalLink from '../../../components/ExternalLink';
 
 interface UserSettingsViewProps {
   settings: UserSettings;
@@ -13,10 +14,13 @@ interface UserSettingsViewProps {
 const renderSlackId = (settings: UserSettings) => {
   return (
     <>
-      <b>Slack ID: </b>
-      <Link target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
-        {settings.slackId}
-      </Link>
+      <Grid container>
+        <b>Slack ID: </b>
+        <ExternalLink
+          link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
+          description={settings.slackId}
+        ></ExternalLink>
+      </Grid>
     </>
   );
 };
