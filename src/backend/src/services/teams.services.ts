@@ -6,7 +6,7 @@ import { NotFoundException } from '../utils/errors.utils';
 
 export default class TeamsService {
   /**
-   * Gets all of the teams across the side
+   * Gets all teams
    * @returns a list of teams
    */
   static async getAllTeams(): Promise<Team[]> {
@@ -15,9 +15,10 @@ export default class TeamsService {
   }
 
   /**
-   * Gets a team by id
-   * @param teamId of team to retrieve
+   * Gets a team with the given id
+   * @param teamId - id of team to retrieve
    * @returns a team
+   * @throws if the team is not found in the db
    */
   static async getSingleTeam(teamId: string): Promise<Team> {
     const team = await prisma.team.findUnique({
