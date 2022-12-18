@@ -5,7 +5,7 @@
 
 import { UseQueryResult } from 'react-query';
 import { ChangeRequest } from 'shared';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR

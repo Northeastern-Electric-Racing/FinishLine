@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../test-support/test-utils';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';

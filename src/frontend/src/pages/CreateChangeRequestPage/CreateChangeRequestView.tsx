@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
@@ -19,7 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { MenuItem, NativeSelect } from '@mui/material';
+import { MenuItem, NativeSelect, useTheme } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
@@ -87,6 +87,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
+  const theme = useTheme();
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
+
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
@@ -110,7 +114,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             <Box>
               <Typography variant="caption">WBS Number</Typography>
             </Box>
-            <ReactHookTextField name="wbsNum" control={control} placeholder="1.1.0" errorMessage={errors.wbsNum} />
+            <ReactHookTextField
+              name="wbsNum"
+              control={control}
+              placeholder="1.1.0"
+              errorMessage={errors.wbsNum}
+              sx={style}
+            />
           </Grid>
           <Grid item xs={12} md={9}>
             <Box>
@@ -121,7 +131,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <TextField select onChange={onChange} value={value}>
+                <TextField select onChange={onChange} value={value} sx={style}>
                   {permittedTypes.map((t) => (
                     <MenuItem key={t} value={t}>
                       {t}
@@ -140,9 +150,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               control={control}
               multiline
               rows={4}
-              sx={{ width: 1 / 2 }}
               errorMessage={errors.what}
               placeholder="What is the situation?"
+              sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
             />
           </Grid>
 
@@ -164,7 +174,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     required
                     autoComplete="off"
                     label="Explain"
-                    sx={{ flexGrow: 1, mx: 1 }}
+                    sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
                     {...register(`why.${index}.explain`)}
                   />
                   <Button
@@ -194,11 +204,11 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="center">
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
-        </Button>
         <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
           Cancel
+        </Button>
+        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
+          Submit
         </Button>
       </Box>
     </form>

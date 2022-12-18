@@ -5,8 +5,8 @@
 
 import { useHistory } from 'react-router-dom';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { routes } from '../../utils/Routes';
-import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -15,6 +15,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
 import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
+import { useTheme } from '@mui/system';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -27,6 +28,7 @@ const ChangeRequestsTable: React.FC = () => {
   };
 
   const auth = useAuth();
+  const theme = useTheme();
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -151,6 +153,7 @@ const ChangeRequestsTable: React.FC = () => {
         rows={data || []}
         columns={columns}
         getRowId={(row) => row.crId}
+        sx={{ background: theme.palette.background.paper }}
         onRowClick={(params) => {
           history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
         }}

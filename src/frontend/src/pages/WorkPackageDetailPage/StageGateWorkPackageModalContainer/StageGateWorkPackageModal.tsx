@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
-import { wbsPipe } from '../../../utils/Pipes';
+import { wbsPipe } from '../../../utils/pipes';
 import {
   Button,
   Dialog,
