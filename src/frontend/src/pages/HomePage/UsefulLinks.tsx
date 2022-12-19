@@ -20,32 +20,28 @@ import PageBlock from '../../layouts/PageBlock';
 const UsefulLinks: React.FC = () => {
   const links = [
     <Link href="https://docs.google.com/document/d/1M5Ldy9L1BifBo18tdKpv3CH-frRneyEK26hUXbtMg7Q/edit" 
-    underline="hover">
-      <ShoppingCart sx={{fontSize:18}}></ShoppingCart>
+    underline="hover" fontSize={19}>
+      <ShoppingCart sx={{fontSize:17, color:'white'}}></ShoppingCart>
       Purchasing Guidelines
     </Link>,
-    <Link href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit" underline="hover">
-      <CurrencyExchange sx={{fontSize:18}}></CurrencyExchange>
+    <Link href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit" underline="hover" fontSize={19}>
+      <CurrencyExchange sx={{fontSize:17, color:'white'}}></CurrencyExchange>
       Reimbursement Guidelines
     </Link>,
-    <Link href="https://forms.gle/6ztRoa1iL7p1KHwP6" underline="hover">
-      <AttachMoney sx={{fontSize:18}}></AttachMoney>
+    <Link href="https://forms.gle/6ztRoa1iL7p1KHwP6" underline="hover" fontSize={19}>
+      <AttachMoney sx={{fontSize:17, color:'white'}}></AttachMoney>
       Procurement Form
     </Link>,
-    <Link href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit" underline="hover">
-      <Receipt sx={{fontSize:18}}></Receipt>
+    <Link href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit" underline="hover" fontSize={19}>
+      <Receipt sx={{fontSize:17, color:'white'}}></Receipt>
       McMaster Order Sheet
     </Link>,
-    <Link href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit" underline="hover">
-      <Description sx={{fontSize:18}}></Description>
+    <Link href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit" underline="hover" fontSize={19}>
+      <Description sx={{fontSize:17, color:'white'}}></Description>
       Project Update Log
     </Link>,
-    <Link href="https://docs.google.com/document/d/1Y8IXCvYjXP3RBj6h4-xLCHXVLW5R6pi3-4i5SYMKtZY/edit" underline="hover">
-      <FormatListNumbered sx={{fontSize:18}}></FormatListNumbered>
-      Part Numbering Guidelines
-    </Link>,
-    <Link href="https://docs.google.com/document/d/1OD1d1VaIEHCwiFCuU7wfwAPu-UA--0_QzbyJjBsexwg/edit" underline="hover">
-      <Settings sx={{fontSize:18}}></Settings>
+    <Link href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines" underline="hover" fontSize={19}>
+      <Settings sx={{fontSize:17, color:'white'}}></Settings>
       Hardware Guidelines
     </Link>
   ];
