@@ -1,6 +1,7 @@
 import { Prisma, Role } from '@prisma/client';
 import { AuthenticatedUser, User } from 'shared';
 import prisma from '../prisma/prisma';
+import { HttpException } from './errors.utils';
 
 export const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
   include: {
@@ -53,8 +54,14 @@ export const rankUserRole = (role: Role) => {
   }
 };
 
+/**
+ * Produce a array of User with given userIds
+ * @param userIds array of userIds as an array of integers
+ * @returns array of User with type = User[]
+ * @throws if any user does not exist
+ */
 export const getUsers = async (userIds: number[]) => {
-  let missingUserIds: number[] = [];
+  const missingUserIds: number[] = [];
 
   const users = await Promise.all(
     userIds.map(async (userId: number) => await prisma.user.findUnique({ where: { userId } }))
@@ -65,7 +72,8 @@ export const getUsers = async (userIds: number[]) => {
     if (user === null) missingUserIds.push(userIds[index]);
   });
 
-  if (missingUserIds.length > 0) throw `user with the following ids not found: ${missingUserIds.join(', ')}`;
+  if (missingUserIds.length > 0)
+    throw new HttpException(404, `${`user with the following ids not found: ${missingUserIds.join(', ')}`}`);
 
   return users as User[];
 };

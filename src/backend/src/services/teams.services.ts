@@ -6,10 +6,6 @@ import teamTransformer from '../transformers/teams.transformer';
 import { HttpException, NotFoundException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 
-interface UserId {
-  userId: number;
-}
-
 export default class TeamsService {
   /**
    * Gets all teams
@@ -60,11 +56,7 @@ export default class TeamsService {
     if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN && submitter.userId !== team.leaderId)
       throw new HttpException(403, 'Access Denied');
 
-    try {
-      users = await getUsers(userIds);
-    } catch (error) {
-      throw new HttpException(404, `${error}`);
-    }
+    users = await getUsers(userIds);
 
     // retrieve userId for every given users to update team's members in the database
     const transoformedUsers = users.map((user) => {
