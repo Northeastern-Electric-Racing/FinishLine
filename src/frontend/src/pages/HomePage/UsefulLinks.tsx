@@ -7,7 +7,6 @@
 import {
   ShoppingCart,
   Settings,
-  FormatListNumbered,
   Receipt,
   Description,
   CurrencyExchange,
