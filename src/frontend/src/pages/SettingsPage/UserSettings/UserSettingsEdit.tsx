@@ -24,7 +24,7 @@ const schema = yup.object().shape({
     .required('Default theme is required'),
   slackId: yup.string().optional()
 });
-
+const style = { display: 'flex'};
 const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
   const { handleSubmit, control } = useForm<FormInput>({
     defaultValues: currentSettings,
@@ -62,13 +62,13 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           defaultValue={currentSettings.slackId}
           render={({ field: { onChange, value } }) => (
             <>
-              <Grid container>
+              <div style={style}>
                 <Typography>{'Slack Id '}</Typography>
                 <ExternalLink
                   link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
                   description="(How to find your Slack ID)"
                 ></ExternalLink>
-              </Grid>
+              </div>
               <TextField
                 required
                 id="slackid-input"
