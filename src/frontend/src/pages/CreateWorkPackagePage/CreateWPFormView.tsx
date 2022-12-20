@@ -11,167 +11,223 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { routes } from '../../utils/routes';
-import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
-import EditableTextInputList from '../../components/EditableTextInputList';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import * as yup from 'yup';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useQuery } from '../../hooks/utils.hooks';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import { IconButton, useTheme } from '@mui/material';
+import ReactHookEditableList from '../../components/ReactHookEditableList';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { bulletsToObject } from '../../utils/form';
+import { wbsPipe } from '../../utils/pipes';
+
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required'),
+  wbsNum: yup.string().required('WBS Number is required'),
+  crId: yup
+    .number()
+    .typeError('CR ID must be a number')
+    .required('CR ID is required')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1'),
+  startDate: yup.date().required('Start Date is required'),
+  duration: yup
+    .number()
+    .typeError('Duration must be a number')
+    .required('Duration is required')
+    .integer('Duration must be an integer')
+    .min(0, 'Duration must be greater than or equal to 0')
+});
 
 interface CreateWPFormViewProps {
-  states: FormStates;
-  dependencies: string[];
-  initialValues: { name: string; wbsNum: string; crId: string; duration: number };
-  depUtils: EditableTextInputListUtils;
-  expectedActivities: string[];
-  eaUtils: EditableTextInputListUtils;
-  deliverables: string[];
-  delUtils: EditableTextInputListUtils;
   allowSubmit: boolean;
-  onSubmit: (e: any) => void;
+  onSubmit: (data: any) => void;
   onCancel: (e: any) => void;
-  startDate: Date | undefined;
 }
 
-const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
-  states,
-  dependencies,
-  depUtils,
-  expectedActivities,
-  eaUtils,
-  deliverables,
-  delUtils,
-  allowSubmit,
-  onSubmit,
-  onCancel,
-  initialValues,
-  startDate
-}) => {
-  const { name, wbsNum, crId, startDate: setStartDate, duration } = states;
+const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+  const theme = useTheme();
+  const query = useQuery();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    register
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      wbsNum: query.get('wbs'),
+      crId: Number(query.get('crId')),
+      startDate: new Date(),
+      duration: 0,
+      dependencies: [].map((dep) => {
+        const wbsNum = wbsPipe(dep);
+        return { wbsNum };
+      }),
+      expectedActivities: bulletsToObject([]),
+      deliverables: bulletsToObject([])
+    }
+  });
 
-  const dateOnChange = (val: Date | null | undefined) => {
-    if (!val) return;
-    setStartDate(val);
-  };
+  const {
+    fields: expectedActivities,
+    append: appendExpectedActivity,
+    remove: removeExpectedActivity
+  } = useFieldArray({ control, name: 'expectedActivities' });
+  const {
+    fields: deliverables,
+    append: appendDeliverable,
+    remove: removeDeliverable
+  } = useFieldArray({ control, name: 'deliverables' });
+  const {
+    fields: dependencies,
+    append: appendDependency,
+    remove: removeDependency
+  } = useFieldArray({ control, name: 'dependencies' });
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   return (
-    <>
+    <form
+      id={'create-work-package-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
-        <form onSubmit={onSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={9}>
-              <TextField
-                required
-                fullWidth
-                id=""
-                name="name"
-                type="text"
-                autoComplete="off"
-                label="Work Package Name"
-                placeholder="Enter work package name..."
-                onChange={(e) => name(e.target.value)}
-                defaultValue={initialValues.name}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                required
-                id="crId"
-                name="crId"
-                type="text"
-                autoComplete="off"
-                label="Change Request ID"
-                placeholder="Enter change request ID..."
-                onChange={(e) => crId(e.target.value)}
-                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
-                defaultValue={initialValues.crId}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <TextField
-                required
-                id="wbsNum"
-                name="wbsNum"
-                type="text"
-                label="Project WBS Number"
-                autoComplete="off"
-                placeholder="Enter project WBS number..."
-                onChange={(e) => wbsNum(e.target.value)}
-                defaultValue={initialValues.wbsNum}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <DatePicker
-                label="Start Date"
-                inputFormat="yyyy-MM-dd"
-                value={startDate}
-                onChange={dateOnChange}
-                renderInput={(params) => <TextField autoComplete="off" {...params} />}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <TextField
-                required
-                id="duration"
-                name="duration"
-                type="text"
-                autoComplete="off"
-                label="Duration"
-                placeholder="Enter duration..."
-                onChange={(e) => duration(parseInt(e.target.value))}
-                inputProps={{
-                  inputMode: 'numeric',
-                  pattern: '[1-9][0-9]*'
-                }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">weeks</InputAdornment>
-                }}
-                defaultValue={initialValues.duration === -1 ? undefined : initialValues.duration}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box marginBottom={1}>
-                <Typography variant="caption">Dependencies</Typography>
-              </Box>
-              <EditableTextInputList
-                items={dependencies}
-                add={depUtils.add}
-                remove={depUtils.remove}
-                update={depUtils.update}
-              />
-
-              <Box marginBottom={1}>
-                <Typography variant="caption">Expected Activities</Typography>
-              </Box>
-              <EditableTextInputList
-                items={expectedActivities}
-                add={eaUtils.add}
-                remove={eaUtils.remove}
-                update={eaUtils.update}
-              />
-
-              <Box marginBottom={1}>
-                <Typography variant="caption">Deliverabless</Typography>
-              </Box>
-              <EditableTextInputList
-                items={deliverables}
-                add={delUtils.add}
-                remove={delUtils.remove}
-                update={delUtils.update}
-              />
-            </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={9}>
+            <Box>
+              <Typography variant="caption">Work Package Name</Typography>
+            </Box>
+            <ReactHookTextField
+              name="name"
+              control={control}
+              placeholder="Enter work package name..."
+              errorMessage={errors.name}
+              fullWidth
+              sx={style}
+            />
           </Grid>
-
-          <Box display="flex" flexDirection="row-reverse" gap={2}>
-            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-              Create
+          <Grid item xs={3}>
+            <Box>
+              <Typography variant="caption">Change Request ID</Typography>
+            </Box>
+            <ReactHookTextField
+              name="crId"
+              control={control}
+              placeholder="Enter change request ID..."
+              errorMessage={errors.crId}
+              type="number"
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <Box>
+              <Typography variant="caption">Project WBS Number</Typography>
+            </Box>
+            <ReactHookTextField
+              name="wbsNum"
+              control={control}
+              placeholder="Enter project WBS number..."
+              errorMessage={errors.wbsNum}
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <Controller
+              name="startDate"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Box>
+                    <Typography variant="caption">Start Date (YYYY-MM-DD)</Typography>
+                  </Box>
+                  <DatePicker
+                    inputFormat="yyyy-MM-dd"
+                    onChange={onChange}
+                    className={'padding: 10'}
+                    value={value}
+                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                  />
+                </>
+              )}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <Box>
+              <Typography variant="caption">Duration</Typography>
+            </Box>
+            <ReactHookTextField
+              name="duration"
+              control={control}
+              placeholder="Enter duration..."
+              errorMessage={errors.duration}
+              type="number"
+              endAdornment={<InputAdornment position="end">weeks</InputAdornment>}
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box marginBottom={1}>
+              <Typography variant="caption">Dependencies</Typography>
+            </Box>
+            {dependencies.map((_element, i) => {
+              return (
+                <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+                  <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              );
+            })}
+            <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ my: 2 }}>
+              + ADD NEW DEPENDENCY
             </Button>
-            <Button variant="outlined" color="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-          </Box>
-        </form>
+            <Box marginBottom={1}>
+              <Typography variant="caption">Expected Activities</Typography>
+            </Box>
+            <ReactHookEditableList
+              name="expectedActivities"
+              register={register}
+              ls={expectedActivities}
+              append={appendExpectedActivity}
+              remove={removeExpectedActivity}
+            />
+            <Box marginBottom={1}>
+              <Typography variant="caption">Deliverables</Typography>
+            </Box>
+            <ReactHookEditableList
+              name="deliverables"
+              register={register}
+              ls={deliverables}
+              append={appendDeliverable}
+              remove={removeDeliverable}
+            />
+          </Grid>
+        </Grid>
+        <Box display="flex" flexDirection="row-reverse" gap={2}>
+          <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+            Create
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </Box>
       </PageBlock>
-    </>
+    </form>
   );
 };
 

@@ -64,7 +64,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       wbsElementStatus: status
     }
   });
-  //lists of stuff
+  // lists of stuff
   const {
     fields: expectedActivities,
     append: appendExpectedActivity,
@@ -101,6 +101,9 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
+
+    console.log(expectedActivities);
+    console.log(deliverables);
 
     try {
       const payload = {
