@@ -24,8 +24,8 @@ const CreateWPForm: React.FC = () => {
 
   const handleSubmit = async (data: any) => {
     const { name, startDate, duration, crId, dependencies } = data;
-    const expectedActivities = mapBulletsToPayload(data.expectedActivities);
-    const deliverables = mapBulletsToPayload(data.deliverables);
+    const expectedActivities = mapBulletsToPayload(data.expectedActivities, true);
+    const deliverables = mapBulletsToPayload(data.deliverables, true);
 
     console.log(expectedActivities);
     console.log(deliverables);
