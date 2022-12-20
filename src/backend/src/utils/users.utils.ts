@@ -52,3 +52,20 @@ export const rankUserRole = (role: Role) => {
       return 1;
   }
 };
+
+export const getUsers = async (userIds: number[]) => {
+  let missingUserIds: number[] = [];
+
+  const users = await Promise.all(
+    userIds.map(async (userId: number) => await prisma.user.findUnique({ where: { userId } }))
+  );
+
+  // track any missing user from given userIds
+  users.forEach((user, index) => {
+    if (user === null) missingUserIds.push(userIds[index]);
+  });
+
+  if (missingUserIds.length > 0) throw `user with the following ids not found: ${missingUserIds.join(', ')}`;
+
+  return users as User[];
+};

@@ -17,9 +17,11 @@ const defaultFontTheme = {
   fontFamily: ['Lato', 'sans-serif'].join(',')
 };
 
+/**
+ * Common options that we'll want for pretty much every single theme
+ */
 export const nerThemeOptions: ThemeOptions = {
   palette: {
-    mode: 'dark',
     primary: {
       main: '#ef4345'
     },
@@ -102,6 +104,24 @@ export const nerThemeOptions: ThemeOptions = {
           overflowWrap: 'anywhere'
         }
       }
+    }
+  }
+};
+
+export const lightThemeOptions: ThemeOptions = {
+  palette: {
+    background: {
+      default: '#FFFFFF',
+      paper: '#F7F7F7'
+    }
+  }
+};
+
+export const darkThemeOptions: ThemeOptions = {
+  palette: {
+    background: {
+      default: '#121212',
+      paper: '#242526'
     }
   }
 };

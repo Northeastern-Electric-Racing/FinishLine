@@ -18,3 +18,9 @@ export const getSingleTeam = (id: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const editSingleTeam = (id: string, payload: any) => {
+  return axios.post<{ message: string }>(apiUrls.teamEdit(id), {
+    ...payload
+  });
+};
