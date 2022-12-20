@@ -11,7 +11,6 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
 import { useQuery } from '../../hooks/utils.hooks';
-import { mapBulletsToPayload } from '../../utils/form';
 
 const CreateWPForm: React.FC = () => {
   const history = useHistory();
@@ -24,11 +23,8 @@ const CreateWPForm: React.FC = () => {
 
   const handleSubmit = async (data: any) => {
     const { name, startDate, duration, crId, dependencies } = data;
-    const expectedActivities = mapBulletsToPayload(data.expectedActivities, true);
-    const deliverables = mapBulletsToPayload(data.deliverables, true);
-
-    console.log(expectedActivities);
-    console.log(deliverables);
+    const expectedActivities = data.expectedActivities.map((bullet: {bulletId: number, detail: string}) => bullet.detail);
+    const deliverables = data.deliverables.map((bullet: {bulletId: number, detail: string}) => bullet.detail);
 
     // exits handleSubmit if form input invalid (should be changed in wire up)
     let wbsNum: WbsNumber;

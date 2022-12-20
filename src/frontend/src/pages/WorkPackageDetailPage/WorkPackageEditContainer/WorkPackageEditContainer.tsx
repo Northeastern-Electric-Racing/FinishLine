@@ -102,9 +102,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
-    console.log(expectedActivities);
-    console.log(deliverables);
-
     try {
       const payload = {
         projectLead,

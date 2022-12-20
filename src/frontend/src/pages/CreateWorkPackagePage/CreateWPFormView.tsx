@@ -39,7 +39,7 @@ const schema = yup.object().shape({
     .typeError('Duration must be a number')
     .required('Duration is required')
     .integer('Duration must be an integer')
-    .min(0, 'Duration must be greater than or equal to 0')
+    .min(1, 'Duration must be greater than or equal to 1')
 });
 
 interface CreateWPFormViewProps {
@@ -63,7 +63,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
       wbsNum: query.get('wbs'),
       crId: Number(query.get('crId')),
       startDate: new Date(),
-      duration: 0,
+      duration: null,
       dependencies: [].map((dep) => {
         const wbsNum = wbsPipe(dep);
         return { wbsNum };
