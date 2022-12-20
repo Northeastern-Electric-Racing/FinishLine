@@ -5,104 +5,138 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { CreateProjectFormStates } from './CreateProjectForm';
-import { styled, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
+import * as yup from 'yup';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { CreateProjectFormInputs } from './CreateProjectForm';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import Typography from '@mui/material/Typography';
+import { useQuery } from '../../hooks/utils.hooks';
+
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required'),
+  carNumber: yup
+    .number()
+    .typeError('Car Number must be a number')
+    .required('Car Number is required')
+    .integer('Car Number must be an integer')
+    .min(1, 'Car Number must be greater than or equal to 1'),
+  crId: yup
+    .number()
+    .typeError('CR ID must be a number')
+    .required('CR ID is required')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1'),
+  summary: yup.string().required('Summary is required')
+});
 
 interface CreateProjectFormViewProps {
-  states: CreateProjectFormStates;
   allowSubmit: boolean;
   onCancel: (e: any) => void;
-  onSubmit: (e: any) => void;
+  onSubmit: (project: CreateProjectFormInputs) => void;
 }
 
-const NERInput = styled(TextField)(({ theme }) => ({
-  '& .MuiInputBase-input': {
-    borderRadius: 4,
-    border: '1px solid ' + theme.palette.divider,
-    width: 'auto'
-  }
-}));
-
-const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, allowSubmit, onCancel, onSubmit }) => {
-  const { name, carNumber, crId, summary } = states;
+const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
   const theme = useTheme();
+  const query = useQuery();
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      carNumber: Number(query.get('wbs')?.charAt(0)),
+      crId: Number(query.get('crId')),
+      summary: ''
+    }
+  });
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   return (
-    <>
+    <form
+      id={'create-project-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
-        <form onSubmit={onSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
-              <NERInput
-                required
-                id="crId"
-                name="crId"
-                type="text"
-                label="Change Request ID"
-                placeholder="Enter change request ID..."
-                autoComplete="off"
-                onChange={(e) => crId(parseInt(e.target.value))}
-                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
-              />
-            </Grid>
-            <Grid item xs={12} md={9}>
-              <NERInput
-                required
-                id="carNumber"
-                name="carNumber"
-                type="text"
-                label="Car Number"
-                placeholder="Enter car number..."
-                autoComplete="off"
-                onChange={(e) => carNumber(parseInt(e.target.value))}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <NERInput
-                required
-                id="name"
-                name="name"
-                type="text"
-                label="Project Name"
-                autoComplete="off"
-                placeholder="Enter project name..."
-                onChange={(e) => name(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                multiline
-                minRows={4}
-                id="summary"
-                name="summary"
-                type="text"
-                label="Project Summary"
-                autoComplete="off"
-                placeholder="Enter summary..."
-                onChange={(e) => summary(e.target.value)}
-                sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
-              />
-            </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={3}>
+            <Box>
+              <Typography variant="caption">Change Request ID</Typography>
+            </Box>
+            <ReactHookTextField
+              name="crId"
+              control={control}
+              placeholder="Enter change request ID..."
+              errorMessage={errors.crId}
+              type="number"
+              sx={style}
+            />
           </Grid>
-          <Box display="flex" gap={2} sx={{ mt: 2 }}>
-            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-              Create
-            </Button>
-            <Button variant="outlined" color="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-          </Box>
-        </form>
+          <Grid item xs={12} md={9}>
+            <Box>
+              <Typography variant="caption">Car Number</Typography>
+            </Box>
+            <ReactHookTextField
+              name="carNumber"
+              control={control}
+              placeholder="Enter car number..."
+              errorMessage={errors.carNumber}
+              type="number"
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box>
+              <Typography variant="caption">Project Name</Typography>
+            </Box>
+            <ReactHookTextField
+              name="name"
+              control={control}
+              placeholder="Enter project name..."
+              errorMessage={errors.name}
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box>
+              <Typography variant="caption">Project Summary</Typography>
+            </Box>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              placeholder="Enter summary..."
+              errorMessage={errors.summary}
+              sx={style}
+            />
+          </Grid>
+        </Grid>
+        <Box display="flex" gap={2} sx={{ mt: 2 }}>
+          <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+            Create
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </Box>
       </PageBlock>
-    </>
+    </form>
   );
 };
 

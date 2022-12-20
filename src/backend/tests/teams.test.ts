@@ -2,7 +2,7 @@ import TeamsService from '../src/services/teams.services';
 import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
 import { prismaTeam1, sharedTeam1 } from './test-data/teams.test-data';
-import teamQueryArgs from '../src/prisma-query-args/team.query-args';
+import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 
 describe('Teams', () => {
   beforeEach(() => {

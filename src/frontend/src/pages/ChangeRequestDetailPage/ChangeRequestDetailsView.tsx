@@ -111,7 +111,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem
           component={Link}
-          to={routes.PROJECTS_NEW}
+          to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
         >
