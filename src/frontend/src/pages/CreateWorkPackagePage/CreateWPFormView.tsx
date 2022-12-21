@@ -191,7 +191,12 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
                   </Grid>
                 );
               })}
-              <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ my: 2 }}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => appendDependency({ wbsNum: '' })}
+                sx={{ my: 2, width: 'max-content' }}
+              >
                 + ADD NEW DEPENDENCY
               </Button>
             </FormControl>
