@@ -24,6 +24,7 @@ export default class ChangeRequestsService {
 
     return changeRequestTransformer(requestedCR);
   }
+
   /**
    * gets all the change requests in the database
    * @returns All of the change requests
@@ -161,6 +162,8 @@ export default class ChangeRequestsService {
         }
       });
     }
+
+    // stage gate cr
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
       // if it's a work package, all deliverables and expected activities must be checked
       if (foundCR.wbsElement.workPackage) {
@@ -175,6 +178,7 @@ export default class ChangeRequestsService {
         const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null);
         if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
       }
+
       // update the status of the associated wp to be complete if needed
       const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
       const changesList = [];
@@ -185,6 +189,7 @@ export default class ChangeRequestsService {
           detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
         });
       }
+
       await prisma.work_Package.update({
         where: { wbsElementId: foundCR.wbsElement.wbsElementId },
         data: {
@@ -201,6 +206,7 @@ export default class ChangeRequestsService {
         }
       });
     }
+
     // if it's an activation cr and being accepted, we can do some stuff to the associated work package
     if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       const { activationChangeRequest: actCr } = foundCR;
@@ -209,6 +215,7 @@ export default class ChangeRequestsService {
       const shouldChangeStartDate =
         actCr.startDate.setHours(0, 0, 0, 0) !== foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
       const changes = [];
+
       if (shouldUpdateProjLead) {
         const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
         const newPL = await getUserFullName(actCr.projectLeadId);
@@ -219,6 +226,7 @@ export default class ChangeRequestsService {
           detail: buildChangeDetail('Project Lead', oldPL, newPL)
         });
       }
+
       if (shouldUpdateProjManager) {
         const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
         const newPM = await getUserFullName(actCr.projectManagerId);
@@ -229,6 +237,7 @@ export default class ChangeRequestsService {
           detail: buildChangeDetail('Project Manager', oldPM, newPM)
         });
       }
+
       if (shouldChangeStartDate) {
         changes.push({
           changeRequestId: foundCR.crId,
@@ -241,13 +250,16 @@ export default class ChangeRequestsService {
           )
         });
       }
+
       changes.push({
         changeRequestId: foundCR.crId,
         implementerId: reviewer.userId,
         wbsElementId: foundCR.wbsElementId,
         detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.ACTIVE)
       });
+
       await prisma.change.createMany({ data: changes });
+
       await prisma.wBS_Element.update({
         where: { wbsElementId: foundCR.wbsElementId },
         data: {
@@ -359,6 +371,7 @@ export default class ChangeRequestsService {
 
     return createdCR.crId;
   }
+
   /**
    * Validates and creates a stage gate change request
    * @param submitter The user creating the cr
@@ -501,9 +514,12 @@ export default class ChangeRequestsService {
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     if (project?.team) {
-      const slackMsg = `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${project.wbsElement.name} project`;
+      const slackMsg =
+        `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
+        `for the ${project.wbsElement.name} project`;
       await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId, budgetImpact);
     }
+
     return createdCR.crId;
   }
 
@@ -516,7 +532,8 @@ export default class ChangeRequestsService {
    * @param timelineImpact  the impact on the timeline
    * @param scopeImpact  the impact on the scope
    * @returns  the id of the created cr
-   * @throws if user is not allowed to create crs, if the change request is not found, or if the change request has already been reviewed
+   * @throws if user is not allowed to create crs, if the change request is not found,
+   *         or if the change request has already been reviewed
    */
   static async addProposedSolution(
     submitter: User,
@@ -533,6 +550,7 @@ export default class ChangeRequestsService {
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId }
     });
+
     if (!foundCR) throw new NotFoundException('Change Request', crId);
 
     if (foundCR.accepted !== null)

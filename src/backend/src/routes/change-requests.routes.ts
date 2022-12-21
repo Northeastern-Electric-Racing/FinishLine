@@ -4,10 +4,13 @@ import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
+
 changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID);
+
 changeRequestsRouter.post(
   '/review',
   intMinZero(body('reviewerId')),
@@ -18,6 +21,7 @@ changeRequestsRouter.post(
   validateInputs,
   ChangeRequestsController.reviewChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/activation',
   intMinZero(body('submitterId')),
@@ -32,6 +36,7 @@ changeRequestsRouter.post(
   validateInputs,
   ChangeRequestsController.createActivationChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/stage-gate',
   intMinZero(body('submitterId')),
@@ -44,6 +49,7 @@ changeRequestsRouter.post(
   validateInputs,
   ChangeRequestsController.createStageGateChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/standard',
   intMinZero(body('submitterId')),
@@ -60,6 +66,7 @@ changeRequestsRouter.post(
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/proposed-solution',
   intMinZero(body('submitterId')),
