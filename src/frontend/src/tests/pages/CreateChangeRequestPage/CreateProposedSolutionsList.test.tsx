@@ -5,6 +5,9 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/CreateProposedSolutionsList';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -19,6 +22,10 @@ const renderComponent = () => {
 };
 
 describe('Proposed Solutions List Test Suite', () => {
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
   it('Renders correctly when empty', () => {
     renderComponent();
     expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
@@ -36,10 +43,10 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
     screen.getByText('+ Add Proposed Solution').click();
-    expect(screen.getByLabelText('Description')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('Scope Impact')).toBeInTheDocument();
+    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
   });
 });

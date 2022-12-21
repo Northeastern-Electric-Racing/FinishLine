@@ -12,8 +12,8 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { routes } from '../../utils/Routes';
-import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -25,7 +25,7 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link as MUILink } from '@mui/material';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -151,19 +151,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
         <Grid container spacing={1}>
           <Grid item xs={2}>
-            <Typography sx={{ maxWidth: '140px' }}>Type: </Typography>
+            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
           </Grid>
           <Grid item xs={10}>
             {changeRequest.type}
           </Grid>
           <Grid item xs={2}>
-            <Typography>WBS #: </Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
           <Grid item xs={10}>
-            <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
+            <MUILink href={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</MUILink>
           </Grid>
           <Grid item xs={3} md={2}>
-            <Typography>Submitted By: </Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
           </Grid>
           <Grid item xs={2}>
             <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>

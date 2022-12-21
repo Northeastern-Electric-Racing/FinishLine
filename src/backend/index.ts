@@ -9,6 +9,7 @@ import workPackagesRouter from './src/routes/work-packages.routes';
 import risksRouter from './src/routes/risks.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
+import { errorHandler } from './src/utils/errors.utils';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -47,6 +48,9 @@ app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
+
+// custom error handler middleware
+app.use(errorHandler);
 
 // start the server
 app.listen(port, () => {

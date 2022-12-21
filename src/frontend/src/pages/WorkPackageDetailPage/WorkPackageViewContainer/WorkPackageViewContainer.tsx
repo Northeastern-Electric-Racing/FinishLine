@@ -5,9 +5,9 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { WbsElementStatus, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
-import { routes } from '../../../utils/Routes';
+import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
@@ -18,6 +18,8 @@ import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
+import { useAuth } from '../../../hooks/auth.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -36,10 +38,15 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowStageGate,
   allowRequestChange
 }) => {
+  const auth = useAuth();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
+
+  if (!auth.user) return <LoadingIndicator />;
+
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || auth.user.role === RoleEnum.GUEST;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -132,18 +139,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         items={workPackage.expectedActivities
           .filter((ea) => !ea.dateDeleted)
           .map((ea) => {
-            return { ...ea, resolved: !!ea.userChecked };
+            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={checkListDisabled}
       />
       <CheckList
         title={'Deliverables'}
         items={workPackage.deliverables
           .filter((del) => !del.dateDeleted)
           .map((del) => {
-            return { ...del, resolved: !!del.userChecked };
+            return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={checkListDisabled}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

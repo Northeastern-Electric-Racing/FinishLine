@@ -15,6 +15,8 @@ import {
 } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import { Grid } from '@mui/material';
+import ExternalLink from '../../components/ExternalLink';
 import PageBlock from '../../layouts/PageBlock';
 
 const UsefulLinks: React.FC = () => {
@@ -49,11 +51,13 @@ const UsefulLinks: React.FC = () => {
 
   return (
     <PageBlock title={'Useful Links'}>
-      <Box display="flex" flexWrap="wrap" flexDirection="row" sx={{ p: 0 }}>
+      <Grid container spacing={2}>
         {links.map((ele) => (
-          <Box padding={1}>{ele}</Box>
+          <Grid item xs={6} md={3}>
+            {ele}
+          </Grid>
         ))}
-      </Box>
+      </Grid>
     </PageBlock>
   );
 };

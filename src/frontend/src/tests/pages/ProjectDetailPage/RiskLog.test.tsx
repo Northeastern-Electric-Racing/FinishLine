@@ -4,24 +4,24 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import RiskLog from '../../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
-import { exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4 } from '../../../test-support/test-data/risks.stub';
-import { Auth } from '../../../../utils/Types';
-import { useAuth } from '../../../../hooks/auth.hooks';
-import { mockAuth, mockPromiseAxiosResponse } from '../../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../../test-support/test-data/users.stub';
-import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
-import { getRisksForProject } from '../../../../apis/risks.api';
+import RiskLog from '../../../pages/ProjectDetailPage/ProjectViewContainer/RiskLog';
+import { exampleRisk1, exampleRisk2, exampleRisk3, exampleRisk4 } from '../../test-support/test-data/risks.stub';
+import { Auth } from '../../../utils/types';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { mockAuth, mockPromiseAxiosResponse } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../test-support/test-data/users.stub';
+import { exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { getRisksForProject } from '../../../apis/risks.api';
 import { AxiosResponse } from 'axios';
 import { Risk } from 'shared';
-import { useGetRisksForProject } from '../../../../hooks/risks.hooks';
+import { useGetRisksForProject } from '../../../hooks/risks.hooks';
 import { renderHook } from '@testing-library/react-hooks';
-import wrapper from '../../../../app/AppContextQuery';
+import wrapper from '../../../app/AppContextQuery';
 
-jest.mock('../../../../hooks/auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
-jest.mock('../../../../apis/risks.api');
+jest.mock('../../../apis/risks.api');
 
 const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
@@ -54,7 +54,7 @@ describe.skip('Rendering Project Risk Log Component', () => {
     expect(result.current.data).toEqual(testRisks);
     render(<RiskLog projectId={exampleProject1.id} wbsNum={exampleProject1.wbsNum} />);
     expect(screen.getByTestId);
-    expect(screen.getByTestId('deleteButton-risk2')).toBeDisabled();
+    expect(screen.getByTestId('deleteButton-risk2')).toHaveAttribute('aria-disabled');
     expect(screen.getByTestId('deleteButton-risk4')).toBeEnabled();
   });
 

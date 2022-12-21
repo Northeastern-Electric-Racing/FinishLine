@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -11,8 +10,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { routes } from '../../utils/Routes';
-import { datePipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
 import { EditableTextInputListUtils, FormStates } from './CreateWPForm';
 import EditableTextInputList from '../../components/EditableTextInputList';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -21,7 +19,7 @@ import PageBlock from '../../layouts/PageBlock';
 interface CreateWPFormViewProps {
   states: FormStates;
   dependencies: string[];
-  initialValues: { name: string; wbsNum: string; crId: number; duration: number };
+  initialValues: { name: string; wbsNum: string; crId: string; duration: number };
   depUtils: EditableTextInputListUtils;
   expectedActivities: string[];
   eaUtils: EditableTextInputListUtils;
@@ -30,6 +28,7 @@ interface CreateWPFormViewProps {
   allowSubmit: boolean;
   onSubmit: (e: any) => void;
   onCancel: (e: any) => void;
+  startDate: Date | undefined;
 }
 
 const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
@@ -42,10 +41,17 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
   delUtils,
   allowSubmit,
   onSubmit,
-  onCancel
+  onCancel,
+  initialValues,
+  startDate
 }) => {
-  const { name, wbsNum, crId, startDate, duration } = states;
-  const [startDateVal, setStartDateVal] = useState<Date | null>(null);
+  const { name, wbsNum, crId, startDate: setStartDate, duration } = states;
+
+  const dateOnChange = (val: Date | null | undefined) => {
+    if (!val) return;
+    setStartDate(val);
+  };
+
   return (
     <>
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
@@ -56,7 +62,6 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
               <TextField
                 required
                 fullWidth
-                sx={{ backgroundColor: 'white' }}
                 id=""
                 name="name"
                 type="text"
@@ -64,25 +69,26 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 label="Work Package Name"
                 placeholder="Enter work package name..."
                 onChange={(e) => name(e.target.value)}
+                defaultValue={initialValues.name}
               />
             </Grid>
             <Grid item xs={3}>
               <TextField
                 required
-                sx={{ backgroundColor: 'white' }}
                 id="crId"
                 name="crId"
                 type="text"
+                autoComplete="off"
                 label="Change Request ID"
                 placeholder="Enter change request ID..."
-                onChange={(e) => crId(parseInt(e.target.value))}
+                onChange={(e) => crId(e.target.value)}
                 inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
+                defaultValue={initialValues.crId}
               />
             </Grid>
             <Grid item xs={2}>
               <TextField
                 required
-                sx={{ backgroundColor: 'white' }}
                 id="wbsNum"
                 name="wbsNum"
                 type="text"
@@ -90,27 +96,25 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 autoComplete="off"
                 placeholder="Enter project WBS number..."
                 onChange={(e) => wbsNum(e.target.value)}
+                defaultValue={initialValues.wbsNum}
               />
             </Grid>
             <Grid item xs={2}>
               <DatePicker
                 label="Start Date"
                 inputFormat="yyyy-MM-dd"
-                value={startDateVal}
-                onChange={(val) => {
-                  setStartDateVal(val);
-                  startDate(datePipe(val!));
-                }}
-                renderInput={(params) => <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />}
+                value={startDate}
+                onChange={dateOnChange}
+                renderInput={(params) => <TextField autoComplete="off" {...params} />}
               />
             </Grid>
             <Grid item xs={2}>
               <TextField
                 required
-                sx={{ backgroundColor: 'white' }}
                 id="duration"
                 name="duration"
                 type="text"
+                autoComplete="off"
                 label="Duration"
                 placeholder="Enter duration..."
                 onChange={(e) => duration(parseInt(e.target.value))}
@@ -121,6 +125,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
                 InputProps={{
                   endAdornment: <InputAdornment position="end">weeks</InputAdornment>
                 }}
+                defaultValue={initialValues.duration === -1 ? undefined : initialValues.duration}
               />
             </Grid>
             <Grid item xs={12}>

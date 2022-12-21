@@ -3,15 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../../test-support/test-utils';
-import { Auth } from '../../../../utils/Types';
-import { useAuth } from '../../../../hooks/auth.hooks';
-import { exampleProject1 } from '../../../test-support/test-data/projects.stub';
-import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser } from '../../../test-support/test-data/users.stub';
-import ProjectViewContainer from '../../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
+import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../test-support/test-utils';
+import { Auth } from '../../../utils/types';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
+import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 
-jest.mock('../../../../hooks/auth.hooks');
+jest.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
@@ -47,8 +47,8 @@ describe('Rendering Project View Container', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).toHaveClass('disabled');
-    expect(screen.getByText('Request Change')).toHaveClass('disabled');
+    expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Request Change')).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('enables the buttons for admin users', () => {
@@ -58,7 +58,7 @@ describe('Rendering Project View Container', () => {
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
-    expect(screen.getByText('Edit')).not.toHaveClass('disabled');
-    expect(screen.getByText('Request Change')).not.toHaveClass('disabled');
+    expect(screen.getByText('Edit')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Request Change')).not.toHaveAttribute('aria-disabled', 'true');
   });
 });

@@ -28,10 +28,11 @@ import {
 } from '../../../hooks/risks.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { routes } from '../../../utils/Routes';
-import { wbsPipe } from '../../../utils/Pipes';
+import { routes } from '../../../utils/routes';
+import { wbsPipe } from '../../../utils/pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
+import { NERButton } from '../../../components/NERButton';
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
@@ -190,9 +191,9 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </div>
         ))}
         {role !== 'GUEST' && (
-          <Button color="success" variant="outlined" onClick={handleShow} data-testId="createButton">
+          <NERButton variant="contained" onClick={handleShow} data-testId="createButton" sx={{ mt: 1 }}>
             Add New Risk
-          </Button>
+          </NERButton>
         )}
       </div>
       <Dialog open={show} onClose={handleClose} fullWidth>

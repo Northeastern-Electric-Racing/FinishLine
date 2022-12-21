@@ -4,8 +4,8 @@
  */
 
 import { Project } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
-import { routes } from '../../../utils/Routes';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -59,7 +59,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       taskListLink,
       googleDriveFolderLink: gDriveLink,
       summary,
-      wbsElementStatus: project.status,
       projectLeadId: project.projectLead?.userId,
       projectManagerId: project.projectManager?.userId,
       crId: query.get('crId') || '',
@@ -90,7 +89,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: any) => {
-    const { name, budget, summary, wbsElementStatus, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
+    const { name, budget, summary, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -105,7 +104,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       taskListLink,
       slideDeckLink,
       userId,
-      wbsElementStatus,
       projectId: project.id,
       crId: parseInt(data.crId),
       rules,

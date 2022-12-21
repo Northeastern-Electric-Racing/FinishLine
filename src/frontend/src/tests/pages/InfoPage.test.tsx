@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import InfoPage from '../../pages/InfoPage';
 
 /**
@@ -20,26 +20,14 @@ const renderComponent = () => {
 };
 
 describe('help page component', () => {
-  it('renders title', () => {
+  it('renders everything', () => {
     renderComponent();
     expect(screen.getAllByText('Information').length).toEqual(2);
-  });
-
-  it('renders resources section', () => {
-    renderComponent();
     expect(screen.getByText(/Resources/)).toBeInTheDocument();
     expect(screen.getByText(/Glossary/)).toBeInTheDocument();
-  });
-
-  it('renders support section', () => {
-    renderComponent();
     expect(screen.getByText(/Support/)).toBeInTheDocument();
     expect(screen.getByText(/Message in Slack/)).toBeInTheDocument();
     expect(screen.getByText(/GitHub/)).toBeInTheDocument();
-  });
-
-  it('renders calendars section', () => {
-    renderComponent();
     expect(screen.getByText(/Calendars/)).toBeInTheDocument();
     expect(screen.getAllByText(/Public URL/).length).toEqual(6);
     expect(screen.getAllByText(/iCal URL/).length).toEqual(6);

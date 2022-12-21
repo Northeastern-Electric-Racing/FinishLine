@@ -23,40 +23,6 @@ const renderComponent = (allowSubmit = true) => {
 };
 
 describe('create project form view test suite', () => {
-  it('renders title', () => {
-    renderComponent();
-
-    expect(screen.queryByText('Create New Project')).toBeInTheDocument();
-  });
-
-  it('renders project name form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Project Name')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter project name...')).toBeInTheDocument();
-  });
-
-  it('renders car number form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Car Number')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter car number...')).toBeInTheDocument();
-  });
-
-  it('renders change request id form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Change Request ID')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter change request ID...')).toBeInTheDocument();
-  });
-
-  it('renders project summary form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Project Summary')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter summary...')).toBeInTheDocument();
-  });
-
   it('renders buttons', () => {
     renderComponent();
 
