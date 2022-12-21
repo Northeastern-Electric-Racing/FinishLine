@@ -10,16 +10,15 @@ import ExternalLink from '../../../components/ExternalLink';
 interface UserSettingsViewProps {
   settings: UserSettings;
 }
-const style = { display: 'flex', padding: 0 }
 const renderSlackId = (settings: UserSettings) => {
   return (
     <>
-      <div style={style}>
+      <div style={{display: 'flex'}}>
         <b>Slack ID: </b>
         <ExternalLink
           link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
           description={settings.slackId}
-        ></ExternalLink>
+        />
       </div>
     </>
   );
