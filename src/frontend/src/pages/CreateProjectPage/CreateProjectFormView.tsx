@@ -9,8 +9,9 @@ import TextField from '@mui/material/TextField';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { CreateProjectFormStates } from './CreateProjectForm';
+import { styled, useTheme } from '@mui/material';
 
 interface CreateProjectFormViewProps {
   states: CreateProjectFormStates;
@@ -19,8 +20,17 @@ interface CreateProjectFormViewProps {
   onSubmit: (e: any) => void;
 }
 
+const NERInput = styled(TextField)(({ theme }) => ({
+  '& .MuiInputBase-input': {
+    borderRadius: 4,
+    border: '1px solid ' + theme.palette.divider,
+    width: 'auto'
+  }
+}));
+
 const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, allowSubmit, onCancel, onSubmit }) => {
   const { name, carNumber, crId, summary } = states;
+  const theme = useTheme();
 
   return (
     <>
@@ -28,8 +38,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
       <PageBlock title={''}>
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={2}>
-              <TextField
+            <Grid item xs={12} md={3}>
+              <NERInput
                 required
                 id="crId"
                 name="crId"
@@ -41,8 +51,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
                 inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
               />
             </Grid>
-            <Grid item xs={12} md={10}>
-              <TextField
+            <Grid item xs={12} md={9}>
+              <NERInput
                 required
                 id="carNumber"
                 name="carNumber"
@@ -55,14 +65,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <NERInput
                 required
                 id="name"
                 name="name"
                 type="text"
                 label="Project Name"
                 autoComplete="off"
-                sx={{ width: 1 / 2 }}
                 placeholder="Enter project name..."
                 onChange={(e) => name(e.target.value)}
               />
@@ -70,7 +79,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
             <Grid item xs={12}>
               <TextField
                 required
-                sx={{ width: 1 / 2 }}
                 multiline
                 minRows={4}
                 id="summary"
@@ -80,6 +88,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
                 autoComplete="off"
                 placeholder="Enter summary..."
                 onChange={(e) => summary(e.target.value)}
+                sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
               />
             </Grid>
           </Grid>

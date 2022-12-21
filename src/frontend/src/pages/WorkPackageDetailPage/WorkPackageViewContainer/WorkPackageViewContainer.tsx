@@ -6,8 +6,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/Pipes';
-import { routes } from '../../../utils/Routes';
+import { wbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';

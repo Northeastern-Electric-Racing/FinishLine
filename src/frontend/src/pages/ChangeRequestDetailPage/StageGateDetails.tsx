@@ -5,7 +5,7 @@
 
 import { Grid, Typography } from '@mui/material';
 import { StageGateChangeRequest } from 'shared';
-import { booleanPipe, dollarsPipe } from '../../utils/Pipes';
+import { booleanPipe, dollarsPipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
 
 interface StageGateDetailsProps {

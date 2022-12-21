@@ -8,11 +8,11 @@ import { useHistory } from 'react-router-dom';
 import { isProject, validateWBS, WbsNumber } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWPFormView from './CreateWPFormView';
 import { useQuery } from '../../hooks/utils.hooks';
-import { numberParamPipe } from '../../utils/Pipes';
+import { numberParamPipe } from '../../utils/pipes';
 
 export interface EditableTextInputListUtils {
   add: (val: any) => void;

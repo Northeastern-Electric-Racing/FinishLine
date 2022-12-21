@@ -4,7 +4,7 @@
  */
 
 import { User, WbsElementStatus } from 'shared';
-import { fullNamePipe } from '../../../utils/Pipes';
+import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';

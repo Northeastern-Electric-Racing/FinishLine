@@ -61,5 +61,6 @@ type NotFoundObjectNames =
   | 'Project'
   | 'Description Bullet'
   | 'Change Request'
-  | 'WBS Element' 
-  | 'Proposed Solution';
+  | 'WBS Element'
+  | 'Proposed Solution'
+  | 'Team';

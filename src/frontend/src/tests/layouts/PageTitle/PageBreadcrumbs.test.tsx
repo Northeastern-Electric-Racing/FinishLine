@@ -5,7 +5,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
-import { LinkItem } from '../../../utils/Types';
+import { LinkItem } from '../../../utils/types';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 
 // Render component under test

@@ -8,9 +8,9 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { useAuth } from '../../hooks/auth.hooks';
-import { fullNamePipe } from '../../utils/Pipes';
+import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
 
 const textColor = 'white';
@@ -21,7 +21,7 @@ const NavTopBar: React.FC = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed">
-        <Toolbar disableGutters sx={{ px: 1, background, color: textColor }}>
+        <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
           <Box sx={{ flexGrow: 1 }}>
             <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
               <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

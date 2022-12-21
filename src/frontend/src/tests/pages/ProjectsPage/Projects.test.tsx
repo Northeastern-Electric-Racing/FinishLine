@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import Projects from '../../../pages/ProjectsPage/Projects';
 
 jest.mock('../../../pages/ProjectsPage/ProjectsTable', () => {
