@@ -105,19 +105,18 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={9}>
-            <FormControl>
+          <Grid item xs={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
                 name="name"
                 control={control}
                 placeholder="Enter work package name..."
                 errorMessage={errors.name}
-                fullWidth
               />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={6}>
             <FormControl>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -129,7 +128,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <FormControl>
               <FormLabel>Project WBS Number</FormLabel>
               <ReactHookTextField
@@ -140,7 +139,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Controller
               name="startDate"
               control={control}
@@ -198,7 +197,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
             </FormControl>
           </Grid>
           <Grid item xs={2}>
-            <FormControl>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Expected Activities</FormLabel>
               <ReactHookEditableList
                 name="expectedActivities"
@@ -210,7 +209,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
             </FormControl>
           </Grid>
           <Grid item xs={2}>
-            <FormControl>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Deliverables</FormLabel>
               <ReactHookEditableList
                 name="deliverables"
