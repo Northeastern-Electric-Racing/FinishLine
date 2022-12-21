@@ -9,14 +9,14 @@ import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { useTheme } from '@mui/material';
+import { FormControl, FormLabel } from '@mui/material';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import Typography from '@mui/material/Typography';
 import { useQuery } from '../../hooks/utils.hooks';
+import { SubmitButton } from '../../components/SubmitButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -42,7 +42,6 @@ interface CreateProjectFormViewProps {
 }
 
 const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
-  const theme = useTheme();
   const query = useQuery();
 
   const {
@@ -58,8 +57,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       summary: ''
     }
   });
-
-  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   return (
     <form
@@ -77,60 +74,58 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageBlock title={''}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <Box>
-              <Typography variant="caption">Change Request ID</Typography>
-            </Box>
-            <ReactHookTextField
-              name="crId"
-              control={control}
-              placeholder="Enter change request ID..."
-              errorMessage={errors.crId}
-              type="number"
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Change Request ID</FormLabel>
+              <ReactHookTextField
+                name="crId"
+                control={control}
+                placeholder="Enter change request ID..."
+                errorMessage={errors.crId}
+                type="number"
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={9}>
-            <Box>
-              <Typography variant="caption">Car Number</Typography>
-            </Box>
-            <ReactHookTextField
-              name="carNumber"
-              control={control}
-              placeholder="Enter car number..."
-              errorMessage={errors.carNumber}
-              type="number"
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Car Number</FormLabel>
+              <ReactHookTextField
+                name="carNumber"
+                control={control}
+                placeholder="Enter car number..."
+                errorMessage={errors.carNumber}
+                type="number"
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">Project Name</Typography>
-            </Box>
-            <ReactHookTextField
-              name="name"
-              control={control}
-              placeholder="Enter project name..."
-              errorMessage={errors.name}
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Project Name</FormLabel>
+              <ReactHookTextField
+                name="name"
+                control={control}
+                placeholder="Enter project name..."
+                errorMessage={errors.name}
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">Project Summary</Typography>
-            </Box>
-            <ReactHookTextField
-              name="summary"
-              control={control}
-              placeholder="Enter summary..."
-              errorMessage={errors.summary}
-              sx={style}
-            />
+            <FormControl sx={{ minWidth: 325, width: '37%' }}>
+              <FormLabel>Project Summary</FormLabel>
+              <ReactHookTextField
+                name="summary"
+                control={control}
+                placeholder="Enter summary..."
+                errorMessage={errors.summary}
+                multiline
+                rows={5}
+              />
+            </FormControl>
           </Grid>
         </Grid>
         <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
             Create
-          </Button>
+          </SubmitButton>
           <Button variant="outlined" color="secondary" onClick={onCancel}>
             Cancel
           </Button>

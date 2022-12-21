@@ -31,7 +31,7 @@ interface CreateChangeRequestViewProps {
   handleCancel: () => void;
 }
 
-const wbsTester = (wbsNum: string | undefined) => {
+export const wbsTester = (wbsNum: string | undefined) => {
   if (!wbsNum) return false;
   try {
     validateWBS(wbsNum);

@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { routes } from '../../utils/routes';
@@ -18,15 +17,17 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useQuery } from '../../hooks/utils.hooks';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { IconButton, useTheme } from '@mui/material';
+import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { bulletsToObject } from '../../utils/form';
 import { wbsPipe } from '../../utils/pipes';
+import { SubmitButton } from '../../components/SubmitButton';
+import { wbsTester } from '../CreateChangeRequestPage/CreateChangeRequestView';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
-  wbsNum: yup.string().required('WBS Number is required'),
+  wbsNum: yup.string().required('WBS Number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   crId: yup
     .number()
     .typeError('CR ID must be a number')
@@ -49,8 +50,8 @@ interface CreateWPFormViewProps {
 }
 
 const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
-  const theme = useTheme();
   const query = useQuery();
+
   const {
     handleSubmit,
     control,
@@ -60,7 +61,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      wbsNum: query.get('wbs'),
+      wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
       startDate: new Date(),
       duration: null,
@@ -89,8 +90,6 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
     remove: removeDependency
   } = useFieldArray({ control, name: 'dependencies' });
 
-  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
-
   return (
     <form
       id={'create-work-package-form'}
@@ -107,42 +106,39 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
       <PageBlock title={''}>
         <Grid container spacing={2}>
           <Grid item xs={9}>
-            <Box>
-              <Typography variant="caption">Work Package Name</Typography>
-            </Box>
-            <ReactHookTextField
-              name="name"
-              control={control}
-              placeholder="Enter work package name..."
-              errorMessage={errors.name}
-              fullWidth
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Work Package Name</FormLabel>
+              <ReactHookTextField
+                name="name"
+                control={control}
+                placeholder="Enter work package name..."
+                errorMessage={errors.name}
+                fullWidth
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={3}>
-            <Box>
-              <Typography variant="caption">Change Request ID</Typography>
-            </Box>
-            <ReactHookTextField
-              name="crId"
-              control={control}
-              placeholder="Enter change request ID..."
-              errorMessage={errors.crId}
-              type="number"
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Change Request ID</FormLabel>
+              <ReactHookTextField
+                name="crId"
+                control={control}
+                placeholder="Enter change request ID..."
+                errorMessage={errors.crId}
+                type="number"
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={2}>
-            <Box>
-              <Typography variant="caption">Project WBS Number</Typography>
-            </Box>
-            <ReactHookTextField
-              name="wbsNum"
-              control={control}
-              placeholder="Enter project WBS number..."
-              errorMessage={errors.wbsNum}
-              sx={style}
-            />
+            <FormControl>
+              <FormLabel>Project WBS Number</FormLabel>
+              <ReactHookTextField
+                name="wbsNum"
+                control={control}
+                placeholder="Enter project WBS number..."
+                errorMessage={errors.wbsNum}
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={2}>
             <Controller
@@ -150,10 +146,8 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <>
-                  <Box>
-                    <Typography variant="caption">Start Date (YYYY-MM-DD)</Typography>
-                  </Box>
+                <FormControl>
+                  <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
                   <DatePicker
                     inputFormat="yyyy-MM-dd"
                     onChange={onChange}
@@ -161,67 +155,77 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
                     value={value}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
-                </>
+                </FormControl>
               )}
             />
           </Grid>
           <Grid item xs={2}>
-            <Box>
-              <Typography variant="caption">Duration</Typography>
-            </Box>
-            <ReactHookTextField
-              name="duration"
-              control={control}
-              placeholder="Enter duration..."
-              errorMessage={errors.duration}
-              type="number"
-              endAdornment={<InputAdornment position="end">weeks</InputAdornment>}
-              sx={style}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Box marginBottom={1}>
-              <Typography variant="caption">Dependencies</Typography>
-            </Box>
-            {dependencies.map((_element, i) => {
-              return (
-                <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
-                  <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
-                    <DeleteIcon />
-                  </IconButton>
-                </Grid>
-              );
-            })}
-            <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ my: 2 }}>
-              + ADD NEW DEPENDENCY
-            </Button>
-            <Box marginBottom={1}>
-              <Typography variant="caption">Expected Activities</Typography>
-            </Box>
-            <ReactHookEditableList
-              name="expectedActivities"
-              register={register}
-              ls={expectedActivities}
-              append={appendExpectedActivity}
-              remove={removeExpectedActivity}
-            />
-            <Box marginBottom={1}>
-              <Typography variant="caption">Deliverables</Typography>
-            </Box>
-            <ReactHookEditableList
-              name="deliverables"
-              register={register}
-              ls={deliverables}
-              append={appendDeliverable}
-              remove={removeDeliverable}
-            />
+            <FormControl>
+              <FormLabel>Duration</FormLabel>
+              <ReactHookTextField
+                name="duration"
+                control={control}
+                placeholder="Enter duration..."
+                errorMessage={errors.duration}
+                type="number"
+                endAdornment={<InputAdornment position="end">weeks</InputAdornment>}
+              />
+            </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" flexDirection="row-reverse" gap={2}>
-          <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+        <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
+          <Grid item xs={2}>
+            <FormControl>
+              <FormLabel>Dependencies</FormLabel>
+              {dependencies.map((_element, i) => {
+                return (
+                  <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                    <TextField
+                      required
+                      autoComplete="off"
+                      {...register(`dependencies.${i}.wbsNum`)}
+                      sx={{ width: 9 / 10 }}
+                    />
+                    <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
+                );
+              })}
+              <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ my: 2 }}>
+                + ADD NEW DEPENDENCY
+              </Button>
+            </FormControl>
+          </Grid>
+          <Grid item xs={2}>
+            <FormControl>
+              <FormLabel>Expected Activities</FormLabel>
+              <ReactHookEditableList
+                name="expectedActivities"
+                register={register}
+                ls={expectedActivities}
+                append={appendExpectedActivity}
+                remove={removeExpectedActivity}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={2}>
+            <FormControl>
+              <FormLabel>Deliverables</FormLabel>
+              <ReactHookEditableList
+                name="deliverables"
+                register={register}
+                ls={deliverables}
+                append={appendDeliverable}
+                remove={removeDeliverable}
+              />
+            </FormControl>
+          </Grid>
+        </Grid>
+        <Box display="flex" gap={2} sx={{ mt: 2 }}>
+          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
             Create
-          </Button>
+          </SubmitButton>
           <Button variant="outlined" color="secondary" onClick={onCancel}>
             Cancel
           </Button>
