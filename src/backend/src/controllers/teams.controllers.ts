@@ -2,8 +2,6 @@ import prisma from '../prisma/prisma';
 import { Request, Response } from 'express';
 import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
 import { Role } from '@prisma/client';
-import { projectTransformer } from '../utils/projects.utils';
-import { WbsElementStatus } from 'shared';
 
 export const getAllTeams = async (_req: Request, res: Response) => {
   const teams = await prisma.team.findMany(teamRelationArgs);
