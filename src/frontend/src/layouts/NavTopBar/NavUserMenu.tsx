@@ -39,7 +39,7 @@ const NavUserMenu: React.FC = () => {
         onClick={handleMenu}
         color="inherit"
       >
-        <AccountCircle />
+        <AccountCircle sx={{ fontSize: 36 }} />
       </IconButton>
       <Menu
         id="menu-appbar"

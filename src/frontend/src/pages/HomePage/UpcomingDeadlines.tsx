@@ -21,11 +21,12 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { Grid } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, daysUntilDeadline });
+  const theme = useTheme();
 
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
@@ -44,7 +45,11 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
-            <Card key={wbsPipe(wp.wbsNum)} sx={{ minWidth: 'fit-content', mr: 3 }}>
+            <Card
+              variant="outlined"
+              key={wbsPipe(wp.wbsNum)}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
+            >
               <CardContent sx={{ padding: 3 }}>
                 <Link
                   variant="h6"
@@ -54,16 +59,39 @@ const UpcomingDeadlines: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-
                 <Box>
-                  <Box>End Date: {datePipe(wp.endDate)}</Box>
                   <Box>
-                    Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
+                    {' '}
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      End Date:{' '}
+                    </Typography>{' '}
+                    <Typography display="inline">{datePipe(wp.endDate)}</Typography>
                   </Box>
-                  <Box>Engineering Lead: {fullNamePipe(wp.projectLead)}</Box>
-                  <Box>Project Manager: {fullNamePipe(wp.projectManager)}</Box>
                   <Box>
-                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Progress:{' '}
+                    </Typography>
+                    <Typography display="inline">
+                      {percentPipe(wp.progress)}, {wp.timelineStatus}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Engineering Lead:
+                    </Typography>
+                    <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                  </Box>
+                  <Box>
+                    {' '}
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Project Manager:{' '}
+                    </Typography>
+                    <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography>
+                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables{' '}
+                    </Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -85,6 +113,8 @@ const UpcomingDeadlines: React.FC = () => {
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
             startAdornment={<InputAdornment position="start">Next</InputAdornment>}
             autoWidth
+            variant="standard"
+            sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2, padding: 1 }}
             endAdornment={
               <InputAdornment position="end" sx={{ marginLeft: -2, marginRight: 2 }}>
                 Days

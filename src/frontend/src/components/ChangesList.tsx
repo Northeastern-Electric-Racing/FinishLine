@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from 'react-router-dom';
+import { Link } from '@mui/material';
 import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
@@ -61,7 +61,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
+          [<Link href={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
           <DynamicTooltip
             id="tooltip"
             title={
