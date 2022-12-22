@@ -1,10 +1,18 @@
 import express from 'express';
+import { body } from 'express-validator';
 import { getAllTeams, getSingleTeam, editDescription } from '../controllers/teams.controllers';
+import { intMinZero } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
 teamsRouter.get('/', getAllTeams);
 teamsRouter.get('/:teamId', getSingleTeam);
-teamsRouter.post('/teams/:teamId/edit-description', editDescription);
+teamsRouter.post(
+  '/edit-description',
+  body('teamId').isString,
+  body('newDescription').isString,
+  intMinZero(body('userId')),
+  editDescription
+);
 
 export default teamsRouter;
