@@ -1,124 +1,56 @@
-import prisma from '../prisma/prisma';
-import { Request, Response } from 'express';
-import { hasRiskPermissions, riskQueryArgs, riskTransformer } from '../utils/risks.utils';
-import { Role } from '@prisma/client';
+import { NextFunction, Request, Response } from 'express';
+import { getCurrentUser } from '../utils/utils';
+import RisksService from '../services/risks.services';
 
-export const getRisksForProject = async (req: Request, res: Response) => {
-  const projectId = parseInt(req.params.projectId);
-  const requestedProject = await prisma.project.findUnique({ where: { projectId } });
+export default class RisksController {
+  
+  static async getRisksForProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const risks = await RisksService.getRisksForProject(projectId);
 
-  if (!requestedProject) {
-    return res.status(404).json({ message: `Project with id ${projectId} not found!` });
-  }
-
-  const risks = await prisma.risk.findMany({ where: { projectId }, ...riskQueryArgs });
-
-  return res.status(200).json(risks.map(riskTransformer));
-};
-
-export const createRisk = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { projectId, detail, createdById } = body;
-
-  const createdByUser = await prisma.user.findUnique({ where: { userId: createdById } });
-  if (createdByUser) {
-    if (createdByUser.role === Role.GUEST) {
-      return res.status(403).json({ message: 'Access Denied' });
+      res.status(200).json(risks);
+    } catch (error: unknown) {
+      next(error);
     }
-  } else {
-    return res.status(404).json({ message: 'User Not Found' });
   }
 
-  const createdRisk = await prisma.risk.create({
-    data: {
-      project: { connect: { projectId } },
-      detail,
-      createdBy: { connect: { userId: createdById } }
+  static async createRisk(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectId, detail } = req.body;
+      const user = await getCurrentUser(res);
+
+      const riskId = await RisksService.createRisk(user, projectId, detail);
+
+      res.status(201).json({ message: `Successfully created risk #${riskId}.` });
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-
-  return res.status(200).json({ message: `Successfully created risk #${createdRisk.id}.` });
-};
-
-export const editRisk = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { userId, id, detail, resolved } = body;
-
-  // get the original risk and check if it exists
-  const originalRisk = await prisma.risk.findUnique({ where: { id } });
-  if (!originalRisk) return res.status(404).json({ message: `Risk with id ${id} not found` });
-  if (originalRisk.dateDeleted) {
-    return res.status(400).json({ message: 'Cant edit a deleted risk' });
   }
 
-  const hasPerms = await hasRiskPermissions(userId, originalRisk.projectId);
-  if (!hasPerms) return res.status(403).json({ message: 'Access Denied' });
+  static async editRisk(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, detail, resolved } = req.body;
+      const user = await getCurrentUser(res);
 
-  let updatedRisk;
+      const updatedRisk = await RisksService.editRisk(user, id, detail, resolved);
 
-  if (originalRisk.isResolved && !resolved) {
-    // if the risk is already resolved and we are unresolving it, we need to take away the resolved data in the db
-    updatedRisk = await prisma.risk.update({
-      where: { id },
-      data: {
-        detail,
-        isResolved: resolved,
-        resolvedByUserId: null,
-        resolvedAt: null
-      },
-      ...riskQueryArgs
-    });
-  } else if (!originalRisk.isResolved && resolved) {
-    // if it's not resolved and we're resolving it, we need to set the resolved data in the db
-    updatedRisk = await prisma.risk.update({
-      where: { id },
-      data: {
-        detail,
-        isResolved: resolved,
-        resolvedByUserId: userId,
-        resolvedAt: new Date()
-      },
-      ...riskQueryArgs
-    });
-  } else {
-    // any other case we are only changing the detail
-    updatedRisk = await prisma.risk.update({
-      where: { id },
-      data: {
-        detail
-      },
-      ...riskQueryArgs
-    });
+      res.status(200).json(updatedRisk);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  // return the updated risk
-  return res.status(200).json(riskTransformer(updatedRisk));
-};
+  static async deleteRisk(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { riskId } = req.body;
+      const user = await getCurrentUser(res);
 
-export const deleteRisk = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { riskId, deletedByUserId } = body;
+      const deletedRisk = await RisksService.deleteRisk(user, riskId);
 
-  const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
-
-  if (!targetRisk) return res.status(404).json({ message: `risk with id ${riskId} not found` });
-
-  if (targetRisk.dateDeleted || targetRisk.deletedBy) {
-    return res.status(400).json({ message: 'this risk has already been deleted' });
+      res.status(200).json(deletedRisk);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
-
-  const selfDelete = targetRisk.createdByUserId === deletedByUserId;
-  const hasPerms = await hasRiskPermissions(deletedByUserId, targetRisk.projectId);
-  if (!selfDelete && !hasPerms) return res.status(403).json({ message: 'Access Denied' });
-
-  const updatedRisk = await prisma.risk.update({
-    where: { id: riskId },
-    data: {
-      deletedByUserId,
-      dateDeleted: new Date()
-    },
-    ...riskQueryArgs
-  });
-
-  return res.status(200).json(riskTransformer(updatedRisk));
-};
+}

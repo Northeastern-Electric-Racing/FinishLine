@@ -3,11 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from 'react-router-dom';
-import { Breadcrumb } from 'react-bootstrap';
-import { LinkItem } from '../../utils/Types';
-import { routes } from '../../utils/Routes';
-import styles from '../../stylesheets/layouts/page-breadcrumbs.module.css';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { LinkItem } from '../../utils/types';
+import { routes } from '../../utils/routes';
+import { Breadcrumbs } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface PageTitleProps {
   currentPageTitle: string;
@@ -17,17 +18,15 @@ interface PageTitleProps {
 // Common component for adding breadcrumbs to a page
 const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousPages }) => {
   return (
-    <Breadcrumb className={styles.breadcrumbs}>
-      <Breadcrumb.Item linkAs={Link} linkProps={{ to: routes.HOME }}>
-        Home
-      </Breadcrumb.Item>
-      {previousPages.map((page) => (
-        <Breadcrumb.Item linkAs={Link} linkProps={{ to: page.route }}>
+    <Breadcrumbs sx={{ my: 1 }}>
+      <Link component={RouterLink} to={routes.HOME}>Home</Link>
+      {previousPages.map((page, i) => (
+        <Link component={RouterLink} key={i} to={page.route}>
           {page.name}
-        </Breadcrumb.Item>
+        </Link>
       ))}
-      <Breadcrumb.Item active>{currentPageTitle}</Breadcrumb.Item>
-    </Breadcrumb>
+      <Typography>{currentPageTitle}</Typography>
+    </Breadcrumbs>
   );
 };
 

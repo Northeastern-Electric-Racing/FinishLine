@@ -20,15 +20,10 @@ const renderComponent = () => {
 };
 
 describe('Rendering Work Package Changes Component', () => {
-  it('renders the component title', () => {
+  it('renders', () => {
     renderComponent();
 
     expect(screen.getByText(`Changes`)).toBeInTheDocument();
-  });
-
-  it('renders all the changes', () => {
-    renderComponent();
-
     expect(screen.getByText('#1')).toBeInTheDocument();
     expect(screen.getByText(/Decreased duration from 10 weeks to 7 weeks./i)).toBeInTheDocument();
     expect(screen.getByText('#54')).toBeInTheDocument();

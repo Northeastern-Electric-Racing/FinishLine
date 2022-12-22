@@ -4,15 +4,23 @@
  */
 
 import * as yup from 'yup';
-import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { routes } from '../../utils/Routes';
-import { FormInput } from './CreateChangeRequest';
+import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
+import TextField from '@mui/material/TextField';
+import FormHelperText from '@mui/material/FormHelperText';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import { MenuItem, NativeSelect, useTheme } from '@mui/material';
+import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -20,6 +28,7 @@ interface CreateChangeRequestViewProps {
   onSubmit: (data: FormInput) => Promise<void>;
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
+  handleCancel: () => void;
 }
 
 const wbsTester = (wbsNum: string | undefined) => {
@@ -59,131 +68,150 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   crDesc,
   onSubmit,
   proposedSolutions,
-  setProposedSolutions
+  setProposedSolutions,
+  handleCancel
 }) => {
-  const { register, handleSubmit, control, formState } = useForm<FormInput>({
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    register
+  } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { wbsNum, what: crDesc, why: [{ type: ChangeRequestReason.Other, explain: '' }] }
+    defaultValues: {
+      wbsNum,
+      what: crDesc,
+      why: [{ type: ChangeRequestReason.Other, explain: '' }],
+      type: ChangeRequestType.Issue
+    }
   });
-  const { fields, append, remove } = useFieldArray({ control, name: 'why' });
+  const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
+
+  const theme = useTheme();
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
 
   return (
-    <Container fluid>
-      <PageTitle title={'New Change Request'} previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
-      <PageBlock title={''}>
-        <Form id={'create-standard-change-request-form'} onSubmit={handleSubmit(onSubmit)}>
-          <Row className="mx-2 justify-content-start">
-            <Col md={5} lg={4} xl={4}>
-              <Form.Group controlId="formWBSNumber" className="mx-2">
-                <Form.Label>WBS Number</Form.Label>
-                <Form.Control
-                  {...register('wbsNum')}
-                  placeholder="Project or Work Package WBS #"
-                  isInvalid={formState.errors.wbsNum?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">{formState.errors.wbsNum?.message}</Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            <Col md={4} lg={4} xl={4}>
-              <Form.Group controlId="formType" className="mx-2">
-                <Form.Label>Type</Form.Label>
-                <Form.Control
-                  as="select"
-                  {...register('type')}
-                  isInvalid={formState.errors.type?.message !== undefined}
-                  custom
-                >
+    <form
+      id={'create-standard-change-request-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
+      <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
+      <PageBlock title="Details">
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={3}>
+            <Box>
+              <Typography variant="caption">WBS Number</Typography>
+            </Box>
+            <ReactHookTextField
+              name="wbsNum"
+              control={control}
+              placeholder="1.1.0"
+              errorMessage={errors.wbsNum}
+              sx={style}
+            />
+          </Grid>
+          <Grid item xs={12} md={9}>
+            <Box>
+              <Typography variant="caption">Type</Typography>
+            </Box>
+            <Controller
+              name="type"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <TextField select onChange={onChange} value={value} sx={style}>
                   {permittedTypes.map((t) => (
-                    <option key={t} value={t}>
+                    <MenuItem key={t} value={t}>
                       {t}
-                    </option>
+                    </MenuItem>
                   ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">{formState.errors.type?.message}</Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mx-2 justify-content-start">
-            <Col>
-              <Form.Group controlId="formWhat" className="mx-2">
-                <Form.Label>What</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  cols={50}
-                  {...register('what')}
-                  placeholder="What is the situation?"
-                  isInvalid={formState.errors.what?.message !== undefined}
-                />
-                <Form.Control.Feedback type="invalid">{formState.errors.what?.message}</Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={6} md={6} lg={6} xl={6}>
-              <Form.Group controlId="formWhy" className="mx-2">
-                <Form.Label>Why</Form.Label>
-                {fields.map((field, index) => (
-                  <InputGroup key={index} className="d-flex m-1">
-                    <Form.Control
-                      as="select"
-                      {...register(`why.${index}.type` as const)}
-                      isInvalid={formState.errors.why?.[index]?.type !== undefined}
-                      custom
-                    >
-                      {Object.values(ChangeRequestReason).map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </Form.Control>
-                    <Form.Control
-                      {...register(`why.${index}.explain` as const)}
-                      placeholder="Explain why"
-                      isInvalid={formState.errors.why?.[index]?.explain?.message !== undefined}
-                    />
-                    <Button variant="danger" onClick={() => remove(index)}>
-                      X
-                    </Button>
-                    <Form.Control.Feedback type="invalid" className="d-block">
-                      {formState.errors.why?.[index]?.type}
-                      {formState.errors.why?.[index]?.explain?.message}
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                ))}
-                <Row className="px-2 justify-content-end">
+                </TextField>
+              )}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box>
+              <Typography variant="caption">What</Typography>
+            </Box>
+            <ReactHookTextField
+              name="what"
+              control={control}
+              multiline
+              rows={4}
+              errorMessage={errors.what}
+              placeholder="What is the situation?"
+              sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="caption">Why</Typography>
+            </Box>
+            <Box>
+              {whys.map((_element, index) => (
+                <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                  <NativeSelect {...register(`why.${index}.type`)}>
+                    {Object.values(ChangeRequestReason).map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                  <TextField
+                    required
+                    autoComplete="off"
+                    label="Explain"
+                    sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
+                    {...register(`why.${index}.explain`)}
+                  />
                   <Button
-                    variant="outline-secondary"
-                    onClick={() => append({ type: ChangeRequestReason.Design, explain: '' })}
+                    sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
+                    variant="contained"
+                    color="error"
+                    onClick={() => removeWhy(index)}
                   >
-                    Add Reason
+                    <DeleteIcon />
                   </Button>
-                </Row>
-              </Form.Group>
-            </Col>
-          </Row>
-          <PageBlock title="Proposed Solutions">
-            {' '}
-            <Row className="mx-2 justify-content-start">
-              <Col className="mx-2">
-                <CreateProposedSolutionsList
-                  proposedSolutions={proposedSolutions}
-                  setProposedSolutions={setProposedSolutions}
-                />
-              </Col>
-            </Row>
-          </PageBlock>
-          <Row className="mx-2 mt-2 justify-content-end">
-            <Button variant="success" type="submit">
-              Submit
+                </Box>
+              ))}
+            </Box>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ mt: 1 }}
+              onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
+            >
+              Add Reason
             </Button>
-          </Row>
-        </Form>
+            <FormHelperText>{errors.why?.message}</FormHelperText>
+          </Grid>
+        </Grid>
       </PageBlock>
-    </Container>
+      <PageBlock title="Proposed Solutions">
+        <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
+      </PageBlock>
+      <Box textAlign="center">
+        <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
+          Cancel
+        </Button>
+        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
+          Submit
+        </Button>
+      </Box>
+    </form>
   );
 };
 

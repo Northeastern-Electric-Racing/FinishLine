@@ -4,85 +4,133 @@
  */
 
 import { useState } from 'react';
-import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Link from '@mui/material/Link';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import CardContent from '@mui/material/CardContent';
+import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
-import { useTheme } from '../../hooks/theme.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
-import { routes } from '../../utils/Routes';
+import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/home.module.css';
+import { Grid, Typography, useTheme } from '@mui/material';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
-  const theme = useTheme();
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, daysUntilDeadline });
+  const theme = useTheme();
 
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
 
   const fullDisplay = (
-    <Row className="flex-nowrap overflow-auto justify-content-start">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start'
+      }}
+    >
       {workPackages.data?.length === 0
         ? 'No upcoming deadlines'
         : workPackages.data?.map((wp) => (
             <Card
-              className={styles.horizontalScrollCard}
+              variant="outlined"
               key={wbsPipe(wp.wbsNum)}
-              border={theme.cardBorder}
-              bg={theme.cardBg}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
             >
-              <Card.Body className="p-3">
-                <Card.Title className="mb-2">
-                  <Link to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-                    {wbsPipe(wp.wbsNum)} - {wp.name}
-                  </Link>
-                </Card.Title>
-                <Card.Text>
-                  <Container fluid>
-                    <Row className="pb-1">End Date: {datePipe(wp.endDate)}</Row>
-                    <Row className="pb-1">
-                      Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
-                    </Row>
-                    <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
-                    <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
-                    <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                    </Row>
-                  </Container>
-                </Card.Text>
-              </Card.Body>
+              <CardContent sx={{ padding: 3 }}>
+                <Link
+                  variant="h6"
+                  component={RouterLink}
+                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                  sx={{ marginBottom: 2 }}
+                >
+                  {wbsPipe(wp.wbsNum)} - {wp.name}
+                </Link>
+                <Box>
+                  <Box>
+                    {' '}
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      End Date:{' '}
+                    </Typography>{' '}
+                    <Typography display="inline">{datePipe(wp.endDate)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Progress:{' '}
+                    </Typography>
+                    <Typography display="inline">
+                      {percentPipe(wp.progress)}, {wp.timelineStatus}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Engineering Lead:
+                    </Typography>
+                    <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                  </Box>
+                  <Box>
+                    {' '}
+                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                      Project Manager:{' '}
+                    </Typography>
+                    <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography>
+                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables{' '}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
             </Card>
           ))}
-    </Row>
+    </Box>
   );
 
   return (
     <PageBlock
       title={`Upcoming Deadlines (${workPackages.data?.length})`}
       headerRight={
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text>Next</InputGroup.Text>
-          </InputGroup.Prepend>
-          <Form.Control custom as="select" value={daysUntilDeadline} onChange={(e) => setDaysUntilDeadline(e.target.value)}>
+        <FormControl>
+          <InputLabel id="dateRange">Date Range</InputLabel>
+          <Select
+            label="Date Range"
+            labelId="dateRange"
+            value={daysUntilDeadline}
+            onChange={(e) => setDaysUntilDeadline(e.target.value)}
+            startAdornment={<InputAdornment position="start">Next</InputAdornment>}
+            autoWidth
+            variant="standard"
+            sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2, padding: 1 }}
+            endAdornment={
+              <InputAdornment position="end" sx={{ marginLeft: -2, marginRight: 2 }}>
+                Days
+              </InputAdornment>
+            }
+          >
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
-              <option key={days} value={days}>
+              <MenuItem key={days} value={days}>
                 {days}
-              </option>
+              </MenuItem>
             ))}
-          </Form.Control>
-          <InputGroup.Append>
-            <InputGroup.Text>Days</InputGroup.Text>
-          </InputGroup.Append>
-        </InputGroup>
+          </Select>
+        </FormControl>
       }
     >
-      <Container fluid>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Container>
+      <Grid container>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Grid>
     </PageBlock>
   );
 };

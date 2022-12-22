@@ -3,169 +3,173 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
-import { ChangeRequest, ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../utils/Routes';
-import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
+import { useHistory } from 'react-router-dom';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { routes } from '../../utils/routes';
+import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import { DisplayChangeRequest } from './ChangeRequestsTableView';
-import CRTable from './ChangeRequestsTableView'; // Directly rename the default import
-import ChangeRequestsFilter from './ChangeRequestsFilter';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import ActionButton from '../../components/ActionButton';
 import ErrorPage from '../ErrorPage';
+import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
-
-/***
- * Returns a list of change requests that has been filtered according to the given params.
- * @param changeRequests The list of projects to filter.
- * @param type The category under which the change request falls.
- * @param impact The parts of the project the change will impact.
- * @param whyType A why type of the change request.
- * @param state The state of review of the CR.
- * @param implemented Whether or not the CR has been implemented.
- * @return The filtered list of change requests.
- */
-export function filterCRs(
-  changeRequests: ChangeRequest[],
-  type: string,
-  impact: number[],
-  whyType: string,
-  state: number[],
-  implemented: string
-): ChangeRequest[] {
-  // Type filter
-  if (type !== '') {
-    changeRequests = changeRequests.filter((changeRequest: ChangeRequest) => changeRequest.type === type);
-  }
-
-  // Impact Filter
-  if (impact.length !== 0) {
-    changeRequests = changeRequests.filter((changeRequest: ChangeRequest) => {
-      let filterBool = false;
-      const standard = changeRequest as StandardChangeRequest;
-      if (impact.indexOf(0) !== -1) {
-        filterBool = filterBool || (standard.scopeImpact !== '' && standard.scopeImpact !== undefined);
-      }
-      if (impact.indexOf(1) !== -1) {
-        filterBool = filterBool || (standard.budgetImpact !== 0 && standard.budgetImpact !== undefined);
-      }
-      if (impact.indexOf(2) !== -1) {
-        filterBool = filterBool || (standard.timelineImpact !== 0 && standard.timelineImpact !== undefined);
-      }
-      return filterBool;
-    });
-  }
-
-  // State filter
-  if (state.length !== 0) {
-    changeRequests = changeRequests.filter((changeRequest: ChangeRequest) => {
-      let filterBool = false;
-      if (state.indexOf(0) !== -1) {
-        filterBool = filterBool || changeRequest.dateReviewed === undefined;
-      }
-      if (state.indexOf(1) !== -1) {
-        filterBool = filterBool || changeRequest.accepted === true;
-      }
-      if (state.indexOf(2) !== -1) {
-        filterBool = filterBool || changeRequest.accepted === false;
-      }
-      return filterBool;
-    });
-  }
-
-  // whyType filter
-  if (whyType !== '') {
-    changeRequests = changeRequests.filter((changeRequest: ChangeRequest) => {
-      const standard = changeRequest as StandardChangeRequest;
-      if (standard.why === undefined) {
-        return false;
-      }
-      return (
-        standard.why.filter((exp: ChangeRequestExplanation) => {
-          if (exp.type === whyType) {
-            return exp.explain !== '';
-          }
-          return false;
-        }).length !== 0
-      );
-    });
-  }
-
-  // Implemented Filter
-  if (implemented !== '') {
-    changeRequests = changeRequests.filter(
-      (changeRequest: ChangeRequest) => (implemented === 'Yes') === (changeRequest.dateImplemented !== undefined)
-    );
-  }
-
-  return changeRequests;
-}
+import { Link } from 'react-router-dom';
+import { Button } from '@mui/material';
+import { useTheme } from '@mui/system';
 
 const ChangeRequestsTable: React.FC = () => {
-  const [type, setType] = useState('');
-  const [impact, setImpact] = useState<number[]>([]);
-  const [whyType, setWhyType] = useState('');
-  const [state, setState] = useState<number[]>([]);
-  const [implemented, setImplemented] = useState('');
+  const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
 
+  const baseColDef: any = {
+    flex: 1,
+    align: 'center',
+    headerAlign: 'center'
+  };
+
   const auth = useAuth();
+  const theme = useTheme();
 
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const transformToDisplayChangeRequests = (changeRequests: ChangeRequest[]) => {
-    return changeRequests.map((cr: ChangeRequest) => {
-      return {
-        id: cr.crId,
-        dateSubmitted: datePipe(cr.dateSubmitted),
-        submitterName: fullNamePipe(cr.submitter),
-        wbsNum: wbsPipe(cr.wbsNum),
-        type: cr.type,
-        dateReviewed: cr.dateReviewed ? datePipe(new Date(cr.dateReviewed)) : '',
-        accepted: cr.accepted !== undefined ? booleanPipe(cr.accepted) : '',
-        dateImplemented: cr.dateImplemented ? datePipe(new Date(cr.dateImplemented)) : ''
-      };
-    }) as DisplayChangeRequest[];
-  };
-
-  const sendDataToParent = (type: string, impact: number[], whyType: string, state: number[], implemented: string) => {
-    setType(type);
-    setImpact(impact);
-    setWhyType(whyType);
-    setState(state);
-    setImplemented(implemented);
-  };
-  return (
-    <Container fluid>
-      <PageTitle
-        title={'Change Requests'}
-        previousPages={[]}
-        actionButton={
-          <ActionButton
-            link={routes.CHANGE_REQUESTS_NEW}
-            icon={faPlus}
-            text={'New Change Request'}
-            disabled={auth.user?.role === 'GUEST'}
-          />
+  const columns: GridColDef[] = [
+    {
+      ...baseColDef,
+      field: 'crId',
+      headerName: 'ID',
+      maxWidth: 100
+    },
+    {
+      ...baseColDef,
+      field: 'type',
+      headerName: 'Type',
+      maxWidth: 150
+    },
+    {
+      ...baseColDef,
+      field: 'wbsNum',
+      headerName: 'WBS #',
+      valueFormatter: (params) => wbsPipe(params.value),
+      maxWidth: 100,
+      sortComparator: (v1, v2, param1, param2) => {
+        if (param1.value.carNumber !== param2.value.carNumber) {
+          return param1.value.carNumber - param2.value.carNumber;
+        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
+          return param1.value.projectNumber - param2.value.projectNumber;
+        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
+          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+        } else {
+          return 0;
         }
+      }
+    },
+    {
+      ...baseColDef,
+      field: 'dateSubmitted',
+      headerName: 'Date Submitted',
+      valueFormatter: (params) => datePipe(params.value),
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'submitter',
+      headerName: 'Submitter',
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'dateReviewed',
+      headerName: 'Date Reviewed',
+      valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'reviewer',
+      headerName: 'Reviewer',
+      valueFormatter: (params) => fullNamePipe(params.value),
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'accepted',
+      headerName: 'Accepted',
+      valueFormatter: (params) => (params.value ? booleanPipe(params.value) : ''),
+      maxWidth: 100
+    },
+    {
+      ...baseColDef,
+      field: 'dateImplemented',
+      headerName: 'Date Implemented',
+      valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
+      maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'implementedChanges',
+      headerName: '# Implemented Changes',
+      valueFormatter: (params) => params.value.length,
+      maxWidth: 200
+    }
+  ];
+
+  return (
+    <div>
+      <div style={{ marginBottom: 15 }}>
+        <PageTitle
+          title={'Change Requests'}
+          previousPages={[]}
+          actionButton={
+            <Button
+              style={{
+                textTransform: 'none',
+                fontSize: 16,
+                backgroundColor: '#ff0000',
+                borderColor: '#0062cc',
+                boxShadow: 'none'
+              }}
+              component={Link}
+              to={routes.CHANGE_REQUESTS_NEW}
+              variant="contained"
+              disabled={auth.user?.role === 'GUEST'}
+              startIcon={<Add />}
+            >
+              New Change Request
+            </Button>
+          }
+        />
+      </div>
+      <DataGrid
+        autoHeight
+        disableSelectionOnClick
+        density="compact"
+        pageSize={15}
+        rowsPerPageOptions={[15, 30, 50, 100]}
+        loading={isLoading}
+        error={error}
+        rows={data || []}
+        columns={columns}
+        getRowId={(row) => row.crId}
+        sx={{ background: theme.palette.background.paper }}
+        onRowClick={(params) => {
+          history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
+        }}
+        components={{ Toolbar: GridToolbar }}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'crId', sort: 'desc' }]
+          },
+          columns: {
+            columnVisibilityModel: {
+              implementedChanges: false
+            }
+          }
+        }}
       />
-      <Row>
-        <Col sm={4} md={3} lg={3} xl={2}>
-          <ChangeRequestsFilter update={sendDataToParent} />
-        </Col>
-        <Col>
-          <CRTable
-            changeRequests={transformToDisplayChangeRequests(filterCRs(data!, type, impact, whyType, state, implemented))}
-          />
-        </Col>
-      </Row>
-    </Container>
+    </div>
   );
 };
 

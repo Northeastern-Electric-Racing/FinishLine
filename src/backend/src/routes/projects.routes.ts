@@ -1,7 +1,12 @@
 import express from 'express';
-import { editProject, getAllProjects, getSingleProject, newProject } from '../controllers/projects.controllers';
+import {
+  editProject,
+  getAllProjects,
+  getSingleProject,
+  newProject,
+  setProjectTeam
+} from '../controllers/projects.controllers';
 import { body } from 'express-validator';
-import { WbsElementStatus } from 'shared';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 
@@ -38,7 +43,6 @@ projectRouter.post(
   body('otherConstraints').isArray(),
   intMinZero(body('otherConstraints.*.id').optional()),
   nonEmptyString(body('otherConstraints.*.detail')),
-  body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
   nonEmptyString(body('googleDriveFolderLink')),
   nonEmptyString(body('slideDeckLink')),
   nonEmptyString(body('bomLink')),
@@ -48,5 +52,6 @@ projectRouter.post(
   validateInputs,
   editProject
 );
+projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, setProjectTeam);
 
 export default projectRouter;

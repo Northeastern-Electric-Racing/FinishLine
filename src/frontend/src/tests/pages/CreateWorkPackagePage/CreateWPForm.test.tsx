@@ -5,11 +5,12 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { Auth } from '../../../utils/Types';
+import { Auth } from '../../../utils/types';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/utils.hooks');
@@ -29,18 +30,14 @@ const mockUseQuery = () => {
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(<CreateWPForm />);
+  return render(
+    <BrowserRouter>
+      <CreateWPForm />
+    </BrowserRouter>
+  );
 };
 
 describe('create wp form test suite', () => {
-  it('render view component', () => {
-    mockAuthHook();
-    mockUseQuery();
-    renderComponent();
-
-    expect(screen.getByText('Create New Work Package')).toBeInTheDocument();
-  });
-
   it('disables submit button for guest users', () => {
     mockAuthHook(exampleGuestUser);
     mockUseQuery();

@@ -4,22 +4,38 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Link from '@mui/material/Link';
+import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
-import { useTheme } from '../../hooks/theme.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
-import { routes } from '../../utils/Routes';
+import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/home.module.css';
+import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
+
+const NERInput = styled(InputBase)(({ theme }) => ({
+  'label + &': {
+    marginTop: theme.spacing(1)
+  },
+  '& .MuiInputBase-input': {
+    borderRadius: 6,
+    position: 'relative',
+    backgroundColor: theme.palette.background.paper,
+    border: '1px solid ' + theme.palette.divider,
+    fontSize: 16,
+    padding: '10px 26px 10px 12px'
+  }
+}));
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
-  const theme = useTheme();
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, timelineStatus });
+  const theme = useTheme();
 
   useEffect(() => {
     workPackages.refetch();
@@ -31,66 +47,90 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
   }
 
   const fullDisplay = (
-    <Row className="flex-nowrap overflow-auto justify-content-start">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start'
+      }}
+    >
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
             <Card
-              className={styles.horizontalScrollCard}
+              variant="outlined"
               key={wbsPipe(wp.wbsNum)}
-              border={theme.cardBorder}
-              bg={theme.cardBg}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
             >
-              <Card.Body className="p-3">
-                <Card.Title className="mb-2">
-                  <Link to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-                    {wbsPipe(wp.wbsNum)} - {wp.name}
-                  </Link>
-                </Card.Title>
-                <Card.Text>
-                  <Container fluid>
-                    <Row className="pb-1">End Date: {datePipe(wp.endDate)}</Row>
-                    <Row className="pb-1">
-                      Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
-                    </Row>
-                    <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
-                    <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
-                    <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                    </Row>
-                  </Container>
-                </Card.Text>
-              </Card.Body>
+              <CardContent sx={{ padding: 3 }}>
+                <Link
+                  variant="h6"
+                  component={RouterLink}
+                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                  sx={{ marginBottom: 2 }}
+                >
+                  {wbsPipe(wp.wbsNum)} - {wp.name}
+                </Link>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    End Date:{' '}
+                  </Typography>
+                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Progress:
+                  </Typography>
+                  <Typography display="inline">
+                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Engineering Lead:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Project Manager:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                </Box>
+                <Box>
+                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                </Box>
+              </CardContent>
             </Card>
           ))}
-    </Row>
+    </Box>
   );
 
   return (
     <PageBlock
       title={`Work Packages By Timeline Status (${workPackages.data?.length})`}
       headerRight={
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text id="selectTimelineStatus">Timeline Status</InputGroup.Text>
-          </InputGroup.Prepend>
-          <Form.Control
-            as="select"
-            aria-describedby="selectTimelineStatus"
+        <FormControl>
+          <InputLabel id="selectTimelineStatus"> Timeline Status</InputLabel>
+          <Select
+            label="Timeline Status"
+            labelId="selectTimelineStatus"
             value={timelineStatus}
             onChange={(e) => setTimelineStatus(e.target.value as TimelineStatus)}
-            custom
+            input={<NERInput />}
           >
             {Object.values(TimelineStatus).map((status) => (
-              <option key={status} value={status}>
+              <MenuItem key={status} value={status}>
                 {status}
-              </option>
+              </MenuItem>
             ))}
-          </Form.Control>
-        </InputGroup>
+          </Select>
+        </FormControl>
       }
     >
-      <Container fluid>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Container>
+      {workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}
     </PageBlock>
   );
 };

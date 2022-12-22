@@ -4,12 +4,60 @@
  */
 
 import { useState } from 'react';
-import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
 import { useAuth } from '../../hooks/auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
+import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
+
+const NERSwitch = styled((props: SwitchProps) => (
+  <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
+))(({ theme }) => ({
+  width: 34,
+  height: 18,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 0,
+    margin: 2,
+    transitionDuration: '300ms',
+    '&.Mui-checked': {
+      transform: 'translateX(16px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#ef4345' : '#ef4345',
+        opacity: 1,
+        border: 0
+      },
+      '&.Mui-disabled + .MuiSwitch-track': {
+        opacity: 0.5
+      }
+    },
+    '&.Mui-focusVisible .MuiSwitch-thumb': {
+      color: '#ef4345',
+      border: '6px solid #fff'
+    },
+    '&.Mui-disabled .MuiSwitch-thumb': {
+      color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600]
+    },
+    '&.Mui-disabled + .MuiSwitch-track': {
+      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3
+    }
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 14,
+    height: 14
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 18 / 2,
+    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+    opacity: 1,
+    transition: theme.transitions.create(['background-color'], {
+      duration: 500
+    })
+  }
+}));
 
 const Settings: React.FC = () => {
   const auth = useAuth();
@@ -18,55 +66,56 @@ const Settings: React.FC = () => {
   if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
   return (
-    <Container fluid>
+    <>
       <PageTitle title={'Settings'} previousPages={[]} />
-      <Alert variant={'success'} show={showAlert}>
-        Haha {auth.user?.firstName} bye bye!
-      </Alert>
+      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <PageBlock title={'Organization Settings'}>
-        <Container fluid>
-          <Row>
-            <Col md={6} lg={4}>
-              <b>Name:</b> Northeastern Electric Racing
-            </Col>
-            <Col md={4} lg={2}>
-              <Form.Switch
-                id="trick-switch"
+        <Grid container>
+          <Grid item xs={6} md={12}>
+            <b>Name:</b> Northeastern Electric Racing
+          </Grid>
+          <Grid item xs={6} md={12}>
+            <FormGroup>
+              <FormControlLabel
                 label="Trickster Mode"
-                onClick={() => {
-                  setShowAlert(true);
-                  setTimeout(() => {
-                    auth.signout();
-                  }, 2000);
-                }}
+                control={
+                  <NERSwitch
+                    id="trick-switch"
+                    sx={{ m: 1 }}
+                    onClick={() => {
+                      setShowAlert(true);
+                      setTimeout(() => {
+                        auth.signout();
+                      }, 2000);
+                    }}
+                  />
+                }
               />
-            </Col>
-          </Row>
-        </Container>
+            </FormGroup>
+          </Grid>
+        </Grid>
       </PageBlock>
       <PageBlock title="User Details">
-        <Container fluid>
-          <Row>
-            <Col md={4} lg={2}>
-              <b>First Name:</b> {auth.user?.firstName}
-            </Col>
-            <Col md={4} lg={2}>
-              <b>Last Name:</b> {auth.user?.lastName}
-            </Col>
-            <Col md={4} lg={3}>
-              <b>Email: </b> {auth.user?.email}
-            </Col>
-            <Col md={4} lg={2}>
-              <b>Email ID:</b> {auth.user?.emailId}
-            </Col>
-            <Col md={4} lg={2}>
-              <b>Role: </b> {auth.user?.role}
-            </Col>
-          </Row>
-        </Container>
+        <Grid container>
+          <Grid item md={4} lg={2}>
+            <b>First Name:</b> {auth.user?.firstName}
+          </Grid>
+          <Grid item md={4} lg={2}>
+            <b>Last Name:</b> {auth.user?.lastName}
+          </Grid>
+          <Grid item md={4} lg={3}>
+            <b>Email: </b> {auth.user?.email}
+          </Grid>
+          <Grid item md={4} lg={2}>
+            <b>Email ID:</b> {auth.user?.emailId}
+          </Grid>
+          <Grid item md={4} lg={2}>
+            <b>Role: </b> {auth.user?.role}
+          </Grid>
+        </Grid>
       </PageBlock>
       <UserSettings userId={auth.user.userId} />
-    </Container>
+    </>
   );
 };
 

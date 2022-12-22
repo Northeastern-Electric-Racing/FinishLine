@@ -7,31 +7,10 @@ import { render } from '@testing-library/react';
 import ErrorPage from '../../pages/ErrorPage';
 
 describe('error page', () => {
-  it('renders without error', () => {
-    render(<ErrorPage />);
-  });
-
-  it('renders title', () => {
+  it('renders everything', () => {
     const { getByText } = render(<ErrorPage />);
 
     expect(getByText('Oops, sorry!')).toBeInTheDocument();
-  });
-
-  it('renders subtitle', () => {
-    const { getByText } = render(<ErrorPage />);
-
     expect(getByText('There was an error loading the page.')).toBeInTheDocument();
-  });
-
-  it('does not render message when not provided', () => {
-    const { queryByText } = render(<ErrorPage />);
-
-    expect(queryByText('sample message')).not.toBeInTheDocument();
-  });
-
-  it('renders message when provided', () => {
-    const { getByText } = render(<ErrorPage message={'sample message'} />);
-
-    expect(getByText('sample message')).toBeInTheDocument();
   });
 });

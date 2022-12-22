@@ -3,10 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Form, InputGroup, FormControl, Button } from 'react-bootstrap';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
+import LoginIcon from '@mui/icons-material/Login';
+import FormControl from '@mui/material/FormControl';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { fullNamePipe } from '../../utils/Pipes';
+import { fullNamePipe } from '../../utils/pipes';
 interface LoginDevProps {
   devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
@@ -24,32 +29,29 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
   if (!usersList || isLoading) return <LoadingIndicator />;
 
   return (
-    <Form className="pt-3" onSubmit={devFormSubmit}>
-      <InputGroup>
-        <InputGroup.Append>
-          <InputGroup.Text id="user-select">Select User</InputGroup.Text>
-        </InputGroup.Append>
-        <FormControl
-          onChange={(e: any) => devSetUser(parseInt(e.target.value))}
-          aria-describedby="user-select"
-          as="select"
-          custom
+    <form onSubmit={devFormSubmit}>
+      <FormControl fullWidth sx={{ marginTop: 2 }}>
+        <InputLabel id="localDevUser">Local Dev User</InputLabel>
+        <Select
+          label="Local Dev User"
+          labelId="localDevUser"
+          onChange={(e: any) => devSetUser(e.target.value)}
+          endAdornment={
+            <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
+              <LoginIcon />
+            </IconButton>
+          }
         >
           {usersList
             .sort((a, b) => a.userId - b.userId)
             .map((user) => (
-              <option key={user.role} value={user.userId}>
+              <MenuItem key={user.userId} value={user.userId}>
                 {fullNamePipe(user)} ({user.role.toLowerCase()})
-              </option>
+              </MenuItem>
             ))}
-        </FormControl>
-        <InputGroup.Append>
-          <Button variant="primary" type="submit">
-            Log In
-          </Button>
-        </InputGroup.Append>
-      </InputGroup>
-    </Form>
+        </Select>
+      </FormControl>
+    </form>
   );
 };
 

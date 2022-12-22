@@ -4,11 +4,21 @@
  */
 
 import { Risk } from 'shared';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { Form, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  TextField,
+  DialogTitle,
+  DialogActions,
+  Tooltip,
+  FormControlLabel,
+  Checkbox
+} from '@mui/material';
 import styles from '../../../stylesheets/components/check-list.module.css';
 import {
   useCreateSingleRisk,
@@ -18,10 +28,11 @@ import {
 } from '../../../hooks/risks.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { routes } from '../../../utils/Routes';
-import { wbsPipe } from '../../../utils/Pipes';
+import { routes } from '../../../utils/routes';
+import { wbsPipe } from '../../../utils/pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
+import { NERButton } from '../../../components/NERButton';
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
@@ -79,7 +90,9 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+
     const payload = {
       projectId: projectId,
       createdById: userId,
@@ -89,6 +102,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     try {
       await createMutateAsync(payload);
       handleClose();
+      setNewDetail('');
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -111,14 +125,13 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     }
   };
 
-  const renderTooltip = (message: string) => <Tooltip id="button-tooltip">{message}</Tooltip>;
-
   const ConvertToCRButton = (risk: Risk) => {
     return (
       role !== 'GUEST' && (
-        <OverlayTrigger overlay={renderTooltip('Convert to CR')}>
+        <Tooltip title="Convert to CR" placement="top">
           <Button
-            variant="success"
+            variant="contained"
+            color="success"
             data-testId="convertButton"
             onClick={() => {
               history.push(
@@ -126,79 +139,86 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
               );
             }}
           >
-            <FontAwesomeIcon icon={faArrowRight} />
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
           </Button>
-        </OverlayTrigger>
+        </Tooltip>
       )
     );
   };
 
   const DeleteRiskButton = (risk: Risk) => {
     return (
-      <OverlayTrigger overlay={renderTooltip('Delete Risk')}>
+      <Tooltip title="Delete Risk" placement="top">
         <Button
-          variant="danger"
+          variant="contained"
+          color="error"
           data-testId={`deleteButton-${risk.id}`}
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <DeleteIcon sx={{ fontSize: 18 }} />
         </Button>
-      </OverlayTrigger>
+      </Tooltip>
     );
   };
 
   return (
     <PageBlock title={'Risk Log'}>
-      <Form>
-        <div className={styles.parentContainer}>
-          {risks.map((risk, idx) => (
-            <div key={idx} className={styles.container}>
-              {hasPermissions ? (
-                <Form.Check
-                  label={
-                    <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
-                      {risk.detail}
-                    </p>
-                  }
-                  checked={risk.isResolved}
-                  data-testId={`testCheckbox${idx}`}
-                  onChange={() => handleCheck(risk)}
-                />
-              ) : (
-                <li
-                  style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}
-                  className="mb-3"
-                >
-                  {risk.detail}
-                </li>
-              )}
-              {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
-            </div>
-          ))}
-          {role !== 'GUEST' && (
-            <Button variant="success" onClick={handleShow} data-testId="createButton">
-              Add New Risk
-            </Button>
-          )}
-        </div>
-        <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Add New Risk</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form.Control placeholder={'Enter New Risk Here'} onChange={(e) => setNewDetail(e.target.value)} />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="danger" onClick={handleClose}>
-              Close
-            </Button>
-            <Button variant="success" onClick={handleCreate}>
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </Form>
+      <div className={styles.parentContainer}>
+        {risks.map((risk, idx) => (
+          <div key={idx} className={styles.container}>
+            {hasPermissions ? (
+              <FormControlLabel
+                label={
+                  <p style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }}>
+                    {risk.detail}
+                  </p>
+                }
+                control={
+                  <Checkbox
+                    checked={risk.isResolved}
+                    data-testId={`testCheckbox${idx}`}
+                    onChange={() => handleCheck(risk)}
+                  />
+                }
+              />
+            ) : (
+              <li style={risk.isResolved ? { textDecoration: 'line-through' } : { textDecoration: 'none' }} className="mb-3">
+                {risk.detail}
+              </li>
+            )}
+            {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
+          </div>
+        ))}
+        {role !== 'GUEST' && (
+          <NERButton variant="contained" onClick={handleShow} data-testId="createButton" sx={{ mt: 1 }}>
+            Add New Risk
+          </NERButton>
+        )}
+      </div>
+      <Dialog open={show} onClose={handleClose} fullWidth>
+        <form onSubmit={handleCreate}>
+          <DialogTitle>Add New Risk</DialogTitle>
+          <DialogContent>
+            <TextField
+              required
+              autoFocus
+              margin="dense"
+              id="newRisk"
+              label="Add New Risk"
+              type="text"
+              maxRows={5}
+              multiline
+              fullWidth
+              onChange={(e) => setNewDetail(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Close</Button>
+            <Button type="submit">Save Changes</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </PageBlock>
   );
 };
