@@ -164,7 +164,7 @@ describe('Work Packages', () => {
       return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
     };
 
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('Project', '1.2.0'));
+    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
   });
 
@@ -178,7 +178,7 @@ describe('Work Packages', () => {
       return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
     };
 
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('Project', '1.2.0'));
+    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
   });
 
