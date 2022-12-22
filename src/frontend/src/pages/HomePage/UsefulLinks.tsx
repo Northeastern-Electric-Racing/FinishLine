@@ -5,14 +5,7 @@
  */
 
 import { useTheme } from '@mui/material';
-import {
-  ShoppingCart,
-  Settings,
-  Receipt,
-  Description,
-  CurrencyExchange,
-  AttachMoney
-} from '@mui/icons-material';
+import { ShoppingCart, Settings, Receipt, Description, CurrencyExchange, AttachMoney } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
@@ -32,54 +25,51 @@ const UsefulLinks: React.FC = () => {
       </Link>
     </>,
     <>
-      <CurrencyExchange sx={{fontSize:17, color:theme.palette.text.primary}} />
-      <Link 
-        href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit" 
-        underline="hover" 
+      <CurrencyExchange sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit"
+        underline="hover"
         fontSize={19}
         sx={{ pl: 1 }}
-        >
-          Reimbursement Guidelines
-        </Link>  
-    </>,
-    <>
-      <AttachMoney sx={{fontSize:17, color:theme.palette.text.primary}} />
-      <Link 
-        href="https://forms.gle/6ztRoa1iL7p1KHwP6"
-        underline="hover" 
-        fontSize={19}
-        sx={{ pl: 1 }}>
-      Procurement Form
+      >
+        Reimbursement Guidelines
       </Link>
     </>,
     <>
-      <Receipt sx={{fontSize:17, color:theme.palette.text.primary}} />
+      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link href="https://forms.gle/6ztRoa1iL7p1KHwP6" underline="hover" fontSize={19} sx={{ pl: 1 }}>
+        Procurement Form
+      </Link>
+    </>,
+    <>
+      <Receipt sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
         href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit"
-        underline='hover'
+        underline="hover"
         fontSize={19}
-        sx={{ pl: 1 }}>
+        sx={{ pl: 1 }}
+      >
         McMaster Order Sheet
       </Link>
     </>,
     <>
-      <Description sx={{fontSize:17, color:theme.palette.text.primary}} />
+      <Description sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
-      href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit"
-      underline='hover'
-      fontSize={19}
-      sx={{ pl: 1 }}
+        href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
       >
         Project Update Log
       </Link>
     </>,
     <>
-      <Settings sx={{fontSize:17, color:theme.palette.text.primary}} />
+      <Settings sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
-      href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines"
-      underline='hover'
-      fontSize={19}
-      sx={{ pl: 1 }}
+        href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
       >
         Hardware Guidelines
       </Link>
