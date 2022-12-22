@@ -9,7 +9,7 @@ import { routes } from '../../utils/routes';
 import { styled } from '@mui/material/styles';
 import { Link, ListItem, List, Tooltip, Typography, TooltipProps, tooltipClasses } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -17,20 +17,19 @@ interface ImplementedChangesListProps {
 }
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
-  const tooltipRef = useRef<any>();
+  const [bodyWidth, setBodyWidth] = useState<number>(window.document.body.offsetWidth);
+
+  document.body.addEventListener('resize', () => {
+    setBodyWidth(window.document.body.offsetWidth);
+  });
 
   function useWindowSize() {
-    const [width, setWidth] = useState<number>(0);
-    const [position, setPosition] = useState<'top' | 'right'>('right');
+    const [innerWidth, setInnerWidth] = useState<number>(0);
+    const [position, setPosition] = useState<'top' | 'right'>('top');
     useLayoutEffect(() => {
       function updateTooltipProps() {
-        setWidth(window.innerWidth);
-        if ([null, undefined].includes(tooltipRef.current)) {
-          return;
-        }
-        const tooltipWidth = tooltipRef.current.getBoundingClientRect().width;
-        const tooltipPosition = tooltipRef.current.getBoundingClientRect().right;
-        setPosition(window.innerWidth - tooltipPosition - 50 <= tooltipWidth ? 'top' : 'right');
+        setInnerWidth(window.innerWidth);
+        setPosition(window.innerWidth <= bodyWidth ? 'top' : 'right');
       }
       window.addEventListener('resize', () => {
         updateTooltipProps();
@@ -41,17 +40,17 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
           updateTooltipProps();
         });
     }, []);
-    return [width, position];
+    return [innerWidth, position];
   }
 
-  let [width, position] = useWindowSize() as [number, 'top' | 'right'];
+  let [innerWidth, position] = useWindowSize() as [number, 'top' | 'right'];
 
   // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
   const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
   ))({
     [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: `${(width as number) / 2}px`,
+      maxWidth: `${(innerWidth as number) / 2}px`,
       overflowWrap: 'break-word'
     }
   });
@@ -72,8 +71,9 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                 </Typography>
               }
               placement={position}
+              arrow
             >
-              <Typography ref={tooltipRef}>
+              <Typography>
                 [{<Link href={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>}] {ic.detail}
               </Typography>
             </CustomWidthTooltip>
