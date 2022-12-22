@@ -10,6 +10,7 @@ import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/utils.hooks');
@@ -29,7 +30,11 @@ const mockUseQuery = () => {
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(<CreateWPForm />);
+  return render(
+    <BrowserRouter>
+      <CreateWPForm />
+    </BrowserRouter>
+  );
 };
 
 describe('create wp form test suite', () => {
