@@ -30,7 +30,6 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
         }
         const tooltipWidth = tooltipRef.current.getBoundingClientRect().width;
         const tooltipPosition = tooltipRef.current.getBoundingClientRect().right;
-        console.log(`${tooltipWidth}, ${window.innerWidth - tooltipPosition}`);
         setPosition(window.innerWidth - tooltipPosition - 50 <= tooltipWidth ? 'top' : 'right');
       }
       window.addEventListener('resize', () => {
@@ -46,7 +45,6 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
   }
 
   let [width, position] = useWindowSize() as [number, 'top' | 'right'];
-  console.log(position);
 
   // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
   const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
