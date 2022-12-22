@@ -20,17 +20,20 @@ interface ChangesListProps {
 const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
   const [bodyWidth, setBodyWidth] = useState<number>(window.document.body.offsetWidth);
 
-  document.body.addEventListener('resize', () => {
+  window.document.body.addEventListener('resize', () => {
     setBodyWidth(window.document.body.offsetWidth);
   });
 
   function useWindowSize() {
     const [innerWidth, setInnerWidth] = useState<number>(0);
-    const [position, setPosition] = useState<'top' | 'right'>('right');
+    function determinePosition() {
+      return window.innerWidth <= bodyWidth ? 'top' : 'right';
+    }
+    const [position, setPosition] = useState<'top' | 'right'>(determinePosition());
     useLayoutEffect(() => {
       function updateTooltipProps() {
         setInnerWidth(window.innerWidth);
-        setPosition(window.innerWidth <= bodyWidth ? 'top' : 'right');
+        setPosition(determinePosition());
       }
       window.addEventListener('resize', () => {
         updateTooltipProps();
