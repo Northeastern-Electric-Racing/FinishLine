@@ -54,4 +54,13 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
 };
 
 // type so that the not found error messages are consistent
-type NotFoundObjectNames = 'User' | 'Risk' | 'Change Request' | 'Work Package' | 'Project' | 'Description Bullet' | 'Team';
+type NotFoundObjectNames =
+  | 'User'
+  | 'Risk'
+  | 'Work Package'
+  | 'Project'
+  | 'Description Bullet'
+  | 'Change Request'
+  | 'WBS Element'
+  | 'Proposed Solution'
+  | 'Team';
