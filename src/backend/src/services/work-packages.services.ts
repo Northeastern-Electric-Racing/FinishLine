@@ -157,7 +157,7 @@ export default class WorkPackagesService {
     });
 
     if (wbsElem === null) {
-      throw new NotFoundException('Project', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+      throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     }
 
     const { project } = wbsElem;
