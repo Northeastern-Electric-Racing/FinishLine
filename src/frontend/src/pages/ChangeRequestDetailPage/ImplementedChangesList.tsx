@@ -25,7 +25,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
 
   function useWindowSize() {
     const [innerWidth, setInnerWidth] = useState<number>(0);
-    const [position, setPosition] = useState<'top' | 'right'>('top');
+    const [position, setPosition] = useState<'top' | 'right'>('right');
     useLayoutEffect(() => {
       function updateTooltipProps() {
         setInnerWidth(window.innerWidth);
@@ -46,7 +46,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
   let [innerWidth, position] = useWindowSize() as [number, 'top' | 'right'];
 
   // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
-  const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
+  const DynamicTooltip = styled(({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
   ))({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -63,7 +63,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
-            <CustomWidthTooltip
+            <DynamicTooltip
               id="tooltip"
               title={
                 <Typography>
@@ -76,7 +76,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
               <Typography>
                 [{<Link href={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>}] {ic.detail}
               </Typography>
-            </CustomWidthTooltip>
+            </DynamicTooltip>
           </ListItem>
         ))}
       </List>
