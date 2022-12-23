@@ -1,21 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
-import { userTransformer } from './users.utils';
-import { wbsNumOf } from './utils';
+import teamQueryArgs from '../prisma-query-args/teams.query-args';
+import { userTransformer } from '../utils/users.utils';
+import { wbsNumOf } from '../utils/utils';
 
-export const teamRelationArgs = Prisma.validator<Prisma.TeamArgs>()({
-  include: {
-    members: true,
-    leader: true,
-    projects: {
-      include: {
-        wbsElement: true
-      }
-    }
-  }
-});
-
-export const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamRelationArgs>): Team => {
+const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Team => {
   return {
     teamId: team.teamId,
     teamName: team.teamName,
@@ -30,3 +19,5 @@ export const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamRelationA
     }))
   };
 };
+
+export default teamTransformer;

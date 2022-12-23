@@ -55,7 +55,7 @@ const InfoPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <PageBlock title="Calendars">
-        <Grid container rowSpacing={2} columnSpacing={1}>
+        <Grid container>
           <Grid item md={4} lg={3}>
             <Box>
               <FontAwesomeIcon icon={faScroll} className="mx-2" style={{ margin: '0px 5px' }} />{' '}

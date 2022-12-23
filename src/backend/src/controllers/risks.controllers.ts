@@ -3,6 +3,7 @@ import { getCurrentUser } from '../utils/utils';
 import RisksService from '../services/risks.services';
 
 export default class RisksController {
+  
   static async getRisksForProject(req: Request, res: Response, next: NextFunction) {
     try {
       const projectId = parseInt(req.params.projectId);
