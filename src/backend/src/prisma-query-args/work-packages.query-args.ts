@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { descBulletArgs } from '../utils/description-bullets.utils';
 
-const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
+const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
     project: {
       include: {
@@ -21,4 +21,4 @@ const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   }
 });
 
-export default wpQueryArgs;
+export default workPackageQueryArgs;

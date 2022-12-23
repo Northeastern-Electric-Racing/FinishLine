@@ -1,12 +1,12 @@
 import { Prisma } from '@prisma/client';
 import { calculateEndDate, calculatePercentExpectedProgress, calculateTimelineStatus, WorkPackage } from 'shared';
-import wpQueryArgs from '../prisma-query-args/work-packages.query-args';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { descBulletTransformer } from '../utils/description-bullets.utils';
 import { userTransformer } from '../utils/users.utils';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 
-const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
+const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>) => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);

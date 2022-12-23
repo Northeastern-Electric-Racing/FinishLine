@@ -20,7 +20,7 @@ import {
 import { addDescriptionBullets, editDescriptionBullets, getChangeRequestReviewState } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
-import wpQueryArgs from '../prisma-query-args/work-packages.query-args';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 
 /** Service layer containing logic for work package controller functions. */
@@ -36,7 +36,7 @@ export default class WorkPackagesService {
     timelineStatus?: TimelineStatus;
     daysUntilDeadline?: string;
   }): Promise<WorkPackage[]> {
-    const workPackages = await prisma.work_Package.findMany(wpQueryArgs);
+    const workPackages = await prisma.work_Package.findMany(workPackageQueryArgs);
     const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
       let passes = true;
       if (query.status) passes &&= wp.status === query.status;
@@ -75,7 +75,7 @@ export default class WorkPackagesService {
           workPackageNumber: parsedWbs.workPackageNumber
         }
       },
-      ...wpQueryArgs
+      ...workPackageQueryArgs
     });
 
     if (!wp)

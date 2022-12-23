@@ -31,9 +31,8 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body } = req;
       const { projectWbsNum, name, crId, userId, startDate, duration, dependencies, expectedActivities, deliverables } =
-        body;
+        req.body;
       const wbsString: string = await WorkPackagesService.createWorkPackage(
         projectWbsNum,
         name,
@@ -55,7 +54,6 @@ export default class WorkPackagesController {
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body } = req;
       const {
         workPackageId,
         userId,
@@ -69,7 +67,7 @@ export default class WorkPackagesController {
         wbsElementStatus,
         projectLead,
         projectManager
-      } = body;
+      } = req.body;
       await WorkPackagesService.editWorkPackage(
         workPackageId,
         userId,

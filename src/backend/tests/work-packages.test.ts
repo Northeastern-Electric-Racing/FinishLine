@@ -1,5 +1,3 @@
-import express from 'express';
-import workPackageRouter from '../src/routes/work-packages.routes';
 import prisma from '../src/prisma/prisma';
 import { batman } from './test-data/users.test-data';
 import { wbsElement1 } from './test-data/projects.test-data';
@@ -12,15 +10,11 @@ import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { WBS_Element, WBS_Element_Status } from '@prisma/client';
 
-const app = express();
-app.use(express.json());
-app.use('/', workPackageRouter);
-
 jest.mock('../src/utils/projects.utils');
 const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 
 describe('Work Packages', () => {
-  /* WORK PACKAGE PAYLOAD */
+  /* WORK PACKAGE SERVICE FUNCTION INPUT ARGUMENTS */
   const projectWbsNum = {
     carNumber: 1,
     projectNumber: 2,
@@ -57,7 +51,7 @@ describe('Work Packages', () => {
     expectedActivities,
     deliverables
   ];
-  /************************/
+  /*************************************************/
 
   afterEach(() => {
     jest.clearAllMocks();
