@@ -2,7 +2,6 @@ import prisma from '../src/prisma/prisma';
 import { batman } from './test-data/users.test-data';
 import { wbsElement1 } from './test-data/projects.test-data';
 import { wonderwoman } from './test-data/users.test-data';
-import { createWorkPackagePayload } from './test-data/work-packages.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { getChangeRequestReviewState } from '../src/utils/projects.utils';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';

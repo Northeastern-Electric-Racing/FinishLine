@@ -1,5 +1,4 @@
-import { batman } from './users.test-data';
-import { WBS_Element_Status, Work_Package as PrismaWorkPackage } from '@prisma/client';
+import { Work_Package as PrismaWorkPackage } from '@prisma/client';
 
 export const prismaWorkPackage1: PrismaWorkPackage = {
   workPackageId: 1,
