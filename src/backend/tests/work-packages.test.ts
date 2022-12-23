@@ -14,7 +14,7 @@ jest.mock('../src/utils/projects.utils');
 const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 
 describe('Work Packages', () => {
-  /* WORK PACKAGE SERVICE FUNCTION INPUT ARGUMENTS */
+  /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
   const projectWbsNum = {
     carNumber: 1,
     projectNumber: 2,
@@ -51,7 +51,7 @@ describe('Work Packages', () => {
     expectedActivities,
     deliverables
   ];
-  /*************************************************/
+  /*********************************************************/
 
   afterEach(() => {
     jest.clearAllMocks();
