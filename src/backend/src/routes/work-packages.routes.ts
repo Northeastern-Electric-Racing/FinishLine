@@ -1,18 +1,13 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import {
-  createWorkPackage,
-  editWorkPackage,
-  getAllWorkPackages,
-  getSingleWorkPackage
-} from '../controllers/work-packages.controllers';
+import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, isDate, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
-workPackagesRouter.get('/', getAllWorkPackages);
-workPackagesRouter.get('/:wbsNum', getSingleWorkPackage);
+workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('userId')),
@@ -31,7 +26,7 @@ workPackagesRouter.post(
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
   validateInputs,
-  createWorkPackage
+  WorkPackagesController.createWorkPackage
 );
 workPackagesRouter.post(
   '/edit',
@@ -54,7 +49,7 @@ workPackagesRouter.post(
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
   validateInputs,
-  editWorkPackage
+  WorkPackagesController.editWorkPackage
 );
 
 export default workPackagesRouter;

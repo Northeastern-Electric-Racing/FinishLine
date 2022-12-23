@@ -1,425 +1,90 @@
-import prisma from '../prisma/prisma';
-import { Request, Response } from 'express';
-import {
-  createChangeJsonDates,
-  createChangeJsonNonList,
-  createDependenciesChangesJson,
-  createDescriptionBulletChangesJson,
-  getWbsElementId,
-  workPackageTransformer,
-  wpQueryArgs
-} from '../utils/work-packages.utils';
-import { equalsWbsNumber, isProject, validateWBS, WbsNumber } from 'shared';
-import { Role, WBS_Element } from '@prisma/client';
-import {
-  addDescriptionBullets,
-  editDescriptionBullets,
-  getChangeRequestReviewState,
-  getUserFullName
-} from '../utils/projects.utils';
-import { descBulletConverter } from '../utils/utils';
+import { NextFunction, Request, Response } from 'express';
+import { validateWBS, WbsNumber, WorkPackage } from 'shared';
+import WorkPackagesService from '../services/work-packages.services';
 
-// Fetch all work packages, optionally filtered by query parameters
-export const getAllWorkPackages = async (req: Request, res: Response) => {
-  const { query } = req;
-  const workPackages = await prisma.work_Package.findMany(wpQueryArgs);
-  const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
-    let passes = true;
-    if (query.status) passes &&= wp.status === query.status;
-    if (query.timelineStatus) passes &&= wp.timelineStatus === query.timelineStatus;
-    if (query.daysUntilDeadline) {
-      const daysToDeadline = Math.round((wp.endDate.getTime() - new Date().getTime()) / 86400000);
-      passes &&= daysToDeadline <= parseInt(query?.daysUntilDeadline as string);
-    }
-    return passes;
-  });
-  outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
-  return res.status(200).json(outputWorkPackages);
-};
+/** Controller for operations involving work packages. */
+export default class WorkPackagesController {
+  // Fetch all work packages, optionally filtered by query parameters
+  static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query } = req;
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query);
 
-// Fetch the work package for the specified WBS number
-export const getSingleWorkPackage = async (req: Request, res: Response) => {
-  const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-  if (isProject(parsedWbs)) {
-    return res.status(400).json({ message: 'WBS Number is a project WBS#, not a Work Package WBS#' });
-  }
-  const wp = await prisma.work_Package.findFirst({
-    where: {
-      wbsElement: {
-        carNumber: parsedWbs.carNumber,
-        projectNumber: parsedWbs.projectNumber,
-        workPackageNumber: parsedWbs.workPackageNumber
-      }
-    },
-    ...wpQueryArgs
-  });
-
-  if (!wp) return res.status(404).json({ message: `work package with wbs num ${req.params.wbsNum} not found!` });
-
-  return res.status(200).json(workPackageTransformer(wp));
-};
-
-export const createWorkPackage = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { projectWbsNum, name, crId, userId, startDate, duration, dependencies, expectedActivities, deliverables } = body;
-
-  // verify user is allowed to create work packages
-  const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return res.status(404).json({ message: `User with id #${userId} not found!` });
-  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
-
-  const crReviewed = await getChangeRequestReviewState(crId);
-  if (crReviewed === null) {
-    return res.status(404).json({ message: `change request with id #${crId} not found!` });
-  }
-  if (!crReviewed) {
-    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
-  }
-
-  // get the corresponding project so we can find the next wbs number
-  // and what number work package this should be
-  const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
-
-  if (workPackageNumber !== 0) {
-    return res.status(400).json({
-      message: `Given WBS Number ${carNumber}.${projectNumber}.${workPackageNumber} is not for a project.`
-    });
-  }
-
-  if (dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
-    return res.status(400).json({ message: `A Work Package cannot have its own project as a dependency` });
-  }
-
-  const wbsElem = await prisma.wBS_Element.findUnique({
-    where: {
-      wbsNumber: {
-        carNumber,
-        projectNumber,
-        workPackageNumber
-      }
-    },
-    include: {
-      project: {
-        include: {
-          workPackages: { include: { wbsElement: true, dependencies: true } }
-        }
-      }
-    }
-  });
-
-  if (wbsElem === null) {
-    return res.status(404).json({
-      message: `Could not find element with wbs number: ${carNumber}.${projectNumber}.${workPackageNumber}`
-    });
-  }
-
-  const { project } = wbsElem;
-
-  if (project === null) {
-    return res.status(404).json({ message: `Could not find project from given wbs number!` });
-  }
-  const { projectId } = project;
-
-  const newWorkPackageNumber: number =
-    project.workPackages
-      .map((element) => element.wbsElement.workPackageNumber)
-      .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
-
-  const dependenciesWBSElems: (WBS_Element | null)[] = await Promise.all(
-    dependencies.map(async (ele: any) => {
-      return await prisma.wBS_Element.findUnique({
-        where: {
-          wbsNumber: {
-            carNumber: ele.carNumber,
-            projectNumber: ele.projectNumber,
-            workPackageNumber: ele.workPackageNumber
-          }
-        }
-      });
-    })
-  );
-
-  const dependenciesIds: number[] = [];
-  // populate dependenciesIds with the element ID's
-  // and return error 400 if any elems are null
-
-  let dependenciesHasNulls = false;
-  dependenciesWBSElems.forEach((elem) => {
-    if (elem === null) {
-      dependenciesHasNulls = true;
-      return;
-    }
-    dependenciesIds.push(elem.wbsElementId);
-  });
-
-  if (dependenciesHasNulls) {
-    return res.status(400).json({ message: 'One of the dependencies was not found.' });
-  }
-
-  // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-  const date = new Date(startDate.split('T')[0]);
-  date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
-
-  // add to the database
-  const created = await prisma.work_Package.create({
-    data: {
-      wbsElement: {
-        create: {
-          carNumber,
-          projectNumber,
-          workPackageNumber: newWorkPackageNumber,
-          name,
-          changes: {
-            create: {
-              changeRequestId: crId,
-              implementerId: userId,
-              detail: 'New Work Package Created'
-            }
-          }
-        }
-      },
-      project: { connect: { projectId } },
-      startDate: date,
-      duration,
-      orderInProject: project.workPackages.length + 1,
-      dependencies: { connect: dependenciesIds.map((ele) => ({ wbsElementId: ele })) },
-      expectedActivities: { create: expectedActivities.map((ele: string) => ({ detail: ele })) },
-      deliverables: { create: deliverables.map((ele: string) => ({ detail: ele })) }
-    },
-    include: {
-      wbsElement: true
-    }
-  });
-
-  return res
-    .status(200)
-    .json(`${created.wbsElement.carNumber}.${created.wbsElement.projectNumber}.${created.wbsElement.workPackageNumber}`);
-};
-
-export const editWorkPackage = async (req: Request, res: Response) => {
-  const { body } = req;
-  const {
-    workPackageId,
-    userId,
-    name,
-    crId,
-    startDate,
-    duration,
-    dependencies,
-    expectedActivities,
-    deliverables,
-    wbsElementStatus,
-    projectLead,
-    projectManager
-  } = body;
-
-  // verify user is allowed to edit work packages
-  const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return res.status(404).json({ message: `User with id #${userId} not found` });
-  if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
-
-  // get the original work package so we can compare things
-  const originalWorkPackage = await prisma.work_Package.findUnique({
-    where: { workPackageId },
-    include: {
-      wbsElement: true,
-      dependencies: true,
-      expectedActivities: true,
-      deliverables: true
-    }
-  });
-  if (originalWorkPackage === null) {
-    return res.status(404).json({ message: `Work Package with id #${workPackageId} not found` });
-  }
-
-  if (
-    dependencies.find((dep: any) =>
-      equalsWbsNumber(dep, {
-        carNumber: originalWorkPackage.wbsElement.carNumber,
-        projectNumber: originalWorkPackage.wbsElement.projectNumber,
-        workPackageNumber: 0
-      })
-    ) != null
-  ) {
-    return res.status(400).json({ message: `A Work Package cannot have own project as a dependency` });
-  }
-
-  if (
-    dependencies.find((dep: any) =>
-      equalsWbsNumber(dep, {
-        carNumber: originalWorkPackage.wbsElement.carNumber,
-        projectNumber: originalWorkPackage.wbsElement.projectNumber,
-        workPackageNumber: originalWorkPackage.wbsElement.workPackageNumber
-      })
-    ) != null
-  ) {
-    return res.status(400).json({ message: `A Work Package cannot have itself as a dependency` });
-  }
-
-  // the crId must match a valid approved change request
-  const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
-  if (changeRequest === null) {
-    return res.status(404).json({ message: `Change request with id #${crId} not found` });
-  }
-  if (!changeRequest.accepted) {
-    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
-  }
-
-  const depsIds: (number | undefined)[] = await Promise.all(
-    dependencies.map(async (wbsNum: any) => getWbsElementId(wbsNum))
-  );
-  if (depsIds.includes(undefined)) {
-    return res.status(404).json({ message: `Dependency with wbs number ${depsIds} not found` });
-  }
-
-  const { wbsElementId } = originalWorkPackage;
-  let changes = [];
-  // get the changes or undefined for each of the fields
-  const nameChangeJson = createChangeJsonNonList(
-    'name',
-    originalWorkPackage.wbsElement.name,
-    name,
-    crId,
-    userId,
-    wbsElementId!
-  );
-  const startDateChangeJson = createChangeJsonDates(
-    'start date',
-    originalWorkPackage.startDate,
-    new Date(startDate),
-    crId,
-    userId,
-    wbsElementId!
-  );
-  const durationChangeJson = createChangeJsonNonList(
-    'duration',
-    originalWorkPackage.duration,
-    duration,
-    crId,
-    userId,
-    wbsElementId!
-  );
-
-  const wbsElementStatusChangeJson = createChangeJsonNonList(
-    'status',
-    originalWorkPackage.wbsElement.status,
-    wbsElementStatus,
-    crId,
-    userId,
-    wbsElementId!
-  );
-  const dependenciesChangeJson = await createDependenciesChangesJson(
-    originalWorkPackage.dependencies.map((element) => element.wbsElementId),
-    depsIds.map((elem) => elem as number),
-    crId,
-    userId,
-    wbsElementId!,
-    'dependency'
-  );
-  const expectedActivitiesChangeJson = createDescriptionBulletChangesJson(
-    originalWorkPackage.expectedActivities.filter((ele) => !ele.dateDeleted).map((element) => descBulletConverter(element)),
-    expectedActivities,
-    crId,
-    userId,
-    wbsElementId!,
-    'expected activity'
-  );
-  const deliverablesChangeJson = createDescriptionBulletChangesJson(
-    originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted).map((element) => descBulletConverter(element)),
-    deliverables,
-    crId,
-    userId,
-    wbsElementId!,
-    'deliverable'
-  );
-
-  // add to changes if not undefined
-  if (nameChangeJson !== undefined) changes.push(nameChangeJson);
-  if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
-  if (durationChangeJson !== undefined) changes.push(durationChangeJson);
-  if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
-
-  if (body.hasOwnProperty('projectManager')) {
-    const projectManagerChangeJson = createChangeJsonNonList(
-      'project manager',
-      await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
-      await getUserFullName(body.projectManager),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    if (projectManagerChangeJson) {
-      changes.push(projectManagerChangeJson);
+      res.status(200).json(outputWorkPackages);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 
-  if (body.hasOwnProperty('projectLead')) {
-    const projectLeadChangeJson = createChangeJsonNonList(
-      'project lead',
-      await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
-      await getUserFullName(body.projectLead),
-      crId,
-      userId,
-      wbsElementId!
-    );
-    if (projectLeadChangeJson) {
-      changes.push(projectLeadChangeJson);
+  // Fetch the work package for the specified WBS number
+  static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
+      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs);
+
+      res.status(200).json(wp);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 
-  // add the changes for each of dependencies, expected activities, and deliverables
-  changes = changes
-    .concat(dependenciesChangeJson)
-    .concat(expectedActivitiesChangeJson.changes)
-    .concat(deliverablesChangeJson.changes);
+  // Create a work package with the given details
+  static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectWbsNum, name, crId, userId, startDate, duration, dependencies, expectedActivities, deliverables } =
+        req.body;
+      const wbsString: string = await WorkPackagesService.createWorkPackage(
+        projectWbsNum,
+        name,
+        crId,
+        userId,
+        startDate,
+        duration,
+        dependencies,
+        expectedActivities,
+        deliverables
+      );
 
-  // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-  const date = new Date(startDate);
-  date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
-
-  // update the work package with the input fields
-  const updatedWorkPackage = await prisma.work_Package.update({
-    where: { wbsElementId },
-    data: {
-      startDate: date,
-      duration,
-      wbsElement: {
-        update: {
-          name,
-          status: wbsElementStatus,
-          projectLeadId: projectLead,
-          projectManagerId: projectManager
-        }
-      },
-      dependencies: {
-        set: [], // remove all the connections then add all the given ones
-        connect: depsIds.map((ele) => ({ wbsElementId: ele }))
-      }
+      res.status(200).json(wbsString);
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-
-  // Update any deleted description bullets to have their date deleted as right now
-  const deletedIds = expectedActivitiesChangeJson.deletedIds.concat(deliverablesChangeJson.deletedIds);
-  if (deletedIds.length > 0) {
-    await prisma.description_Bullet.updateMany({
-      where: { descriptionId: { in: deletedIds } },
-      data: { dateDeleted: new Date() }
-    });
   }
 
-  addDescriptionBullets(
-    expectedActivitiesChangeJson.addedDetails,
-    updatedWorkPackage.workPackageId,
-    'workPackageIdExpectedActivities'
-  );
-  addDescriptionBullets(deliverablesChangeJson.addedDetails, updatedWorkPackage.workPackageId, 'workPackageIdDeliverables');
-  editDescriptionBullets(
-    expectedActivitiesChangeJson.editedIdsAndDetails.concat(deliverablesChangeJson.editedIdsAndDetails)
-  );
-
-  // create the changes in prisma
-  await prisma.change.createMany({ data: changes });
-
-  // return the updated work package
-  return res.status(200).json({ message: 'Work package updated successfully' });
-};
+  // Edit a work package to the given specifications
+  static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        workPackageId,
+        userId,
+        name,
+        crId,
+        startDate,
+        duration,
+        dependencies,
+        expectedActivities,
+        deliverables,
+        wbsElementStatus,
+        projectLead,
+        projectManager
+      } = req.body;
+      await WorkPackagesService.editWorkPackage(
+        workPackageId,
+        userId,
+        name,
+        crId,
+        startDate,
+        duration,
+        dependencies,
+        expectedActivities,
+        deliverables,
+        wbsElementStatus,
+        projectLead,
+        projectManager
+      );
+      return res.status(200).json({ message: 'Work package updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+}
