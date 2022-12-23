@@ -5,6 +5,7 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import CreateProjectFormView from '../../../pages/CreateProjectPage/CreateProjectFormView';
+import { BrowserRouter } from 'react-router-dom';
 
 const mockStates = {
   name: () => null,
@@ -18,7 +19,9 @@ const mockStates = {
  */
 const renderComponent = (allowSubmit = true) => {
   return render(
-    <CreateProjectFormView states={mockStates} onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
+    <BrowserRouter>
+      <CreateProjectFormView states={mockStates} onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
+    </BrowserRouter>
   );
 };
 

@@ -8,6 +8,7 @@ import { mockUtils } from '../../test-support/test-data/test-utils.stub';
 import { exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from '../../test-support/test-data/wbs-numbers.stub';
 import { render, screen } from '../../test-support/test-utils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
+import { BrowserRouter } from 'react-router-dom';
 
 const mockDependencies = [wbsPipe(exampleWbsWorkPackage2), wbsPipe(exampleWbsWorkPackage1)];
 const mockEA = ['yooooo', 'wassup', 'bruh', 'whoosh'];
@@ -25,19 +26,21 @@ const mockStates = {
  */
 const renderComponent = (allowSubmit = true) => {
   return render(
-    <CreateWPFormView
-      states={mockStates}
-      dependencies={mockDependencies}
-      initialValues={{ name: '', wbsNum: '', duration: -1, crId: -1 }}
-      depUtils={mockUtils}
-      expectedActivities={mockEA}
-      eaUtils={mockUtils}
-      deliverables={mockDeliverables}
-      delUtils={mockUtils}
-      onSubmit={() => null}
-      onCancel={() => null}
-      allowSubmit={allowSubmit}
-    />
+    <BrowserRouter>
+      <CreateWPFormView
+        states={mockStates}
+        dependencies={mockDependencies}
+        initialValues={{ name: '', wbsNum: '', duration: -1, crId: -1 }}
+        depUtils={mockUtils}
+        expectedActivities={mockEA}
+        eaUtils={mockUtils}
+        deliverables={mockDeliverables}
+        delUtils={mockUtils}
+        onSubmit={() => null}
+        onCancel={() => null}
+        allowSubmit={allowSubmit}
+      />
+    </BrowserRouter>
   );
 };
 

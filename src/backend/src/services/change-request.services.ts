@@ -110,6 +110,7 @@ export default class ChangeRequestsService {
           where: { projectId: foundCR.wbsElement.workPackage.projectId }
         });
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
+
         const newBudget = wpProj.budget + foundPs.budgetImpact;
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
