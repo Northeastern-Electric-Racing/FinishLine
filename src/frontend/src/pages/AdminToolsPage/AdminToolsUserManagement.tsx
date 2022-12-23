@@ -18,9 +18,8 @@ import { fullNamePipe } from '../../utils/pipes';
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
   const [userId, setUserId] = useState(-1);
-
   const [isDisabled, setIsDisabled] = useState(true);
-
+  const [hideSuccessLabel, setHideSuccessLabel] = useState(true);
   const { isLoading, isError, error, data } = useAllUsers();
   const update = useUpdateUserRole();
 
@@ -51,10 +50,12 @@ const AdminToolsUserMangaement: React.FC = () => {
   };
 
   const handleClick = async () => {
+    setHideSuccessLabel(true);
     await update.mutateAsync({ userId, role }).catch((error) => {
       alert(error);
       throw new Error(error);
     });
+    setHideSuccessLabel(false);
   };
 
   return (
@@ -111,13 +112,16 @@ const AdminToolsUserMangaement: React.FC = () => {
         </Grid>
       </Grid>
       <NERButton
-        sx={{ mt: 2, float: 'right' }}
+        sx={{ mt: '2px', float: 'right' }}
         variant="contained"
         disabled={isDisabled || userId === -1}
         onClick={handleClick}
       >
         Confirm
       </NERButton>
+      <h4 hidden={hideSuccessLabel} style={{ color: 'red' }}>
+        Successfully Updated User
+      </h4>
     </PageBlock>
   );
 };
