@@ -34,7 +34,7 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const handleSearchChange = (event: React.SyntheticEvent<Element, Event>, value: string | null) => {
     if (value) {
-      const user = data.find((user) => fullNamePipe(user) === value);
+      const user = data.find((user) => fullNamePipe(user) === value.split(':')[0]);
       if (user) setUser(user);
     } else {
       setUser(null);
@@ -71,7 +71,7 @@ const AdminToolsUserMangaement: React.FC = () => {
               disablePortal
               id="autocomplete"
               onChange={handleSearchChange}
-              options={data.map((user) => fullNamePipe(user))}
+              options={data.map((user) => `${fullNamePipe(user)}: ${user.email}`)}
               sx={{
                 width: '100%',
                 '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
