@@ -25,6 +25,9 @@ export const getWbsElementId = async ({
       wbsNumber: { carNumber, projectNumber, workPackageNumber }
     }
   });
+
+  if (wbsElem?.dateDeleted) return undefined;
+
   return wbsElem?.wbsElementId;
 };
 

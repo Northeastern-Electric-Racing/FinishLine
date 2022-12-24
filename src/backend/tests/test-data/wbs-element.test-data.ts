@@ -9,5 +9,7 @@ export const prismaWbsElement1: PrismaWBSElement = {
   name: 'redesign whip',
   status: PrismaWBSElementStatus.ACTIVE,
   projectLeadId: 1,
-  projectManagerId: 2
+  projectManagerId: 2,
+  dateDeleted: null,
+  deletedByUserId: null
 };

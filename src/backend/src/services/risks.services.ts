@@ -13,10 +13,10 @@ export default class RisksService {
    * @throws if the given project doesn't exist
    */
   static async getRisksForProject(projectId: number): Promise<Risk[]> {
-    const requestedProject = await prisma.project.findUnique({ where: { projectId } });
-    if (!requestedProject) throw new NotFoundException('Project', projectId);
+    const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
+    if (!requestedProject || requestedProject.wbsElement.dateDeleted) throw new NotFoundException('Project', projectId);
 
-    const risks = await prisma.risk.findMany({ where: { projectId }, ...riskQueryArgs });
+    const risks = await prisma.risk.findMany({ where: { projectId, dateDeleted: null }, ...riskQueryArgs });
 
     return risks.map(riskTransformer);
   }
@@ -31,6 +31,9 @@ export default class RisksService {
    */
   static async createRisk(user: User, projectId: number, detail: string): Promise<string> {
     if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create risks!');
+
+    const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
+    if (!requestedProject || requestedProject.wbsElement.dateDeleted) throw new NotFoundException('Project', projectId);
 
     const createdRisk = await prisma.risk.create({
       data: {

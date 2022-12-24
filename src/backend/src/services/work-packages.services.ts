@@ -1,4 +1,4 @@
-import { Role, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
@@ -17,11 +17,12 @@ import {
   createDescriptionBulletChangesJson,
   getWbsElementId
 } from '../utils/work-packages.utils';
-import { addDescriptionBullets, editDescriptionBullets, getChangeRequestReviewState } from '../utils/projects.utils';
+import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -36,7 +37,11 @@ export default class WorkPackagesService {
     timelineStatus?: TimelineStatus;
     daysUntilDeadline?: string;
   }): Promise<WorkPackage[]> {
-    const workPackages = await prisma.work_Package.findMany(workPackageQueryArgs);
+    const workPackages = await prisma.work_Package.findMany({
+      where: { wbsElement: { dateDeleted: null } },
+      ...workPackageQueryArgs
+    });
+
     const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
       let passes = true;
       if (query.status) passes &&= wp.status === query.status;
@@ -47,7 +52,9 @@ export default class WorkPackagesService {
       }
       return passes;
     });
+
     outputWorkPackages.sort((wpA, wpB) => wpA.endDate.getTime() - wpB.endDate.getTime());
+
     return outputWorkPackages;
   }
 
@@ -67,9 +74,11 @@ export default class WorkPackagesService {
           ' is a project WBS#, not a Work Package WBS#'
       );
     }
+
     const wp = await prisma.work_Package.findFirst({
       where: {
         wbsElement: {
+          dateDeleted: null,
           carNumber: parsedWbs.carNumber,
           projectNumber: parsedWbs.projectNumber,
           workPackageNumber: parsedWbs.workPackageNumber
@@ -89,10 +98,10 @@ export default class WorkPackagesService {
 
   /**
    * Creates a Work_Package in the database
+   * @param user the user creating the work package
    * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
-   * @param userId the id of the user creating the work package
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
    * @param dependencies the WBS elements that need to be completed before this WP
@@ -102,27 +111,19 @@ export default class WorkPackagesService {
    * @throws if the work package could not be created
    */
   static async createWorkPackage(
+    user: User,
     projectWbsNum: WbsNumber,
     name: string,
     crId: number,
-    userId: number,
     startDate: string,
     duration: number,
     dependencies: WBS_Element[],
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
-    const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw new NotFoundException('User', userId);
     if (user.role === Role.GUEST) throw new AccessDeniedException();
 
-    const crReviewed = await getChangeRequestReviewState(crId);
-    if (crReviewed === null) {
-      throw new NotFoundException('Change Request', crId);
-    }
-    if (!crReviewed) {
-      throw new HttpException(400, 'Cannot implement an unreviewed change request');
-    }
+    await validateChangeRequestAccepted(crId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
@@ -156,15 +157,13 @@ export default class WorkPackagesService {
       }
     });
 
-    if (wbsElem === null) {
-      throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    }
+    if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+    if (wbsElem.dateDeleted) throw new HttpException(400, 'Cannot create a work package for a deleted project!');
 
     const { project } = wbsElem;
 
-    if (project === null) {
-      throw new NotFoundException('Project', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    }
+    if (!project) throw new NotFoundException('Project', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+
     const { projectId } = project;
 
     const newWorkPackageNumber: number =
@@ -219,7 +218,7 @@ export default class WorkPackagesService {
             changes: {
               create: {
                 changeRequestId: crId,
-                implementerId: userId,
+                implementerId: user.userId,
                 detail: 'New Work Package Created'
               }
             }
@@ -243,8 +242,8 @@ export default class WorkPackagesService {
 
   /**
    * Edits a Work_Package in the database
+   * @param user the user editing the work package
    * @param workPackageId the id of the work package
-   * @param userId the id of the user editing the work package
    * @param name the new name of the work package
    * @param crId the id of the change request implementing this edit
    * @param startDate the date string representing the new start date
@@ -257,8 +256,8 @@ export default class WorkPackagesService {
    * @param projectManager the new manager for this work package
    */
   static async editWorkPackage(
+    user: User,
     workPackageId: number,
-    userId: number,
     name: string,
     crId: number,
     startDate: string,
@@ -271,9 +270,9 @@ export default class WorkPackagesService {
     projectManager: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
-    const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw new NotFoundException('User', userId);
     if (user.role === Role.GUEST) throw new AccessDeniedException();
+
+    const { userId } = user;
 
     // get the original work package so we can compare things
     const originalWorkPackage = await prisma.work_Package.findUnique({
@@ -285,9 +284,9 @@ export default class WorkPackagesService {
         deliverables: true
       }
     });
-    if (originalWorkPackage === null) {
-      throw new NotFoundException('Work Package', workPackageId);
-    }
+
+    if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
+    if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
 
     if (
       dependencies.find((dep: any) =>
@@ -314,13 +313,7 @@ export default class WorkPackagesService {
     }
 
     // the crId must match a valid approved change request
-    const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
-    if (changeRequest === null) {
-      throw new NotFoundException('Change Request', crId);
-    }
-    if (!changeRequest.accepted) {
-      throw new HttpException(400, 'Cannot implement an unreviewed change request');
-    }
+    await validateChangeRequestAccepted(crId);
 
     const depsIds: (number | undefined)[] = await Promise.all(
       dependencies.map(async (wbsNum: any) => getWbsElementId(wbsNum))
@@ -356,7 +349,6 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
-
     const wbsElementStatusChangeJson = createChangeJsonNonList(
       'status',
       originalWorkPackage.wbsElement.status,
