@@ -15,9 +15,14 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 
+interface UserData {
+  userId: number;
+  role: string;
+}
+
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
-  const [userId, setUserId] = useState(-1);
+  const [user, setUser] = useState<UserData | null>(null);
   const [isDisabled, setIsDisabled] = useState(true);
   const [hideSuccessLabel, setHideSuccessLabel] = useState(true);
   const { isLoading, isError, error, data } = useAllUsers();
@@ -27,22 +32,18 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const getUserRole = () => {
-    const user = data.find((user) => user.userId === userId);
-    return user?.role ?? '';
-  };
   const handleSearchChange = (event: React.SyntheticEvent<Element, Event>, value: string | null) => {
     if (value) {
       const user = data.find((user) => fullNamePipe(user) === value);
-      if (user) setUserId(user.userId);
+      if (user) setUser(user);
     } else {
-      setUserId(-1);
+      setUser(null);
     }
   };
 
   const handleRoleChange = (event: SelectChangeEvent) => {
     setRole(event.target.value);
-    if (event.target.value === getUserRole()) {
+    if (user && event.target.value === user.role) {
       setIsDisabled(true);
     } else {
       setIsDisabled(false);
@@ -51,7 +52,7 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const handleClick = async () => {
     setHideSuccessLabel(true);
-    await update.mutateAsync({ userId, role }).catch((error) => {
+    await update.mutateAsync({ userId: user?.userId, role }).catch((error) => {
       alert(error);
       throw new Error(error);
     });
@@ -90,14 +91,14 @@ const AdminToolsUserMangaement: React.FC = () => {
             }}
           >
             <FormControl size="small" sx={{ width: '100%' }}>
-              <InputLabel id="select-label">{userId === -1 ? 'Current Role' : getUserRole()}</InputLabel>
+              <InputLabel id="select-label">{!user ? 'Current Role' : user.role}</InputLabel>
               <Select
-                label={userId === -1 ? 'Current Role' : getUserRole()}
+                label={!user ? 'Current Role' : user.role}
                 labelId="select-label"
                 id="role-select"
                 value={role}
                 onChange={handleRoleChange}
-                disabled={userId === -1}
+                disabled={!user}
                 sx={{
                   '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
                 }}
@@ -111,15 +112,10 @@ const AdminToolsUserMangaement: React.FC = () => {
           </div>
         </Grid>
       </Grid>
-      <NERButton
-        sx={{ mt: '2px', float: 'right' }}
-        variant="contained"
-        disabled={isDisabled || userId === -1}
-        onClick={handleClick}
-      >
+      <NERButton sx={{ mt: '2px', float: 'right' }} variant="contained" disabled={isDisabled || !user} onClick={handleClick}>
         Confirm
       </NERButton>
-      <h4 hidden={hideSuccessLabel} style={{ color: 'red' }}>
+      <h4 hidden={hideSuccessLabel} style={{ color: 'primary' }}>
         Successfully Updated User
       </h4>
     </PageBlock>

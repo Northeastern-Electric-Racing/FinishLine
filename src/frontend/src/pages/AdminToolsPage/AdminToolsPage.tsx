@@ -4,7 +4,6 @@
  */
 
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import * as React from 'react';
 import AdminToolsUserMangaement from './AdminToolsUserManagement';
 
 const AdminToolsPage: React.FC = () => {

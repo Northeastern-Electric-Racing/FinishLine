@@ -98,7 +98,7 @@ export const useUpdateUserRole = () => {
     ['users', 'change-role'],
     async (updateUserPayload: any) => {
       if (!auth.user) throw new Error('Update role not allowed when not logged in');
-      const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role, auth.user.userId);
+      const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role);
       return data;
     },
     {

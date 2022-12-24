@@ -71,6 +71,6 @@ export const updateUserSettings = (id: number, settings: UserSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
 };
 
-export const updateUserRole = (id: number, role: string, userId: number) => {
-  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { userId, role });
+export const updateUserRole = (id: number, role: string) => {
+  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { role });
 };
