@@ -16,11 +16,12 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
+import { useState } from 'react';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-
+  const [pageSize, setPageSize] = useState(15);
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -146,8 +147,9 @@ const ChangeRequestsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={15}
+        pageSize={pageSize}
         rowsPerPageOptions={[15, 30, 50, 100]}
+        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}
         rows={data || []}
