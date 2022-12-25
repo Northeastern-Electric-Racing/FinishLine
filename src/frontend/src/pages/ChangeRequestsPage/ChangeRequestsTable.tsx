@@ -21,7 +21,7 @@ import { useState } from 'react';
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(50);
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -148,7 +148,7 @@ const ChangeRequestsTable: React.FC = () => {
         disableSelectionOnClick
         density="compact"
         pageSize={pageSize}
-        rowsPerPageOptions={[15, 30, 50, 100]}
+        rowsPerPageOptions={[25, 50, 75, 100]}
         onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}

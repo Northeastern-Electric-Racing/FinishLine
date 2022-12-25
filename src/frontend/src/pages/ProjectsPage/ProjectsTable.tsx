@@ -18,7 +18,7 @@ import { useState } from 'react';
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(30);
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -128,7 +128,7 @@ const ProjectsTable: React.FC = () => {
         disableSelectionOnClick
         density="compact"
         pageSize={pageSize}
-        rowsPerPageOptions={[15, 30, 50, 100]}
+        rowsPerPageOptions={[15, 30, 60, 100]}
         onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}
