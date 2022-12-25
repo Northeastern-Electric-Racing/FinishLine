@@ -10,6 +10,7 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useTheme } from '@mui/material';
+import { useState } from 'react';
 
 /**
  * Table of all projects.
@@ -17,7 +18,7 @@ import { useTheme } from '@mui/material';
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-
+  const [pageSize, setPageSize] = useState(30);
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -126,8 +127,9 @@ const ProjectsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={15}
-        rowsPerPageOptions={[15, 30, 50, 100]}
+        pageSize={pageSize}
+        rowsPerPageOptions={[15, 30, 60, 100]}
+        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}
         rows={data || []}
