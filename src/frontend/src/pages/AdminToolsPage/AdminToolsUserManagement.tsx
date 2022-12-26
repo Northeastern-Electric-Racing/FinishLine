@@ -1,14 +1,12 @@
 import Autocomplete from '@mui/material/Autocomplete';
 import { NERButton } from '../../components/NERButton';
-import { Grid } from '@mui/material';
+import { Grid, InputAdornment, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import { useState } from 'react';
 import { useAllUsers, useUpdateUserRole } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -34,7 +32,7 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const handleSearchChange = (event: React.SyntheticEvent<Element, Event>, value: string | null) => {
     if (value) {
-      const user = data.find((user) => fullNamePipe(user) === value.split(':')[0]);
+      const user = data.find((user) => fullNamePipe(user) === value.split(' -')[0]);
       if (user) setUser(user);
     } else {
       setUser(null);
@@ -60,64 +58,83 @@ const AdminToolsUserMangaement: React.FC = () => {
   };
 
   return (
-    <PageBlock title={'User Management'}>
+    <PageBlock title={'Role Management'}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>
-          <div style={{ backgroundColor: 'ActiveBorder', borderRadius: '25px', height: '40px', display: 'flex' }}>
-            <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
-              <SearchIcon />
-            </IconButton>
-            <Autocomplete
-              disablePortal
-              id="autocomplete"
-              onChange={handleSearchChange}
-              options={data.map((user) => `${fullNamePipe(user)}: ${user.email}`)}
-              sx={{
-                width: '100%',
-                '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
-              }}
-              size="small"
-              renderInput={(params) => <TextField {...params} label="Select a User" />}
-            />
-          </div>
+          <Autocomplete
+            disablePortal
+            id="autocomplete"
+            onChange={handleSearchChange}
+            options={data.map((user) => `${fullNamePipe(user)} - ${user.email}`)}
+            sx={{
+              height: '40px',
+              backgroundColor: 'ActiveBorder',
+              width: '100%',
+              borderRadius: '25px',
+              borderColor: 'black',
+              '.MuiOutlinedInput-notchedOutline': {
+                border: 0,
+                borderRadius: '25px'
+              }
+            }}
+            size="small"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  )
+                }}
+                placeholder="Select a User"
+              />
+            )}
+          />
         </Grid>
         <Grid item xs={12} md={4}>
-          <div
-            style={{
+          <FormControl
+            size="small"
+            sx={{
+              width: '100%',
               backgroundColor: '#ff0000',
               borderColor: '#0062cc',
               borderRadius: '25px',
               height: '40px'
             }}
           >
-            <FormControl size="small" sx={{ width: '100%' }}>
-              <InputLabel id="select-label">{!user ? 'Current Role' : user.role}</InputLabel>
-              <Select
-                label={!user ? 'Current Role' : user.role}
-                labelId="select-label"
-                id="role-select"
-                value={role}
-                onChange={handleRoleChange}
-                disabled={!user}
-                sx={{
-                  '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
-                }}
-              >
-                <MenuItem value={'ADMIN'}>Admin</MenuItem>
-                <MenuItem value={'LEADERSHIP'}>Leadership</MenuItem>
-                <MenuItem value={'MEMBER'}>Member</MenuItem>
-                <MenuItem value={'GUEST'}>Guest</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
+            <Select
+              displayEmpty={true}
+              renderValue={(value) => (value ? value : user ? user.role : 'Current Role')}
+              id="role-select"
+              value={role}
+              onChange={handleRoleChange}
+              disabled={!user}
+              sx={{
+                '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
+              }}
+            >
+              <MenuItem value={'ADMIN'}>Admin</MenuItem>
+              <MenuItem value={'LEADERSHIP'}>Leadership</MenuItem>
+              <MenuItem value={'MEMBER'}>Member</MenuItem>
+              <MenuItem value={'GUEST'}>Guest</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
       </Grid>
-      <NERButton sx={{ mt: '2px', float: 'right' }} variant="contained" disabled={isDisabled || !user} onClick={handleClick}>
+      <NERButton
+        sx={{ mt: '20px', float: 'right' }}
+        variant="contained"
+        disabled={isDisabled || !user}
+        onClick={handleClick}
+      >
         Confirm
       </NERButton>
-      <h4 hidden={hideSuccessLabel} style={{ color: 'primary' }}>
+      <Typography hidden={hideSuccessLabel} style={{ color: 'primary', marginTop: '20px' }}>
         Successfully Updated User
-      </h4>
+      </Typography>
     </PageBlock>
   );
 };
