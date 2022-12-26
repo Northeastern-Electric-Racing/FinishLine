@@ -11,6 +11,7 @@ import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useTheme } from '@mui/material';
 import { useState } from 'react';
+import { WbsElementStatus } from 'shared';
 
 /**
  * Table of all projects.
@@ -19,6 +20,7 @@ const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
   const [pageSize, setPageSize] = useState(30);
+
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -34,13 +36,14 @@ const ProjectsTable: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
+    { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
       field: 'wbsNum',
       headerName: 'WBS #',
-      align: 'center',
       valueFormatter: (params) => wbsPipe(params.value),
       maxWidth: 100,
+      filterable: false,
       sortComparator: (v1, v2, param1, param2) => {
         if (param1.value.carNumber !== param2.value.carNumber) {
           return param1.value.carNumber - param2.value.carNumber;
@@ -56,46 +59,39 @@ const ProjectsTable: React.FC = () => {
     {
       ...baseColDef,
       field: 'name',
-      headerName: 'Project Name',
-      align: 'center'
+      headerName: 'Project Name'
     },
     {
       ...baseColDef,
       field: 'projectLead',
       headerName: 'Project Lead',
-      align: 'center',
-      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
       ...baseColDef,
       field: 'projectManager',
       headerName: 'Project Manager',
-      align: 'center',
-      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
       ...baseColDef,
       field: 'team',
       headerName: 'Team',
-      align: 'center',
-      valueFormatter: (params) => params.value?.teamName || 'No Team',
       maxWidth: 200
     },
     {
       ...baseColDef,
       field: 'duration',
       headerName: 'Duration',
+      type: 'number',
       valueFormatter: (params) => weeksPipe(params.value),
-      maxWidth: 100,
-      align: 'center'
+      maxWidth: 100
     },
     {
       ...baseColDef,
       field: 'budget',
       headerName: 'Budget',
-      align: 'center',
+      type: 'number',
       valueFormatter: (params) => dollars(params.value),
       maxWidth: 100
     },
@@ -103,17 +99,17 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'workPackages',
       headerName: '# Work Packages',
-      type: 'number',
+      filterable: false,
       maxWidth: 150,
-      align: 'center',
       valueFormatter: (params) => params.value.length
     },
     {
       ...baseColDef,
       field: 'status',
       headerName: 'Status',
-      maxWidth: 100,
-      align: 'center'
+      type: 'singleSelect',
+      valueOptions: Object.values(WbsElementStatus),
+      maxWidth: 100
     }
   ];
 
@@ -132,7 +128,16 @@ const ProjectsTable: React.FC = () => {
         onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}
-        rows={data || []}
+        rows={
+          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
+          data?.map((v) => ({
+            ...v,
+            carNumber: v.wbsNum.carNumber,
+            projectLead: fullNamePipe(v.projectLead),
+            projectManager: fullNamePipe(v.projectManager),
+            team: v.team?.teamName || 'No Team'
+          })) || []
+        }
         columns={columns}
         sx={{ background: theme.palette.background.paper }}
         onRowClick={(params) => {
@@ -145,6 +150,7 @@ const ProjectsTable: React.FC = () => {
           },
           columns: {
             columnVisibilityModel: {
+              carNumber: false,
               workPackages: false
             }
           }
