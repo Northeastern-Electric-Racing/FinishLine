@@ -8,7 +8,8 @@ import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
-import { TextField, Typography } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -77,7 +78,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Description'}</Typography>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>Description</Typography>
                 <TextField
                   multiline
                   rows={4}
@@ -104,7 +105,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Scope Impact'}</Typography>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>Scope Impact</Typography>
                 <TextField
                   multiline
                   rows={4}
@@ -131,7 +132,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Budget Impact'}</Typography>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>Budget Impact</Typography>
                 <TextField
                   multiline
                   rows={1}
@@ -158,7 +159,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Timeline Impact'}</Typography>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>Timeline Impact</Typography>
                 <TextField
                   multiline
                   rows={1}
@@ -190,7 +191,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                <Typography>Add</Typography>
+                Add
               </Button>
             </Box>
           )}

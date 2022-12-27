@@ -6,7 +6,8 @@
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
-import { Tooltip, Typography } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 interface ReviewNotesProps {
   reviewer?: User;

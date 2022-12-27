@@ -1,4 +1,7 @@
-import { Grid, Button, IconButton, TextField, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FieldArrayWithId, UseFieldArrayRemove } from 'react-hook-form';
 
@@ -16,12 +19,10 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
       {ls.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography>
-              <TextField required autoComplete="off" sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
-              <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Typography>
+            <TextField required autoComplete="off" sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
+            <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
+              <DeleteIcon />
+            </IconButton>
           </Grid>
         );
       })}

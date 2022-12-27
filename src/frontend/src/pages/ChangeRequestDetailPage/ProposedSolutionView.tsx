@@ -5,7 +5,10 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Chip, Button, Grid, Typography } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -38,28 +41,20 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={6}>
-          <Typography>
-            <b>Description: </b>
-            {proposedSolution.description}
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
+          <Typography>{proposedSolution.description}</Typography>
         </Grid>
         <Grid item xs={6}>
-          <Typography>
-            <b>Budget Impact: </b>
-            {dollarsPipe(proposedSolution.budgetImpact)}
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Budget Impact: </Typography>
+          <Typography>{dollarsPipe(proposedSolution.budgetImpact)}</Typography>
         </Grid>
         <Grid item xs={6}>
-          <Typography>
-            <b>Timeline Impact: </b>
-            {weeksPipe(proposedSolution.timelineImpact)}
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Timeline Impact: </Typography>
+          <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
         </Grid>
         <Grid item xs={6}>
-          <Typography>
-            <b>Scope Impact: </b>
-            {proposedSolution.scopeImpact}
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Scope Impact:</Typography>
+          <Typography>{proposedSolution.scopeImpact}</Typography>
         </Grid>
       </Grid>
     </PageBlock>

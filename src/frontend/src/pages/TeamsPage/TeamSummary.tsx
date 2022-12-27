@@ -6,7 +6,13 @@
 import { Team } from 'shared';
 import { routes } from '../../utils/Routes';
 import { fullNamePipe, wbsPipe } from '../../utils/Pipes';
-import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+
 interface TeamSummaryProps {
   team: Team;
 }
@@ -27,11 +33,20 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
           {team.projects.length} Project{team.projects.length === 1 ? '' : 's'} | {team.members.length} Member
           {team.members.length === 1 ? '' : 's'}
         </Typography>
-        <Typography variant="body2">
-          <b>Lead:</b> {fullNamePipe(team.leader)}
+        <Typography display="inline" variant="body2" sx={{ fontWeight: 'bold' }}>
+          Lead:
         </Typography>
-        <Typography variant="body2">
-          <b>Projects:</b> {projectsList}
+        <Typography display="inline" variant="body2">
+          {' '}
+          {fullNamePipe(team.leader)}
+        </Typography>
+        <Typography variant="body2"></Typography>
+        <Typography display="inline" variant="body2" sx={{ fontWeight: 'bold' }}>
+          Projects:
+        </Typography>
+        <Typography display="inline" variant="body2">
+          {' '}
+          {projectsList}
         </Typography>
       </CardContent>
       <CardActions>

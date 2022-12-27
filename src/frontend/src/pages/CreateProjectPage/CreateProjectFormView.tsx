@@ -11,7 +11,6 @@ import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/Routes';
 import { CreateProjectFormStates } from './CreateProjectForm';
-import { Typography } from '@mui/material';
 
 interface CreateProjectFormViewProps {
   states: CreateProjectFormStates;
@@ -30,77 +29,67 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={2}>
-              <Typography>
-                <TextField
-                  required
-                  id="name"
-                  name="name"
-                  type="text"
-                  label="Project Name"
-                  sx={{ backgroundColor: 'white' }}
-                  autoComplete="off"
-                  placeholder="Enter project name..."
-                  onChange={(e) => name(e.target.value)}
-                />
-              </Typography>
+              <TextField
+                required
+                id="name"
+                name="name"
+                type="text"
+                label="Project Name"
+                sx={{ backgroundColor: 'white' }}
+                autoComplete="off"
+                placeholder="Enter project name..."
+                onChange={(e) => name(e.target.value)}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Typography>
-                <TextField
-                  required
-                  id="carNumber"
-                  name="carNumber"
-                  type="text"
-                  label="Car Number"
-                  sx={{ backgroundColor: 'white' }}
-                  placeholder="Enter car number..."
-                  onChange={(e) => carNumber(parseInt(e.target.value))}
-                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                />
-              </Typography>
+              <TextField
+                required
+                id="carNumber"
+                name="carNumber"
+                type="text"
+                label="Car Number"
+                sx={{ backgroundColor: 'white' }}
+                placeholder="Enter car number..."
+                onChange={(e) => carNumber(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Typography>
-                <TextField
-                  required
-                  id="crId"
-                  name="crId"
-                  type="text"
-                  label="Change Request ID"
-                  sx={{ backgroundColor: 'white' }}
-                  placeholder="Enter change request ID..."
-                  onChange={(e) => crId(parseInt(e.target.value))}
-                  inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
-                />
-              </Typography>
+              <TextField
+                required
+                id="crId"
+                name="crId"
+                type="text"
+                label="Change Request ID"
+                sx={{ backgroundColor: 'white' }}
+                placeholder="Enter change request ID..."
+                onChange={(e) => crId(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
+              />
             </Grid>
             <Grid item xs={9}>
-              <Typography>
-                <TextField
-                  required
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  id="summary"
-                  name="summary"
-                  type="text"
-                  label="Project Summary"
-                  sx={{ backgroundColor: 'white' }}
-                  placeholder="Enter summary..."
-                  onChange={(e) => summary(e.target.value)}
-                />
-              </Typography>
+              <TextField
+                required
+                fullWidth
+                multiline
+                minRows={2}
+                id="summary"
+                name="summary"
+                type="text"
+                label="Project Summary"
+                sx={{ backgroundColor: 'white' }}
+                placeholder="Enter summary..."
+                onChange={(e) => summary(e.target.value)}
+              />
             </Grid>
           </Grid>
           <Box display="flex" flexDirection="row-reverse" gap={2}>
-            <Typography>
-              <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-                Create
-              </Button>
-              <Button variant="outlined" color="secondary" onClick={onCancel}>
-                Cancel
-              </Button>
-            </Typography>
+            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+              Create
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
             ``
           </Box>
         </form>

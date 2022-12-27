@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';

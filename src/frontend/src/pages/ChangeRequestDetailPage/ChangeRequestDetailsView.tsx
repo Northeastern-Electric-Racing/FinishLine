@@ -25,7 +25,10 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {

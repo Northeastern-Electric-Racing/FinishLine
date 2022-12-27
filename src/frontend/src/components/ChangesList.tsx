@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
-import { fullNamePipe, datePipe } from '../utils/Pipes';
 import { routes } from '../utils/Routes';
 import BulletList from './BulletList';
 
@@ -24,13 +23,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
           [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
           <Tooltip
             id="tooltip"
-            title={
-              <>
-                <Typography variant="body2">
-                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
-                </Typography>
-              </>
-            }
+            title={<Typography variant="body2">fullNamePipe(ic.implementer) - datePipe(ic.dateImplemented)</Typography>}
             placement="right"
             arrow
           >

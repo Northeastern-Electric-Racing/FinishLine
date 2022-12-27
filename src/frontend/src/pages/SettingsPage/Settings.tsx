@@ -8,7 +8,12 @@ import { useAuth } from '../../hooks/auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
-import { Alert, Grid, Switch, FormGroup, FormControlLabel, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Grid from '@mui/material/Grid';
+import Switch from '@mui/material/Switch';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Typography from '@mui/material/Typography';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 const Settings: React.FC = () => {
@@ -24,28 +29,28 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item md={12}>
-            <Typography>
-              <b>Name:</b> Northeastern Electric Racing
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              Name:
             </Typography>
+            <Typography display="inline"> Northeastern Electric Racing</Typography>
           </Grid>
           <Grid item>
             <FormGroup>
-              <Typography>
-                <FormControlLabel
-                  label="Trickster Mode"
-                  control={
-                    <Switch
-                      id="trick-switch"
-                      onClick={() => {
-                        setShowAlert(true);
-                        setTimeout(() => {
-                          auth.signout();
-                        }, 2000);
-                      }}
-                    />
-                  }
-                />
-              </Typography>
+              {' '}
+              <FormControlLabel
+                label="Trickster Mode"
+                control={
+                  <Switch
+                    id="trick-switch"
+                    onClick={() => {
+                      setShowAlert(true);
+                      setTimeout(() => {
+                        auth.signout();
+                      }, 2000);
+                    }}
+                  />
+                }
+              />
             </FormGroup>
           </Grid>
         </Grid>
@@ -53,29 +58,34 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            <Typography>
-              <b>First Name:</b> {auth.user?.firstName}
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              First Name:
             </Typography>
+            <Typography display="inline"> {auth.user?.firstName}</Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <Typography>
-              <b>Last Name:</b> {auth.user?.lastName}
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              Last Name:
             </Typography>
+            <Typography display="inline"> {auth.user?.lastName}</Typography>
           </Grid>
           <Grid item md={4} lg={3}>
-            <Typography>
-              <b>Email: </b> {auth.user?.email}
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              Email:
             </Typography>
+            <Typography display="inline"> {auth.user?.email}</Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <Typography>
-              <b>Email ID:</b> {auth.user?.emailId}
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              Email ID:
             </Typography>
+            <Typography display="inline"> {auth.user?.emailId}</Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <Typography>
-              <b>Role: </b> {auth.user?.role}
+            <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+              Role:
             </Typography>
+            <Typography display="inline"> {auth.user?.role}</Typography>
           </Grid>
         </Grid>
       </PageBlock>

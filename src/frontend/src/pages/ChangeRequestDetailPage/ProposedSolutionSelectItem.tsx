@@ -5,7 +5,12 @@
 
 import { ProposedSolution } from 'shared';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 interface ProposedSolutionSelectItemProps {
   proposedSolution: ProposedSolution;
@@ -30,10 +35,8 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
         <CardContent>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             <Grid item xs={6}>
-              <Typography>
-                <b>Description: </b>
-                {proposedSolution.description}
-              </Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Description:</Typography>
+              <Typography>{proposedSolution.description}</Typography>
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" justifyContent="flex-end" sx={{ maxHeight: 32 }}>
@@ -45,22 +48,16 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Typography>
-                <b>Budget Impact: </b>
-                {dollarsPipe(proposedSolution.budgetImpact)}
-              </Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Budget Impact:</Typography>
+              <Typography>{dollarsPipe(proposedSolution.budgetImpact)}</Typography>
             </Grid>
             <Grid item xs={12}>
-              <Typography>
-                <b>Timeline Impact: </b>
-                {weeksPipe(proposedSolution.timelineImpact)}
-              </Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Timeline Impact: </Typography>
+              <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
             </Grid>
             <Grid item xs={12}>
-              <Typography>
-                <b>Scope Impact: </b>
-                {proposedSolution.scopeImpact}
-              </Typography>
+              <Typography sx={{ fontWeight: 'bold' }}>Scope Impact: </Typography>
+              <Typography>{proposedSolution.scopeImpact}</Typography>
             </Grid>
           </Grid>
         </CardContent>

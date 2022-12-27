@@ -6,7 +6,8 @@
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -17,36 +18,28 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
     <PageBlock title={'Activation Change Request Details'}>
       <Grid container>
         <Grid item xs={6} md={2}>
-          <Typography>
-            <b>Project Lead </b>
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Lead</Typography>
         </Grid>
         <Grid item xs={6} md={2}>
-          {fullNamePipe(cr.projectLead)}
+          <Typography>{fullNamePipe(cr.projectLead)}</Typography>
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography>
-            <b>Start Date </b>
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Start Date</Typography>
         </Grid>
         <Grid item xs={6} md={6}>
-          {datePipe(cr.startDate)}
+          <Typography>{datePipe(cr.startDate)}</Typography>
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography>
-            <b>Project Manager </b>
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Manager</Typography>
         </Grid>
         <Grid item xs={6} md={2}>
-          {fullNamePipe(cr.projectManager)}
+          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography>
-            <b>Confirm WP Details </b>
-          </Typography>
+          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details</Typography>
         </Grid>
         <Grid item xs={6} md={6}>
-          {booleanPipe(cr.confirmDetails)}
+          <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
         </Grid>
       </Grid>
     </PageBlock>

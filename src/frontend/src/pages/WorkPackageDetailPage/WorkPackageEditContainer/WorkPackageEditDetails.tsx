@@ -6,7 +6,10 @@
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../utils/Pipes';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -41,15 +44,13 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
     <PageBlock title="Work Package Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <Typography>
-            <ReactHookTextField
-              name="name"
-              control={control}
-              sx={{ width: 10 / 10 }}
-              label="Work Package Name"
-              errorMessage={errors.name}
-            />
-          </Typography>
+          <ReactHookTextField
+            name="name"
+            control={control}
+            sx={{ width: 10 / 10 }}
+            label="Work Package Name"
+            errorMessage={errors.name}
+          />
         </Grid>
         <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           <Controller
@@ -58,16 +59,14 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
-                <Typography>
-                  <DatePicker
-                    label={'Start Date (YYYY-MM-DD)'}
-                    inputFormat="yyyy-MM-dd"
-                    onChange={onChange}
-                    className={'padding: 10'}
-                    value={value}
-                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
-                  />
-                </Typography>
+                <DatePicker
+                  label={'Start Date (YYYY-MM-DD)'}
+                  inputFormat="yyyy-MM-dd"
+                  onChange={onChange}
+                  className={'padding: 10'}
+                  value={value}
+                  renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                />
               </>
             )}
           />
@@ -81,15 +80,13 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <Typography>
-                <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Typography>
+              <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
           />
         </Grid>
@@ -99,29 +96,25 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <Typography>
-                <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Typography>
+              <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
+                {users.map((t) => (
+                  <MenuItem key={t.userId} value={t.userId}>
+                    {fullNamePipe(t)}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <Typography>
-            <ReactHookTextField
-              name="duration"
-              control={control}
-              type="number"
-              label="Duration"
-              sx={{ width: 3 / 10 }}
-              errorMessage={errors.budget}
-            />
-          </Typography>
+          <ReactHookTextField
+            name="duration"
+            control={control}
+            type="number"
+            label="Duration"
+            sx={{ width: 3 / 10 }}
+            errorMessage={errors.budget}
+          />
         </Grid>
       </Grid>
     </PageBlock>

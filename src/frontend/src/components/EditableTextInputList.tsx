@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
-import { Typography } from '@mui/material';
 
 interface EditableTextInputListProps {
   items: any[];
@@ -95,39 +94,37 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
     !readOnly ? (
       <li key={index} className={'mb-2'}>
         <Box marginBottom={1}>
-          <Typography>
-            <TextField
-              required
-              fullWidth
-              type="text"
-              id={`bullet-${index}`}
-              name={`bullet-${index}`}
-              value={item.toString()}
-              label={label}
-              placeholder="Input new bullet here..."
-              ref={isLastElement(index) ? focusRef : null}
-              autoFocus={hasTyped && isLastElement(index)}
-              onKeyDown={(e: any) => handleKeyDown(e, index)}
-              onChange={(e: any) => {
-                setHasTyped(true);
-                update(index, e.target.value);
-                if (isLastElement(index)) {
-                  setLastInput(e.target.value);
-                }
-              }}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    aria-label="delete"
-                    disabled={disabledItems && disabledItems[index]}
-                    onClick={() => removeButtonOnClick(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )
-              }}
-            />
-          </Typography>
+          <TextField
+            required
+            fullWidth
+            type="text"
+            id={`bullet-${index}`}
+            name={`bullet-${index}`}
+            value={item.toString()}
+            label={label}
+            placeholder="Input new bullet here..."
+            ref={isLastElement(index) ? focusRef : null}
+            autoFocus={hasTyped && isLastElement(index)}
+            onKeyDown={(e: any) => handleKeyDown(e, index)}
+            onChange={(e: any) => {
+              setHasTyped(true);
+              update(index, e.target.value);
+              if (isLastElement(index)) {
+                setLastInput(e.target.value);
+              }
+            }}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  aria-label="delete"
+                  disabled={disabledItems && disabledItems[index]}
+                  onClick={() => removeButtonOnClick(index)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            }}
+          />
         </Box>
       </li>
     ) : (

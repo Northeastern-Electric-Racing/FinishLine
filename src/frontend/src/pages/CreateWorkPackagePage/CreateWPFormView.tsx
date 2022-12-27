@@ -53,85 +53,75 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
         <form onSubmit={onSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={9}>
-              <Typography>
-                <TextField
-                  required
-                  fullWidth
-                  sx={{ backgroundColor: 'white' }}
-                  id=""
-                  name="name"
-                  type="text"
-                  autoComplete="off"
-                  label="Work Package Name"
-                  placeholder="Enter work package name..."
-                  onChange={(e) => name(e.target.value)}
-                />
-              </Typography>
+              <TextField
+                required
+                fullWidth
+                sx={{ backgroundColor: 'white' }}
+                id=""
+                name="name"
+                type="text"
+                autoComplete="off"
+                label="Work Package Name"
+                placeholder="Enter work package name..."
+                onChange={(e) => name(e.target.value)}
+              />
             </Grid>
             <Grid item xs={3}>
-              <Typography>
-                <TextField
-                  required
-                  sx={{ backgroundColor: 'white' }}
-                  id="crId"
-                  name="crId"
-                  type="text"
-                  label="Change Request ID"
-                  placeholder="Enter change request ID..."
-                  onChange={(e) => crId(parseInt(e.target.value))}
-                  inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
-                />
-              </Typography>
+              <TextField
+                required
+                sx={{ backgroundColor: 'white' }}
+                id="crId"
+                name="crId"
+                type="text"
+                label="Change Request ID"
+                placeholder="Enter change request ID..."
+                onChange={(e) => crId(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Typography>
-                <TextField
-                  required
-                  sx={{ backgroundColor: 'white' }}
-                  id="wbsNum"
-                  name="wbsNum"
-                  type="text"
-                  label="Project WBS Number"
-                  autoComplete="off"
-                  placeholder="Enter project WBS number..."
-                  onChange={(e) => wbsNum(e.target.value)}
-                />
-              </Typography>
+              <TextField
+                required
+                sx={{ backgroundColor: 'white' }}
+                id="wbsNum"
+                name="wbsNum"
+                type="text"
+                label="Project WBS Number"
+                autoComplete="off"
+                placeholder="Enter project WBS number..."
+                onChange={(e) => wbsNum(e.target.value)}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Typography>
-                <DatePicker
-                  label="Start Date"
-                  inputFormat="yyyy-MM-dd"
-                  value={startDateVal}
-                  onChange={(val) => {
-                    setStartDateVal(val);
-                    startDate(datePipe(val!));
-                  }}
-                  renderInput={(params) => <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />}
-                />
-              </Typography>
+              <DatePicker
+                label="Start Date"
+                inputFormat="yyyy-MM-dd"
+                value={startDateVal}
+                onChange={(val) => {
+                  setStartDateVal(val);
+                  startDate(datePipe(val!));
+                }}
+                renderInput={(params) => <TextField autoComplete="off" sx={{ backgroundColor: 'white' }} {...params} />}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Typography>
-                <TextField
-                  required
-                  sx={{ backgroundColor: 'white' }}
-                  id="duration"
-                  name="duration"
-                  type="text"
-                  label="Duration"
-                  placeholder="Enter duration..."
-                  onChange={(e) => duration(parseInt(e.target.value))}
-                  inputProps={{
-                    inputMode: 'numeric',
-                    pattern: '[1-9][0-9]*'
-                  }}
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">weeks</InputAdornment>
-                  }}
-                />
-              </Typography>
+              <TextField
+                required
+                sx={{ backgroundColor: 'white' }}
+                id="duration"
+                name="duration"
+                type="text"
+                label="Duration"
+                placeholder="Enter duration..."
+                onChange={(e) => duration(parseInt(e.target.value))}
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[1-9][0-9]*'
+                }}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">weeks</InputAdornment>
+                }}
+              />
             </Grid>
             <Grid item xs={12}>
               <Box marginBottom={1}>
@@ -168,10 +158,10 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
 
           <Box display="flex" flexDirection="row-reverse" gap={2}>
             <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-              <Typography>Create</Typography>
+              Create
             </Button>
             <Button variant="outlined" color="secondary" onClick={onCancel}>
-              <Typography>Cancel</Typography>
+              Cancel
             </Button>
           </Box>
         </form>

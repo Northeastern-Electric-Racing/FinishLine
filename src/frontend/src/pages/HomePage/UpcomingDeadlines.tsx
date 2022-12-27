@@ -13,6 +13,8 @@ import InputLabel from '@mui/material/InputLabel';
 import CardContent from '@mui/material/CardContent';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -21,7 +23,6 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { Grid, Typography } from '@mui/material';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');

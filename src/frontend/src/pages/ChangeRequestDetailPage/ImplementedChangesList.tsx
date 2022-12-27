@@ -6,7 +6,12 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/Pipes';
 import { routes } from '../../utils/Routes';
-import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
+import Link from '@mui/material/Link';
+import ListItem from '@mui/material/ListItem';
+import List from '@mui/material/List';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+
 import PageBlock from '../../layouts/PageBlock';
 
 interface ImplementedChangesListProps {

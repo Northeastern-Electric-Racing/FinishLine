@@ -10,7 +10,14 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -167,7 +174,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography>{'Additional Comments'}</Typography>
+                  <Typography>Additional Comments</Typography>
                   <TextField
                     multiline
                     rows={4}

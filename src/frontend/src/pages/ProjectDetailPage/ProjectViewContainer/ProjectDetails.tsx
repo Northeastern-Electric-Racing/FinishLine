@@ -9,7 +9,8 @@ import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/P
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -63,24 +64,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Typography>Links: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <Typography>
-            <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
-          </Typography>
+          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
         </Grid>
         <Grid item xs={2} md={2}>
-          <Typography>
-            <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
-          </Typography>
+          <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
         </Grid>
         <Grid item xs={2} md={2}>
-          <Typography>
-            <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
-          </Typography>
+          <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
         </Grid>
         <Grid item xs={2} md={2}>
-          <Typography>
-            <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
-          </Typography>
+          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
         </Grid>
       </Grid>
     </PageBlock>

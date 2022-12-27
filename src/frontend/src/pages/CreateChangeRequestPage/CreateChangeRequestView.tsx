@@ -160,15 +160,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                       </option>
                     ))}
                   </NativeSelect>
-                  <Typography>
-                    <TextField
-                      required
-                      autoComplete="off"
-                      label="Explain"
-                      sx={{ flexGrow: 1, mx: 1 }}
-                      {...register(`why.${index}.explain`)}
-                    />
-                  </Typography>
+                  <TextField
+                    required
+                    autoComplete="off"
+                    label="Explain"
+                    sx={{ flexGrow: 1, mx: 1 }}
+                    {...register(`why.${index}.explain`)}
+                  />
                   <Button
                     sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
                     variant="contained"
@@ -186,7 +184,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               sx={{ mt: 1 }}
               onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
             >
-              <Typography>Add Reason</Typography>
+              Add Reason
             </Button>
             <FormHelperText>{errors.why?.message}</FormHelperText>
           </Grid>
@@ -197,10 +195,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       </PageBlock>
       <Box textAlign="center">
         <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          <Typography>Submit</Typography>
+          Submit
         </Button>
         <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
-          <Typography>Cancel</Typography>
+          Cancel
         </Button>
       </Box>
     </form>

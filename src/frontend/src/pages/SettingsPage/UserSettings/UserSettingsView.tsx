@@ -3,7 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
 import { UserSettings } from 'shared';
 
 interface UserSettingsViewProps {
@@ -26,9 +28,10 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
       <Grid item md={4} lg={2}>
-        <Typography>
-          <b>Default Theme:</b> {settings.defaultTheme}
+        <Typography display="inline" sx={{ fontWeight: 'bold' }}>
+          Default Theme:
         </Typography>
+        <Typography display="inline"> {settings.defaultTheme}</Typography>
       </Grid>
       <Grid item md={6} lg={4}>
         <Typography>{renderSlackId(settings)}</Typography>
