@@ -54,6 +54,15 @@ export const newProject = async (req: Request, res: Response) => {
 
   await validateChangeRequestAccepted(req.body.crId);
 
+  // check for valid team
+  if (req.body.teamId === undefined) {
+    return res.status(404).json({ message: `team id not supplied.` });
+  }
+  const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
+  if (!team) {
+    return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
+  }
+
   // create the wbs element for the project and document the implemented change request
   const maxProjectNumber = await getHighestProjectNumber(req.body.carNumber);
   const createdProject = await prisma.wBS_Element.create({
@@ -61,6 +70,7 @@ export const newProject = async (req: Request, res: Response) => {
       carNumber: req.body.carNumber,
       projectNumber: maxProjectNumber + 1,
       workPackageNumber: 0,
+      teamId: req.body.teamId,
       name: req.body.name,
       project: { create: { summary: req.body.summary } },
       changes: {
