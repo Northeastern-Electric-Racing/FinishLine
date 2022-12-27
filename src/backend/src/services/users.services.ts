@@ -1,9 +1,12 @@
 import { Role, User_Settings } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { AuthenticatedUser, User } from 'shared';
+import { authUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
+import { authenticatedUserTransformer } from '../transformers/auth-user.transformer';
+import { userTransformer } from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
-import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
+import { rankUserRole } from '../utils/users.utils';
 
 export default class UsersService {
   static async getAllUsers(): Promise<User[]> {
