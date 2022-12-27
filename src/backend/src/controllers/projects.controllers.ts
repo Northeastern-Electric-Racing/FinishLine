@@ -61,12 +61,19 @@ export const newProject = async (req: Request, res: Response) => {
     }
   }
 
+  // check for valid team
+  const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
+  if (!team) {
+    return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
+  }
+
   // create the wbs element for the project and document the implemented change request
   const maxProjectNumber = await getHighestProjectNumber(req.body.carNumber);
   const createdProject = await prisma.wBS_Element.create({
     data: {
       carNumber: req.body.carNumber,
       projectNumber: maxProjectNumber + 1,
+      teamId: req.body.teamId,
       workPackageNumber: 0,
       name: req.body.name,
       project: { create: { summary: req.body.summary, teamId: req.body.teamId } },
