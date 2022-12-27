@@ -55,12 +55,12 @@ export const newProject = async (req: Request, res: Response) => {
   await validateChangeRequestAccepted(req.body.crId);
 
   // check for valid team
-  if (req.body.teamId === undefined) {
-    return res.status(404).json({ message: `team id not supplied.` });
-  }
-  const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
-  if (!team) {
-    return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
+
+  if (req.body.teamId !== undefined) {
+    const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
+    if (!team) {
+      return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
+    }
   }
 
   // create the wbs element for the project and document the implemented change request
