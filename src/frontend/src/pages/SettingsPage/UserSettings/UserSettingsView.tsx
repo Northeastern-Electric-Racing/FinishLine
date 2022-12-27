@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link } from '@mui/material';
+import { Grid, Link, Typography } from '@mui/material';
 import { UserSettings } from 'shared';
 
 interface UserSettingsViewProps {
@@ -26,10 +26,12 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
       <Grid item md={4} lg={2}>
-        <b>Default Theme:</b> {settings.defaultTheme}
+        <Typography>
+          <b>Default Theme:</b> {settings.defaultTheme}
+        </Typography>
       </Grid>
       <Grid item md={6} lg={4}>
-        {renderSlackId(settings)}
+        <Typography>{renderSlackId(settings)}</Typography>
       </Grid>
     </>
   );

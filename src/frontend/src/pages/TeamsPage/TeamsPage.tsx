@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -25,7 +25,9 @@ const TeamsPage: React.FC = () => {
       <Grid container spacing={2}>
         {teams?.map((team) => (
           <Grid item key={team.teamId}>
-            <TeamSummary team={team} />
+            <Typography>
+              <TeamSummary team={team} />
+            </Typography>
           </Grid>
         ))}
       </Grid>

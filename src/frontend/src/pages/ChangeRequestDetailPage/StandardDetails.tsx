@@ -36,7 +36,7 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
             </Typography>
           </Grid>,
           <Grid item xs={8}>
-            {ele.explain}
+            <Typography>{ele.explain}</Typography>
           </Grid>
         ])}
       </Grid>

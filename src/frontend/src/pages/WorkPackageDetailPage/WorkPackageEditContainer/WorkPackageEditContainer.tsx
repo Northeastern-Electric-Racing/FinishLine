@@ -16,7 +16,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Button, Box, TextField, Grid, IconButton } from '@mui/material';
+import { Button, Box, TextField, Grid, IconButton, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
@@ -158,7 +158,9 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         {dependencies.map((_element, i) => {
           return (
             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              <Typography>
+                <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              </Typography>
               <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>
@@ -190,10 +192,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       </PageBlock>
       <Box textAlign="center" sx={{ my: 2 }}>
         <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
+          <Typography>Submit</Typography>
         </Button>
         <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
-          Cancel
+          <Typography>Cancel</Typography>
         </Button>
       </Box>
     </form>

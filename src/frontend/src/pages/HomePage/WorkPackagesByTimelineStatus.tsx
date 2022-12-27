@@ -16,7 +16,7 @@ import { routes } from '../../utils/Routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -54,14 +54,24 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-                <Box>End Date: {datePipe(wp.endDate)}</Box>
                 <Box>
-                  Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
+                  <Typography>End Date: {datePipe(wp.endDate)}</Typography>
                 </Box>
-                <Box>Engineering Lead: {fullNamePipe(wp.projectLead)}</Box>
-                <Box>Project Manager: {fullNamePipe(wp.projectManager)}</Box>
                 <Box>
-                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                  <Typography>
+                    Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography>Engineering Lead: {fullNamePipe(wp.projectLead)}</Typography>
+                </Box>
+                <Box>
+                  <Typography>Project Manager: {fullNamePipe(wp.projectManager)}</Typography>
+                </Box>
+                <Box>
+                  <Typography>
+                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>

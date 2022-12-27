@@ -6,7 +6,7 @@
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/Pipes';
 import PageBlock from '../../layouts/PageBlock';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -17,25 +17,33 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
     <PageBlock title={'Activation Change Request Details'}>
       <Grid container>
         <Grid item xs={6} md={2}>
-          <b>Project Lead </b>
+          <Typography>
+            <b>Project Lead </b>
+          </Typography>
         </Grid>
         <Grid item xs={6} md={2}>
           {fullNamePipe(cr.projectLead)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <b>Start Date </b>
+          <Typography>
+            <b>Start Date </b>
+          </Typography>
         </Grid>
         <Grid item xs={6} md={6}>
           {datePipe(cr.startDate)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <b>Project Manager </b>
+          <Typography>
+            <b>Project Manager </b>
+          </Typography>
         </Grid>
         <Grid item xs={6} md={2}>
           {fullNamePipe(cr.projectManager)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <b>Confirm WP Details </b>
+          <Typography>
+            <b>Confirm WP Details </b>
+          </Typography>
         </Grid>
         <Grid item xs={6} md={6}>
           {booleanPipe(cr.confirmDetails)}

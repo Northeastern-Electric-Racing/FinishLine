@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
-import { Alert, Grid, Switch, FormGroup, FormControlLabel } from '@mui/material';
+import { Alert, Grid, Switch, FormGroup, FormControlLabel, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 const Settings: React.FC = () => {
@@ -24,24 +24,28 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item md={12}>
-            <b>Name:</b> Northeastern Electric Racing
+            <Typography>
+              <b>Name:</b> Northeastern Electric Racing
+            </Typography>
           </Grid>
           <Grid item>
             <FormGroup>
-              <FormControlLabel
-                label="Trickster Mode"
-                control={
-                  <Switch
-                    id="trick-switch"
-                    onClick={() => {
-                      setShowAlert(true);
-                      setTimeout(() => {
-                        auth.signout();
-                      }, 2000);
-                    }}
-                  />
-                }
-              />
+              <Typography>
+                <FormControlLabel
+                  label="Trickster Mode"
+                  control={
+                    <Switch
+                      id="trick-switch"
+                      onClick={() => {
+                        setShowAlert(true);
+                        setTimeout(() => {
+                          auth.signout();
+                        }, 2000);
+                      }}
+                    />
+                  }
+                />
+              </Typography>
             </FormGroup>
           </Grid>
         </Grid>
@@ -49,19 +53,29 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            <b>First Name:</b> {auth.user?.firstName}
+            <Typography>
+              <b>First Name:</b> {auth.user?.firstName}
+            </Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Last Name:</b> {auth.user?.lastName}
+            <Typography>
+              <b>Last Name:</b> {auth.user?.lastName}
+            </Typography>
           </Grid>
           <Grid item md={4} lg={3}>
-            <b>Email: </b> {auth.user?.email}
+            <Typography>
+              <b>Email: </b> {auth.user?.email}
+            </Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Email ID:</b> {auth.user?.emailId}
+            <Typography>
+              <b>Email ID:</b> {auth.user?.emailId}
+            </Typography>
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Role: </b> {auth.user?.role}
+            <Typography>
+              <b>Role: </b> {auth.user?.role}
+            </Typography>
           </Grid>
         </Grid>
       </PageBlock>

@@ -5,7 +5,7 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Chip, Button, Grid } from '@mui/material';
+import { Chip, Button, Grid, Typography } from '@mui/material';
 import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -38,20 +38,28 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={6}>
-          <b>Description: </b>
-          {proposedSolution.description}
+          <Typography>
+            <b>Description: </b>
+            {proposedSolution.description}
+          </Typography>
         </Grid>
         <Grid item xs={6}>
-          <b>Budget Impact: </b>
-          {dollarsPipe(proposedSolution.budgetImpact)}
+          <Typography>
+            <b>Budget Impact: </b>
+            {dollarsPipe(proposedSolution.budgetImpact)}
+          </Typography>
         </Grid>
         <Grid item xs={6}>
-          <b>Timeline Impact: </b>
-          {weeksPipe(proposedSolution.timelineImpact)}
+          <Typography>
+            <b>Timeline Impact: </b>
+            {weeksPipe(proposedSolution.timelineImpact)}
+          </Typography>
         </Grid>
         <Grid item xs={6}>
-          <b>Scope Impact: </b>
-          {proposedSolution.scopeImpact}
+          <Typography>
+            <b>Scope Impact: </b>
+            {proposedSolution.scopeImpact}
+          </Typography>
         </Grid>
       </Grid>
     </PageBlock>

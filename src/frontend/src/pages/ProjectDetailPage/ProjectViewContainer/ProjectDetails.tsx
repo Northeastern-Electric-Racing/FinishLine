@@ -63,16 +63,24 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Typography>Links: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
+          <Typography>
+            <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
+          </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
+          <Typography>
+            <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
+          </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
+          <Typography>
+            <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
+          </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
+          <Typography>
+            <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
+          </Typography>
         </Grid>
       </Grid>
     </PageBlock>

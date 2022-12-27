@@ -22,13 +22,17 @@ const InfoPage: React.FC = () => {
         </Box>
         <Grid container spacing={2}>
           <Grid item md={4} lg={3}>
-            <ExternalLink
-              icon={faScroll}
-              description={'Glossary Document'}
-              link={'https://docs.google.com/document/d/1_kr7PQxjYKvBTmZc8cxeSv5xx0lE88v0wVXkVg3Mez8/edit?usp=sharing'}
-            />
+            <Typography>
+              <ExternalLink
+                icon={faScroll}
+                description={'Glossary Document'}
+                link={'https://docs.google.com/document/d/1_kr7PQxjYKvBTmZc8cxeSv5xx0lE88v0wVXkVg3Mez8/edit?usp=sharing'}
+              />
+            </Typography>
           </Grid>
-          <Grid item>Got any suggestions for additional resources? Drop a message in Slack!</Grid>
+          <Grid item>
+            <Typography> Got any suggestions for additional resources? Drop a message in Slack! </Typography>
+          </Grid>
         </Grid>
       </PageBlock>
       <PageBlock title="Support">
@@ -39,18 +43,22 @@ const InfoPage: React.FC = () => {
         </Box>
         <Grid container spacing={2}>
           <Grid item sm={5} md={4} lg={3}>
-            <ExternalLink
-              icon={faCommentAlt}
-              link={'slack://channel?team=T7MHAQ5TL&id=C02U5TKHLER'}
-              description={'Message in Slack'}
-            />
+            <Typography>
+              <ExternalLink
+                icon={faCommentAlt}
+                link={'slack://channel?team=T7MHAQ5TL&id=C02U5TKHLER'}
+                description={'Message in Slack'}
+              />
+            </Typography>
           </Grid>
           <Grid item sm={6} md={4} lg={3}>
-            <ExternalLink
-              icon={faCode}
-              description={'Submit a ticket on GitHub'}
-              link={'https://github.com/Northeastern-Electric-Racing/FinishLine/issues/new/choose'}
-            />
+            <Typography>
+              <ExternalLink
+                icon={faCode}
+                description={'Submit a ticket on GitHub'}
+                link={'https://github.com/Northeastern-Electric-Racing/FinishLine/issues/new/choose'}
+              />
+            </Typography>
           </Grid>
         </Grid>
       </PageBlock>
@@ -62,16 +70,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Club-Wide Meetings & Events</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
           <Grid item md={4} lg={3}>
@@ -80,16 +92,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Electrical Meetings</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
           <Grid md={4} lg={6}>
@@ -98,16 +114,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Mechanical Meetings</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
           <Grid md={4} lg={3}>
@@ -116,16 +136,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Business Meetings</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
           <Grid item md={4} lg={3}>
@@ -134,16 +158,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Software Meetings</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
           <Grid md={4} lg={6}>
@@ -152,16 +180,20 @@ const InfoPage: React.FC = () => {
               <Typography display="inline">Engineering Reviews</Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="Public URL"
-                link="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="Public URL"
+                  link="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"
+                ></ExternalLink>
+              </Typography>
             </Box>
             <Box>
-              <ExternalLink
-                description="iCal URL"
-                link="https://calendar.google.com/calendar/ical/qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com/public/basic.ics"
-              ></ExternalLink>
+              <Typography>
+                <ExternalLink
+                  description="iCal URL"
+                  link="https://calendar.google.com/calendar/ical/qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com/public/basic.ics"
+                ></ExternalLink>
+              </Typography>
             </Box>
           </Grid>
         </Grid>

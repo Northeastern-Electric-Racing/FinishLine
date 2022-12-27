@@ -17,7 +17,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Button, Box, TextField, IconButton } from '@mui/material';
+import { Grid, Button, Box, TextField, IconButton, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
@@ -148,15 +148,17 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       <ProjectEditDetails users={users} control={control} errors={errors} />
       <PageBlock title="Project Summary">
         <Grid item sx={{ mt: 2 }}>
-          <ReactHookTextField
-            name="summary"
-            control={control}
-            sx={{ width: '50%' }}
-            label="Summary"
-            multiline={true}
-            rows={5}
-            errorMessage={errors.summary}
-          />
+          <Typography>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              sx={{ width: '50%' }}
+              label="Summary"
+              multiline={true}
+              rows={5}
+              errorMessage={errors.summary}
+            />
+          </Typography>
         </Grid>
       </PageBlock>
       <PageBlock title="Goals">
@@ -184,10 +186,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         {rules.map((_rule, i) => {
           return (
             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
-              <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
+              <Typography>
+                <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
+                <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Typography>
             </Grid>
           );
         })}
@@ -198,10 +202,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
       <Box textAlign="center" sx={{ my: 2 }}>
         <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
+          <Typography>Submit</Typography>
         </Button>
         <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
-          Cancel
+          <Typography>Cancel</Typography>
         </Button>
       </Box>
     </form>
