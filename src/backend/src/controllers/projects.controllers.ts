@@ -70,9 +70,8 @@ export const newProject = async (req: Request, res: Response) => {
       carNumber: req.body.carNumber,
       projectNumber: maxProjectNumber + 1,
       workPackageNumber: 0,
-      teamId: req.body.teamId,
       name: req.body.name,
-      project: { create: { summary: req.body.summary } },
+      project: { create: { summary: req.body.summary, teamId: req.body.teamId } },
       changes: {
         create: {
           changeRequestId: req.body.crId,
