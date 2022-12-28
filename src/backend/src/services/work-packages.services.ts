@@ -6,6 +6,7 @@ import {
   TimelineStatus,
   WbsElementStatus,
   WbsNumber,
+  wbsPipe,
   WorkPackage
 } from 'shared';
 import prisma from '../prisma/prisma';
@@ -14,8 +15,7 @@ import {
   createChangeJsonDates,
   createChangeJsonNonList,
   createDependenciesChangesJson,
-  createDescriptionBulletChangesJson,
-  getWbsElementId
+  createDescriptionBulletChangesJson
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -315,12 +315,21 @@ export default class WorkPackagesService {
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
 
-    const depsIds: (number | undefined)[] = await Promise.all(
-      dependencies.map(async (wbsNum: any) => getWbsElementId(wbsNum))
+    const depsIds = await Promise.all(
+      dependencies.map(async (wbsNum: WbsNumber) => {
+        const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+        const wbsElem = await prisma.wBS_Element.findUnique({
+          where: {
+            wbsNumber: { carNumber, projectNumber, workPackageNumber }
+          }
+        });
+
+        if (!wbsElem) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+        if (wbsElem.dateDeleted) throw new HttpException(400, `WBS ${wbsPipe(wbsNum)} has been deleted!`);
+
+        return wbsElem.wbsElementId;
+      })
     );
-    if (depsIds.includes(undefined)) {
-      throw new HttpException(404, `Dependency with wbs number ${depsIds} not found`);
-    }
 
     const { wbsElementId } = originalWorkPackage;
     let changes = [];

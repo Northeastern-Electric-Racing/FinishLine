@@ -62,9 +62,9 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
+  if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
   if (changeRequest.accepted === null) throw new HttpException(400, 'Cannot implement an unreviewed change request');
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
-  if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
 
   return changeRequest;
 };

@@ -14,7 +14,9 @@ export default class RisksService {
    */
   static async getRisksForProject(projectId: number): Promise<Risk[]> {
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
-    if (!requestedProject || requestedProject.wbsElement.dateDeleted) throw new NotFoundException('Project', projectId);
+
+    if (!requestedProject) throw new NotFoundException('Project', projectId);
+    if (requestedProject.wbsElement.dateDeleted) throw new HttpException(400, 'This risks project has been deleted!');
 
     const risks = await prisma.risk.findMany({ where: { projectId, dateDeleted: null }, ...riskQueryArgs });
 
@@ -33,7 +35,9 @@ export default class RisksService {
     if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create risks!');
 
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
-    if (!requestedProject || requestedProject.wbsElement.dateDeleted) throw new NotFoundException('Project', projectId);
+
+    if (!requestedProject) throw new NotFoundException('Project', projectId);
+    if (requestedProject.wbsElement.dateDeleted) throw new HttpException(400, 'This risks project has been deleted!');
 
     const createdRisk = await prisma.risk.create({
       data: {

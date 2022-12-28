@@ -1,4 +1,4 @@
-import { ChangeRequest } from 'shared';
+import { ChangeRequest, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
@@ -336,7 +336,7 @@ export default class ChangeRequestsService {
       }
     });
 
-    if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
 
     const createdCR = await prisma.change_Request.create({
