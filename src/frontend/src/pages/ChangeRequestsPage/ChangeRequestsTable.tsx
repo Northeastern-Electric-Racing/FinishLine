@@ -6,7 +6,7 @@
 import { useHistory } from 'react-router-dom';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
-import { booleanPipe, datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -17,11 +17,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
+import { ChangeRequestType } from 'shared';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
   const [pageSize, setPageSize] = useState(50);
+
   const baseColDef: any = {
     flex: 1,
     align: 'center',
@@ -39,21 +41,26 @@ const ChangeRequestsTable: React.FC = () => {
     {
       ...baseColDef,
       field: 'crId',
+      type: 'number',
       headerName: 'ID',
       maxWidth: 100
     },
     {
       ...baseColDef,
       field: 'type',
+      type: 'singleSelect',
+      valueOptions: Object.values(ChangeRequestType),
       headerName: 'Type',
       maxWidth: 150
     },
+    { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
       field: 'wbsNum',
       headerName: 'WBS #',
-      valueFormatter: (params) => wbsPipe(params.value),
+      filterable: false,
       maxWidth: 100,
+      valueFormatter: (params) => wbsPipe(params.value),
       sortComparator: (v1, v2, param1, param2) => {
         if (param1.value.carNumber !== param2.value.carNumber) {
           return param1.value.carNumber - param2.value.carNumber;
@@ -70,6 +77,7 @@ const ChangeRequestsTable: React.FC = () => {
       ...baseColDef,
       field: 'dateSubmitted',
       headerName: 'Date Submitted',
+      type: 'date',
       valueFormatter: (params) => datePipe(params.value),
       maxWidth: 200
     },
@@ -77,13 +85,13 @@ const ChangeRequestsTable: React.FC = () => {
       ...baseColDef,
       field: 'submitter',
       headerName: 'Submitter',
-      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 200
     },
     {
       ...baseColDef,
       field: 'dateReviewed',
       headerName: 'Date Reviewed',
+      type: 'date',
       valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
       maxWidth: 200
     },
@@ -91,20 +99,20 @@ const ChangeRequestsTable: React.FC = () => {
       ...baseColDef,
       field: 'reviewer',
       headerName: 'Reviewer',
-      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 200
     },
     {
       ...baseColDef,
       field: 'accepted',
       headerName: 'Accepted',
-      valueFormatter: (params) => (params.value ? booleanPipe(params.value) : ''),
+      type: 'boolean',
       maxWidth: 100
     },
     {
       ...baseColDef,
       field: 'dateImplemented',
       headerName: 'Date Implemented',
+      type: 'date',
       valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
       maxWidth: 200
     },
@@ -112,6 +120,7 @@ const ChangeRequestsTable: React.FC = () => {
       ...baseColDef,
       field: 'implementedChanges',
       headerName: '# Implemented Changes',
+      filterable: false,
       valueFormatter: (params) => params.value.length,
       maxWidth: 200
     }
@@ -152,7 +161,15 @@ const ChangeRequestsTable: React.FC = () => {
         onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
         loading={isLoading}
         error={error}
-        rows={data || []}
+        rows={
+          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
+          data?.map((v) => ({
+            ...v,
+            carNumber: v.wbsNum.carNumber,
+            submitter: fullNamePipe(v.submitter),
+            reviewer: fullNamePipe(v.reviewer)
+          })) || []
+        }
         columns={columns}
         getRowId={(row) => row.crId}
         sx={{ background: theme.palette.background.paper }}
@@ -166,6 +183,7 @@ const ChangeRequestsTable: React.FC = () => {
           },
           columns: {
             columnVisibilityModel: {
+              carNumber: false,
               implementedChanges: false
             }
           }
