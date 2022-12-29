@@ -17,6 +17,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
+import { formatKeyValueSpaced } from '../../styling/keyValueSameLine';
 
 const NERInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -45,7 +46,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
-
+  const padding = 2;
   const fullDisplay = (
     <Box
       sx={{
@@ -73,34 +74,14 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
+                <Box>{formatKeyValueSpaced('End Date', datePipe(wp.endDate), padding)}</Box>
+                <Box>{formatKeyValueSpaced('Progress', percentPipe(wp.progress), padding)}</Box>
+                <Box>{formatKeyValueSpaced('Engineering Lead', fullNamePipe(wp.projectLead), padding)}</Box>
+                <Box>{formatKeyValueSpaced('Project Manager', fullNamePipe(wp.projectManager), padding)} </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    End Date:{' '}
+                  <Typography>
+                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                   </Typography>
-                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Progress:
-                  </Typography>
-                  <Typography display="inline">
-                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Engineering Lead:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Project Manager:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
-                </Box>
-                <Box>
-                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                 </Box>
               </CardContent>
             </Card>

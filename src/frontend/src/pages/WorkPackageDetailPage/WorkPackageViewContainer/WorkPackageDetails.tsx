@@ -7,70 +7,48 @@ import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, Typography } from '@mui/material';
+import { Grid } from '@mui/material';
+import { formatKeyValueSpaced } from '../../../styling/keyValueSameLine';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
+  const paddingRight = 2;
   return (
     <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Lead:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(workPackage.projectLead)}</Typography>
+          {formatKeyValueSpaced('Project Lead', fullNamePipe(workPackage.projectLead), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Start Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(workPackage.startDate)}</Typography>
+          {formatKeyValueSpaced('Start Date', datePipe(workPackage.startDate), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Progress:{' '}
-          </Typography>
-          <Typography display="inline">{percentPipe(workPackage.progress)}</Typography>
+          {formatKeyValueSpaced('Progress', percentPipe(workPackage.progress), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Manager:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(workPackage.projectManager)}</Typography>
+          {formatKeyValueSpaced('Project Manager', fullNamePipe(workPackage.projectManager), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            End Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(workPackage.endDate)}</Typography>
+          {formatKeyValueSpaced('End Date', datePipe(workPackage.endDate), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Expected Progress:{' '}
-          </Typography>
-          <Typography display="inline">{percentPipe(workPackage.expectedProgress)}</Typography>
+          {formatKeyValueSpaced('Expected Progress', percentPipe(workPackage.expectedProgress), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Duration:{' '}
-          </Typography>
-          <Typography display="inline">{weeksPipe(workPackage.duration)}</Typography>
+          {formatKeyValueSpaced('Duration', weeksPipe(workPackage.duration), paddingRight)}
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Timeline Status:{' '}
-          </Typography>
-          <Typography display="inline">{workPackage.timelineStatus}</Typography>
+          {formatKeyValueSpaced('Timeline Status', workPackage.timelineStatus, paddingRight)}
         </Grid>
       </Grid>
     </PageBlock>

@@ -9,6 +9,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
+import { formatKeyValue } from '../../styling/keyValueSameLine';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 const NERSwitch = styled((props: SwitchProps) => (
@@ -72,7 +73,7 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
-            <b>Name:</b> Northeastern Electric Racing
+            {formatKeyValue('Name', 'Northeastern Electric Racing')}
           </Grid>
           <Grid item xs={6} md={12}>
             <FormGroup>
@@ -98,19 +99,19 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            <b>First Name:</b> {auth.user?.firstName}
+            {formatKeyValue('First Name', auth.user?.firstName)}
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Last Name:</b> {auth.user?.lastName}
+            {formatKeyValue('Last Name', auth.user?.lastName)}
           </Grid>
           <Grid item md={4} lg={3}>
-            <b>Email: </b> {auth.user?.email}
+            {formatKeyValue('Email', auth.user?.email)}
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Email ID:</b> {auth.user?.emailId}
+            {formatKeyValue('Email ID', auth.user?.emailId)}
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Role: </b> {auth.user?.role}
+            {formatKeyValue('Role', auth.user?.role)}
           </Grid>
         </Grid>
       </PageBlock>

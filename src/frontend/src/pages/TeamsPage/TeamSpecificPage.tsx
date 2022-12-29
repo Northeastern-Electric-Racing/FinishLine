@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/pipes';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import { formatKeyValue } from '../../styling/keyValueSameLine';
 
 interface ParamTypes {
   teamId: string;
@@ -27,18 +28,17 @@ const TeamSpecificPage: React.FC = () => {
           <PageBlock title={'People'}>
             <Grid container spacing={1}>
               <Grid item xs={12} md={12}>
-                <b style={{ display: 'inline' }}>Lead: </b>
-                <p style={{ display: 'inline' }}>{fullNamePipe(data.leader)}</p>
+                {formatKeyValue('Lead', fullNamePipe(data.leader))}
               </Grid>
               <Grid item xs={12} md={12}>
-                <b style={{ display: 'inline' }}>Members: </b>
-                <p style={{ display: 'inline' }}>
-                  {data.members
+                {formatKeyValue(
+                  'Members',
+                  data.members
                     .map((member) => {
                       return fullNamePipe(member);
                     })
-                    .join(', ')}
-                </p>
+                    .join(', ')
+                )}
               </Grid>
             </Grid>
           </PageBlock>
