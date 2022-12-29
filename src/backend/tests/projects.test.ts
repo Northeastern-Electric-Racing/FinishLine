@@ -98,6 +98,14 @@ describe('Projects', () => {
     expect(res.body).toStrictEqual('1.2.3');
   });
 
+  test('newProject fails when unknown team Id provided', async () => {
+    const proj = { ...newProjectPayload, teamId: 'TEST' };
+    const res = await request(app).post('/new').send(proj);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: `team with id TEST not found.` });
+  });
+
   test('editProject fails with feature with no detail', async () => {
     const proj = { ...editProjectPayload, features: [{ id: 4 }] };
     const res = await request(app).post('/edit').send(proj);

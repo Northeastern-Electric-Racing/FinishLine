@@ -54,8 +54,6 @@ export const newProject = async (req: Request, res: Response) => {
 
   await validateChangeRequestAccepted(req.body.crId);
 
-  // check for valid team
-
   if (req.body.teamId !== undefined) {
     const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
     if (!team) {
