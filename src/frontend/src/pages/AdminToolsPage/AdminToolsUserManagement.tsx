@@ -80,15 +80,19 @@ const AdminToolsUserMangaement: React.FC = () => {
     backgroundColor: theme.palette.background.default,
     width: '100%',
     borderRadius: '25px',
+    border: 0,
     '.MuiOutlinedInput-notchedOutline': {
-      border: 0,
+      borderColor: 'black',
       borderRadius: '25px'
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'red'
     }
   };
   const selectStyle = {
     '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
   };
-  console.log(styles)
+  console.log(styles);
   return (
     <PageBlock title={'Role Management'}>
       <Grid container spacing={2}>
