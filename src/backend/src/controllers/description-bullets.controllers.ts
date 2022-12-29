@@ -1,7 +1,23 @@
 import { WBS_Element_Status } from '@prisma/client';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import prisma from '../prisma/prisma';
+import DBService from '../services/description-bullets.services';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
+
+
+export default class DescriptionBullet {
+  static async checkDescriptionBullet(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, descriptionId } = req.body;
+      const updatedDB = await DBService.checkDescriptionBullet(userId, descriptionId);
+      res.status(200).json(updatedDB);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const checkDescriptionBullet = async (req: Request, res: Response) => {
   const { body } = req;
