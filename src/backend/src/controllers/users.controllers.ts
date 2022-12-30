@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { generateAccessToken } from '../utils/utils';
+import { getCurrentUser } from '../utils/utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
 
@@ -39,11 +39,11 @@ export default class UsersController {
   static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { defaultTheme, slackId } = req.body;
-      const userId = parseInt(req.params.userId);
+      const user = await getCurrentUser(res);
 
-      const settings = await UsersService.updateUserSettings(userId, defaultTheme, slackId);
+      await UsersService.updateUserSettings(user.userId, defaultTheme, slackId);
 
-      res.status(200).json({ message: `Successfully updated settings for user ${userId}.` });
+      res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
     } catch (error: unknown) {
       next(error);
     }
@@ -54,9 +54,8 @@ export default class UsersController {
       const idToken = req.body.id_token;
       const header = req.headers['user-agent'];
 
-      const user = await UsersService.logUserIn(idToken, header!);
+      const { user, token } = await UsersService.logUserIn(idToken, header!);
 
-      const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
       res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
       res.status(200).json(user);
     } catch (error: unknown) {
@@ -66,9 +65,9 @@ export default class UsersController {
 
   // for dev login only!
   static async logUserInDev(req: any, res: any, next: NextFunction) {
-    if (process.env.NODE_ENV === 'production') throw new AccessDeniedException('Cant dev login on production!');
-
     try {
+      if (process.env.NODE_ENV === 'production') throw new AccessDeniedException('Cant dev login on production!');
+
       const { userId } = req.body;
       const header = req.headers['user-agent'];
 
@@ -83,9 +82,10 @@ export default class UsersController {
   static async updateUserRole(req: Request, res: Response, next: NextFunction) {
     try {
       const targetUserId: number = parseInt(req.params.userId);
-      const { role, userId } = req.body;
+      const { role } = req.body;
+      const user = await getCurrentUser(res);
 
-      const targetUser = await UsersService.updateUserRole(targetUserId, userId, role);
+      const targetUser = await UsersService.updateUserRole(targetUserId, user.userId, role);
 
       res.status(200).json(targetUser);
     } catch (error: unknown) {

@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { User } from 'shared';
 
-export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
+const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
   return {
     userId: user.userId ?? undefined,
     firstName: user.firstName ?? undefined,
@@ -11,3 +11,5 @@ export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
     role: user.role ?? undefined
   };
 };
+
+export default userTransformer;

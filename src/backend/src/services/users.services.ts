@@ -1,14 +1,19 @@
 import { Role, User_Settings } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { AuthenticatedUser, User } from 'shared';
-import { authUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
-import { authenticatedUserTransformer } from '../transformers/auth-user.transformer';
-import { userTransformer } from '../transformers/user.transformer';
+import authenticatedUserTransformer from '../transformers/auth-user.transformer';
+import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
 import { rankUserRole } from '../utils/users.utils';
+import { generateAccessToken } from '../utils/utils';
 
 export default class UsersService {
+  /**
+   * Gets all of the users from the database
+   * @returns a list of all the users
+   */
   static async getAllUsers(): Promise<User[]> {
     const users = await prisma.user.findMany();
     users.sort((a, b) => a.firstName.localeCompare(b.firstName));
@@ -16,6 +21,12 @@ export default class UsersService {
     return users.map(userTransformer);
   }
 
+  /**
+   * Gets the user with the specified id
+   * @param userId the id of the user that's returned
+   * @returns the user with the specified id
+   * @throws if the given user doesn't exist
+   */
   static async getSingleUser(userId: number): Promise<User> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
@@ -23,6 +34,12 @@ export default class UsersService {
     return userTransformer(requestedUser);
   }
 
+  /**
+   * Gets the user settings for a specified user
+   * @param userId the id of the user's settings
+   * @returns the user settings object
+   * @throws if the given user doesn't exist, or the given user's settings don't exist
+   */
   static async getUserSettings(userId: number): Promise<User_Settings> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
 
@@ -39,6 +56,14 @@ export default class UsersService {
     return settings;
   }
 
+  /**
+   * Edits a user's settings in the database
+   * @param userId the id of the user who's settings are being updated
+   * @param defaultTheme the defaultTheme of the user - a setting
+   * @param slackId the user's slackId - a setting
+   * @returns the updated settings
+   * @throws if the user does not exist
+   */
   static async updateUserSettings(userId: number, defaultTheme: any, slackId: string): Promise<User_Settings> {
     const user = await prisma.user.findUnique({ where: { userId } });
     if (!user) throw new NotFoundException('User', userId);
@@ -52,7 +77,14 @@ export default class UsersService {
     return updatedSettings;
   }
 
-  static async logUserIn(idToken: string, header: string): Promise<AuthenticatedUser> {
+  /**
+   * Logs a user in on production
+   * @param idToken the idToken of the user logging in
+   * @param header additional information used to register a login
+   * @returns the user that has been signed in, and an access token
+   * @throws if the auth server response payload is invalid
+   */
+  static async logUserIn(idToken: string, header: string): Promise<{ user: AuthenticatedUser; token: string }> {
     const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken,
@@ -93,9 +125,18 @@ export default class UsersService {
       }
     });
 
-    return authenticatedUserTransformer(user);
+    const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
+
+    return { user: authenticatedUserTransformer(user), token };
   }
 
+  /**
+   * Logs a user in on the development version of the app
+   * @param userId the user id of the user being logged in
+   * @param header additional information used to register a login
+   * @returns the user that has been logged in
+   * @throws if the user with the specified id doesn't exist in the database
+   */
   static async logUserInDev(userId: number, header: string): Promise<AuthenticatedUser> {
     const user = await prisma.user.findUnique({
       where: { userId },
@@ -115,6 +156,16 @@ export default class UsersService {
     return authenticatedUserTransformer(user);
   }
 
+  /**
+   * Edits a user's role
+   * @param targetUserId the user who's role is being changed
+   * @param userId the user who is changing the role
+   * @param role the role that the user is being updated to
+   * @returns the user whose role has been updated
+   * @throws if the targeted user doesn't exist, the user who's changing the role doesn't exist,
+   *         a user is trying to change the role of a user with an equal or higher role, or a user is trying to
+   *         promote a user to higher role than themself
+   */
   static async updateUserRole(targetUserId: number, userId: number, role: Role): Promise<User> {
     const user = await prisma.user.findUnique({ where: { userId } });
 
