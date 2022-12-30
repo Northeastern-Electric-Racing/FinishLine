@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { calculateEndDate, calculatePercentExpectedProgress, calculateTimelineStatus, WorkPackage } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { descBulletTransformer } from '../utils/description-bullets.utils';
+import { descBulletTransformer } from '../transformers/description-bullets.transformer';
 import { userTransformer } from '../utils/users.utils';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
