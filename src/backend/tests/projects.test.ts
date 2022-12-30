@@ -75,6 +75,14 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  test('newProject fails when unknown team Id provided', async () => {
+    const proj = { ...newProjectPayload, teamId: 'TEST' };
+    const res = await request(app).post('/new').send(proj);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toStrictEqual({ message: `team with id TEST not found.` });
+  });
+
   test('newProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
@@ -96,14 +104,6 @@ describe('Projects', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toStrictEqual('1.2.3');
-  });
-
-  test('newProject fails when unknown team Id provided', async () => {
-    const proj = { ...newProjectPayload, teamId: 'TEST' };
-    const res = await request(app).post('/new').send(proj);
-
-    expect(res.statusCode).toBe(404);
-    // expect(res.body).toStrictEqual({ message: `team with id TEST not found.` });
   });
 
   test('editProject fails with feature with no detail', async () => {
