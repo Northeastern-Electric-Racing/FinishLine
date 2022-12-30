@@ -1,10 +1,12 @@
-import { WBS_Element_Status } from '@prisma/client';
+import { User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { descBulletTransformer, hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
+import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { descBulletTransformer } from '../transformers/description-bullets.transformer';
+import { descBulletArgs } from '../prisma-query-args/description-bullets.query-args';
 
 export default class DBService {
-  static async checkDescriptionBullet(userId: number, descriptionId: number) {
+  static async checkDescriptionBullet(userId: number, descriptionId: number, user: User) {
     const originalDB = await prisma.description_Bullet.findUnique({
       where: { descriptionId },
       include: {
@@ -36,7 +38,8 @@ export default class DBService {
         data: {
           userCheckedId: null,
           dateTimeChecked: null
-        }
+        },
+        ...descBulletArgs
       });
     } else {
       updatedDB = await prisma.description_Bullet.update({
@@ -44,10 +47,11 @@ export default class DBService {
         data: {
           userCheckedId: userId,
           dateTimeChecked: new Date()
-        }
+        },
+        ...descBulletArgs
       });
     }
 
-    //return descBulletTransformer(updatedDB);
+    return descBulletTransformer(updatedDB);
   }
 }
