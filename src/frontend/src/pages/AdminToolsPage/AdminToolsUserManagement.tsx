@@ -6,13 +6,11 @@ import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import { useState } from 'react';
 import { useAllUsers, useUpdateUserRole } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import styles from '../../stylesheets/pages/role-select-form.module.css';
 
 interface UserData {
   userId: number;
@@ -90,9 +88,14 @@ const AdminToolsUserMangaement: React.FC = () => {
     }
   };
   const selectStyle = {
-    '.MuiOutlinedInput-notchedOutline': { border: 0, borderRadius: '25px', borderColor: 'black' }
+    width: '100%',
+    backgroundColor: theme.palette.primary.main,
+    borderRadius: '25px',
+    height: '40px',
+    '.MuiOutlinedInput-notchedOutline': { borderRadius: '25px', borderColor: 'black' },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
+    '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
   };
-  console.log(styles);
   return (
     <PageBlock title={'Role Management'}>
       <Grid container spacing={2}>
@@ -108,21 +111,20 @@ const AdminToolsUserMangaement: React.FC = () => {
           />
         </Grid>
         <Grid item xs={12} md={4}>
-          <FormControl size="small" className={styles.formControl} disabled={!user}>
-            <Select
-              displayEmpty={true}
-              renderValue={(value) => (value ? value : user ? user.role : 'Current Role')}
-              id="role-select"
-              value={role}
-              onChange={handleRoleChange}
-              sx={selectStyle}
-            >
-              <MenuItem value={'ADMIN'}>Admin</MenuItem>
-              <MenuItem value={'LEADERSHIP'}>Leadership</MenuItem>
-              <MenuItem value={'MEMBER'}>Member</MenuItem>
-              <MenuItem value={'GUEST'}>Guest</MenuItem>
-            </Select>
-          </FormControl>
+          <Select
+            displayEmpty={true}
+            renderValue={(value) => (value ? value : user ? user.role : 'Current Role')}
+            id="role-select"
+            value={role}
+            onChange={handleRoleChange}
+            sx={selectStyle}
+            disabled={!user}
+          >
+            <MenuItem value={'ADMIN'}>Admin</MenuItem>
+            <MenuItem value={'LEADERSHIP'}>Leadership</MenuItem>
+            <MenuItem value={'MEMBER'}>Member</MenuItem>
+            <MenuItem value={'GUEST'}>Guest</MenuItem>
+          </Select>
         </Grid>
       </Grid>
       <NERButton
