@@ -25,7 +25,30 @@ const AdminToolsUserMangaement: React.FC = () => {
   const { isLoading, isError, error, data } = useAllUsers();
   const update = useUpdateUserRole();
   const theme = useTheme();
+  const autoCompleteStyle = {
+    height: '40px',
+    backgroundColor: theme.palette.background.default,
+    width: '100%',
+    borderRadius: '25px',
+    border: 0,
+    '.MuiOutlinedInput-notchedOutline': {
+      borderColor: 'black',
+      borderRadius: '25px'
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'red'
+    }
+  };
 
+  const selectStyle = {
+    width: '100%',
+    backgroundColor: theme.palette.primary.main,
+    borderRadius: '25px',
+    height: '40px',
+    '.MuiOutlinedInput-notchedOutline': { borderRadius: '25px', borderColor: 'black' },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
+    '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
+  };
   if (isLoading || !data) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -72,29 +95,6 @@ const AdminToolsUserMangaement: React.FC = () => {
         placeholder="Select a User"
       />
     );
-  };
-  const autoCompleteStyle = {
-    height: '40px',
-    backgroundColor: theme.palette.background.default,
-    width: '100%',
-    borderRadius: '25px',
-    border: 0,
-    '.MuiOutlinedInput-notchedOutline': {
-      borderColor: 'black',
-      borderRadius: '25px'
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'red'
-    }
-  };
-  const selectStyle = {
-    width: '100%',
-    backgroundColor: theme.palette.primary.main,
-    borderRadius: '25px',
-    height: '40px',
-    '.MuiOutlinedInput-notchedOutline': { borderRadius: '25px', borderColor: 'black' },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
-    '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
   };
   return (
     <PageBlock title={'Role Management'}>
