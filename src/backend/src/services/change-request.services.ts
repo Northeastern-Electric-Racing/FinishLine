@@ -5,7 +5,7 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../util
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
 import {
-  checkDependencies,
+  updateDependencies,
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
@@ -132,7 +132,7 @@ export default class ChangeRequestsService {
           }
         ];
 
-        await checkDependencies(wpProj.workPackages, foundCR.wbsElement, foundPs.timelineImpact, crId, reviewer);
+        await updateDependencies(wpProj.workPackages, foundCR.wbsElement, foundPs.timelineImpact, crId, reviewer);
 
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
