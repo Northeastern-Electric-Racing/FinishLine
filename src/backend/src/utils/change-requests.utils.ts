@@ -1,6 +1,8 @@
-import { Scope_CR_Why_Type, Team, User } from '@prisma/client';
+import { Scope_CR_Why_Type, Team, User, WBS_Element } from '@prisma/client';
 import { ChangeRequestReason } from 'shared';
 import { sendMessage } from '../integrations/slack.utils';
+import prisma from '../prisma/prisma';
+import { buildChangeDetail } from './utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -48,4 +50,39 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
+};
+
+export const checkDependencies = async (
+  workPackages: any[],
+  wbsElement: WBS_Element,
+  timelineImpact: number,
+  crId: number,
+  reviewer: User
+) => {
+  workPackages.forEach(async (wp) => {
+    if (wp.dependencies.map((d: WBS_Element) => d.wbsElementId).includes(wbsElement.wbsElementId)) {
+      const copyStartDate = new Date(wp.startDate);
+      const newStartDate = new Date(wp.startDate.setDate(wp.startDate.getDate() + 7 * timelineImpact));
+      const change = {
+        changeRequestId: crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail('Start Date', String(copyStartDate), String(newStartDate))
+      };
+
+      await prisma.work_Package.update({
+        where: { workPackageId: wp.workPackageId },
+        data: {
+          startDate: newStartDate,
+          wbsElement: {
+            update: {
+              changes: {
+                create: change
+              }
+            }
+          }
+        }
+      });
+      checkDependencies(workPackages, wp.wbsElement, timelineImpact, crId, reviewer);
+    }
+  });
 };

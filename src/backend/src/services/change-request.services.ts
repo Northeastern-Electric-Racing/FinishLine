@@ -4,7 +4,11 @@ import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-a
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
-import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
+import {
+  checkDependencies,
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
+} from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 
@@ -107,7 +111,8 @@ export default class ChangeRequestsService {
         });
       } else if (foundCR.wbsElement.workPackage) {
         const wpProj = await prisma.project.findUnique({
-          where: { projectId: foundCR.wbsElement.workPackage.projectId }
+          where: { projectId: foundCR.wbsElement.workPackage.projectId },
+          include: { workPackages: { include: { dependencies: true, wbsElement: true } } }
         });
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
@@ -126,6 +131,9 @@ export default class ChangeRequestsService {
             detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
           }
         ];
+
+        await checkDependencies(wpProj.workPackages, foundCR.wbsElement, foundPs.timelineImpact, crId, reviewer);
+
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {
