@@ -41,7 +41,7 @@ interface ProjectcardsViewProps {
 const ProjectCardsView: React.FC<ProjectcardsViewProps> = ({ projects }) => {
   return (
     <>
-      <PageBlock title={'ActiveProjects'}>
+      <PageBlock title={'Active Projects'}>
         <Grid container spacing={2}>
           {projects.map((project) => (
             <Grid item key={project.id}>
