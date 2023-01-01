@@ -55,6 +55,8 @@ describe('Projects', () => {
   });
 
   test('newProject fails with invalid userId', async () => {
+    // you need to add a line here that mocks prisma.team.findunique to return null
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
     const proj = { ...newProjectPayload, userId: -1 };
     const res = await request(app).post('/new').send(proj);
 
