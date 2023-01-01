@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/pipes';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import ProjectCardsView from './ProjectCardsView';
 
 interface ParamTypes {
   teamId: string;
@@ -42,7 +43,8 @@ const TeamSpecificPage: React.FC = () => {
               </Grid>
             </Grid>
           </PageBlock>
-          <PageBlock title={'Active Projects'}></PageBlock>
+          <ProjectCardsView projects={data.projects} />
+
           <PageBlock title={'Description'}>
             <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>
           </PageBlock>
