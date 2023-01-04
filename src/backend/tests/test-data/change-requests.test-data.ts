@@ -17,7 +17,9 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   dateReviewed: new Date('11/25/2020'),
   accepted: null,
   reviewerId: null,
-  reviewNotes: null
+  reviewNotes: null,
+  dateDeleted: null,
+  deletedByUserId: null
 };
 
 export const prismaProposedSolution1: PrismaProposedSolution = {

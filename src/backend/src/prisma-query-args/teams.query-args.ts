@@ -5,6 +5,11 @@ const teamQueryArgs = Prisma.validator<Prisma.TeamArgs>()({
     members: true,
     leader: true,
     projects: {
+      where: {
+        wbsElement: {
+          dateDeleted: null
+        }
+      },
       include: {
         wbsElement: true
       }

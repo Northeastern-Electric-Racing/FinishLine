@@ -2,9 +2,11 @@ import request from 'supertest';
 import express from 'express';
 import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
-import { getChangeRequestReviewState, getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
+import { getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
+import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
 import { project1, wbsElement1 } from './test-data/projects.test-data';
+import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 
 const app = express();
@@ -12,7 +14,6 @@ app.use(express.json());
 app.use('/', projectRouter);
 
 jest.mock('../src/utils/projects.utils');
-const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
 
 const mockProjectTransformer = projectTransformer as jest.Mock;
@@ -43,6 +44,12 @@ const editProjectPayload = {
 };
 
 describe('Projects', () => {
+  beforeEach(() => {
+    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+      return prismaChangeRequest1;
+    });
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -69,7 +76,6 @@ describe('Projects', () => {
   });
 
   test('newProject works', async () => {
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
     mockGetHighestProjectNumber.mockResolvedValue(0);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
@@ -79,6 +85,8 @@ describe('Projects', () => {
       projectNumber: 2,
       workPackageNumber: 3,
       dateCreated: new Date(),
+      dateDeleted: null,
+      deletedByUserId: null,
       name: 'car',
       projectLeadId: 4,
       projectManagerId: 5

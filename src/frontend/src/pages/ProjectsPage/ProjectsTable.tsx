@@ -144,6 +144,12 @@ const ProjectsTable: React.FC = () => {
           history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
         }}
         components={{ Toolbar: GridToolbar }}
+        componentsProps={{
+          toolbar: {
+            showQuickFilter: true,
+            quickFilterProps: { debounceMs: 500 }
+          }
+        }}
         initialState={{
           sorting: {
             sortModel: [{ field: 'wbsNum', sort: 'asc' }]

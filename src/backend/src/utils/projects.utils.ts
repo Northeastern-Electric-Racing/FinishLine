@@ -42,11 +42,16 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
       }
     },
     team: true,
-    goals: true,
-    features: true,
-    risks: riskQueryArgs,
-    otherConstraints: true,
+    goals: { where: { dateDeleted: null } },
+    features: { where: { dateDeleted: null } },
+    otherConstraints: { where: { dateDeleted: null } },
+    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
     workPackages: {
+      where: {
+        wbsElement: {
+          dateDeleted: null
+        }
+      },
       include: {
         wbsElement: {
           include: {
@@ -68,11 +73,16 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
     project: {
       include: {
         team: true,
-        goals: true,
-        features: true,
-        risks: riskQueryArgs,
-        otherConstraints: true,
+        goals: { where: { dateDeleted: null } },
+        features: { where: { dateDeleted: null } },
+        otherConstraints: { where: { dateDeleted: null } },
+        risks: { where: { dateDeleted: null }, ...riskQueryArgs },
         workPackages: {
+          where: {
+            wbsElement: {
+              dateDeleted: null
+            }
+          },
           include: {
             wbsElement: {
               include: {
@@ -181,15 +191,6 @@ export const projectTransformer = (
       };
     })
   };
-};
-
-// gets the associated change request for creating a project
-export const getChangeRequestReviewState = async (crId: number) => {
-  const cr = await prisma.change_Request.findUnique({ where: { crId } });
-
-  // returns null if the change request doesn't exist
-  // if it exists, return a boolean describing if the change request was reviewed
-  return cr ? cr.dateReviewed !== null : cr;
 };
 
 // gets highest current project number
