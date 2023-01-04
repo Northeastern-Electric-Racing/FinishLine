@@ -2,11 +2,18 @@ import { User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import { descBulletTransformer } from '../transformers/description-bullets.transformer';
-import { descBulletArgs } from '../prisma-query-args/description-bullets.query-args';
+import descBulletTransformer from '../transformers/description-bullets.transformer';
+import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
 
-export default class DBService {
-  static async checkDescriptionBullet(userId: number, descriptionId: number, user: User) {
+export default class DescriptionBulletsService {
+  /**
+   * Checks the description bullet
+   * @param userId user that checks the description bullet
+   * @param descriptionId description of bullet that is being checked
+   * @throws if bullet doesn't exist or if the bullet is not linked to anything valid
+   * @returns a checked description bullet
+   */
+  static async checkDescriptionBullet(user: User, descriptionId: number) {
     const originalDB = await prisma.description_Bullet.findUnique({
       where: { descriptionId },
       include: {
@@ -26,7 +33,7 @@ export default class DBService {
     if (workPackage.wbsElement.status !== WBS_Element_Status.ACTIVE)
       throw new HttpException(400, 'Cannot check a description bullet on an inactive work package!');
 
-    const hasPerms = await hasBulletCheckingPermissions(userId, descriptionId);
+    const hasPerms = await hasBulletCheckingPermissions(user.userId, descriptionId);
 
     if (!hasPerms) throw new AccessDeniedException();
 
@@ -39,16 +46,16 @@ export default class DBService {
           userCheckedId: null,
           dateTimeChecked: null
         },
-        ...descBulletArgs
+        ...descriptionBulletQueryArgs
       });
     } else {
       updatedDB = await prisma.description_Bullet.update({
         where: { descriptionId },
         data: {
-          userCheckedId: userId,
+          userCheckedId: user.userId,
           dateTimeChecked: new Date()
         },
-        ...descBulletArgs
+        ...descriptionBulletQueryArgs
       });
     }
 
