@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 
-export const descBulletArgs = Prisma.validator<Prisma.Description_BulletArgs>()({
+const descriptionBulletQueryArgs = Prisma.validator<Prisma.Description_BulletArgs>()({
   include: { userChecked: true }
 });
+
+export default descriptionBulletQueryArgs;
