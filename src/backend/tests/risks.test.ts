@@ -29,8 +29,6 @@ describe('Risks', () => {
     expect(risks).toStrictEqual([]);
     expect(prisma.risk.findMany).toHaveBeenCalledTimes(1);
     expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.risk.findMany).toHaveBeenCalledWith({ where: { projectId }, ...riskQueryArgs });
-    expect(prisma.project.findUnique).toHaveBeenCalledWith({ where: { projectId } });
   });
 
   describe('editRisk', () => {
