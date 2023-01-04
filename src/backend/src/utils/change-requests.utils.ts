@@ -4,7 +4,6 @@ import workPackageDependencyQueryArgs from '../prisma-query-args/work-package-de
 import { calculateEndDate, ChangeRequestReason } from 'shared';
 import { buildChangeDetail } from './utils';
 import { sendMessage } from '../integrations/slack.utils';
-import { buildChangeDetail } from './utils';
 import { HttpException, NotFoundException } from './errors.utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
