@@ -1,5 +1,4 @@
-
-import { Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
 
 const workPackageDependencyQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -8,4 +7,4 @@ const workPackageDependencyQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>
   }
 });
 
-export default workPackageDependencyQueryArgs; 
+export default workPackageDependencyQueryArgs;

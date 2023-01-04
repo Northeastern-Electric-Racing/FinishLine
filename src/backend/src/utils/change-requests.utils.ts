@@ -1,9 +1,9 @@
-import { Scope_CR_Why_Type, Team, User, WBS_Element, Prisma } from '@prisma/client';
-import { ChangeRequestReason } from 'shared';
-import { sendMessage } from '../integrations/slack.utils';
 import prisma from '../prisma/prisma';
-import { buildChangeDetail } from './utils';
+import { Scope_CR_Why_Type, Team, User, WBS_Element, Prisma } from '@prisma/client';
 import workPackageDependencyQueryArgs from '../prisma-query-args/work-package-depedencies.query-args';
+import { calculateEndDate, ChangeRequestReason } from 'shared';
+import { sendMessage } from '../integrations/slack.utils';
+import { buildChangeDetail } from './utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -70,22 +70,20 @@ export const updateDependencies = async (
   crId: number,
   reviewer: User
 ) => {
-  //cycle through all the work packages
+  // cycle through all the work packages
   workPackages.forEach(async (wp) => {
-    //if the work package depends on the wbs element
+    // if the work package depends on the wbs element
     if (wp.dependencies.map((d: WBS_Element) => d.wbsElementId).includes(wbsElement.wbsElementId)) {
-      //update the start date of the work package
-      const copyStartDate = new Date(wp.startDate);
-      const newStartDate = new Date(wp.startDate.setDate(wp.startDate.getDate() + 7 * timelineImpact));
-
-      //create a change to reflect the changing start date
+      // update the start date of the work package by the timeline impact
+      const newStartDate = calculateEndDate(wp.startDate, timelineImpact);
+      // create a change to reflect the changing start date
       const change = {
         changeRequestId: crId,
         implementerId: reviewer.userId,
-        detail: buildChangeDetail('Start Date', String(copyStartDate), String(newStartDate))
+        detail: buildChangeDetail('Start Date', String(wp.startDate), String(newStartDate))
       };
 
-      //update the work package
+      // update the work package
       await prisma.work_Package.update({
         where: { workPackageId: wp.workPackageId },
         data: {
@@ -99,7 +97,7 @@ export const updateDependencies = async (
           }
         }
       });
-      //recursively update the work packages that depends on the updated work package
+      // recursively update the work packages that depends on the updated work package
       updateDependencies(workPackages, wp.wbsElement, timelineImpact, crId, reviewer);
     }
   });
