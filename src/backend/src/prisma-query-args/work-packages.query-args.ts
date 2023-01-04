@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { descBulletArgs } from '../prisma-query-args/description-bullets.query-args';
+import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
 
 const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -15,8 +15,8 @@ const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
         changes: { include: { implementer: true }, orderBy: { dateImplemented: 'asc' } }
       }
     },
-    expectedActivities: descBulletArgs,
-    deliverables: descBulletArgs,
+    expectedActivities: descriptionBulletQueryArgs,
+    deliverables: descriptionBulletQueryArgs,
     dependencies: true
   }
 });
