@@ -77,7 +77,7 @@ describe('Projects', () => {
 
   test('newProject fails when unknown team Id provided', async () => {
     mockGetChangeRequestReviewState.mockResolvedValue(true);
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
     const proj = { ...newProjectPayload, teamId: 'TEST' };
     const res = await request(app).post('/new').send(proj);
@@ -88,7 +88,7 @@ describe('Projects', () => {
 
   test('newProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
-    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
       wbsElementId: 1,
       status: 'ACTIVE',
