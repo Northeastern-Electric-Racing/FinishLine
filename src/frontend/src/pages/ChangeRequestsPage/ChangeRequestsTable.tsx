@@ -177,6 +177,12 @@ const ChangeRequestsTable: React.FC = () => {
           history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
         }}
         components={{ Toolbar: GridToolbar }}
+        componentsProps={{
+          toolbar: {
+            showQuickFilter: true,
+            quickFilterProps: { debounceMs: 500 }
+          }
+        }}
         initialState={{
           sorting: {
             sortModel: [{ field: 'crId', sort: 'desc' }]
