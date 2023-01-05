@@ -64,7 +64,6 @@ describe('Projects', () => {
   });
 
   test('newProject fails when unknown team Id provided', async () => {
-    mockGetChangeRequestReviewState.mockResolvedValue(true);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...batman, googleAuthId: 'b' });
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
     const proj = { ...newProjectPayload, teamId: 'TEST' };
