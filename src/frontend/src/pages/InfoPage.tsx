@@ -28,7 +28,9 @@ const InfoPage: React.FC = () => {
               link={'https://docs.google.com/document/d/1_kr7PQxjYKvBTmZc8cxeSv5xx0lE88v0wVXkVg3Mez8/edit?usp=sharing'}
             />
           </Grid>
-          <Grid item>Got any suggestions for additional resources? Drop a message in Slack!</Grid>
+          <Grid item>
+            <Typography>Got any suggestions for additional resources? Drop a message in Slack!</Typography>
+          </Grid>
         </Grid>
       </PageBlock>
       <PageBlock title="Support">

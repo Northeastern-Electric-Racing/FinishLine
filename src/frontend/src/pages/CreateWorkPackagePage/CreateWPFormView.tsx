@@ -150,7 +150,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({
               />
 
               <Box marginBottom={1}>
-                <Typography variant="caption">Deliverabless</Typography>
+                <Typography variant="caption">Deliverables</Typography>
               </Box>
               <EditableTextInputList
                 items={deliverables}

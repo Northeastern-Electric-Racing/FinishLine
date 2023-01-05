@@ -17,6 +17,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
+import DetailDisplay from '../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../components/DetailDisplay';
+
+const WorkPackagesByTimelineStatusDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
+};
 
 const NERInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -74,33 +80,33 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    End Date:{' '}
-                  </Typography>
-                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="End Date"
+                    content={datePipe(wp.endDate)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Progress:
-                  </Typography>
-                  <Typography display="inline">
-                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
-                  </Typography>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Progress"
+                    content={percentPipe(wp.progress)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Engineering Lead:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Engineering Lead"
+                    content={fullNamePipe(wp.projectLead)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Project Manager:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Project Manager"
+                    content={fullNamePipe(wp.projectManager)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
                 </Box>
                 <Box>
-                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                  <Typography>
+                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>
