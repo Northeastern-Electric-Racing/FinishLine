@@ -6,7 +6,7 @@
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -69,7 +69,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           />
         </Grid>
         <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
-          <Typography>{statusSelect}</Typography>
+          {statusSelect}
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller

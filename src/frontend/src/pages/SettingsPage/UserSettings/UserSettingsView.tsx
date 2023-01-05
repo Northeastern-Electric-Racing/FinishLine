@@ -6,7 +6,7 @@
 import { Grid, Typography } from '@mui/material';
 import { UserSettings } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
-import { formatKeyValue } from '../../../styling/keyValueSameLine';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface UserSettingsViewProps {
   settings: UserSettings;
@@ -30,7 +30,7 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
       <Grid item md={4} lg={2}>
-        {formatKeyValue('Default Theme', settings.defaultTheme)}
+        <DetailDisplay label="Default Theme" content={settings.defaultTheme}></DetailDisplay>
       </Grid>
       <Grid item md={6} lg={4}>
         {renderSlackId(settings)}

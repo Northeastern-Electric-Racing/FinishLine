@@ -22,7 +22,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { Grid, Typography, useTheme } from '@mui/material';
-import { formatKeyValueSpaced } from '../../styling/keyValueSameLine';
+import DetailDisplay from '../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../components/DetailDisplay';
+
+const ProposedSolutionDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
+};
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -32,7 +37,7 @@ const UpcomingDeadlines: React.FC = () => {
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
-  const padding = 2;
+
   const fullDisplay = (
     <Box
       sx={{
@@ -43,37 +48,59 @@ const UpcomingDeadlines: React.FC = () => {
         justifyContent: 'flex-start'
       }}
     >
-      {workPackages.data?.length === 0
-        ? 'No upcoming deadlines'
-        : workPackages.data?.map((wp) => (
-            <Card
-              variant="outlined"
-              key={wbsPipe(wp.wbsNum)}
-              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
-            >
-              <CardContent sx={{ padding: 3 }}>
-                <Link
-                  variant="h6"
-                  component={RouterLink}
-                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
-                  sx={{ marginBottom: 2 }}
-                >
-                  {wbsPipe(wp.wbsNum)} - {wp.name}
-                </Link>
+      {workPackages.data?.length === 0 ? (
+        <Typography>'No upcoming deadlines'</Typography>
+      ) : (
+        workPackages.data?.map((wp) => (
+          <Card
+            variant="outlined"
+            key={wbsPipe(wp.wbsNum)}
+            sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
+          >
+            <CardContent sx={{ padding: 3 }}>
+              <Link
+                variant="h6"
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                sx={{ marginBottom: 2 }}
+              >
+                {wbsPipe(wp.wbsNum)} - {wp.name}
+              </Link>
+              <Box>
                 <Box>
-                  <Box>{formatKeyValueSpaced('End Date', datePipe(wp.endDate), padding)}</Box>
-                  <Box>{formatKeyValueSpaced('Progress', percentPipe(wp.progress), padding)}</Box>
-                  <Box>{formatKeyValueSpaced('Engineering Lead', fullNamePipe(wp.projectLead), padding)}</Box>
-                  <Box>{formatKeyValueSpaced('Project Manager', fullNamePipe(wp.projectManager), padding)} </Box>
-                  <Box>
-                    <Typography>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                    </Typography>
-                  </Box>
+                  <ProposedSolutionDetailDisplay
+                    label="End Date"
+                    content={datePipe(wp.endDate)}
+                  ></ProposedSolutionDetailDisplay>
                 </Box>
-              </CardContent>
-            </Card>
-          ))}
+                <Box>
+                  <ProposedSolutionDetailDisplay
+                    label="Progress"
+                    content={percentPipe(wp.progress)}
+                  ></ProposedSolutionDetailDisplay>
+                </Box>
+                <Box>
+                  <ProposedSolutionDetailDisplay
+                    label="Engineering Lead"
+                    content={fullNamePipe(wp.projectLead)}
+                  ></ProposedSolutionDetailDisplay>
+                </Box>
+                <Box>
+                  <ProposedSolutionDetailDisplay
+                    label="Project Manager"
+                    content={fullNamePipe(wp.projectManager)}
+                  ></ProposedSolutionDetailDisplay>
+                </Box>
+                <Box>
+                  <Typography>
+                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </Box>
   );
 

@@ -8,47 +8,75 @@ import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/p
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid } from '@mui/material';
-import { formatKeyValueSpaced } from '../../../styling/keyValueSameLine';
+import DetailDisplay from '../../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../../components/DetailDisplay';
+
+const WorkPackageDetailsDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
+};
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
-  const paddingRight = 2;
   return (
     <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Project Lead', fullNamePipe(workPackage.projectLead), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Project Lead"
+            content={fullNamePipe(workPackage.projectLead)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Start Date', datePipe(workPackage.startDate), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Start Date"
+            content={datePipe(workPackage.startDate)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Progress', percentPipe(workPackage.progress), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Progress"
+            content={percentPipe(workPackage.progress)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Project Manager', fullNamePipe(workPackage.projectManager), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Project Manager"
+            content={fullNamePipe(workPackage.projectManager)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('End Date', datePipe(workPackage.endDate), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="End Date"
+            content={datePipe(workPackage.endDate)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Expected Progress', percentPipe(workPackage.expectedProgress), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Expected Progress"
+            content={percentPipe(workPackage.expectedProgress)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Duration', weeksPipe(workPackage.duration), paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Duration"
+            content={weeksPipe(workPackage.duration)}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Timeline Status', workPackage.timelineStatus, paddingRight)}
+          <WorkPackageDetailsDetailDisplay
+            label="Timeline Status"
+            content={workPackage.timelineStatus}
+          ></WorkPackageDetailsDetailDisplay>
         </Grid>
       </Grid>
     </PageBlock>

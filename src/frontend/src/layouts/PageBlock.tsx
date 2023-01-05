@@ -40,7 +40,7 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
             <Typography variant="h5" sx={{ flexGrow: 1 }}>
               {title}
             </Typography>
-            <Typography>{headerRight}</Typography>
+            {headerRight}
             {collapsed ? (
               <ExpandMoreIcon sx={{ ml: 2 }} onClick={() => setCollapsed(false)} />
             ) : (

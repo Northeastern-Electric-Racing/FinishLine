@@ -12,28 +12,27 @@ import PageBlock from '../../layouts/PageBlock';
 interface StandardDetailsProps {
   cr: StandardChangeRequest;
 }
-
+const style = {
+  maxWidth: '140px',
+  fontWeight: 'bold'
+};
 const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetailsProps) => {
-  const style = {
-    maxWidth: '140px',
-    fontWeight: 'bold'
-  };
   return (
     <PageBlock title={'Standard Change Request Details'}>
       <Grid container spacing={1}>
         <Grid item xs={2}>
-          <Typography sx={{ ...style }}>What</Typography>
+          <Typography sx={style}>What</Typography>
         </Grid>
         <Grid item xs={10}>
           <Typography>{cr.what}</Typography>
         </Grid>
         <Grid item xs={2}>
-          <Typography sx={{ ...style }}>Why</Typography>
+          <Typography sx={style}>Why</Typography>
         </Grid>
         {cr.why.map((ele: ChangeRequestExplanation, idx: number) => [
           idx !== 0 ? <Grid item xs={2}></Grid> : <></>,
           <Grid item xs={2}>
-            <Typography sx={{ ...style }}>{ele.type}</Typography>
+            <Typography sx={style}>{ele.type}</Typography>
           </Grid>,
           <Grid item xs={8}>
             <Typography>{ele.explain}</Typography>

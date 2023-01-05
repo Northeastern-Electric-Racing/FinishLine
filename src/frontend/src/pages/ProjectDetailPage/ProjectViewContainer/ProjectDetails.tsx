@@ -11,39 +11,54 @@ import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { formatKeyValueSpaced } from '../../../styling/keyValueSameLine';
+import DetailDisplay from '../../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../../components/DetailDisplay';
+
+const ProjectDetailsDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
+};
 
 interface ProjectDetailsProps {
   project: Project;
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const paddingRight = 2;
-
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Project Lead', fullNamePipe(project.projectLead), paddingRight)}
+          <ProjectDetailsDetailDisplay
+            label="Project Lead"
+            content={fullNamePipe(project.projectLead)}
+          ></ProjectDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Start Date', datePipe(project.startDate) || 'n/a', paddingRight)}
+          <ProjectDetailsDetailDisplay
+            label="Start Date"
+            content={datePipe(project.startDate) || 'n/a'}
+          ></ProjectDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={3} md={3}>
-          {formatKeyValueSpaced('Duration', weeksPipe(project.duration), paddingRight)}
+          <ProjectDetailsDetailDisplay label="Duration" content={weeksPipe(project.duration)}></ProjectDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Project Manager', fullNamePipe(project.projectManager), paddingRight)}
+          <ProjectDetailsDetailDisplay
+            label="Project Manager"
+            content={fullNamePipe(project.projectManager)}
+          ></ProjectDetailsDetailDisplay>
         </Grid>
 
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('End Date', datePipe(project.endDate) || 'n/a', paddingRight)}
+          <ProjectDetailsDetailDisplay
+            label="End Date"
+            content={datePipe(project.endDate) || 'n/a'}
+          ></ProjectDetailsDetailDisplay>
         </Grid>
         <Grid item xs={4} md={4}>
-          {formatKeyValueSpaced('Budget', dollarsPipe(project.budget), paddingRight)}
+          <ProjectDetailsDetailDisplay label="Budget" content={dollarsPipe(project.budget)}></ProjectDetailsDetailDisplay>
         </Grid>
         <Grid item xs={1} md={1}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>

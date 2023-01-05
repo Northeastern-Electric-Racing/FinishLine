@@ -6,7 +6,7 @@
 import { ProposedSolution } from 'shared';
 import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { Box, Card, CardContent, Chip, Grid } from '@mui/material';
-import { formatKeyValue } from '../../styling/keyValueSameLine';
+import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionSelectItemProps {
   proposedSolution: ProposedSolution;
@@ -31,7 +31,7 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
         <CardContent>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             <Grid item xs={6}>
-              {formatKeyValue('Description', proposedSolution.description)}
+              <DetailDisplay label="Description" content={proposedSolution.description}></DetailDisplay>
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" justifyContent="flex-end" sx={{ maxHeight: 32 }}>
@@ -43,13 +43,13 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
               </Box>
             </Grid>
             <Grid item xs={12}>
-              {formatKeyValue('Budget Impact', dollarsPipe(proposedSolution.budgetImpact))}
+              <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)}></DetailDisplay>
             </Grid>
             <Grid item xs={12}>
-              {formatKeyValue('Timeline Impact', weeksPipe(proposedSolution.timelineImpact))}
+              <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)}></DetailDisplay>
             </Grid>
             <Grid item xs={12}>
-              {formatKeyValue('Scope Impact', proposedSolution.scopeImpact)}
+              <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact}></DetailDisplay>
             </Grid>
           </Grid>
         </CardContent>

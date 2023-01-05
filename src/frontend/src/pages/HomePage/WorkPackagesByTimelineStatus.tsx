@@ -17,7 +17,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
-import { formatKeyValueSpaced } from '../../styling/keyValueSameLine';
+import DetailDisplay from '../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../components/DetailDisplay';
+
+const WorkPackagesByTimelineStatusDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
+};
 
 const NERInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -46,7 +51,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
-  const padding = 2;
+
   const fullDisplay = (
     <Box
       sx={{
@@ -74,10 +79,30 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-                <Box>{formatKeyValueSpaced('End Date', datePipe(wp.endDate), padding)}</Box>
-                <Box>{formatKeyValueSpaced('Progress', percentPipe(wp.progress), padding)}</Box>
-                <Box>{formatKeyValueSpaced('Engineering Lead', fullNamePipe(wp.projectLead), padding)}</Box>
-                <Box>{formatKeyValueSpaced('Project Manager', fullNamePipe(wp.projectManager), padding)} </Box>
+                <Box>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="End Date"
+                    content={datePipe(wp.endDate)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                </Box>
+                <Box>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Progress"
+                    content={percentPipe(wp.progress)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                </Box>
+                <Box>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Engineering Lead"
+                    content={fullNamePipe(wp.projectLead)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                </Box>
+                <Box>
+                  <WorkPackagesByTimelineStatusDetailDisplay
+                    label="Project Manager"
+                    content={fullNamePipe(wp.projectManager)}
+                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                </Box>
                 <Box>
                   <Typography>
                     {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables

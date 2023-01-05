@@ -9,7 +9,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
-import { formatKeyValue } from '../../styling/keyValueSameLine';
+import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 const NERSwitch = styled((props: SwitchProps) => (
@@ -73,7 +73,7 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
-            {formatKeyValue('Name', 'Northeastern Electric Racing')}
+            <DetailDisplay label="Name" content="Northeastern Electric Racing"></DetailDisplay>
           </Grid>
           <Grid item xs={6} md={12}>
             <FormGroup>
@@ -99,19 +99,19 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            {formatKeyValue('First Name', auth.user?.firstName)}
+            <DetailDisplay label="First Name" content={auth.user?.firstName}></DetailDisplay>
           </Grid>
           <Grid item md={4} lg={2}>
-            {formatKeyValue('Last Name', auth.user?.lastName)}
+            <DetailDisplay label="Last Name" content={auth.user?.lastName}></DetailDisplay>
           </Grid>
           <Grid item md={4} lg={3}>
-            {formatKeyValue('Email', auth.user?.email)}
+            <DetailDisplay label="Email" content={auth.user?.email}></DetailDisplay>
           </Grid>
           <Grid item md={4} lg={2}>
-            {formatKeyValue('Email ID', auth.user?.emailId)}
+            <DetailDisplay label="Email ID" content={auth.user?.emailId}></DetailDisplay>
           </Grid>
           <Grid item md={4} lg={2}>
-            {formatKeyValue('Role', auth.user?.role)}
+            <DetailDisplay label="Role" content={auth.user?.role}></DetailDisplay>
           </Grid>
         </Grid>
       </PageBlock>

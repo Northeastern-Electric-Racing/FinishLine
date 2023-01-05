@@ -16,7 +16,12 @@ import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
-import { formatKeyValueSpaced } from '../../../styling/keyValueSameLine';
+import DetailDisplay from '../../../components/DetailDisplay';
+import { DetailDisplayProps } from '../../../components/DetailDisplay';
+
+const WorkPackageSummaryDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+  return <DetailDisplay label={label} content={content} paddingRight={1}></DetailDisplay>;
+};
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
@@ -64,24 +69,32 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row" flexGrow={0.5}>
                 <Box display="flex" flexDirection="row" paddingRight={2}>
-                  {formatKeyValueSpaced('Start date', datePipe(workPackage.startDate), 1)}
+                  <WorkPackageSummaryDetailDisplay
+                    label="Start Date"
+                    content={datePipe(workPackage.startDate)}
+                  ></WorkPackageSummaryDetailDisplay>
                 </Box>
                 <Box display="flex" flexDirection="row">
-                  {formatKeyValueSpaced(
-                    'End date',
-                    datePipe(calculateEndDate(workPackage.startDate, workPackage.duration)),
-                    1
-                  )}
+                  <WorkPackageSummaryDetailDisplay
+                    label="End Date"
+                    content={datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}
+                  ></WorkPackageSummaryDetailDisplay>
                 </Box>
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row">
-                {formatKeyValueSpaced('Dependencies', listPipe(workPackage.dependencies, wbsPipe), 1)}
+                <WorkPackageSummaryDetailDisplay
+                  label="Dependencies"
+                  content={listPipe(workPackage.dependencies, wbsPipe)}
+                ></WorkPackageSummaryDetailDisplay>
               </Box>
             </Grid>
             <Grid item xs={6}>
-              {formatKeyValueSpaced('Expected Activities', expectedActivitiesList, 1)}
+              <WorkPackageSummaryDetailDisplay
+                label="Expected Activities"
+                content={expectedActivitiesList}
+              ></WorkPackageSummaryDetailDisplay>
               {numMoreExpectedActivities > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreExpectedActivities} more...
@@ -91,7 +104,10 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               )}
             </Grid>
             <Grid item xs={6}>
-              {formatKeyValueSpaced('Deliverables', deliverablesList, 1)}
+              <WorkPackageSummaryDetailDisplay
+                label="Deliverables"
+                content={deliverablesList}
+              ></WorkPackageSummaryDetailDisplay>
               {numMoreDeliverables > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreDeliverables} more...

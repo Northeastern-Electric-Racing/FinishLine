@@ -12,7 +12,7 @@ import Grid from '@mui/material/Grid';
 import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { formatKeyValue } from '../../styling/keyValueSameLine';
+import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
@@ -37,10 +37,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={7}>
-          {formatKeyValue('Description', proposedSolution.description)}
+          <DetailDisplay label="Description" content={proposedSolution.description}></DetailDisplay>
         </Grid>
         <Grid item xs={3}>
-          {formatKeyValue('Budget Impact', dollarsPipe(proposedSolution.budgetImpact))}
+          <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)}></DetailDisplay>
         </Grid>
         <Grid item xs={2}>
           <Typography sx={{ fontWeight: 'bold' }}>
@@ -48,10 +48,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
           </Typography>
         </Grid>
         <Grid item xs={7}>
-          {formatKeyValue('Scope Impact', proposedSolution.scopeImpact)}
+          <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact}></DetailDisplay>
         </Grid>
         <Grid item xs={5}>
-          {formatKeyValue('Timeline Impact', weeksPipe(proposedSolution.timelineImpact))}
+          <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)}></DetailDisplay>
         </Grid>
       </Grid>
     </PageBlock>
