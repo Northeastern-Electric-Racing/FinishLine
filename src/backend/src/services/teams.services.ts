@@ -29,7 +29,10 @@ export default class TeamsService {
     if (!team) {
       throw new NotFoundException('Team', teamId);
     }
+    const activeProjects = team.projects.filter((project) => {
+      return project.wbsElement.status === 'ACTIVE';
+    });
 
-    return teamTransformer(team);
+    return teamTransformer({ ...team, projects: activeProjects });
   }
 }
