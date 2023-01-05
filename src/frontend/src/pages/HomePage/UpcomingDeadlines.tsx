@@ -25,7 +25,7 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import { DetailDisplayProps } from '../../components/DetailDisplay';
 
-const ProposedSolutionDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
+const UpcomingDeadlinesDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
   return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
 };
 
@@ -49,7 +49,7 @@ const UpcomingDeadlines: React.FC = () => {
       }}
     >
       {workPackages.data?.length === 0 ? (
-        <Typography>'No upcoming deadlines'</Typography>
+        <Typography>No upcoming deadlines</Typography>
       ) : (
         workPackages.data?.map((wp) => (
           <Card
@@ -68,28 +68,28 @@ const UpcomingDeadlines: React.FC = () => {
               </Link>
               <Box>
                 <Box>
-                  <ProposedSolutionDetailDisplay
+                  <UpcomingDeadlinesDetailDisplay
                     label="End Date"
                     content={datePipe(wp.endDate)}
-                  ></ProposedSolutionDetailDisplay>
+                  ></UpcomingDeadlinesDetailDisplay>
                 </Box>
                 <Box>
-                  <ProposedSolutionDetailDisplay
+                  <UpcomingDeadlinesDetailDisplay
                     label="Progress"
-                    content={percentPipe(wp.progress)}
-                  ></ProposedSolutionDetailDisplay>
+                    content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
+                  ></UpcomingDeadlinesDetailDisplay>
                 </Box>
                 <Box>
-                  <ProposedSolutionDetailDisplay
+                  <UpcomingDeadlinesDetailDisplay
                     label="Engineering Lead"
                     content={fullNamePipe(wp.projectLead)}
-                  ></ProposedSolutionDetailDisplay>
+                  ></UpcomingDeadlinesDetailDisplay>
                 </Box>
                 <Box>
-                  <ProposedSolutionDetailDisplay
+                  <UpcomingDeadlinesDetailDisplay
                     label="Project Manager"
                     content={fullNamePipe(wp.projectManager)}
-                  ></ProposedSolutionDetailDisplay>
+                  ></UpcomingDeadlinesDetailDisplay>
                 </Box>
                 <Box>
                   <Typography>
