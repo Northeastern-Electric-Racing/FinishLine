@@ -127,10 +127,13 @@ const AdminToolsUserMangaement: React.FC = () => {
             sx={selectStyle}
             disabled={!user}
           >
-            <MenuItem value={RoleEnum.ADMIN}>Admin</MenuItem>
-            <MenuItem value={RoleEnum.LEADERSHIP}>Leadership</MenuItem>
-            <MenuItem value={RoleEnum.MEMBER}>Member</MenuItem>
-            <MenuItem value={RoleEnum.GUEST}>Guest</MenuItem>
+            {Object.values(RoleEnum)
+              .filter((v) => v !== RoleEnum.APP_ADMIN)
+              .map((v) => (
+                <MenuItem value={v} key={v}>
+                  {v}
+                </MenuItem>
+              ))}
           </Select>
         </Grid>
       </Grid>
