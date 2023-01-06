@@ -11,21 +11,18 @@ import { useAllUsers, useUpdateUserRole } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-
-interface UserData {
-  userId: number;
-  role: string;
-}
+import { RoleEnum, User } from 'shared';
 
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isDisabled, setIsDisabled] = useState(true);
   const [hideSuccessLabel, setHideSuccessLabel] = useState(true);
-  const { isLoading, isError, error, data } = useAllUsers();
-  const update = useUpdateUserRole();
+  const { isLoading, isError, error, data: users } = useAllUsers();
+  const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
-  const autoCompleteStyle = {
+
+  const autocompleteStyle = {
     height: '40px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
@@ -49,14 +46,18 @@ const AdminToolsUserMangaement: React.FC = () => {
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
     '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
   };
-  if (isLoading || !data) return <LoadingIndicator />;
 
+  if (isLoading || !users) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const handleSearchChange = (event: React.SyntheticEvent<Element, Event>, value: string | null) => {
+  const handleSearchChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: number } | null) => {
     if (value) {
-      const user = data.find((user) => fullNamePipe(user) === value.split(' -')[0]);
-      if (user) setUser(user);
+      const user = users.find((user: User) => user.userId === value.id);
+      if (user) {
+        setUser(user);
+        setRole(user.role);
+        setHideSuccessLabel(true);
+      }
     } else {
       setUser(null);
     }
@@ -73,14 +74,16 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const handleClick = async () => {
     setHideSuccessLabel(true);
-    await update.mutateAsync({ userId: user?.userId, role }).catch((error) => {
-      alert(error);
-      throw new Error(error);
-    });
-    setHideSuccessLabel(false);
+    if (!user) return;
+    try {
+      await updateUserRole.mutateAsync({ userId: user.userId, role });
+      setHideSuccessLabel(false);
+    } catch (e) {
+      alert(e);
+    }
   };
 
-  const createTextField = (params: any) => {
+  const autocompleteRenderInput = (params: any) => {
     return (
       <TextField
         {...params}
@@ -96,18 +99,22 @@ const AdminToolsUserMangaement: React.FC = () => {
       />
     );
   };
+
   return (
     <PageBlock title={'Role Management'}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>
           <Autocomplete
+            isOptionEqualToValue={(option, value) => option.id === value.id}
             disablePortal
             id="autocomplete"
             onChange={handleSearchChange}
-            options={data.map((user) => `${fullNamePipe(user)} - ${user.email}`)}
-            sx={autoCompleteStyle}
+            options={users.map((user: User) => {
+              return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
+            })}
+            sx={autocompleteStyle}
             size="small"
-            renderInput={createTextField}
+            renderInput={autocompleteRenderInput}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -120,10 +127,13 @@ const AdminToolsUserMangaement: React.FC = () => {
             sx={selectStyle}
             disabled={!user}
           >
-            <MenuItem value={'ADMIN'}>Admin</MenuItem>
-            <MenuItem value={'LEADERSHIP'}>Leadership</MenuItem>
-            <MenuItem value={'MEMBER'}>Member</MenuItem>
-            <MenuItem value={'GUEST'}>Guest</MenuItem>
+            {Object.values(RoleEnum)
+              .filter((v) => v !== RoleEnum.APP_ADMIN)
+              .map((v) => (
+                <MenuItem value={v} key={v}>
+                  {v}
+                </MenuItem>
+              ))}
           </Select>
         </Grid>
       </Grid>

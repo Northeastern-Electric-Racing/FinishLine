@@ -4,6 +4,7 @@ import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTran
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
 import { generateAccessToken, getCurrentUser } from '../utils/utils';
+import { Role } from '@prisma/client';
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
@@ -155,6 +156,10 @@ export const updateUserRole = async (req: Request, res: Response) => {
 
   if (!user) {
     return res.status(404).json({ message: `user not found!` });
+  }
+
+  if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+    return res.status(403).json({ message: 'Access Denied!' });
   }
 
   if (!targetUser) {
