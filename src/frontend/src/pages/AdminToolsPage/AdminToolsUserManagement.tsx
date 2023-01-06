@@ -110,7 +110,7 @@ const AdminToolsUserMangaement: React.FC = () => {
             id="autocomplete"
             onChange={handleSearchChange}
             options={users.map((user: User) => {
-              return { label: `${fullNamePipe(user)} - ${user.email}`, id: user.userId };
+              return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
             })}
             sx={autocompleteStyle}
             size="small"
