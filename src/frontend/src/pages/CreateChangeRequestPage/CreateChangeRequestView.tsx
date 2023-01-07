@@ -110,11 +110,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   if (isLoading || !projects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const options: { label: string; id: string }[] = [];
+  const wbsDropdownOptions: { label: string; id: string }[] = [];
   projects.forEach((project: Project) => {
-    options.push({ label: `${wbsPipe(project.wbsNum)} - ${project.name}`, id: wbsPipe(project.wbsNum) });
+    wbsDropdownOptions.push({ label: `${wbsPipe(project.wbsNum)} - ${project.name}`, id: wbsPipe(project.wbsNum) });
     project.workPackages.forEach((workPackage: WorkPackage) => {
-      options.push({ label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`, id: wbsPipe(workPackage.wbsNum) });
+      wbsDropdownOptions.push({
+        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
+        id: wbsPipe(workPackage.wbsNum)
+      });
     });
   });
 
@@ -128,8 +131,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       setWbsNum('');
     }
   };
-
-  console.log(`SELECTED WBS: ${wbsNum}`);
 
   return (
     <form
@@ -155,10 +156,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             <NERAutocomplete
               id="wbs-autocomplete"
               onChange={wbsAutocompleteOnChange}
-              options={options}
+              options={wbsDropdownOptions}
               size="small"
               placeholder="Select a project or work package"
-              value={options.find((element) => element.id === wbsNum) || null}
+              value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
             />
           </Grid>
           <Grid item xs={12} md={3}>
