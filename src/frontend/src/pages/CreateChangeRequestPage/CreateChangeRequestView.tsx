@@ -19,7 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { MenuItem, NativeSelect, useTheme } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, NativeSelect } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
@@ -87,10 +87,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
-  const theme = useTheme();
-
-  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
-
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
@@ -114,46 +110,40 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             <Box>
               <Typography variant="caption">WBS Number</Typography>
             </Box>
-            <ReactHookTextField
-              name="wbsNum"
-              control={control}
-              placeholder="1.1.0"
-              errorMessage={errors.wbsNum}
-              sx={style}
-            />
+            <ReactHookTextField name="wbsNum" control={control} placeholder="1.1.0" errorMessage={errors.wbsNum} />
           </Grid>
           <Grid item xs={12} md={9}>
-            <Box>
-              <Typography variant="caption">Type</Typography>
-            </Box>
-            <Controller
-              name="type"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <TextField select onChange={onChange} value={value} sx={style}>
-                  {permittedTypes.map((t) => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
+            <FormControl>
+              <FormLabel>Type</FormLabel>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    {permittedTypes.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">What</Typography>
-            </Box>
-            <ReactHookTextField
-              name="what"
-              control={control}
-              multiline
-              rows={4}
-              errorMessage={errors.what}
-              placeholder="What is the situation?"
-              sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
-            />
+            <FormControl>
+              <FormLabel>What</FormLabel>
+              <ReactHookTextField
+                name="what"
+                control={control}
+                multiline
+                rows={4}
+                errorMessage={errors.what}
+                placeholder="What is the situation?"
+                sx={{ width: 300 }}
+              />
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -174,7 +164,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     required
                     autoComplete="off"
                     label="Explain"
-                    sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
+                    sx={{ flexGrow: 1, mx: 1 }}
                     {...register(`why.${index}.explain`)}
                   />
                   <Button
