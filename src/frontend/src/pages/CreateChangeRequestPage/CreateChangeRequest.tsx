@@ -17,7 +17,6 @@ import { useState } from 'react';
 interface CreateChangeRequestProps {}
 
 export interface FormInput {
-  wbsNum: string;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   what: string;
   why: { type: ChangeRequestReason; explain: string }[];
@@ -35,6 +34,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     mutateAsync: cpsMutateAsync
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
 
   if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -45,8 +45,8 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const handleConfirm = async (data: FormInput) => {
     const crId = await mutateAsync({
       ...data,
-      wbsNum: validateWBS(data.wbsNum),
-      submitterId: auth.user?.userId
+      wbsNum: validateWBS(wbsNum),
+      submitterId: userId
     });
 
     proposedSolutions.forEach(async (ps) => {
@@ -70,7 +70,8 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
 
   return (
     <CreateChangeRequestsView
-      wbsNum={query.get('wbsNum') || ''}
+      wbsNum={wbsNum}
+      setWbsNum={setWbsNum}
       crDesc={query.get('riskDetails') || ''}
       onSubmit={handleConfirm}
       proposedSolutions={proposedSolutions}

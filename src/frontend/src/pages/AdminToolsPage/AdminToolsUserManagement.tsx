@@ -1,9 +1,11 @@
-import Autocomplete from '@mui/material/Autocomplete';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { NERButton } from '../../components/NERButton';
-import { Grid, InputAdornment, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
@@ -12,6 +14,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { RoleEnum, User } from 'shared';
+import NERAutocomplete from '../../components/NERAutocomplete';
 
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
@@ -22,22 +25,7 @@ const AdminToolsUserMangaement: React.FC = () => {
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
 
-  const autocompleteStyle = {
-    height: '40px',
-    backgroundColor: theme.palette.background.default,
-    width: '100%',
-    borderRadius: '25px',
-    border: 0,
-    '.MuiOutlinedInput-notchedOutline': {
-      borderColor: 'black',
-      borderRadius: '25px'
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'red'
-    }
-  };
-
-  const selectStyle = {
+  const roleSelectStyle = {
     width: '100%',
     backgroundColor: theme.palette.primary.main,
     borderRadius: '25px',
@@ -50,7 +38,10 @@ const AdminToolsUserMangaement: React.FC = () => {
   if (isLoading || !users) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const handleSearchChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: number } | null) => {
+  const usersSearchOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: number } | null
+  ) => {
     if (value) {
       const user = users.find((user: User) => user.userId === value.id);
       if (user) {
@@ -83,38 +74,18 @@ const AdminToolsUserMangaement: React.FC = () => {
     }
   };
 
-  const autocompleteRenderInput = (params: any) => {
-    return (
-      <TextField
-        {...params}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          )
-        }}
-        placeholder="Select a User"
-      />
-    );
-  };
-
   return (
     <PageBlock title={'Role Management'}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>
-          <Autocomplete
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            disablePortal
-            id="autocomplete"
-            onChange={handleSearchChange}
+          <NERAutocomplete
+            id="users-autocomplete"
+            onChange={usersSearchOnChange}
             options={users.map((user: User) => {
               return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
             })}
-            sx={autocompleteStyle}
             size="small"
-            renderInput={autocompleteRenderInput}
+            placeholder="Select a User"
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -124,7 +95,7 @@ const AdminToolsUserMangaement: React.FC = () => {
             id="role-select"
             value={role}
             onChange={handleRoleChange}
-            sx={selectStyle}
+            sx={roleSelectStyle}
             disabled={!user}
           >
             {Object.values(RoleEnum)
