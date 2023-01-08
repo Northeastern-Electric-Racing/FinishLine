@@ -3,6 +3,7 @@ import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
 import { NotFoundException } from '../utils/errors.utils';
+import { calculateProjectStatus } from '../utils/projects.utils';
 
 export default class TeamsService {
   /**
@@ -30,7 +31,7 @@ export default class TeamsService {
       throw new NotFoundException('Team', teamId);
     }
     const activeProjects = team.projects.filter((project) => {
-      return project.wbsElement.status === 'ACTIVE';
+      return calculateProjectStatus(project) === 'ACTIVE';
     });
 
     return teamTransformer({ ...team, projects: activeProjects });
