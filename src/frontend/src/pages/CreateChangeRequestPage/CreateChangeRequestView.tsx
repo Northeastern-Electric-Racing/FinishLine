@@ -112,7 +112,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
   projects.forEach((project: Project) => {
-    wbsDropdownOptions.push({ label: `${wbsPipe(project.wbsNum)} - ${project.name}`, id: wbsPipe(project.wbsNum) });
+    wbsDropdownOptions.push({
+      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      id: wbsPipe(project.wbsNum)
+    });
     project.workPackages.forEach((workPackage: WorkPackage) => {
       wbsDropdownOptions.push({
         label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
@@ -147,11 +150,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title="Details">
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Box>
-              <Typography sx={{ ml: 1 }} variant="caption">
-                WBS
-              </Typography>
+              <Typography variant="caption">WBS</Typography>
             </Box>
             <NERAutocomplete
               id="wbs-autocomplete"
@@ -160,9 +161,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               size="small"
               placeholder="Select a project or work package"
               value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+              sx={{ width: 1 / 2 }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12}>
             <Box>
               <Typography variant="caption">Type</Typography>
             </Box>

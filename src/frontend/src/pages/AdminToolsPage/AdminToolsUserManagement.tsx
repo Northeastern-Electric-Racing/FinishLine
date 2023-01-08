@@ -25,14 +25,16 @@ const AdminToolsUserMangaement: React.FC = () => {
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
 
-  const roleSelectStyle = {
-    width: '100%',
-    backgroundColor: theme.palette.primary.main,
-    borderRadius: '25px',
-    height: '40px',
-    '.MuiOutlinedInput-notchedOutline': { borderRadius: '25px', borderColor: 'black' },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
-    '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
+  const styles = {
+    roleSelectStyle: {
+      width: '100%',
+      backgroundColor: theme.palette.primary.main,
+      borderRadius: '25px',
+      height: '40px',
+      '.MuiOutlinedInput-notchedOutline': { borderRadius: '25px', borderColor: 'black' },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 0 },
+      '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
+    }
   };
 
   if (isLoading || !users) return <LoadingIndicator />;
@@ -69,9 +71,14 @@ const AdminToolsUserMangaement: React.FC = () => {
     try {
       await updateUserRole.mutateAsync({ userId: user.userId, role });
       setHideSuccessLabel(false);
+      setUser(null);
     } catch (e) {
       alert(e);
     }
+  };
+
+  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
   };
 
   return (
@@ -81,11 +88,10 @@ const AdminToolsUserMangaement: React.FC = () => {
           <NERAutocomplete
             id="users-autocomplete"
             onChange={usersSearchOnChange}
-            options={users.map((user: User) => {
-              return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
-            })}
+            options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a User"
+            value={user ? userToAutocompleteOption(user) : null}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -95,7 +101,7 @@ const AdminToolsUserMangaement: React.FC = () => {
             id="role-select"
             value={role}
             onChange={handleRoleChange}
-            sx={roleSelectStyle}
+            sx={styles.roleSelectStyle}
             disabled={!user}
           >
             {Object.values(RoleEnum)
