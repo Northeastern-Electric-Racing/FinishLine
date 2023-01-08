@@ -1,4 +1,5 @@
 import { WBS_Element_Status } from '@prisma/client';
+import { prismaWbsElement1 } from './wbs-element.test-data';
 
 export const project1 = {
   projectId: 2,
@@ -11,6 +12,7 @@ export const project1 = {
   bomLink: 'https://docs.google.com/spreadsheets/d/1',
   taskListLink: 'https://docs.google.com/spreadsheets/d/1',
   teamId: '1',
+  wbsElement: prismaWbsElement1,
   workPackages: [
     {
       workPackageId: 2,
@@ -21,7 +23,9 @@ export const project1 = {
       progress: 5,
       duration: 4,
       wbsElement: {
-        workPackageNumber: 9
+        workPackageNumber: 9,
+        dateDeleted: null,
+        deletedByUserId: null
       },
       dependencies: []
     }
@@ -35,7 +39,9 @@ export const wbsElement1 = {
   projectNumber: 2,
   workPackageNumber: 0,
   dateCreated: new Date(),
+  dateDeleted: null,
   name: 'car',
+  deletedByUserId: null,
   projectLeadId: 4,
   projectManagerId: 5,
   project: project1
