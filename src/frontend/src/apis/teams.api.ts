@@ -19,8 +19,8 @@ export const getSingleTeam = (id: string) => {
   });
 };
 
-export const editSingleTeam = (id: string, payload: any) => {
-  return axios.post<{ message: string }>(apiUrls.teamEdit(id), {
+export const setTeamMembers = (id: string, payload: any) => {
+  return axios.post<{ message: string }>(apiUrls.teamsSetMembers(id), {
     ...payload
   });
 };

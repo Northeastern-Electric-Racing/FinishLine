@@ -33,7 +33,7 @@ export default class TeamsController {
       // update the team with the input fields
       const updateTeam = await TeamsService.updateSingleTeam(submitter, req.params.teamId, userIds);
 
-      // return the updaetd team
+      // return the updated team
       return res.status(200).json(updateTeam);
     } catch (error: unknown) {
       next(error);

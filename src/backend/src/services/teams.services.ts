@@ -3,7 +3,7 @@ import { Role, User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { HttpException, NotFoundException } from '../utils/errors.utils';
+import { HttpException, NotFoundException, AccessDeniedException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TeamsService {
@@ -39,7 +39,7 @@ export default class TeamsService {
    * Update the given teamId's team's members
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated
-   * @param userIds a array of user Ids that represent team's new members
+   * @param userIds a array of user Ids that replaces team's old members
    * @returns a updated team
    * @throws if the team is not found, the submitter has no priviledge, or any user from the given userIds does not exist
    */
@@ -50,14 +50,14 @@ export default class TeamsService {
       ...teamQueryArgs
     });
 
-    if (!team) throw new HttpException(404, `Team with id ${teamId} not found!`);
+    if (!team) throw new NotFoundException('Team', teamId);
     if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN && submitter.userId !== team.leaderId)
-      throw new HttpException(403, 'Access Denied');
+      throw new AccessDeniedException('No priviledge to update team members');
 
     const users = await getUsers(userIds);
 
     // retrieve userId for every given users to update team's members in the database
-    const transoformedUsers = users.map((user) => {
+    const transformedUsers = users.map((user) => {
       return {
         userId: user.userId
       };
@@ -69,7 +69,7 @@ export default class TeamsService {
       },
       data: {
         members: {
-          set: transoformedUsers
+          set: transformedUsers
         }
       },
       ...teamQueryArgs

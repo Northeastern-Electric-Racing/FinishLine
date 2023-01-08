@@ -5,26 +5,27 @@
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { Team } from 'shared';
-import { getAllTeams, getSingleTeam, editSingleTeam } from '../apis/teams.api';
+import { getAllTeams, getSingleTeam, setTeamMembers } from '../apis/teams.api';
 
 export const useAllTeams = () => {
-  return useQuery<Team[], Error>(['temas'], async () => {
+  return useQuery<Team[], Error>(['teams'], async () => {
     const { data } = await getAllTeams();
     return data;
   });
 };
 export const useSingleTeam = (teamId: string) => {
-  return useQuery<Team, Error>(['temas', teamId], async () => {
+  return useQuery<Team, Error>(['teams', teamId], async () => {
     const { data } = await getSingleTeam(teamId);
     return data;
   });
 };
-export const useEditSingleTeam = (teamId: string) => {
+
+export const useSetTeamMembers = (teamId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['teams', 'edit'],
-    async (teamPayload: any) => {
-      const { data } = await editSingleTeam(teamId, teamPayload);
+    async (teamPayload: number[]) => {
+      const { data } = await setTeamMembers(teamId, teamPayload);
       return data;
     },
     {

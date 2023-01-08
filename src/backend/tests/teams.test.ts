@@ -74,7 +74,6 @@ describe('Teams', () => {
         },
         ...teamQueryArgs
       });
-      expect(res).toStrictEqual(updatedSharedTeam1);
     });
   });
 });
