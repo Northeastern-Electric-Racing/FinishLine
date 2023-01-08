@@ -61,7 +61,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           defaultValue={currentSettings.slackId}
           render={({ field: { onChange, value } }) => (
             <>
-              <div style={{display: 'flex'}}>
+              <div style={{ display: 'flex' }}>
                 <Typography>{'Slack Id '}</Typography>
                 <ExternalLink
                   link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"

@@ -13,7 +13,7 @@ interface UserSettingsViewProps {
 const renderSlackId = (settings: UserSettings) => {
   return (
     <>
-      <div style={{display: 'flex'}}>
+      <div style={{ display: 'flex' }}>
         <b>Slack ID: </b>
         <ExternalLink
           link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
