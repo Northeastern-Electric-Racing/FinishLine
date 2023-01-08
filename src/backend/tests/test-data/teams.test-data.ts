@@ -24,13 +24,3 @@ export const sharedTeam1: SharedTeam = {
   members: [],
   projects: []
 };
-
-export const updatedSharedTeam1: SharedTeam = {
-  teamId,
-  teamName,
-  slackId,
-  description,
-  leader: flash,
-  members: [superman, wonderwoman],
-  projects: []
-};
