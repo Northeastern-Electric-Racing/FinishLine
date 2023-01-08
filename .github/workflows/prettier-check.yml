@@ -9,7 +9,7 @@ on:
       - main
       - develop
 jobs:
-  run-linting-check:
+  run-prettier-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
