@@ -15,6 +15,7 @@ const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
+const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -68,6 +69,7 @@ export const apiUrls = {
   usersLogin,
   usersLoginDev,
   userSettingsByUserId,
+  userRoleByUserId,
 
   projects,
   projectsByWbsNum,

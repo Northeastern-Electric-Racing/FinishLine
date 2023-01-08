@@ -4,7 +4,7 @@
  */
 
 import { ReactElement, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -25,7 +25,7 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link as MUILink } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -110,15 +110,15 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem
-          component={Link}
           to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
+          component={RouterLink}
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
         >
           Create New Project
         </MenuItem>
         <MenuItem
-          component={Link}
+          component={RouterLink}
           to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
@@ -126,7 +126,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           Create New Work Package
         </MenuItem>
         <MenuItem
-          component={Link}
+          component={RouterLink}
           to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
@@ -160,7 +160,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
           <Grid item xs={10}>
-            <MUILink href={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</MUILink>
+            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              {wbsPipe(changeRequest.wbsNum)}
+            </Link>
           </Grid>
           <Grid item xs={3} md={2}>
             <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>

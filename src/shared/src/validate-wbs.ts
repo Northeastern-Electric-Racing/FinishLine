@@ -61,3 +61,8 @@ export const equalsWbsNumber = (wbsNum1: WbsNumber, wbsNum2: WbsNumber): boolean
     wbsNum1.workPackageNumber === wbsNum2.workPackageNumber
   );
 };
+
+/** Display WBS number as string "1.2.0" */
+export const wbsPipe = (wbsNum: WbsNumber) => {
+  return `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`;
+};

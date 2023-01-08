@@ -11,6 +11,7 @@ import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import CreateProjectForm from '../../../pages/CreateProjectPage/CreateProjectForm';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/utils.hooks');
@@ -30,7 +31,11 @@ const mockUseQuery = () => {
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(<CreateProjectForm />);
+  return render(
+    <BrowserRouter>
+      <CreateProjectForm />
+    </BrowserRouter>
+  );
 };
 
 describe('create project form test suite', () => {

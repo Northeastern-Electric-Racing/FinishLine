@@ -6,6 +6,7 @@
 import { render, screen } from '../../test-support/test-utils';
 import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/utils.hooks');
 
@@ -19,7 +20,11 @@ const mockUseQuery = () => {
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = (allowSubmit = true) => {
-  return render(<CreateWPFormView onSubmit={() => null} onCancel={() => null} allowSubmit={allowSubmit} />);
+  return render(
+    <BrowserRouter>
+      <CreateWPFormView onSubmit={() => null} onCancel={() => null} allowSubmit={allowSubmit} />
+    </BrowserRouter>
+  );
 };
 
 describe('create wp form view test suite', () => {
