@@ -3,7 +3,7 @@ import { Role, User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { HttpException, NotFoundException, AccessDeniedException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TeamsService {

@@ -1,6 +1,6 @@
 import { Team as PrismaTeam } from '@prisma/client';
 import { Team as SharedTeam } from 'shared/src/types/team-types';
-import { flash, superman, wonderwoman } from './users.test-data';
+import { flash } from './users.test-data';
 
 const teamId = 'id1';
 const teamName = 'pats';
