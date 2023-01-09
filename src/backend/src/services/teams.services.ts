@@ -44,7 +44,7 @@ export default class TeamsService {
    * @throws if the team is not found, the submitter has no priviledge, or any user from the given userIds does not exist
    */
   static async setTeamMembers(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
-    // find and vertify the given teamId exist
+    // find and verify the given teamId exist
     const team = await prisma.team.findUnique({
       where: { teamId },
       ...teamQueryArgs
@@ -54,6 +54,7 @@ export default class TeamsService {
     if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN && submitter.userId !== team.leaderId)
       throw new AccessDeniedException('you must be an admin or the team lead to update the members!');
 
+    // this throws if any of the users aren't found
     const users = await getUsers(userIds);
 
     // retrieve userId for every given users to update team's members in the database

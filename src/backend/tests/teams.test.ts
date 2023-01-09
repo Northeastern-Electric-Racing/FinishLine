@@ -3,7 +3,7 @@ import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
 import { prismaTeam1, sharedTeam1 } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
-import { flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
 import { HttpException } from '../src/utils/errors.utils';
 
@@ -50,9 +50,15 @@ describe('Teams', () => {
   describe('setTeamMembers', () => {
     test('setTeamMembers members not found', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman]);
 
-      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [122, 55]);
-      expect(res).toThrow(new HttpException(404, 'User(s) with the following ids not found: 122, 55'));
+      const callSetTeamMembers = async () =>
+        await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [batman.userId, 122, 55]);
+
+      // note that the error does not include batman's id since he was found in the database
+      const expectedException = new HttpException(404, 'User(s) with the following ids not found: 122, 55');
+
+      await expect(callSetTeamMembers).rejects.toThrow(expectedException);
     });
 
     test('setTeamMembers works', async () => {

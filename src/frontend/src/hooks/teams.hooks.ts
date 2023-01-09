@@ -24,8 +24,8 @@ export const useSetTeamMembers = (teamId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['teams', 'edit'],
-    async (teamPayload: number[]) => {
-      const { data } = await setTeamMembers(teamId, teamPayload);
+    async (userIds: number[]) => {
+      const { data } = await setTeamMembers(teamId, userIds);
       return data;
     },
     {
