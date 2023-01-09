@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
 
-const descriptionBulletTransformer = (
+const DescriptionBullet = (
   descBullet: Prisma.Description_BulletGetPayload<typeof descriptionBulletQueryArgs>
 ) => {
   return {
@@ -13,4 +13,4 @@ const descriptionBulletTransformer = (
   };
 };
 
-export default descriptionBulletTransformer;
+export default DescriptionBullet;

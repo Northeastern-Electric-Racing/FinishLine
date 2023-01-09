@@ -8,7 +8,7 @@ import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets
 export default class DescriptionBulletsService {
   /**
    * Checks the description bullet
-   * @param userId user that checks the description bullet
+   * @param user user that checks the description bullet
    * @param descriptionId description of bullet that is being checked
    * @throws if bullet doesn't exist or if the bullet is not linked to anything valid
    * @returns a checked description bullet
