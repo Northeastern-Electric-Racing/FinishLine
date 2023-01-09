@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '../../test-support/test-utils';
-import CreateWPFormView from '../../../pages/CreateWorkPackagePage/CreateWPFormView';
+import CreateWorkPackageFormView from '../../../pages/CreateWorkPackagePage/CreateWorkPackageFormView';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -22,7 +22,7 @@ const mockUseQuery = () => {
 const renderComponent = (allowSubmit = true) => {
   return render(
     <BrowserRouter>
-      <CreateWPFormView onSubmit={() => null} onCancel={() => null} allowSubmit={allowSubmit} />
+      <CreateWorkPackageFormView onSubmit={() => null} onCancel={() => null} allowSubmit={allowSubmit} />
     </BrowserRouter>
   );
 };

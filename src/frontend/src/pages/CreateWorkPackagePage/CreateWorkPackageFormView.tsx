@@ -20,10 +20,8 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { bulletsToObject } from '../../utils/form';
-import { wbsPipe } from '../../utils/pipes';
 import { SubmitButton } from '../../components/SubmitButton';
-import { wbsTester } from '../CreateChangeRequestPage/CreateChangeRequestView';
+import { wbsTester } from '../../utils/form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -43,13 +41,13 @@ const schema = yup.object().shape({
     .min(1, 'Duration must be greater than or equal to 1')
 });
 
-interface CreateWPFormViewProps {
+interface CreateWorkPackageFormViewProps {
   allowSubmit: boolean;
   onSubmit: (data: any) => void;
   onCancel: (e: any) => void;
 }
 
-const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
   const query = useQuery();
 
   const {
@@ -65,12 +63,9 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
       crId: Number(query.get('crId')),
       startDate: new Date(),
       duration: null,
-      dependencies: [].map((dep) => {
-        const wbsNum = wbsPipe(dep);
-        return { wbsNum };
-      }),
-      expectedActivities: bulletsToObject([]),
-      deliverables: bulletsToObject([])
+      dependencies: [] as { wbsNum: string }[],
+      expectedActivities: [] as { bulletId: number; detail: string }[],
+      deliverables: [] as { bulletId: number; detail: string }[]
     }
   });
 
@@ -105,7 +100,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={12} md={6}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
@@ -116,7 +111,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} md={6}>
             <FormControl>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -128,7 +123,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={12} md={3}>
             <FormControl>
               <FormLabel>Project WBS Number</FormLabel>
               <ReactHookTextField
@@ -139,7 +134,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={12} md={3}>
             <Controller
               name="startDate"
               control={control}
@@ -158,7 +153,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               )}
             />
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={12} md={2}>
             <FormControl>
               <FormLabel>Duration</FormLabel>
               <ReactHookTextField
@@ -173,7 +168,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
           </Grid>
         </Grid>
         <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
-          <Grid item xs={2}>
+          <Grid item xs={12} md={2}>
             <FormControl>
               <FormLabel>Dependencies</FormLabel>
               {dependencies.map((_element, i) => {
@@ -201,7 +196,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               </Button>
             </FormControl>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={12} md={2}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Expected Activities</FormLabel>
               <ReactHookEditableList
@@ -213,7 +208,7 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={12} md={2}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Deliverables</FormLabel>
               <ReactHookEditableList
@@ -239,4 +234,4 @@ const CreateWPFormView: React.FC<CreateWPFormViewProps> = ({ allowSubmit, onSubm
   );
 };
 
-export default CreateWPFormView;
+export default CreateWorkPackageFormView;

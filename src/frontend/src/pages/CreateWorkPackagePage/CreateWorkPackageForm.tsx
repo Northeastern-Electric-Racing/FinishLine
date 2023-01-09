@@ -9,17 +9,28 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import CreateWPFormView from './CreateWPFormView';
+import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 
-const CreateWPForm: React.FC = () => {
+export interface CreateWorkPackageFormInputs {
+  name: string;
+  startDate: Date;
+  duration: number;
+  crId: string;
+  wbsNum: string;
+  dependencies: { wbsNum: string }[];
+  expectedActivities: { bulletId: number; detail: string }[];
+  deliverables: { bulletId: number; detail: string }[];
+}
+
+const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
     const { name, startDate, duration, crId, dependencies, wbsNum } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
@@ -28,7 +39,13 @@ const CreateWPForm: React.FC = () => {
     try {
       const wbsNumValidated = validateWBS(wbsNum);
 
-      const { userId } = auth.user!;
+      // this check needs to be in handleSubmit instead of outside to stop compiler error
+      if (auth.user === undefined) {
+        alert('User is undefined, please make sure you are logged in.');
+        return;
+      }
+
+      const { userId } = auth.user;
 
       if (!isProject(wbsNumValidated)) {
         alert('Please enter a valid Project WBS Number.');
@@ -67,8 +84,12 @@ const CreateWPForm: React.FC = () => {
   };
 
   return (
-    <CreateWPFormView onSubmit={handleSubmit} onCancel={() => history.goBack()} allowSubmit={auth.user?.role !== 'GUEST'} />
+    <CreateWorkPackageFormView
+      onSubmit={handleSubmit}
+      onCancel={() => history.goBack()}
+      allowSubmit={auth.user.role !== 'GUEST'}
+    />
   );
 };
 
-export default CreateWPForm;
+export default CreateWorkPackageForm;
