@@ -48,7 +48,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
       wbsNum: validateWBS(wbsNum),
       submitterId: userId
     });
-    const crId = parseInt(cr.message.split('#')[1]);
+    const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
       await cpsMutateAsync({
