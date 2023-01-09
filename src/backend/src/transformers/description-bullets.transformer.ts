@@ -1,7 +1,10 @@
 import { Prisma } from '@prisma/client';
+import { DescriptionBullet } from 'shared';
 import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
 
-const DescriptionBullet = (descBullet: Prisma.Description_BulletGetPayload<typeof descriptionBulletQueryArgs>) => {
+const descriptionBulletTransformer = (
+  descBullet: Prisma.Description_BulletGetPayload<typeof descriptionBulletQueryArgs>
+): DescriptionBullet => {
   return {
     id: descBullet.descriptionId,
     detail: descBullet.detail,
@@ -11,4 +14,4 @@ const DescriptionBullet = (descBullet: Prisma.Description_BulletGetPayload<typeo
   };
 };
 
-export default DescriptionBullet;
+export default descriptionBulletTransformer;

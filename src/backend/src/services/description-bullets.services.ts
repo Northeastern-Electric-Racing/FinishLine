@@ -2,8 +2,9 @@ import { User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import descBulletTransformer from '../transformers/description-bullets.transformer';
+import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
+import { DescriptionBullet } from 'shared';
 
 export default class DescriptionBulletsService {
   /**
@@ -13,7 +14,7 @@ export default class DescriptionBulletsService {
    * @throws if bullet doesn't exist or if the bullet is not linked to anything valid
    * @returns a checked description bullet
    */
-  static async checkDescriptionBullet(user: User, descriptionId: number) {
+  static async checkDescriptionBullet(user: User, descriptionId: number): Promise<DescriptionBullet> {
     const originalDB = await prisma.description_Bullet.findUnique({
       where: { descriptionId },
       include: {
@@ -59,6 +60,6 @@ export default class DescriptionBulletsService {
       });
     }
 
-    return descBulletTransformer(updatedDB);
+    return descriptionBulletTransformer(updatedDB);
   }
 }
