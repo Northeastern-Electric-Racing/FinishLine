@@ -25,13 +25,13 @@ export default class TeamsController {
     }
   }
 
-  static async setMembers(req: Request, res: Response, next: NextFunction) {
+  static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
       const submitter = await getCurrentUser(res);
 
       // update the team with the input fields
-      const updateTeam = await TeamsService.updateSingleTeam(submitter, req.params.teamId, userIds);
+      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds);
 
       // return the updated team
       return res.status(200).json(updateTeam);

@@ -5,6 +5,7 @@ import { prismaTeam1, sharedTeam1 } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 import { flash, superman, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
+import { HttpException } from '../src/utils/errors.utils';
 
 describe('Teams', () => {
   beforeEach(() => {
@@ -46,7 +47,14 @@ describe('Teams', () => {
     expect(prisma.team.findUnique).toHaveBeenCalledWith({ where: { teamId }, ...teamQueryArgs });
   });
 
-  describe('editTeam', () => {
+  describe('setTeamMembers', () => {
+    test('setTeamMembers members not found', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [122, 55]);
+      expect(res).toThrow(new HttpException(404, 'User(s) with the following ids not found: 122, 55'));
+    });
+
     test('setTeamMembers works', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       jest.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
@@ -61,7 +69,7 @@ describe('Teams', () => {
           userId: 3
         }
       ];
-      const res = await TeamsService.updateSingleTeam(flash, sharedTeam1.teamId, [2, 3]);
+      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [2, 3]);
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.team.update).toHaveBeenCalledTimes(1);

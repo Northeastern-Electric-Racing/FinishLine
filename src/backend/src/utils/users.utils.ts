@@ -60,7 +60,7 @@ export const rankUserRole = (role: Role) => {
  * @returns array of User with type = User[]
  * @throws if any user does not exist
  */
-export const getUsers = async (userIds: number[]) => {
+export const getUsers = async (userIds: number[]): Promise<User[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } }
   });
@@ -68,7 +68,7 @@ export const getUsers = async (userIds: number[]) => {
   if (users.length !== userIds.length) {
     const prismaUserIds = users.map((user) => user.userId);
     const missingUserIds = userIds.filter((id) => !prismaUserIds.includes(id));
-    throw new HttpException(404, `${`User(s) with the following ids not found: ${missingUserIds.join(', ')}`}`);
+    throw new HttpException(404, `User(s) with the following ids not found: ${missingUserIds.join(', ')}`);
   }
 
   return users;
