@@ -4,7 +4,7 @@
  */
 
 import { ReactElement, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -25,7 +25,7 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -110,7 +110,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem
-          component={Link}
+          component={RouterLink}
           to={routes.PROJECTS_NEW}
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
@@ -118,7 +118,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           Create New Project
         </MenuItem>
         <MenuItem
-          component={Link}
+          component={RouterLink}
           to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
@@ -126,7 +126,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           Create New Work Package
         </MenuItem>
         <MenuItem
-          component={Link}
+          component={RouterLink}
           to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
@@ -151,19 +151,21 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
         <Grid container spacing={1}>
           <Grid item xs={2}>
-            <Typography sx={{ maxWidth: '140px' }}>Type: </Typography>
+            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
           </Grid>
           <Grid item xs={10}>
             {changeRequest.type}
           </Grid>
           <Grid item xs={2}>
-            <Typography>WBS #: </Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
           <Grid item xs={10}>
-            <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
+            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              {wbsPipe(changeRequest.wbsNum)}
+            </Link>
           </Grid>
           <Grid item xs={3} md={2}>
-            <Typography>Submitted By: </Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
           </Grid>
           <Grid item xs={2}>
             <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>

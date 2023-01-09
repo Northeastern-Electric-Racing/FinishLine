@@ -6,6 +6,7 @@
 import { Team } from 'shared';
 import { routes } from '../../utils/routes';
 import { fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
 interface TeamSummaryProps {
   team: Team;
@@ -14,7 +15,9 @@ interface TeamSummaryProps {
 const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
   const projectsList = team.projects.map((project, idx) => (
     <>
-      <Link href={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>{project.name}</Link>
+      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
+        {project.name}
+      </Link>
       {idx + 1 !== team.projects.length ? ', ' : ''}
     </>
   ));
@@ -35,8 +38,10 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button variant="outlined" size="small" component={Link} href={`${routes.TEAMS}/${team.teamId}`}>
-          See More
+        <Button variant="outlined" size="small">
+          <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
+            See More
+          </Link>
         </Button>
       </CardActions>
     </Card>

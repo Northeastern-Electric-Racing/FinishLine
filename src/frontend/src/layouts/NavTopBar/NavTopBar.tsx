@@ -21,7 +21,7 @@ const NavTopBar: React.FC = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed">
-        <Toolbar disableGutters sx={{ px: 1, background, color: textColor }}>
+        <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
           <Box sx={{ flexGrow: 1 }}>
             <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
               <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

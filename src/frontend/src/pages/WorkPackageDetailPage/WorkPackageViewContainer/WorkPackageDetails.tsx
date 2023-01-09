@@ -17,60 +17,60 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
   return (
     <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Grid container spacing={1}>
-        <Grid item xs={2} md={2}>
-          <Typography>Project Lead: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{fullNamePipe(workPackage.projectLead)}</Typography>
-        </Grid>
-
-        <Grid item xs={2} md={2}>
-          <Typography>Project Manager: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{fullNamePipe(workPackage.projectManager)}</Typography>
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Project Lead:{' '}
+          </Typography>
+          <Typography display="inline">{fullNamePipe(workPackage.projectLead)}</Typography>
         </Grid>
 
-        <Grid item xs={2} md={2}>
-          <Typography>Duration: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{weeksPipe(workPackage.duration)}</Typography>
-        </Grid>
-
-        <Grid item xs={2} md={2}>
-          <Typography>Start Date: </Typography>
-        </Grid>
-        <Grid item xs={3} md={2}>
-          <Typography>{datePipe(workPackage.startDate)}</Typography>
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Start Date:{' '}
+          </Typography>
+          <Typography display="inline">{datePipe(workPackage.startDate)}</Typography>
         </Grid>
 
-        <Grid item xs={2} md={2}>
-          <Typography>End Date: </Typography>
-        </Grid>
-        <Grid item xs={5} md={2}>
-          <Typography>{datePipe(workPackage.endDate)}</Typography>
-        </Grid>
-
-        <Grid item xs={2} md={2}>
-          <Typography>Progress: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{percentPipe(workPackage.progress)}</Typography>
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Progress:{' '}
+          </Typography>
+          <Typography display="inline">{percentPipe(workPackage.progress)}</Typography>
         </Grid>
 
-        <Grid item xs={2} md={2}>
-          <Typography>Expected Progress: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{percentPipe(workPackage.expectedProgress)}</Typography>
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Project Manager:{' '}
+          </Typography>
+          <Typography display="inline">{fullNamePipe(workPackage.projectManager)}</Typography>
         </Grid>
 
-        <Grid item xs={2} md={2}>
-          <Typography>Timeline Status: </Typography>
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            End Date:{' '}
+          </Typography>
+          <Typography display="inline">{datePipe(workPackage.endDate)}</Typography>
         </Grid>
-        <Grid item xs={2} md={2}>
-          <Typography>{workPackage.timelineStatus}</Typography>
+
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Expected Progress:{' '}
+          </Typography>
+          <Typography display="inline">{percentPipe(workPackage.expectedProgress)}</Typography>
+        </Grid>
+
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Duration:{' '}
+          </Typography>
+          <Typography display="inline">{weeksPipe(workPackage.duration)}</Typography>
+        </Grid>
+
+        <Grid item xs={4} md={4}>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+            Timeline Status:{' '}
+          </Typography>
+          <Typography display="inline">{workPackage.timelineStatus}</Typography>
         </Grid>
       </Grid>
     </PageBlock>

@@ -1,15 +1,8 @@
-import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestReason,
-  ProposedSolution,
-  StageGateChangeRequest,
-  StandardChangeRequest
-} from 'shared';
+import { Scope_CR_Why_Type, Team, User } from '@prisma/client';
+import prisma from '../prisma/prisma';
+import { ChangeRequestReason } from 'shared';
 import { sendMessage } from '../integrations/slack.utils';
-import { userTransformer } from './users.utils';
-import { wbsNumOf } from './utils';
+import { HttpException, NotFoundException } from './errors.utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -24,105 +17,6 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
     OTHER_PROJECT: ChangeRequestReason.OtherProject,
     OTHER: ChangeRequestReason.Other
   }[whyType]);
-
-export const proposedSolutionArgs = Prisma.validator<Prisma.Proposed_SolutionArgs>()({
-  include: {
-    createdBy: true
-  }
-});
-
-export const scopeCRArgs = Prisma.validator<Prisma.Scope_CRArgs>()({
-  include: {
-    why: true,
-    proposedSolutions: proposedSolutionArgs
-  }
-});
-
-export const changeRequestRelationArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
-  include: {
-    submitter: true,
-    wbsElement: true,
-    reviewer: true,
-    changes: {
-      include: {
-        implementer: true,
-        wbsElement: true
-      }
-    },
-    scopeChangeRequest: scopeCRArgs,
-    stageGateChangeRequest: true,
-    activationChangeRequest: { include: { projectLead: true, projectManager: true } }
-  }
-});
-
-export const proposedSolutionTransformer = (
-  proposedSolution: Prisma.Proposed_SolutionGetPayload<typeof proposedSolutionArgs>
-): ProposedSolution => {
-  return {
-    id: proposedSolution.proposedSolutionId,
-    description: proposedSolution.description,
-    scopeImpact: proposedSolution.scopeImpact,
-    budgetImpact: proposedSolution.budgetImpact,
-    timelineImpact: proposedSolution.timelineImpact,
-    createdBy: userTransformer(proposedSolution.createdBy),
-    dateCreated: proposedSolution.dateCreated,
-    approved: proposedSolution.approved
-  };
-};
-
-export const changeRequestTransformer = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
-): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
-  return {
-    // all cr fields
-    crId: changeRequest.crId,
-    wbsNum: wbsNumOf(changeRequest.wbsElement),
-    submitter: userTransformer(changeRequest.submitter),
-    dateSubmitted: changeRequest.dateSubmitted,
-    type: changeRequest.type,
-    reviewer: changeRequest.reviewer ? userTransformer(changeRequest.reviewer) : undefined,
-    dateReviewed: changeRequest.dateReviewed ?? undefined,
-    accepted: changeRequest.accepted ?? undefined,
-    reviewNotes: changeRequest.reviewNotes ?? undefined,
-    dateImplemented: changeRequest.changes.reduce(
-      (res: Date | undefined, change) =>
-        !res || change.dateImplemented.valueOf() > res.valueOf() ? change.dateImplemented : res,
-      undefined
-    ),
-    implementedChanges: changeRequest.changes.map((change) => ({
-      wbsNum: wbsNumOf(change.wbsElement),
-      changeId: change.changeId,
-      changeRequestId: change.changeRequestId,
-      implementer: userTransformer(change.implementer),
-      detail: change.detail,
-      dateImplemented: change.dateImplemented
-    })),
-    // scope cr fields
-    what: changeRequest.scopeChangeRequest?.what ?? undefined,
-    why: changeRequest.scopeChangeRequest?.why.map((why) => ({
-      type: convertCRScopeWhyType(why.type),
-      explain: why.explain
-    })),
-    scopeImpact: changeRequest.scopeChangeRequest?.scopeImpact ?? undefined,
-    budgetImpact: changeRequest.scopeChangeRequest?.budgetImpact ?? undefined,
-    timelineImpact: changeRequest.scopeChangeRequest?.timelineImpact ?? undefined,
-    proposedSolutions: changeRequest.scopeChangeRequest
-      ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
-      : undefined,
-    // activation cr fields
-    projectLead: changeRequest.activationChangeRequest?.projectLead
-      ? userTransformer(changeRequest.activationChangeRequest?.projectLead)
-      : undefined,
-    projectManager: changeRequest.activationChangeRequest?.projectManager
-      ? userTransformer(changeRequest.activationChangeRequest?.projectManager)
-      : undefined,
-    startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
-    confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
-    // stage gate cr fields
-    leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
-    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
-  };
-};
 
 export const sendSlackChangeRequestNotification = async (
   team: Team & {
@@ -156,4 +50,21 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
+};
+
+/**
+ * Makes sure that a change request has been accepted already (and not deleted)
+ * @param crId - the id of the change request to check
+ * @returns the change request
+ * @throws if the change request is unreviewed, denied, or deleted
+ */
+export const validateChangeRequestAccepted = async (crId: number) => {
+  const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
+
+  if (!changeRequest) throw new NotFoundException('Change Request', crId);
+  if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
+  if (changeRequest.accepted === null) throw new HttpException(400, 'Cannot implement an unreviewed change request');
+  if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
+
+  return changeRequest;
 };

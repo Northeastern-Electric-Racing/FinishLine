@@ -19,11 +19,6 @@ interface ProposedSolutionViewProps {
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
   return (
     <PageBlock title="">
-      {proposedSolution.approved ? (
-        <b style={{ position: 'absolute', right: 75 }}>
-          <Chip label="Approved" color="success" />
-        </b>
-      ) : null}
       {showDeleteButton && onDelete !== undefined ? (
         <Button
           color="error"
@@ -37,21 +32,24 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
         </Button>
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
+        <Grid item xs={7}>
           <b>Description: </b>
           {proposedSolution.description}
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={3}>
           <b>Budget Impact: </b>
           {dollarsPipe(proposedSolution.budgetImpact)}
         </Grid>
-        <Grid item xs={6}>
-          <b>Timeline Impact: </b>
-          {weeksPipe(proposedSolution.timelineImpact)}
+        <Grid item xs={2}>
+          {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={7}>
           <b>Scope Impact: </b>
           {proposedSolution.scopeImpact}
+        </Grid>
+        <Grid item xs={5}>
+          <b>Timeline Impact: </b>
+          {weeksPipe(proposedSolution.timelineImpact)}
         </Grid>
       </Grid>
     </PageBlock>

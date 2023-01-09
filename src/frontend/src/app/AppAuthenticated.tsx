@@ -16,6 +16,7 @@ import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Container } from '@mui/material';
 import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
+import AdminTools from '../pages/AdminToolsPage/AdminTools';
 
 const styles = {
   content: {
@@ -39,6 +40,7 @@ const AppAuthenticated: React.FC = () => {
               <Route path={routes.GANTT} component={GanttPageWrapper} />
               <Route path={routes.TEAMS} component={Teams} />
               <Route path={routes.SETTINGS} component={Settings} />
+              <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
               <Route path={routes.INFO} component={InfoPage} />
               <Route exact path={routes.HOME} component={Home} />
               <Route path="*" component={PageNotFound} />

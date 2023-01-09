@@ -1,21 +1,26 @@
-import prisma from '../prisma/prisma';
-import { Request, Response } from 'express';
-import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
+import { NextFunction, Request, Response } from 'express';
+import TeamsService from '../services/teams.services';
 
-export const getAllTeams = async (_req: Request, res: Response) => {
-  const teams = await prisma.team.findMany(teamRelationArgs);
-  return res.status(200).json(teams.map(teamTransformer));
-};
+export default class TeamsController {
+  static async getAllTeams(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeams();
 
-export const getSingleTeam = async (req: Request, res: Response) => {
-  const team = await prisma.team.findUnique({
-    where: { teamId: req.params.teamId },
-    ...teamRelationArgs
-  });
-
-  if (!team) {
-    return res.status(404).json({ message: `Team with id ${req.params.teamId} not found!` });
+      return res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  return res.status(200).json(teamTransformer(team));
-};
+  static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+
+      const team = await TeamsService.getSingleTeam(teamId);
+
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+}
