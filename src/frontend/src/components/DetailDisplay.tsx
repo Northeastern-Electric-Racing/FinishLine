@@ -1,8 +1,13 @@
+/*
+ * This file is part of FinishLine by NER and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import Typography from '@mui/material/Typography';
 
-export interface DetailDisplayProps {
-  label: string | number;
-  content: string | number | JSX.Element | null;
+interface DetailDisplayProps {
+  label: string;
+  content: string | JSX.Element | null;
   paddingRight?: number;
 }
 

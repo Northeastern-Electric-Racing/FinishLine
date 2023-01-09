@@ -73,7 +73,7 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
-            <DetailDisplay label="Name" content="Northeastern Electric Racing"></DetailDisplay>
+            <DetailDisplay label="Name" content="Northeastern Electric Racing" />
           </Grid>
           <Grid item xs={6} md={12}>
             <FormGroup>
@@ -99,19 +99,19 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="First Name" content={auth.user?.firstName}></DetailDisplay>
+            <DetailDisplay label="First Name" content={auth.user?.firstName} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Last Name" content={auth.user?.lastName}></DetailDisplay>
+            <DetailDisplay label="Last Name" content={auth.user?.lastName} />
           </Grid>
           <Grid item md={4} lg={3}>
-            <DetailDisplay label="Email" content={auth.user?.email}></DetailDisplay>
+            <DetailDisplay label="Email" content={auth.user?.email} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Email ID" content={auth.user?.emailId}></DetailDisplay>
+            <DetailDisplay label="Email ID" content={auth.user?.emailId} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Role" content={auth.user?.role}></DetailDisplay>
+            <DetailDisplay label="Role" content={auth.user?.role} />
           </Grid>
         </Grid>
       </PageBlock>

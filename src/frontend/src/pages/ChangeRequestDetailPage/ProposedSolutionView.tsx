@@ -37,10 +37,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={7}>
-          <DetailDisplay label="Description" content={proposedSolution.description}></DetailDisplay>
+          <DetailDisplay label="Description" content={proposedSolution.description} />
         </Grid>
         <Grid item xs={3}>
-          <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)}></DetailDisplay>
+          <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)} />
         </Grid>
         <Grid item xs={2}>
           <Typography sx={{ fontWeight: 'bold' }}>
@@ -48,10 +48,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
           </Typography>
         </Grid>
         <Grid item xs={7}>
-          <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact}></DetailDisplay>
+          <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
         </Grid>
         <Grid item xs={5}>
-          <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)}></DetailDisplay>
+          <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)} />
         </Grid>
       </Grid>
     </PageBlock>

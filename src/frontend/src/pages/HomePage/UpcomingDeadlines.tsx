@@ -23,11 +23,6 @@ import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { Grid, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
-import { DetailDisplayProps } from '../../components/DetailDisplay';
-
-const UpcomingDeadlinesDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
-  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
-};
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -68,28 +63,20 @@ const UpcomingDeadlines: React.FC = () => {
               </Link>
               <Box>
                 <Box>
-                  <UpcomingDeadlinesDetailDisplay
-                    label="End Date"
-                    content={datePipe(wp.endDate)}
-                  ></UpcomingDeadlinesDetailDisplay>
+                  <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
                 </Box>
                 <Box>
-                  <UpcomingDeadlinesDetailDisplay
+                  <DetailDisplay
                     label="Progress"
                     content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
-                  ></UpcomingDeadlinesDetailDisplay>
+                    paddingRight={2}
+                  />
                 </Box>
                 <Box>
-                  <UpcomingDeadlinesDetailDisplay
-                    label="Engineering Lead"
-                    content={fullNamePipe(wp.projectLead)}
-                  ></UpcomingDeadlinesDetailDisplay>
+                  <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
                 </Box>
                 <Box>
-                  <UpcomingDeadlinesDetailDisplay
-                    label="Project Manager"
-                    content={fullNamePipe(wp.projectManager)}
-                  ></UpcomingDeadlinesDetailDisplay>
+                  <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
                 </Box>
                 <Box>
                   <Typography>

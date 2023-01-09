@@ -31,7 +31,7 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
         <CardContent>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             <Grid item xs={6}>
-              <DetailDisplay label="Description" content={proposedSolution.description}></DetailDisplay>
+              <DetailDisplay label="Description" content={proposedSolution.description} />
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" justifyContent="flex-end" sx={{ maxHeight: 32 }}>
@@ -43,13 +43,13 @@ const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)}></DetailDisplay>
+              <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)} />
             </Grid>
             <Grid item xs={12}>
-              <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)}></DetailDisplay>
+              <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)} />
             </Grid>
             <Grid item xs={12}>
-              <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact}></DetailDisplay>
+              <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
             </Grid>
           </Grid>
         </CardContent>

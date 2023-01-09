@@ -9,11 +9,6 @@ import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
-import { DetailDisplayProps } from '../../../components/DetailDisplay';
-
-const WorkPackageDetailsDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
-  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
-};
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -24,59 +19,35 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
     <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Project Lead"
-            content={fullNamePipe(workPackage.projectLead)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Start Date"
-            content={datePipe(workPackage.startDate)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Progress"
-            content={percentPipe(workPackage.progress)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Progress" content={percentPipe(workPackage.progress)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Project Manager"
-            content={fullNamePipe(workPackage.projectManager)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Project Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="End Date"
-            content={datePipe(workPackage.endDate)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Expected Progress"
-            content={percentPipe(workPackage.expectedProgress)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Duration"
-            content={weeksPipe(workPackage.duration)}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <WorkPackageDetailsDetailDisplay
-            label="Timeline Status"
-            content={workPackage.timelineStatus}
-          ></WorkPackageDetailsDetailDisplay>
+          <DetailDisplay label="Timeline Status" content={workPackage.timelineStatus} paddingRight={2} />
         </Grid>
       </Grid>
     </PageBlock>

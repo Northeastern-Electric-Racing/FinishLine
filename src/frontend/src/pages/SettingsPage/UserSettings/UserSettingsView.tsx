@@ -30,7 +30,7 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
       <Grid item md={4} lg={2}>
-        <DetailDisplay label="Default Theme" content={settings.defaultTheme}></DetailDisplay>
+        <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
       </Grid>
       <Grid item md={6} lg={4}>
         {renderSlackId(settings)}

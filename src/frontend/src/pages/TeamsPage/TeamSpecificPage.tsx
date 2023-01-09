@@ -28,7 +28,7 @@ const TeamSpecificPage: React.FC = () => {
           <PageBlock title={'People'}>
             <Grid container spacing={1}>
               <Grid item xs={12} md={12}>
-                <DetailDisplay label="Lead" content={fullNamePipe(data.leader)}></DetailDisplay>
+                <DetailDisplay label="Lead" content={fullNamePipe(data.leader)} />
               </Grid>
               <Grid item xs={12} md={12}>
                 <DetailDisplay
@@ -38,7 +38,7 @@ const TeamSpecificPage: React.FC = () => {
                       return fullNamePipe(member);
                     })
                     .join(', ')}
-                ></DetailDisplay>
+                />
               </Grid>
             </Grid>
           </PageBlock>

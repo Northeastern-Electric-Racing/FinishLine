@@ -18,11 +18,6 @@ import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
-import { DetailDisplayProps } from '../../components/DetailDisplay';
-
-const WorkPackagesByTimelineStatusDetailDisplay: React.FC<DetailDisplayProps> = ({ label, content }) => {
-  return <DetailDisplay label={label} content={content} paddingRight={2}></DetailDisplay>;
-};
 
 const NERInput = styled(InputBase)(({ theme }) => ({
   'label + &': {
@@ -80,28 +75,16 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
                 <Box>
-                  <WorkPackagesByTimelineStatusDetailDisplay
-                    label="End Date"
-                    content={datePipe(wp.endDate)}
-                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                  <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
                 </Box>
                 <Box>
-                  <WorkPackagesByTimelineStatusDetailDisplay
-                    label="Progress"
-                    content={percentPipe(wp.progress)}
-                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                  <DetailDisplay label="Progress" content={percentPipe(wp.progress)} paddingRight={2} />
                 </Box>
                 <Box>
-                  <WorkPackagesByTimelineStatusDetailDisplay
-                    label="Engineering Lead"
-                    content={fullNamePipe(wp.projectLead)}
-                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                  <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
                 </Box>
                 <Box>
-                  <WorkPackagesByTimelineStatusDetailDisplay
-                    label="Project Manager"
-                    content={fullNamePipe(wp.projectManager)}
-                  ></WorkPackagesByTimelineStatusDetailDisplay>
+                  <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
                 </Box>
                 <Box>
                   <Typography>
