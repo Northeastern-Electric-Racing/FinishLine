@@ -57,7 +57,7 @@ export const rankUserRole = (role: Role) => {
 /**
  * Produce a array of User with given userIds
  * @param userIds array of userIds as an array of integers
- * @returns array of User with type = User[]
+ * @returns array of User
  * @throws if any user does not exist
  */
 export const getUsers = async (userIds: number[]): Promise<User[]> => {
