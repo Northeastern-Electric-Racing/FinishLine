@@ -77,7 +77,7 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, what, why, budgetImpact } = req.body;
       const submitter = await getCurrentUser(res);
-      const id = ChangeRequestsService.createStandardChangeRequest(
+      const id = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
         wbsNum.carNumber,
         wbsNum.projectNumber,

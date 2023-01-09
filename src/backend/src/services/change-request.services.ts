@@ -551,6 +551,7 @@ export default class ChangeRequestsService {
     timelineImpact: number,
     scopeImpact: string
   ): Promise<String> {
+    console.log('test')
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
