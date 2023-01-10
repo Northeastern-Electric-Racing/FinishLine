@@ -61,29 +61,18 @@ const UpcomingDeadlines: React.FC = () => {
               >
                 {wbsPipe(wp.wbsNum)} - {wp.name}
               </Link>
-              <Box>
-                <Box>
-                  <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
-                </Box>
-                <Box>
-                  <DetailDisplay
-                    label="Progress"
-                    content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
-                    paddingRight={2}
-                  />
-                </Box>
-                <Box>
-                  <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
-                </Box>
-                <Box>
-                  <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
-                </Box>
-                <Box>
-                  <Typography>
-                    {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                  </Typography>
-                </Box>
-              </Box>
+              <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
+              <DetailDisplay
+                label="Progress"
+                content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
+                paddingRight={2}
+              />
+
+              <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
+              <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
+              <Typography>
+                {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+              </Typography>
             </CardContent>
           </Card>
         ))

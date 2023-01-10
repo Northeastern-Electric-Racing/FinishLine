@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 
 interface DetailDisplayProps {
   label: string;
-  content: string | JSX.Element | null;
+  content: string;
   paddingRight?: number;
 }
 

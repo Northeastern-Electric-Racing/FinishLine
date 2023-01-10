@@ -81,7 +81,8 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               </Box>
             </Grid>
             <Grid item xs={6}>
-              <DetailDisplay label="Expected Activities" content={expectedActivitiesList} paddingRight={1} />
+              <Typography fontWeight="bold">Expected Activities:</Typography>
+              <Typography>{expectedActivitiesList}</Typography>
               {numMoreExpectedActivities > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreExpectedActivities} more...
@@ -91,7 +92,8 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               )}
             </Grid>
             <Grid item xs={6}>
-              <DetailDisplay label="Deliverables" content={deliverablesList} paddingRight={1} />
+              <Typography fontWeight="bold">Deliverables:</Typography>
+              <Typography>{deliverablesList}</Typography>
               {numMoreDeliverables > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreDeliverables} more...

@@ -108,7 +108,7 @@ const Settings: React.FC = () => {
             <DetailDisplay label="Email" content={auth.user?.email} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Email ID" content={auth.user?.emailId} />
+            <DetailDisplay label="Email ID" content={String(auth.user?.emailId)} />
           </Grid>
           <Grid item md={4} lg={2}>
             <DetailDisplay label="Role" content={auth.user?.role} />
