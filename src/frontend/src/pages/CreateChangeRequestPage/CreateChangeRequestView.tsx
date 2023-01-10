@@ -212,12 +212,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                       </option>
                     ))}
                   </NativeSelect>
-                  <TextField
+                  <ReactHookTextField
                     required
-                    autoComplete="off"
+                    control={control}
                     label="Explain"
                     sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
                     {...register(`why.${index}.explain`)}
+                    errorMessage={errors.why?.[index]?.explain}
                   />
                   <Button
                     sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
