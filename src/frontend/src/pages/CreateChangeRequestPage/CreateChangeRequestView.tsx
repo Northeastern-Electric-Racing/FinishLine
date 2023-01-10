@@ -100,6 +100,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
   const { isLoading, isError, error, data: projects } = useAllProjects();
+
   const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
