@@ -85,6 +85,30 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     remove: removeDependency
   } = useFieldArray({ control, name: 'dependencies' });
 
+  const dependenciesFormControl = (
+    <FormControl>
+      <FormLabel>Dependencies</FormLabel>
+      {dependencies.map((_element, i) => {
+        return (
+          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+            <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
+            <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+              <DeleteIcon />
+            </IconButton>
+          </Grid>
+        );
+      })}
+      <Button
+        variant="contained"
+        color="success"
+        onClick={() => appendDependency({ wbsNum: '' })}
+        sx={{ my: 2, width: 'max-content' }}
+      >
+        + ADD NEW DEPENDENCY
+      </Button>
+    </FormControl>
+  );
+
   return (
     <form
       id={'create-work-package-form'}
@@ -100,7 +124,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={7}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
@@ -111,7 +135,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={5}>
             <FormControl>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -134,14 +158,14 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <Controller
-              name="startDate"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <FormControl>
-                  <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+          <Grid item xs={12} md={4}>
+            <FormControl>
+              <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+              <Controller
+                name="startDate"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
                   <DatePicker
                     inputFormat="yyyy-MM-dd"
                     onChange={onChange}
@@ -149,9 +173,9 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                     value={value}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
-                </FormControl>
-              )}
-            />
+                )}
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={2}>
             <FormControl>
@@ -169,32 +193,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         </Grid>
         <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
           <Grid item xs={12} md={2}>
-            <FormControl>
-              <FormLabel>Dependencies</FormLabel>
-              {dependencies.map((_element, i) => {
-                return (
-                  <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                    <TextField
-                      required
-                      autoComplete="off"
-                      {...register(`dependencies.${i}.wbsNum`)}
-                      sx={{ width: 9 / 10 }}
-                    />
-                    <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Grid>
-                );
-              })}
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => appendDependency({ wbsNum: '' })}
-                sx={{ my: 2, width: 'max-content' }}
-              >
-                + ADD NEW DEPENDENCY
-              </Button>
-            </FormControl>
+            {dependenciesFormControl}
           </Grid>
           <Grid item xs={12} md={2}>
             <FormControl sx={{ width: '100%' }}>

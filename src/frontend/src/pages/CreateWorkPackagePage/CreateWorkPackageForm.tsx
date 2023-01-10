@@ -39,14 +39,6 @@ const CreateWorkPackageForm: React.FC = () => {
     try {
       const wbsNumValidated = validateWBS(wbsNum);
 
-      // this check needs to be in handleSubmit instead of outside to stop compiler error
-      if (auth.user === undefined) {
-        alert('User is undefined, please make sure you are logged in.');
-        return;
-      }
-
-      const { userId } = auth.user;
-
       if (!isProject(wbsNumValidated)) {
         alert('Please enter a valid Project WBS Number.');
         return;
@@ -60,7 +52,6 @@ const CreateWorkPackageForm: React.FC = () => {
         };
       });
       const createdWbsNum = await mutateAsync({
-        userId,
         name: name.trim(),
         crId: parseInt(crId),
         projectWbsNum: {
