@@ -18,6 +18,7 @@ interface ReactHookTextFieldProps {
   icon?: any;
   multiline?: boolean;
   rows?: number;
+  endAdornment?: any;
   errorMessage?: FieldError;
 }
 
@@ -34,6 +35,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   icon,
   multiline,
   rows,
+  endAdornment,
   errorMessage
 }) => {
   const defaultRules = { required: true };
@@ -44,6 +46,9 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   }
   if (icon) {
     inputProps = { ...inputProps, startAdornment: <InputAdornment position="start">{icon}</InputAdornment> };
+  }
+  if (endAdornment) {
+    inputProps = { ...inputProps, endAdornment };
   }
 
   return (

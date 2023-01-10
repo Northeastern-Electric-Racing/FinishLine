@@ -8,7 +8,7 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/types';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
+import CreateWorkPackageForm from '../../../pages/CreateWorkPackagePage/CreateWorkPackageForm';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ const mockUseQuery = () => {
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <CreateWPForm />
+      <CreateWorkPackageForm />
     </BrowserRouter>
   );
 };
