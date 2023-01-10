@@ -4,7 +4,11 @@ import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-a
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
-import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
+import {
+  updateDependencies,
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
+} from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 
@@ -110,14 +114,19 @@ export default class ChangeRequestsService {
           }
         });
       } else if (foundCR.wbsElement.workPackage) {
+        // get the project for the work package
         const wpProj = await prisma.project.findUnique({
-          where: { projectId: foundCR.wbsElement.workPackage.projectId }
+          where: { projectId: foundCR.wbsElement.workPackage.projectId },
+          include: { workPackages: { include: { dependencies: true, wbsElement: true } } }
         });
+        // ensure the project exists
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
+        // calculate the new budget and new duration
         const newBudget = wpProj.budget + foundPs.budgetImpact;
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
+        // create changes that reflect the new budget and duration
         const changes = [
           {
             changeRequestId: crId,
@@ -130,6 +139,11 @@ export default class ChangeRequestsService {
             detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
           }
         ];
+
+        // Recursively update any workpackages that depend on the changed one so that their start dates reflect the new duration
+        await updateDependencies(wpProj.workPackages, foundCR.wbsElement, foundPs.timelineImpact, crId, reviewer);
+
+        // update the project and work package
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {

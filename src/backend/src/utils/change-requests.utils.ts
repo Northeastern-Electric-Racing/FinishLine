@@ -1,6 +1,8 @@
-import { Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { ChangeRequestReason } from 'shared';
+import { Scope_CR_Why_Type, Team, User, WBS_Element, Prisma } from '@prisma/client';
+import workPackageDependencyQueryArgs from '../prisma-query-args/work-package-depedencies.query-args';
+import { calculateEndDate, ChangeRequestReason } from 'shared';
+import { buildChangeDetail } from './utils';
 import { sendMessage } from '../integrations/slack.utils';
 import { HttpException, NotFoundException } from './errors.utils';
 
@@ -53,7 +55,56 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
 };
 
 /**
- * Makes sure that a change request has been accepted already (and not deleted)
+ *
+ * @param workPackages The Projects work Packages to be checked
+ * @param wbsElement The wbs element to check for
+ * @param timelineImpact the timeline impact of the proposed solution
+ * @param crId the change request id
+ * @param reviewer the reviewer of the change request
+ *
+ * This function will recursively update the start date of all work packages that depend on the wbs element to be finished
+ */
+export const updateDependencies = async (
+  workPackages: Prisma.Work_PackageGetPayload<typeof workPackageDependencyQueryArgs>[],
+  wbsElement: WBS_Element,
+  timelineImpact: number,
+  crId: number,
+  reviewer: User
+) => {
+  // cycle through all the work packages
+  workPackages.forEach(async (wp) => {
+    // if the work package depends on the wbs element
+    if (wp.dependencies.map((d: WBS_Element) => d.wbsElementId).includes(wbsElement.wbsElementId)) {
+      // update the start date of the work package by the timeline impact
+      const newStartDate = calculateEndDate(wp.startDate, timelineImpact);
+      // create a change to reflect the changing start date
+      const change = {
+        changeRequestId: crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail('Start Date', String(wp.startDate), String(newStartDate))
+      };
+
+      // update the work package
+      await prisma.work_Package.update({
+        where: { workPackageId: wp.workPackageId },
+        data: {
+          startDate: newStartDate,
+          wbsElement: {
+            update: {
+              changes: {
+                create: change
+              }
+            }
+          }
+        }
+      });
+      // recursively update the work packages that depends on the updated work package
+      updateDependencies(workPackages, wp.wbsElement, timelineImpact, crId, reviewer);
+    }
+  });
+};
+
+/** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
  * @returns the change request
  * @throws if the change request is unreviewed, denied, or deleted
