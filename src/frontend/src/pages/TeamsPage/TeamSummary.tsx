@@ -23,7 +23,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
   ));
 
   return (
-    <Card sx={{ minWidth: 300, maxWidth: 400, minHeight: 200 }}>
+    <Card sx={{ minWidth: 350, maxWidth: 350, minHeight: 200 }}>
       <CardContent>
         <Typography variant="h5">{team.teamName}</Typography>
         <Typography sx={{ mb: 1.5 }} color="text.secondary">
@@ -33,7 +33,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         <Typography variant="body2">
           <b>Lead:</b> {fullNamePipe(team.leader)}
         </Typography>
-        <Typography variant="body2">
+        <Typography noWrap variant="body2">
           <b>Projects:</b> {projectsList}
         </Typography>
       </CardContent>
