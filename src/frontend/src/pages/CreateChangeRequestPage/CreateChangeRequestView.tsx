@@ -6,7 +6,15 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
+import {
+  ChangeRequestReason,
+  ChangeRequestType,
+  Project,
+  ProposedSolution,
+  validateWBS,
+  wbsPipe,
+  WorkPackage
+} from 'shared';
 import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
@@ -21,9 +29,14 @@ import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton, MenuItem, NativeSelect } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
+  setWbsNum: (val: string) => void;
   crDesc: string;
   onSubmit: (data: FormInput) => Promise<void>;
   proposedSolutions: ProposedSolution[];
@@ -42,7 +55,6 @@ const wbsTester = (wbsNum: string | undefined) => {
 };
 
 const schema = yup.object().shape({
-  wbsNum: yup.string().required('WBS number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   type: yup.string().required('Type is required'),
   what: yup.string().required('What is required'),
   why: yup
@@ -65,12 +77,14 @@ const schema = yup.object().shape({
 
 const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   wbsNum,
+  setWbsNum,
   crDesc,
   onSubmit,
   proposedSolutions,
   setProposedSolutions,
   handleCancel
 }) => {
+  const theme = useTheme();
   const {
     handleSubmit,
     control,
@@ -79,17 +93,47 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      wbsNum,
       what: crDesc,
       why: [{ type: ChangeRequestReason.Other, explain: '' }],
       type: ChangeRequestType.Issue
     }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
+  const { isLoading, isError, error, data: projects } = useAllProjects();
+
+  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
   );
+
+  if (isLoading || !projects) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const wbsDropdownOptions: { label: string; id: string }[] = [];
+  projects.forEach((project: Project) => {
+    wbsDropdownOptions.push({
+      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    project.workPackages.forEach((workPackage: WorkPackage) => {
+      wbsDropdownOptions.push({
+        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
+        id: wbsPipe(workPackage.wbsNum)
+      });
+    });
+  });
+
+  const wbsAutocompleteOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: any } | null
+  ) => {
+    if (value) {
+      setWbsNum(value.id);
+    } else {
+      setWbsNum('');
+    }
+  };
 
   return (
     <form
@@ -106,30 +150,38 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
       <PageBlock title="Details">
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12}>
             <Box>
-              <Typography variant="caption">WBS Number</Typography>
+              <Typography variant="caption">WBS</Typography>
             </Box>
-            <ReactHookTextField name="wbsNum" control={control} placeholder="1.1.0" errorMessage={errors.wbsNum} />
+            <NERAutocomplete
+              id="wbs-autocomplete"
+              onChange={wbsAutocompleteOnChange}
+              options={wbsDropdownOptions}
+              size="small"
+              placeholder="Select a project or work package"
+              value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+              sx={{ width: 1 / 2 }}
+            />
           </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl>
-              <FormLabel>Type</FormLabel>
-              <Controller
-                name="type"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value}>
-                    {permittedTypes.map((t) => (
-                      <MenuItem key={t} value={t}>
-                        {t}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </FormControl>
+          <Grid item xs={12}>
+            <Box>
+              <Typography variant="caption">Type</Typography>
+            </Box>
+            <Controller
+              name="type"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <TextField select onChange={onChange} value={value} sx={style}>
+                  {permittedTypes.map((t) => (
+                    <MenuItem key={t} value={t}>
+                      {t}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
           </Grid>
           <Grid item xs={12}>
             <FormControl>
