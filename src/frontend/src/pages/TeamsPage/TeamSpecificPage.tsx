@@ -5,9 +5,9 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
-import { fullNamePipe } from '../../utils/pipes';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import TeamMembersView from './TeamMembersView';
 
 interface ParamTypes {
   teamId: string;
@@ -16,6 +16,7 @@ interface ParamTypes {
 const TeamSpecificPage: React.FC = () => {
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
+
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
 
@@ -24,24 +25,7 @@ const TeamSpecificPage: React.FC = () => {
       <PageTitle title={`Team ${data.teamName}`} previousPages={[]} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <PageBlock title={'People'}>
-            <Grid container spacing={1}>
-              <Grid item xs={12} md={12}>
-                <b style={{ display: 'inline' }}>Lead: </b>
-                <p style={{ display: 'inline' }}>{fullNamePipe(data.leader)}</p>
-              </Grid>
-              <Grid item xs={12} md={12}>
-                <b style={{ display: 'inline' }}>Members: </b>
-                <p style={{ display: 'inline' }}>
-                  {data.members
-                    .map((member) => {
-                      return fullNamePipe(member);
-                    })
-                    .join(', ')}
-                </p>
-              </Grid>
-            </Grid>
-          </PageBlock>
+          <TeamMembersView team={data} />
           <PageBlock title={'Active Projects'}></PageBlock>
           <PageBlock title={'Description'}>
             <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>
