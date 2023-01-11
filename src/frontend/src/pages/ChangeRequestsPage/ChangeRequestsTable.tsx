@@ -43,7 +43,7 @@ const ChangeRequestsTable: React.FC = () => {
       field: 'crId',
       type: 'number',
       headerName: 'ID',
-      maxWidth: 100
+      maxWidth: 75
     },
     {
       ...baseColDef,
@@ -56,11 +56,11 @@ const ChangeRequestsTable: React.FC = () => {
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
-      field: 'wbsNum',
-      headerName: 'WBS #',
+      field: 'wbs',
+      headerName: 'WBS',
       filterable: false,
-      maxWidth: 100,
-      valueFormatter: (params) => wbsPipe(params.value),
+      maxWidth: 300,
+      valueFormatter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
       sortComparator: (v1, v2, param1, param2) => {
         if (param1.value.carNumber !== param2.value.carNumber) {
           return param1.value.carNumber - param2.value.carNumber;
@@ -165,7 +165,7 @@ const ChangeRequestsTable: React.FC = () => {
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
           data?.map((v) => ({
             ...v,
-            carNumber: v.wbsNum.carNumber,
+            carNumber: v.wbs.wbsNum.carNumber,
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []
