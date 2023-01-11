@@ -39,7 +39,19 @@ const UpcomingDeadlines: React.FC = () => {
         flexDirection: 'row',
         flexWrap: 'nowrap',
         overflow: 'auto',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
       }}
     >
       {workPackages.data?.length === 0
