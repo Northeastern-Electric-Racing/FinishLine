@@ -7,7 +7,7 @@ import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import TeamMembersView from './TeamMembersView';
+import TeamMembersView from './TeamMembersPageBlock';
 
 interface ParamTypes {
   teamId: string;
