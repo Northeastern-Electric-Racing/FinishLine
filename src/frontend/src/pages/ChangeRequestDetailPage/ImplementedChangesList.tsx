@@ -9,6 +9,7 @@ import { routes } from '../../utils/routes';
 import { styled } from '@mui/material/styles';
 import { Link, ListItem, List, Tooltip, Typography, TooltipProps, tooltipClasses } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
+import { Link as RouterLink } from 'react-router-dom';
 import { useLayoutEffect, useState } from 'react';
 
 interface ImplementedChangesListProps {
@@ -77,7 +78,13 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
               arrow
             >
               <Typography>
-                [{<Link href={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>{wbsPipe(ic.wbsNum)}</Link>}] {ic.detail}
+                [
+                {
+                  <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
+                    {wbsPipe(ic.wbsNum)}
+                  </Link>
+                }
+                ] {ic.detail}
               </Typography>
             </DynamicTooltip>
           </ListItem>

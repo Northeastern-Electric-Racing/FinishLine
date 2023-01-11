@@ -8,6 +8,7 @@ import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';
+import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
 import BulletList from './BulletList';
 import styled from '@emotion/styled';
@@ -64,7 +65,11 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link href={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
+          [
+          <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
+            #{ic.changeRequestId}
+          </Link>
+          ]{' '}
           <DynamicTooltip
             id="tooltip"
             title={

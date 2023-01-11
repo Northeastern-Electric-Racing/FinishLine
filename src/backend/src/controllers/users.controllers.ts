@@ -3,7 +3,8 @@ import { OAuth2Client } from 'google-auth-library';
 import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
 import { validationResult } from 'express-validator';
 import { Request, Response } from 'express';
-import { generateAccessToken } from '../utils/utils';
+import { generateAccessToken, getCurrentUser } from '../utils/utils';
+import { Role } from '@prisma/client';
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await prisma.user.findMany();
@@ -148,14 +149,17 @@ export const updateUserRole = async (req: Request, res: Response) => {
 
   const { body } = req;
 
-  const { role, userId } = body;
-
-  const user = await prisma.user.findUnique({ where: { userId } });
+  const { role } = body;
+  const user = await getCurrentUser(res);
 
   let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
 
   if (!user) {
-    return res.status(404).json({ message: `user #${userId} not found!` });
+    return res.status(404).json({ message: `user not found!` });
+  }
+
+  if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+    return res.status(403).json({ message: 'Access Denied!' });
   }
 
   if (!targetUser) {

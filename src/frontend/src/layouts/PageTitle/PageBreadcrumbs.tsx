@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import { Breadcrumbs } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface PageTitleProps {
   currentPageTitle: string;
@@ -18,9 +19,11 @@ interface PageTitleProps {
 const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousPages }) => {
   return (
     <Breadcrumbs sx={{ my: 1 }}>
-      <Link href={routes.HOME}>Home</Link>
+      <Link component={RouterLink} to={routes.HOME}>
+        Home
+      </Link>
       {previousPages.map((page, i) => (
-        <Link key={i} href={page.route}>
+        <Link component={RouterLink} key={i} to={page.route}>
           {page.name}
         </Link>
       ))}
