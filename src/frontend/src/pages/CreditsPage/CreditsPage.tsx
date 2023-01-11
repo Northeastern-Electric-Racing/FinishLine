@@ -3,16 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Button, Typography } from '@mui/material';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
-import PageBlock from '../../layouts/PageBlock';
+import { Grid, Button, Typography } from '@mui/material'; // some imports from libraries
 import { useState } from 'react';
-
-const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
+import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
+import PageBlock from '../../layouts/PageBlock';
 
 const CreditsPage: React.FC = () => {
-  const names = ['Kevin Chen']; // This is a list of names, add yours here!
+  const names: {
+    name: string;
+    color: string;
+  }[] = [{ name: 'Kevin Chen', color: '#00A36C' }]; // This is a list of names, add yours here! (along with a hexcode color)
 
+  const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
   const [displaySnark, setDisplaySnark] = useState(0);
   // "displaySnark" is a variable and we're using it as a counter.
   // we define it with the "useState" React "hook" designating it as a special variable that re-renders the view when changed.
@@ -26,9 +28,11 @@ const CreditsPage: React.FC = () => {
       <PageBlock>
         <PageTitle title={'Credits'} previousPages={[]} />
         <Grid container spacing={2}>
-          {names.map((name) => (
+          {names.map((item) => (
             <Grid item>
-              <Typography variant="body1">{name}</Typography>
+              <Typography variant="body1" color={item.color}>
+                {item.name}
+              </Typography>
             </Grid>
           ))}
         </Grid>
