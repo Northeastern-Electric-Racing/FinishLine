@@ -12,7 +12,7 @@ const changeRequestTransformer = (
   return {
     // all cr fields
     crId: changeRequest.crId,
-    wbs: {wbsNum: wbsNumOf(changeRequest.wbsElement), name: changeRequest.wbsElement.name},
+    wbs: { wbsNum: wbsNumOf(changeRequest.wbsElement), name: changeRequest.wbsElement.name },
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
@@ -56,7 +56,7 @@ const changeRequestTransformer = (
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
-    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
+    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
 };
 

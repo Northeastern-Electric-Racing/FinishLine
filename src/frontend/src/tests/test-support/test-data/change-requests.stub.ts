@@ -73,7 +73,7 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   crId: 93,
-  wbs: { wbsNum: exampleWbsWorkPackage1, name: 'Example Work Package 1'},
+  wbs: { wbsNum: exampleWbsWorkPackage1, name: 'Example Work Package 1' },
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.StageGate,
