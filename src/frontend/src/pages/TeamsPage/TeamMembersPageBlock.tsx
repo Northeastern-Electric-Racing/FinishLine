@@ -3,18 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../../layouts/PageBlock';
 import { Autocomplete, Button, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
-import { fullNamePipe } from '../../utils/pipes';
-import { Team } from 'shared';
-import { Edit } from '@mui/icons-material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
+import { useSetTeamMembers } from '../../hooks/teams.hooks';
+import { Team, User } from 'shared';
+import { fullNamePipe } from '../../utils/pipes';
+import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { User } from 'shared';
-import { useSetTeamMembers } from '../../hooks/teams.hooks';
+import PageBlock from '../../layouts/PageBlock';
 
 interface TeamMembersViewProps {
   team: Team;
