@@ -19,7 +19,7 @@ export const getAllProjects = () => {
 };
 
 /**
- * Fetches a single change request.
+ * Fetches a single project.
  *
  * @param wbsNum Project WBS number of the requested project.
  */

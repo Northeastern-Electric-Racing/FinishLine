@@ -11,7 +11,12 @@ const teamQueryArgs = Prisma.validator<Prisma.TeamArgs>()({
         }
       },
       include: {
-        wbsElement: true
+        wbsElement: true,
+        workPackages: {
+          include: {
+            wbsElement: true
+          }
+        }
       }
     }
   }
