@@ -11,23 +11,6 @@ export const calculateWorkPackageProgress = (
   return bullets.length === 0 ? 0 : Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
 };
 
-export const getWbsElementId = async ({
-  carNumber,
-  projectNumber,
-  workPackageNumber
-}: {
-  carNumber: number;
-  projectNumber: number;
-  workPackageNumber: number;
-}) => {
-  const wbsElem = await prisma.wBS_Element.findUnique({
-    where: {
-      wbsNumber: { carNumber, projectNumber, workPackageNumber }
-    }
-  });
-  return wbsElem?.wbsElementId;
-};
-
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChangeJsonNonList = (
   nameOfField: string,

@@ -10,7 +10,6 @@ workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
-  intMinZero(body('userId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   intMinZero(body('projectWbsNum.carNumber')),
@@ -31,7 +30,6 @@ workPackagesRouter.post(
 workPackagesRouter.post(
   '/edit',
   intMinZero(body('workPackageId')),
-  intMinZero(body('userId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   body('startDate').isDate(),

@@ -58,6 +58,12 @@ describe('Change Requests', () => {
     const reviewNotes = 'reviewNotes';
     const accepted = true;
 
+    const changeRequest = {
+      ...prismaChangeRequest1,
+      scopeChangeRequest: prismaScopeChangeRequest1,
+      wbsElement: prismaWbsElement1
+    };
+
     test('reviewer doesnt have access errors', async () => {
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(wonderwoman, crId, reviewNotes, accepted, '1')
@@ -73,7 +79,7 @@ describe('Change Requests', () => {
     });
 
     test('change request already reviewed', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...changeRequest, accepted: true });
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new HttpException(400, 'This change request is already approved!'));
@@ -81,7 +87,7 @@ describe('Change Requests', () => {
     });
 
     test('change request reviewer is creator', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(batman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new AccessDeniedException());
@@ -89,8 +95,7 @@ describe('Change Requests', () => {
     });
 
     test('did not select proposed solution', async () => {
-      const cr = { ...prismaChangeRequest1, scopeChangeRequest: prismaScopeChangeRequest1 };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(cr);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, null)
       ).rejects.toThrow(new HttpException(400, 'No proposed solution selected for scope change request'));
@@ -98,8 +103,7 @@ describe('Change Requests', () => {
     });
 
     test('proposed solution id not found', async () => {
-      const cr = { ...prismaChangeRequest1, scopeChangeRequest: prismaScopeChangeRequest1 };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(cr);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(null);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
@@ -112,10 +116,9 @@ describe('Change Requests', () => {
       const invalidWP = { ...prismaWorkPackage1, projectId: 100 };
       const invalidWBSElement = { ...prismaWbsElement1, workPackage: invalidWP, project: null };
       const invalidCR = {
-        ...prismaChangeRequest1,
+        ...changeRequest,
         wbsElement: invalidWBSElement,
-        accepted: false,
-        scopeChangeRequest: prismaScopeChangeRequest1
+        accepted: false
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(invalidCR);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
@@ -132,8 +135,7 @@ describe('Change Requests', () => {
 
     test('proposed solution successfully implemented for work package change', async () => {
       const validWPCR = {
-        ...prismaChangeRequest1,
-        scopeChangeRequest: prismaScopeChangeRequest1,
+        ...changeRequest,
         wbsElement: { ...prismaWbsElement1, workPackage: prismaWorkPackage1 }
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(validWPCR);
@@ -182,10 +184,9 @@ describe('Change Requests', () => {
     test('proposed solution successfully implemented for project', async () => {
       const myWBSElement = { ...prismaWbsElement1, workPackage: null, project: project1 };
       const newCR = {
-        ...prismaChangeRequest1,
+        ...changeRequest,
         wbsElement: myWBSElement,
-        accepted: false,
-        scopeChangeRequest: prismaScopeChangeRequest1
+        accepted: false
       };
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(newCR);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
