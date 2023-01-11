@@ -104,19 +104,15 @@ const UpcomingDeadlines: React.FC = () => {
     <PageBlock
       title={`Upcoming Deadlines (${workPackages.data?.length})`}
       headerRight={
-        <FormControl>
+        <FormControl size="small">
           <InputLabel id="dateRange">Date Range</InputLabel>
           <Select
             label="Date Range"
             labelId="dateRange"
             value={daysUntilDeadline}
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
-            startAdornment={<InputAdornment position="start">Next</InputAdornment>}
-            autoWidth
-            variant="standard"
-            sx={{ border: '1px solid ' + theme.palette.divider, borderRadius: 2, padding: 1 }}
             endAdornment={
-              <InputAdornment position="end" sx={{ marginLeft: -2, marginRight: 2 }}>
+              <InputAdornment position="end" sx={{ marginLeft: -3, marginRight: 2 }}>
                 Days
               </InputAdornment>
             }

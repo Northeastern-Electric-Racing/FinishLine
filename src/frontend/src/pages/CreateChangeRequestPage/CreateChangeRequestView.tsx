@@ -19,7 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { FormControl, FormLabel, MenuItem, NativeSelect } from '@mui/material';
+import { FormControl, FormLabel, IconButton, MenuItem, NativeSelect } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 
 interface CreateChangeRequestViewProps {
@@ -167,14 +167,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     sx={{ flexGrow: 1, mx: 1 }}
                     {...register(`why.${index}.explain`)}
                   />
-                  <Button
-                    sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
-                    variant="contained"
-                    color="error"
-                    onClick={() => removeWhy(index)}
-                  >
+                  <IconButton type="button" onClick={() => removeWhy(index)}>
                     <DeleteIcon />
-                  </Button>
+                  </IconButton>
                 </Box>
               ))}
             </Box>
