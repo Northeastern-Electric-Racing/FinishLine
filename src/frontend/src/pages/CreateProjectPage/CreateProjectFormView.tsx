@@ -54,7 +54,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
     }
   };
 
-  const teamToAutoCompletion = (team: Team): { label: string, id: string } => {
+  const teamToAutoCompletion = (team: Team): { label: string; id: string } => {
     return { label: team.teamName, id: team.teamId };
   };
 
@@ -91,7 +91,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
               />
             </Grid>
             <Grid item xs={12}>
-            <NERInput
+              <NERInput
                 required
                 id="name"
                 name="name"
