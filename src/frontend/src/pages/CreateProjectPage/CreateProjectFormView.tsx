@@ -12,6 +12,11 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
 import { CreateProjectFormStates } from './CreateProjectForm';
 import { styled, useTheme } from '@mui/material';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import { useState } from 'react';
+import { Team } from 'shared';
+import { useAllTeams } from '../../hooks/teams.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface CreateProjectFormViewProps {
   states: CreateProjectFormStates;
@@ -31,6 +36,27 @@ const NERInput = styled(TextField)(({ theme }) => ({
 const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, allowSubmit, onCancel, onSubmit }) => {
   const { name, carNumber, crId, summary } = states;
   const theme = useTheme();
+  const [team, setTeam] = useState<Team | null>(null);
+  const { isLoading, data: teams } = useAllTeams();
+  if (isLoading || !teams) return <LoadingIndicator />;
+
+  const teamsSearchOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      const team = teams.find((team: Team) => team.teamName === value.id);
+      if (team) {
+        setTeam(team);
+      }
+    } else {
+      setTeam(null);
+    }
+  };
+
+  const teamToAutoCompletion = (team: Team): { label: string, id: string } => {
+    return { label: team.teamName, id: team.teamId };
+  };
 
   return (
     <>
@@ -65,7 +91,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
               />
             </Grid>
             <Grid item xs={12}>
-              <NERInput
+            <NERInput
                 required
                 id="name"
                 name="name"
@@ -74,6 +100,16 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
                 autoComplete="off"
                 placeholder="Enter project name..."
                 onChange={(e) => name(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <NERAutocomplete
+                id="teams-autocomplete"
+                onChange={teamsSearchOnChange}
+                options={teams.map(teamToAutoCompletion)}
+                size="small"
+                placeholder="Assign a Team"
+                value={team ? teamToAutoCompletion(team) : null}
               />
             </Grid>
             <Grid item xs={12}>
