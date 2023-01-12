@@ -45,7 +45,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
     value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const team = teams.find((team: Team) => team.teamName === value.id);
+      const team = teams.find((team: Team) => team.teamName === value.label);
       if (team) {
         setTeam(team);
       }
@@ -102,13 +102,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, a
                 onChange={(e) => name(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={3}>
               <NERAutocomplete
                 id="teams-autocomplete"
                 onChange={teamsSearchOnChange}
                 options={teams.map(teamToAutoCompletion)}
                 size="small"
-                placeholder="Assign a Team"
+                placeholder="Assign a Team *"
                 value={team ? teamToAutoCompletion(team) : null}
               />
             </Grid>
