@@ -50,7 +50,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>v.3.5.1</Typography>
+      <Typography className={styles.versionNumber}>v.3.5.3</Typography>
     </div>
   );
 };
