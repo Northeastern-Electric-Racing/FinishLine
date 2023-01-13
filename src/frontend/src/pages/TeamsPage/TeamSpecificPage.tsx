@@ -7,7 +7,7 @@ import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import TeamMembersView from './TeamMembersPageBlock';
+import TeamMembersPageBlock from './TeamMembersPageBlock';
 
 interface ParamTypes {
   teamId: string;
@@ -25,7 +25,7 @@ const TeamSpecificPage: React.FC = () => {
       <PageTitle title={`Team ${data.teamName}`} previousPages={[]} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <TeamMembersView team={data} />
+          <TeamMembersPageBlock team={data} />
           <PageBlock title={'Active Projects'}></PageBlock>
           <PageBlock title={'Description'}>
             <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>

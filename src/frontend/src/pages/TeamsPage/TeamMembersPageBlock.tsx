@@ -15,11 +15,11 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 
-interface TeamMembersViewProps {
+interface TeamMembersPageBlockProps {
   team: Team;
 }
 
-const TeamMembersView: React.FC<TeamMembersViewProps> = ({ team }) => {
+const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();
   const theme = useTheme();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
@@ -51,28 +51,35 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({ team }) => {
     return { label: `${fullNamePipe(user)}`, id: user.userId };
   };
 
-  return isEditingMembers ? (
-    <PageBlock
-      title={'People'}
-      headerRight={
-        <div style={{ display: 'flex' }}>
-          <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
-          <Button
-            sx={{
-              ml: 2,
-              backgroundColor: theme.palette.success.main,
-              color: theme.palette.success.contrastText,
-              '&:hover': {
-                backgroundColor: theme.palette.success.dark
-              }
-            }}
-            onClick={handleSubmit}
-          >
-            Save
-          </Button>
-        </div>
-      }
-    >
+  //first filters the options to only include users who have not been selected to be on the team, then sorts the options by alphabetical order of their first name, then maps the options to the autocomplete option format
+  const options = () => {
+    return data
+      .filter((user) => !memberIds.includes(user.userId))
+      .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+      .map(userToAutocompleteOption);
+  };
+
+  const headerRight = (
+    <div style={{ display: 'flex' }}>
+      <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
+      <Button
+        sx={{
+          ml: 2,
+          backgroundColor: theme.palette.success.main,
+          color: theme.palette.success.contrastText,
+          '&:hover': {
+            backgroundColor: theme.palette.success.dark
+          }
+        }}
+        onClick={handleSubmit}
+      >
+        Save
+      </Button>
+    </div>
+  );
+
+  const editingView = (
+    <PageBlock title={'People'} headerRight={headerRight}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <Typography sx={{ display: 'inline', fontWeight: 'bold' }}>Lead: </Typography>
@@ -84,11 +91,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({ team }) => {
           <Autocomplete
             multiple
             id="tags-standard"
-            //first filters the options to only include users who have not been selected to be on the team, then sorts the options by alphabetical order of their first name
-            options={data
-              .filter((user) => !memberIds.includes(user.userId))
-              .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-              .map(userToAutocompleteOption)}
+            options={options()}
             defaultValue={team.members.map(userToAutocompleteOption)}
             onChange={(event, newValue) => {
               setMemberIds(newValue.map((option) => option.id));
@@ -101,7 +104,9 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({ team }) => {
         </Grid>
       </Grid>
     </PageBlock>
-  ) : (
+  );
+
+  const nonEditingView = (
     <PageBlock
       title={'People'}
       headerRight={<IconButton disabled={hasPerms()} onClick={() => setIsEditingMembers(true)} children={<Edit />} />}
@@ -124,6 +129,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({ team }) => {
       </Grid>
     </PageBlock>
   );
+  return isEditingMembers ? editingView : nonEditingView;
 };
 
-export default TeamMembersView;
+export default TeamMembersPageBlock;
