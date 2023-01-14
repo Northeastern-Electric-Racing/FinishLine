@@ -16,22 +16,8 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
-
-const NERInput = styled(InputBase)(({ theme }) => ({
-  'label + &': {
-    marginTop: theme.spacing(1)
-  },
-  '& .MuiInputBase-input': {
-    borderRadius: 6,
-    position: 'relative',
-    backgroundColor: theme.palette.background.paper,
-    border: '1px solid ' + theme.palette.divider,
-    fontSize: 16,
-    padding: '10px 26px 10px 12px'
-  }
-}));
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -54,7 +40,19 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
         flexDirection: 'row',
         flexWrap: 'nowrap',
         overflow: 'auto',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
       }}
     >
       {workPackages.data?.length === 0
@@ -91,14 +89,13 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
     <PageBlock
       title={`Work Packages By Timeline Status (${workPackages.data?.length})`}
       headerRight={
-        <FormControl>
+        <FormControl size="small">
           <InputLabel id="selectTimelineStatus"> Timeline Status</InputLabel>
           <Select
             label="Timeline Status"
             labelId="selectTimelineStatus"
             value={timelineStatus}
             onChange={(e) => setTimelineStatus(e.target.value as TimelineStatus)}
-            input={<NERInput />}
           >
             {Object.values(TimelineStatus).map((status) => (
               <MenuItem key={status} value={status}>
