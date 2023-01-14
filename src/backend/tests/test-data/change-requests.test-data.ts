@@ -73,14 +73,12 @@ export const whipDeliverables: PrismaDescriptionBullet = {
 
 export const sharedChangeRequest: SharedChangeRequest = {
   crId: 1,
-  wbs: {
-    wbsNum: {
-      carNumber: 1,
-      projectNumber: 2,
-      workPackageNumber: 3
-    },
-    name: 'whip'
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 3
   },
+  wbsName: 'whip',
   submitter: sharedUser1,
   dateSubmitted: new Date('12-25-2000'),
   type: ChangeRequestType.Redefinition

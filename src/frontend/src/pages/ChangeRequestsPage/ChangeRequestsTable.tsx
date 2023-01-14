@@ -165,7 +165,8 @@ const ChangeRequestsTable: React.FC = () => {
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
           data?.map((v) => ({
             ...v,
-            carNumber: v.wbs.wbsNum.carNumber,
+            carNumber: v.wbsNum.carNumber,
+            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []

@@ -8,10 +8,8 @@ import { WbsNumber } from './project-types';
 
 export interface ChangeRequest {
   crId: number;
-  wbs: {
-    wbsNum: WbsNumber;
-    name: string;
-  };
+  wbsNum: WbsNumber;
+  wbsName: string;
   submitter: User;
   dateSubmitted: Date;
   type: ChangeRequestType;

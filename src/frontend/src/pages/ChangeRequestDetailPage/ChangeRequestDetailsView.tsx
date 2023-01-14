@@ -119,7 +119,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </MenuItem>
         <MenuItem
           component={RouterLink}
-          to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbs.wbsNum)}`}
+          to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
@@ -127,11 +127,11 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </MenuItem>
         <MenuItem
           component={RouterLink}
-          to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbs.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
+          to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
-          Edit {changeRequest.wbs.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
+          Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
         </MenuItem>
       </Menu>
     </div>
@@ -160,8 +160,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
           <Grid item xs={10}>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbs.wbsNum)}`}>
-              {wbsPipe(changeRequest.wbs.wbsNum)}
+            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              {wbsPipe(changeRequest.wbsNum)}
             </Link>
           </Grid>
           <Grid item xs={3} md={2}>
