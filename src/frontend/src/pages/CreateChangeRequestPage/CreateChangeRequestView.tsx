@@ -6,33 +6,25 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  ChangeRequestReason,
-  ChangeRequestType,
-  Project,
-  ProposedSolution,
-  validateWBS,
-  wbsPipe,
-  WorkPackage
-} from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
 import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { MenuItem, NativeSelect, useTheme } from '@mui/material';
+import { FormControl, FormLabel, IconButton, MenuItem, NativeSelect } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { wbsTester } from '../../utils/form';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -43,16 +35,6 @@ interface CreateChangeRequestViewProps {
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;
 }
-
-const wbsTester = (wbsNum: string | undefined) => {
-  if (!wbsNum) return false;
-  try {
-    validateWBS(wbsNum);
-  } catch (error) {
-    return false;
-  }
-  return true;
-};
 
 const schema = yup.object().shape({
   type: yup.string().required('Type is required'),
@@ -84,7 +66,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   setProposedSolutions,
   handleCancel
 }) => {
-  const theme = useTheme();
   const {
     handleSubmit,
     control,
@@ -100,8 +81,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
   const { isLoading, isError, error, data: projects } = useAllProjects();
-
-  const style = { border: '1px solid ' + theme.palette.divider, borderRadius: 2 };
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
     (t) => t !== ChangeRequestType.Activation && t !== ChangeRequestType.StageGate
@@ -151,9 +130,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       <PageBlock title="Details">
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">WBS</Typography>
-            </Box>
+            <FormLabel>WBS</FormLabel>
             <NERAutocomplete
               id="wbs-autocomplete"
               onChange={wbsAutocompleteOnChange}
@@ -165,71 +142,66 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             />
           </Grid>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">Type</Typography>
-            </Box>
-            <Controller
-              name="type"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <TextField select onChange={onChange} value={value} sx={style}>
-                  {permittedTypes.map((t) => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
+            <FormControl>
+              <FormLabel>Type</FormLabel>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    {permittedTypes.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Box>
-              <Typography variant="caption">What</Typography>
-            </Box>
-            <ReactHookTextField
-              name="what"
-              control={control}
-              multiline
-              rows={4}
-              errorMessage={errors.what}
-              placeholder="What is the situation?"
-              sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
-            />
+            <FormControl>
+              <FormLabel>What</FormLabel>
+              <ReactHookTextField
+                name="what"
+                control={control}
+                multiline
+                rows={4}
+                errorMessage={errors.what}
+                placeholder="What is the situation?"
+                sx={{ width: 300 }}
+              />
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box>
-              <Typography variant="caption">Why</Typography>
-            </Box>
-            <Box>
-              {whys.map((_element, index) => (
-                <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                  <NativeSelect {...register(`why.${index}.type`)}>
-                    {Object.values(ChangeRequestReason).map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                  <TextField
-                    required
-                    autoComplete="off"
-                    label="Explain"
-                    sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
-                    {...register(`why.${index}.explain`)}
-                  />
-                  <Button
-                    sx={{ maxHeight: '55px', verticalAlign: 'middle' }}
-                    variant="contained"
-                    color="error"
-                    onClick={() => removeWhy(index)}
-                  >
-                    <DeleteIcon />
-                  </Button>
-                </Box>
-              ))}
-            </Box>
+            <FormControl>
+              <FormLabel>Why</FormLabel>
+              <Box>
+                {whys.map((_element, index) => (
+                  <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                    <NativeSelect {...register(`why.${index}.type`)}>
+                      {Object.values(ChangeRequestReason).map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                    <TextField
+                      required
+                      autoComplete="off"
+                      label="Explain"
+                      sx={{ flexGrow: 1, mx: 1 }}
+                      {...register(`why.${index}.explain`)}
+                    />
+                    <IconButton type="button" onClick={() => removeWhy(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            </FormControl>
             <Button
               variant="outlined"
               color="secondary"

@@ -110,8 +110,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem
+          to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           component={RouterLink}
-          to={routes.PROJECTS_NEW}
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
         >
