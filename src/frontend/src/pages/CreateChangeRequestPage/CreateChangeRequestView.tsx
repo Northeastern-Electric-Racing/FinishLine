@@ -6,15 +6,7 @@
 import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  ChangeRequestReason,
-  ChangeRequestType,
-  Project,
-  ProposedSolution,
-  validateWBS,
-  wbsPipe,
-  WorkPackage
-} from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
 import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
@@ -32,6 +24,7 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { wbsTester } from '../../utils/form';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -42,16 +35,6 @@ interface CreateChangeRequestViewProps {
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;
 }
-
-const wbsTester = (wbsNum: string | undefined) => {
-  if (!wbsNum) return false;
-  try {
-    validateWBS(wbsNum);
-  } catch (error) {
-    return false;
-  }
-  return true;
-};
 
 const schema = yup.object().shape({
   type: yup.string().required('Type is required'),
