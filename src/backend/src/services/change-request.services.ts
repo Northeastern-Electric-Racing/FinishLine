@@ -11,6 +11,7 @@ import {
 } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 
 export default class ChangeRequestsService {
   /**
@@ -67,7 +68,7 @@ export default class ChangeRequestsService {
         activationChangeRequest: true,
         scopeChangeRequest: true,
         wbsElement: {
-          include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, project: true }
+          include: { workPackage: workPackageQueryArgs, project: true }
         }
       }
     });
@@ -117,9 +118,9 @@ export default class ChangeRequestsService {
         // get the project for the work package
         const wpProj = await prisma.project.findUnique({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
-          include: { workPackages: { include: { dependencies: true, wbsElement: true } } }
+          include: { workPackages: workPackageQueryArgs }
         });
-        // ensure the project exists
+
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
         // calculate the new budget and new duration
@@ -141,7 +142,7 @@ export default class ChangeRequestsService {
         ];
 
         // Recursively update any workpackages that depend on the changed one so that their start dates reflect the new duration
-        await updateDependencies(wpProj.workPackages, foundCR.wbsElement, foundPs.timelineImpact, crId, reviewer);
+        await updateDependencies(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
 
         // update the project and work package
         await prisma.project.update({
