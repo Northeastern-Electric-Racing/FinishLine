@@ -17,6 +17,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
+import DetailDisplay from '../../components/DetailDisplay';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -71,35 +72,13 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    End Date:{' '}
-                  </Typography>
-                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Progress:
-                  </Typography>
-                  <Typography display="inline">
-                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Engineering Lead:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                    Project Manager:
-                  </Typography>
-                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
-                </Box>
-                <Box>
+                <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
+                <DetailDisplay label="Progress" content={percentPipe(wp.progress)} paddingRight={2} />
+                <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
+                <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
+                <Typography>
                   {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                </Box>
+                </Typography>
               </CardContent>
             </Card>
           ))}

@@ -5,6 +5,7 @@
  */
 
 import { useTheme } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { ShoppingCart, Settings, Receipt, Description, CurrencyExchange, AttachMoney } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
@@ -81,7 +82,7 @@ const UsefulLinks: React.FC = () => {
       <Grid container spacing={2}>
         {links.map((ele) => (
           <Grid item xs={6} md={3}>
-            {ele}
+            <Typography>{ele}</Typography>
           </Grid>
         ))}
       </Grid>

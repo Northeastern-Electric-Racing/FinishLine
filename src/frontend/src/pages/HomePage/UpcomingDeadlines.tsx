@@ -22,6 +22,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { Grid, Typography, useTheme } from '@mui/material';
+import DetailDisplay from '../../components/DetailDisplay';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -54,61 +55,40 @@ const UpcomingDeadlines: React.FC = () => {
         }
       }}
     >
-      {workPackages.data?.length === 0
-        ? 'No upcoming deadlines'
-        : workPackages.data?.map((wp) => (
-            <Card
-              variant="outlined"
-              key={wbsPipe(wp.wbsNum)}
-              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
-            >
-              <CardContent sx={{ padding: 3 }}>
-                <Link
-                  variant="h6"
-                  component={RouterLink}
-                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
-                  sx={{ marginBottom: 2 }}
-                >
-                  {wbsPipe(wp.wbsNum)} - {wp.name}
-                </Link>
-                <Box>
-                  <Box>
-                    {' '}
-                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                      End Date:{' '}
-                    </Typography>{' '}
-                    <Typography display="inline">{datePipe(wp.endDate)}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                      Progress:{' '}
-                    </Typography>
-                    <Typography display="inline">
-                      {percentPipe(wp.progress)}, {wp.timelineStatus}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                      Engineering Lead:
-                    </Typography>
-                    <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
-                  </Box>
-                  <Box>
-                    {' '}
-                    <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-                      Project Manager:{' '}
-                    </Typography>
-                    <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables{' '}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+      {workPackages.data?.length === 0 ? (
+        <Typography>No upcoming deadlines</Typography>
+      ) : (
+        workPackages.data?.map((wp) => (
+          <Card
+            variant="outlined"
+            key={wbsPipe(wp.wbsNum)}
+            sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
+          >
+            <CardContent sx={{ padding: 3 }}>
+              <Link
+                variant="h6"
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                sx={{ marginBottom: 2 }}
+              >
+                {wbsPipe(wp.wbsNum)} - {wp.name}
+              </Link>
+              <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
+              <DetailDisplay
+                label="Progress"
+                content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
+                paddingRight={2}
+              />
+
+              <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
+              <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
+              <Typography>
+                {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+              </Typography>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </Box>
   );
 
