@@ -3,7 +3,6 @@ import { Role, User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { calculateProjectStatus } from '../utils/projects.utils';
 import { NotFoundException, AccessDeniedException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 
@@ -32,11 +31,8 @@ export default class TeamsService {
     if (!team) {
       throw new NotFoundException('Team', teamId);
     }
-    const activeProjects = team.projects.filter((project) => {
-      return calculateProjectStatus(project) === 'ACTIVE';
-    });
 
-    return teamTransformer({ ...team, projects: activeProjects });
+    return teamTransformer(team);
   }
 
   /**

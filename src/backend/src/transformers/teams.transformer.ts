@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
+import { calculateProjectStatus } from '../utils/projects.utils';
 import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
@@ -15,7 +16,8 @@ const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Tea
     projects: team.projects.map((project) => ({
       id: project.projectId,
       wbsNum: wbsNumOf(project.wbsElement),
-      name: project.wbsElement.name
+      name: project.wbsElement.name,
+      status: calculateProjectStatus(project)
     }))
   };
 };

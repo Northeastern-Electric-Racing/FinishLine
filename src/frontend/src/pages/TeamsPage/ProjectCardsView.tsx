@@ -16,7 +16,7 @@ const ActiveProjectCardView: React.FC<ActiveProjectCardViewProps> = ({ project }
   if (isLoading || !data) return <LoadingIndicator />;
 
   return (
-    <Card sx={{ width: 345 }}>
+    <Card sx={{ minWidth: 300, maxWidth: 400, minHeight: 200 }}>
       <CardContent>
         <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(data.wbsNum)}`}>
           {wbsPipe(data.wbsNum) + ' - ' + data.name}

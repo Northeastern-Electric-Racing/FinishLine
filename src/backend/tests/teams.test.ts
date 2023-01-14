@@ -27,8 +27,7 @@ describe('Teams', () => {
   });
 
   test('getSingleTeam works', async () => {
-    const prismaTeam = { ...prismaTeam1, projects: [] };
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam);
+    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
 
     const { teamId } = prismaTeam1;
     const team = await TeamsService.getSingleTeam(teamId);

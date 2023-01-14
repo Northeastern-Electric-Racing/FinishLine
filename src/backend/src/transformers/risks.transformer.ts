@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { Risk } from 'shared';
+import { Risk, WbsElementStatus } from 'shared';
 import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
@@ -10,7 +10,8 @@ const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs>): Ris
     project: {
       id: risk.project.projectId,
       name: risk.project.wbsElement.name,
-      wbsNum: wbsNumOf(risk.project.wbsElement)
+      wbsNum: wbsNumOf(risk.project.wbsElement),
+      status: risk.project.wbsElement.status as WbsElementStatus
     },
     detail: risk.detail,
     isResolved: risk.isResolved,

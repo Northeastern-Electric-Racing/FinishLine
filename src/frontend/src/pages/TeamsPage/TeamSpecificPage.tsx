@@ -19,6 +19,7 @@ const TeamSpecificPage: React.FC = () => {
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
+
   return (
     <>
       <PageTitle title={`Team ${data.teamName}`} previousPages={[]} />
@@ -44,11 +45,13 @@ const TeamSpecificPage: React.FC = () => {
           </PageBlock>
           <PageBlock title={'Active Projects'}>
             <Grid container spacing={2}>
-              {data.projects.map((project) => (
-                <Grid item key={project.id}>
-                  <ActiveProjectCardView project={project} />
-                </Grid>
-              ))}
+              {data.projects
+                .filter((project) => project.status === 'ACTIVE')
+                .map((project) => (
+                  <Grid item key={project.id}>
+                    <ActiveProjectCardView project={project} />
+                  </Grid>
+                ))}
             </Grid>
           </PageBlock>
 
