@@ -216,7 +216,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     required
                     control={control}
                     label="Explain"
-                    sx={{ flexGrow: 1, mx: 1, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
+                    sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
                     {...register(`why.${index}.explain`)}
                     errorMessage={errors.why?.[index]?.explain}
                   />
