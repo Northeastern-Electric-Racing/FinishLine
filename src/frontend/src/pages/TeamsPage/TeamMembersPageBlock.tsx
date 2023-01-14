@@ -14,6 +14,7 @@ import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
+import DetailDisplay from '../../components/DetailDisplay';
 
 interface TeamMembersPageBlockProps {
   team: Team;
@@ -82,10 +83,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     <PageBlock title={'People'} headerRight={headerRight}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <Typography sx={{ display: 'inline', fontWeight: 'bold' }}>Lead: </Typography>
-          <Typography sx={{ display: 'inline' }} variant={'body1'}>
-            {fullNamePipe(team.leader)}
-          </Typography>
+          <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
         </Grid>
         <Grid item xs={12}>
           <Autocomplete
@@ -113,18 +111,17 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     >
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <Typography style={{ display: 'inline', fontWeight: 'bold' }}>Lead: </Typography>
-          <Typography style={{ display: 'inline' }}>{fullNamePipe(team.leader)}</Typography>
+          <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
         </Grid>
         <Grid item xs={12}>
-          <Typography sx={{ display: 'inline', fontWeight: 'bold' }}>Members: </Typography>
-          <Typography sx={{ display: 'inline' }}>
-            {team.members
+          <DetailDisplay
+            label="Members"
+            content={team.members
               .map((member) => {
                 return fullNamePipe(member);
               })
               .join(', ')}
-          </Typography>
+          />
         </Grid>
       </Grid>
     </PageBlock>
