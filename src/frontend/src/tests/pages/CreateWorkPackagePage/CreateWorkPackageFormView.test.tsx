@@ -4,7 +4,7 @@
  */
 
 import { render, screen } from '../../test-support/test-utils';
-import CreateProjectFormView from '../../../pages/CreateProjectPage/CreateProjectFormView';
+import CreateWorkPackageFormView from '../../../pages/CreateWorkPackagePage/CreateWorkPackageFormView';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -22,20 +22,12 @@ const mockUseQuery = () => {
 const renderComponent = (allowSubmit = true) => {
   return render(
     <BrowserRouter>
-      <CreateProjectFormView onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
+      <CreateWorkPackageFormView onSubmit={() => null} onCancel={() => null} allowSubmit={allowSubmit} />
     </BrowserRouter>
   );
 };
 
-describe('create project form view test suite', () => {
-  it('renders buttons', () => {
-    mockUseQuery();
-    renderComponent();
-
-    expect(screen.getByText('Create')).toBeInTheDocument();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
-  });
-
+describe('create wp form view test suite', () => {
   it('disables submit button when allowSubmit is false', () => {
     mockUseQuery();
     renderComponent(false);
