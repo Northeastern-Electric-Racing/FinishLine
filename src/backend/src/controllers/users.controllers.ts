@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
+import { Role } from '@prisma/client';
 
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
@@ -72,13 +73,13 @@ export default class UsersController {
       const header = req.headers['user-agent'];
 
       const user = await UsersService.logUserInDev(userId, header);
-  if (!user) {
-    return res.status(404).json({ message: `user not found!` });
-  }
+      if (!user) {
+        return res.status(404).json({ message: `user not found!` });
+      }
 
-  if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
-    return res.status(403).json({ message: 'Access Denied!' });
-  }
+      if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+        return res.status(403).json({ message: 'Access Denied!' });
+      }
 
       res.status(200).json(user);
     } catch (error: unknown) {

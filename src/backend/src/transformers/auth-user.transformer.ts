@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { AuthenticatedUser } from 'shared';
-import { authUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 
 const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
   return {
