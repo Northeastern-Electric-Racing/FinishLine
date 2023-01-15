@@ -17,10 +17,6 @@ describe('useful links component', () => {
   it('renders headers', () => {
     renderComponent();
     expect(screen.getByText(/Useful Links/i)).toBeInTheDocument();
-  });
-
-  it('renders links', () => {
-    renderComponent();
     expect(screen.getByText(/Purchasing Guidelines/i)).toBeInTheDocument();
     expect(screen.getByText(/Procurement Form/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Guidelines/i).length).toEqual(4);

@@ -6,10 +6,11 @@
 import { ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Button } from '@mui/material';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -20,7 +21,10 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   proposedSolutions,
   setProposedSolutions
 }) => {
+  const auth = useAuth();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
+
+  if (!auth.user) return <LoadingIndicator />;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
@@ -33,13 +37,6 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      {useAuth().user?.role !== 'GUEST' ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="success" className="mb-3">
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
@@ -50,10 +47,19 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
+      {auth.user.role !== 'GUEST' ? (
+        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
+          + Add Proposed Solution
+        </Button>
+      ) : (
+        ''
+      )}
       {showEditableForm ? (
-        <Modal size="xl" centered show={showEditableForm} onHide={() => setShowEditableForm(false)}>
-          <ProposedSolutionForm onAdd={addProposedSolution} />
-        </Modal>
+        <ProposedSolutionForm
+          onAdd={addProposedSolution}
+          open={showEditableForm}
+          onClose={() => setShowEditableForm(false)}
+        />
       ) : null}
     </>
   );

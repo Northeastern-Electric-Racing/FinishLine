@@ -31,13 +31,9 @@ const renderComponent = () => {
 };
 
 describe('app main, entry component', () => {
-  it('renders the app context component', () => {
+  it('renders', () => {
     renderComponent();
     expect(screen.getAllByText('context')[0]).toBeInTheDocument();
-  });
-
-  it('renders the app public component', () => {
-    renderComponent();
     expect(screen.getByText('public')).toBeInTheDocument();
   });
 });

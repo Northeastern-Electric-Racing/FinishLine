@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ReviewChangeRequest from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequest';
 

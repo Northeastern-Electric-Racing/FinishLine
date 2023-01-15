@@ -5,7 +5,7 @@
 
 import { render, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/Pipes';
+import { datePipe, fullNamePipe, weeksPipe, percentPipe } from '../../../../utils/pipes';
 import {
   exampleWorkPackage1,
   exampleWorkPackage2,

@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { User } from 'shared';
-import { datePipe, emDashPipe, fullNamePipe } from '../../utils/Pipes';
+import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
+import { Tooltip, Typography } from '@mui/material';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -19,14 +19,22 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
     <PageBlock
       title={'Review Notes'}
       headerRight={
-        <OverlayTrigger
+        <Tooltip
+          id="tooltip"
+          arrow
           placement="left"
-          overlay={
-            <Tooltip id="tooltip">{'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}</Tooltip>
+          title={
+            <Typography
+              sx={{
+                fontSize: 14
+              }}
+            >
+              {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
+            </Typography>
           }
         >
           <span>{fullNamePipe(reviewer)}</span>
-        </OverlayTrigger>
+        </Tooltip>
       }
     >
       {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}

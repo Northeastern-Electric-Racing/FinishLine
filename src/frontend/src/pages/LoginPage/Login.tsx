@@ -5,9 +5,9 @@
 
 import { useState } from 'react';
 import { useHistory } from 'react-router';
-import { useTheme } from '../../hooks/theme.hooks';
+import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
@@ -21,7 +21,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
   const [devUserId, setDevUserId] = useState(1);
   const history = useHistory();
-  const theme = useTheme();
+  const theme = useToggleTheme();
   const auth = useAuth();
 
   if (auth.isLoading) return <LoadingIndicator />;
@@ -37,8 +37,8 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
   const devFormSubmit = async (e: any) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
-    if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.name) {
-      theme.toggleTheme!(authedUser.defaultTheme);
+    if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
+      theme.toggleTheme();
     }
     redirectAfterLogin();
   };
@@ -47,8 +47,8 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
     const { id_token } = response.getAuthResponse();
     if (!id_token) throw new Error('Invalid login object');
     const authedUser = await auth.signin(id_token);
-    if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.name) {
-      theme.toggleTheme!(authedUser.defaultTheme);
+    if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
+      theme.toggleTheme();
     }
     redirectAfterLogin();
   };
@@ -63,7 +63,6 @@ const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
       devFormSubmit={devFormSubmit}
       prodSuccess={verifyLogin}
       prodFailure={handleFailure}
-      theme={theme}
     />
   );
 };

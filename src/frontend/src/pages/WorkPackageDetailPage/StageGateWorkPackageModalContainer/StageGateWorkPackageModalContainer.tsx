@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../../../hooks/change-requests.hooks';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import StageGateWorkPackageModal from './StageGateWorkPackageModal';

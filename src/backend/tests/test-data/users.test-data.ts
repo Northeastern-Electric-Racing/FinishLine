@@ -1,6 +1,6 @@
-import { Role, Theme } from '@prisma/client';
+import { Role, Theme, User, User_Settings } from '@prisma/client';
 
-export const batman = {
+export const batman: User = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',
@@ -10,7 +10,7 @@ export const batman = {
   googleAuthId: 'b'
 };
 
-export const superman = {
+export const superman: User = {
   userId: 2,
   firstName: 'Clark',
   lastName: 'Kent',
@@ -20,7 +20,7 @@ export const superman = {
   googleAuthId: 's'
 };
 
-export const wonderwoman = {
+export const wonderwoman: User = {
   userId: 3,
   firstName: 'Wonder',
   lastName: 'Woman',
@@ -30,7 +30,7 @@ export const wonderwoman = {
   googleAuthId: 'w'
 };
 
-export const flash = {
+export const flash: User = {
   userId: 4,
   firstName: 'Barry',
   lastName: 'Allen',
@@ -40,7 +40,27 @@ export const flash = {
   googleAuthId: 'b'
 };
 
-export const batmanSettings = {
+export const greenlantern: User = {
+  userId: 5,
+  firstName: 'Hal',
+  lastName: 'Jordan',
+  email: 'h.jordam@pilot.com',
+  emailId: 'hal.jordan',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'g'
+};
+
+export const aquaman: User = {
+  userId: 6,
+  firstName: 'Arthur',
+  lastName: 'Curry',
+  email: 'a.curry@water.com',
+  emailId: 'arhur.curry',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'a'
+};
+
+export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: 1,
   defaultTheme: Theme.DARK,

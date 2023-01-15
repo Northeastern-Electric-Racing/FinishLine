@@ -3,39 +3,52 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Nav, Navbar } from 'react-bootstrap';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import { useAuth } from '../../hooks/auth.hooks';
-import { fullNamePipe } from '../../utils/Pipes';
+import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
-import NavNotificationsMenu from './NavNotificationsMenu';
-import styles from '../../stylesheets/layouts/nav-top-bar/nav-top-bar.module.css';
+
+const textColor = 'white';
+const background = '#ef4345';
 
 const NavTopBar: React.FC = () => {
   const auth = useAuth();
-
   return (
-    <Navbar className={styles.mainBackground} variant="light" expand="md" fixed="top">
-      <Navbar.Brand as="div">
-        <Link className="d-flex" to={routes.HOME} style={{ textDecoration: 'none' }}>
-          <img
-            className={`d-inline-block align-top ${styles.logo}`}
-            src={'/NER-Logo-App-Icon.png'}
-            alt="Northeastern Electric Racing Logo"
-          />{' '}
-          <h3 className={styles.title}>FinishLine by NER</h3>
-        </Link>
-      </Navbar.Brand>
-      <Navbar.Toggle aria-controls="nav-top-bar-items" />
-      <Navbar.Collapse id="nav-top-bar-items">
-        <Nav className="ml-auto">
-          <NavNotificationsMenu />
-          <div className={styles.username}>{fullNamePipe(auth.user)}</div>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="fixed">
+        <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                <Box
+                  component="img"
+                  sx={{ height: 60 }}
+                  alt="Northeastern Electric Racing Logo"
+                  src="/NER-Logo-App-Icon.png"
+                />
+                <Typography
+                  variant="h4"
+                  fontSize={30}
+                  component="div"
+                  sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}
+                >
+                  FinishLine by NER
+                </Typography>
+              </Box>
+            </Link>
+          </Box>
+          <Typography variant="body1" component="div" sx={{ color: textColor }}>
+            {fullNamePipe(auth.user)}
+          </Typography>
           <NavUserMenu />
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
+        </Toolbar>
+      </AppBar>
+    </Box>
   );
 };
 

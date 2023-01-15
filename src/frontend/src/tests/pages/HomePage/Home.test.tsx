@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import Home from '../../../pages/HomePage/Home';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
@@ -59,20 +59,8 @@ describe('home component', () => {
   it('renders welcome', () => {
     renderComponent();
     expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
-  });
-
-  it('renders useful links', () => {
-    renderComponent();
     expect(screen.getByText('useful-links')).toBeInTheDocument();
-  });
-
-  it('renders upcoming deadlines', () => {
-    renderComponent();
     expect(screen.getByText('upcoming-deadlines')).toBeInTheDocument();
-  });
-
-  it('renders work packages by timeline status', () => {
-    renderComponent();
     expect(screen.getByText('work-packages-by-timeline-status')).toBeInTheDocument();
   });
 });

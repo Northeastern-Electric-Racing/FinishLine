@@ -5,8 +5,8 @@ import { intMinZero } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
-teamsRouter.get('/', getAllTeams);
-teamsRouter.get('/:teamId', getSingleTeam);
+teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post(
   '/edit-description',
   body('teamId').isString,

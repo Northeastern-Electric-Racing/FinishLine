@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Typography, Grid } from '@mui/material';
 import { ReactNode } from 'react';
-import { LinkItem } from '../../utils/Types';
+import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
 
 interface PageTitleProps {
@@ -12,12 +13,6 @@ interface PageTitleProps {
   previousPages: LinkItem[];
   actionButton?: ReactNode;
 }
-
-const styles = {
-  titleText: {
-    marginBottom: 0
-  }
-};
 
 /**
  * Build the page title section for a page.
@@ -27,13 +22,21 @@ const styles = {
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton }) => {
   return (
-    <div className={'pt-3 mb-2 d-flex justify-content-between align-items-center'}>
-      <div>
-        <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-        <h3 style={styles.titleText}>{title}</h3>
-      </div>
-      <div>{actionButton}</div>
-    </div>
+    <>
+      <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
+      <Grid container sx={{ mt: 1, mb: 2 }}>
+        <Grid item>
+          <Typography variant="h4" fontSize={30} sx={{ verticalAlign: 'middle', display: 'inline-flex' }}>
+            {title}
+          </Typography>
+        </Grid>
+        <Grid item sx={{ mx: 0 }} xs>
+          <Grid container direction="row-reverse">
+            <Grid item>{actionButton}</Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
