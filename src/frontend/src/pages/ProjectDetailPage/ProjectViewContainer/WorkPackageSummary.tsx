@@ -16,6 +16,7 @@ import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
@@ -63,23 +64,20 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row" flexGrow={0.5}>
                 <Box display="flex" flexDirection="row" paddingRight={2}>
-                  <Typography fontWeight="bold" paddingRight={1}>
-                    Start date:
-                  </Typography>
-                  <Typography>{datePipe(workPackage.startDate)}</Typography>
+                  <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={1} />
                 </Box>
                 <Box display="flex" flexDirection="row">
-                  <Typography fontWeight="bold" paddingRight={1}>
-                    End date:
-                  </Typography>
-                  <Typography>{datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}</Typography>
+                  <DetailDisplay
+                    label="End Date"
+                    content={datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}
+                    paddingRight={1}
+                  />
                 </Box>
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row">
-                <Typography fontWeight="bold">Dependencies:</Typography>
-                <Typography>{listPipe(workPackage.dependencies, wbsPipe)}</Typography>
+                <DetailDisplay label="Dependencies" content={listPipe(workPackage.dependencies, wbsPipe)} paddingRight={1} />
               </Box>
             </Grid>
             <Grid item xs={6}>

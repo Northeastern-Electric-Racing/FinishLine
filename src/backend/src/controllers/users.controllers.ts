@@ -72,6 +72,13 @@ export default class UsersController {
       const header = req.headers['user-agent'];
 
       const user = await UsersService.logUserInDev(userId, header);
+  if (!user) {
+    return res.status(404).json({ message: `user not found!` });
+  }
+
+  if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+    return res.status(403).json({ message: 'Access Denied!' });
+  }
 
       res.status(200).json(user);
     } catch (error: unknown) {

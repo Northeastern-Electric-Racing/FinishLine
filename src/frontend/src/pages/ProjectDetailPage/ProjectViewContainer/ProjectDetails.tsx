@@ -9,7 +9,9 @@ import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/p
 import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -20,47 +22,29 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Lead:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(project.projectLead)}</Typography>
+          <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Start Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(project.startDate) || 'n/a'}</Typography>
+          <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={2} />
         </Grid>
 
         <Grid item xs={3} md={3}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Duration:{' '}
-          </Typography>
-          <Typography display="inline">{weeksPipe(project.duration)}</Typography>
+          <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Manager:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(project.projectManager)}</Typography>
+          <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            End Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(project.endDate) || 'n/a'}</Typography>
+          <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={2} />
         </Grid>
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Budget:{' '}
-          </Typography>
-          <Typography display="inline">{dollarsPipe(project.budget)}</Typography>
+          <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={2} />
         </Grid>
         <Grid item xs={1} md={1}>
-          <Typography sx={{ fontWeight: 'bold' }}>Links: </Typography>
+          <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
           <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />

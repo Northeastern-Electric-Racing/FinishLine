@@ -16,6 +16,7 @@
 .versionNumber {
   position: absolute;
   text-align: center;
+  color: #ffffff;
   width: 100%;
   bottom: 0;
   height: 6em;

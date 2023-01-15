@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
+import { getCurrentUser } from '../utils/utils';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -31,13 +32,15 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, userId, startDate, duration, dependencies, expectedActivities, deliverables } =
-        req.body;
+      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
+
+      const user = await getCurrentUser(res);
+
       const wbsString: string = await WorkPackagesService.createWorkPackage(
+        user,
         projectWbsNum,
         name,
         crId,
-        userId,
         startDate,
         duration,
         dependencies,
@@ -56,7 +59,6 @@ export default class WorkPackagesController {
     try {
       const {
         workPackageId,
-        userId,
         name,
         crId,
         startDate,
@@ -68,9 +70,12 @@ export default class WorkPackagesController {
         projectLead,
         projectManager
       } = req.body;
+
+      const user = await getCurrentUser(res);
+
       await WorkPackagesService.editWorkPackage(
+        user,
         workPackageId,
-        userId,
         name,
         crId,
         startDate,
