@@ -15,7 +15,7 @@ userRouter.post(
   body('slackId').isString(),
   UsersController.updateUserSettings
 );
-userRouter.post('/:userId/change-role', intMinZero(body('userId')), isRole(body('role')), UsersController.updateUserRole);
+userRouter.post('/change-role', intMinZero(body('userId')), isRole(body('role')), UsersController.updateUserRole);
 userRouter.post('/auth/login', UsersController.logUserIn);
 userRouter.post('/auth/login/dev', UsersController.logUserInDev);
 

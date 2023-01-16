@@ -3,12 +3,12 @@ import { User } from 'shared';
 
 const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
   return {
-    userId: user.userId ?? undefined,
-    firstName: user.firstName ?? undefined,
-    lastName: user.lastName ?? undefined,
-    email: user.email ?? undefined,
+    userId: user.userId,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
     emailId: user.emailId,
-    role: user.role ?? undefined
+    role: user.role
   };
 };
 
