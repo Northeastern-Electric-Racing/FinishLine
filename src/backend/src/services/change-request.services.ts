@@ -120,7 +120,6 @@ export default class ChangeRequestsService {
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           include: { workPackages: workPackageQueryArgs }
         });
-
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
         // calculate the new budget and new duration
@@ -141,8 +140,10 @@ export default class ChangeRequestsService {
           }
         ];
 
-        // Recursively update any workpackages that depend on the changed one so that their start dates reflect the new duration
-        await updateDependencies(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+        // update all the dependencies (and nested dependencies) of this work package so that their start dates reflect the new duration
+        if (foundPs.timelineImpact > 0) {
+          await updateDependencies(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+        }
 
         // update the project and work package
         await prisma.project.update({
@@ -174,6 +175,7 @@ export default class ChangeRequestsService {
           }
         });
       }
+
       // finally update the proposed solution
       await prisma.proposed_Solution.update({
         where: { proposedSolutionId: psId },

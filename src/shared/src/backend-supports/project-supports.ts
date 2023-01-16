@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { addWeeksToDate } from '../date-utils';
 import { WbsElementStatus } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
@@ -12,11 +13,7 @@ import { TimelineStatus } from '../types/work-package-types';
  * @param weeks number of weeks
  * @returns the start date after the weeks have passed
  */
-const calculateEndDate = (start: Date, weeks: number) => {
-  const end = new Date(start);
-  end.setDate(start.getDate() + weeks * 7);
-  return end;
-};
+const calculateEndDate = (start: Date, weeks: number): Date => addWeeksToDate(start, weeks);
 
 /**
  * This function calculates the end date for a project.
