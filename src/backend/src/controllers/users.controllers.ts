@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
-import { Role } from '@prisma/client';
 
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
@@ -42,7 +41,7 @@ export default class UsersController {
       const { defaultTheme, slackId } = req.body;
       const user = await getCurrentUser(res);
 
-      await UsersService.updateUserSettings(user.userId, defaultTheme, slackId);
+      await UsersService.updateUserSettings(user, defaultTheme, slackId);
 
       res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
     } catch (error: unknown) {
@@ -86,7 +85,7 @@ export default class UsersController {
       const { role } = req.body;
       const user = await getCurrentUser(res);
 
-      const targetUser = await UsersService.updateUserRole(targetUserId, user.userId, role);
+      const targetUser = await UsersService.updateUserRole(targetUserId, user, role);
 
       res.status(200).json(targetUser);
     } catch (error: unknown) {

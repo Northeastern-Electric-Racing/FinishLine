@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman, wonderwoman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
@@ -38,14 +38,14 @@ describe('Users', () => {
   describe('updateUserRole', () => {
     test('cannotUpdateUserToHigherRole', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
-      await expect(() => UsersService.updateUserRole(1, 3, 'APP_ADMIN')).rejects.toThrow(
+      await expect(() => UsersService.updateUserRole(1, wonderwoman, 'APP_ADMIN')).rejects.toThrow(
         new AccessDeniedException('Cannot promote user to a higher role than yourself')
       );
     });
 
     test('cannotDemoteUserOfSameRole', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(flash);
-      await expect(() => UsersService.updateUserRole(superman.userId, 4, 'GUEST')).rejects.toThrow(
+      await expect(() => UsersService.updateUserRole(superman.userId, flash, 'GUEST')).rejects.toThrow(
         new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you')
       );
     });
@@ -53,11 +53,10 @@ describe('Users', () => {
     test('updateUserRoleSuccess', async () => {
       const newSuperman = { ...superman, role: Role.MEMBER };
 
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(batman);
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
       jest.spyOn(prisma.user, 'update').mockResolvedValueOnce(newSuperman);
 
-      const res = await UsersService.updateUserRole(2, 1, 'MEMBER');
+      const res = await UsersService.updateUserRole(2, batman, 'MEMBER');
 
       const { googleAuthId, ...restOfSuperman } = newSuperman;
       expect(res).toStrictEqual(restOfSuperman);
@@ -85,19 +84,11 @@ describe('Users', () => {
   describe('updateUserSettings', () => {
     test('updateUserSettings works', async () => {
       jest.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
-      const res = await UsersService.updateUserSettings(1, 'DARK', 'Slack');
+      const res = await UsersService.updateUserSettings(batman, 'DARK', 'Slack');
 
       expect(res.userId).toStrictEqual(1);
       expect(res.defaultTheme).toStrictEqual('DARK');
       expect(res.slackId).toStrictEqual('slack');
-    });
-
-    test('updateUserSettings fails when user does not exist', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
-
-      await expect(() => UsersService.updateUserSettings(88, 'Dark', 'Slack')).rejects.toThrow(
-        new NotFoundException('User', 88)
-      );
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Role, User_Settings } from '@prisma/client';
+import { Role, User_Settings, User as PrimsaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { AuthenticatedUser, User } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
@@ -58,15 +58,14 @@ export default class UsersService {
 
   /**
    * Edits a user's settings in the database
-   * @param userId the id of the user who's settings are being updated
+   * @param user the user who's settings are being updated
    * @param defaultTheme the defaultTheme of the user - a setting
    * @param slackId the user's slackId - a setting
    * @returns the updated settings
    * @throws if the user does not exist
    */
-  static async updateUserSettings(userId: number, defaultTheme: any, slackId: string): Promise<User_Settings> {
-    const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw new NotFoundException('User', userId);
+  static async updateUserSettings(user: PrimsaUser, defaultTheme: any, slackId: string): Promise<User_Settings> {
+    const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
       where: { userId },
@@ -159,19 +158,15 @@ export default class UsersService {
   /**
    * Edits a user's role
    * @param targetUserId the user who's role is being changed
-   * @param userId the user who is changing the role
+   * @param user the user who is changing the role
    * @param role the role that the user is being updated to
    * @returns the user whose role has been updated
    * @throws if the targeted user doesn't exist, the user who's changing the role doesn't exist,
    *         a user is trying to change the role of a user with an equal or higher role, or a user is trying to
    *         promote a user to higher role than themself
    */
-  static async updateUserRole(targetUserId: number, userId: number, role: Role): Promise<User> {
-    const user = await prisma.user.findUnique({ where: { userId } });
-
+  static async updateUserRole(targetUserId: number, user: PrimsaUser, role: Role): Promise<User> {
     let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
-
-    if (!user) throw new NotFoundException('User', userId);
 
     if (!targetUser) throw new NotFoundException('User', targetUserId);
 
