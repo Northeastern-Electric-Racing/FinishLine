@@ -180,7 +180,9 @@ export default class ChangeRequestsService {
           throw new HttpException(400, `Work Package has unchecked expected activities`);
 
         // checks for any unchecked deliverables, if there are any it will return an error
-        const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null && element.dateDeleted !== null);
+        const uncheckedDeliverables = wpDeliverables.some(
+          (element) => element.dateTimeChecked === null && element.dateDeleted !== null
+        );
         if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
       }
 
