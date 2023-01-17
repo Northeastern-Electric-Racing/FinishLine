@@ -176,11 +176,11 @@ export default class ChangeRequestsService {
         const wpDeliverables = foundCR.wbsElement.workPackage.deliverables;
 
         // checks for any unchecked expected activities, if there are any it will return an error
-        if (wpExpectedActivities.some((element) => element.dateTimeChecked === null))
+        if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted !== null))
           throw new HttpException(400, `Work Package has unchecked expected activities`);
 
         // checks for any unchecked deliverables, if there are any it will return an error
-        const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null);
+        const uncheckedDeliverables = wpDeliverables.some((element) => element.dateTimeChecked === null && element.dateDeleted !== null);
         if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
       }
 
