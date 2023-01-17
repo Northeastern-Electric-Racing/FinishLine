@@ -1,10 +1,11 @@
 import express from 'express';
-import { getAllTeams, getSingleTeam, editDescription } from '../controllers/teams.controllers';
+import TeamsController from '../controllers/teams.controllers';
 
 const teamsRouter = express.Router();
 
-teamsRouter.get('/', getAllTeams);
-teamsRouter.get('/:teamId', getSingleTeam);
-teamsRouter.post('/teams/:teamId/edit-description', editDescription);
+teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
+teamsRouter.post('/:teamId/set-members', TeamsController.setTeamMembers);
+teamsRouter.post('/teams/:teamId/edit-description', TeamsController.editDescription);
 
 export default teamsRouter;

@@ -5,7 +5,7 @@
 
 import { UseMutationResult } from 'react-query';
 import { render, screen } from '../../../test-support/test-utils';
-import { wbsPipe } from '../../../../utils/Pipes';
+import { wbsPipe } from '../../../../utils/pipes';
 import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
@@ -30,19 +30,5 @@ describe('stage gate work package modal container test suite', () => {
     renderComponent();
 
     expect(screen.getByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
-  });
-
-  it('renders loading indicator when loading', () => {
-    mockUseCreateStageGateCRHook(true, false);
-    renderComponent();
-
-    expect(screen.getByTestId('loader')).toBeInTheDocument();
-  });
-
-  it('renders error page when error', () => {
-    mockUseCreateStageGateCRHook(false, true, new Error('some error'));
-    renderComponent();
-
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
   });
 });

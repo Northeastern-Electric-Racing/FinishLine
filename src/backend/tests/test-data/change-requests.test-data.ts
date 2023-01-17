@@ -1,27 +1,28 @@
-import { CR_Type, Scope_CR_Why_Type } from '@prisma/client';
-import { WBS_Element_Status } from '@prisma/client';
+import {
+  Change_Request as PrismaChangeRequest,
+  Proposed_Solution as PrismaProposedSolution,
+  Scope_CR as PrismaScopeCR,
+  Description_Bullet as PrismaDescriptionBullet,
+  CR_Type as PrismaCRType
+} from '@prisma/client';
+import { ChangeRequest as SharedChangeRequest, ChangeRequestType } from 'shared';
+import { sharedUser1 } from './users.test-data';
 
-export const changeBatmobile = {
+export const prismaChangeRequest1: PrismaChangeRequest = {
   crId: 1,
   submitterId: 1,
   wbsElementId: 65,
-  type: CR_Type.DEFINITION_CHANGE,
-  changes: [
-    {
-      changeRequestId: 1,
-      implementerId: 1,
-      wbsElementId: 65,
-      detail: 'changed batmobile from white (yuck) to black'
-    }
-  ],
+  type: PrismaCRType.DEFINITION_CHANGE,
   dateSubmitted: new Date('11/24/2020'),
   dateReviewed: new Date('11/25/2020'),
-  accepted: true,
-  reviewerId: 1,
-  reviewNotes: 'white sucks'
+  accepted: null,
+  reviewerId: null,
+  reviewNotes: null,
+  dateDeleted: null,
+  deletedByUserId: null
 };
 
-export const solutionToRedesignWhip = {
+export const prismaProposedSolution1: PrismaProposedSolution = {
   proposedSolutionId: '1',
   description: 'Change Color from Orange to Black',
   timelineImpact: 10,
@@ -32,91 +33,52 @@ export const solutionToRedesignWhip = {
   dateCreated: new Date('10/16/2022'),
   approved: false
 };
-export const redesignWhipWhy = {
-  scopeCRWhyId: 1,
-  scopeCrId: 1,
-  type: Scope_CR_Why_Type.DESIGN,
-  explain: 'because it looks better'
-};
-export const redesignWhipScopeCR = {
+
+export const prismaScopeChangeRequest1: PrismaScopeCR = {
   scopeCrId: 1,
   changeRequestId: 2,
   what: 'redesign whip',
-  why: redesignWhipWhy,
   scopeImpact: 'huge',
   timelineImpact: 10,
-  budgetImpact: 1000,
-  proposedSolutions: solutionToRedesignWhip
+  budgetImpact: 1000
 };
 
-export const redesignWhip = {
-  crId: 2,
-  submitterId: 100,
-  wbsElementId: 65,
-  projectId: 2,
-  type: CR_Type.OTHER,
-  dateSubmitted: new Date('10/10/2022'),
-  dateReviewed: new Date('10/18/2022'),
-  accepted: true,
-  reviewerId: 1,
-  reviewNotes: 'orange sucks',
-  changes: [
-    {
-      changeRequestId: 2,
-      implementerId: 3,
-      wbsElementId: 65,
-      detail: 'changed whip from orange (yuck) to Red'
-    }
-  ],
-  scopeChangeRequest: redesignWhipScopeCR
-};
-export const whipWorkPackage = {
-  workPackageId: 1,
-  wbsElementId: 65,
-  projectId: 1,
-  orderInProject: 1,
-  startDate: new Date('10/10/2022'),
-  progress: 20,
-  duration: 10
+export const whipExpectedActivites: PrismaDescriptionBullet = {
+  descriptionId: 1,
+  dateAdded: new Date('10/10/2022'),
+  userCheckedId: 1,
+  dateTimeChecked: new Date('10/10/2022'),
+  dateDeleted: null,
+  projectIdGoals: null,
+  projectIdFeatures: null,
+  projectIdOtherConstraints: null,
+  workPackageIdDeliverables: null,
+  detail: 'redesign whip',
+  workPackageIdExpectedActivities: 1
 };
 
-export const redesignWhipWBSElement = {
-  wbsElementId: 65,
-  dateCreated: new Date('10/18/2022'),
-  carNumber: 1,
-  projectNumber: 1,
-  workPackageNumber: 1,
-  name: 'redesign whip',
-  status: WBS_Element_Status.ACTIVE,
-  projectLeadId: 1,
-  projectManagerId: 2,
-  changeRequests: [redesignWhip],
-  workPackage: whipWorkPackage
+export const whipDeliverables: PrismaDescriptionBullet = {
+  descriptionId: 2,
+  dateAdded: new Date('10/10/2022'),
+  userCheckedId: 1,
+  dateTimeChecked: new Date('10/10/2022'),
+  detail: 'Gotta Finish',
+  workPackageIdDeliverables: 1,
+  projectIdGoals: null,
+  projectIdFeatures: null,
+  projectIdOtherConstraints: null,
+  workPackageIdExpectedActivities: null,
+  dateDeleted: null
 };
 
-export const unreviewedCr = {
-  crId: 69,
-  submitterId: 1,
-  wbsElementId: 65,
-  type: CR_Type.DEFINITION_CHANGE,
-  changes: [
-    {
-      changeRequestId: 1,
-      implementerId: 1,
-      wbsElementId: 65,
-      detail: "this won't get reviewed"
-    }
-  ],
-  dateSubmitted: new Date('11/24/2020'),
-  dateReviewed: null,
-  accepted: null,
-  reviewerId: null,
-  reviewNotes: null
-};
-
-export const whipPayloadObject = {
-  reviewerId: 1,
-  crId: 2,
-  reviewNotes: 'reviewNotes',
-  accepted: true,
+export const sharedChangeRequest: SharedChangeRequest = {
+  crId: 1,
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 3
+  },
+  submitter: sharedUser1,
+  dateSubmitted: new Date('12-25-2000'),
+  type: ChangeRequestType.Redefinition
 };

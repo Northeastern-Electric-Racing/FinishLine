@@ -1,5 +1,30 @@
 import { project1, wbsElement1 } from './projects.test-data';
-import { batman, superman, wonderwoman } from './users.test-data';
+import { batman, superman, wonderwoman, flash } from './users.test-data';
+import { Team as PrismaTeam } from '@prisma/client';
+import { Team as SharedTeam } from 'shared/src/types/team-types';
+
+const teamId = 'id1';
+const teamName = 'pats';
+const slackId = '69';
+const description = 'best team no cap';
+
+export const prismaTeam1: PrismaTeam = {
+  teamId,
+  teamName,
+  slackId,
+  description,
+  leaderId: flash.userId
+};
+
+export const sharedTeam1: SharedTeam = {
+  teamId,
+  teamName,
+  slackId,
+  description,
+  leader: flash,
+  members: [],
+  projects: []
+};
 
 export const justiceLeague = {
   teamId: '1',

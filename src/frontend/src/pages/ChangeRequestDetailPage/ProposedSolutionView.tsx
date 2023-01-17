@@ -5,11 +5,14 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import { Badge, Button, Col, Container, Row } from 'react-bootstrap';
-import { dollarsPipe, weeksPipe } from '../../utils/Pipes';
-import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solution-view.module.css';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
@@ -18,55 +21,39 @@ interface ProposedSolutionViewProps {
 }
 
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
-  const spacer = 'mb-2';
   return (
-    <PageBlock title="" cardContainerStyle="mb-1" cardBodyStyle="pt-1 pb-2">
-      <Container fluid>
-        <Row className={spacer + ' ' + styles.descLabelContainer}>
-          <b>Description</b>
-          {proposedSolution.approved ? (
-            <b>
-              <Badge pill variant="success">
-                Approved
-              </Badge>
-            </b>
-          ) : null}
-          {showDeleteButton && onDelete !== undefined ? (
-            <Button
-              variant="danger"
-              onClick={() => {
-                onDelete(proposedSolution);
-              }}
-            >
-              <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
-            </Button>
-          ) : null}
-        </Row>
-        <Row className={spacer}>
-          <Col>{proposedSolution.description}</Col>
-        </Row>
-        <Row className={spacer}>
-          <b>Impact</b>
-        </Row>
-        <Row>
-          <Col className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
-            <b>Budget Impact</b>
-          </Col>
-          <Col className={spacer}>{dollarsPipe(proposedSolution.budgetImpact)}</Col>
-        </Row>
-        <Row>
-          <Col className={spacer} xs={7} sm={6} md={4} lg={3} xl={2}>
-            <b>Timeline Impact</b>
-          </Col>
-          <Col className={spacer}>{weeksPipe(proposedSolution.timelineImpact)}</Col>
-        </Row>
-        <Row>
-          <Col className={spacer} md={4} lg={3} xl={2}>
-            <b>Scope Impact</b>
-          </Col>
-          <Col className={spacer}>{proposedSolution.scopeImpact}</Col>
-        </Row>
-      </Container>
+    <PageBlock title="">
+      {showDeleteButton && onDelete !== undefined ? (
+        <Button
+          color="error"
+          variant="outlined"
+          onClick={() => {
+            onDelete(proposedSolution);
+          }}
+          sx={{ position: 'absolute', right: 75 }}
+        >
+          <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+        </Button>
+      ) : null}
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={7}>
+          <DetailDisplay label="Description" content={proposedSolution.description} />
+        </Grid>
+        <Grid item xs={3}>
+          <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)} />
+        </Grid>
+        <Grid item xs={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>
+            {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}{' '}
+          </Typography>
+        </Grid>
+        <Grid item xs={7}>
+          <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
+        </Grid>
+        <Grid item xs={5}>
+          <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)} />
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };

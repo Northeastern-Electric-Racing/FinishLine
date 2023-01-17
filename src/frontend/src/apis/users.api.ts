@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import { User } from 'shared';
-import { apiUrls } from '../utils/Urls';
+import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 
@@ -69,4 +69,8 @@ export const getSingleUserSettings = (id: number) => {
  */
 export const updateUserSettings = (id: number, settings: UserSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
+};
+
+export const updateUserRole = (id: number, role: string) => {
+  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { role });
 };

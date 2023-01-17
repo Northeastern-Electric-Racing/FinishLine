@@ -3,47 +3,45 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Container, Row, Col } from 'react-bootstrap';
 import { ActivationChangeRequest } from 'shared';
-import { booleanPipe, datePipe, fullNamePipe } from '../../utils/Pipes';
+import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
 }
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
-  const spacer = 'mb-2';
   return (
     <PageBlock title={'Activation Change Request Details'}>
-      <Container fluid>
-        <Row>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Project Lead</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {fullNamePipe(cr.projectLead)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Project Manager</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {fullNamePipe(cr.projectManager)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Start Date</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={6} md={3} lg={3} xl={2}>
-            {datePipe(cr.startDate)}
-          </Col>
-          <Col className={spacer} xs={6} sm={4} md={3} lg={3} xl={2}>
-            <b>Confirm WP Details</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={4} md={2} lg={2} xl={1}>
-            {booleanPipe(cr.confirmDetails)}
-          </Col>
-        </Row>
-      </Container>
+      <Grid container>
+        <Grid item xs={6} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <Typography>{fullNamePipe(cr.projectLead)}</Typography>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Start Date </Typography>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <Typography>{datePipe(cr.startDate)}</Typography>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Manager </Typography>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
+        </Grid>
+        <Grid item xs={6} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details </Typography>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };

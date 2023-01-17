@@ -25,35 +25,29 @@ const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, 
         budgetImpact={budgetImpact}
         timelineImpact={timelineImpact}
         scopeImpact={scopeImpact}
+        open={true}
+        onClose={() => {}}
       />
     </RouterWrapper>
   );
 };
 
 describe('Individual Proposed Solution Form Test Suite', () => {
-  it('Renders labels for inputs correctly when readOnly', () => {
+  it('Renders everything correctly when readOnly', () => {
     renderComponent(true);
-    expect(screen.getByLabelText('Description')).toBeInTheDocument();
-    expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
-  });
-
-  it('Renders labels for inputs correctly when not readOnly', () => {
-    renderComponent(false);
-    expect(screen.getByLabelText('Description')).toBeInTheDocument();
-    expect(screen.getByLabelText('Budget Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByLabelText('Scope Impact')).toBeInTheDocument();
-  });
-
-  it('Does not render add button when readOnly', () => {
-    renderComponent(true);
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
+    expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
   });
 
-  it('Renders add button when not readOnly', () => {
+  it('Renders everything correctly when not readOnly', () => {
     renderComponent(false);
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
+    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
+    expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
   });
 

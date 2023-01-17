@@ -1,65 +1,52 @@
-import prisma from '../prisma/prisma';
-import { Request, Response } from 'express';
-import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
-import { Role } from '@prisma/client';
+import { NextFunction, Request, Response } from 'express';
+import TeamsService from '../services/teams.services';
+import { getCurrentUser } from '../utils/utils';
 
-export const getAllTeams = async (_req: Request, res: Response) => {
-  const teams = await prisma.team.findMany(teamRelationArgs);
-  return res.status(200).json(teams.map(teamTransformer));
-};
+export default class TeamsController {
+  static async getAllTeams(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeams();
 
-export const getSingleTeam = async (req: Request, res: Response) => {
-  const team = await prisma.team.findUnique({
-    where: { teamId: req.params.teamId },
-    ...teamRelationArgs
-  });
-
-  if (!team) {
-    return res.status(404).json({ message: `Team with id ${req.params.teamId} not found!` });
+      return res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async editDescription(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId, newDescription } = _req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.editDescription(user, teamId, newDescription);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  return res.status(200).json(teamTransformer(team));
-};
+  static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
 
-export const editDescription = async (req: Request, res: Response) => {
-  const { body } = req;
-  const { userId, teamId, newDescription } = body;
+      const team = await TeamsService.getSingleTeam(teamId);
 
-  const user = await prisma.user.findUnique({ where: { userId } });
-  const team = await prisma.team.findUnique({
-    where: { teamId },
-    include: {
-      leader: true,
-      projects: {
-        include: {
-          wbsElement: true
-        }
-      },
-      members: true
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-  if (!user) return res.status(404).json({ message: `User with id #${userId} not found!` });
-  if (!team) return res.status(404).json({ message: `Team with id #${teamId} not found!` });
+  }
 
-  const canAccess = (user.role === Role.ADMIN || user.role === Role.APP_ADMIN) && userId === team?.leaderId;
-  if (!canAccess) return res.status(403).json({ message: 'Access Denied' });
+  static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+      const submitter = await getCurrentUser(res);
 
-  let updatedTeam = team;
-  updatedTeam = await prisma.team.update({
-    where: { teamId },
-    include: {
-      leader: true,
-      projects: {
-        include: {
-          wbsElement: true
-        }
-      },
-      members: true
-    },
-    data: {
-      description: newDescription
+      // update the team with the input fields
+      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds);
+
+      // return the updated team
+      return res.status(200).json(updateTeam);
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-
-  return res.status(200).json(teamTransformer(updatedTeam));
-};
+  }
+}

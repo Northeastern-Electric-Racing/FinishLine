@@ -4,11 +4,11 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestExplanation, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateProposeSolution, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { routes } from '../../utils/Routes';
+import { routes } from '../../utils/routes';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
@@ -17,13 +17,9 @@ import { useState } from 'react';
 interface CreateChangeRequestProps {}
 
 export interface FormInput {
-  wbsNum: string;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   what: string;
-  scopeImpact: string;
-  timelineImpact: number;
-  budgetImpact: number;
-  why: ChangeRequestExplanation[];
+  why: { type: ChangeRequestReason; explain: string }[];
 }
 
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
@@ -38,22 +34,26 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     mutateAsync: cpsMutateAsync
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+
+  if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
+
+  const { userId } = auth.user;
 
   const handleConfirm = async (data: FormInput) => {
-    if (auth.user?.userId === undefined) {
-      throw new Error('Cannot review change request without being logged in');
-    }
-    const crId = await mutateAsync({
+    const cr = await mutateAsync({
       ...data,
-      wbsNum: validateWBS(data.wbsNum),
-      submitterId: auth.user?.userId
+      wbsNum: validateWBS(wbsNum),
+      submitterId: userId
     });
-
+    const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
       await cpsMutateAsync({
         crId,
-        submitterId: auth.user!.userId,
+        submitterId: userId,
         description,
         timelineImpact,
         scopeImpact,
@@ -64,17 +64,19 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     history.push(routes.CHANGE_REQUESTS);
   };
 
-  if (isLoading || cpsIsLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
+  const handleCancel = () => {
+    history.push(routes.CHANGE_REQUESTS);
+  };
 
   return (
     <CreateChangeRequestsView
-      wbsNum={query.get('wbsNum') || ''}
+      wbsNum={wbsNum}
+      setWbsNum={setWbsNum}
       crDesc={query.get('riskDetails') || ''}
       onSubmit={handleConfirm}
       proposedSolutions={proposedSolutions}
       setProposedSolutions={setProposedSolutions}
+      handleCancel={handleCancel}
     />
   );
 };

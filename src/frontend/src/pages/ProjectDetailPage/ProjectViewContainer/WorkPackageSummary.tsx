@@ -3,24 +3,26 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Collapse, Col, Container, Row } from 'react-bootstrap';
-import { WorkPackage } from 'shared';
-import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/Pipes';
-import { useTheme } from '../../../hooks/theme.hooks';
-import { routes } from '../../../utils/Routes';
+import Box from '@mui/material/Box';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import { Link as RouterLink } from 'react-router-dom';
+import { calculateEndDate, WorkPackage } from 'shared';
+import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
-import styles from '../../../stylesheets/pages/project-detail-page/work-package-summary.module.scss';
+import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
 }
 
 const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) => {
-  const [open, setOpen] = useState(false);
-  const theme = useTheme();
-
   const expectedActivitiesList = (
     <ul>
       {workPackage.expectedActivities.slice(0, 3).map((item, idx) => (
@@ -38,61 +40,72 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
 
-  return (
-    <Card bg={theme.cardBg} border={theme.cardBorder}>
-      <Card.Header className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
-        <div className={'d-flex justify-content-between'}>
-          <div className={'d-flex'}>
-            <div className={'mr-3'}>{wbsPipe(workPackage.wbsNum)}</div>
-            <Link to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>{workPackage.name}</Link>
-          </div>
-          <div className={'d-flex'}>
-            <div className={'mr-3'}>{<WbsStatus status={workPackage.status} />}</div>
-            <div>{weeksPipe(workPackage.duration)}</div>
-          </div>
-        </div>
-      </Card.Header>
+  const theme = useTheme();
 
-      <Collapse in={open}>
-        <div>
-          <Card.Body>
-            <Container fluid>
-              <Row>
-                <Col xs={12} md={6}>
-                  <b>Dependencies:</b> {listPipe(workPackage.dependencies, wbsPipe)}
-                </Col>
-                <Col xs={6} md={4}>
-                  <b>Start date:</b> {datePipe(workPackage.startDate)} <br />
-                  <b>End Date:</b> {datePipe(workPackage.endDate)}
-                </Col>
-              </Row>
-              <Row>
-                <Col xs={12} md={6}>
-                  <b>Expected Activities:</b> {expectedActivitiesList}
-                  {numMoreExpectedActivities > 0 ? (
-                    <Link to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
-                      Show {numMoreExpectedActivities} more...
-                    </Link>
-                  ) : (
-                    <></>
-                  )}
-                </Col>
-                <Col xs={12} md={6}>
-                  <b>Deliverables:</b> {deliverablesList}
-                  {numMoreDeliverables > 0 ? (
-                    <Link to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`} className={styles.showMoreLink}>
-                      Show {numMoreDeliverables} more...
-                    </Link>
-                  ) : (
-                    <></>
-                  )}
-                </Col>
-              </Row>
-            </Container>
-          </Card.Body>
-        </div>
-      </Collapse>
-    </Card>
+  return (
+    <Accordion sx={{ border: '1px solid ' + theme.palette.divider, background: theme.palette.background.default }}>
+      <AccordionSummary
+        id={`${wbsPipe(workPackage.wbsNum)}-summary-header`}
+        aria-controls={`${wbsPipe(workPackage.wbsNum)}-summary-content`}
+      >
+        <Typography>{wbsPipe(workPackage.wbsNum)}</Typography>
+        <Box flexGrow={1} paddingLeft={2}>
+          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
+            {workPackage.name}
+          </Link>
+        </Box>
+        <WbsStatus status={workPackage.status} />
+        <Typography paddingLeft={2}>{weeksPipe(workPackage.duration)}</Typography>
+      </AccordionSummary>
+
+      <AccordionDetails>
+        <Box flexGrow={1}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Box display="flex" flexDirection="row" flexGrow={0.5}>
+                <Box display="flex" flexDirection="row" paddingRight={2}>
+                  <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={1} />
+                </Box>
+                <Box display="flex" flexDirection="row">
+                  <DetailDisplay
+                    label="End Date"
+                    content={datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}
+                    paddingRight={1}
+                  />
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={6}>
+              <Box display="flex" flexDirection="row">
+                <DetailDisplay label="Dependencies" content={listPipe(workPackage.dependencies, wbsPipe)} paddingRight={1} />
+              </Box>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography fontWeight="bold">Expected Activities:</Typography>
+              <Typography>{expectedActivitiesList}</Typography>
+              {numMoreExpectedActivities > 0 ? (
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
+                  Show {numMoreExpectedActivities} more...
+                </Link>
+              ) : (
+                <></>
+              )}
+            </Grid>
+            <Grid item xs={6}>
+              <Typography fontWeight="bold">Deliverables:</Typography>
+              <Typography>{deliverablesList}</Typography>
+              {numMoreDeliverables > 0 ? (
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
+                  Show {numMoreDeliverables} more...
+                </Link>
+              ) : (
+                <></>
+              )}
+            </Grid>
+          </Grid>
+        </Box>
+      </AccordionDetails>
+    </Accordion>
   );
 };
 

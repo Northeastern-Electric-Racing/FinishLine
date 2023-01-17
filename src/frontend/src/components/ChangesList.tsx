@@ -3,11 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from 'react-router-dom';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Link } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
-import { fullNamePipe, datePipe } from '../utils/Pipes';
-import { routes } from '../utils/Routes';
+import { fullNamePipe, datePipe } from '../utils/pipes';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../utils/routes';
 import BulletList from './BulletList';
 
 interface ChangesListProps {
@@ -20,20 +22,29 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       title={'Changes'}
       list={changes.map((ic) => (
         <>
-          [<Link to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>#{ic.changeRequestId}</Link>]{' '}
-          <OverlayTrigger
-            placement="right"
-            overlay={
-              <Tooltip id="tooltip">
-                {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
-              </Tooltip>
+          [
+          <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
+            #{ic.changeRequestId}
+          </Link>
+          ]{' '}
+          <Tooltip
+            id="tooltip"
+            title={
+              <>
+                <Typography variant="body2">
+                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
+                </Typography>
+              </>
             }
+            placement="right"
+            arrow
           >
-            <span>{ic.detail}</span>
-          </OverlayTrigger>
+            <Typography component="span">{ic.detail}</Typography>
+          </Tooltip>
         </>
       ))}
       readOnly={true}
+      defaultClosed
     />
   );
 };

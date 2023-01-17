@@ -59,7 +59,8 @@ export const exampleWorkPackage1: WorkPackage = {
       detail: 'Increased funding by $500.',
       dateImplemented: new Date('11/15/2003')
     }
-  ]
+  ],
+  projectName: 'project1'
 };
 
 export const exampleWorkPackage2: WorkPackage = {
@@ -126,7 +127,8 @@ export const exampleWorkPackage2: WorkPackage = {
       detail: 'Added "jet fuel burns hot" bullet.',
       dateImplemented: new Date('03/24/21')
     }
-  ]
+  ],
+  projectName: 'project2'
 };
 
 export const exampleWorkPackage3: WorkPackage = {
@@ -184,7 +186,8 @@ export const exampleWorkPackage3: WorkPackage = {
       detail: 'Increased budget from $10 to $200.',
       dateImplemented: new Date('03/24/21')
     }
-  ]
+  ],
+  projectName: 'project3'
 };
 
 export const exampleAllWorkPackages: WorkPackage[] = [exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3];

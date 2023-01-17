@@ -4,8 +4,7 @@
  */
 
 import { ReactElement, useState } from 'react';
-import { Button, Col, Container, Dropdown, DropdownButton, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   ActivationChangeRequest,
   ChangeRequest,
@@ -13,8 +12,8 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { routes } from '../../utils/Routes';
-import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/Pipes';
+import { routes } from '../../utils/routes';
+import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -24,6 +23,9 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
+import { NERButton } from '../../components/NERButton';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -79,73 +81,99 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [modalShow, setModalShow] = useState<boolean>(false);
   const handleClose = () => setModalShow(false);
   const handleOpen = () => setModalShow(true);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const dropdownOpen = Boolean(anchorEl);
 
   const reviewBtn = (
-    <Button variant="primary" onClick={handleOpen} disabled={!isUserAllowedToReview}>
+    <NERButton variant="contained" onClick={handleOpen} disabled={!isUserAllowedToReview}>
       Review
-    </Button>
+    </NERButton>
   );
 
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
   const implementCrDropdown = (
-    <DropdownButton id="implement-cr-dropdown" title="Implement Change Request">
-      <Dropdown.Item as={Link} to={routes.PROJECTS_NEW} disabled={!isUserAllowedToImplement}>
-        Create New Project
-      </Dropdown.Item>
-      <Dropdown.Item
-        as={Link}
-        to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
-        disabled={!isUserAllowedToImplement}
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="implement-cr-dropdown"
+        onClick={handleClick}
       >
-        Create New Work Package
-      </Dropdown.Item>
-      <Dropdown.Item
-        as={Link}
-        to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
-        disabled={!isUserAllowedToImplement}
-      >
-        Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
-      </Dropdown.Item>
-    </DropdownButton>
+        Implement Change Request
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem
+          to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
+          component={RouterLink}
+          onClick={handleDropdownClose}
+          disabled={!isUserAllowedToImplement}
+        >
+          Create New Project
+        </MenuItem>
+        <MenuItem
+          component={RouterLink}
+          to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
+          disabled={!isUserAllowedToImplement}
+          onClick={handleDropdownClose}
+        >
+          Create New Work Package
+        </MenuItem>
+        <MenuItem
+          component={RouterLink}
+          to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
+          disabled={!isUserAllowedToImplement}
+          onClick={handleDropdownClose}
+        >
+          Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
+        </MenuItem>
+      </Menu>
+    </div>
   );
 
   let actionDropdown = <></>;
   if (changeRequest.accepted === undefined) actionDropdown = reviewBtn;
   if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
-  const spacer = 'mb-2';
 
   return (
-    <Container fluid>
+    <>
       <PageTitle
         title={`Change Request #${changeRequest.crId}`}
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
       <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
-        <Container fluid>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>Type</b>
-            </Col>
-            <Col className={spacer}>{changeRequest.type}</Col>
-          </Row>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>WBS #</b>
-            </Col>
-            <Col className={spacer}>
-              <Link to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>{wbsPipe(changeRequest.wbsNum)}</Link>
-            </Col>
-          </Row>
-          <Row>
-            <Col className={spacer} xs={4} sm={4} md={3} lg={2} xl={2}>
-              <b>Submitted By</b>
-            </Col>
-            <Col className={spacer} xs={5} sm={5} md={4} lg={3} xl={2}>
-              {fullNamePipe(changeRequest.submitter)}
-            </Col>
-            <Col className={spacer}>{datePipe(changeRequest.dateSubmitted)}</Col>
-          </Row>
-        </Container>
+        <Grid container spacing={1}>
+          <Grid item xs={2}>
+            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
+          </Grid>
+          <Grid item xs={10}>
+            {changeRequest.type}
+          </Grid>
+          <Grid item xs={2}>
+            <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
+          </Grid>
+          <Grid item xs={10}>
+            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              {wbsPipe(changeRequest.wbsNum)}
+            </Link>
+          </Grid>
+          <Grid item xs={3} md={2}>
+            <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
+          </Grid>
+          <Grid item xs={2}>
+            <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
+          </Grid>
+          <Grid item xs={2}>
+            <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
+          </Grid>
+        </Grid>
       </PageBlock>
       {buildDetails(changeRequest)}
       {buildProposedSolutions(changeRequest)}
@@ -159,7 +187,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         overallDateImplemented={changeRequest.dateImplemented}
       />
       {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
-    </Container>
+    </>
   );
 };
 

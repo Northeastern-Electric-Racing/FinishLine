@@ -3,35 +3,39 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Col, Row } from 'react-bootstrap';
+import { Grid, Typography } from '@mui/material';
 import { UserSettings } from 'shared';
+import ExternalLink from '../../../components/ExternalLink';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface UserSettingsViewProps {
   settings: UserSettings;
 }
-
 const renderSlackId = (settings: UserSettings) => {
   return (
-    <div>
-      <b>Slack ID: </b>
-      <a target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
-        {settings.slackId}
-      </a>
-    </div>
+    <>
+      <div style={{ display: 'flex' }}>
+        <Typography sx={{ fontWeight: 'bold' }}>Slack ID:</Typography>
+        <ExternalLink
+          link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
+          description={settings.slackId}
+        />
+      </div>
+    </>
   );
 };
 
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
-    <Row>
-      <Col md={4} lg={2}>
-        <b>Default Theme:</b> {settings.defaultTheme}
-      </Col>
-      <Col md={6} lg={4}>
+    <>
+      <Grid item md={4} lg={2}>
+        <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
+      </Grid>
+      <Grid item md={6} lg={4}>
         {renderSlackId(settings)}
-      </Col>
-    </Row>
+      </Grid>
+    </>
   );
 };
 

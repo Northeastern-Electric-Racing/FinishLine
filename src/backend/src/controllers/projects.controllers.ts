@@ -6,7 +6,6 @@ import {
   createDescriptionBulletChangesJson,
   createRulesChangesJson,
   editDescriptionBullets,
-  getChangeRequestReviewState,
   getHighestProjectNumber,
   getUserFullName,
   manyRelationArgs,
@@ -15,10 +14,11 @@ import {
 } from '../utils/projects.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import { descBulletConverter } from '../utils/utils';
+import { descBulletConverter, getCurrentUser } from '../utils/utils';
+import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
-  const projects = await prisma.project.findMany(manyRelationArgs);
+  const projects = await prisma.project.findMany({ where: { wbsElement: { dateDeleted: null } }, ...manyRelationArgs });
   res.status(200).json(projects.map(projectTransformer));
 };
 
@@ -40,9 +40,8 @@ export const getSingleProject = async (req: Request, res: Response) => {
     ...uniqueRelationArgs
   });
 
-  if (wbsEle === null) {
-    return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
-  }
+  if (!wbsEle) return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
+  if (wbsEle.dateDeleted) return res.status(400).json({ message: 'This project has been deleted!' });
 
   return res.status(200).json(projectTransformer(wbsEle));
 };
@@ -53,13 +52,13 @@ export const newProject = async (req: Request, res: Response) => {
   if (!user) return res.status(404).json({ message: `user #${req.body.userId} not found!` });
   if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
-  // check if the change request exists
-  const crReviewed = await getChangeRequestReviewState(req.body.crId);
-  if (crReviewed === null) {
-    return res.status(404).json({ message: `change request CR #${req.body.crId}` });
-  }
-  if (!crReviewed) {
-    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
+  await validateChangeRequestAccepted(req.body.crId);
+
+  if (req.body.teamId !== undefined) {
+    const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
+    if (!team) {
+      return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
+    }
   }
 
   // create the wbs element for the project and document the implemented change request
@@ -70,7 +69,7 @@ export const newProject = async (req: Request, res: Response) => {
       projectNumber: maxProjectNumber + 1,
       workPackageNumber: 0,
       name: req.body.name,
-      project: { create: { summary: req.body.summary } },
+      project: { create: { summary: req.body.summary, teamId: req.body.teamId } },
       changes: {
         create: {
           changeRequestId: req.body.crId,
@@ -82,19 +81,14 @@ export const newProject = async (req: Request, res: Response) => {
     include: { project: true, changes: true }
   });
 
-  return res.status(200).json({
-    wbsNumber: {
-      carNumber: createdProject.carNumber,
-      projectNumber: createdProject.projectNumber,
-      workPackageNumber: createdProject.workPackageNumber
-    }
-  });
+  return res
+    .status(200)
+    .json(`${createdProject.carNumber}.${createdProject.projectNumber}.${createdProject.workPackageNumber}`);
 };
 
 export const editProject = async (req: Request, res: Response) => {
   const { body } = req;
-  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name, wbsElementStatus } =
-    body;
+  const { projectId, crId, userId, budget, summary, rules, goals, features, otherConstraints, name } = body;
 
   // Create optional arg values
   const googleDriveFolderLink = body.googleDriveFolderLink === undefined ? null : body.googleDriveFolderLink;
@@ -108,12 +102,9 @@ export const editProject = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return res.status(404).json({ message: `user with id ${userId} not found` });
   if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
-  // Verify valid change request
-  const crReviewed = await getChangeRequestReviewState(body.crId);
-  if (crReviewed === null) return res.status(404).json({ message: `change request with id ${crId} not found` });
-  if (!crReviewed) {
-    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
-  }
+
+  // verify valid change request
+  await validateChangeRequestAccepted(crId);
 
   // get the original project so we can compare things
   const originalProject = await prisma.project.findUnique({
@@ -129,9 +120,8 @@ export const editProject = async (req: Request, res: Response) => {
   });
 
   // if it doesn't exist we error
-  if (originalProject === null) {
-    return res.status(404).json({ message: `project ${projectId} not found!` });
-  }
+  if (!originalProject) return res.status(404).json({ message: `project ${projectId} not found!` });
+  if (originalProject.wbsElement.dateDeleted) return res.status(400).json({ message: 'This project has been deleted!' });
 
   const { wbsElementId } = originalProject;
 
@@ -140,14 +130,6 @@ export const editProject = async (req: Request, res: Response) => {
   const nameChangeJson = createChangeJsonNonList('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
   const budgetChangeJson = createChangeJsonNonList('budget', originalProject.budget, budget, crId, userId, wbsElementId);
   const summaryChangeJson = createChangeJsonNonList('summary', originalProject.summary, summary, crId, userId, wbsElementId);
-  const statusChangeJson = createChangeJsonNonList(
-    'status',
-    originalProject.wbsElement.status,
-    wbsElementStatus,
-    crId,
-    userId,
-    wbsElementId
-  );
   const driveChangeJson = createChangeJsonNonList(
     'google drive folder link',
     originalProject.googleDriveFolderLink,
@@ -198,9 +180,6 @@ export const editProject = async (req: Request, res: Response) => {
   }
   if (summaryChangeJson !== undefined) {
     changes.push(summaryChangeJson);
-  }
-  if (statusChangeJson !== undefined) {
-    changes.push(statusChangeJson);
   }
   if (driveChangeJson !== undefined) {
     changes.push(driveChangeJson);
@@ -272,7 +251,6 @@ export const editProject = async (req: Request, res: Response) => {
       wbsElement: {
         update: {
           name,
-          status: wbsElementStatus,
           projectLeadId: projectLead,
           projectManagerId: projectManager
         }
@@ -311,4 +289,53 @@ export const editProject = async (req: Request, res: Response) => {
 
   // return the updated work package
   return res.status(200).json(updatedProject);
+};
+
+export const setProjectTeam = async (req: Request, res: Response) => {
+  const { body } = req;
+
+  // check for valid WBS number
+  const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
+
+  if (!isProject(parsedWbs)) {
+    return res.status(400).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
+  }
+
+  // find the associated project
+  const project = await prisma.project.findFirst({
+    where: {
+      wbsElement: {
+        carNumber: parsedWbs.carNumber,
+        projectNumber: parsedWbs.projectNumber,
+        workPackageNumber: parsedWbs.workPackageNumber
+      }
+    }
+  });
+
+  if (!project) {
+    return res.status(404).json({ message: `no associated project for ${req.params.wbsNum}` });
+  }
+
+  // check for valid team
+  const team = await prisma.team.findUnique({ where: { teamId: body.teamId } });
+  if (!team) {
+    return res.status(404).json({ message: `team with id ${body.teamId} not found.` });
+  }
+
+  const user = await getCurrentUser(res);
+  // check for user and user permission (admin, app admin, or leader of the team)
+  if (
+    user.role === Role.GUEST ||
+    user.role === Role.MEMBER ||
+    (user.role === Role.LEADERSHIP && user.userId !== team.leaderId)
+  )
+    return res.status(403).json({ message: 'Access Denied' });
+
+  // if everything is fine, then update the given project to assign to provided team ID
+  await prisma.project.update({
+    where: { projectId: project.projectId },
+    data: { teamId: body.teamId }
+  });
+
+  return res.status(200).json({ message: `Project ${project.projectId} successfully assigned to team ${body.teamId}.` });
 };
