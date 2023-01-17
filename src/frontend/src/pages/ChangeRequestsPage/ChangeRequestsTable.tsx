@@ -62,12 +62,12 @@ const ChangeRequestsTable: React.FC = () => {
       maxWidth: 300,
       valueFormatter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
       sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.carNumber !== param2.value.carNumber) {
-          return param1.value.carNumber - param2.value.carNumber;
-        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
-          return param1.value.projectNumber - param2.value.projectNumber;
-        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
-          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+        if (param1.value.wbsNum.carNumber !== param2.value.wbsNum.carNumber) {
+          return param1.value.wbsNum.carNumber - param2.value.wbsNum.carNumber;
+        } else if (param1.value.wbsNum.projectNumber !== param2.value.wbsNum.projectNumber) {
+          return param1.value.wbsNum.projectNumber - param2.value.wbsNum.projectNumber;
+        } else if (param1.value.wbsNum.workPackageNumber !== param2.value.wbsNum.workPackageNumber) {
+          return param1.value.wbsNum.workPackageNumber - param2.value.wbsNum.workPackageNumber;
         } else {
           return 0;
         }
