@@ -1,4 +1,4 @@
-import { Role, User_Settings, User as PrimsaUser } from '@prisma/client';
+import { Role, User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { AuthenticatedUser, User } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
@@ -64,7 +64,7 @@ export default class UsersService {
    * @returns the updated settings
    * @throws if the user does not exist
    */
-  static async updateUserSettings(user: PrimsaUser, defaultTheme: any, slackId: string): Promise<User_Settings> {
+  static async updateUserSettings(user: PrismaUser, defaultTheme: any, slackId: string): Promise<User_Settings> {
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -165,7 +165,7 @@ export default class UsersService {
    *         a user is trying to change the role of a user with an equal or higher role, or a user is trying to
    *         promote a user to higher role than themself
    */
-  static async updateUserRole(targetUserId: number, user: PrimsaUser, role: Role): Promise<User> {
+  static async updateUserRole(targetUserId: number, user: PrismaUser, role: Role): Promise<User> {
     let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
 
     if (!targetUser) throw new NotFoundException('User', targetUserId);
@@ -173,10 +173,15 @@ export default class UsersService {
     const userRole = rankUserRole(user.role);
     const targetUserRole = rankUserRole(targetUser.role);
 
+    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+      throw new AccessDeniedException('Only admins can update user roles!');
+    }
+
     if (rankUserRole(role) > userRole) throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
 
-    if (targetUserRole >= userRole)
+    if (targetUserRole >= userRole) {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
+    }
 
     targetUser = await prisma.user.update({
       where: { userId: targetUserId },
