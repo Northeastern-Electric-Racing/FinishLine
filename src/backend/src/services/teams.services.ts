@@ -34,6 +34,13 @@ export default class TeamsService {
 
     return teamTransformer(team);
   }
+  /**
+   * Changes the description of the given team to be the new description
+   * @param user The user who is editing the description
+   * @param teamId The id for the team that is being edited
+   * @param newDescription the new description for the team
+   * @returns The team with the new description
+   */
   static async editDescription(user: User, teamId: string, newDescription: string): Promise<Team> {
     const team = await prisma.team.findUnique({
       where: { teamId },
@@ -41,7 +48,7 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN && user.userId !== team.leaderId)
+    if (user.role === Role.GUEST || (user.role === Role.MEMBER && user.userId !== team.leaderId))
       throw new AccessDeniedException();
 
     const updateTeam = await prisma.team.update({

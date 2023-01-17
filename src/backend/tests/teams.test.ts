@@ -109,10 +109,10 @@ describe('Teams', () => {
     test('returnsErrorIfNotAdmin', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
-      await expect(() =>
-        TeamsService.editDescription(wonderwoman, '1', 'Hello!')
-      ).rejects.toThrow(new AccessDeniedException());
-      
+      await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
+        new AccessDeniedException()
+      );
+
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
     });
   });

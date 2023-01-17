@@ -6,6 +6,6 @@ const teamsRouter = express.Router();
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post('/:teamId/set-members', TeamsController.setTeamMembers);
-teamsRouter.post('/teams/:teamId/edit-description', TeamsController.editDescription);
+teamsRouter.post('/:teamId/edit-description', TeamsController.editDescription);
 
 export default teamsRouter;
