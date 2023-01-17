@@ -217,7 +217,7 @@ describe('Change Requests', () => {
       const uncheckedExpectedActivities = {
         ...whipExpectedActivites,
         userCheckedId: null,
-        dateTimeChecked: null
+        dateTimeChecked: null,
       };
       const uncheckedExpectedActivitiesWP = { ...prismaWorkPackage1, expectedActivities: [uncheckedExpectedActivities] };
       const uncheckedExpectedActivitesWBS = {
@@ -243,7 +243,7 @@ describe('Change Requests', () => {
       const uncheckedDeliverables = {
         ...whipDeliverables,
         userCheckedId: null,
-        dateTimeChecked: null
+        dateTimeChecked: null,
       };
       const uncheckedDeliverablesWP = {
         ...prismaWorkPackage1,
