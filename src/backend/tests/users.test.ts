@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
@@ -36,21 +36,21 @@ describe('Users', () => {
   });
 
   describe('updateUserRole', () => {
-    test('cannotUpdateUserToHigherRole', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
-      await expect(() => UsersService.updateUserRole(1, wonderwoman, 'APP_ADMIN')).rejects.toThrow(
+    test('cannot update user to higher role', async () => {
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      await expect(() => UsersService.updateUserRole(1, superman, 'APP_ADMIN')).rejects.toThrow(
         new AccessDeniedException('Cannot promote user to a higher role than yourself')
       );
     });
 
-    test('cannotDemoteUserOfSameRole', async () => {
+    test('cannot demote user of same role', async () => {
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(flash);
       await expect(() => UsersService.updateUserRole(superman.userId, flash, 'GUEST')).rejects.toThrow(
         new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you')
       );
     });
 
-    test('updateUserRoleSuccess', async () => {
+    test('updateUserRole success', async () => {
       const newSuperman = { ...superman, role: Role.MEMBER };
 
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValueOnce(superman);
