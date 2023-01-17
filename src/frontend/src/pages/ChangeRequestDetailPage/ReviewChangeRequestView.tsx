@@ -10,7 +10,18 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
+import {
+  Snackbar,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Box,
+  TextField,
+  Typography,
+  Alert
+} from '@mui/material';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -31,6 +42,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   onSubmit
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
+  const [showAlert, setShowAlert] = useState(false);
 
   const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
@@ -78,6 +90,24 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             }
           }}
         >
+          <Snackbar
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            open={showAlert}
+            autoHideDuration={3000}
+            onClose={() => {
+              setShowAlert(false);
+            }}
+          >
+            <Alert
+              variant="filled"
+              severity="error"
+              onClose={() => {
+                setShowAlert(false);
+              }}
+            >
+              Please select a proposed solution!
+            </Alert>
+          </Snackbar>
           <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
           <Box
             sx={{
@@ -134,7 +164,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             form="review-notes-form"
             sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => {
-              selected > -1 ? handleAcceptDeny(true) : alert('Please select a proposed solution!');
+              selected > -1 ? handleAcceptDeny(true) : setShowAlert(true);
             }}
           >
             Accept
