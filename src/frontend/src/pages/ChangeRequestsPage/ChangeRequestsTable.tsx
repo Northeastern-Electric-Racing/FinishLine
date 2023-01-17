@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequestType } from 'shared';
+import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -58,16 +58,20 @@ const ChangeRequestsTable: React.FC = () => {
       ...baseColDef,
       field: 'wbs',
       headerName: 'WBS',
-      filterable: false,
+      filterable: true,
+      sortable: true,
       maxWidth: 300,
-      valueFormatter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
-      sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.wbsNum.carNumber !== param2.value.wbsNum.carNumber) {
-          return param1.value.wbsNum.carNumber - param2.value.wbsNum.carNumber;
-        } else if (param1.value.wbsNum.projectNumber !== param2.value.wbsNum.projectNumber) {
-          return param1.value.wbsNum.projectNumber - param2.value.wbsNum.projectNumber;
-        } else if (param1.value.wbsNum.workPackageNumber !== param2.value.wbsNum.workPackageNumber) {
-          return param1.value.wbsNum.workPackageNumber - param2.value.wbsNum.workPackageNumber;
+      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+      sortComparator: (_v1, _v2, param1, param2) => {
+        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
+        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+
+        if (wbs1.carNumber !== wbs2.carNumber) {
+          return wbs1.carNumber - wbs2.carNumber;
+        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
+          return wbs1.projectNumber - wbs2.projectNumber;
+        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+          return wbs1.workPackageNumber - wbs2.workPackageNumber;
         } else {
           return 0;
         }
