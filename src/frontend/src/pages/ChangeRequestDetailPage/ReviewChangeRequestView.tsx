@@ -10,18 +10,8 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import {
-  Snackbar,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  TextField,
-  Typography,
-  Alert
-} from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
+import Toast from '../../components/Toast';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -81,107 +71,99 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 
   const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
-      <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
-        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
-        <DialogContent
-          sx={{
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            }
-          }}
-        >
-          <Snackbar
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            open={showAlert}
-            autoHideDuration={3000}
-            onClose={() => {
-              setShowAlert(false);
-            }}
-          >
-            <Alert
-              variant="filled"
-              severity="error"
-              onClose={() => {
-                setShowAlert(false);
-              }}
-            >
-              Please select a proposed solution!
-            </Alert>
-          </Snackbar>
-          <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
-          <Box
+      <>
+        <Toast open={showAlert} severity="error" message={'Please select a proposed solution!'} stateSetter={setShowAlert} />
+        <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
+          <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+          <DialogContent
             sx={{
-              width: 400,
               '&::-webkit-scrollbar': {
                 display: 'none'
               }
             }}
-            style={overflow}
           >
-            {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
-              return (
-                <div style={proposedSolutionStyle}>
-                  <ProposedSolutionSelectItem
-                    proposedSolution={solution}
-                    selected={selected === i}
-                    onClick={() => (selected === i ? setSelected(-1) : setSelected(i))}
-                  />
-                </div>
-              );
-            })}
-          </Box>
-          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-            <Controller
-              name="reviewNotes"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Additional Comments'}</Typography>
-                  <TextField
-                    multiline
-                    rows={4}
-                    required
-                    variant="outlined"
-                    id="reviewNotes-input"
-                    autoComplete="off"
-                    onChange={onChange}
-                    value={value}
-                    defaultValue={value}
-                    fullWidth
-                    sx={{ width: 400 }}
-                  />
-                </>
-              )}
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="success"
-            variant="contained"
-            type="submit"
-            form="review-notes-form"
-            sx={{ textTransform: 'none', fontSize: 16 }}
-            onClick={() => {
-              selected > -1 ? handleAcceptDeny(true) : setShowAlert(true);
-            }}
-          >
-            Accept
-          </Button>
-          <Button
-            color="error"
-            className={'ml-3'}
-            variant="contained"
-            type="submit"
-            form="review-notes-form"
-            sx={{ textTransform: 'none', fontSize: 16 }}
-            onClick={() => handleAcceptDeny(false)}
-          >
-            Deny
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+            <Box
+              sx={{
+                width: 400,
+                '&::-webkit-scrollbar': {
+                  display: 'none'
+                }
+              }}
+              style={overflow}
+            >
+              {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
+                return (
+                  <div style={proposedSolutionStyle}>
+                    <ProposedSolutionSelectItem
+                      proposedSolution={solution}
+                      selected={selected === i}
+                      onClick={() => (selected === i ? setSelected(-1) : setSelected(i))}
+                    />
+                  </div>
+                );
+              })}
+            </Box>
+            <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+              <Controller
+                name="reviewNotes"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <Typography
+                      sx={{
+                        paddingTop: 1,
+                        paddingBottom: 1
+                      }}
+                    >
+                      {'Additional Comments'}
+                    </Typography>
+                    <TextField
+                      multiline
+                      rows={4}
+                      required
+                      variant="outlined"
+                      id="reviewNotes-input"
+                      autoComplete="off"
+                      onChange={onChange}
+                      value={value}
+                      defaultValue={value}
+                      fullWidth
+                      sx={{ width: 400 }}
+                    />
+                  </>
+                )}
+              />
+            </form>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="success"
+              variant="contained"
+              type="submit"
+              form="review-notes-form"
+              sx={{ textTransform: 'none', fontSize: 16 }}
+              onClick={() => {
+                selected > -1 ? handleAcceptDeny(true) : setShowAlert(true);
+              }}
+            >
+              Accept
+            </Button>
+            <Button
+              color="error"
+              className={'ml-3'}
+              variant="contained"
+              type="submit"
+              form="review-notes-form"
+              sx={{ textTransform: 'none', fontSize: 16 }}
+              onClick={() => handleAcceptDeny(false)}
+            >
+              Deny
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   };
 
