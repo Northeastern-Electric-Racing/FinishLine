@@ -34,6 +34,7 @@ export default class TeamsService {
 
     return teamTransformer(team);
   }
+
   /**
    * Changes the description of the given team to be the new description
    * @param user The user who is editing the description
@@ -48,7 +49,7 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (user.role === Role.GUEST || (user.role === Role.MEMBER && user.userId !== team.leaderId))
+    if (!(user.role === Role.APP_ADMIN || user.role === Role.ADMIN || user.userId === team.leaderId))
       throw new AccessDeniedException();
 
     const updateTeam = await prisma.team.update({

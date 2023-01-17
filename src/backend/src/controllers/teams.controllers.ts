@@ -12,7 +12,7 @@ export default class TeamsController {
       next(error);
     }
   }
-  
+
   static async editDescription(_req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId, newDescription } = _req.body;

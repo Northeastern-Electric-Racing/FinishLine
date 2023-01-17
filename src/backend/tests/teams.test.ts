@@ -92,9 +92,10 @@ describe('Teams', () => {
       expect(res).toStrictEqual(sharedTeam1);
     });
   });
-  describe('editTeamDescription', () => {
-    test('updateTeamDescSuccess', async () => {
-      const newJustice = { ...justiceLeague, description: 'hello!', leader: { ...batman, googleAuthId: 'b' } };
+
+  describe('Edit Team Description', () => {
+    test('Update Team Description Success', async () => {
+      const newJustice = { ...justiceLeague, description: 'hello!' };
 
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
       jest.spyOn(prisma.team, 'update').mockResolvedValue(newJustice);
@@ -106,7 +107,7 @@ describe('Teams', () => {
       expect(prisma.team.update).toHaveBeenCalledTimes(1);
     });
 
-    test('returnsErrorIfNotAdmin', async () => {
+    test('Returns Error If Not Admin', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
       await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
