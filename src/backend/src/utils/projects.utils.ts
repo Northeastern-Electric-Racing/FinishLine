@@ -12,11 +12,11 @@ import {
   calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
-import { userTransformer } from './users.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
 import { calculateWorkPackageProgress } from './work-packages.utils';
+import userTransformer from '../transformers/user.transformer';
 
 /**
  * calculate the project's status based on its workpacakges' status
