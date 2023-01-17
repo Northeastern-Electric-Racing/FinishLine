@@ -64,7 +64,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       wbsElementStatus: status
     }
   });
-  //lists of stuff
+  // lists of stuff
   const {
     fields: expectedActivities,
     append: appendExpectedActivity,

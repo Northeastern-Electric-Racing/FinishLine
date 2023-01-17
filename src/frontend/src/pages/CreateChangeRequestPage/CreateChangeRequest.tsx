@@ -43,12 +43,12 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const { userId } = auth.user;
 
   const handleConfirm = async (data: FormInput) => {
-    const crId = await mutateAsync({
+    const cr = await mutateAsync({
       ...data,
       wbsNum: validateWBS(wbsNum),
       submitterId: userId
     });
-
+    const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
       await cpsMutateAsync({

@@ -17,6 +17,7 @@ import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
   const auth = useAuth();
@@ -62,6 +63,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
+      <Typography className={styles.versionNumber}>v.3.5.3</Typography>
     </div>
   );
 };
