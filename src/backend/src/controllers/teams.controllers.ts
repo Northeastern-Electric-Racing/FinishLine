@@ -13,17 +13,6 @@ export default class TeamsController {
     }
   }
 
-  static async editDescription(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { teamId, newDescription } = req.body;
-      const user = await getCurrentUser(res);
-      const team = await TeamsService.editDescription(user, teamId, newDescription);
-      return res.status(200).json(team);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params;
@@ -46,6 +35,17 @@ export default class TeamsController {
 
       // return the updated team
       return res.status(200).json(updateTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId, newDescription } = req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.editDescription(user, teamId, newDescription);
+      return res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
