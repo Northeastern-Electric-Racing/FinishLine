@@ -72,7 +72,13 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
       <>
-        <Toast open={showAlert} severity="error" message={'Please select a proposed solution!'} stateSetter={setShowAlert} />
+        <Toast
+          open={showAlert}
+          type="error"
+          message={'Please select a proposed solution!'}
+          handleClose={() => setShowAlert(false)}
+          autoHideDuration={4500}
+        />
         <Dialog open={modalShow} onClose={onHide} style={{ color: 'black' }}>
           <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
           <DialogContent

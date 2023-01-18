@@ -7,18 +7,18 @@ import { Snackbar, Alert } from '@mui/material';
 
 interface ToastProps {
   message: string;
-  autoHideDuration?: number;
-  severity: 'error' | 'warning' | 'info' | 'success';
+  autoHideDuration?: number; // milliseconds
+  type: 'error' | 'warning' | 'info' | 'success';
   open: boolean;
-  stateSetter: (value: boolean) => void;
+  handleClose: () => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, autoHideDuration, severity, open, stateSetter }: ToastProps) => {
-  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
+const Toast: React.FC<ToastProps> = ({ message, autoHideDuration, type, open, handleClose }: ToastProps) => {
+  const onClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
-    stateSetter(false);
+    handleClose();
   };
 
   return (
@@ -26,9 +26,9 @@ const Toast: React.FC<ToastProps> = ({ message, autoHideDuration, severity, open
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       open={open}
       autoHideDuration={autoHideDuration ?? 3000}
-      onClose={handleClose}
+      onClose={onClose}
     >
-      <Alert variant="filled" severity={severity} onClose={handleClose}>
+      <Alert variant="filled" severity={type} onClose={onClose}>
         {message}
       </Alert>
     </Snackbar>
