@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequestType } from 'shared';
+import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -43,7 +43,7 @@ const ChangeRequestsTable: React.FC = () => {
       field: 'crId',
       type: 'number',
       headerName: 'ID',
-      maxWidth: 100
+      maxWidth: 75
     },
     {
       ...baseColDef,
@@ -56,18 +56,22 @@ const ChangeRequestsTable: React.FC = () => {
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
-      field: 'wbsNum',
-      headerName: 'WBS #',
-      filterable: false,
-      maxWidth: 100,
-      valueFormatter: (params) => wbsPipe(params.value),
-      sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.carNumber !== param2.value.carNumber) {
-          return param1.value.carNumber - param2.value.carNumber;
-        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
-          return param1.value.projectNumber - param2.value.projectNumber;
-        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
-          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+      field: 'wbs',
+      headerName: 'WBS',
+      filterable: true,
+      sortable: true,
+      maxWidth: 300,
+      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+      sortComparator: (_v1, _v2, param1, param2) => {
+        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
+        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+
+        if (wbs1.carNumber !== wbs2.carNumber) {
+          return wbs1.carNumber - wbs2.carNumber;
+        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
+          return wbs1.projectNumber - wbs2.projectNumber;
+        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+          return wbs1.workPackageNumber - wbs2.workPackageNumber;
         } else {
           return 0;
         }
@@ -166,6 +170,7 @@ const ChangeRequestsTable: React.FC = () => {
           data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
+            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []
