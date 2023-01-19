@@ -4,52 +4,77 @@
  *
  */
 
-import {
-  faCoins,
-  faReceipt,
-  faHandHoldingUsd,
-  faDollarSign,
-  faFileAlt,
-  faSortNumericDown,
-  faCogs
-} from '@fortawesome/free-solid-svg-icons';
+import { useTheme } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import { ShoppingCart, Settings, Receipt, Description, CurrencyExchange, AttachMoney } from '@mui/icons-material';
+import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
-import ExternalLink from '../../components/ExternalLink';
 import PageBlock from '../../layouts/PageBlock';
 
 const UsefulLinks: React.FC = () => {
+  const theme = useTheme();
   const links = [
-    <ExternalLink
-      icon={faCoins}
-      description={'Purchasing Guidelines'}
-      link={'https://docs.google.com/document/d/1M5Ldy9L1BifBo18tdKpv3CH-frRneyEK26hUXbtMg7Q/edit'}
-    />,
-    <ExternalLink
-      icon={faHandHoldingUsd}
-      description={'Reimbursement Guidelines'}
-      link={'https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit'}
-    />,
-    <ExternalLink icon={faDollarSign} description={'Procurement Form'} link={'https://forms.gle/6ztRoa1iL7p1KHwP6'} />,
-    <ExternalLink
-      icon={faReceipt}
-      description={'McMaster Order Sheet'}
-      link={'https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit'}
-    />,
-    <ExternalLink
-      icon={faFileAlt}
-      description={'Project Update Log'}
-      link={'https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit'}
-    />,
-    <ExternalLink
-      icon={faSortNumericDown}
-      description={'Part Numbering Guidelines'}
-      link={'https://docs.google.com/document/d/1Y8IXCvYjXP3RBj6h4-xLCHXVLW5R6pi3-4i5SYMKtZY/edit'}
-    />,
-    <ExternalLink
-      icon={faCogs}
-      description={'Hardware Guidelines'}
-      link={'https://docs.google.com/document/d/1OD1d1VaIEHCwiFCuU7wfwAPu-UA--0_QzbyJjBsexwg/edit'}
-    />
+    <>
+      <ShoppingCart sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/document/d/1M5Ldy9L1BifBo18tdKpv3CH-frRneyEK26hUXbtMg7Q/edit"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Purchasing Guidelines
+      </Link>
+    </>,
+    <>
+      <CurrencyExchange sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Reimbursement Guidelines
+      </Link>
+    </>,
+    <>
+      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link href="https://forms.gle/6ztRoa1iL7p1KHwP6" underline="hover" fontSize={19} sx={{ pl: 1 }}>
+        Procurement Form
+      </Link>
+    </>,
+    <>
+      <Receipt sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        McMaster Order Sheet
+      </Link>
+    </>,
+    <>
+      <Description sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Project Update Log
+      </Link>
+    </>,
+    <>
+      <Settings sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Hardware Guidelines
+      </Link>
+    </>
   ];
 
   return (
@@ -57,7 +82,7 @@ const UsefulLinks: React.FC = () => {
       <Grid container spacing={2}>
         {links.map((ele) => (
           <Grid item xs={6} md={3}>
-            {ele}
+            <Typography>{ele}</Typography>
           </Grid>
         ))}
       </Grid>

@@ -1,17 +1,18 @@
 import express from 'express';
-import { body } from 'express-validator';
-import { intMinZero } from '../utils/validation.utils';
 import TeamsController from '../controllers/teams.controllers';
+import { body } from 'express-validator';
+import { validateInputs } from '../utils/utils';
 
 const teamsRouter = express.Router();
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
+teamsRouter.post('/:teamId/set-members', TeamsController.setTeamMembers);
 teamsRouter.post(
-  '/edit-description',
-  body('teamId').isString,
-  body('newDescription').isString,
-  intMinZero(body('userId')),
+  '/:teamId/edit-description',
+  body('teamId').isString(),
+  body('newDescription').isString(),
+  validateInputs,
   TeamsController.editDescription
 );
 

@@ -15,6 +15,8 @@ import InfoPage from '../pages/InfoPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Container } from '@mui/material';
 import Teams from '../pages/TeamsPage/Teams';
+import AdminTools from '../pages/AdminToolsPage/AdminTools';
+import Credits from '../pages/CreditsPage/Credits';
 
 const styles = {
   content: {
@@ -37,7 +39,9 @@ const AppAuthenticated: React.FC = () => {
               <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
               <Route path={routes.TEAMS} component={Teams} />
               <Route path={routes.SETTINGS} component={Settings} />
+              <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
               <Route path={routes.INFO} component={InfoPage} />
+              <Route path={routes.CREDITS} component={Credits} />
               <Route exact path={routes.HOME} component={Home} />
               <Route path="*" component={PageNotFound} />
             </Switch>

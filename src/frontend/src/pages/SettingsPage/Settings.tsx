@@ -9,6 +9,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
+import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 const NERSwitch = styled((props: SwitchProps) => (
@@ -72,7 +73,7 @@ const Settings: React.FC = () => {
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
-            <b>Name:</b> Northeastern Electric Racing
+            <DetailDisplay label="Name" content="Northeastern Electric Racing" />
           </Grid>
           <Grid item xs={6} md={12}>
             <FormGroup>
@@ -98,19 +99,19 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container>
           <Grid item md={4} lg={2}>
-            <b>First Name:</b> {auth.user?.firstName}
+            <DetailDisplay label="First Name" content={auth.user?.firstName} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Last Name:</b> {auth.user?.lastName}
+            <DetailDisplay label="Last Name" content={auth.user?.lastName} />
           </Grid>
           <Grid item md={4} lg={3}>
-            <b>Email: </b> {auth.user?.email}
+            <DetailDisplay label="Email" content={auth.user?.email} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Email ID:</b> {auth.user?.emailId}
+            <DetailDisplay label="Email ID" content={String(auth.user?.emailId)} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <b>Role: </b> {auth.user?.role}
+            <DetailDisplay label="Role" content={auth.user?.role} />
           </Grid>
         </Grid>
       </PageBlock>

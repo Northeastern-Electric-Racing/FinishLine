@@ -3,20 +3,24 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { UserSettings } from 'shared';
+import ExternalLink from '../../../components/ExternalLink';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface UserSettingsViewProps {
   settings: UserSettings;
 }
-
 const renderSlackId = (settings: UserSettings) => {
   return (
     <>
-      <b>Slack ID: </b>
-      <Link target="_blank" rel="noopener noreferrer" href={'https://nu-electric-racing.slack.com/team/' + settings.slackId}>
-        {settings.slackId}
-      </Link>
+      <div style={{ display: 'flex' }}>
+        <Typography sx={{ fontWeight: 'bold' }}>Slack ID:</Typography>
+        <ExternalLink
+          link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
+          description={settings.slackId}
+        />
+      </div>
     </>
   );
 };
@@ -26,7 +30,7 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
       <Grid item md={4} lg={2}>
-        <b>Default Theme:</b> {settings.defaultTheme}
+        <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
       </Grid>
       <Grid item md={6} lg={4}>
         {renderSlackId(settings)}

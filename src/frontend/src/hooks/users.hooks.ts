@@ -10,7 +10,8 @@ import {
   getSingleUserSettings,
   logUserIn,
   logUserInDev,
-  updateUserSettings
+  updateUserSettings,
+  updateUserRole
 } from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
 import { useAuth } from './auth.hooks';
@@ -85,6 +86,24 @@ export const useUpdateUserSettings = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['users', auth.user?.userId, 'settings']);
+      }
+    }
+  );
+};
+
+export const useUpdateUserRole = () => {
+  const auth = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['users', 'change-role'],
+    async (updateUserPayload: any) => {
+      if (!auth.user) throw new Error('Update role not allowed when not logged in');
+      const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users']);
       }
     }
   );
