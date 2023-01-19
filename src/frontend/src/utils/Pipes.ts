@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User } from 'shared';
+import { WbsNumber, User, TimelineStatus } from 'shared';
+import { EnumDeclaration, EnumMember, EnumType } from 'typescript';
 
 /**
  * Pipes:
@@ -66,6 +67,13 @@ export const datePipe = (date: Date) => {
     year: 'numeric',
     timeZone: 'UTC'
   });
+};
+/**
+ * Replace the enum value with a readable string in the local en-US format.
+ */
+export const transforEnum = (TimelineStatus: EnumType) => {
+  const names = Object.keys(TimelineStatus);
+  console.log(names);
 };
 
 /** returns a given number as a string with a percent sign */

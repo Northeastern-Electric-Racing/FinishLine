@@ -9,3 +9,21 @@ export enum TimelineStatus {
   Behind = 'BEHIND',
   VeryBehind = 'VERY_BEHIND'
 }
+
+/**
+ * Translate every single one of them from enum value to string.
+ */
+function getReadableTimelineStatus(status: TimelineStatus) {
+  switch (status) {
+    case TimelineStatus.Ahead:
+      return 'Ahead of Schedule';
+    case TimelineStatus.OnTrack:
+      return 'On Track';
+    case TimelineStatus.Behind:
+      return 'Behind Schedule';
+    case TimelineStatus.VeryBehind:
+      return 'Very Behind Schedule';
+    default:
+      return 'Invalid Status';
+  }
+}
