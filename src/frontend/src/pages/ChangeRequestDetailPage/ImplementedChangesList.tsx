@@ -27,7 +27,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
   function useWindowSize() {
     const [innerWidth, setInnerWidth] = useState<number>(0);
     function determinePosition() {
-      return window.innerWidth <= bodyWidth ? 'top' : 'right';
+      return window.innerWidth < bodyWidth ? 'top' : 'right';
     }
     const [position, setPosition] = useState<'top' | 'right'>(determinePosition());
     useLayoutEffect(() => {
