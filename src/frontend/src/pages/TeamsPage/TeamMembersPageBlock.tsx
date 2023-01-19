@@ -49,7 +49,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
       (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
     );
   };
-  
+
   const userToAutocompleteOption = (user: User): { label: string; id: number } => {
     return { label: `${fullNamePipe(user)}`, id: user.userId };
   };
