@@ -34,7 +34,17 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
 
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
-      <CardContent>
+      <CardContent
+        sx={
+          collapsed
+            ? {
+                '&:last-child': {
+                  paddingBottom: '8px'
+                }
+              }
+            : {}
+        }
+      >
         {title && (
           <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
             <Typography variant="h5" sx={{ flexGrow: 1 }}>
