@@ -10,6 +10,7 @@ import { ShoppingCart, Settings, Receipt, Description, CurrencyExchange, AttachM
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
+import React from 'react';
 
 const UsefulLinks: React.FC = () => {
   const theme = useTheme();
@@ -77,11 +78,25 @@ const UsefulLinks: React.FC = () => {
     </>
   ];
 
+  const rawText = (component: React.ReactElement | string): string => {
+    if (!component) {
+      return '';
+    }
+    if (typeof component === 'string') {
+      return component;
+    }
+    const children = component.props && component.props.children;
+    if (children instanceof Array) {
+      return children.map(rawText).join('');
+    }
+    return rawText(children);
+  };
+
   return (
     <PageBlock title={'Useful Links'}>
       <Grid container spacing={2}>
         {links.map((ele) => (
-          <Grid item xs={6} md={3}>
+          <Grid item xs={6} md={3} key={rawText(ele)}>
             <Typography>{ele}</Typography>
           </Grid>
         ))}
