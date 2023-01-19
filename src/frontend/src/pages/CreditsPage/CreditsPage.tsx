@@ -28,6 +28,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Nezam Jazayeri', color: '#8a8f5c' },
     { name: 'Gilad Avni-Heller', color: '#d333ff' },
+    { name: 'Alan Zhan', color: '#7AD0AC' },
     { name: 'Sutton Spindler', color: '#53A3ff' }
   ];
 
