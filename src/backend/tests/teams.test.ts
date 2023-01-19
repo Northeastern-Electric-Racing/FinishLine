@@ -44,3 +44,27 @@ describe('Teams', () => {
     expect(prisma.team.findUnique).toHaveBeenCalledWith({ where: { teamId }, ...teamQueryArgs });
   });
 });
+
+
+test('updateTeamDescSuccess', async () => {
+  const newJustice = { ...justiceLeague, description: 'hello!', leader: { ...batman, googleAuthId: 'b' } };
+
+  jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+  jest.spyOn(prisma.team, 'update').mockResolvedValue(newJustice);
+
+  const body = { userId: 1, teamId: '1', newDescription: 'hello!' };
+  const res = await request(app).post('/teams/:teamId/edit-description').send(body);
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body).toStrictEqual(teamTransformer(newJustice));
+});
+
+test('returnsErrorIfNotAdmin', async () => {
+  jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+
+  const body = { userId: 1, teamId: '1', newDescription: 'hello!' };
+  const res = await request(app).post('/teams/:teamId/edit-description').send(body);
+
+  expect(res.statusCode).toBe(403);

@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { getAllTeams, getSingleTeam, editDescription } from '../controllers/teams.controllers';
 import { intMinZero } from '../utils/validation.utils';
+import TeamsController from '../controllers/teams.controllers';
 
 const teamsRouter = express.Router();
 
@@ -12,7 +12,7 @@ teamsRouter.post(
   body('teamId').isString,
   body('newDescription').isString,
   intMinZero(body('userId')),
-  editDescription
+  TeamsController.editDescription
 );
 
 export default teamsRouter;
