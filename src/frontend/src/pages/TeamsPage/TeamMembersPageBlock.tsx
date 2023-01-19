@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Button, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Button, Grid, IconButton, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -33,6 +33,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     error: setTeamMemberError,
     mutateAsync
   } = useSetTeamMembers(team.teamId);
+
   if (isError) return <ErrorPage message={error?.message} />;
   if (setTeamMemberIsError) return <ErrorPage message={setTeamMemberError?.message} />;
   if (isLoading || setTeamMemberIsLoading || !data) return <LoadingIndicator />;
@@ -48,6 +49,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
       (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
     );
   };
+  
   const userToAutocompleteOption = (user: User): { label: string; id: number } => {
     return { label: `${fullNamePipe(user)}`, id: user.userId };
   };
