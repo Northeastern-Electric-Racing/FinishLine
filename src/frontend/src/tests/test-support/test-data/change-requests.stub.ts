@@ -18,6 +18,7 @@ import { exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 export const exampleStandardChangeRequest: StandardChangeRequest = {
   crId: 37,
   wbsNum: exampleWbsWorkPackage1,
+  wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.Issue,
@@ -62,6 +63,7 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
   crId: 69,
   wbsNum: exampleWbsWorkPackage1,
+  wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.Activation,
@@ -74,6 +76,7 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   crId: 93,
   wbsNum: exampleWbsWorkPackage1,
+  wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.StageGate,
@@ -84,6 +87,7 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   crId: 37,
   wbsNum: exampleWbsWorkPackage1,
+  wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.Issue,

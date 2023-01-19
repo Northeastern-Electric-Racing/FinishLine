@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - develop
+      - 'feature/**'
 jobs:
   run-linting-check:
     runs-on: ubuntu-latest

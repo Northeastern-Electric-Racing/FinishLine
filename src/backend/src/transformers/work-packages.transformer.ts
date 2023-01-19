@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { calculateEndDate, calculatePercentExpectedProgress, calculateTimelineStatus, WorkPackage } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { descBulletTransformer } from '../utils/description-bullets.utils';
-import { userTransformer } from '../utils/users.utils';
+import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
+import userTransformer from './user.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>) => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
@@ -18,8 +18,8 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wo
     progress,
     startDate: wpInput.startDate,
     duration: wpInput.duration,
-    expectedActivities: wpInput.expectedActivities.map(descBulletTransformer),
-    deliverables: wpInput.deliverables.map(descBulletTransformer),
+    expectedActivities: wpInput.expectedActivities.map(descriptionBulletTransformer),
+    deliverables: wpInput.deliverables.map(descriptionBulletTransformer),
     dependencies: wpInput.dependencies.map(wbsNumOf),
     projectManager: wpInput.wbsElement.projectManager ? userTransformer(wpInput.wbsElement.projectManager) : undefined,
     projectLead: wpInput.wbsElement.projectLead ? userTransformer(wpInput.wbsElement.projectLead) : undefined,
