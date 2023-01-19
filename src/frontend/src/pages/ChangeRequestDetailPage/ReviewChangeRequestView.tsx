@@ -117,7 +117,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
-                    defaultValue={value}
                     fullWidth
                     sx={{ width: 400 }}
                   />
@@ -176,7 +175,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
-                    defaultValue={value}
                     fullWidth
                     sx={{ width: 500 }}
                   />

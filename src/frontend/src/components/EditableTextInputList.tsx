@@ -133,7 +133,7 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   );
 
   const addButton = (
-    <Button variant="outlined" color="secondary" onClick={addButtonOnClick}>
+    <Button key="addButton" variant="outlined" color="secondary" onClick={addButtonOnClick}>
       + Add New Bullet
     </Button>
   );
@@ -143,10 +143,7 @@ const EditableTextInputList: React.FC<EditableTextInputListProps> = ({
   if (!readOnly) {
     listPrepared = [...listPrepared, addButton];
   }
-  let builtList = <ul style={style}>{listPrepared}</ul>;
-  if (ordered) {
-    builtList = <ol style={style}>{listPrepared}</ol>;
-  }
+  const builtList = ordered ? <ol style={style}>{listPrepared}</ol> : <ul style={style}>{listPrepared}</ul>;
 
   return <Box>{builtList}</Box>;
 };
