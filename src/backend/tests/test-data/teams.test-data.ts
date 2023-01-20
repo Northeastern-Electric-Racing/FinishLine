@@ -1,6 +1,5 @@
-import { project1, wbsElement1 } from './projects.test-data';
 import { batman, superman, wonderwoman, flash } from './users.test-data';
-import { Team as PrismaTeam, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { Team as SharedTeam } from 'shared/src/types/team-types';
 import teamQueryArgs from '../../src/prisma-query-args/teams.query-args';
 
@@ -9,12 +8,15 @@ const teamName = 'pats';
 const slackId = '69';
 const description = 'best team no cap';
 
-export const prismaTeam1: PrismaTeam = {
+export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   teamId,
   teamName,
   slackId,
   description,
-  leaderId: flash.userId
+  leaderId: flash.userId,
+  leader: flash,
+  projects: [],
+  members: []
 };
 
 export const sharedTeam1: SharedTeam = {
@@ -34,6 +36,6 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   slackId: '1234',
   leaderId: 1,
   leader: batman,
-  projects: [{ ...project1, wbsElement: wbsElement1 }],
+  projects: [],
   members: [superman, wonderwoman]
 };

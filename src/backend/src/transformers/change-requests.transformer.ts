@@ -13,6 +13,7 @@ const changeRequestTransformer = (
     // all cr fields
     crId: changeRequest.crId,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
+    wbsName: changeRequest.wbsElement.name,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,

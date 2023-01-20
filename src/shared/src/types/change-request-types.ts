@@ -9,6 +9,7 @@ import { WbsNumber } from './project-types';
 export interface ChangeRequest {
   crId: number;
   wbsNum: WbsNumber;
+  wbsName: string;
   submitter: User;
   dateSubmitted: Date;
   type: ChangeRequestType;
