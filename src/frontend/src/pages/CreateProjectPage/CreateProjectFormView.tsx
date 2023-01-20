@@ -37,7 +37,8 @@ const schema = yup.object().shape({
     .required('CR ID is required')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
-  summary: yup.string().required('Summary is required')
+  summary: yup.string().required('Summary is required'),
+  team: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
@@ -58,7 +59,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       name: '',
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
-      summary: ''
+      summary: '',
+      team: ''
     }
   });
   const [team, setTeam] = useState<Team | null>(null);

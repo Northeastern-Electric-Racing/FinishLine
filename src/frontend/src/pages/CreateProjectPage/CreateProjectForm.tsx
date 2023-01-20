@@ -15,6 +15,7 @@ export interface CreateProjectFormInputs {
   carNumber: number;
   crId: number;
   summary: string;
+  team: string;
 }
 
 const CreateProjectForm: React.FC = () => {
@@ -29,14 +30,15 @@ const CreateProjectForm: React.FC = () => {
   const handleCancel = () => history.goBack();
 
   const handleSubmit = async (project: CreateProjectFormInputs) => {
-    const { name, carNumber, crId, summary } = project;
+    const { name, carNumber, crId, summary, team } = project;
 
     const payload = {
       userId,
       crId,
       name,
       carNumber,
-      summary
+      summary,
+      team
     };
 
     const createdWbsNum = await mutateAsync(payload);
