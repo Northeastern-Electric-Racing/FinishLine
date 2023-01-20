@@ -7,9 +7,7 @@ import { render, screen } from '../../test-support/test-utils';
 import CreateProjectFormView from '../../../pages/CreateProjectPage/CreateProjectFormView';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
-import { Auth } from '../../../utils/types';
 import { useAllTeams } from '../../../hooks/teams.hooks';
-import { useAuth } from '../../../hooks/auth.hooks';
 import { Team } from 'shared';
 import { UseQueryResult } from 'react-query';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
@@ -41,6 +39,8 @@ const renderComponent = (allowSubmit = true) => {
 
 describe('create project form view test suite', () => {
   it('renders buttons', () => {
+    const teamArray: Team[] = [sharedTeam1, sharedTeam1, sharedTeam1];
+    mockUseAllTeams(false, false, teamArray);
     mockUseQuery();
     renderComponent();
 
