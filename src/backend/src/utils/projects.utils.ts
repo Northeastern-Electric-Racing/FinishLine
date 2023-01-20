@@ -12,11 +12,11 @@ import {
   calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
+import { userTransformer } from './users.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
 import { calculateWorkPackageProgress } from './work-packages.utils';
-import userTransformer from '../transformers/user.transformer';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -42,16 +42,11 @@ export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
       }
     },
     team: true,
-    goals: { where: { dateDeleted: null } },
-    features: { where: { dateDeleted: null } },
-    otherConstraints: { where: { dateDeleted: null } },
-    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
+    goals: true,
+    features: true,
+    risks: riskQueryArgs,
+    otherConstraints: true,
     workPackages: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
-        }
-      },
       include: {
         wbsElement: {
           include: {
@@ -73,16 +68,11 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
     project: {
       include: {
         team: true,
-        goals: { where: { dateDeleted: null } },
-        features: { where: { dateDeleted: null } },
-        otherConstraints: { where: { dateDeleted: null } },
-        risks: { where: { dateDeleted: null }, ...riskQueryArgs },
+        goals: true,
+        features: true,
+        risks: riskQueryArgs,
+        otherConstraints: true,
         workPackages: {
-          where: {
-            wbsElement: {
-              dateDeleted: null
-            }
-          },
           include: {
             wbsElement: {
               include: {
@@ -191,6 +181,15 @@ export const projectTransformer = (
       };
     })
   };
+};
+
+// gets the associated change request for creating a project
+export const getChangeRequestReviewState = async (crId: number) => {
+  const cr = await prisma.change_Request.findUnique({ where: { crId } });
+
+  // returns null if the change request doesn't exist
+  // if it exists, return a boolean describing if the change request was reviewed
+  return cr ? cr.dateReviewed !== null : cr;
 };
 
 // gets highest current project number

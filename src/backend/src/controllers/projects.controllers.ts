@@ -6,6 +6,7 @@ import {
   createDescriptionBulletChangesJson,
   createRulesChangesJson,
   editDescriptionBullets,
+  getChangeRequestReviewState,
   getHighestProjectNumber,
   getUserFullName,
   manyRelationArgs,
@@ -15,10 +16,9 @@ import {
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
 import { descBulletConverter, getCurrentUser } from '../utils/utils';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 
 export const getAllProjects = async (_req: Request, res: Response) => {
-  const projects = await prisma.project.findMany({ where: { wbsElement: { dateDeleted: null } }, ...manyRelationArgs });
+  const projects = await prisma.project.findMany(manyRelationArgs);
   res.status(200).json(projects.map(projectTransformer));
 };
 
@@ -40,8 +40,9 @@ export const getSingleProject = async (req: Request, res: Response) => {
     ...uniqueRelationArgs
   });
 
-  if (!wbsEle) return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
-  if (wbsEle.dateDeleted) return res.status(400).json({ message: 'This project has been deleted!' });
+  if (wbsEle === null) {
+    return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
+  }
 
   return res.status(200).json(projectTransformer(wbsEle));
 };
@@ -52,13 +53,13 @@ export const newProject = async (req: Request, res: Response) => {
   if (!user) return res.status(404).json({ message: `user #${req.body.userId} not found!` });
   if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
 
-  await validateChangeRequestAccepted(req.body.crId);
-
-  if (req.body.teamId !== undefined) {
-    const team = await prisma.team.findUnique({ where: { teamId: req.body.teamId } });
-    if (!team) {
-      return res.status(404).json({ message: `team with id ${req.body.teamId} not found.` });
-    }
+  // check if the change request exists
+  const crReviewed = await getChangeRequestReviewState(req.body.crId);
+  if (crReviewed === null) {
+    return res.status(404).json({ message: `change request CR #${req.body.crId}` });
+  }
+  if (!crReviewed) {
+    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
   }
 
   // create the wbs element for the project and document the implemented change request
@@ -69,7 +70,7 @@ export const newProject = async (req: Request, res: Response) => {
       projectNumber: maxProjectNumber + 1,
       workPackageNumber: 0,
       name: req.body.name,
-      project: { create: { summary: req.body.summary, teamId: req.body.teamId } },
+      project: { create: { summary: req.body.summary } },
       changes: {
         create: {
           changeRequestId: req.body.crId,
@@ -102,9 +103,12 @@ export const editProject = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return res.status(404).json({ message: `user with id ${userId} not found` });
   if (user.role === Role.GUEST) return res.status(403).json({ message: 'Access Denied' });
-
-  // verify valid change request
-  await validateChangeRequestAccepted(crId);
+  // Verify valid change request
+  const crReviewed = await getChangeRequestReviewState(body.crId);
+  if (crReviewed === null) return res.status(404).json({ message: `change request with id ${crId} not found` });
+  if (!crReviewed) {
+    return res.status(400).json({ message: 'Cannot implement an unreviewed change request' });
+  }
 
   // get the original project so we can compare things
   const originalProject = await prisma.project.findUnique({
@@ -120,8 +124,9 @@ export const editProject = async (req: Request, res: Response) => {
   });
 
   // if it doesn't exist we error
-  if (!originalProject) return res.status(404).json({ message: `project ${projectId} not found!` });
-  if (originalProject.wbsElement.dateDeleted) return res.status(400).json({ message: 'This project has been deleted!' });
+  if (originalProject === null) {
+    return res.status(404).json({ message: `project ${projectId} not found!` });
+  }
 
   const { wbsElementId } = originalProject;
 

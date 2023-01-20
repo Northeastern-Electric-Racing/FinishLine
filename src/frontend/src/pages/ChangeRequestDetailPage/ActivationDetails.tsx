@@ -6,8 +6,7 @@
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import { Grid } from '@mui/material';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -18,28 +17,28 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
     <PageBlock title={'Activation Change Request Details'}>
       <Grid container>
         <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
+          <b>Project Lead </b>
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography>{fullNamePipe(cr.projectLead)}</Typography>
+          {fullNamePipe(cr.projectLead)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Start Date </Typography>
+          <b>Start Date </b>
         </Grid>
         <Grid item xs={6} md={6}>
-          <Typography>{datePipe(cr.startDate)}</Typography>
+          {datePipe(cr.startDate)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Manager </Typography>
+          <b>Project Manager </b>
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
+          {fullNamePipe(cr.projectManager)}
         </Grid>
         <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details </Typography>
+          <b>Confirm WP Details </b>
         </Grid>
         <Grid item xs={6} md={6}>
-          <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
+          {booleanPipe(cr.confirmDetails)}
         </Grid>
       </Grid>
     </PageBlock>

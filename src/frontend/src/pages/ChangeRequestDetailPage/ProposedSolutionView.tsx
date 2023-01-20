@@ -5,14 +5,10 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
+import { Chip, Button, Grid } from '@mui/material';
 import { dollarsPipe, weeksPipe } from '../../utils/pipes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
@@ -37,21 +33,23 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={7}>
-          <DetailDisplay label="Description" content={proposedSolution.description} />
+          <b>Description: </b>
+          {proposedSolution.description}
         </Grid>
         <Grid item xs={3}>
-          <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)} />
+          <b>Budget Impact: </b>
+          {dollarsPipe(proposedSolution.budgetImpact)}
         </Grid>
         <Grid item xs={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>
-            {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}{' '}
-          </Typography>
+          {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}
         </Grid>
         <Grid item xs={7}>
-          <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
+          <b>Scope Impact: </b>
+          {proposedSolution.scopeImpact}
         </Grid>
         <Grid item xs={5}>
-          <DetailDisplay label="Timeline Impact" content={weeksPipe(proposedSolution.timelineImpact)} />
+          <b>Timeline Impact: </b>
+          {weeksPipe(proposedSolution.timelineImpact)}
         </Grid>
       </Grid>
     </PageBlock>

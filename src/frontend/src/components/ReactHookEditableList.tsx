@@ -23,12 +23,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
           </Grid>
         );
       })}
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ my: 2, width: 'max-content' }}
-      >
+      <Button variant="contained" color="success" onClick={() => append({ bulletId: -1, detail: '' })} sx={{ mt: 2 }}>
         + Add New Bullet
       </Button>
     </>

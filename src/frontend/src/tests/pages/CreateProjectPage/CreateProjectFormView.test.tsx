@@ -5,15 +5,12 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import CreateProjectFormView from '../../../pages/CreateProjectPage/CreateProjectFormView';
-import { useQuery } from '../../../hooks/utils.hooks';
-import { BrowserRouter } from 'react-router-dom';
 
-jest.mock('../../../hooks/utils.hooks');
-
-const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
-
-const mockUseQuery = () => {
-  mockedUseQuery.mockReturnValue(new URLSearchParams(''));
+const mockStates = {
+  name: () => null,
+  carNumber: () => null,
+  crId: () => null,
+  summary: () => null
 };
 
 /**
@@ -21,15 +18,12 @@ const mockUseQuery = () => {
  */
 const renderComponent = (allowSubmit = true) => {
   return render(
-    <BrowserRouter>
-      <CreateProjectFormView onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
-    </BrowserRouter>
+    <CreateProjectFormView states={mockStates} onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
   );
 };
 
 describe('create project form view test suite', () => {
   it('renders buttons', () => {
-    mockUseQuery();
     renderComponent();
 
     expect(screen.getByText('Create')).toBeInTheDocument();
@@ -37,14 +31,12 @@ describe('create project form view test suite', () => {
   });
 
   it('disables submit button when allowSubmit is false', () => {
-    mockUseQuery();
     renderComponent(false);
 
     expect(screen.getByText('Create')).toBeDisabled();
   });
 
   it('enables submit button when allowSubmit is true', () => {
-    mockUseQuery();
     renderComponent(true);
 
     expect(screen.getByText('Create')).not.toBeDisabled();

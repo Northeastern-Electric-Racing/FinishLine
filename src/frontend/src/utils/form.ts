@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, validateWBS } from 'shared';
+import { DescriptionBullet } from 'shared';
 
 /*
  * maps a description bullet list to the object needed for forms
@@ -21,18 +21,4 @@ export const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) 
   return ls.map((ele) => {
     return { id: ele.bulletId, detail: ele.detail };
   });
-};
-
-/**
- * Tests if a WBS is valid
- * @param wbsNum
- */
-export const wbsTester = (wbsNum: string | undefined) => {
-  if (!wbsNum) return false;
-  try {
-    validateWBS(wbsNum);
-  } catch (error) {
-    return false;
-  }
-  return true;
 };

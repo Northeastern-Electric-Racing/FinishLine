@@ -17,13 +17,17 @@ const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
     <PageBlock title={'Stage Gate Change Request Details'}>
       <Grid container spacing={1}>
         <Grid item xs={2}>
-          <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Leftover Budget</Typography>
+          <Typography sx={{ maxWidth: '140px' }}>
+            <b>Leftover Budget</b>
+          </Typography>
         </Grid>
         <Grid item xs={10}>
           <Typography sx={{ maxWidth: '140px' }}>{dollarsPipe(cr.leftoverBudget)}</Typography>
         </Grid>
         <Grid item xs={2}>
-          <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Confirm WP Completed</Typography>
+          <Typography sx={{ maxWidth: '140px' }}>
+            <b>Confirm WP Completed</b>
+          </Typography>
         </Grid>
         <Grid item xs={10}>
           <Typography sx={{ maxWidth: '140px' }}>{booleanPipe(cr.confirmDone)}</Typography>

@@ -1,15 +1,21 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
-import WorkPackagesController from '../controllers/work-packages.controllers';
+import {
+  createWorkPackage,
+  editWorkPackage,
+  getAllWorkPackages,
+  getSingleWorkPackage
+} from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, isDate, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
-workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
-workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
+workPackagesRouter.get('/', getAllWorkPackages);
+workPackagesRouter.get('/:wbsNum', getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
+  intMinZero(body('userId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   intMinZero(body('projectWbsNum.carNumber')),
@@ -25,11 +31,12 @@ workPackagesRouter.post(
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
   validateInputs,
-  WorkPackagesController.createWorkPackage
+  createWorkPackage
 );
 workPackagesRouter.post(
   '/edit',
   intMinZero(body('workPackageId')),
+  intMinZero(body('userId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   body('startDate').isDate(),
@@ -47,7 +54,7 @@ workPackagesRouter.post(
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
   validateInputs,
-  WorkPackagesController.editWorkPackage
+  editWorkPackage
 );
 
 export default workPackagesRouter;

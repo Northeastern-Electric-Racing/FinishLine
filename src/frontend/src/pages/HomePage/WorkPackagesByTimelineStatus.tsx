@@ -16,8 +16,21 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
-import DetailDisplay from '../../components/DetailDisplay';
+import { FormControl, InputBase, InputLabel, MenuItem, Select, styled, Typography, useTheme } from '@mui/material';
+
+const NERInput = styled(InputBase)(({ theme }) => ({
+  'label + &': {
+    marginTop: theme.spacing(1)
+  },
+  '& .MuiInputBase-input': {
+    borderRadius: 6,
+    position: 'relative',
+    backgroundColor: theme.palette.background.paper,
+    border: '1px solid ' + theme.palette.divider,
+    fontSize: 16,
+    padding: '10px 26px 10px 12px'
+  }
+}));
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -40,19 +53,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
         flexDirection: 'row',
         flexWrap: 'nowrap',
         overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
+        justifyContent: 'flex-start'
       }}
     >
       {workPackages.data?.length === 0
@@ -72,13 +73,35 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
-                <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
-                <DetailDisplay label="Progress" content={percentPipe(wp.progress)} paddingRight={2} />
-                <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
-                <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
-                <Typography>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    End Date:{' '}
+                  </Typography>
+                  <Typography display="inline">{datePipe(wp.endDate)}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Progress:
+                  </Typography>
+                  <Typography display="inline">
+                    {percentPipe(wp.progress)}, {wp.timelineStatus}{' '}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Engineering Lead:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectLead)}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
+                    Project Manager:
+                  </Typography>
+                  <Typography display="inline">{fullNamePipe(wp.projectManager)}</Typography>
+                </Box>
+                <Box>
                   {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                </Typography>
+                </Box>
               </CardContent>
             </Card>
           ))}
@@ -89,13 +112,14 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
     <PageBlock
       title={`Work Packages By Timeline Status (${workPackages.data?.length})`}
       headerRight={
-        <FormControl size="small">
+        <FormControl>
           <InputLabel id="selectTimelineStatus"> Timeline Status</InputLabel>
           <Select
             label="Timeline Status"
             labelId="selectTimelineStatus"
             value={timelineStatus}
             onChange={(e) => setTimelineStatus(e.target.value as TimelineStatus)}
+            input={<NERInput />}
           >
             {Object.values(TimelineStatus).map((status) => (
               <MenuItem key={status} value={status}>

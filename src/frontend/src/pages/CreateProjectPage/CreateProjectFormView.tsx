@@ -5,133 +5,104 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { FormControl, FormLabel } from '@mui/material';
-import * as yup from 'yup';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { CreateProjectFormInputs } from './CreateProjectForm';
-import ReactHookTextField from '../../components/ReactHookTextField';
-import { useQuery } from '../../hooks/utils.hooks';
-import { SubmitButton } from '../../components/SubmitButton';
-
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  carNumber: yup
-    .number()
-    .typeError('Car Number must be a number')
-    .required('Car Number is required')
-    .integer('Car Number must be an integer')
-    .min(1, 'Car Number must be greater than or equal to 1'),
-  crId: yup
-    .number()
-    .typeError('CR ID must be a number')
-    .required('CR ID is required')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1'),
-  summary: yup.string().required('Summary is required')
-});
+import { CreateProjectFormStates } from './CreateProjectForm';
+import { styled, useTheme } from '@mui/material';
 
 interface CreateProjectFormViewProps {
+  states: CreateProjectFormStates;
   allowSubmit: boolean;
   onCancel: (e: any) => void;
-  onSubmit: (project: CreateProjectFormInputs) => void;
+  onSubmit: (e: any) => void;
 }
 
-const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
-  const query = useQuery();
+const NERInput = styled(TextField)(({ theme }) => ({
+  '& .MuiInputBase-input': {
+    borderRadius: 4,
+    border: '1px solid ' + theme.palette.divider,
+    width: 'auto'
+  }
+}));
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name: '',
-      carNumber: Number(query.get('wbs')?.charAt(0)),
-      crId: Number(query.get('crId')),
-      summary: ''
-    }
-  });
+const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ states, allowSubmit, onCancel, onSubmit }) => {
+  const { name, carNumber, crId, summary } = states;
+  const theme = useTheme();
 
   return (
-    <form
-      id={'create-project-form'}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
-    >
+    <>
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
-            <FormControl>
-              <FormLabel>Change Request ID</FormLabel>
-              <ReactHookTextField
+        <form onSubmit={onSubmit}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+              <NERInput
+                required
+                id="crId"
                 name="crId"
-                control={control}
+                type="text"
+                label="Change Request ID"
                 placeholder="Enter change request ID..."
-                errorMessage={errors.crId}
-                type="number"
+                autoComplete="off"
+                onChange={(e) => crId(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[1-9][0-9]*' }}
               />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl>
-              <FormLabel>Car Number</FormLabel>
-              <ReactHookTextField
+            </Grid>
+            <Grid item xs={12} md={9}>
+              <NERInput
+                required
+                id="carNumber"
                 name="carNumber"
-                control={control}
+                type="text"
+                label="Car Number"
                 placeholder="Enter car number..."
-                errorMessage={errors.carNumber}
-                type="number"
+                autoComplete="off"
+                onChange={(e) => carNumber(parseInt(e.target.value))}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
+            </Grid>
+            <Grid item xs={12}>
+              <NERInput
+                required
+                id="name"
                 name="name"
-                control={control}
+                type="text"
+                label="Project Name"
+                autoComplete="off"
                 placeholder="Enter project name..."
-                errorMessage={errors.name}
+                onChange={(e) => name(e.target.value)}
               />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl sx={{ minWidth: 325, width: '37%' }}>
-              <FormLabel>Project Summary</FormLabel>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Enter summary..."
-                errorMessage={errors.summary}
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
                 multiline
-                rows={5}
+                minRows={4}
+                id="summary"
+                name="summary"
+                type="text"
+                label="Project Summary"
+                autoComplete="off"
+                placeholder="Enter summary..."
+                onChange={(e) => summary(e.target.value)}
+                sx={{ width: 1 / 2, border: '1px solid ' + theme.palette.divider, borderRadius: 2 }}
               />
-            </FormControl>
+            </Grid>
           </Grid>
-        </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
-        </Box>
+          <Box display="flex" gap={2} sx={{ mt: 2 }}>
+            <Button variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+              Create
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          </Box>
+        </form>
       </PageBlock>
-    </form>
+    </>
   );
 };
 

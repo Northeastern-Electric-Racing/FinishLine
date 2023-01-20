@@ -9,7 +9,7 @@
     "src/shared"
   ],
   "scripts": {
-    "prettier-check": "yarn prettier --check .",
+    "prettier-all": "prettier --write \"**/*{ts,js,css,html,jsx,tsx}\"",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
     "start": "concurrently --kill-others-on-fail \"yarn workspace backend dev\"  \"yarn frontend\"",

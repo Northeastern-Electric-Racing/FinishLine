@@ -1,6 +1,6 @@
 name: Bug
 description: For any issue related to a bug
-title: '[Area] - Short Description'
+title: "[Area] - Short Description"
 labels: [bug]
 body:
   - type: dropdown
@@ -32,8 +32,8 @@ body:
       description: Which versions of the application does this affect?
       multiple: true
       options:
-        - production (main)
-        - develop
+        - main
+        - production
         - other (specify below)
   - type: textarea
     id: observed-behavior

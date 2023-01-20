@@ -1,4 +1,4 @@
-import { ChangeRequest, wbsPipe } from 'shared';
+import { ChangeRequest } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
@@ -16,15 +16,13 @@ export default class ChangeRequestsService {
    * @throws if the change request does not exist
    */
   static async getChangeRequestByID(crId: number): Promise<ChangeRequest> {
-    const changeRequest = await prisma.change_Request.findUnique({
+    const requestedCR = await prisma.change_Request.findUnique({
       where: { crId },
       ...changeRequestQueryArgs
     });
+    if (requestedCR === null) throw new NotFoundException('Change Request', crId);
 
-    if (!changeRequest) throw new NotFoundException('Change Request', crId);
-    if (changeRequest.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
-
-    return changeRequestTransformer(changeRequest);
+    return changeRequestTransformer(requestedCR);
   }
 
   /**
@@ -32,7 +30,7 @@ export default class ChangeRequestsService {
    * @returns All of the change requests
    */
   static async getAllChangeRequests(): Promise<ChangeRequest[]> {
-    const changeRequests = await prisma.change_Request.findMany({ where: { dateDeleted: null }, ...changeRequestQueryArgs });
+    const changeRequests = await prisma.change_Request.findMany(changeRequestQueryArgs);
     return changeRequests.map(changeRequestTransformer);
   }
 
@@ -70,8 +68,6 @@ export default class ChangeRequestsService {
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.accepted) throw new HttpException(400, `This change request is already approved!`);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
-    if (foundCR.wbsElement.dateDeleted) throw new HttpException(400, 'This change requests wbs element has been deleted!');
 
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId) throw new AccessDeniedException();
@@ -114,7 +110,6 @@ export default class ChangeRequestsService {
           where: { projectId: foundCR.wbsElement.workPackage.projectId }
         });
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
-
         const newBudget = wpProj.budget + foundPs.budgetImpact;
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
@@ -336,8 +331,8 @@ export default class ChangeRequestsService {
       }
     });
 
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement === null)
+      throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -411,9 +406,7 @@ export default class ChangeRequestsService {
         }
       }
     });
-
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
@@ -489,7 +482,6 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -560,7 +552,7 @@ export default class ChangeRequestsService {
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
+
     if (foundCR.accepted !== null)
       throw new HttpException(400, `Cannot create proposed solutions on a reviewed change request!`);
 

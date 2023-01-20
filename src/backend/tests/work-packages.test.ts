@@ -1,157 +1,138 @@
+import request from 'supertest';
+import express from 'express';
+import workPackageRouter from '../src/routes/work-packages.routes';
 import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman } from './test-data/users.test-data';
+import { batman } from './test-data/users.test-data';
 import { wbsElement1 } from './test-data/projects.test-data';
-import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
+import { wonderwoman } from './test-data/users.test-data';
+import { createWorkPackagePayload } from './test-data/work-packages.test-data';
+import { changeBatmobile, unreviewedCr } from './test-data/change-requests.test-data';
+import { getChangeRequestReviewState } from '../src/utils/projects.utils';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import WorkPackageService from '../src/services/work-packages.services';
-import { WbsNumber } from 'shared';
-import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
-import * as changeRequestUtils from '../src/utils/change-requests.utils';
+
+const app = express();
+app.use(express.json());
+app.use('/', workPackageRouter);
+
+jest.mock('../src/utils/projects.utils');
+const mockGetChangeRequestReviewState = getChangeRequestReviewState as jest.Mock<Promise<boolean | null>>;
 
 describe('Work Packages', () => {
-  /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
-  const projectWbsNum = {
-    carNumber: 1,
-    projectNumber: 2,
-    workPackageNumber: 0
-  };
-  const name = 'Pack your bags';
-  const crId = 1;
-  const startDate = '2022-09-18';
-  const duration = 5;
-  const dependencies = [
-    {
-      wbsElementId: 65,
-      dateCreated: new Date('11/24/2021'),
-      carNumber: 1,
-      projectNumber: 1,
-      workPackageNumber: 1,
-      name: 'prereq',
-      status: WBS_Element_Status.COMPLETE,
-      projectLeadId: null,
-      projectManagerId: null,
-      dateDeleted: null,
-      deletedByUserId: null
-    }
-  ];
-  const expectedActivities = ['ayo'];
-  const deliverables = ['ajdhjakfjafja'];
-  const createWorkPackageArgs: [User, WbsNumber, string, number, string, number, WBS_Element[], string[], string[]] = [
-    batman,
-    projectWbsNum,
-    name,
-    crId,
-    startDate,
-    duration,
-    dependencies,
-    expectedActivities,
-    deliverables
-  ];
-  /*********************************************************/
-
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  beforeEach(() => {
-    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
-      return prismaChangeRequest1;
-    });
-  });
-
   test('createWorkPackage fails if WBS number does not represent a project', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage(
-        batman,
-        {
-          carNumber: 1,
-          projectNumber: 2,
-          workPackageNumber: 2
-        },
-        name,
-        crId,
-        startDate,
-        duration,
-        dependencies,
-        expectedActivities,
-        deliverables
-      );
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+    mockGetChangeRequestReviewState.mockResolvedValue(true);
+    const proj = {
+      ...createWorkPackagePayload,
+      projectWbsNum: {
+        carNumber: 1,
+        projectNumber: 2,
+        workPackageNumber: 2
+      }
     };
 
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'Given WBS Number 1.2.2 is not for a project.'));
+    const res = await request(app).post('/create').send(proj);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe('Given WBS Number 1.2.2 is not for a project.');
   });
 
   test('createWorkPackage fails if any elements in the dependencies are null', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(wbsElement1);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
+    mockGetChangeRequestReviewState.mockResolvedValue(true);
 
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
 
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the dependencies was not found.'));
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe('One of the dependencies was not found.');
   });
 
   test('createWorkPackage fails if user does not have access', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
 
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage(
-        wonderwoman,
-        projectWbsNum,
-        name,
-        crId,
-        startDate,
-        duration,
-        dependencies,
-        expectedActivities,
-        deliverables
-      );
-    };
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
 
-    await expect(callCreateWP).rejects.toThrow(AccessDeniedException);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(403);
+    expect(res.body.message).toBe('Access Denied');
   });
 
-  test('createWorkPackage fails when changeRequest validation fails', async () => {
+  test('createWorkPackage fails if user does not exist', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`User with id #${createWorkPackagePayload.userId} not found!`);
+  });
+
+  test('createWorkPackage fails when changeRequest is not found', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
-    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
-      throw new HttpException(400, 'error');
-    });
+    mockGetChangeRequestReviewState.mockResolvedValue(null);
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
 
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'error'));
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe(`change request with id #1 not found!`);
   });
 
-  test('createWorkPackage fails if the associated wbsElem returns null', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+  test('createWorkPackage fails when changeRequest has not been reviewed', async () => {
+    jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(unreviewedCr);
+    mockGetChangeRequestReviewState.mockResolvedValue(false);
+    const res = await request(app).post('/create').send(createWorkPackagePayload);
 
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
-  });
-
-  test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe(`Cannot implement an unreviewed change request`);
   });
 
   test('calculateWorkPackageProgress', async () => {
-    expect(calculateWorkPackageProgress([], [])).toBe(0);
+    const proj = {
+      ...createWorkPackagePayload,
+      expectedActivities: [],
+      deliverables: []
+    };
+
+    expect(calculateWorkPackageProgress(proj.expectedActivities, proj.deliverables)).toBe(0);
   });
+});
+
+test('createWorkPackage fails if the associated wbsElem returns null', async () => {
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+  jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+  mockGetChangeRequestReviewState.mockResolvedValue(true);
+  jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+
+  const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+  expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+  expect(res.statusCode).toBe(404);
+  expect(res.body.message).toBe(`Could not find element with wbs number: 1.2.0`);
+});
+
+test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
+  jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+  jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeBatmobile);
+  mockGetChangeRequestReviewState.mockResolvedValue(true);
+  jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+  const res = await request(app).post('/create').send(createWorkPackagePayload);
+
+  expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
+  expect(res.statusCode).toBe(404);
+  expect(res.body.message).toBe(`Could not find element with wbs number: 1.2.0`);
 });

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe } from 'shared';
+import { WbsNumber, User } from 'shared';
 
 /**
  * Pipes:
@@ -24,7 +24,9 @@ export const dollarsPipe = (dollars: number) => {
 };
 
 /** Display WBS number as string "1.2.0" */
-export { wbsPipe };
+export const wbsPipe = (wbsNum: WbsNumber) => {
+  return `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`;
+};
 
 /** Display WBS number as string but always the project number (1.2.3 -> 1.2.0) */
 export const projectWbsPipe = (wbsNum: WbsNumber) => {

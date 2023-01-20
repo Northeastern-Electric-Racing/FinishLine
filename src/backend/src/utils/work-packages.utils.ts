@@ -1,7 +1,36 @@
-import { Description_Bullet } from '@prisma/client';
-import { DescriptionBullet } from 'shared';
+import { Description_Bullet, Prisma } from '@prisma/client';
+import {
+  calculateEndDate,
+  calculatePercentExpectedProgress,
+  calculateTimelineStatus,
+  DescriptionBullet,
+  WorkPackage
+} from 'shared';
 import prisma from '../prisma/prisma';
-import { buildChangeDetail } from './utils';
+import { userTransformer } from './users.utils';
+import { buildChangeDetail, convertStatus, wbsNumOf } from './utils';
+import { descBulletArgs, descBulletTransformer } from './description-bullets.utils';
+
+export const wpQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
+  include: {
+    project: {
+      include: {
+        wbsElement: true
+      }
+    },
+    wbsElement: {
+      include: {
+        projectLead: true,
+        projectManager: true,
+        changes: { include: { implementer: true }, orderBy: { dateImplemented: 'asc' } }
+      }
+    },
+    expectedActivities: descBulletArgs,
+    deliverables: descBulletArgs,
+    dependencies: true,
+    
+  }
+});
 
 export const calculateWorkPackageProgress = (
   deliverables: Description_Bullet[],
@@ -9,6 +38,57 @@ export const calculateWorkPackageProgress = (
 ) => {
   const bullets = deliverables.concat(expectedActivities);
   return bullets.length === 0 ? 0 : Math.floor((bullets.filter((b) => b.dateTimeChecked).length / bullets.length) * 100);
+};
+
+export const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wpQueryArgs>) => {
+  const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
+  const wbsNum = wbsNumOf(wpInput.wbsElement);
+  const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);
+  return {
+    id: wpInput.workPackageId,
+    dateCreated: wpInput.wbsElement.dateCreated,
+    name: wpInput.wbsElement.name,
+    orderInProject: wpInput.orderInProject,
+    progress,
+    startDate: wpInput.startDate,
+    duration: wpInput.duration,
+    expectedActivities: wpInput.expectedActivities.map(descBulletTransformer),
+    deliverables: wpInput.deliverables.map(descBulletTransformer),
+    dependencies: wpInput.dependencies.map(wbsNumOf),
+    projectManager: wpInput.wbsElement.projectManager ? userTransformer(wpInput.wbsElement.projectManager) : undefined,
+    projectLead: wpInput.wbsElement.projectLead ? userTransformer(wpInput.wbsElement.projectLead) : undefined,
+    status: convertStatus(wpInput.wbsElement.status),
+    wbsNum,
+    endDate: calculateEndDate(wpInput.startDate, wpInput.duration),
+    expectedProgress,
+    timelineStatus: calculateTimelineStatus(progress, expectedProgress),
+    changes: wpInput.wbsElement.changes.map((change) => ({
+      wbsNum,
+      changeId: change.changeId,
+      changeRequestId: change.changeRequestId,
+      implementer: userTransformer(change.implementer),
+      detail: change.detail,
+      dateImplemented: change.dateImplemented
+    })),
+    projectName: wpInput.project.wbsElement.name
+  } as WorkPackage;
+};
+
+export const getWbsElementId = async ({
+  carNumber,
+  projectNumber,
+  workPackageNumber
+}: {
+  carNumber: number;
+  projectNumber: number;
+  workPackageNumber: number;
+}) => {
+  const wbsElem = await prisma.wBS_Element.findUnique({
+    where: {
+      wbsNumber: { carNumber, projectNumber, workPackageNumber }
+    }
+  });
+  return wbsElem?.wbsElementId;
 };
 
 // create a change json if the old and new value are different, otherwise return undefined

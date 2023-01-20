@@ -8,12 +8,12 @@ import { routes } from '../../utils/routes';
 import ProjectsTable from './ProjectsTable';
 import WBSDetails from '../WBSDetails';
 import CreateProjectForm from '../CreateProjectPage/CreateProjectForm';
-import CreateWorkPackageForm from '../CreateWorkPackagePage/CreateWorkPackageForm';
+import CreateWPForm from '../CreateWorkPackagePage/CreateWPForm';
 
 const Projects: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
+      <Route path={routes.WORK_PACKAGE_NEW} component={CreateWPForm} />
       <Route path={routes.PROJECTS_NEW} component={CreateProjectForm} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
       <Route path={routes.PROJECTS} component={ProjectsTable} />

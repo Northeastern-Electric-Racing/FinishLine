@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { Risk } from 'shared';
+import { userTransformer } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
-import userTransformer from './user.transformer';
 
 const riskTransformer = (risk: Prisma.RiskGetPayload<typeof riskQueryArgs>): Risk => {
   return {

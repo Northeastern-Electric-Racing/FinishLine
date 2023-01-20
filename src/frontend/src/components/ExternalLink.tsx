@@ -5,7 +5,7 @@
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Link from '@mui/material/Link';
+import { Link } from '@mui/material';
 
 interface ExternalLinkProps {
   icon?: IconProp;

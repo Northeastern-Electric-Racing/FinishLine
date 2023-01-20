@@ -8,9 +8,8 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/types';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import CreateWorkPackageForm from '../../../pages/CreateWorkPackagePage/CreateWorkPackageForm';
+import CreateWPForm from '../../../pages/CreateWorkPackagePage/CreateWPForm';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/utils.hooks');
@@ -30,11 +29,7 @@ const mockUseQuery = () => {
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
-  return render(
-    <BrowserRouter>
-      <CreateWorkPackageForm />
-    </BrowserRouter>
-  );
+  return render(<CreateWPForm />);
 };
 
 describe('create wp form test suite', () => {

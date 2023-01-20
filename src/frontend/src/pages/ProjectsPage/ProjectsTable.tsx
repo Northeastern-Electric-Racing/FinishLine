@@ -10,8 +10,6 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useTheme } from '@mui/material';
-import { useState } from 'react';
-import { WbsElementStatus } from 'shared';
 
 /**
  * Table of all projects.
@@ -19,7 +17,6 @@ import { WbsElementStatus } from 'shared';
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-  const [pageSize, setPageSize] = useState(30);
 
   const baseColDef: any = {
     flex: 1,
@@ -36,14 +33,13 @@ const ProjectsTable: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
       field: 'wbsNum',
       headerName: 'WBS #',
+      align: 'center',
       valueFormatter: (params) => wbsPipe(params.value),
       maxWidth: 100,
-      filterable: false,
       sortComparator: (v1, v2, param1, param2) => {
         if (param1.value.carNumber !== param2.value.carNumber) {
           return param1.value.carNumber - param2.value.carNumber;
@@ -59,39 +55,46 @@ const ProjectsTable: React.FC = () => {
     {
       ...baseColDef,
       field: 'name',
-      headerName: 'Project Name'
+      headerName: 'Project Name',
+      align: 'center'
     },
     {
       ...baseColDef,
       field: 'projectLead',
       headerName: 'Project Lead',
+      align: 'center',
+      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
       ...baseColDef,
       field: 'projectManager',
       headerName: 'Project Manager',
+      align: 'center',
+      valueFormatter: (params) => fullNamePipe(params.value),
       maxWidth: 250
     },
     {
       ...baseColDef,
       field: 'team',
       headerName: 'Team',
+      align: 'center',
+      valueFormatter: (params) => params.value?.teamName || 'No Team',
       maxWidth: 200
     },
     {
       ...baseColDef,
       field: 'duration',
       headerName: 'Duration',
-      type: 'number',
       valueFormatter: (params) => weeksPipe(params.value),
-      maxWidth: 100
+      maxWidth: 100,
+      align: 'center'
     },
     {
       ...baseColDef,
       field: 'budget',
       headerName: 'Budget',
-      type: 'number',
+      align: 'center',
       valueFormatter: (params) => dollars(params.value),
       maxWidth: 100
     },
@@ -99,17 +102,17 @@ const ProjectsTable: React.FC = () => {
       ...baseColDef,
       field: 'workPackages',
       headerName: '# Work Packages',
-      filterable: false,
+      type: 'number',
       maxWidth: 150,
+      align: 'center',
       valueFormatter: (params) => params.value.length
     },
     {
       ...baseColDef,
       field: 'status',
       headerName: 'Status',
-      type: 'singleSelect',
-      valueOptions: Object.values(WbsElementStatus),
-      maxWidth: 100
+      maxWidth: 100,
+      align: 'center'
     }
   ];
 
@@ -123,40 +126,23 @@ const ProjectsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={pageSize}
-        rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        pageSize={15}
+        rowsPerPageOptions={[15, 30, 50, 100]}
         loading={isLoading}
         error={error}
-        rows={
-          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data?.map((v) => ({
-            ...v,
-            carNumber: v.wbsNum.carNumber,
-            projectLead: fullNamePipe(v.projectLead),
-            projectManager: fullNamePipe(v.projectManager),
-            team: v.team?.teamName || 'No Team'
-          })) || []
-        }
+        rows={data || []}
         columns={columns}
         sx={{ background: theme.palette.background.paper }}
         onRowClick={(params) => {
           history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
         }}
         components={{ Toolbar: GridToolbar }}
-        componentsProps={{
-          toolbar: {
-            showQuickFilter: true,
-            quickFilterProps: { debounceMs: 500 }
-          }
-        }}
         initialState={{
           sorting: {
             sortModel: [{ field: 'wbsNum', sort: 'asc' }]
           },
           columns: {
             columnVisibilityModel: {
-              carNumber: false,
               workPackages: false
             }
           }

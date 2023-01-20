@@ -123,7 +123,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
           { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+          { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
         ]}
         actionButton={projectActionsDropdown}
       />

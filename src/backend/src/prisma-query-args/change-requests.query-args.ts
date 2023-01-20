@@ -7,11 +7,6 @@ const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
     wbsElement: true,
     reviewer: true,
     changes: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
-        }
-      },
       include: {
         implementer: true,
         wbsElement: true

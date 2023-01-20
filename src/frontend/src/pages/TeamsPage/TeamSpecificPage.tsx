@@ -8,7 +8,6 @@ import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/pipes';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import DetailDisplay from '../../components/DetailDisplay';
 
 interface ParamTypes {
   teamId: string;
@@ -28,17 +27,18 @@ const TeamSpecificPage: React.FC = () => {
           <PageBlock title={'People'}>
             <Grid container spacing={1}>
               <Grid item xs={12} md={12}>
-                <DetailDisplay label="Lead" content={fullNamePipe(data.leader)} />
+                <b style={{ display: 'inline' }}>Lead: </b>
+                <p style={{ display: 'inline' }}>{fullNamePipe(data.leader)}</p>
               </Grid>
               <Grid item xs={12} md={12}>
-                <DetailDisplay
-                  label="Members"
-                  content={data.members
+                <b style={{ display: 'inline' }}>Members: </b>
+                <p style={{ display: 'inline' }}>
+                  {data.members
                     .map((member) => {
                       return fullNamePipe(member);
                     })
                     .join(', ')}
-                />
+                </p>
               </Grid>
             </Grid>
           </PageBlock>

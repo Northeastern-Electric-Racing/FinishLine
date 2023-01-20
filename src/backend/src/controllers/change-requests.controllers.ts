@@ -37,7 +37,7 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, projectLeadId, projectManagerId, startDate, confirmDetails } = req.body;
       const submitter = await getCurrentUser(res);
-      const id = await ChangeRequestsService.createActivationChangeRequest(
+      const id = ChangeRequestsService.createActivationChangeRequest(
         submitter,
         wbsNum.carNumber,
         wbsNum.projectNumber,
@@ -58,7 +58,7 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, leftoverBudget, confirmDone } = req.body;
       const submitter = await getCurrentUser(res);
-      const id = await ChangeRequestsService.createStageGateChangeRequest(
+      const id = ChangeRequestsService.createStageGateChangeRequest(
         submitter,
         wbsNum.carNumber,
         wbsNum.projectNumber,
@@ -77,7 +77,7 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, what, why, budgetImpact } = req.body;
       const submitter = await getCurrentUser(res);
-      const id = await ChangeRequestsService.createStandardChangeRequest(
+      const id = ChangeRequestsService.createStandardChangeRequest(
         submitter,
         wbsNum.carNumber,
         wbsNum.projectNumber,
@@ -87,7 +87,7 @@ export default class ChangeRequestsController {
         why,
         budgetImpact
       );
-      return res.status(200).json({ message: `${id}` });
+      return res.status(200).json({ message: `Successfully created standard change request with id #${id}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -97,7 +97,7 @@ export default class ChangeRequestsController {
     try {
       const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
       const submitter = await getCurrentUser(res);
-      const id = await ChangeRequestsService.addProposedSolution(
+      const id = ChangeRequestsService.addProposedSolution(
         submitter,
         crId,
         budgetImpact,
