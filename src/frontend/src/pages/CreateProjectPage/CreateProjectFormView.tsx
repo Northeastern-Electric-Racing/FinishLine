@@ -20,7 +20,6 @@ import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
-
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   carNumber: yup
@@ -64,7 +63,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
   });
 
   const { isLoading, data: teams } = useAllTeams();
-
+  console.log(teams, 'FKJEFWBJBFJOEWB');
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
