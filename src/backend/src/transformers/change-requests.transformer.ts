@@ -2,9 +2,9 @@ import { Prisma } from '@prisma/client';
 import { ChangeRequest, StandardChangeRequest, ActivationChangeRequest, StageGateChangeRequest } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
-import { userTransformer } from '../utils/users.utils';
 import { convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
+import userTransformer from './user.transformer';
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
@@ -13,6 +13,7 @@ const changeRequestTransformer = (
     // all cr fields
     crId: changeRequest.crId,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
+    wbsName: changeRequest.wbsElement.name,
     submitter: userTransformer(changeRequest.submitter),
     dateSubmitted: changeRequest.dateSubmitted,
     type: changeRequest.type,
