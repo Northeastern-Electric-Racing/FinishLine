@@ -188,12 +188,13 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                         </option>
                       ))}
                     </NativeSelect>
-                    <TextField
+                    <ReactHookTextField
                       required
-                      autoComplete="off"
+                      control={control}
                       label="Explain"
-                      sx={{ flexGrow: 1, mx: 1 }}
+                      sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
                       {...register(`why.${index}.explain`)}
+                      errorMessage={errors.why?.[index]?.explain}
                     />
                     <IconButton type="button" onClick={() => removeWhy(index)}>
                       <DeleteIcon />

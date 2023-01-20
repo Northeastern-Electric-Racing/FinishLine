@@ -28,6 +28,19 @@ const CreditsPage: React.FC = () => {
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Nezam Jazayeri', color: '#8a8f5c' },
     { name: 'Mokkh Mitsuntisuk', color: 'd4af37' }
+    { name: 'Gilad Avni-Heller', color: '#d333ff' },
+    { name: 'Edward Ibarra', color: '#c4a484' },
+    { name: 'Sean Walker', color: '#fa8072' },
+    { name: 'Anastasia Sobolina', color: 'C9A9A6' },
+    { name: 'Nick Tarallo', color: '#1d4ee1' },
+    { name: 'Ray Kong', color: '#87CEEE' },
+    { name: 'Andrew Panos', color: '#4ab5f7' },
+    { name: 'Jonathan Chen', color: '#e76869' },
+    { name: 'Zach Marino', color: '#c175ff' },
+    { name: 'Horace Mai', color: '#5c8f70' },
+    { name: 'Jared Ritchie', color: '#f0354e' },
+    { name: 'Alan Zhan', color: '#7AD0AC' },
+    { name: 'Sutton Spindler', color: '#53A3ff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
