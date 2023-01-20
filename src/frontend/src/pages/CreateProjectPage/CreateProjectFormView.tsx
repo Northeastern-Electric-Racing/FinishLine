@@ -36,8 +36,6 @@ const schema = yup.object().shape({
     .min(1, 'CR ID must be greater than or equal to 1'),
   summary: yup.string().required('Summary is required'),
   team: yup.string().required('Team is required')
-  summary: yup.string().required('Summary is required'),
-  team: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
