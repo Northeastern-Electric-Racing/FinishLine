@@ -103,7 +103,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} md={3}>
             <FormControl>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
@@ -114,8 +114,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl>
+          <Grid item xs={12} md={9}>
+            <FormControl sx={{ width: 197 }}>
               <FormLabel>Assign a Team</FormLabel>
               <Controller
                 name="team"
