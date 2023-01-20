@@ -3,7 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faToolbox, faUsers } from '@fortawesome/free-solid-svg-icons';
+import {
+  faExchangeAlt,
+  faFolder,
+  faHome,
+  faQuestionCircle,
+  faToolbox,
+  faUsers,
+  faChartGantt
+} from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
@@ -28,6 +36,11 @@ const Sidebar: React.FC = () => {
       name: 'Change Requests',
       icon: faExchangeAlt,
       route: routes.CHANGE_REQUESTS
+    },
+    {
+      name: 'Gantt',
+      icon: faChartGantt,
+      route: routes.GANTT
     },
     {
       name: 'Teams',
