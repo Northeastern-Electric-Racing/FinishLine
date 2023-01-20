@@ -62,7 +62,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
   });
 
   const { isLoading, data: teams } = useAllTeams();
-  console.log(teams, 'FKJEFWBJBFJOEWB');
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
