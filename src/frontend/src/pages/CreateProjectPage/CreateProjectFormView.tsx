@@ -116,13 +116,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
           </Grid>
           <Grid item xs={12} md={9}>
             <FormControl sx={{ width: 197 }}>
-              <FormLabel>Assign a Team</FormLabel>
+              <FormLabel>Team</FormLabel>
               <Controller
                 name="team"
                 control={control}
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value}>
+                  <TextField select onChange={onChange} value={value} label="Assign a team...">
                     {teams.map((t) => (
                       <MenuItem key={t.teamName} value={t.teamName}>
                         {t.teamName}
