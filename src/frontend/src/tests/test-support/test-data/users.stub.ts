@@ -23,6 +23,15 @@ export const exampleAdminUser: User = {
   role: RoleEnum.ADMIN
 };
 
+export const exampleAdminUser2: User = {
+  userId: 8,
+  firstName: 'Joseph',
+  lastName: 'Shmoeseph',
+  email: 'shmoeseph.j@husky.neu.edu',
+  emailId: 'shmoeseph.j',
+  role: RoleEnum.ADMIN
+};
+
 export const exampleLeadershipUser: User = {
   userId: 3,
   firstName: 'Joe',
