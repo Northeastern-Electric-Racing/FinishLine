@@ -3,8 +3,9 @@ import { Role, User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { NotFoundException, AccessDeniedException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
+import { checkWordCount } from '../utils/utils';
 
 export default class TeamsService {
   /**
@@ -87,6 +88,8 @@ export default class TeamsService {
    * @returns The team with the new description
    */
   static async editDescription(user: User, teamId: string, newDescription: string): Promise<Team> {
+    if (checkWordCount(newDescription, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
     const team = await prisma.team.findUnique({
       where: { teamId },
       ...teamQueryArgs
