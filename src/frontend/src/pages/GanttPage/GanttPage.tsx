@@ -5,7 +5,7 @@
 
 import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface GanttPageProps {
   tasks: Task[];
@@ -13,6 +13,10 @@ interface GanttPageProps {
 
 const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
   const [taskList, setTaskList] = useState<Task[]>(tasks);
+
+  useEffect(() => {
+    setTaskList(tasks);
+  }, [tasks]);
 
   const handleExpanderClick = (task: Task) => {
     setTaskList(taskList.map((t) => (t.id === task.id ? task : t)));
