@@ -12,10 +12,11 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import { ChangeEvent, FC } from 'react';
 
 interface GanttPageFilterProps {
-  car1Handler: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  car2Handler: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  car1Handler: (event: ChangeEvent<HTMLInputElement>) => void;
+  car2Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   status: string;
   statusHandler: (event: SelectChangeEvent) => void;
   selectedTeam: string;
@@ -28,7 +29,7 @@ interface GanttPageFilterProps {
   expandedHandler: (expanded: boolean) => void;
 }
 
-const GanttPageFilter: React.FC<GanttPageFilterProps> = ({
+const GanttPageFilter: FC<GanttPageFilterProps> = ({
   car1Handler,
   car2Handler,
   status,
@@ -43,63 +44,62 @@ const GanttPageFilter: React.FC<GanttPageFilterProps> = ({
   currentEnd
 }) => (
   <PageBlock title="Filters" style={{ flexGrow: 1 }}>
-    <Grid
-      container
-      rowSpacing={1}
-      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-      sx={{ justifyContent: 'space-evenly', alignItems: 'stretch' }}
-    >
-      <Grid item container xs={12} md={1} direction="column" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        Car
-        <Grid item>
-          <Checkbox
-            defaultChecked
-            icon={<LooksOneOutlinedIcon />}
-            checkedIcon={<LooksOneOutlinedIcon />}
-            onChange={car1Handler}
-            sx={{
-              color: 'white',
-              '&.Mui-checked': {
-                color: '#ef4345'
-              },
-              '& .MuiSvgIcon-root': {
-                fontSize: '2rem'
-              }
-            }}
-          />
+    <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
+      <Grid item container direction="column" xs={12} md={1} sx={{ justifyContent: 'space-evenly', alignItems: 'center' }}>
+        <Grid item xs={12} md={1}>
+          Car
         </Grid>
-        <Grid item>
-          <Checkbox
-            defaultChecked
-            icon={<LooksTwoOutlinedIcon />}
-            checkedIcon={<LooksTwoOutlinedIcon />}
-            onChange={car2Handler}
-            sx={{
-              color: 'white',
-              '&.Mui-checked': {
-                color: '#ef4345'
-              },
-              '& .MuiSvgIcon-root': {
-                fontSize: '2rem'
-              }
-            }}
-          />
+        <Grid item container xs={12} md={1} sx={{ justifyContent: 'space-evenly', alignItems: 'center' }}>
+          <Grid item>
+            <Checkbox
+              defaultChecked
+              icon={<LooksOneOutlinedIcon />}
+              checkedIcon={<LooksOneOutlinedIcon />}
+              onChange={car1Handler}
+              sx={{
+                color: 'white',
+                '&.Mui-checked': {
+                  color: '#ef4345'
+                },
+                '& .MuiSvgIcon-root': {
+                  fontSize: '2rem'
+                }
+              }}
+            />
+          </Grid>
+          <Grid item>
+            <Checkbox
+              defaultChecked
+              icon={<LooksTwoOutlinedIcon />}
+              checkedIcon={<LooksTwoOutlinedIcon />}
+              onChange={car2Handler}
+              sx={{
+                color: 'white',
+                '&.Mui-checked': {
+                  color: '#ef4345'
+                },
+                '& .MuiSvgIcon-root': {
+                  fontSize: '2rem'
+                }
+              }}
+            />
+          </Grid>
         </Grid>
       </Grid>
       <Grid item xs={12} md={2}>
         <FormControl sx={{ width: '100%' }}>
-          <FormLabel>Start Date</FormLabel>
+          <FormLabel>Status</FormLabel>
           <Select value={status} onChange={statusHandler}>
             <MenuItem value="All Statuses">All Statuses</MenuItem>
-            <MenuItem value={WbsElementStatus.Active}>{WbsElementStatus.Active.toString()}</MenuItem>
-            <MenuItem value={WbsElementStatus.Inactive}>{WbsElementStatus.Inactive.toString()}</MenuItem>
-            <MenuItem value={WbsElementStatus.Complete}>{WbsElementStatus.Complete.toString()}</MenuItem>
+            {Object.values(WbsElementStatus).map((status) => {
+              return <MenuItem value={status}>{status}</MenuItem>;
+            })}
           </Select>
         </FormControl>
       </Grid>
       <Grid item xs={12} md={2}>
         <FormControl sx={{ width: '100%' }}>
-          <FormLabel>Start Date</FormLabel>
+          <FormLabel>Team</FormLabel>
           <Select value={selectedTeam} onChange={teamHandler}>
             <MenuItem value="All Teams">All Teams</MenuItem>
             {teamList.map((team) => (
@@ -132,7 +132,13 @@ const GanttPageFilter: React.FC<GanttPageFilterProps> = ({
           />
         </FormControl>
       </Grid>
-      <Grid item container xs={12} md={1} direction="column" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      <Grid
+        item
+        container
+        xs={12}
+        md={3}
+        sx={{ justifyContent: 'end', alignItems: 'center', alignSelf: 'center', justifySelf: 'end' }}
+      >
         <Grid item>
           <Button
             color="secondary"

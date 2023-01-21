@@ -12,8 +12,10 @@ import { Project, WbsElementStatus, WorkPackage } from 'shared';
 import GanttPage from './GanttPage';
 import { projectWbsPipe, wbsPipe } from '../../utils/pipes';
 import GanttPageFilter from './GanttPageFilter';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
+import { useQuery } from '../../hooks/utils.hooks';
+import { useHistory } from 'react-router-dom';
 
 export const filterGanttProjects = (
   projects: Project[],
@@ -66,20 +68,34 @@ export const filterGanttProjects = (
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
  */
-const GanttPageWrapper: React.FC = () => {
+const GanttPageWrapper: FC = () => {
+  const query = useQuery();
+  const history = useHistory();
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [showCar1, setShowCar1] = useState(true);
-  const [showCar2, setShowCar2] = useState(true);
-  const [status, setStatus] = useState(WbsElementStatus.Active.toString());
-  const [selectedTeam, setSelectedTeam] = useState('All Teams');
-  const [start, setStart] = useState<Date | null>(null);
-  const [end, setEnd] = useState<Date | null>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
+  const showCar1 = query.get('showCar1') ? query.get('showCar1') === 'true' : true;
+  const showCar2 = query.get('showCar2') ? query.get('showCar2') === 'true' : true;
+  const status = query.get('status') || WbsElementStatus.Active.toString();
+  const selectedTeam = query.get('selectedTeam') || 'All Teams';
+  const queryStart = query.get('start');
+  const queryEnd = query.get('end');
+  const start = useMemo(() => {
+    if (queryStart === 'null' || queryStart === null || queryStart === undefined) return null;
+    return new Date(Date.parse(queryStart));
+  }, [queryStart]);
+  const end = useMemo(() => {
+    if (queryEnd === 'null' || queryEnd === null || queryEnd === undefined) return null;
+    return new Date(Date.parse(queryEnd));
+  }, [queryEnd]);
+  console.log('start', start);
+  console.log('queryStart', queryStart);
+  console.log('end', end);
+  console.log('queryEnd', queryEnd);
+  const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   useEffect(() => {
-    const transformProjectToTask = (project: Project): Task => {
+    const transformProjectToGanttObject = (project: Project): Task => {
       return {
         id: wbsPipe(project.wbsNum),
         name: wbsPipe(project.wbsNum) + ' ' + project.name,
@@ -98,7 +114,7 @@ const GanttPageWrapper: React.FC = () => {
         }
       };
     };
-    const transformWPToTask = (wp: WorkPackage, projects: Project[]): Task => {
+    const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
       return {
         id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
         name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
@@ -116,11 +132,11 @@ const GanttPageWrapper: React.FC = () => {
     };
     if (projects) {
       const filteredProjects = filterGanttProjects(projects, showCar1, showCar2, status, selectedTeam, start, end);
-      const projTasks = filteredProjects.map(transformProjectToTask);
+      const projTasks = filteredProjects.map(transformProjectToGanttObject);
       const workPackages = filteredProjects.flatMap((p) => p.workPackages);
-      const wpTasks = workPackages.map((wp) => transformWPToTask(wp, filteredProjects));
+      const wpTasks = workPackages.map((wp) => transformWPToGanttObject(wp, filteredProjects));
       setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
-      setTasks([...projTasks, ...wpTasks]);
+      setGanttDisplayObjects([...projTasks, ...wpTasks]);
     }
   }, [end, expanded, projects, showCar1, showCar2, start, status, selectedTeam]);
 
@@ -128,25 +144,45 @@ const GanttPageWrapper: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const car1Handler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setShowCar1(event.target.checked);
+  const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
+    const searchParams = `?status=${status}&showCar1=${event.target.checked}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
 
-  const car2Handler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setShowCar2(event.target.checked);
+  const car2Handler = (event: ChangeEvent<HTMLInputElement>) => {
+    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${event.target.checked}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
 
   const statusHandler = (event: SelectChangeEvent) => {
-    setStatus(event.target.value as string);
+    const searchParams = `?status=${
+      event.target.value as string
+    }&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
   const teamHandler = (event: SelectChangeEvent) => {
-    setSelectedTeam(event.target.value as string);
+    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${
+      event.target.value as string
+    }&expanded=${expanded}&start=${start}&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
   const startHandler = (value: Date | null) => {
-    setStart(value);
+    const dateString = value?.toISOString();
+    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${
+      dateString ?? null
+    }&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
   const endHandler = (value: Date | null) => {
-    setEnd(value);
+    const dateString = value?.toISOString();
+    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${
+      dateString ?? null
+    }`;
+    history.push(`${history.location.pathname + searchParams}`);
+  };
+  const expandedHandler = (value: boolean) => {
+    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${value}&start=${start}&end=${end}`;
+    history.push(`${history.location.pathname + searchParams}`);
   };
 
   return (
@@ -160,13 +196,13 @@ const GanttPageWrapper: React.FC = () => {
         teamHandler={teamHandler}
         startHandler={startHandler}
         endHandler={endHandler}
-        expandedHandler={setExpanded}
+        expandedHandler={expandedHandler}
         teamList={teamList}
         selectedTeam={selectedTeam}
         currentStart={start}
         currentEnd={end}
       />
-      <GanttPage tasks={tasks} />
+      <GanttPage ganttDisplayObjects={ganttDisplayObjects} />
     </>
   );
 };
