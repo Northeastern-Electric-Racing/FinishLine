@@ -78,6 +78,7 @@ const UsefulLinks: React.FC = () => {
     </>
   ];
 
+  // gets the text wrapped in the React element, used here to generate keys
   const rawText = (component: React.ReactElement | string): string => {
     if (!component) {
       return '';
