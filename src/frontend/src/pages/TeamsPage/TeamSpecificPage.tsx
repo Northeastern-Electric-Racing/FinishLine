@@ -2,14 +2,13 @@ import { Grid } from '@mui/material';
 import { useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/pipes';
-import ReactMarkdown from 'react-markdown';
-import styles from '../../stylesheets/pages/teams.module.css';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ActiveProjectCardView from './ProjectCardsView';
 import DetailDisplay from '../../components/DetailDisplay';
+import DescriptionPageBlock from './DescriptionPageBlock';
 
 interface ParamTypes {
   teamId: string;
@@ -54,10 +53,7 @@ const TeamSpecificPage: React.FC = () => {
                 ))}
             </Grid>
           </PageBlock>
-
-          <PageBlock title={'Description'}>
-            <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>
-          </PageBlock>
+          <DescriptionPageBlock team={data} />
         </Grid>
       </Grid>
     </>

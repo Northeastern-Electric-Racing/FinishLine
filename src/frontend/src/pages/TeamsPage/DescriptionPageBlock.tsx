@@ -1,0 +1,123 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { Button, IconButton, TextField, useTheme } from '@mui/material';
+import { useState } from 'react';
+import { useAuth } from '../../hooks/auth.hooks';
+import { useEditTeamDescription } from '../../hooks/teams.hooks';
+import { Team } from 'shared';
+import { Edit } from '@mui/icons-material';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import PageBlock from '../../layouts/PageBlock';
+import ReactMarkdown from 'react-markdown';
+import styles from '../../stylesheets/pages/teams.module.css';
+
+interface DescriptionPageBlockProps {
+  team: Team;
+}
+
+const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => {
+  const auth = useAuth();
+  const theme = useTheme();
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [description, setDescription] = useState(team.description);
+  const [isPreview, setIsPreview] = useState(false);
+  const { isLoading, isError, error, mutateAsync } = useEditTeamDescription(team.teamId);
+
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading) return <LoadingIndicator />;
+
+  const handleSubmit = async () => {
+    await mutateAsync(description);
+    setIsEditingDescription(false);
+  };
+
+  const hasPerms = () => {
+    return !(
+      auth.user &&
+      (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
+    );
+  };
+
+  const countWords = (str: string): number => {
+    const words = str.split(' ');
+    let wordCount = 0;
+    words.forEach((word) => {
+      if (word.trim() !== '') {
+        wordCount++;
+      }
+    });
+    return wordCount;
+  };
+
+  const checkWordCount = (str: string, limit: number): boolean => {
+    return countWords(str) < limit;
+  };
+
+  const headerRight = (
+    <div style={{ display: 'flex' }}>
+      <Button onClick={() => setIsEditingDescription(false)}>Cancel</Button>
+      <Button
+        onClick={() => setIsPreview(!isPreview)}
+        sx={{
+          backgroundColor: theme.palette.grey[600],
+          color: theme.palette.getContrastText(theme.palette.grey[600]),
+          '&:hover': {
+            backgroundColor: theme.palette.grey[700]
+          }
+        }}
+      >
+        Preview
+      </Button>
+      <Button
+        sx={{
+          ml: 2,
+          backgroundColor: theme.palette.success.main,
+          color: theme.palette.success.contrastText,
+          '&:hover': {
+            backgroundColor: theme.palette.success.dark
+          }
+        }}
+        onClick={handleSubmit}
+      >
+        Save
+      </Button>
+    </div>
+  );
+
+  const editingView = (
+    <PageBlock title={'Description'} headerRight={headerRight}>
+      {isPreview ? (
+        <ReactMarkdown className={styles.markdown}>{description}</ReactMarkdown>
+      ) : (
+        <TextField
+          fullWidth
+          multiline
+          rows={10}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          inputProps={{
+            maxlength: checkWordCount(description, 300) ? null : 0
+          }}
+          helperText={`${countWords(description)}/300`}
+        />
+      )}
+    </PageBlock>
+  );
+
+  const nonEditingView = (
+    <PageBlock
+      title={'Description'}
+      headerRight={<IconButton disabled={hasPerms()} onClick={() => setIsEditingDescription(true)} children={<Edit />} />}
+    >
+      <ReactMarkdown className={styles.markdown}>{team.description}</ReactMarkdown>
+    </PageBlock>
+  );
+
+  return isEditingDescription ? editingView : nonEditingView;
+};
+
+export default DescriptionPageBlock;

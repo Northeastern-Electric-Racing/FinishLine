@@ -24,3 +24,9 @@ export const setTeamMembers = (id: string, userIds: number[]) => {
     userIds
   });
 };
+
+export const setTeamDescription = (id: string, description: string) => {
+  return axios.post<{ message: string }>(apiUrls.teamsSetDescription(id), {
+    newDescription: description
+  });
+};
