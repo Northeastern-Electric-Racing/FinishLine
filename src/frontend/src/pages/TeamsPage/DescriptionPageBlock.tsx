@@ -31,7 +31,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
   if (isLoading) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
-    if (!checkWordCount(description, 300)) {
+    if (!isUnderWordCount(description, 300)) {
       return alert('Description must be less than 300 words');
     }
     await mutateAsync(description);
