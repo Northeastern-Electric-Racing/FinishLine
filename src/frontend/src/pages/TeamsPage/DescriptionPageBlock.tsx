@@ -31,6 +31,9 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
   if (isLoading) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
+    if (!checkWordCount(description, 300)) {
+      return alert('Description must be less than 300 words');
+    }
     await mutateAsync(description);
     setIsEditingDescription(false);
   };
@@ -63,6 +66,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
       <Button
         onClick={() => setIsPreview(!isPreview)}
         sx={{
+          ml: 2,
           backgroundColor: theme.palette.grey[600],
           color: theme.palette.getContrastText(theme.palette.grey[600]),
           '&:hover': {
@@ -102,7 +106,8 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
           inputProps={{
             maxlength: checkWordCount(description, 300) ? null : 0
           }}
-          helperText={`${countWords(description)}/300`}
+          helperText={`${countWords(description)}/300 words`}
+          error={!checkWordCount(description, 300)}
         />
       )}
     </PageBlock>
