@@ -56,7 +56,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     return wordCount;
   };
 
-  const checkWordCount = (str: string, limit: number): boolean => {
+  const isUnderWordCount = (str: string, limit: number): boolean => {
     return countWords(str) < limit;
   };
 
@@ -104,10 +104,10 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           inputProps={{
-            maxlength: checkWordCount(description, 300) ? null : 0
+            maxlength: isUnderWordCount(description, 300) ? null : 0
           }}
           helperText={`${countWords(description)}/300 words`}
-          error={!checkWordCount(description, 300)}
+          error={!isUnderWordCount(description, 300)}
         />
       )}
     </PageBlock>

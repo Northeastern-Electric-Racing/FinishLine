@@ -124,6 +124,6 @@ export const countWords = (str: string): number => {
   return wordCount;
 };
 
-export const checkWordCount = (str: string, limit: number): boolean => {
+export const isUnderWordCount = (str: string, limit: number): boolean => {
   return countWords(str) < limit;
 };
