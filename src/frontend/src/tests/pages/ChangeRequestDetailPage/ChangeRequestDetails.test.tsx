@@ -10,12 +10,7 @@ import {
   exampleActivationChangeRequest as exActivationCR,
   exampleStandardChangeRequest as exStandardCR
 } from '../../test-support/test-data/change-requests.stub';
-import {
-  exampleAdminUser,
-  exampleAdminUser2,
-  exampleGuestUser,
-  exampleMemberUser
-} from '../../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleGuestUser, exampleMemberUser } from '../../test-support/test-data/users.stub';
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
@@ -62,7 +57,7 @@ describe.skip('change request details container', () => {
 
   it('enables review if the user is an admin', () => {
     mockSingleCRHook(false, false, exActivationCR);
-    mockAuthHook(exampleAdminUser2);
+    mockAuthHook(exampleAdminUser);
     renderComponent();
 
     expect(screen.getByText('Review')).not.toHaveAttribute('aria-disabled');
