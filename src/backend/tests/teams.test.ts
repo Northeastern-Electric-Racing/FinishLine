@@ -1,11 +1,12 @@
 import TeamsService from '../src/services/teams.services';
 import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
-import { prismaTeam1, sharedTeam1 } from './test-data/teams.test-data';
+import { prismaTeam1, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
-import { HttpException } from '../src/utils/errors.utils';
+import { AccessDeniedException, HttpException } from '../src/utils/errors.utils';
+import teamTransformer from '../src/transformers/teams.transformer';
 
 describe('Teams', () => {
   beforeEach(() => {
@@ -89,6 +90,31 @@ describe('Teams', () => {
         ...teamQueryArgs
       });
       expect(res).toStrictEqual(sharedTeam1);
+    });
+  });
+
+  describe('Edit Team Description', () => {
+    test('Update Team Description Success', async () => {
+      const newJustice = { ...justiceLeague, description: 'hello!' };
+
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+      jest.spyOn(prisma.team, 'update').mockResolvedValue(newJustice);
+
+      const res = await TeamsService.editDescription(batman, '1', 'hello!');
+
+      expect(res).toStrictEqual(teamTransformer(newJustice));
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.team.update).toHaveBeenCalledTimes(1);
+    });
+
+    test('Returns Error If Not Admin', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+
+      await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
+        new AccessDeniedException()
+      );
+
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
     });
   });
 });
