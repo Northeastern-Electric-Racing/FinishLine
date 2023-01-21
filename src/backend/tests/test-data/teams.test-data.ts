@@ -1,7 +1,7 @@
+import { batman, superman, wonderwoman, flash } from './users.test-data';
 import { Prisma } from '@prisma/client';
 import { Team as SharedTeam } from 'shared/src/types/team-types';
 import teamQueryArgs from '../../src/prisma-query-args/teams.query-args';
-import { flash } from './users.test-data';
 
 const teamId = 'id1';
 const teamName = 'pats';
@@ -27,4 +27,15 @@ export const sharedTeam1: SharedTeam = {
   leader: flash,
   members: [],
   projects: []
+};
+
+export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
+  teamId: '1',
+  teamName: 'Justice League',
+  description: 'hiii :3',
+  slackId: '1234',
+  leaderId: 1,
+  leader: batman,
+  projects: [],
+  members: [superman, wonderwoman]
 };
