@@ -5,18 +5,8 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import Sidebar from '../../../layouts/Sidebar/Sidebar';
-import { useGetVersionNumber } from '../../../hooks/misc.hooks';
-import { UseQueryResult } from 'react-query';
-import { VersionObject } from '../../../utils/types';
-import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-
-jest.mock('../../../hooks/misc.hooks');
-
-const mockedUseGetVersionNumber = useGetVersionNumber as jest.Mock<UseQueryResult<VersionObject>>;
-
-const mockVersionNumberHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
-  mockedUseGetVersionNumber.mockReturnValue(mockUseQueryResult<VersionObject>(isLoading, isError, data, error));
-};
+import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
+import * as miscHooks from '../../../hooks/misc.hooks';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -32,7 +22,7 @@ const renderComponent = () => {
 
 describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
-    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
     expect(screen.getByText(/Home/i)).toBeInTheDocument();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();

@@ -5,10 +5,8 @@
 
 import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
 import AppAuthenticated from '../../app/AppAuthenticated';
-import { useGetVersionNumber } from '../../hooks/misc.hooks';
-import { UseQueryResult } from 'react-query';
-import { VersionObject } from '../../utils/types';
-import { mockUseQueryResult } from '../test-support/test-data/test-utils.stub';
+import * as miscHooks from '../../hooks/misc.hooks';
+import { mockGetVersionNumberReturnValue } from '../test-support/mock-hooks';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {
   return {
@@ -18,14 +16,6 @@ jest.mock('../../pages/ProjectsPage/Projects', () => {
     }
   };
 });
-
-jest.mock('../../hooks/misc.hooks');
-
-const mockedUseGetVersionNumber = useGetVersionNumber as jest.Mock<UseQueryResult<VersionObject>>;
-
-const mockVersionNumberHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
-  mockedUseGetVersionNumber.mockReturnValue(mockUseQueryResult<VersionObject>(isLoading, isError, data, error));
-};
 
 // Sets up the component under test with the desired values and renders it
 const renderComponent = (path?: string, route?: string) => {
@@ -39,7 +29,7 @@ const renderComponent = (path?: string, route?: string) => {
 
 describe('app authenticated section', () => {
   it('renders nav links', () => {
-    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
@@ -47,7 +37,7 @@ describe('app authenticated section', () => {
   });
 
   it('can navigate to projects page', () => {
-    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
 
     const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });
