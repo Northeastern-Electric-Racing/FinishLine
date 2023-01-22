@@ -55,9 +55,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     reset({ reviewNotes: '' });
   };
 
-  const overflow: object = {
-    'overflow-y': 'scroll',
-    'max-height': '300px'
+  const overflowStyle: object = {
+    overflowY: 'scroll',
+    maxHeight: '300px'
   };
 
   const proposedSolutionStyle = {
@@ -84,9 +84,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               width: 400,
               '&::-webkit-scrollbar': {
                 display: 'none'
-              }
+              },
+              ...overflowStyle
             }}
-            style={overflow}
           >
             {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
@@ -117,7 +117,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
-                    defaultValue={value}
                     fullWidth
                     sx={{ width: 400 }}
                   />
@@ -176,7 +175,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
-                    defaultValue={value}
                     fullWidth
                     sx={{ width: 500 }}
                   />
