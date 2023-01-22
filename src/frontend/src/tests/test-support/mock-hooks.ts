@@ -34,4 +34,5 @@ export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionB
   undefined
 );
 
-export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) => mockUseQueryResult<VersionObject>(false, false, versionObject);
+export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
+  mockUseQueryResult<VersionObject>(false, false, versionObject);
