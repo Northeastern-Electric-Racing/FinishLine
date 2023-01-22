@@ -26,16 +26,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSu
       <CardContent>
         <Typography variant="h5">FinishLine by NER</Typography>
         <Typography variant="body1">Login Required. Students must use their Husky Google account.</Typography>
-        <GoogleLogin
-          clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-          //jsSrc={'accounts.google.com/gsi/client.js'}
-          buttonText="Login"
-          onSuccess={prodSuccess}
-          onFailure={prodFailure}
-          cookiePolicy={'single_host_origin'}
-          isSignedIn={true}
-        />
-        {process.env.NODE_ENV === 'development' ? <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} /> : ''}
+        {process.env.NODE_ENV === 'development' ? (
+          <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} />
+        ) : (
+          <GoogleLogin
+            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+            //jsSrc={'accounts.google.com/gsi/client.js'}
+            buttonText="Login"
+            onSuccess={prodSuccess}
+            onFailure={prodFailure}
+            cookiePolicy={'single_host_origin'}
+            isSignedIn={true}
+          />
+        )}
       </CardContent>
       <CardActions>
         <Typography variant="caption">
