@@ -9190,6 +9190,7 @@ __metadata:
     classnames: ^2.3.1
     customize-cra: ^0.9.1
     google-auth-library: ^8.1.1
+    jest-fail-on-console: ^3.0.2
     msw: ^0.44.2
     react: ^17.0.1
     react-app-rewired: ^2.1.6
@@ -11330,6 +11331,15 @@ __metadata:
     jest-mock: ^26.6.2
     jest-util: ^26.6.2
   checksum: 0b69b481e6d6f2350ed241c2dabc70b0b1f3a00f9a410b7dad97c8ab38e88026acf7445ca663eb314f46ff50acee0133100b1006bf4ebda5298ffb02763a6861
+  languageName: node
+  linkType: hard
+
+"jest-fail-on-console@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "jest-fail-on-console@npm:3.0.2"
+  dependencies:
+    chalk: ^4.1.0
+  checksum: 3d14a72f38028317a3dd1d1d7118bf045b71ce7c7d815fa0be2e4303ebaee314e83f640a155c34a42a2e8819259f994ac4341d0e6743d049880b81aee27e10a0
   languageName: node
   linkType: hard
 
