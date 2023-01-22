@@ -14,7 +14,7 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import { isUnderWordCount, countWords } from '../../../../shared/src/word-count';
+import { isUnderWordCount, countWords } from 'shared/src/word-count';
 
 interface DescriptionPageBlockProps {
   team: Team;
@@ -36,7 +36,12 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
       return alert('Description must be less than 300 words');
     }
     await mutateAsync(description);
+    resetDefaults();
+  };
+
+  const resetDefaults = () => {
     setIsEditingDescription(false);
+    setIsPreview(false);
   };
 
   const hasPerms = () => {
@@ -48,7 +53,13 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
 
   const headerRight = (
     <div style={{ display: 'flex' }}>
-      <Button onClick={() => setIsEditingDescription(false)}>Cancel</Button>
+      <Button
+        onClick={() => {
+          resetDefaults();
+        }}
+      >
+        Cancel
+      </Button>
       <Button
         onClick={() => setIsPreview(!isPreview)}
         sx={{
@@ -60,7 +71,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
           }
         }}
       >
-        Preview
+        {isPreview ? 'Edit' : 'Preview'}
       </Button>
       <Button
         sx={{
