@@ -16,54 +16,8 @@ import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-
-export const filterGanttProjects = (
-  projects: Project[],
-  showCar1: boolean,
-  showCar2: boolean,
-  status: string,
-  team: string,
-  start: Date | null,
-  end: Date | null
-): Project[] => {
-  const car1Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 1;
-  };
-  const car2Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 2;
-  };
-  const statusCheck = (project: Project) => {
-    return project.status.toString() === status;
-  };
-  const teamCheck = (project: Project) => {
-    return project.team?.teamName === team;
-  };
-  const startCheck = (project: Project) => {
-    return project.startDate && start ? project.startDate >= start : false;
-  };
-  const endCheck = (project: Project) => {
-    return project.endDate && end ? project.endDate <= end : false;
-  };
-  if (!showCar1) {
-    projects = projects.filter(car1Check);
-  }
-  if (!showCar2) {
-    projects = projects.filter(car2Check);
-  }
-  if (status !== 'All Statuses') {
-    projects = projects.filter(statusCheck);
-  }
-  if (team !== 'All Teams') {
-    projects = projects.filter(teamCheck);
-  }
-  if (start) {
-    projects = projects.filter(startCheck);
-  }
-  if (end) {
-    projects = projects.filter(endCheck);
-  }
-  return projects;
-};
+import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
+import { routes } from '../../utils/routes';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -74,8 +28,9 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
-  const showCar1 = query.get('showCar1') ? query.get('showCar1') === 'true' : true;
-  const showCar2 = query.get('showCar2') ? query.get('showCar2') === 'true' : true;
+  console.log(query.get('showCar1'));
+  const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
+  const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
   const selectedTeam = query.get('selectedTeam') || 'All Teams';
   const queryStart = query.get('start');
@@ -88,11 +43,24 @@ const GanttPageWrapper: FC = () => {
     if (queryEnd === 'null' || queryEnd === null || queryEnd === undefined) return null;
     return new Date(Date.parse(queryEnd));
   }, [queryEnd]);
-  console.log('start', start);
-  console.log('queryStart', queryStart);
-  console.log('end', end);
-  console.log('queryEnd', queryEnd);
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
+
+  const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
+    return {
+      id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
+      name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
+      start: wp.startDate,
+      end: wp.endDate,
+      progress: wp.progress,
+      project: projectWbsPipe(wp.wbsNum),
+      type: 'task',
+      styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
+      displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
+      onClick: () => {
+        window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
+      }
+    };
+  };
 
   useEffect(() => {
     const transformProjectToGanttObject = (project: Project): Task => {
@@ -114,24 +82,17 @@ const GanttPageWrapper: FC = () => {
         }
       };
     };
-    const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
-      return {
-        id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
-        name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
-        start: wp.startDate,
-        end: wp.endDate,
-        progress: wp.progress,
-        project: projectWbsPipe(wp.wbsNum),
-        type: 'task',
-        styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
-        displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
-        onClick: () => {
-          window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
-        }
-      };
-    };
     if (projects) {
-      const filteredProjects = filterGanttProjects(projects, showCar1, showCar2, status, selectedTeam, start, end);
+      const ganttFilters: GanttFilters = {
+        showCar1,
+        showCar2,
+        status,
+        selectedTeam,
+        expanded,
+        start,
+        end
+      };
+      const filteredProjects = filterGanttProjects(projects, ganttFilters);
       const projTasks = filteredProjects.map(transformProjectToGanttObject);
       const workPackages = filteredProjects.flatMap((p) => p.workPackages);
       const wpTasks = workPackages.map((wp) => transformWPToGanttObject(wp, filteredProjects));
@@ -145,44 +106,96 @@ const GanttPageWrapper: FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const searchParams = `?status=${status}&showCar1=${event.target.checked}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    const ganttFilters: GanttFilters = {
+      showCar1: event.target.checked,
+      showCar2,
+      status,
+      selectedTeam,
+      expanded,
+      start,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const car2Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${event.target.checked}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2: event.target.checked,
+      status,
+      selectedTeam,
+      expanded,
+      start,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const statusHandler = (event: SelectChangeEvent) => {
-    const searchParams = `?status=${
-      event.target.value as string
-    }&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2,
+      status: event.target.value as string,
+      selectedTeam,
+      expanded,
+      start,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const teamHandler = (event: SelectChangeEvent) => {
-    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${
-      event.target.value as string
-    }&expanded=${expanded}&start=${start}&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2,
+      status,
+      selectedTeam: event.target.value as string,
+      expanded,
+      start,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const startHandler = (value: Date | null) => {
-    const dateString = value?.toISOString();
-    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${
-      dateString ?? null
-    }&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    // TODO: After Toasts are implemented, add a toast to warn the user that they inputted invalid
+    //  dates.
+    if (value?.toString() === 'Invalid Date') return;
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2,
+      status,
+      selectedTeam,
+      expanded,
+      start: value,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const endHandler = (value: Date | null) => {
-    const dateString = value?.toISOString();
-    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${expanded}&start=${start}&end=${
-      dateString ?? null
-    }`;
-    history.push(`${history.location.pathname + searchParams}`);
+    // TODO: After Toasts are implemented, add a toast to warn the user that they inputted invalid
+    //  dates.
+    if (value?.toString() === 'Invalid Date') return;
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2,
+      status,
+      selectedTeam,
+      expanded,
+      start,
+      end: value
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const expandedHandler = (value: boolean) => {
-    const searchParams = `?status=${status}&showCar1=${showCar1}&showCar2=${showCar2}&selectedTeam=${selectedTeam}&expanded=${value}&start=${start}&end=${end}`;
-    history.push(`${history.location.pathname + searchParams}`);
+    const ganttFilters: GanttFilters = {
+      showCar1,
+      showCar2,
+      status,
+      selectedTeam,
+      expanded: value,
+      start,
+      end
+    };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   return (
@@ -201,8 +214,11 @@ const GanttPageWrapper: FC = () => {
         selectedTeam={selectedTeam}
         currentStart={start}
         currentEnd={end}
+        resetHandler={() => {
+          history.push(routes.GANTT);
+        }}
       />
-      <GanttPage ganttDisplayObjects={ganttDisplayObjects} />
+      <GanttPage ganttDisplayObjects={ganttDisplayObjects} updateGanttDisplayObjects={setGanttDisplayObjects} />
     </>
   );
 };

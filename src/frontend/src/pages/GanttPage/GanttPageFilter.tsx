@@ -12,6 +12,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
 interface GanttPageFilterProps {
@@ -27,6 +28,7 @@ interface GanttPageFilterProps {
   currentEnd: Date | null;
   endHandler: (value: Date | null) => void;
   expandedHandler: (expanded: boolean) => void;
+  resetHandler: () => void;
 }
 
 const GanttPageFilter: FC<GanttPageFilterProps> = ({
@@ -41,7 +43,8 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   teamList,
   selectedTeam,
   currentStart,
-  currentEnd
+  currentEnd,
+  resetHandler
 }) => (
   <PageBlock title="Filters" style={{ flexGrow: 1 }}>
     <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
@@ -137,30 +140,53 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         container
         xs={12}
         md={3}
+        spacing={1}
         sx={{ justifyContent: 'end', alignItems: 'center', alignSelf: 'center', justifySelf: 'end' }}
       >
         <Grid item>
           <Button
-            color="secondary"
-            size="large"
+            variant="contained"
             onClick={() => {
               expandedHandler(true);
             }}
             startIcon={<UnfoldMoreIcon />}
+            sx={{
+              '&:hover': {
+                backgroundColor: '#ff0000'
+              }
+            }}
           >
             Expand
           </Button>
         </Grid>
         <Grid item>
           <Button
-            color="secondary"
-            size="large"
+            variant="contained"
             onClick={() => {
               expandedHandler(false);
             }}
             startIcon={<UnfoldLessIcon />}
+            sx={{
+              '&:hover': {
+                backgroundColor: '#ff0000'
+              }
+            }}
           >
             Collapse
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            onClick={resetHandler}
+            startIcon={<RestartAltIcon />}
+            sx={{
+              '&:hover': {
+                backgroundColor: '#ff0000'
+              }
+            }}
+          >
+            Reset
           </Button>
         </Grid>
       </Grid>
