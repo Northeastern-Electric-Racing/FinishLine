@@ -112,18 +112,3 @@ export const getCurrentUser = async (res: Response): Promise<User> => {
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };
-
-export const countWords = (str: string): number => {
-  const words = str.split(' ');
-  let wordCount = 0;
-  words.forEach((word) => {
-    if (word.trim() !== '') {
-      wordCount++;
-    }
-  });
-  return wordCount;
-};
-
-export const isUnderWordCount = (str: string, limit: number): boolean => {
-  return countWords(str) < limit;
-};

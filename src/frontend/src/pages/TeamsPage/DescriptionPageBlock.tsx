@@ -14,6 +14,7 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import { isUnderWordCount, countWords } from '../../../../shared/src/word-count';
 
 interface DescriptionPageBlockProps {
   team: Team;
@@ -43,21 +44,6 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
       auth.user &&
       (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
     );
-  };
-
-  const countWords = (str: string): number => {
-    const words = str.split(' ');
-    let wordCount = 0;
-    words.forEach((word) => {
-      if (word.trim() !== '') {
-        wordCount++;
-      }
-    });
-    return wordCount;
-  };
-
-  const isUnderWordCount = (str: string, limit: number): boolean => {
-    return countWords(str) < limit;
   };
 
   const headerRight = (

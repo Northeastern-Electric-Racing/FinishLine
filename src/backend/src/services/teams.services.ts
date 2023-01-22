@@ -5,7 +5,7 @@ import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
-import { isUnderWordCount } from '../utils/utils';
+import { isUnderWordCount } from '../../../shared/src/word-count';
 
 export default class TeamsService {
   /**
