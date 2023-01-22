@@ -30,7 +30,6 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
-  console.log(query.get('showCar1'));
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
