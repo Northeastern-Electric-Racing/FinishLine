@@ -18,11 +18,13 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
+import { useToast } from '../../hooks/toasts.hooks';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
  */
 const GanttPageWrapper: FC = () => {
+  const toast = useToast();
   const query = useQuery();
   const history = useHistory();
   const { isLoading, isError, data: projects, error } = useAllProjects();
@@ -156,9 +158,7 @@ const GanttPageWrapper: FC = () => {
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const startHandler = (value: Date | null) => {
-    // TODO: After Toasts are implemented, add a toast to warn the user that they inputted invalid
-    //  dates.
-    if (value?.toString() === 'Invalid Date') return;
+    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
     const ganttFilters: GanttFilters = {
       showCar1,
       showCar2,
@@ -171,9 +171,7 @@ const GanttPageWrapper: FC = () => {
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const endHandler = (value: Date | null) => {
-    // TODO: After Toasts are implemented, add a toast to warn the user that they inputted invalid
-    //  dates.
-    if (value?.toString() === 'Invalid Date') return;
+    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
     const ganttFilters: GanttFilters = {
       showCar1,
       showCar2,
