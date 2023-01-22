@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Button, Grid, IconButton, TextField, useTheme } from '@mui/material';
+import { Autocomplete, Button, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -15,6 +15,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
+import { NERSuccessButton } from '../../components/NERSuccessButton';
 
 interface TeamMembersPageBlockProps {
   team: Team;
@@ -22,7 +23,6 @@ interface TeamMembersPageBlockProps {
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();
-  const theme = useTheme();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [memberIds, setMemberIds] = useState(team.members.map((member) => member.userId));
 
@@ -39,45 +39,31 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   if (isLoading || setTeamMemberIsLoading || !data) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
-    await mutateAsync(memberIds);
+    await mutateAsync(memberIds).catch((err) => {
+      alert(err.message);
+    });
     setIsEditingMembers(false);
   };
 
-  const hasPerms = () => {
-    return !(
-      auth.user &&
-      (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
-    );
-  };
+  const hasPerms =
+    auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId);
 
   const userToAutocompleteOption = (user: User): { label: string; id: number } => {
     return { label: `${fullNamePipe(user)}`, id: user.userId };
   };
 
   //first filters the options to only include users who have not been selected to be on the team, then sorts the options by alphabetical order of their first name, then maps the options to the autocomplete option format
-  const options = () => {
-    return data
-      .filter((user) => !memberIds.includes(user.userId))
-      .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-      .map(userToAutocompleteOption);
-  };
+  const options = data
+    .filter((user) => !memberIds.includes(user.userId) && user.userId !== team.leader.userId)
+    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .map(userToAutocompleteOption);
 
   const headerRight = (
     <div style={{ display: 'flex' }}>
       <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
-      <Button
-        sx={{
-          ml: 2,
-          backgroundColor: theme.palette.success.main,
-          color: theme.palette.success.contrastText,
-          '&:hover': {
-            backgroundColor: theme.palette.success.dark
-          }
-        }}
-        onClick={handleSubmit}
-      >
+      <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
         Save
-      </Button>
+      </NERSuccessButton>
     </div>
   );
 
@@ -91,9 +77,9 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           <Autocomplete
             multiple
             id="tags-standard"
-            options={options()}
+            options={options}
             defaultValue={team.members.map(userToAutocompleteOption)}
-            onChange={(event, newValue) => {
+            onChange={(_event, newValue) => {
               setMemberIds(newValue.map((option) => option.id));
             }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -109,21 +95,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const nonEditingView = (
     <PageBlock
       title={'People'}
-      headerRight={<IconButton disabled={hasPerms()} onClick={() => setIsEditingMembers(true)} children={<Edit />} />}
+      headerRight={<IconButton disabled={!hasPerms} onClick={() => setIsEditingMembers(true)} children={<Edit />} />}
     >
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay
-            label="Members"
-            content={team.members
-              .map((member) => {
-                return fullNamePipe(member);
-              })
-              .join(', ')}
-          />
+          <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
         </Grid>
       </Grid>
     </PageBlock>
