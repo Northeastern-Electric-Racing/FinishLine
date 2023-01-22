@@ -23,7 +23,7 @@ jest.mock('../../hooks/misc.hooks');
 
 const mockedUseGetVersionNumber = useGetVersionNumber as jest.Mock<UseQueryResult<VersionObject>>;
 
-const mockHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
+const mockVersionNumberHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
   mockedUseGetVersionNumber.mockReturnValue(mockUseQueryResult<VersionObject>(isLoading, isError, data, error));
 };
 
@@ -39,7 +39,7 @@ const renderComponent = (path?: string, route?: string) => {
 
 describe('app authenticated section', () => {
   it('renders nav links', () => {
-    mockHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
     renderComponent();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('app authenticated section', () => {
   });
 
   it('can navigate to projects page', () => {
-    mockHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
     renderComponent();
 
     const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });

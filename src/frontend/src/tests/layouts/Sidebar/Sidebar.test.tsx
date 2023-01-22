@@ -14,7 +14,7 @@ jest.mock('../../../hooks/misc.hooks');
 
 const mockedUseGetVersionNumber = useGetVersionNumber as jest.Mock<UseQueryResult<VersionObject>>;
 
-const mockHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
+const mockVersionNumberHook = (isLoading: boolean, isError: boolean, data?: VersionObject, error?: Error) => {
   mockedUseGetVersionNumber.mockReturnValue(mockUseQueryResult<VersionObject>(isLoading, isError, data, error));
 };
 
@@ -32,7 +32,7 @@ const renderComponent = () => {
 
 describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
-    mockHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
+    mockVersionNumberHook(false, false, { tag_name: 'v3.5.4' } as VersionObject);
     renderComponent();
     expect(screen.getByText(/Home/i)).toBeInTheDocument();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
