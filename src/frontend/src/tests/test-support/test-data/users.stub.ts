@@ -25,7 +25,7 @@ export const exampleAdminUser: User = {
 
 export const exampleAdminUser2: User = {
   userId: 8,
-  firstName: 'Joseph',
+  firstName: 'Joe',
   lastName: 'Shmoseph',
   email: 'shmoseph.j@husky.neu.edu',
   emailId: 'shmoseph.j',
