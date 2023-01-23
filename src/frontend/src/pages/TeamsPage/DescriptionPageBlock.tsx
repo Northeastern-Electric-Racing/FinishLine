@@ -44,14 +44,10 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     setIsPreview(false);
   };
 
-  const hasPerms = () => {
-    return !(
-      auth.user &&
-      (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId)
-    );
-  };
+  const hasPerms =
+    auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId);
 
-  const headerRight = (
+  const editButtons = (
     <div style={{ display: 'flex' }}>
       <Button
         onClick={() => {
@@ -90,7 +86,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
   );
 
   const editingView = (
-    <PageBlock title={'Description'} headerRight={headerRight}>
+    <PageBlock title={'Description'} headerRight={editButtons}>
       {isPreview ? (
         <ReactMarkdown className={styles.markdown}>{description}</ReactMarkdown>
       ) : (
@@ -113,7 +109,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
   const nonEditingView = (
     <PageBlock
       title={'Description'}
-      headerRight={<IconButton disabled={hasPerms()} onClick={() => setIsEditingDescription(true)} children={<Edit />} />}
+      headerRight={hasPerms ? <IconButton onClick={() => setIsEditingDescription(true)} children={<Edit />} /> : null}
     >
       <ReactMarkdown className={styles.markdown}>{team.description}</ReactMarkdown>
     </PageBlock>
