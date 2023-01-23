@@ -45,153 +45,142 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   currentStart,
   currentEnd,
   resetHandler
-}) => (
-  <PageBlock title="Filters" style={{ flexGrow: 1 }}>
-    <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
-      <Grid item container direction="column" xs={12} md={1} sx={{ justifyContent: 'space-evenly', alignItems: 'center' }}>
-        <Grid item xs={12} md={1}>
-          Car
-        </Grid>
-        <Grid item container xs={12} md={1} sx={{ justifyContent: 'space-evenly', alignItems: 'center' }}>
-          <Grid item>
-            <Checkbox
-              defaultChecked
-              icon={<LooksOneOutlinedIcon />}
-              checkedIcon={<LooksOneOutlinedIcon />}
-              onChange={car1Handler}
-              sx={{
-                color: 'white',
-                '&.Mui-checked': {
-                  color: '#ef4345'
-                },
-                '& .MuiSvgIcon-root': {
-                  fontSize: '2rem'
-                }
-              }}
-            />
-          </Grid>
-          <Grid item>
-            <Checkbox
-              defaultChecked
-              icon={<LooksTwoOutlinedIcon />}
-              checkedIcon={<LooksTwoOutlinedIcon />}
-              onChange={car2Handler}
-              sx={{
-                color: 'white',
-                '&.Mui-checked': {
-                  color: '#ef4345'
-                },
-                '& .MuiSvgIcon-root': {
-                  fontSize: '2rem'
-                }
-              }}
-            />
-          </Grid>
-        </Grid>
+}) => {
+  const carFilters = (
+    <Grid item container direction="column" xs={12} md={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
+      <Grid item xs={12} md={1}>
+        Car
       </Grid>
-      <Grid item xs={12} md={2}>
-        <FormControl sx={{ width: '100%' }}>
-          <FormLabel>Status</FormLabel>
-          <Select value={status} onChange={statusHandler}>
-            <MenuItem value="All Statuses">All Statuses</MenuItem>
-            {Object.values(WbsElementStatus).map((status) => {
-              return <MenuItem value={status}>{status}</MenuItem>;
-            })}
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={12} md={2}>
-        <FormControl sx={{ width: '100%' }}>
-          <FormLabel>Team</FormLabel>
-          <Select value={selectedTeam} onChange={teamHandler}>
-            <MenuItem value="All Teams">All Teams</MenuItem>
-            {teamList.map((team) => (
-              <MenuItem value={team}>{team}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={12} md={2}>
-        <FormControl sx={{ width: '100%' }}>
-          <FormLabel>Start Date</FormLabel>
-          <DatePicker
-            inputFormat="yyyy-MM-dd"
-            onChange={startHandler}
-            className={'padding: 10'}
-            value={currentStart}
-            renderInput={(params) => <TextField autoComplete="off" {...params} />}
+      <Grid item container xs={12} md={1}>
+        <Grid item>
+          <Checkbox
+            defaultChecked
+            icon={<LooksOneOutlinedIcon />}
+            checkedIcon={<LooksOneOutlinedIcon />}
+            onChange={car1Handler}
+            sx={{
+              color: 'white',
+              '&.Mui-checked': {
+                color: '#ef4345'
+              },
+              '& .MuiSvgIcon-root': {
+                fontSize: '2rem'
+              },
+              paddingLeft: 0
+            }}
           />
-        </FormControl>
-      </Grid>
-      <Grid item xs={12} md={2}>
-        <FormControl sx={{ width: '100%' }}>
-          <FormLabel>End Date</FormLabel>
-          <DatePicker
-            inputFormat="yyyy-MM-dd"
-            onChange={endHandler}
-            className={'padding: 10'}
-            value={currentEnd}
-            renderInput={(params) => <TextField autoComplete="off" {...params} />}
+        </Grid>
+        <Grid item>
+          <Checkbox
+            defaultChecked
+            icon={<LooksTwoOutlinedIcon />}
+            checkedIcon={<LooksTwoOutlinedIcon />}
+            onChange={car2Handler}
+            sx={{
+              color: 'white',
+              '&.Mui-checked': {
+                color: '#ef4345'
+              },
+              '& .MuiSvgIcon-root': {
+                fontSize: '2rem'
+              },
+              paddingLeft: 0
+            }}
           />
-        </FormControl>
-      </Grid>
-      <Grid
-        item
-        container
-        xs={12}
-        md={3}
-        spacing={1}
-        sx={{ justifyContent: 'end', alignItems: 'center', alignSelf: 'center', justifySelf: 'end' }}
-      >
-        <Grid item>
-          <Button
-            variant="contained"
-            onClick={() => {
-              expandedHandler(true);
-            }}
-            startIcon={<UnfoldMoreIcon />}
-            sx={{
-              '&:hover': {
-                backgroundColor: '#ff0000'
-              }
-            }}
-          >
-            Expand
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            onClick={() => {
-              expandedHandler(false);
-            }}
-            startIcon={<UnfoldLessIcon />}
-            sx={{
-              '&:hover': {
-                backgroundColor: '#ff0000'
-              }
-            }}
-          >
-            Collapse
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            onClick={resetHandler}
-            startIcon={<RestartAltIcon />}
-            sx={{
-              '&:hover': {
-                backgroundColor: '#ff0000'
-              }
-            }}
-          >
-            Reset
-          </Button>
         </Grid>
       </Grid>
     </Grid>
-  </PageBlock>
-);
+  );
+  const buttons = (
+    <Grid
+      item
+      container
+      xs={12}
+      md={3}
+      spacing={1}
+      sx={{ justifyContent: 'end', alignItems: 'center', alignSelf: 'center', justifySelf: 'end' }}
+    >
+      <Grid item>
+        <Button
+          onClick={() => {
+            expandedHandler(true);
+          }}
+          startIcon={<UnfoldMoreIcon />}
+        >
+          Expand
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button
+          onClick={() => {
+            expandedHandler(false);
+          }}
+          startIcon={<UnfoldLessIcon />}
+        >
+          Collapse
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
+          Reset
+        </Button>
+      </Grid>
+    </Grid>
+  );
+  return (
+    <PageBlock title="Filters" style={{ flexGrow: 1 }}>
+      <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
+        {carFilters}
+        <Grid item xs={12} md={2}>
+          <FormControl sx={{ width: '100%' }}>
+            <FormLabel>Status</FormLabel>
+            <Select value={status} onChange={statusHandler}>
+              <MenuItem value="All Statuses">All Statuses</MenuItem>
+              {Object.values(WbsElementStatus).map((status) => {
+                return <MenuItem value={status}>{status}</MenuItem>;
+              })}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <FormControl sx={{ width: '100%' }}>
+            <FormLabel>Team</FormLabel>
+            <Select value={selectedTeam} onChange={teamHandler}>
+              <MenuItem value="All Teams">All Teams</MenuItem>
+              {teamList.map((team) => (
+                <MenuItem value={team}>{team}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <FormControl sx={{ width: '100%' }}>
+            <FormLabel>Start Date</FormLabel>
+            <DatePicker
+              inputFormat="yyyy-MM-dd"
+              onChange={startHandler}
+              className={'padding: 10'}
+              value={currentStart}
+              renderInput={(params) => <TextField autoComplete="off" {...params} />}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <FormControl sx={{ width: '100%' }}>
+            <FormLabel>End Date</FormLabel>
+            <DatePicker
+              inputFormat="yyyy-MM-dd"
+              onChange={endHandler}
+              className={'padding: 10'}
+              value={currentEnd}
+              renderInput={(params) => <TextField autoComplete="off" {...params} />}
+            />
+          </FormControl>
+        </Grid>
+        {buttons}
+      </Grid>
+    </PageBlock>
+  );
+};
 
 export default GanttPageFilter;

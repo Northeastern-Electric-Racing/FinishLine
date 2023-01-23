@@ -118,7 +118,6 @@ const GanttPageWrapper: FC = () => {
     };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
-
   const car2Handler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = {
       showCar1,
@@ -131,7 +130,6 @@ const GanttPageWrapper: FC = () => {
     };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
-
   const statusHandler = (event: SelectChangeEvent) => {
     const ganttFilters: GanttFilters = {
       showCar1,
