@@ -68,14 +68,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
                   description="(How to find your Slack ID)"
                 />
               </div>
-              <TextField
-                required
-                id="slackid-input"
-                autoComplete="off"
-                onChange={onChange}
-                value={value}
-                defaultValue={value}
-              />
+              <TextField required id="slackid-input" autoComplete="off" onChange={onChange} value={value} />
             </>
           )}
         />

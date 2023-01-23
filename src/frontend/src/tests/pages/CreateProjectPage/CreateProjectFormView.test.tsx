@@ -10,6 +10,13 @@ import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/utils.hooks');
 
+jest.mock('../../../components/ReactHookTextField', () => {
+  return {
+    __esModule: true,
+    default: () => <p>React hook text field component</p>
+  };
+});
+
 const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
 
 const mockUseQuery = () => {

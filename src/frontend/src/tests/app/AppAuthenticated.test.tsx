@@ -5,6 +5,8 @@
 
 import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
 import AppAuthenticated from '../../app/AppAuthenticated';
+import * as workPackageHooks from '../../hooks/work-packages.hooks';
+import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {
   return {
@@ -14,6 +16,8 @@ jest.mock('../../pages/ProjectsPage/Projects', () => {
     }
   };
 });
+
+jest.mock('../../utils/axios');
 
 // Sets up the component under test with the desired values and renders it
 const renderComponent = (path?: string, route?: string) => {
@@ -25,7 +29,11 @@ const renderComponent = (path?: string, route?: string) => {
   );
 };
 
-describe('app authenticated section', () => {
+describe('AppAuthenticated', () => {
+  beforeEach(() => {
+    jest.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
+  });
+
   it('renders nav links', () => {
     renderComponent();
     expect(screen.getByText('Home')).toBeInTheDocument();

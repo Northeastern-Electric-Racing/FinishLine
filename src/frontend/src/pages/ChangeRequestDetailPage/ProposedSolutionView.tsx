@@ -5,7 +5,6 @@
 
 import { ProposedSolution } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -43,9 +42,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
           <DetailDisplay label="Budget Impact" content={dollarsPipe(proposedSolution.budgetImpact)} />
         </Grid>
         <Grid item xs={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>
-            {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}{' '}
-          </Typography>
+          {proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}
         </Grid>
         <Grid item xs={7}>
           <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />

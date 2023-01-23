@@ -38,7 +38,7 @@ export const flash: PrismaUser = {
   email: 'b.allen@fast.com',
   emailId: 'barry.allen',
   role: PrismaRole.ADMIN,
-  googleAuthId: 'b'
+  googleAuthId: 'f'
 };
 
 export const greenlantern: PrismaUser = {
