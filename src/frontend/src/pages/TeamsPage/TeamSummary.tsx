@@ -8,18 +8,19 @@ import { routes } from '../../utils/routes';
 import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
+import React from 'react';
 interface TeamSummaryProps {
   team: Team;
 }
 
 const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
   const projectsList = team.projects.map((project, idx) => (
-    <>
+    <React.Fragment key={project.name}>
       <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
         {project.name}
       </Link>
       {idx + 1 !== team.projects.length ? ', ' : ''}
-    </>
+    </React.Fragment>
   ));
 
   return (

@@ -39,4 +39,15 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async editDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId, newDescription } = req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.editDescription(user, teamId, newDescription);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

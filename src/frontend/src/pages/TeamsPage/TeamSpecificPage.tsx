@@ -1,13 +1,14 @@
 import { Grid } from '@mui/material';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { useSingleTeam } from '../../hooks/teams.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
-import ErrorPage from '../ErrorPage';
-import PageBlock from '../../layouts/PageBlock';
 import { useParams } from 'react-router-dom';
 import { fullNamePipe } from '../../utils/pipes';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
+import ErrorPage from '../ErrorPage';
+import PageBlock from '../../layouts/PageBlock';
+import ActiveProjectCardView from './ProjectCardsView';
 import DetailDisplay from '../../components/DetailDisplay';
 
 interface ParamTypes {
@@ -42,7 +43,18 @@ const TeamSpecificPage: React.FC = () => {
               </Grid>
             </Grid>
           </PageBlock>
-          <PageBlock title={'Active Projects'}></PageBlock>
+          <PageBlock title={'Active Projects'}>
+            <Grid container spacing={2}>
+              {data.projects
+                .filter((project) => project.status === 'ACTIVE')
+                .map((project) => (
+                  <Grid item key={project.id}>
+                    <ActiveProjectCardView project={project} />
+                  </Grid>
+                ))}
+            </Grid>
+          </PageBlock>
+
           <PageBlock title={'Description'}>
             <ReactMarkdown className={styles.markdown}>{data.description}</ReactMarkdown>
           </PageBlock>
