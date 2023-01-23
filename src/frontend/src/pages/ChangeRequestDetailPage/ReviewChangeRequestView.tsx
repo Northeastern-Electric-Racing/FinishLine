@@ -11,6 +11,7 @@ import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography } from '@mui/material';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -31,6 +32,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   onSubmit
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
+  const toast = useToast();
 
   const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
@@ -107,7 +109,14 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
-                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Additional Comments'}</Typography>
+                  <Typography
+                    sx={{
+                      paddingTop: 1,
+                      paddingBottom: 1
+                    }}
+                  >
+                    {'Additional Comments'}
+                  </Typography>
                   <TextField
                     multiline
                     rows={4}
@@ -133,7 +142,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             form="review-notes-form"
             sx={{ textTransform: 'none', fontSize: 16 }}
             onClick={() => {
-              selected > -1 ? handleAcceptDeny(true) : alert('Please select a proposed solution!');
+              selected > -1 ? handleAcceptDeny(true) : toast.error('Please select a proposed solution!', 4500);
             }}
           >
             Accept

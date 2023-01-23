@@ -48,6 +48,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Alan Zhan', color: '#7AD0AC' },
     { name: 'Sutton Spindler', color: '#53A3ff' },
     { name: 'Emma Vonbuelow', color: '#c77ad0' }
+    { name: 'Aidan Roche', color: '#20B1AA' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
