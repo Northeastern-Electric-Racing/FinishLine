@@ -108,7 +108,7 @@ describe('Projects', () => {
   });
 
   test('editProject fails with feature with invalid id', async () => {
-    const proj = { ...editProjectPayload, features: [{ id: -1, detail: 'alsdjf' }] };
+    const proj = { ...editProjectPayload, features: [{ id: -2, detail: 'alsdjf' }] };
     const res = await request(app).post('/edit').send(proj);
     expect(res.statusCode).toBe(400);
   });
