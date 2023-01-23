@@ -4,7 +4,8 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import NavTopBar from '../../../layouts/NavTopBar/NavTopBar';
+import TeamSummary from '../../../pages/TeamsPage/TeamSummary';
+import { exampleTeam } from '../../test-support/test-data/teams.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -13,14 +14,14 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <NavTopBar />
+      <TeamSummary team={exampleTeam} />
     </RouterWrapper>
   );
 };
 
-describe('navigation top bar tests', () => {
-  it('renders site title', () => {
+describe('Rendering Team Summary Component', () => {
+  it('Renders Team Name', () => {
     renderComponent();
-    expect(screen.getByText(/FinishLine by NER/i)).toBeInTheDocument();
+    expect(screen.getByText(exampleTeam.teamName)).toBeInTheDocument();
   });
 });
