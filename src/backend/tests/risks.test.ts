@@ -1,3 +1,5 @@
+import request from 'supertest';
+import express from 'express';
 import { project1 } from './test-data/projects.test-data';
 import RisksService from '../src/services/risks.services';
 import prisma from '../src/prisma/prisma';
@@ -6,6 +8,13 @@ import { prismaRisk1, prismaRisk2, sharedRisk1 } from './test-data/risks.test-da
 import { batman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
+import risksRouter from '../src/routes/risks.routes';
+import { NotFoundException } from '../src/utils/errors.utils';
+import RisksController from '../src/controllers/risks.controllers';
+
+const app = express();
+app.use(express.json());
+app.use('/', risksRouter);
 
 describe('Risks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -19,6 +28,33 @@ describe('Risks', () => {
     jest.clearAllMocks();
   });
 
+  test('getRisksForProject fails when unknown projectId given', async () => {
+    const fakeProjectId = 100;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.risk, 'findMany').mockResolvedValue([]);
+
+    await expect(() => RisksService.getRisksForProject(fakeProjectId)).rejects.toThrow(
+      new NotFoundException('Project', fakeProjectId)
+    );
+    expect(prisma.risk.findMany).toHaveBeenCalledTimes(0);
+  });
+
+  test('getRisksForProject endpoint fails when unknown projectId given', async () => {
+    const fakeProjectId = 100;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+    const res = await request(app).get(`/${fakeProjectId}`);
+    expect(res.statusCode).toBe(404);
+    expect(prisma.risk.findMany).toHaveBeenCalledTimes(0);
+  });
+
+  test('getRisksForProject fails when non-integer projectId given', async () => {
+    const fakeProjectId = 'hello';
+
+    const res = await request(app).get(`/${fakeProjectId}`);
+    expect(res.statusCode).toBe(404);
+  });
+
   test('getRisksForProject works', async () => {
     const { projectId } = project1;
     jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
@@ -29,6 +65,16 @@ describe('Risks', () => {
     expect(risks).toStrictEqual([]);
     expect(prisma.risk.findMany).toHaveBeenCalledTimes(1);
     expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  test('getRisksForProject endpoint works', async () => {
+    const { projectId } = project1;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
+    jest.spyOn(prisma.risk, 'findMany').mockResolvedValue([]);
+
+    const res = await request(app).get(`/${projectId}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toBe('[]');
   });
 
   describe('editRisk', () => {
