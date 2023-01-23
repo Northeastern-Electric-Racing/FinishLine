@@ -58,7 +58,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
-  const headerRight = (
+  const editButtons = (
     <div style={{ display: 'flex' }}>
       <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
       <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
@@ -68,7 +68,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   );
 
   const editingView = (
-    <PageBlock title={'People'} headerRight={headerRight}>
+    <PageBlock title={'People'} headerRight={editButtons}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
@@ -95,7 +95,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const nonEditingView = (
     <PageBlock
       title={'People'}
-      headerRight={<IconButton disabled={!hasPerms} onClick={() => setIsEditingMembers(true)} children={<Edit />} />}
+      headerRight={hasPerms ? <IconButton onClick={() => setIsEditingMembers(true)} children={<Edit />} /> : null}
     >
       <Grid container spacing={1}>
         <Grid item xs={12}>
