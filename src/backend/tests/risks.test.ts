@@ -10,7 +10,6 @@ import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
 import risksRouter from '../src/routes/risks.routes';
 import { NotFoundException } from '../src/utils/errors.utils';
-import RisksController from '../src/controllers/risks.controllers';
 
 const app = express();
 app.use(express.json());
