@@ -4,8 +4,14 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Project, WbsNumber } from 'shared';
-import { editSingleProject, createSingleProject, getAllProjects, getSingleProject } from '../apis/projects.api';
+import { Project, Team, WbsNumber } from 'shared';
+import {
+  editSingleProject,
+  createSingleProject,
+  getAllProjects,
+  getSingleProject,
+  setProjectTeam
+} from '../apis/projects.api';
 
 /**
  * Custom React Hook to supply all projects.
@@ -54,6 +60,22 @@ export const useEditSingleProject = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects', wbsNum]);
+      }
+    }
+  );
+};
+
+export const useSetProjectTeam = (wbsNum: WbsNumber, team: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['projects', 'edit', 'teams'],
+    async () => {
+      const { data } = await setProjectTeam(wbsNum, team);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
       }
     }
   );

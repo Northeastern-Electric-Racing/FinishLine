@@ -17,7 +17,8 @@ export const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof 
     email: user.email,
     emailId: user.emailId,
     role: user.role,
-    defaultTheme: user.userSettings?.defaultTheme
+    defaultTheme: user.userSettings?.defaultTheme,
+    teamAsLeadId: getTeamForLead(user.userId)
   };
 };
 
@@ -72,4 +73,22 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
   }
 
   return users;
+};
+
+export const getTeamForLead = (userId: number) => {
+  let teamId;
+
+  prisma.team
+    .findUniqueOrThrow({
+      where: { leaderId: userId },
+      select: { teamId: true }
+    })
+    .then((res) => {
+      teamId = res.teamId;
+    })
+    .catch((err) => {
+      throw new HttpException(404, `User with the following id not found: ${userId}`);
+    });
+
+  return teamId;
 };

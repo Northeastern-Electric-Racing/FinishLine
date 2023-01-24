@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, WbsNumber } from 'shared';
+import { Project, WbsNumber, Team } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { projectTransformer } from './transformers/projects.transformers';
@@ -49,4 +49,8 @@ export const editSingleProject = (payload: any) => {
   return axios.post<{ message: string }>(apiUrls.projectsEdit(), {
     ...payload
   });
+};
+
+export const setProjectTeam = (wbsNum: WbsNumber, team: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), team);
 };

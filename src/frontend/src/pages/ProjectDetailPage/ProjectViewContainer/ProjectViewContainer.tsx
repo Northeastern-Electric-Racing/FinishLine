@@ -21,6 +21,7 @@ import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -63,6 +64,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       Request Change
     </MenuItem>
   );
+
+  const assignToMyTeamBtn = <MenuItem onClick={() => {}}>Assign to My Team</MenuItem>;
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -76,6 +80,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
+        {auth.user?.teamAsLeadId && assignToMyTeamBtn}
       </Menu>
     </div>
   );
