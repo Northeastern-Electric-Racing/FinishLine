@@ -132,7 +132,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           <Button
             variant="contained"
             color="success"
-            data-testId="convertButton"
+            data-testid="convertButton"
             onClick={() => {
               history.push(
                 routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(wbsNum) + '&riskDetails=' + encodeURIComponent(risk.detail)
@@ -152,7 +152,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
         <Button
           variant="contained"
           color="error"
-          data-testId={`deleteButton-${risk.id}`}
+          data-testid={`deleteButton-${risk.id}`}
           disabled={!hasPermissions && risk.createdBy.userId !== userId}
           onClick={() => handleDelete(risk.id)}
         >
@@ -177,7 +177,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
                 control={
                   <Checkbox
                     checked={risk.isResolved}
-                    data-testId={`testCheckbox${idx}`}
+                    data-testid={`testCheckbox${idx}`}
                     onChange={() => handleCheck(risk)}
                   />
                 }
@@ -191,7 +191,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </div>
         ))}
         {role !== 'GUEST' && (
-          <NERButton variant="contained" onClick={handleShow} data-testId="createButton" sx={{ mt: 1 }}>
+          <NERButton variant="contained" onClick={handleShow} data-testid="createButton" sx={{ mt: 1 }}>
             Add New Risk
           </NERButton>
         )}

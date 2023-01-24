@@ -3,7 +3,6 @@ import prisma from '../prisma/prisma';
 import {
   Project,
   WbsElementStatus,
-  DescriptionBullet,
   calculateEndDate,
   calculateProjectEndDate,
   calculatePercentExpectedProgress,
@@ -12,11 +11,11 @@ import {
   calculateProjectStartDate
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from './utils';
-import { userTransformer } from './users.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
 import { calculateWorkPackageProgress } from './work-packages.utils';
+import userTransformer from '../transformers/user.transformer';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -291,96 +290,6 @@ export const createRulesChangesJson = (
       detail: `${element.type} ${nameOfField} "${element.element}"`
     };
   });
-};
-
-// this method creates changes for description bullet inputs
-// it returns it as an object of {deletedIds[], addedDetails[] changes[]}
-// because the deletedIds are needed for the database and the addedDetails are needed to make new ones
-export const createDescriptionBulletChangesJson = (
-  oldArray: DescriptionBullet[],
-  newArray: DescriptionBullet[],
-  crId: number,
-  implementerId: number,
-  wbsElementId: number,
-  nameOfField: string
-): {
-  deletedIds: number[];
-  addedDetails: string[];
-  editedIdsAndDetails: { id: number; detail: string }[];
-  changes: {
-    changeRequestId: number;
-    implementerId: number;
-    wbsElementId: number;
-    detail: string;
-  }[];
-} => {
-  // Changes
-  const changes: { element: DescriptionBullet; type: string }[] = [];
-
-  // Elements from database that have not been deleted
-  const oldArrayNotDeleted = oldArray.filter((element) => element.dateDeleted === undefined);
-
-  // All elements that were inputs but are not new
-  const existingElements = new Map<number, string>();
-
-  // Database version of edited elements
-  const originalElements = new Map<number, string>();
-
-  // Find new elements
-  newArray.forEach((element) => {
-    if (element.id === undefined) {
-      changes.push({ element, type: 'Added new' });
-    } else {
-      existingElements.set(element.id, element.detail);
-    }
-  });
-
-  // Find deleted and edited
-  oldArrayNotDeleted.forEach((element) => {
-    // Input version of old description element text
-    const inputElText = existingElements.get(element.id);
-
-    if (inputElText === undefined) {
-      changes.push({ element, type: 'Removed' });
-    } else if (inputElText !== element.detail) {
-      changes.push({ element: { ...element, detail: inputElText }, type: 'Edited' });
-      originalElements.set(element.id, element.detail);
-    }
-  });
-
-  return {
-    deletedIds: changes
-      .filter((element) => element.type === 'Removed')
-      .map((element) => {
-        return element.element.id;
-      }),
-    addedDetails: changes
-      .filter((element) => element.type === 'Added new')
-      .map((element) => {
-        return element.element.detail;
-      }),
-    editedIdsAndDetails: changes
-      .filter((element) => element.type === 'Edited')
-      .map((element) => {
-        return { id: element.element.id, detail: element.element.detail };
-      }),
-    changes: changes.map((element) => {
-      const detail =
-        element.type === 'Edited'
-          ? buildChangeDetail(
-              nameOfField,
-              originalElements.get(element.element.id) || 'null',
-              existingElements.get(element.element.id) || 'null'
-            )
-          : `${element.type} ${nameOfField} "${element.element.detail}"`;
-      return {
-        changeRequestId: crId,
-        implementerId,
-        wbsElementId,
-        detail
-      };
-    })
-  };
 };
 
 // Given a user's id, this method returns the user's full name

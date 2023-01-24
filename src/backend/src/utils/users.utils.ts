@@ -1,5 +1,4 @@
-import { Prisma, Role } from '@prisma/client';
-import { AuthenticatedUser, User } from 'shared';
+import { Role, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 
