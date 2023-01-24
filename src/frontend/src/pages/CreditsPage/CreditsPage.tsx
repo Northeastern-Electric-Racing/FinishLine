@@ -39,7 +39,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
     { name: 'Ryan Howe', color: '#3cce20' },
-    { name: 'Harish Sundar', color: '##7f00ff' }, // One too many #s
+    { name: 'Harish Sundar', color: '#7f00ff' },
     { name: 'Sahil Shah', color: '#288BA8' },
     { name: 'Veda Nandikam', color: '#d3cefc' },
     { name: 'Nezam Jazayeri', color: '#42b3f5' },
@@ -51,11 +51,11 @@ const CreditsPage: React.FC = () => {
     { name: 'Ethan Moskowitz', color: '#1434A4' },
     { name: 'Roger Huang', color: '#0000ff' },
     { name: 'Hamsini Malli', color: '#A020F0' },
-    { name: 'Mokkh Mitsuntisuk', color: 'd4af37' }, // You need to put # in front of the hex value
+    { name: 'Mokkh Mitsuntisuk', color: '#d4af37' },
     { name: 'Gilad Avni-Heller', color: '#d333ff' },
     { name: 'Edward Ibarra', color: '#c4a484' },
     { name: 'Sean Walker', color: '#fa8072' },
-    { name: 'Anastasia Sobolina', color: 'C9A9A6' }, // You need to put # in front of the hex value
+    { name: 'Anastasia Sobolina', color: '#C9A9A6' },
     { name: 'Nick Tarallo', color: '#1d4ee1' },
     { name: 'Ray Kong', color: '#87CEEE' },
     { name: 'Andrew Panos', color: '#4ab5f7' },
