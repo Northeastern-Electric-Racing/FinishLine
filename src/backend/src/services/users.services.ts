@@ -183,7 +183,6 @@ export default class UsersService {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
     }
 
-    console.log(role);
     targetUser = await prisma.user.update({
       where: { userId: targetUserId },
       data: { role }
