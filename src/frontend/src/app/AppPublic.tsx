@@ -35,10 +35,18 @@ const AppPublic: React.FC = () => {
     }
 
     // otherwise, the user needs to login manually
+    // prepare query args to store path after login
+    const pathParts: string[] = history.location.pathname.split('/').slice(1);
+    const asQueryArg = (pathPart: string, idx: number): string => {
+      if (idx === 0) return `page=${pathPart}`;
+      else return `value${idx}=${pathPart}`;
+    };
+    const pathArgs: string = `?${pathParts.map(asQueryArg).join('&')}`;
     return (
       <Redirect
         to={{
           pathname: routes.LOGIN,
+          search: pathArgs + (history.location.search ? `&${history.location.search.slice(1)}` : ''),
           state: { from: e.location }
         }}
       />
