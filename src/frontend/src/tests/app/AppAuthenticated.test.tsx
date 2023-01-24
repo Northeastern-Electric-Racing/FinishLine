@@ -7,6 +7,8 @@ import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support
 import AppAuthenticated from '../../app/AppAuthenticated';
 import * as miscHooks from '../../hooks/misc.hooks';
 import { mockGetVersionNumberReturnValue } from '../test-support/mock-hooks';
+import * as workPackageHooks from '../../hooks/work-packages.hooks';
+import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {
   return {
@@ -16,6 +18,8 @@ jest.mock('../../pages/ProjectsPage/Projects', () => {
     }
   };
 });
+
+jest.mock('../../utils/axios');
 
 // Sets up the component under test with the desired values and renders it
 const renderComponent = (path?: string, route?: string) => {
@@ -27,9 +31,13 @@ const renderComponent = (path?: string, route?: string) => {
   );
 };
 
-describe('app authenticated section', () => {
-  it('renders nav links', () => {
+describe('AppAuthenticated', () => {
+  beforeEach(() => {
+    jest.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
     jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
+  });
+
+  it('renders nav links', () => {
     renderComponent();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
@@ -37,9 +45,7 @@ describe('app authenticated section', () => {
   });
 
   it('can navigate to projects page', () => {
-    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
-
     const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });
     expect(homeEle).toBeInTheDocument();
     fireEvent.click(screen.getByText('Projects'));
