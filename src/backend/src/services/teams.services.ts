@@ -58,6 +58,9 @@ export default class TeamsService {
     // this throws if any of the users aren't found
     const users = await getUsers(userIds);
 
+    if (users.map((user) => user.userId).includes(team.leader.userId))
+      throw new HttpException(400, 'team leader cannot be a member!');
+
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
       return {
