@@ -35,7 +35,6 @@ const CreateWorkPackageForm: React.FC = () => {
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
-    console.log(`START DATE: ${startDate.toDateString()}`);
     // exits handleSubmit if form input invalid (should be changed in wire up)
     try {
       const wbsNumValidated = validateWBS(wbsNum);

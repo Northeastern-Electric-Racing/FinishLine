@@ -140,8 +140,6 @@ export default class WorkPackagesService {
       throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
     }
 
-    console.log(`START DATE: ${startDate}`);
-
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
