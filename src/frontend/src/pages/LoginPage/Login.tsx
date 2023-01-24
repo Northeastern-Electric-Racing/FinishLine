@@ -10,27 +10,34 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-
-interface LoginProps {
-  postLoginRedirect: { url: string; search: string };
-}
+import { useQuery } from '../../hooks/utils.hooks';
 
 /**
  * Page for unauthenticated users to do login.
  */
-const Login: React.FC<LoginProps> = ({ postLoginRedirect }) => {
+const Login = () => {
   const [devUserId, setDevUserId] = useState(1);
   const history = useHistory();
+  const query = useQuery();
   const theme = useToggleTheme();
   const auth = useAuth();
 
   if (auth.isLoading) return <LoadingIndicator />;
 
   const redirectAfterLogin = () => {
-    if (postLoginRedirect.url === routes.LOGIN) {
+    if (!query.has('page')) {
       history.push(routes.HOME);
     } else {
-      history.push(`${postLoginRedirect.url}${postLoginRedirect.search}`);
+      const pageName: string = query.get('page')!;
+      query.delete('page');
+      const intermediatePathValues: string[] = [];
+      for (let valueIdx = 1; query.has(`value${valueIdx}`); valueIdx++) {
+        // get all the &valueX=... args from login query args
+        intermediatePathValues.push(`/${query.get(`value${valueIdx}`)!}`);
+        query.delete(`value${valueIdx}`);
+      }
+      const pathString: string = `/${pageName}${intermediatePathValues.join('')}`;
+      history.push(`${pathString}?${query.toString()}`);
     }
   };
 
