@@ -1,4 +1,5 @@
 import { WBS_Element_Status } from '@prisma/client';
+import { Project as SharedProject, WbsElementStatus } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 
 export const project1 = {
@@ -30,6 +31,32 @@ export const project1 = {
       dependencies: []
     }
   ]
+};
+
+export const sharedProject1: SharedProject = {
+  id: 1,
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 0
+  },
+  dateCreated: new Date('12-25-2022'),
+  name: 'name',
+  status: WbsElementStatus.Active,
+  changes: [],
+  summary: 'summary',
+  budget: 5,
+  gDriveLink: 'gdrive',
+  taskListLink: 'task',
+  slideDeckLink: 'slide',
+  bomLink: 'bom',
+  rules: ['rule 1', 'rule 2'],
+  duration: 0,
+  goals: [],
+  features: [],
+  otherConstraints: [],
+  workPackages: [],
+  risks: []
 };
 
 export const wbsElement1 = {
