@@ -26,7 +26,9 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const expectedActivitiesList = (
     <ul>
       {workPackage.expectedActivities.slice(0, 3).map((item, idx) => (
-        <li key={idx}>{item.detail}</li>
+        <li key={idx}>
+          <Typography>{item.detail}</Typography>
+        </li>
       ))}
     </ul>
   );
@@ -34,7 +36,9 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const deliverablesList = (
     <ul>
       {workPackage.deliverables.slice(0, 3).map((item, idx) => (
-        <li key={idx}>{item.detail}</li>
+        <li key={idx}>
+          <Typography>{item.detail}</Typography>
+        </li>
       ))}
     </ul>
   );
@@ -82,7 +86,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
-              <Typography>{expectedActivitiesList}</Typography>
+              {expectedActivitiesList}
               {numMoreExpectedActivities > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreExpectedActivities} more...
@@ -93,7 +97,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Deliverables:</Typography>
-              <Typography>{deliverablesList}</Typography>
+              {deliverablesList}
               {numMoreDeliverables > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreDeliverables} more...
