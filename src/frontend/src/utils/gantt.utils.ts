@@ -56,8 +56,8 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
-  const startString = ganttFilters.start?.toLocaleString();
-  const endString = ganttFilters.end?.toLocaleString();
+  const startString = ganttFilters.start?.toLocaleDateString();
+  const endString = ganttFilters.end?.toLocaleDateString();
   return (
     `?status=${ganttFilters.status}` +
     `&showCar1=${ganttFilters.showCar1}` +
