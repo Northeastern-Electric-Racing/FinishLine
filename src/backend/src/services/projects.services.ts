@@ -62,10 +62,10 @@ export default class ProjectsService {
    * @param name the name of the new project
    * @param summary the summary of the new project
    * @param teamId the teamId of the new project
-   * @returns the created project
+   * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
-  static async newProject(
+  static async createProject(
     user: User,
     crId: number,
     carNumber: number,
@@ -84,8 +84,8 @@ export default class ProjectsService {
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
 
-    // create the wbs element for the project and document the implemented change request
-    const createdProject = await prisma.wBS_Element.create({
+    // create the wbs element and project as well as the associated change
+    const createdWbsElement = await prisma.wBS_Element.create({
       data: {
         carNumber,
         projectNumber: maxProjectNumber + 1,
@@ -103,7 +103,7 @@ export default class ProjectsService {
       include: { project: true, changes: true }
     });
 
-    return wbsNumOf(createdProject);
+    return wbsNumOf(createdWbsElement);
   }
 
   /**

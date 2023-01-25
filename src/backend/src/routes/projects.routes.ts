@@ -9,13 +9,13 @@ const projectRouter = express.Router();
 projectRouter.get('/', ProjectsController.getAllProjects);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 projectRouter.post(
-  '/new',
+  '/create',
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   intMinZero(body('carNumber')),
   nonEmptyString(body('summary')),
   validateInputs,
-  ProjectsController.newProject
+  ProjectsController.createProject
 );
 projectRouter.post(
   '/edit',

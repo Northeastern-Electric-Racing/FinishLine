@@ -20,7 +20,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
-const projectsCreate = () => `${projects()}/new`;
+const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 
 /**************** Risks Endpoints ********************/

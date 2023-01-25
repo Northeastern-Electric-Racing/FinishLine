@@ -2,7 +2,7 @@ import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { project1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
@@ -25,20 +25,20 @@ describe('Projects', () => {
     jest.clearAllMocks();
   });
 
-  test('newProject fails when unknown teamId provided', async () => {
+  test('createProject fails when unknown teamId provided', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
-    await expect(async () => await ProjectsService.newProject(batman, 1, 2, 'name', 'summary', 'teamId')).rejects.toThrow(
+    await expect(async () => await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', 'teamId')).rejects.toThrow(
       new NotFoundException('Team', 'teamId')
     );
   });
 
-  test('newProject works', async () => {
+  test('createProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(prismaWbsElement1);
 
-    const res = await ProjectsService.newProject(batman, 1, 2, 'name', 'summary', undefined);
+    const res = await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', undefined);
 
     expect(res).toStrictEqual({
       carNumber: prismaWbsElement1.carNumber,
@@ -61,7 +61,7 @@ describe('Projects', () => {
   });
 
   test('getSingleProject works', async () => {
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
     const res = await ProjectsService.getSingleProject({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 });
 
@@ -86,7 +86,7 @@ describe('Projects', () => {
 
   test('setProjectTeam fails when the team is not found', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
     await expect(
       async () =>
@@ -96,7 +96,7 @@ describe('Projects', () => {
 
   test('setProjectTeam fails with no permission from submitter (guest)', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
     await expect(
       async () =>
@@ -106,8 +106,8 @@ describe('Projects', () => {
 
   test('setProjectTeam fails with no permission from submitter (leadership)', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
-    jest.spyOn(prisma.project, 'update').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+    jest.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
 
     await expect(
       async () =>
@@ -117,7 +117,7 @@ describe('Projects', () => {
 
   test('setProjectTeam works if the submitter is not an admin but is the lead of the team', async () => {
     jest.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...prismaTeam1, leaderId: aquaman.userId });
-    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
     // no error, no return value
     await ProjectsService.setProjectTeam(aquaman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 }, 'teamId');
