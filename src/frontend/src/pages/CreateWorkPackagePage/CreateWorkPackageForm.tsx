@@ -59,7 +59,7 @@ const CreateWorkPackageForm: React.FC = () => {
           projectNumber: wbsNumValidated.projectNumber,
           workPackageNumber: wbsNumValidated.workPackageNumber
         },
-        startDate,
+        startDate: startDate.toLocaleDateString(),
         duration,
         dependencies: depWbsNums,
         expectedActivities,

@@ -68,6 +68,14 @@ describe.skip('change request details container', () => {
     expect(screen.getByText('Review')).not.toHaveAttribute('aria-disabled');
   });
 
+  it("disables review of admin's own change requests", () => {
+    mockSingleCRHook(false, false, exActivationCR);
+    mockAuthHook(exampleAdminUser);
+    renderComponent();
+
+    expect(screen.getByText('Review')).toHaveAttribute('aria-disabled');
+  });
+
   it('disables reviewing change requests for guests', () => {
     mockSingleCRHook(false, false, exActivationCR);
     mockAuthHook(exampleGuestUser);
