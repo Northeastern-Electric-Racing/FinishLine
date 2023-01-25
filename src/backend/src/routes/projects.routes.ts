@@ -1,35 +1,27 @@
 import express from 'express';
-import {
-  editProject,
-  getAllProjects,
-  getSingleProject,
-  newProject,
-  setProjectTeam
-} from '../controllers/projects.controllers';
 import { body } from 'express-validator';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
+import ProjectsController from '../controllers/projects.controllers';
 
 const projectRouter = express.Router();
 
-projectRouter.get('/', getAllProjects);
-projectRouter.get('/:wbsNum', getSingleProject);
+projectRouter.get('/', ProjectsController.getAllProjects);
+projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 projectRouter.post(
-  '/new',
-  intMinZero(body('userId')),
+  '/create',
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
   intMinZero(body('carNumber')),
   nonEmptyString(body('summary')),
   validateInputs,
-  newProject
+  ProjectsController.createProject
 );
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('userId')),
   intMinZero(body('budget')),
   nonEmptyString(body('summary')),
   body('rules').isArray(),
@@ -50,8 +42,8 @@ projectRouter.post(
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
   validateInputs,
-  editProject
+  ProjectsController.editProject
 );
-projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, setProjectTeam);
+projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
 
 export default projectRouter;
