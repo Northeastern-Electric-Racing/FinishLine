@@ -3,7 +3,6 @@ import { isProject, validateWBS, WbsNumber } from 'shared';
 import {
   addDescriptionBullets,
   createChangeJsonNonList,
-  createDescriptionBulletChangesJson,
   createRulesChangesJson,
   editDescriptionBullets,
   getHighestProjectNumber,
@@ -12,6 +11,7 @@ import {
   projectTransformer,
   uniqueRelationArgs
 } from '../utils/projects.utils';
+import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
 import { Request, Response } from 'express';
 import { Role } from '@prisma/client';
 import { descBulletConverter, getCurrentUser } from '../utils/utils';
