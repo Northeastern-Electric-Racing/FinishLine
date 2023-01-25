@@ -69,6 +69,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aidan Roche', color: '#20B1AA' },
     { name: 'Carrie Wang', color: '#f9cfc8' },
     { name: 'Kenneth Wan', color: '#00FFFF' },
+    { name: 'Madeline Engle', color: '#FF2D76' },
     { name: 'Parth Kabra', color: '#e53774' },
     { name: 'Riley Platz', color: '#2d2fa6' }
   ];
