@@ -46,6 +46,16 @@ const GanttPageWrapper: FC = () => {
   }, [queryEnd]);
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
+  const defaultGanttFilters: GanttFilters = {
+    showCar1,
+    showCar2,
+    status,
+    selectedTeam,
+    expanded,
+    start,
+    end
+  };
+
   const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
     return {
       id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
@@ -107,89 +117,39 @@ const GanttPageWrapper: FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = {
-      showCar1: event.target.checked,
-      showCar2,
-      status,
-      selectedTeam,
-      expanded,
-      start,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
+
   const car2Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2: event.target.checked,
-      status,
-      selectedTeam,
-      expanded,
-      start,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar2: event.target.checked };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
+
   const statusHandler = (event: SelectChangeEvent) => {
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
-      status: event.target.value as string,
-      selectedTeam,
-      expanded,
-      start,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, status: event.target.value as string };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
+
   const teamHandler = (event: SelectChangeEvent) => {
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
-      status,
-      selectedTeam: event.target.value as string,
-      expanded,
-      start,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, selectedTeam: event.target.value as string };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
+
+  const expandedHandler = (value: boolean) => {
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
   const startHandler = (value: Date | null) => {
     if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
-      status,
-      selectedTeam,
-      expanded,
-      start: value,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, start: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
+
   const endHandler = (value: Date | null) => {
     if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
-      status,
-      selectedTeam,
-      expanded,
-      start,
-      end: value
-    };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-  const expandedHandler = (value: boolean) => {
-    const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
-      status,
-      selectedTeam,
-      expanded: value,
-      start,
-      end
-    };
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, end: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 

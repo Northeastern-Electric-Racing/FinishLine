@@ -5,17 +5,17 @@
 
 import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
-import { FC } from 'react';
 
 interface GanttPageProps {
   ganttDisplayObjects: Task[];
   updateGanttDisplayObjects: (ganttDisplayObjects: Task[]) => void;
 }
 
-const GanttPage: FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttDisplayObjects }) => {
+const GanttPage: React.FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttDisplayObjects }) => {
   const handleExpanderClick = (task: Task) => {
     updateGanttDisplayObjects(ganttDisplayObjects.map((t) => (t.id === task.id ? task : t)));
   };
+
   return ganttDisplayObjects.length > 0 ? (
     <Gantt
       tasks={ganttDisplayObjects}

@@ -91,6 +91,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       </Grid>
     </Grid>
   );
+
   const buttons = (
     <Grid
       item
@@ -127,6 +128,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       </Grid>
     </Grid>
   );
+
   return (
     <PageBlock title="Filters" style={{ flexGrow: 1 }}>
       <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
