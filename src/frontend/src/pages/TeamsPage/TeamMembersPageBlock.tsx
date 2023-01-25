@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSetTeamMembers } from '../../hooks/teams.hooks';
-import { Team, User } from 'shared';
+import { RoleEnum, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -21,12 +21,16 @@ interface TeamMembersPageBlockProps {
   team: Team;
 }
 
+const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+  return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
+};
+
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
-  const [memberIds, setMemberIds] = useState(team.members.map((member) => member.userId));
+  const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
 
-  const { isLoading, isError, error, data } = useAllUsers();
+  const { isLoading, isError, error, data: users } = useAllUsers();
   const {
     isLoading: setTeamMemberIsLoading,
     isError: setTeamMemberIsError,
@@ -36,31 +40,36 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (setTeamMemberIsError) return <ErrorPage message={setTeamMemberError?.message} />;
-  if (isLoading || setTeamMemberIsLoading || !data) return <LoadingIndicator />;
+  if (isLoading || setTeamMemberIsLoading || !users) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
-    await mutateAsync(memberIds).catch((err) => {
-      alert(err.message);
-    });
-    setIsEditingMembers(false);
+    try {
+      await mutateAsync(members.map((member) => member.id));
+      setIsEditingMembers(false);
+    } catch (error) {
+      alert(error);
+    }
   };
 
   const hasPerms =
-    auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId);
+    auth.user &&
+    (auth.user.role === RoleEnum.ADMIN || auth.user.role === RoleEnum.APP_ADMIN || auth.user.userId === team.leader.userId);
 
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)}`, id: user.userId };
-  };
-
-  //first filters the options to only include users who have not been selected to be on the team, then sorts the options by alphabetical order of their first name, then maps the options to the autocomplete option format
-  const options = data
-    .filter((user) => !memberIds.includes(user.userId) && user.userId !== team.leader.userId)
+  const options = users
+    .filter((user) => user.userId !== team.leader.userId)
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
-      <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
+      <Button
+        onClick={() => {
+          setIsEditingMembers(false);
+          setMembers(team.members.map(userToAutocompleteOption));
+        }}
+      >
+        Cancel
+      </Button>
       <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
         Save
       </NERSuccessButton>
@@ -75,14 +84,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
         </Grid>
         <Grid item xs={12}>
           <Autocomplete
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterSelectedOptions
             multiple
             id="tags-standard"
             options={options}
-            defaultValue={team.members.map(userToAutocompleteOption)}
-            onChange={(_event, newValue) => {
-              setMemberIds(newValue.map((option) => option.id));
-            }}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={members}
+            onChange={(_event, newValue) => setMembers(newValue)}
+            getOptionLabel={(option) => option.label}
             renderInput={(params) => (
               <TextField {...params} variant="standard" label="Members" placeholder="Select A User" />
             )}
