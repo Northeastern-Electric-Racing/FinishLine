@@ -66,7 +66,6 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
                     autoComplete="off"
                     onChange={onChange}
                     value={value}
-                    defaultValue={value}
                     fullWidth
                     InputProps={{
                       startAdornment: <Typography sx={{ paddingRight: 1 }}>$</Typography>
