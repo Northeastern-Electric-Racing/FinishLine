@@ -14,7 +14,7 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import { isUnderWordCount, countWords } from 'shared/src/word-count';
+import { isUnderWordCount, countWords } from 'shared';
 
 interface DescriptionPageBlockProps {
   team: Team;

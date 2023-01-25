@@ -4,7 +4,7 @@
  * @returns - the number of words in the string
  */
 export const countWords = (str: string): number => {
-  return str.split(' ').filter((word) => word.trim() !== '').length;
+  return str.split(/\s/).filter((word) => word.trim() !== '').length;
 };
 
 /**
