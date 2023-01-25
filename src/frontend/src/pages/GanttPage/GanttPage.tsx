@@ -5,22 +5,20 @@
 
 import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
-import { useState } from 'react';
 
 interface GanttPageProps {
-  tasks: Task[];
+  ganttDisplayObjects: Task[];
+  updateGanttDisplayObjects: (ganttDisplayObjects: Task[]) => void;
 }
 
-const GanttPage: React.FC<GanttPageProps> = ({ tasks }) => {
-  const [taskList, setTaskList] = useState<Task[]>(tasks);
-
+const GanttPage: React.FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttDisplayObjects }) => {
   const handleExpanderClick = (task: Task) => {
-    setTaskList(taskList.map((t) => (t.id === task.id ? task : t)));
+    updateGanttDisplayObjects(ganttDisplayObjects.map((t) => (t.id === task.id ? task : t)));
   };
 
-  return taskList.length > 0 ? (
+  return ganttDisplayObjects.length > 0 ? (
     <Gantt
-      tasks={taskList}
+      tasks={ganttDisplayObjects}
       viewMode={ViewMode.Week}
       preStepsCount={1}
       locale={'US'}
