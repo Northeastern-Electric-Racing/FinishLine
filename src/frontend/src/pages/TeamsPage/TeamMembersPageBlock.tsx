@@ -60,7 +60,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
-      <Button onClick={() => setIsEditingMembers(false)}>Cancel</Button>
+      <Button
+        onClick={() => {
+          setIsEditingMembers(false);
+          setMemberIds(team.members.map((member) => member.userId));
+        }}
+      >
+        Cancel
+      </Button>
       <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
         Save
       </NERSuccessButton>
@@ -82,6 +89,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
             onChange={(_event, newValue) => {
               setMemberIds(newValue.map((option) => option.id));
             }}
+            getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             renderInput={(params) => (
               <TextField {...params} variant="standard" label="Members" placeholder="Select A User" />
