@@ -52,6 +52,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
       <Button
         onClick={() => {
           resetDefaults();
+          setDescription(team.description);
         }}
       >
         Cancel
@@ -111,7 +112,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
       title={'Description'}
       headerRight={hasPerms ? <IconButton onClick={() => setIsEditingDescription(true)} children={<Edit />} /> : null}
     >
-      <ReactMarkdown className={styles.markdown}>{team.description}</ReactMarkdown>
+      <ReactMarkdown className={styles.markdown}>{description}</ReactMarkdown>
     </PageBlock>
   );
 
