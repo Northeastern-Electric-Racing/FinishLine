@@ -1,21 +1,53 @@
-import prisma from '../prisma/prisma';
-import { Request, Response } from 'express';
-import { teamRelationArgs, teamTransformer } from '../utils/teams.utils';
+import { NextFunction, Request, Response } from 'express';
+import TeamsService from '../services/teams.services';
+import { getCurrentUser } from '../utils/utils';
 
-export const getAllTeams = async (_req: Request, res: Response) => {
-  const teams = await prisma.team.findMany(teamRelationArgs);
-  return res.status(200).json(teams.map(teamTransformer));
-};
+export default class TeamsController {
+  static async getAllTeams(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllTeams();
 
-export const getSingleTeam = async (req: Request, res: Response) => {
-  const team = await prisma.team.findUnique({
-    where: { teamId: req.params.teamId },
-    ...teamRelationArgs
-  });
-
-  if (!team) {
-    return res.status(404).json({ message: `Team with id ${req.params.teamId} not found!` });
+      return res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  return res.status(200).json(teamTransformer(team));
-};
+  static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+
+      const team = await TeamsService.getSingleTeam(teamId);
+
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+      const submitter = await getCurrentUser(res);
+
+      // update the team with the input fields
+      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds);
+
+      // return the updated team
+      return res.status(200).json(updateTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { newDescription } = req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.editDescription(user, req.params.teamId, newDescription);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+}

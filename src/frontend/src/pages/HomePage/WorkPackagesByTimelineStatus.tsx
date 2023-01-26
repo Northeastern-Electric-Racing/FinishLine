@@ -4,22 +4,25 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Link from '@mui/material/Link';
+import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
-import { useTheme } from '../../hooks/theme.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/Pipes';
-import { routes } from '../../utils/Routes';
+import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import styles from '../../stylesheets/pages/home.module.css';
+import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
+import DetailDisplay from '../../components/DetailDisplay';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
-  const theme = useTheme();
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, timelineStatus });
+  const theme = useTheme();
 
   useEffect(() => {
     workPackages.refetch();
@@ -31,66 +34,79 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
   }
 
   const fullDisplay = (
-    <Row className="flex-nowrap overflow-auto justify-content-start">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
+      }}
+    >
       {workPackages.data?.length === 0
         ? `No ${timelineStatus} work packages`
         : workPackages.data?.map((wp) => (
             <Card
-              className={styles.horizontalScrollCard}
+              variant="outlined"
               key={wbsPipe(wp.wbsNum)}
-              border={theme.cardBorder}
-              bg={theme.cardBg}
+              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
             >
-              <Card.Body className="p-3">
-                <Card.Title className="mb-2">
-                  <Link to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-                    {wbsPipe(wp.wbsNum)} - {wp.name}
-                  </Link>
-                </Card.Title>
-                <Card.Text>
-                  <Container fluid>
-                    <Row className="pb-1">End Date: {datePipe(wp.endDate)}</Row>
-                    <Row className="pb-1">
-                      Progress: {percentPipe(wp.progress)}, {wp.timelineStatus}
-                    </Row>
-                    <Row className="pb-1">Engineering Lead: {fullNamePipe(wp.projectLead)}</Row>
-                    <Row className="pb-1">Project Manager: {fullNamePipe(wp.projectManager)}</Row>
-                    <Row>
-                      {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                    </Row>
-                  </Container>
-                </Card.Text>
-              </Card.Body>
+              <CardContent sx={{ padding: 3 }}>
+                <Link
+                  variant="h6"
+                  component={RouterLink}
+                  to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
+                  sx={{ marginBottom: 2 }}
+                >
+                  {wbsPipe(wp.wbsNum)} - {wp.name}
+                </Link>
+                <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
+                <DetailDisplay label="Progress" content={percentPipe(wp.progress)} paddingRight={2} />
+                <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
+                <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
+                <Typography>
+                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
+                </Typography>
+              </CardContent>
             </Card>
           ))}
-    </Row>
+    </Box>
   );
 
   return (
     <PageBlock
       title={`Work Packages By Timeline Status (${workPackages.data?.length})`}
       headerRight={
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text id="selectTimelineStatus">Timeline Status</InputGroup.Text>
-          </InputGroup.Prepend>
-          <Form.Control
-            as="select"
-            aria-describedby="selectTimelineStatus"
+        <FormControl size="small">
+          <InputLabel id="selectTimelineStatus"> Timeline Status</InputLabel>
+          <Select
+            label="Timeline Status"
+            labelId="selectTimelineStatus"
             value={timelineStatus}
             onChange={(e) => setTimelineStatus(e.target.value as TimelineStatus)}
-            custom
           >
             {Object.values(TimelineStatus).map((status) => (
-              <option key={status} value={status}>
+              <MenuItem key={status} value={status}>
                 {status}
-              </option>
+              </MenuItem>
             ))}
-          </Form.Control>
-        </InputGroup>
+          </Select>
+        </FormControl>
       }
     >
-      <Container fluid>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Container>
+      {workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}
     </PageBlock>
   );
 };

@@ -8,7 +8,7 @@ import { ChangeRequestType, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ActivateWorkPackageModal from './ActivateWorkPackageModal';
@@ -20,8 +20,8 @@ interface ActivateWorkPackageModalContainerProps {
 }
 
 export interface FormInput {
-  projectLeadId: number;
-  projectManagerId: number;
+  projectLeadId: number | '';
+  projectManagerId: number | '';
   startDate: string;
   confirmDetails: boolean;
 }

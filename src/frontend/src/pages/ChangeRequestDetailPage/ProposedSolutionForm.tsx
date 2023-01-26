@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../../layouts/PageBlock';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import * as yup from 'yup';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
-import { useTheme } from '../../hooks/theme.hooks';
+import { TextField, Typography } from '@mui/material';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -18,16 +17,9 @@ interface ProposedSolutionFormProps {
   scopeImpact?: string;
   readOnly?: boolean;
   onAdd: (data: ProposedSolution) => void;
+  open: boolean;
+  onClose: () => void;
 }
-
-const styles = {
-  white: {
-    color: 'white'
-  },
-  black: {
-    color: 'black'
-  }
-};
 
 const schema = yup.object().shape({
   description: yup.string().required('Description is required'),
@@ -40,10 +32,10 @@ const schema = yup.object().shape({
   scopeImpact: yup.string().required('Scope Impact is required'),
   timelineImpact: yup
     .number()
-    .typeError('Timeline must be a number')
-    .min(0, 'Timeline must be greater than or equal to 0 weeks')
-    .required('Timeline is required')
-    .integer('Timeline must be an integer')
+    .typeError('Timeline Impact must be a number')
+    .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
+    .required('Timeline Impact is required')
+    .integer('Timeline Impact must be an integer')
 });
 
 const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
@@ -52,124 +44,155 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   timelineImpact,
   scopeImpact,
   readOnly,
-  onAdd
+  onAdd,
+  open,
+  onClose
 }) => {
-  const { register, formState, handleSubmit } = useForm<ProposedSolution>({
+  const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
   });
 
-  const theme = useTheme();
-
   return (
-    <PageBlock title="" cardContainerStyle="mb-0">
-      <Form
-        id="individual-proposed-solution-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onAdd)(e);
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Propose a Solution</DialogTitle>
+      <DialogContent
+        sx={{
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          }
         }}
       >
-        <Row className="mx-2 justify-content-start">
-          <Col lg={true}>
-            <Form.Group controlId="formDescription" className="mx-2">
-              {theme.name === 'DARK' ? (
-                <Form.Label style={styles.white}>Description</Form.Label>
-              ) : (
-                <Form.Label style={styles.black}>Description</Form.Label>
-              )}
-              <Form.Control
-                as="textarea"
-                rows={3}
-                {...register('description')}
-                placeholder="Describe the proposed solution..."
-                isInvalid={formState.errors.description?.message !== undefined}
-                readOnly={readOnly}
-              />
-              <Form.Control.Feedback type="invalid">{formState.errors.description?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-          <Col lg={true}>
-            <Form.Group controlId="formScope" className="mx-2">
-              {theme.name === 'DARK' ? (
-                <Form.Label style={styles.white}>Scope Impact</Form.Label>
-              ) : (
-                <Form.Label style={styles.black}>Scope Impact</Form.Label>
-              )}
-              <Form.Control
-                as="textarea"
-                rows={3}
-                {...register('scopeImpact')}
-                placeholder="What changes to the scope does this entail?"
-                isInvalid={formState.errors.scopeImpact?.message !== undefined}
-                readOnly={readOnly}
-              />
-              <Form.Control.Feedback type="invalid">{formState.errors.scopeImpact?.message}</Form.Control.Feedback>
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className="mx-2 justify-content-start">
-          <Col lg={true}>
-            <Row className="mx-2 justify-content-start">
-              <Col lg={true} className="pl-0">
-                <Form.Group controlId="formBudgetImpact">
-                  {theme.name === 'DARK' ? (
-                    <Form.Label style={styles.white}>Budget Impact</Form.Label>
-                  ) : (
-                    <Form.Label style={styles.black}>Budget Impact</Form.Label>
-                  )}
-                  <InputGroup>
-                    <InputGroup.Prepend>
-                      <InputGroup.Text>$</InputGroup.Text>
-                    </InputGroup.Prepend>
-                    <Form.Control
-                      {...register('budgetImpact')}
-                      placeholder="$ needed"
-                      isInvalid={formState.errors.budgetImpact?.message !== undefined}
-                      readOnly={readOnly}
-                    />
-                    <Form.Control.Feedback type="invalid">{formState.errors.budgetImpact?.message}</Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-              </Col>
-              <Col lg={true} className="pr-0">
-                <Form.Group controlId="formTimelineImpact">
-                  {theme.name === 'DARK' ? (
-                    <Form.Label style={styles.white}>Timeline Impact</Form.Label>
-                  ) : (
-                    <Form.Label style={styles.black}>Timeline Impact</Form.Label>
-                  )}
-                  <InputGroup>
-                    <Form.Control
-                      {...register('timelineImpact')}
-                      placeholder="# needed"
-                      isInvalid={formState.errors.timelineImpact?.message !== undefined}
-                      readOnly={readOnly}
-                    />
-                    <InputGroup.Append>
-                      <InputGroup.Text>weeks</InputGroup.Text>
-                    </InputGroup.Append>
-                    <Form.Control.Feedback type="invalid">{formState.errors.timelineImpact?.message}</Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-              </Col>
-            </Row>
-          </Col>
-          <Col lg={true}>
-            <Row className="mx-2 mt-4 justify-content-end">
-              {readOnly ? (
-                ''
-              ) : (
-                <Button variant="success" type="submit">
-                  Add
-                </Button>
-              )}
-            </Row>
-          </Col>
-        </Row>
-      </Form>
-    </PageBlock>
+        <form
+          id={'individual-proposed-solution-form'}
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSubmit(onAdd)(e);
+          }}
+        >
+          <Controller
+            name="description"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Description'}</Typography>
+                <TextField
+                  multiline
+                  rows={4}
+                  required
+                  variant="outlined"
+                  id="description-input"
+                  autoComplete="off"
+                  onChange={onChange}
+                  value={value}
+                  fullWidth
+                  sx={{ width: 400 }}
+                  disabled={readOnly}
+                  placeholder="Describe the proposed solution..."
+                  error={!!formState.errors.description}
+                  helperText={formState.errors.description?.message}
+                />
+              </>
+            )}
+          />
+          <Controller
+            name="scopeImpact"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Scope Impact'}</Typography>
+                <TextField
+                  multiline
+                  rows={4}
+                  required
+                  variant="outlined"
+                  id="scopeImpact-input"
+                  autoComplete="off"
+                  onChange={onChange}
+                  value={value}
+                  fullWidth
+                  sx={{ width: 400 }}
+                  disabled={readOnly}
+                  placeholder="What changes to the scope does this entail?"
+                  error={!!formState.errors.scopeImpact}
+                  helperText={formState.errors.scopeImpact?.message}
+                />
+              </>
+            )}
+          />
+          <Controller
+            name="budgetImpact"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Budget Impact'}</Typography>
+                <TextField
+                  multiline
+                  rows={1}
+                  required
+                  variant="outlined"
+                  id="budgetImpact-input"
+                  autoComplete="off"
+                  onChange={onChange}
+                  value={value}
+                  fullWidth
+                  sx={{ width: 400 }}
+                  disabled={readOnly}
+                  placeholder="$ needed"
+                  error={!!formState.errors.budgetImpact}
+                  helperText={formState.errors.budgetImpact?.message}
+                />
+              </>
+            )}
+          />
+          <Controller
+            name="timelineImpact"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <Typography sx={{ paddingTop: 2, paddingBottom: 2 }}>{'Timeline Impact'}</Typography>
+                <TextField
+                  multiline
+                  rows={1}
+                  required
+                  variant="outlined"
+                  id="timelineImpact-input"
+                  autoComplete="off"
+                  onChange={onChange}
+                  value={value}
+                  fullWidth
+                  sx={{ width: 400 }}
+                  disabled={readOnly}
+                  placeholder="# needed"
+                  error={!!formState.errors.timelineImpact}
+                  helperText={formState.errors.timelineImpact?.message}
+                />
+              </>
+            )}
+          />
+          {readOnly ? (
+            ''
+          ) : (
+            <Box display="flex" flexDirection="row-reverse">
+              <Button
+                color="success"
+                variant="contained"
+                type="submit"
+                form="individual-proposed-solution-form"
+                sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
+              >
+                Add
+              </Button>
+            </Box>
+          )}
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

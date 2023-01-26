@@ -1,21 +1,16 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
-import {
-  createActivationChangeRequest,
-  createStageGateChangeRequest,
-  createStandardChangeRequest,
-  getAllChangeRequests,
-  getChangeRequestByID,
-  reviewChangeRequest,
-  addProposedSolution
-} from '../controllers/change-requests.controllers';
+import ChangeRequestsController from '../controllers/change-requests.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+
 const changeRequestsRouter = express.Router();
 
-changeRequestsRouter.get('/', getAllChangeRequests);
-changeRequestsRouter.get('/:crId', getChangeRequestByID);
+changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
+
+changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID);
+
 changeRequestsRouter.post(
   '/review',
   intMinZero(body('reviewerId')),
@@ -24,8 +19,9 @@ changeRequestsRouter.post(
   body('accepted').isBoolean(),
   body('psId').optional().isString().not().isEmpty(),
   validateInputs,
-  reviewChangeRequest
+  ChangeRequestsController.reviewChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/activation',
   intMinZero(body('submitterId')),
@@ -33,13 +29,14 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
-  body('startDate').isDate(),
+  body('startDate').custom((value) => !isNaN(Date.parse(value))),
   intMinZero(body('projectLeadId')),
   intMinZero(body('projectManagerId')),
   body('confirmDetails').isBoolean(),
   validateInputs,
-  createActivationChangeRequest
+  ChangeRequestsController.createActivationChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/stage-gate',
   intMinZero(body('submitterId')),
@@ -50,8 +47,9 @@ changeRequestsRouter.post(
   intMinZero(body('leftoverBudget')),
   body('confirmDone').isBoolean(),
   validateInputs,
-  createStageGateChangeRequest
+  ChangeRequestsController.createStageGateChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/standard',
   intMinZero(body('submitterId')),
@@ -66,8 +64,9 @@ changeRequestsRouter.post(
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
   validateInputs,
-  createStandardChangeRequest
+  ChangeRequestsController.createStandardChangeRequest
 );
+
 changeRequestsRouter.post(
   '/new/proposed-solution',
   intMinZero(body('submitterId')),
@@ -77,7 +76,7 @@ changeRequestsRouter.post(
   intMinZero(body('timelineImpact')),
   intMinZero(body('budgetImpact')),
   validateInputs,
-  addProposedSolution
+  ChangeRequestsController.addProposedSolution
 );
 
 export default changeRequestsRouter;

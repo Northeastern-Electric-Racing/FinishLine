@@ -5,11 +5,22 @@
 
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Form, InputGroup, Modal } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
-import { wbsPipe } from '../../../utils/Pipes';
+import { wbsPipe } from '../../../utils/pipes';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  TextField,
+  Typography
+} from '@mui/material';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
@@ -24,7 +35,7 @@ const schema = yup.object().shape({
 });
 
 const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
-  const { register, reset, handleSubmit } = useForm<FormInput>({
+  const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
 
@@ -37,62 +48,85 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
   };
 
   return (
-    <Modal show={modalShow} onHide={onHide} centered>
-      <Modal.Header className={'font-weight-bold'} closeButton>{`Stage Gate #${wbsPipe(wbsNum)}`}</Modal.Header>
-      <Modal.Body>
-        <Form id={'stage-gate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+    <Dialog open={modalShow} onClose={onHide}>
+      <DialogTitle>{`Stage Gate #${wbsPipe(wbsNum)}`}</DialogTitle>
+      <DialogContent>
+        <form id={'stage-gate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
-            <Form.Group controlId="stageGateWPForm-LeftoverBudget">
-              <Form.Label>Leftover Budget</Form.Label>
-              <InputGroup>
-                <InputGroup.Prepend>
-                  <InputGroup.Text>$</InputGroup.Text>
-                </InputGroup.Prepend>
-                <Form.Control {...register('leftoverBudget')}></Form.Control>
-              </InputGroup>
-            </Form.Group>
+            <Controller
+              name="leftoverBudget"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Leftover Budget'}</Typography>
+                  <TextField
+                    required
+                    variant="outlined"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    fullWidth
+                    InputProps={{
+                      startAdornment: <Typography sx={{ paddingRight: 1 }}>$</Typography>
+                    }}
+                  />
+                </>
+              )}
+            />
 
-            <Form.Group controlId="stageGateWPForm-ConfirmDone">
-              Is everything done?
-              <ul>
-                <li>Updated slide deck & documentation</li>
-                <li>Creating any outstanding change requests</li>
-                <li>Submitted all receipts to the procurement form</li>
-                <li>Completed all Work Package expected activities</li>
-                <li>Completed all Work Package deliverables</li>
-                <li>Ensure rules compliance</li>
-              </ul>
-              <Form.Check
-                inline
-                label="Yes"
-                type={'radio'}
-                id={`stageGateWPForm-ConfirmDone-checkbox-yes`}
-                aria-labelledby={`stageGateWPForm-ConfirmDone`}
-                value={1}
-                {...register('confirmDone')}
-              />
-              <Form.Check
-                inline
-                label="No"
-                type={'radio'}
-                id={`stageGateWPForm-ConfirmDone-checkbox-no`}
-                aria-labelledby={`stageGateWPForm-ConfirmDone`}
-                value={0}
-                {...register('confirmDone')}
-              />
-            </Form.Group>
+            <Controller
+              name="confirmDone"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
+                  <ul style={{ marginTop: 0, marginBottom: 2 }}>
+                    <li>Updated slide deck & documentation</li>
+                    <li>Creating any outstanding change requests</li>
+                    <li>Submitted all receipts to the procurement form</li>
+                    <li>Completed all Work Package expected activities</li>
+                    <li>Completed all Work Package deliverables</li>
+                    <li>Ensure rules compliance</li>
+                  </ul>
+                  <RadioGroup value={value} row onChange={onChange}>
+                    <FormControlLabel
+                      value={1}
+                      control={<Radio />}
+                      label="Yes"
+                      id={`stageGateWPForm-ConfirmDone-checkbox-yes`}
+                      aria-labelledby={`stageGateWPForm-ConfirmDone`}
+                    />
+                    <FormControlLabel
+                      value={0}
+                      control={<Radio />}
+                      label="No"
+                      id={`stageGateWPForm-ConfirmDone-checkbox-no`}
+                      aria-labelledby={`stageGateWPForm-ConfirmDone`}
+                    />
+                  </RadioGroup>
+                </>
+              )}
+            />
           </div>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button className={'ml-3'} variant="secondary" form="stage-gate-work-package-form" onClick={onHide}>
+        </form>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          color="secondary"
+          className={'ml-3'}
+          variant="contained"
+          form="stage-gate-work-package-form"
+          onClick={onHide}
+        >
           Cancel
         </Button>
-        <Button variant="success" type="submit" form="stage-gate-work-package-form">
+        <Button color="success" variant="contained" type="submit" form="stage-gate-work-package-form">
           Submit
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -3,18 +3,24 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { NavDropdown } from 'react-bootstrap';
-import { Link, useHistory } from 'react-router-dom';
+import { useState } from 'react';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { GoogleLogout } from 'react-google-login';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
-import { routes } from '../../utils/Routes';
-import styles from '../../stylesheets/layouts/nav-top-bar/nav-user-menu.module.css';
+import { routes } from '../../utils/routes';
+import Button from '@mui/material/Button';
 
 const NavUserMenu: React.FC = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
@@ -24,42 +30,72 @@ const NavUserMenu: React.FC = () => {
   };
 
   return (
-    <NavDropdown
-      className="m-auto"
-      title={<FontAwesomeIcon icon={faUserCircle} size="2x" inverse />}
-      id="user-dropdown"
-      alignRight
-    >
-      <NavDropdown.ItemText>Logged in as: {auth.user?.emailId}</NavDropdown.ItemText>
-      <NavDropdown.Divider />
-      <NavDropdown.Item className={styles.UserMenuItem}>
-        <Link className={'nav-link ' + styles.dropdownItems} role="button" to={routes.SETTINGS}>
+    <>
+      <IconButton
+        size="large"
+        aria-label="account of current user"
+        aria-controls="menu-appbar"
+        aria-haspopup="true"
+        onClick={handleMenu}
+        color="inherit"
+      >
+        <AccountCircle sx={{ fontSize: 36 }} />
+      </IconButton>
+      <Menu
+        id="menu-appbar"
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        PaperProps={{
+          style: {
+            transform: 'translateX(-10%) translateY(35%)'
+          }
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        sx={{ minHeight: 0 }}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem
+          divider
+          component="p"
+          style={{ backgroundColor: 'transparent' }}
+          sx={{ fontWeight: 600, cursor: 'default' }}
+        >
+          {auth.user?.email}
+        </MenuItem>
+        <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
-        </Link>
-      </NavDropdown.Item>
-      <NavDropdown.Item className={styles.UserMenuItem}>
-        {googleAuthClientId ? (
-          <GoogleLogout
-            clientId={googleAuthClientId}
-            //jsSrc={'accounts.google.com/gsi/client'}
-            onLogoutSuccess={logout}
-            render={(renderProps) => (
-              <button
-                className={'nav-link ' + styles.dropdownItems}
-                onClick={renderProps.onClick}
-                disabled={renderProps.disabled}
-              >
-                Logout
-              </button>
-            )}
-          />
-        ) : (
-          <button className={'nav-link ' + styles.dropdownItems} onClick={logout}>
-            Logout
-          </button>
-        )}
-      </NavDropdown.Item>
-    </NavDropdown>
+        </MenuItem>
+        <MenuItem onClick={handleClose} component="div" sx={{ py: 0 }}>
+          {googleAuthClientId ? (
+            <GoogleLogout
+              clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+              //jsSrc={'accounts.google.com/gsi/client'}
+              onLogoutSuccess={logout}
+              render={(renderProps) => (
+                <Button
+                  onClick={renderProps.onClick}
+                  disabled={renderProps.disabled}
+                  sx={{ padding: 0, minHeight: 0, minWidth: 0 }}
+                >
+                  Logout
+                </Button>
+              )}
+            />
+          ) : (
+            <Button onClick={logout} sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>
+              Logout
+            </Button>
+          )}
+        </MenuItem>
+      </Menu>
+    </>
   );
 };
 

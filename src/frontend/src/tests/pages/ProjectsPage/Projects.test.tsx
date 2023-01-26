@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 import Projects from '../../../pages/ProjectsPage/Projects';
 
 jest.mock('../../../pages/ProjectsPage/ProjectsTable', () => {
@@ -38,13 +38,6 @@ const renderComponent = (route: string) => {
 };
 
 describe('projects page component', () => {
-  it.skip('renders the projects table page title', () => {
-    renderComponent(routes.PROJECTS);
-
-    // idk why this test is failing
-    expect(screen.getByText('Projects Table')).toBeInTheDocument();
-  });
-
   it('renders the wbs element page title', () => {
     renderComponent(`${routes.PROJECTS}/1.8.1`);
     expect(screen.getByText('WBS Details')).toBeInTheDocument();

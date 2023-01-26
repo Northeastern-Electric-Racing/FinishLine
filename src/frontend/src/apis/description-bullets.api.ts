@@ -5,7 +5,7 @@
 
 import axios from '../utils/axios';
 import { DescriptionBullet } from 'shared';
-import { apiUrls } from '../utils/Urls';
+import { apiUrls } from '../utils/urls';
 
 /**
  * Check a single description bullet.

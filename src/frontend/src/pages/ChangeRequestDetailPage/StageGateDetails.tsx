@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Col, Container, Row } from 'react-bootstrap';
+import { Grid, Typography } from '@mui/material';
 import { StageGateChangeRequest } from 'shared';
-import { booleanPipe, dollarsPipe } from '../../utils/Pipes';
+import { booleanPipe, dollarsPipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
 
 interface StageGateDetailsProps {
@@ -13,25 +13,22 @@ interface StageGateDetailsProps {
 }
 
 const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
-  const spacer = 'mb-2';
   return (
     <PageBlock title={'Stage Gate Change Request Details'}>
-      <Container fluid>
-        <Row>
-          <Col className={spacer} xs={6} sm={6} md={3} lg={3} xl={2}>
-            <b>Leftover Budget</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={4} md={3} lg={3} xl={1}>
-            {dollarsPipe(cr.leftoverBudget)}
-          </Col>
-          <Col className={spacer} xs={6} sm={6} md={4} lg={3} xl={3}>
-            <b>Confirm WP Completed</b>
-          </Col>
-          <Col className={spacer} xs={4} sm={4} md={2} lg={3} xl={1}>
-            {booleanPipe(cr.confirmDone)}
-          </Col>
-        </Row>
-      </Container>
+      <Grid container spacing={1}>
+        <Grid item xs={2}>
+          <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Leftover Budget</Typography>
+        </Grid>
+        <Grid item xs={10}>
+          <Typography sx={{ maxWidth: '140px' }}>{dollarsPipe(cr.leftoverBudget)}</Typography>
+        </Grid>
+        <Grid item xs={2}>
+          <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Confirm WP Completed</Typography>
+        </Grid>
+        <Grid item xs={10}>
+          <Typography sx={{ maxWidth: '140px' }}>{booleanPipe(cr.confirmDone)}</Typography>
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };

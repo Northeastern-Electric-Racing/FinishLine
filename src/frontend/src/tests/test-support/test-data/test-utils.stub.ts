@@ -7,9 +7,9 @@ import { AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { exampleAdminUser } from './users.stub';
-import { Auth, LinkItem } from '../../../utils/Types';
+import { Auth, LinkItem } from '../../../utils/types';
 import { faExchangeAlt, faFolder, faHome } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../../utils/Routes';
+import { routes } from '../../../utils/routes';
 
 export const mockContext = {
   functionName: '',

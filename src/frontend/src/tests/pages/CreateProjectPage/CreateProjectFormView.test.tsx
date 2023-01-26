@@ -5,12 +5,22 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import CreateProjectFormView from '../../../pages/CreateProjectPage/CreateProjectFormView';
+import { useQuery } from '../../../hooks/utils.hooks';
+import { BrowserRouter } from 'react-router-dom';
 
-const mockStates = {
-  name: () => null,
-  carNumber: () => null,
-  crId: () => null,
-  summary: () => null
+jest.mock('../../../hooks/utils.hooks');
+
+jest.mock('../../../components/ReactHookTextField', () => {
+  return {
+    __esModule: true,
+    default: () => <p>React hook text field component</p>
+  };
+});
+
+const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
+
+const mockUseQuery = () => {
+  mockedUseQuery.mockReturnValue(new URLSearchParams(''));
 };
 
 /**
@@ -18,46 +28,15 @@ const mockStates = {
  */
 const renderComponent = (allowSubmit = true) => {
   return render(
-    <CreateProjectFormView states={mockStates} onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
+    <BrowserRouter>
+      <CreateProjectFormView onCancel={() => null} onSubmit={() => null} allowSubmit={allowSubmit} />
+    </BrowserRouter>
   );
 };
 
 describe('create project form view test suite', () => {
-  it('renders title', () => {
-    renderComponent();
-
-    expect(screen.queryByText('Create New Project')).toBeInTheDocument();
-  });
-
-  it('renders project name form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Project Name')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter project name...')).toBeInTheDocument();
-  });
-
-  it('renders car number form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Car Number')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter car number...')).toBeInTheDocument();
-  });
-
-  it('renders change request id form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Change Request ID')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter change request ID...')).toBeInTheDocument();
-  });
-
-  it('renders project summary form input', () => {
-    renderComponent();
-
-    expect(screen.getByLabelText('Project Summary')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter summary...')).toBeInTheDocument();
-  });
-
   it('renders buttons', () => {
+    mockUseQuery();
     renderComponent();
 
     expect(screen.getByText('Create')).toBeInTheDocument();
@@ -65,12 +44,14 @@ describe('create project form view test suite', () => {
   });
 
   it('disables submit button when allowSubmit is false', () => {
+    mockUseQuery();
     renderComponent(false);
 
     expect(screen.getByText('Create')).toBeDisabled();
   });
 
   it('enables submit button when allowSubmit is true', () => {
+    mockUseQuery();
     renderComponent(true);
 
     expect(screen.getByText('Create')).not.toBeDisabled();

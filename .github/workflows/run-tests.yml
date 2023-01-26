@@ -12,7 +12,7 @@ on:
     branches:
       - main
       - develop
-
+      - 'feature/**'
 jobs:
   run-jest-tests:
     runs-on: ubuntu-latest
@@ -27,4 +27,3 @@ jobs:
         run: yarn install && yarn prisma:generate
       - name: Run tests
         run: yarn test:backend --runInBand; yarn test:frontend
-        

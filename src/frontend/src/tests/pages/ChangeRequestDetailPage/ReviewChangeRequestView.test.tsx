@@ -7,6 +7,8 @@ import { exampleStandardChangeRequest } from '../../test-support/test-data/chang
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import ReviewChangeRequestsView from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequestView';
 
+jest.mock('../../../hooks/toasts.hooks');
+
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
  */
@@ -38,23 +40,8 @@ describe('review change request page test suite', () => {
     renderComponent(true);
 
     expect(screen.queryByText(`Review Change Request #${exampleStandardChangeRequest.crId}`)).toBeInTheDocument();
-  });
-
-  it('renders label for textbox', () => {
-    renderComponent(true);
-
-    expect(screen.getByLabelText('Additional Comments')).toBeInTheDocument();
-  });
-
-  it('renders textbox', () => {
-    renderComponent(true);
-
+    expect(screen.getByText('Additional Comments')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
-
-  it('renders buttons', () => {
-    renderComponent(true);
-
     expect(screen.getByText('Accept')).toBeInTheDocument();
     expect(screen.getByText('Deny')).toBeInTheDocument();
   });

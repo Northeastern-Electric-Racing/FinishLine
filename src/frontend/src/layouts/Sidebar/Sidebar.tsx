@@ -3,14 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Nav } from 'react-bootstrap';
-import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { routes } from '../../utils/Routes';
-import { LinkItem } from '../../utils/Types';
+import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faToolbox, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { routes } from '../../utils/routes';
+import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
+import { useAuth } from '../../hooks/auth.hooks';
+import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
+  const auth = useAuth();
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -38,10 +40,18 @@ const Sidebar: React.FC = () => {
       route: routes.INFO
     }
   ];
+  if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
+    linkItems.splice(4, 0, {
+      name: 'Admin Tools',
+      icon: faToolbox,
+      route: routes.ADMIN_TOOLS
+    });
+  }
   return (
-    <Nav className={styles.sidebar}>
+    <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-    </Nav>
+      <Typography className={styles.versionNumber}>3.5.4</Typography>
+    </div>
   );
 };
 

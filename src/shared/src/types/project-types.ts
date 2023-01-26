@@ -51,7 +51,7 @@ export interface Project extends WbsElement {
   risks: Risk[];
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum'>;
+export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -64,6 +64,7 @@ export interface WorkPackage extends WbsElement {
   dependencies: WbsNumber[];
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
+  projectName: string;
 }
 
 export interface DescriptionBullet {
