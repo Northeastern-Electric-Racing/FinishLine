@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import { useAuth } from '../../../hooks/auth.hooks';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
@@ -40,7 +39,6 @@ interface ProjectEditContainerProps {
 }
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
-  const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
@@ -80,12 +78,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   } = useFieldArray({ control, name: 'constraints' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
-  if (allUsers.isLoading || !allUsers.data || !auth.user) return <LoadingIndicator />;
+  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
-  const { userId } = auth.user;
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: any) => {
@@ -103,7 +100,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       googleDriveFolderLink,
       taskListLink,
       slideDeckLink,
-      userId,
       projectId: project.id,
       crId: parseInt(data.crId),
       rules,

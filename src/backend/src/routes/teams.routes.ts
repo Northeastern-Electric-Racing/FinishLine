@@ -10,7 +10,6 @@ teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post('/:teamId/set-members', TeamsController.setTeamMembers);
 teamsRouter.post(
   '/:teamId/edit-description',
-  body('teamId').isString(),
   body('newDescription').isString(),
   validateInputs,
   TeamsController.editDescription

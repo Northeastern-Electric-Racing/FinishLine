@@ -1,6 +1,10 @@
+<<<<<<< #239-test-getRisksForProject
 import request from 'supertest';
 import express from 'express';
 import { project1 } from './test-data/projects.test-data';
+=======
+import { prismaProject1 } from './test-data/projects.test-data';
+>>>>>>> develop
 import RisksService from '../src/services/risks.services';
 import prisma from '../src/prisma/prisma';
 import riskQueryArgs from '../src/prisma-query-args/risks.query-args';
@@ -55,8 +59,8 @@ describe('Risks', () => {
   });
 
   test('getRisksForProject works', async () => {
-    const { projectId } = project1;
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
+    const { projectId } = prismaProject1;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
     jest.spyOn(prisma.risk, 'findMany').mockResolvedValue([]);
 
     const risks = await RisksService.getRisksForProject(projectId);
