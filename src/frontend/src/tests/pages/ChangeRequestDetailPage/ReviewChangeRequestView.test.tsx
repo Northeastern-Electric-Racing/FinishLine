@@ -7,6 +7,8 @@ import { exampleStandardChangeRequest } from '../../test-support/test-data/chang
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import ReviewChangeRequestsView from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequestView';
 
+jest.mock('../../../hooks/toasts.hooks');
+
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
  */

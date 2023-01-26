@@ -20,7 +20,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
-const projectsCreate = () => `${projects()}/new`;
+const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 
 /**************** Risks Endpoints ********************/
@@ -56,6 +56,7 @@ const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/prop
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -100,6 +101,7 @@ export const apiUrls = {
   teams,
   teamsById,
   teamsSetMembers,
+  teamsSetDescription,
 
   descriptionBulletsCheck,
 
