@@ -193,7 +193,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       </PageBlock>
 
       <Box textAlign="center" sx={{ my: 2 }}>
-        <NERFailButton variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 2 }}>
           Cancel
         </NERFailButton>
         <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
