@@ -18,13 +18,16 @@ import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { GridColDefStyle } from '../../utils/tables';
+
+
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
   const [pageSize, setPageSize] = useState(50);
 
-  const baseColDef: any = {
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
