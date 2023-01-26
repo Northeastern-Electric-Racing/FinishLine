@@ -221,10 +221,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="center">
-        <NERFailButton>
+        <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 2 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
           Submit
         </NERSuccessButton>
       </Box>
