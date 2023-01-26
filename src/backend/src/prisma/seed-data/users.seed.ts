@@ -162,7 +162,7 @@ const nightwing: Prisma.UserCreateInput = {
   role: Role.GUEST
 };
 
-export const dbSeedAllUsers: Prisma.UserCreateInput[] = [
+export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
   joeBlow,
@@ -178,4 +178,4 @@ export const dbSeedAllUsers: Prisma.UserCreateInput[] = [
   greenLantern,
   martianManhunter,
   nightwing
-];
+};

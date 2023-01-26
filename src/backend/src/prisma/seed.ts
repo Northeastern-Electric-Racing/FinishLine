@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { CR_Type, PrismaClient, Scope_CR_Why_Type } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllProjects } from './seed-data/projects.seed';
 import { dbSeedAllWorkPackages } from './seed-data/work-packages.seed';
@@ -12,13 +13,27 @@ import { dbSeedAllSessions } from './seed-data/session.seed';
 import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions.seed';
+import ProjectsService from '../services/projects.services';
+import ChangeRequestsService from '../services/change-request.services';
 
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
-  for (const seedUser of dbSeedAllUsers) {
-    await prisma.user.create({ data: seedUser });
-  }
+  const thomasEmrax = await prisma.user.create({ data: dbSeedAllUsers.thomasEmrax });
+  const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
+  const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
+  const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
+  const flash = await prisma.user.create({ data: dbSeedAllUsers.flash });
+  const aquaman = await prisma.user.create({ data: dbSeedAllUsers.aquaman });
+  const robin = await prisma.user.create({ data: dbSeedAllUsers.robin });
+  const batman = await prisma.user.create({ data: dbSeedAllUsers.batman });
+  const superman = await prisma.user.create({ data: dbSeedAllUsers.superman });
+  const hawkMan = await prisma.user.create({ data: dbSeedAllUsers.hawkMan });
+  const hawkWoman = await prisma.user.create({ data: dbSeedAllUsers.hawkWoman });
+  const cyborg = await prisma.user.create({ data: dbSeedAllUsers.cyborg });
+  const greenLantern = await prisma.user.create({ data: dbSeedAllUsers.greenLantern });
+  const martianManhunter = await prisma.user.create({ data: dbSeedAllUsers.martianManhunter });
+  const nightwing = await prisma.user.create({ data: dbSeedAllUsers.nightwing });
 
   for (const seedSession of dbSeedAllSessions) {
     await prisma.session.create({
@@ -40,6 +55,26 @@ const performSeed: () => Promise<void> = async () => {
       }
     });
   }
+
+  const changeRequest1Id: number = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
+    0,
+    0,
+    0,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        scopeCrWhyId: -1,
+        scopeCrId: -1,
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need to initialize all this seed data'
+      }
+    ],
+    0
+  );
+
+  const project1 = await ProjectsService.createProject(batman, changeRequest1Id);
 
   for (const seedTeam of dbSeedAllTeams) {
     await prisma.team.create({
