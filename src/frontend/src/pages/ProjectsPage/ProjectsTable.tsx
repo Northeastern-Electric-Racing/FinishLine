@@ -19,7 +19,10 @@ import { WbsElementStatus } from 'shared';
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-  const [pageSize, setPageSize] = useState(30);
+  if (!localStorage.getItem('rowCount')) localStorage.setItem('rowCount', '30');
+  const [pageSize, setPageSize] = useState(localStorage.getItem('rowCount'));
+  // call a localStorage method and save the return value into a variable const projectsTableRowCount
+  // pass this variable into the useState function on line 22 (get rid of the 30)
 
   const baseColDef: any = {
     flex: 1,
@@ -114,7 +117,6 @@ const ProjectsTable: React.FC = () => {
   ];
 
   const theme = useTheme();
-
   return (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
@@ -123,9 +125,12 @@ const ProjectsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={pageSize}
+        pageSize={Number(pageSize)}
         rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('rowCount', newPageSize.toString());
+          setPageSize(newPageSize.toString());
+        }}
         loading={isLoading}
         error={error}
         rows={
