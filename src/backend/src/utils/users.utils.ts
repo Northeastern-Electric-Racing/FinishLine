@@ -44,20 +44,13 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
   return users;
 };
 
-export const getTeamForLead = (userId: number) => {
+export const getTeamForLead = (userId: number): string | undefined => {
   let teamId;
-
   prisma.team
     .findUniqueOrThrow({
       where: { leaderId: userId },
       select: { teamId: true }
     })
-    .then((res) => {
-      teamId = res.teamId;
-    })
-    .catch((err) => {
-      throw new HttpException(404, `User with the following id not found: ${userId}`);
-    });
-
+    .then((tid) => (teamId = tid));
   return teamId;
 };

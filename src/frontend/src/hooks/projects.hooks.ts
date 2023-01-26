@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Project, Team, WbsNumber } from 'shared';
+import { Project, WbsNumber } from 'shared';
 import {
   editSingleProject,
   createSingleProject,

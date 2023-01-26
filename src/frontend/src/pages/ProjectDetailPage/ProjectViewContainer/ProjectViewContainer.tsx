@@ -21,7 +21,6 @@ import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
-import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 
 interface ProjectViewContainerProps {
   proj: Project;
