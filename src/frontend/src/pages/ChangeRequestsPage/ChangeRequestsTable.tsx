@@ -138,12 +138,15 @@ const ChangeRequestsTable: React.FC = () => {
           previousPages={[]}
           actionButton={
             <Button
-              style={{
+              sx={{
                 textTransform: 'none',
                 fontSize: 16,
-                backgroundColor: '#ff0000',
+                backgroundColor: '#ef4345',
                 borderColor: '#0062cc',
-                boxShadow: 'none'
+                boxShadow: 'none',
+                '&:hover': {
+                  backgroundColor: '#ff0000'
+                }
               }}
               component={Link}
               to={routes.CHANGE_REQUESTS_NEW}
