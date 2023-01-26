@@ -21,8 +21,11 @@ interface ProposedSolutionViewProps {
 }
 
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
+  const faded = !proposedSolution.approved;
+
   return (
-    <PageBlock title="">
+    <PageBlock title=""
+     style={{ opacity:faded ?  0.5 : 1 }}>
       {showDeleteButton && onDelete !== undefined ? (
         <Button
           color="error"
