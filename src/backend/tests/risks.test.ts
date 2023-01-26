@@ -1,5 +1,6 @@
 import request from 'supertest';
 import express from 'express';
+// import project1
 import { prismaProject1 } from './test-data/projects.test-data';
 >>>>>>> develop
 import RisksService from '../src/services/risks.services';
@@ -95,8 +96,8 @@ describe('Risks', () => {
   });
 
   test('getRisksForProject endpoint works', async () => {
-    const { projectId } = project1;
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
+    const { projectId } = prismaProject1;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
     jest.spyOn(prisma.risk, 'findMany').mockResolvedValue([]);
 
     const res = await request(app).get(`/${projectId}`);
