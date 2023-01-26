@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-request.services';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {

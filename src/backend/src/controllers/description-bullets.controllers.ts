@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import DescriptionBulletsService from '../services/description-bullets.services';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 
 export default class DescriptionBulletsController {
   static async checkDescriptionBullet(req: Request, res: Response, next: NextFunction) {

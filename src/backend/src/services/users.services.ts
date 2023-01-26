@@ -7,7 +7,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer'
 import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
 import { rankUserRole } from '../utils/users.utils';
-import { generateAccessToken } from '../utils/utils';
+import { generateAccessToken } from '../utils/auth.utils';
 
 export default class UsersService {
   /**
