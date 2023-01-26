@@ -3,21 +3,25 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
+//import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
+import { Folder, FormatListBulleted, FormatListNumbered, Slideshow } from '@mui/icons-material';
+import Link from '@mui/material/Link';
 import { Project } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
-import ExternalLink from '../../../components/ExternalLink';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DetailDisplay from '../../../components/DetailDisplay';
+import { useTheme } from '@mui/material';
 
 interface ProjectDetailsProps {
   project: Project;
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
+  const theme = useTheme();
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
       <Grid container spacing={1}>
@@ -47,16 +51,36 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
+          <Stack direction="row" alignItems="center">
+            <Slideshow sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.slideDeckLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+              Slide Deck
+            </Link>
+          </Stack>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
+          <Stack direction="row" alignItems="center">
+            <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.taskListLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+              Task List
+            </Link>
+          </Stack>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
+          <Stack direction="row" alignItems="center">
+            <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.bomLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+              BOM
+            </Link>
+          </Stack>
         </Grid>
         <Grid item xs={2} md={2}>
-          <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
+          <Stack direction="row" alignItems="center">
+            <Folder sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.gDriveLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+              Google Drive
+            </Link>
+          </Stack>
         </Grid>
       </Grid>
     </PageBlock>
