@@ -22,6 +22,8 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -191,12 +193,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       </PageBlock>
 
       <Box textAlign="center" sx={{ my: 2 }}>
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
-        </Button>
-        <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+        <NERFailButton variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
           Cancel
-        </Button>
+        </NERFailButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
+          Submit
+        </NERSuccessButton>
       </Box>
     </form>
   );
