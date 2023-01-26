@@ -22,7 +22,6 @@ import { routes } from '../../../utils/Routes';
 import { wbsPipe } from '../../../utils/Pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
-import { useCheckDescriptionBullet } from '../../../hooks/description-bullets.hooks';
 
 interface RiskLogProps {
   projectId: number;
@@ -44,7 +43,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
   const [newDetail, setNewDetail] = useState('');
   const [show, setShow] = useState(false);
   const risksQuery = useGetRisksForProject(projectId);
-  const { isLoading } = useCheckDescriptionBullet();
+  const { isLoading } = useEditSingleRisk();
 
   if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
 

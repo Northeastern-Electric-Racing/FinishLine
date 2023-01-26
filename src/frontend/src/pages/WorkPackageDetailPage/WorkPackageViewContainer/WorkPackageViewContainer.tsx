@@ -16,6 +16,7 @@ import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import CheckList from '../../../components/CheckList';
+import { useCheckDescriptionBullet } from '../../../hooks/description-bullets.hooks';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -36,6 +37,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 }) => {
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
+  const { isLoading } = useCheckDescriptionBullet();
 
   const editBtn = (
     <Dropdown.Item as={Button} onClick={enterEditMode} disabled={!allowEdit}>
@@ -96,7 +98,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((ea) => {
             return { ...ea, resolved: !!ea.userChecked };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={isLoading}
       />
       <CheckList
         title={'Deliverables'}
@@ -105,7 +107,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((del) => {
             return { ...del, resolved: !!del.userChecked };
           })}
-        isDisabled={workPackage.status !== WbsElementStatus.Active}
+        isDisabled={isLoading}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (
