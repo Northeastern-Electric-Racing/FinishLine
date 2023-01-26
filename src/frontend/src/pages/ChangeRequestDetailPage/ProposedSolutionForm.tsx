@@ -87,7 +87,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  defaultValue={value}
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
@@ -114,7 +113,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  defaultValue={value}
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
@@ -141,7 +139,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  defaultValue={value}
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
@@ -168,7 +165,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  defaultValue={value}
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
