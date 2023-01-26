@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Button, Grid, IconButton, TextField } from '@mui/material';
+import { Autocomplete, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -15,7 +15,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
-import { NERSuccessButton } from '../../components/NERSuccessButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import NERFailButton from '../../components/NERFailButton';
 
 interface TeamMembersPageBlockProps {
   team: Team;
@@ -62,14 +63,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
-      <Button
+      <NERFailButton
         onClick={() => {
           setIsEditingMembers(false);
           setMembers(team.members.map(userToAutocompleteOption));
         }}
       >
         Cancel
-      </Button>
+      </NERFailButton>
       <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
         Save
       </NERSuccessButton>

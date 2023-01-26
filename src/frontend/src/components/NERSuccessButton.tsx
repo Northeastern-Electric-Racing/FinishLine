@@ -5,10 +5,12 @@
 
 import { Button, styled } from '@mui/material';
 
-export const NERSuccessButton = styled(Button)(({ theme }) => ({
+const NERSuccessButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.success.main,
   color: theme.palette.success.contrastText,
   '&:hover': {
     backgroundColor: theme.palette.success.dark
   }
 }));
+
+export default NERSuccessButton;
