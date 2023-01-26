@@ -17,7 +17,11 @@ const AppPublic: React.FC = () => {
 
   const devUserId = localStorage.getItem('devUserId');
 
-  const render = (e: any) => {
+  interface appRenderInput {
+    location: string;
+  }
+
+  const render = (e: appRenderInput) => {
     // if logged in, go to authenticated app
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
