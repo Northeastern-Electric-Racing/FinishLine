@@ -2,36 +2,6 @@ import { Role, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 
-export const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
-  include: {
-    userSettings: true
-  }
-});
-
-export const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
-  return {
-    userId: user.userId,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    emailId: user.emailId,
-    role: user.role,
-    defaultTheme: user.userSettings?.defaultTheme,
-    teamAsLeadId: getTeamForLead(user.userId)
-  };
-};
-
-export const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
-  return {
-    userId: user.userId ?? undefined,
-    firstName: user.firstName ?? undefined,
-    lastName: user.lastName ?? undefined,
-    email: user.email ?? undefined,
-    emailId: user.emailId,
-    role: user.role ?? undefined
-  };
-};
-
 export const getUserFullName = async (userId: number | null) => {
   if (!userId) return 'no one';
   const user = await prisma.user.findUnique({ where: { userId } });
