@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-//import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Folder, FormatListBulleted, FormatListNumbered, Slideshow } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Project } from 'shared';
