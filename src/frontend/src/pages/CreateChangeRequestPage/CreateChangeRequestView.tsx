@@ -25,6 +25,8 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -219,12 +221,12 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="center">
-        <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
+        <NERFailButton>
           Cancel
-        </Button>
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
+        </NERFailButton>
+        <NERSuccessButton>
           Submit
-        </Button>
+        </NERSuccessButton>
       </Box>
     </form>
   );
