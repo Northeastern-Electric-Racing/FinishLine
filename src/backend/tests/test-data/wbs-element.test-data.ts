@@ -1,15 +1,15 @@
-import { WBS_Element as PrismaWBSElement, WBS_Element_Status as PrismaWBSElementStatus } from '@prisma/client';
+import { WBS_Element_Status as PrismaWBSElementStatus, WBS_Element as PrismaWbsElement } from '@prisma/client';
 
-export const prismaWbsElement1: PrismaWBSElement = {
-  wbsElementId: 65,
-  dateCreated: new Date('10/18/2022'),
-  carNumber: 1,
-  projectNumber: 1,
-  workPackageNumber: 1,
-  name: 'redesign whip',
+export const prismaWbsElement1: PrismaWbsElement = {
+  wbsElementId: 1,
   status: PrismaWBSElementStatus.ACTIVE,
-  projectLeadId: 1,
-  projectManagerId: 2,
+  carNumber: 1,
+  projectNumber: 2,
+  workPackageNumber: 0,
+  dateCreated: new Date(),
   dateDeleted: null,
-  deletedByUserId: null
+  name: 'car',
+  deletedByUserId: null,
+  projectLeadId: 4,
+  projectManagerId: 5
 };

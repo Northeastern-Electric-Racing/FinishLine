@@ -25,15 +25,12 @@ const CreateProjectForm: React.FC = () => {
 
   if (isLoading || !auth.user) return <LoadingIndicator />;
 
-  const { userId } = auth.user;
-
   const handleCancel = () => history.goBack();
 
   const handleSubmit = async (project: CreateProjectFormInputs) => {
     const { name, carNumber, crId, summary, team } = project;
 
     const payload = {
-      userId,
       crId,
       name,
       carNumber,
@@ -41,9 +38,13 @@ const CreateProjectForm: React.FC = () => {
       team
     };
 
-    const createdWbsNum = await mutateAsync(payload);
+    try {
+      const createdWbsNum = await mutateAsync(payload);
 
-    history.push(`${routes.PROJECTS}/${createdWbsNum}`);
+      history.push(`${routes.PROJECTS}/${createdWbsNum}`);
+    } catch (error) {
+      alert(error);
+    }
   };
 
   return <CreateProjectFormView onCancel={handleCancel} onSubmit={handleSubmit} allowSubmit={auth.user.role !== 'GUEST'} />;

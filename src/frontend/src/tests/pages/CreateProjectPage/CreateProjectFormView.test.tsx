@@ -16,6 +16,13 @@ import { sharedTeam1 } from '../../../../../backend/tests/test-data/teams.test-d
 jest.mock('../../../hooks/utils.hooks');
 jest.mock('../../../hooks/teams.hooks');
 
+jest.mock('../../../components/ReactHookTextField', () => {
+  return {
+    __esModule: true,
+    default: () => <p>React hook text field component</p>
+  };
+});
+
 const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
 const mockedSingleUseAllTeams = useAllTeams as jest.Mock<UseQueryResult<Team[]>>;
 const mockUseAllTeams = (isLoading: boolean, isError: boolean, data?: Team[], error?: Error) => {
