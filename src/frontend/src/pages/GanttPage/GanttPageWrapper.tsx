@@ -140,9 +140,10 @@ const GanttPageWrapper: FC = () => {
   };
 
   const expandedHandler = (value: boolean) => {
+    // quick fix for gantt chart not updating when any expander arrow is clicked reload
+    if (value === expanded) return window.location.reload();
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-    window.location.reload(); // quick fix for gantt chart not updating when any expander arrow is clicked
   };
 
   const startHandler = (value: Date | null) => {
@@ -174,7 +175,8 @@ const GanttPageWrapper: FC = () => {
         currentStart={start}
         currentEnd={end}
         resetHandler={() => {
-          history.push(routes.GANTT);
+          // quick fix for gantt chart not updating when any expander arrow is clicked
+          history.location.search === '' ? window.location.reload() : history.push(routes.GANTT);
         }}
       />
       <GanttPage ganttDisplayObjects={ganttDisplayObjects} updateGanttDisplayObjects={setGanttDisplayObjects} />
