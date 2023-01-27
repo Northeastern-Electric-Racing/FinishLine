@@ -72,9 +72,9 @@ const NavUserMenu: React.FC = () => {
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        {googleAuthClientId ? (
+        {googleAuthClientId && (
           <GoogleLogout
-            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+            clientId={googleAuthClientId}
             //jsSrc={'accounts.google.com/gsi/client'}
             onLogoutSuccess={logout}
             render={(renderProps) => (
@@ -83,11 +83,10 @@ const NavUserMenu: React.FC = () => {
               </MenuItem>
             )}
           />
-        ) : (
-          <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
-            <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
-          </MenuItem>
         )}
+        <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+          <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+        </MenuItem>
       </Menu>
     </>
   );
