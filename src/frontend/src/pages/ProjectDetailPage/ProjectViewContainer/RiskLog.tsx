@@ -48,12 +48,11 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
   const history = useHistory();
   const auth = useAuth();
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();
-  const { mutateAsync: editMutateAsync } = useEditSingleRisk();
+  const { isLoading, mutateAsync: editMutateAsync } = useEditSingleRisk();
   const { mutateAsync: deleteMutateAsync } = useDeleteSingleRisk();
   const [newDetail, setNewDetail] = useState('');
   const [show, setShow] = useState(false);
   const risksQuery = useGetRisksForProject(projectId);
-  const { isLoading } = useEditSingleRisk();
 
   if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
 

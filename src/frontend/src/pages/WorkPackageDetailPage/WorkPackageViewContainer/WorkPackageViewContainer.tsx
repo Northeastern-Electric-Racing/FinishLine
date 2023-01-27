@@ -15,7 +15,6 @@ import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import CheckList from '../../../components/CheckList';
-import { useCheckDescriptionBullet } from '../../../hooks/description-bullets.hooks';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
@@ -44,7 +43,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
-  const { isLoading } = useCheckDescriptionBullet();
 
   if (!auth.user) return <LoadingIndicator />;
 
@@ -143,7 +141,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((ea) => {
             return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
           })}
-        isDisabled={checkListDisabled || isLoading}
+        isDisabled={checkListDisabled}
       />
       <CheckList
         title={'Deliverables'}
@@ -152,7 +150,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           .map((del) => {
             return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
           })}
-        isDisabled={checkListDisabled || isLoading}
+        isDisabled={checkListDisabled}
       />
       <ChangesList changes={workPackage.changes} />
       {showActivateModal && (

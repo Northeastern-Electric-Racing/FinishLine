@@ -35,7 +35,7 @@ interface CheckListProps {
 
 const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
   const auth = useAuth();
-  const { mutateAsync } = useCheckDescriptionBullet();
+  const { isLoading, mutateAsync } = useCheckDescriptionBullet();
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [currIdx, setCurrIdx] = useState<number>(-1);
 
@@ -65,7 +65,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
             control={
               <Checkbox
                 checked={check.resolved}
-                disabled={isDisabled}
+                disabled={isDisabled || isLoading}
                 onChange={() => {
                   if (check.resolved) {
                     setCurrIdx(idx);
