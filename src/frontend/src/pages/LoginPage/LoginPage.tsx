@@ -21,24 +21,31 @@ interface LoginPageProps {
  * Page for unauthenticated users to do login.
  */
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
+  const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
+
+  const googleLogin = (
+    <GoogleLogin
+      clientId={googleAuthClientId!}
+      //jsSrc={'accounts.google.com/gsi/client.js'}
+      buttonText="Login"
+      onSuccess={prodSuccess}
+      onFailure={prodFailure}
+      cookiePolicy={'single_host_origin'}
+      isSignedIn={true}
+    />
+  );
+
+  const loginDev = <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} />;
+
   return (
     <Card sx={{ marginX: 'auto', maxWidth: '25em', marginTop: 5 }}>
       <CardContent>
         <Typography variant="h5">FinishLine by NER</Typography>
-        <Typography variant="body1">Login Required. Students must use their Husky Google account.</Typography>
-        {process.env.NODE_ENV === 'development' ? (
-          <LoginDev devSetUser={devSetUser} devFormSubmit={devFormSubmit} />
-        ) : (
-          <GoogleLogin
-            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-            //jsSrc={'accounts.google.com/gsi/client.js'}
-            buttonText="Login"
-            onSuccess={prodSuccess}
-            onFailure={prodFailure}
-            cookiePolicy={'single_host_origin'}
-            isSignedIn={true}
-          />
-        )}
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          Login Required. Students must use their Husky Google account.
+        </Typography>
+        {googleAuthClientId && googleLogin}
+        {process.env.NODE_ENV === 'development' && loginDev}
       </CardContent>
       <CardActions>
         <Typography variant="caption">
