@@ -139,7 +139,11 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             <Select value={status} onChange={statusHandler}>
               <MenuItem value="All Statuses">All Statuses</MenuItem>
               {Object.values(WbsElementStatus).map((status) => {
-                return <MenuItem value={status}>{status}</MenuItem>;
+                return (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                );
               })}
             </Select>
           </FormControl>
@@ -150,7 +154,9 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             <Select value={selectedTeam} onChange={teamHandler}>
               <MenuItem value="All Teams">All Teams</MenuItem>
               {teamList.map((team) => (
-                <MenuItem value={team}>{team}</MenuItem>
+                <MenuItem key={team} value={team}>
+                  {team}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>

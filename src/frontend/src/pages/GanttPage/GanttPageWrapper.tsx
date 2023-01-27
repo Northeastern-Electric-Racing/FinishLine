@@ -75,18 +75,21 @@ const GanttPageWrapper: FC = () => {
 
   useEffect(() => {
     const transformProjectToGanttObject = (project: Project): Task => {
+      const progress =
+        (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
+        100;
       return {
         id: wbsPipe(project.wbsNum),
         name: wbsPipe(project.wbsNum) + ' ' + project.name,
         start: project.startDate || new Date(),
         end: project.endDate || new Date(),
-        progress:
-          (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length /
-            project.workPackages.length) *
-          100,
+        progress,
         type: 'project',
         hideChildren: !expanded,
-        styles: { progressColor: '#e50000', backgroundColor: '#ff0000' },
+        styles:
+          progress === 100
+            ? { progressColor: '#66bb6a', backgroundColor: '#66bb6a' }
+            : { progressColor: '#e50000', backgroundColor: '#ff0000' },
         displayOrder: project.id,
         onClick: () => {
           window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
@@ -139,6 +142,7 @@ const GanttPageWrapper: FC = () => {
   const expandedHandler = (value: boolean) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    window.location.reload(); // quick fix for gantt chart not updating when any expander arrow is clicked
   };
 
   const startHandler = (value: Date | null) => {
