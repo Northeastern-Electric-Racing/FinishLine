@@ -73,6 +73,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Madeline Engle', color: '#FF2D76' },
     { name: 'Parth Kabra', color: '#e53774' },
     { name: 'Riley Platz', color: '#2d2fa6' },
+    { name: 'Isaac Levine', color: '#6a3941' },
     { name: 'Andrew Tsai', color: '#3281a8' }
   ];
 
