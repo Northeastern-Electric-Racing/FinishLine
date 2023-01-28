@@ -17,8 +17,6 @@ const TeamsPage: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  console.log(JSON.stringify(teams));
-
   return (
     <>
       <PageTitle title={'Teams'} previousPages={[]} />

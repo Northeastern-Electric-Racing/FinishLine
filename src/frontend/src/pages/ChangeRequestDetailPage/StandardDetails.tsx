@@ -5,6 +5,7 @@
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
@@ -29,15 +30,17 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
         <Grid item xs={2}>
           <Typography sx={style}>Why</Typography>
         </Grid>
-        {cr.why.map((ele: ChangeRequestExplanation, idx: number) => [
-          idx !== 0 ? <Grid item xs={2}></Grid> : <></>,
-          <Grid item xs={2}>
-            <Typography sx={style}>{ele.type}</Typography>
-          </Grid>,
-          <Grid item xs={8}>
-            <Typography>{ele.explain}</Typography>
-          </Grid>
-        ])}
+        {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
+          <React.Fragment key={'CRExplanation' + idx}>
+            {idx !== 0 ? <Grid item xs={2}></Grid> : <></>}
+            <Grid item xs={2}>
+              <Typography sx={style}>{ele.type}</Typography>
+            </Grid>
+            <Grid item xs={8}>
+              <Typography>{ele.explain}</Typography>
+            </Grid>
+          </React.Fragment>
+        ))}
       </Grid>
     </PageBlock>
   );

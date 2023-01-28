@@ -3,75 +3,179 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Role } from '@prisma/client';
+import { Prisma, Role, Theme } from '@prisma/client';
 
-const dbSeedUser1: any = {
+const thomasEmrax: Prisma.UserCreateInput = {
   firstName: 'Thomas',
   lastName: 'Emrax',
   googleAuthId: '1',
   email: 'emrax.t@husky.neu.edu',
   emailId: 'emrax.t',
-  role: Role.APP_ADMIN
+  role: Role.APP_ADMIN,
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: 'emrax'
+    }
+  }
 };
 
-const dbSeedUser2: any = {
+const joeShmoe: Prisma.UserCreateInput = {
   firstName: 'Joe',
   lastName: 'Shmoe',
   googleAuthId: '2',
   email: 'shmoe.j@husky.neu.edu',
   emailId: 'shmoe.j',
-  role: Role.ADMIN
+  role: Role.ADMIN,
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'asdf'
+    }
+  }
 };
 
-const dbSeedUser3: any = {
+const joeBlow: Prisma.UserCreateInput = {
   firstName: 'Joe',
   lastName: 'Blow',
   googleAuthId: '3',
   email: 'blow.j@husky.neu.edu',
   emailId: 'blow.j',
-  role: Role.LEADERSHIP
+  role: Role.LEADERSHIP,
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: 'blow'
+    }
+  }
 };
 
-const dbSeedUser4: any = {
-  firstName: 'Amy',
-  lastName: 'Smith',
-  googleAuthId: '4',
-  email: 'smith.a@husky.neu.edu',
-  emailId: 'smith.a',
-  role: Role.LEADERSHIP
+const wonderwoman: Prisma.UserCreateInput = {
+  firstName: 'Diana',
+  lastName: 'Prince',
+  email: 'wonderwoman@justiceleague.com',
+  emailId: 'wonderwoman',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'wonderwoman'
 };
 
-const dbSeedUser5: any = {
-  firstName: 'Rachel',
-  lastName: 'Barmatha',
-  googleAuthId: '5',
-  email: 'barmatha.r@husky.neu.edu',
-  emailId: 'barmatha.r',
+const flash: Prisma.UserCreateInput = {
+  firstName: 'Barry',
+  lastName: 'Allen',
+  googleAuthId: 'flaaaash',
+  email: 'flash@starlabs.edu',
+  emailId: 'barry.allen',
   role: Role.MEMBER
 };
 
-const dbSeedUser6: any = {
-  firstName: 'Emily',
-  lastName: 'Bendara',
-  googleAuthId: '6',
-  email: 'bendara.e@husky.neu.edu',
-  emailId: 'bendara.e',
+const aquaman: Prisma.UserCreateInput = {
+  firstName: 'Arthur',
+  lastName: 'Curry',
+  googleAuthId: 'fish',
+  email: 'aquaman@gmail.com',
+  emailId: 'thefishman',
   role: Role.MEMBER
 };
 
-const dbSeedUser7: any = {
-  firstName: 'Jackson',
-  lastName: 'James',
-  googleAuthId: '7',
-  email: 'james.j@gmail.com'
+const robin: Prisma.UserCreateInput = {
+  firstName: 'Damien',
+  lastName: 'Wayne',
+  googleAuthId: 'robin',
+  email: 'robin3@brucewayne.com',
+  role: Role.GUEST
 };
 
-export const dbSeedAllUsers: any[] = [
-  dbSeedUser1,
-  dbSeedUser2,
-  dbSeedUser3,
-  dbSeedUser4,
-  dbSeedUser5,
-  dbSeedUser6,
-  dbSeedUser7
+const batman: Prisma.UserCreateInput = {
+  firstName: 'Bruce',
+  lastName: 'Wayne',
+  googleAuthId: 'im batman',
+  email: 'notbatman@brucewayne.com',
+  emailId: 'notbatman',
+  role: Role.APP_ADMIN,
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: 'batman'
+    }
+  }
+};
+
+const superman: Prisma.UserCreateInput = {
+  firstName: 'Clark',
+  lastName: 'Kent',
+  email: 'superman@thedailyplanet.com',
+  role: Role.ADMIN,
+  googleAuthId: 'superman',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'superman'
+    }
+  }
+};
+
+const cyborg: Prisma.UserCreateInput = {
+  firstName: 'Vic',
+  lastName: 'Stone',
+  email: 'cyborg@justiceleague.com',
+  googleAuthId: 'beepboop',
+  role: Role.APP_ADMIN
+};
+
+const martianManhunter: Prisma.UserCreateInput = {
+  firstName: `J'onn`,
+  lastName: `J'onnz`,
+  email: 'martian.manhunter@justiceleague.com',
+  googleAuthId: 'martian',
+  role: Role.LEADERSHIP
+};
+
+const greenLantern: Prisma.UserCreateInput = {
+  firstName: 'Hal',
+  lastName: 'Jordan',
+  email: 'greenlantern1@justiceleague.com',
+  googleAuthId: 'green',
+  role: Role.MEMBER
+};
+
+const hawkMan: Prisma.UserCreateInput = {
+  firstName: 'Hawk',
+  lastName: 'Man',
+  email: 'hawkman@justiceleague.com',
+  googleAuthId: 'cawwwww',
+  role: Role.MEMBER
+};
+
+const hawkWoman: Prisma.UserCreateInput = {
+  firstName: 'Hawk',
+  lastName: 'Woman',
+  email: 'hawkwoman@justiceleague.com',
+  googleAuthId: 'cacawwwww',
+  role: Role.MEMBER
+};
+
+const nightwing: Prisma.UserCreateInput = {
+  firstName: 'Dick',
+  lastName: 'Grayson',
+  email: 'robin1@brucewayne.com',
+  googleAuthId: 'robin1',
+  role: Role.GUEST
+};
+
+export const dbSeedAllUsers: Prisma.UserCreateInput[] = [
+  thomasEmrax,
+  joeShmoe,
+  joeBlow,
+  wonderwoman,
+  flash,
+  aquaman,
+  robin,
+  batman,
+  superman,
+  hawkMan,
+  hawkWoman,
+  cyborg,
+  greenLantern,
+  martianManhunter,
+  nightwing
 ];

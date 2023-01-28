@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 
 export default class TeamsController {
   static async getAllTeams(_req: Request, res: Response, next: NextFunction) {
@@ -35,6 +35,17 @@ export default class TeamsController {
 
       // return the updated team
       return res.status(200).json(updateTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { newDescription } = req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.editDescription(user, req.params.teamId, newDescription);
+      return res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }

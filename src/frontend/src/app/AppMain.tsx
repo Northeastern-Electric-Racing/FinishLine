@@ -6,13 +6,16 @@
 import { BrowserRouter } from 'react-router-dom';
 import AppContext from './AppContext';
 import AppPublic from './AppPublic';
+import { ToastProvider } from '../components/Toast/ToastProvider';
 
 const AppMain: React.FC = () => {
   return (
     <AppContext>
-      <BrowserRouter>
-        <AppPublic />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <AppPublic />
+        </BrowserRouter>
+      </ToastProvider>
     </AppContext>
   );
 };

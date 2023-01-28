@@ -400,32 +400,28 @@ export default class WorkPackagesService {
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
     if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
 
-    if (projectManager === undefined) {
-      const projectManagerChangeJson = createChangeJsonNonList(
-        'project manager',
-        await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
-        await getUserFullName(projectManager),
-        crId,
-        userId,
-        wbsElementId!
-      );
-      if (projectManagerChangeJson) {
-        changes.push(projectManagerChangeJson);
-      }
+    const projectManagerChangeJson = createChangeJsonNonList(
+      'project manager',
+      await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
+      await getUserFullName(projectManager),
+      crId,
+      userId,
+      wbsElementId!
+    );
+    if (projectManagerChangeJson) {
+      changes.push(projectManagerChangeJson);
     }
 
-    if (projectLead === undefined) {
-      const projectLeadChangeJson = createChangeJsonNonList(
-        'project lead',
-        await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
-        await getUserFullName(projectLead),
-        crId,
-        userId,
-        wbsElementId!
-      );
-      if (projectLeadChangeJson) {
-        changes.push(projectLeadChangeJson);
-      }
+    const projectLeadChangeJson = createChangeJsonNonList(
+      'project lead',
+      await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
+      await getUserFullName(projectLead),
+      crId,
+      userId,
+      wbsElementId!
+    );
+    if (projectLeadChangeJson) {
+      changes.push(projectLeadChangeJson);
     }
 
     // add the changes for each of dependencies, expected activities, and deliverables
