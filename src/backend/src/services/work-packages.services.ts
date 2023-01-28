@@ -1,9 +1,10 @@
-import { Role, User, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element, Work_Package } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
   isProject,
   TimelineStatus,
+  validateWBS,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
@@ -485,53 +486,81 @@ export default class WorkPackagesService {
     await prisma.change.createMany({ data: changes });
   }
 
-  static async deleteWorkPackage(submitter: User, wbsNum: String): Promise<void> {
-    // verify submitter is allowed to delete work packages
+  static async deleteWorkPackage(submitter: User, wbsNum: string): Promise<void> {
+    // Verify submitter is allowed to delete work packages
     if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
 
-    // Delete a description bullets that is related to the work package to be deleted
-    const deleteBulletDescriptionActivities = prisma.description_Bullet.deleteMany({
+    // Verify if given WBS number represents work package
+    const parsedWbs: WbsNumber = validateWBS(wbsNum);
+
+    if (parsedWbs.workPackageNumber === 0) throw new HttpException(400, `${wbsNum} is not a valid work package WBS!`);
+
+    const { carNumber, projectNumber, workPackageNumber } = parsedWbs;
+
+    // Verify if the work package to be deleted exist
+    const work_package = await prisma.work_Package.findFirst({
       where: {
-        workPackageIdExpectedActivities: 5
-      }
-    });
-
-    const deleteBulletDescriptionDeliverables = prisma.description_Bullet.deleteMany({
-      where: {
-        workPackageIdDeliverables: 5
-      }
-    });
-
-    // verifiy if given wbs element exists
-    const WbsElement = prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: 5
-      },
-      ...workPackageQueryArgs
-    });
-
-    if (!WbsElement) throw new NotFoundException('WBS Element', 5);
-
-    // Remove a work package to be deleted from related wbs_element's work packages
-    const wbsElementId = 5;
-
-    const updatedWorkPackages = WbsElement.dependentWorkPackages;
-
-    const removeWPInWBS = prisma.wBS_Element.update({
-      where: {
-        wbsElementId
-      },
-      data: {
-        dependentWorkPackages: {
-          set: []
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
         }
       }
     });
 
-    // delete a work package
-    const deleteWorkPackage = prisma.work_Package.delete({
+    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(parsedWbs));
+
+    // Delete a description bullets that is related to the work package to be deleted
+    await prisma.description_Bullet.deleteMany({
       where: {
-        workPackageId: 5
+        workPackageExpectedActivities: work_package
+      }
+    });
+
+    await prisma.description_Bullet.deleteMany({
+      where: {
+        workPackageDeliverables: work_package
+      }
+    });
+
+    // Verifiy if given wbs num's element exists
+    const WbsElement = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!WbsElement) throw new NotFoundException('WBS Element', wbsPipe(parsedWbs));
+
+    // Remove a work package to be deleted from related wbs_element's work package list
+    const workPackages = WbsElement.dependencies as Work_Package[];
+
+    const updatedWorkPackages = workPackages.filter((wp) => wp !== work_package);
+
+    await prisma.wBS_Element.update({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      data: {
+        dependentWorkPackages: {
+          set: updatedWorkPackages
+        }
+      }
+    });
+
+    // Finally, delete a work package
+    await prisma.work_Package.delete({
+      where: {
+        workPackageId: work_package.workPackageId
       }
     });
   }
