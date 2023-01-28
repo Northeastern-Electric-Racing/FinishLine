@@ -92,4 +92,15 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
+  // Delete a workpackage that corresponds to the given wbs number
+  static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+
+      await WorkPackagesService.deleteWorkPackage(user, req.params.wbsNum);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

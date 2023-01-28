@@ -484,4 +484,55 @@ export default class WorkPackagesService {
     // create the changes in prisma
     await prisma.change.createMany({ data: changes });
   }
+
+  static async deleteWorkPackage(submitter: User, wbsNum: String): Promise<void> {
+    // verify submitter is allowed to delete work packages
+    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+
+    // Delete a description bullets that is related to the work package to be deleted
+    const deleteBulletDescriptionActivities = prisma.description_Bullet.deleteMany({
+      where: {
+        workPackageIdExpectedActivities: 5
+      }
+    });
+
+    const deleteBulletDescriptionDeliverables = prisma.description_Bullet.deleteMany({
+      where: {
+        workPackageIdDeliverables: 5
+      }
+    });
+
+    // verifiy if given wbs element exists
+    const WbsElement = prisma.wBS_Element.findUnique({
+      where: {
+        wbsElementId: 5
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!WbsElement) throw new NotFoundException('WBS Element', 5);
+
+    // Remove a work package to be deleted from related wbs_element's work packages
+    const wbsElementId = 5;
+
+    const updatedWorkPackages = WbsElement.dependentWorkPackages;
+
+    const removeWPInWBS = prisma.wBS_Element.update({
+      where: {
+        wbsElementId
+      },
+      data: {
+        dependentWorkPackages: {
+          set: []
+        }
+      }
+    });
+
+    // delete a work package
+    const deleteWorkPackage = prisma.work_Package.delete({
+      where: {
+        workPackageId: 5
+      }
+    });
+  }
 }
