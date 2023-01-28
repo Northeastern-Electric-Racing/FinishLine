@@ -124,8 +124,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
                 render={({ field: { onChange, value } }) => (
                   <TextField select onChange={onChange} value={value}>
                     {teams.map((t) => (
-                      <MenuItem key={t.teamName} value={t.teamName}>
-                        {t.teamName}
+                      <MenuItem key={t.teamId} value={t.teamId}>
+                        {t.teamId}
                       </MenuItem>
                     ))}
                   </TextField>
