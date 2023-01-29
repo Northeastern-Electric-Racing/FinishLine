@@ -174,7 +174,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               />
             </FormControl>
           </Grid>
-
           <Grid item xs={12} md={6}>
             <FormControl>
               <FormLabel>Why</FormLabel>
@@ -203,6 +202,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 ))}
               </Box>
             </FormControl>
+            <FormHelperText>{errors.why?.message}</FormHelperText>
+          </Grid>
+          <Grid xs={12}>
             <Button
               variant="outlined"
               color="secondary"
@@ -211,7 +213,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             >
               Add Reason
             </Button>
-            <FormHelperText>{errors.why?.message}</FormHelperText>
           </Grid>
         </Grid>
       </PageBlock>
