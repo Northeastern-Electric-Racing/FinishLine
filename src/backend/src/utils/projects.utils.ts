@@ -1,8 +1,22 @@
-import { WBS_Element_Status } from '@prisma/client';
+import { Prisma, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { WbsElementStatus } from 'shared';
+import {
+  Project,
+  WbsElementStatus,
+  DescriptionBullet,
+  calculateEndDate,
+  calculateProjectEndDate,
+  calculatePercentExpectedProgress,
+  calculateTimelineStatus,
+  calculateDuration,
+  calculateProjectStartDate
+} from 'shared';
+import { descBulletConverter, wbsNumOf } from './utils';
+import riskQueryArgs from '../prisma-query-args/risks.query-args';
+import riskTransformer from '../transformers/risks.transformer';
 import { buildChangeDetail } from '../utils/utils';
-import { NotFoundException } from './errors.utils';
+import { calculateWorkPackageProgress } from './work-packages.utils';
+import userTransformer from '../transformers/user.transformer';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -13,8 +27,170 @@ export const calculateProjectStatus = (proj: { workPackages: { wbsElement: { sta
   if (proj.workPackages.length === 0) return WbsElementStatus.Inactive;
 
   if (proj.workPackages.every((wp) => wp.wbsElement.status === WbsElementStatus.Complete)) return WbsElementStatus.Complete;
-  else if (proj.workPackages.some((wp) => wp.wbsElement.status === WbsElementStatus.Active)) return WbsElementStatus.Active;
+  else if (proj.workPackages.findIndex((wp) => wp.wbsElement.status === WbsElementStatus.Active) !== -1)
+    return WbsElementStatus.Active;
   return WbsElementStatus.Inactive;
+};
+
+export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
+  include: {
+    wbsElement: {
+      include: {
+        projectLead: true,
+        projectManager: true,
+        changes: { include: { implementer: true } }
+      }
+    },
+    team: true,
+    goals: { where: { dateDeleted: null } },
+    features: { where: { dateDeleted: null } },
+    otherConstraints: { where: { dateDeleted: null } },
+    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
+    workPackages: {
+      where: {
+        wbsElement: {
+          dateDeleted: null
+        }
+      },
+      include: {
+        wbsElement: {
+          include: {
+            projectLead: true,
+            projectManager: true,
+            changes: { include: { implementer: true } }
+          }
+        },
+        dependencies: true,
+        expectedActivities: true,
+        deliverables: true
+      }
+    }
+  }
+});
+
+export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
+  include: {
+    project: {
+      include: {
+        team: true,
+        goals: { where: { dateDeleted: null } },
+        features: { where: { dateDeleted: null } },
+        otherConstraints: { where: { dateDeleted: null } },
+        risks: { where: { dateDeleted: null }, ...riskQueryArgs },
+        workPackages: {
+          where: {
+            wbsElement: {
+              dateDeleted: null
+            }
+          },
+          include: {
+            wbsElement: {
+              include: {
+                projectLead: true,
+                projectManager: true,
+                changes: { include: { implementer: true } }
+              }
+            },
+            dependencies: true,
+            expectedActivities: true,
+            deliverables: true
+          }
+        }
+      }
+    },
+    projectLead: true,
+    projectManager: true,
+    changes: { include: { implementer: true } }
+  }
+});
+
+export const projectTransformer = (
+  payload: Prisma.ProjectGetPayload<typeof manyRelationArgs> | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
+): Project => {
+  const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
+  const project = 'project' in payload ? payload.project! : payload;
+  const wbsNum = wbsNumOf(wbsElement);
+  let team = undefined;
+  if (project.team) {
+    team = {
+      teamId: project.team.teamId,
+      teamName: project.team.teamName
+    };
+  }
+  const { projectLead, projectManager } = wbsElement;
+
+  return {
+    id: project.projectId,
+    wbsNum,
+    dateCreated: wbsElement.dateCreated,
+    name: wbsElement.name,
+    status: calculateProjectStatus(project),
+    projectLead: projectLead ? userTransformer(projectLead) : undefined,
+    projectManager: projectManager ? userTransformer(projectManager) : undefined,
+    changes: wbsElement.changes.map((change) => ({
+      changeId: change.changeId,
+      changeRequestId: change.changeRequestId,
+      wbsNum,
+      implementer: userTransformer(change.implementer),
+      detail: change.detail,
+      dateImplemented: change.dateImplemented
+    })),
+    team,
+    summary: project.summary,
+    budget: project.budget,
+    gDriveLink: project.googleDriveFolderLink ?? undefined,
+    taskListLink: project.taskListLink ?? undefined,
+    slideDeckLink: project.slideDeckLink ?? undefined,
+    bomLink: project.bomLink ?? undefined,
+    rules: project.rules,
+    duration: calculateDuration(project.workPackages),
+    startDate: calculateProjectStartDate(project.workPackages),
+    endDate: calculateProjectEndDate(project.workPackages),
+    goals: project.goals.map(descBulletConverter),
+    features: project.features.map(descBulletConverter),
+    otherConstraints: project.otherConstraints.map(descBulletConverter),
+    risks: project.risks.map(riskTransformer),
+    workPackages: project.workPackages.map((workPackage) => {
+      const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
+      const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
+      const expectedProgress = calculatePercentExpectedProgress(
+        workPackage.startDate,
+        workPackage.duration,
+        workPackage.wbsElement.status
+      );
+
+      return {
+        id: workPackage.workPackageId,
+        wbsNum: wbsNumOf(workPackage.wbsElement),
+        dateCreated: workPackage.wbsElement.dateCreated,
+        name: workPackage.wbsElement.name,
+        status: workPackage.wbsElement.status as WbsElementStatus,
+        projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
+        projectManager: workPackage.wbsElement.projectManager
+          ? userTransformer(workPackage.wbsElement.projectManager)
+          : undefined,
+        changes: workPackage.wbsElement.changes.map((change) => ({
+          changeId: change.changeId,
+          changeRequestId: change.changeRequestId,
+          wbsNum: wbsNumOf(workPackage.wbsElement),
+          implementer: userTransformer(change.implementer),
+          detail: change.detail,
+          dateImplemented: change.dateImplemented
+        })),
+        orderInProject: workPackage.orderInProject,
+        progress,
+        startDate: workPackage.startDate,
+        endDate,
+        duration: workPackage.duration,
+        expectedProgress,
+        timelineStatus: calculateTimelineStatus(progress, expectedProgress),
+        dependencies: workPackage.dependencies.map(wbsNumOf),
+        expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
+        deliverables: workPackage.deliverables.map(descBulletConverter),
+        projectName: wbsElement.name
+      };
+    })
+  };
 };
 
 // gets highest current project number
@@ -57,8 +233,8 @@ export const editDescriptionBullets = async (editedIdsAndDetails: { id: number; 
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChangeJsonNonList = (
   nameOfField: string,
-  oldValue: any,
-  newValue: any,
+  oldValue: string,
+  newValue: string,
   crId: number,
   implementerId: number,
   wbsElementId: number
@@ -117,10 +293,100 @@ export const createRulesChangesJson = (
   });
 };
 
+// this method creates changes for description bullet inputs
+// it returns it as an object of {deletedIds[], addedDetails[] changes[]}
+// because the deletedIds are needed for the database and the addedDetails are needed to make new ones
+export const createDescriptionBulletChangesJson = (
+  oldArray: DescriptionBullet[],
+  newArray: DescriptionBullet[],
+  crId: number,
+  implementerId: number,
+  wbsElementId: number,
+  nameOfField: string
+): {
+  deletedIds: number[];
+  addedDetails: string[];
+  editedIdsAndDetails: { id: number; detail: string }[];
+  changes: {
+    changeRequestId: number;
+    implementerId: number;
+    wbsElementId: number;
+    detail: string;
+  }[];
+} => {
+  // Changes
+  const changes: { element: DescriptionBullet; type: string }[] = [];
+
+  // Elements from database that have not been deleted
+  const oldArrayNotDeleted = oldArray.filter((element) => element.dateDeleted === undefined);
+
+  // All elements that were inputs but are not new
+  const existingElements = new Map<number, string>();
+
+  // Database version of edited elements
+  const originalElements = new Map<number, string>();
+
+  // Find new elements
+  newArray.forEach((element) => {
+    if (element.id === undefined) {
+      changes.push({ element, type: 'Added new' });
+    } else {
+      existingElements.set(element.id, element.detail);
+    }
+  });
+
+  // Find deleted and edited
+  oldArrayNotDeleted.forEach((element) => {
+    // Input version of old description element text
+    const inputElText = existingElements.get(element.id);
+
+    if (inputElText === undefined) {
+      changes.push({ element, type: 'Removed' });
+    } else if (inputElText !== element.detail) {
+      changes.push({ element: { ...element, detail: inputElText }, type: 'Edited' });
+      originalElements.set(element.id, element.detail);
+    }
+  });
+
+  return {
+    deletedIds: changes
+      .filter((element) => element.type === 'Removed')
+      .map((element) => {
+        return element.element.id;
+      }),
+    addedDetails: changes
+      .filter((element) => element.type === 'Added new')
+      .map((element) => {
+        return element.element.detail;
+      }),
+    editedIdsAndDetails: changes
+      .filter((element) => element.type === 'Edited')
+      .map((element) => {
+        return { id: element.element.id, detail: element.element.detail };
+      }),
+    changes: changes.map((element) => {
+      const detail =
+        element.type === 'Edited'
+          ? buildChangeDetail(
+              nameOfField,
+              originalElements.get(element.element.id) || 'null',
+              existingElements.get(element.element.id) || 'null'
+            )
+          : `${element.type} ${nameOfField} "${element.element.detail}"`;
+      return {
+        changeRequestId: crId,
+        implementerId,
+        wbsElementId,
+        detail
+      };
+    })
+  };
+};
+
 // Given a user's id, this method returns the user's full name
 export const getUserFullName = async (userId: number | null): Promise<string | null> => {
   if (!userId) return null;
   const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) throw new NotFoundException('User', userId);
+  if (!user) throw new Error('user not found');
   return `${user.firstName} ${user.lastName}`;
 };
