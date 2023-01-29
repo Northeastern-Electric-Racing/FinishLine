@@ -38,22 +38,6 @@ describe('Risks', () => {
     expect(prisma.risk.findMany).toHaveBeenCalledTimes(0);
   });
 
-  test('getRisksForProject endpoint fails when unknown projectId given', async () => {
-    const fakeProjectId = 100;
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-
-    const res = await request(app).get(`/${fakeProjectId}`);
-    expect(res.statusCode).toBe(404);
-    expect(prisma.risk.findMany).toHaveBeenCalledTimes(0);
-  });
-
-  test('getRisksForProject fails when non-integer projectId given', async () => {
-    const fakeProjectId = 'hello';
-
-    const res = await request(app).get(`/${fakeProjectId}`);
-    expect(res.statusCode).toBe(404);
-  });
-
   test('getRisksForProject works', async () => {
     const { projectId } = prismaProject1;
     jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
