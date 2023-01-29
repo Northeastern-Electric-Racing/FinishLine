@@ -8,6 +8,7 @@ import { validateWBS, isProject } from 'shared';
 import WorkPackagePage from './WorkPackageDetailPage/WorkPackagePage';
 import ErrorPage from './ErrorPage';
 import ProjectPage from './ProjectDetailPage/ProjectPage';
+import { SystemUpdateOutlined } from '@mui/icons-material';
 
 const WBSDetails: React.FC = () => {
   interface ParamTypes {
@@ -17,8 +18,8 @@ const WBSDetails: React.FC = () => {
   let wbsNumber;
   try {
     wbsNumber = validateWBS(wbsNum); // ensure the provided wbsNum is correctly formatted
-  } catch (error: any) {
-    return <ErrorPage message={error.message} />;
+  } catch (error: unknown) {
+    return <ErrorPage message={error instanceof Error ? error.message : ''} />;
   }
 
   if (isProject(wbsNumber)) {
