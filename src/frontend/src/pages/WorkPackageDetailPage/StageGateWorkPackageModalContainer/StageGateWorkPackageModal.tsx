@@ -10,7 +10,6 @@ import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
 import { wbsPipe } from '../../../utils/pipes';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
