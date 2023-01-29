@@ -10,6 +10,7 @@ import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
 import { wbsPipe } from '../../../utils/pipes';
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,8 +21,6 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
@@ -114,12 +113,18 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
         </form>
       </DialogContent>
       <DialogActions>
-        <NERFailButton form="stage-gate-work-package-form" onClick={onHide}>
+        <Button
+          color="secondary"
+          className={'ml-3'}
+          variant="contained"
+          form="stage-gate-work-package-form"
+          onClick={onHide}
+        >
           Cancel
-        </NERFailButton>
-        <NERSuccessButton type="submit" form="stage-gate-work-package-form">
+        </Button>
+        <Button color="success" variant="contained" type="submit" form="stage-gate-work-package-form">
           Submit
-        </NERSuccessButton>
+        </Button>
       </DialogActions>
     </Dialog>
   );
