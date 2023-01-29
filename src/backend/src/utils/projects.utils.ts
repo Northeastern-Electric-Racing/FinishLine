@@ -57,8 +57,8 @@ export const editDescriptionBullets = async (editedIdsAndDetails: { id: number; 
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChangeJsonNonList = (
   nameOfField: string,
-  oldValue: any,
-  newValue: any,
+  oldValue: string,
+  newValue: string,
   crId: number,
   implementerId: number,
   wbsElementId: number
