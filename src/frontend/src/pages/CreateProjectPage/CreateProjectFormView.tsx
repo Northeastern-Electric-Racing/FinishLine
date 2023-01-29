@@ -16,7 +16,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
-import { SubmitButton } from '../../components/SubmitButton';
+import { NERSuccessButton } from '../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -122,13 +122,10 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>
