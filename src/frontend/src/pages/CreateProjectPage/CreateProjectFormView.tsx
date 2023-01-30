@@ -19,6 +19,9 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { useState } from 'react';
+
+// d4dd361f-3f44-4fdf-b49e-db42049d544e
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -35,7 +38,7 @@ const schema = yup.object().shape({
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
   summary: yup.string().required('Summary is required'),
-  team: yup.string().required('Team is required')
+  teamId: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
@@ -57,9 +60,11 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
       summary: '',
-      team: ''
+      teamId: ''
     }
   });
+
+  const [team, setTeam] = useState('');
 
   const { isLoading, data: teams } = useAllTeams();
   if (isLoading || !teams) return <LoadingIndicator />;
@@ -118,14 +123,15 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             <FormControl sx={{ width: 197 }}>
               <FormLabel>Team</FormLabel>
               <Controller
-                name="team"
+                name="teamId"
                 control={control}
                 rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value}>
+                render={({ field: { onChange } }) => (
+                  <TextField required select onChange={onChange} value={team}>
                     {teams.map((t) => (
-                      <MenuItem key={t.teamName} value={t.teamId}>
+                      <MenuItem key={t.teamName} value={t.teamId} onClick={() => setTeam(t.teamId)}>
                         {t.teamName}
+                        {console.log(t.teamId)}
                       </MenuItem>
                     ))}
                   </TextField>
