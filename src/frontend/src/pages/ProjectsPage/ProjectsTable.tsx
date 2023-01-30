@@ -16,16 +16,17 @@ import { WbsElementStatus } from 'shared';
 /**
  * Table of all projects.
  */
+
+interface BaseColDef {
+  flex: number;
+  align: GridAlignment;
+  headerAlign: GridAlignment;
+}
+
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
   const [pageSize, setPageSize] = useState(30);
-
-  interface BaseColDef {
-    flex: number;
-    align: GridAlignment;
-    headerAlign: GridAlignment;
-  }
 
   const baseColDef: BaseColDef = {
     flex: 1,
