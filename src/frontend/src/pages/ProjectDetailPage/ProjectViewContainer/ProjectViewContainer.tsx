@@ -40,6 +40,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   if (!auth.user) return <LoadingIndicator />;
 
+  const { teamAsLeadId } = auth.user;
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -54,10 +56,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   };
 
   const handleAssignToMyTeam = async () => {
-    await mutateAsync(auth.user!.teamAsLeadId!).catch((err) => {
+    await mutateAsync(teamAsLeadId).catch((err) => {
       alert(err);
     });
-    setProjTeamId(auth.user!.teamAsLeadId!);
+    setProjTeamId(teamAsLeadId);
     handleDropdownClose();
   };
 
@@ -81,7 +83,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const assignToMyTeamButton = (
-    <MenuItem disabled={projTeamId === auth.user.teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem disabled={projTeamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
       Assign to My Team
     </MenuItem>
   );
@@ -99,7 +101,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
-        {auth.user.teamAsLeadId && assignToMyTeamButton}
+        {teamAsLeadId && assignToMyTeamButton}
       </Menu>
     </div>
   );
