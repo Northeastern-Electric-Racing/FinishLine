@@ -19,7 +19,6 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useState } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -61,8 +60,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       teamId: ''
     }
   });
-
-  const [team, setTeam] = useState('');
 
   const { isLoading, data: teams } = useAllTeams();
   if (isLoading || !teams) return <LoadingIndicator />;
@@ -124,10 +121,10 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
                 name="teamId"
                 control={control}
                 rules={{ required: true }}
-                render={({ field: { onChange } }) => (
-                  <TextField required select onChange={onChange} value={team}>
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
                     {teams.map((t) => (
-                      <MenuItem key={t.teamName} value={t.teamId} onClick={() => setTeam(t.teamId)}>
+                      <MenuItem key={t.teamName} value={t.teamId}>
                         {t.teamName}
                       </MenuItem>
                     ))}
