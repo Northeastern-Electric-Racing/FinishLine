@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridAlignment, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
@@ -21,7 +21,13 @@ const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
   const [pageSize, setPageSize] = useState(30);
 
-  const baseColDef: any = {
+  interface BaseColDef {
+    flex: number;
+    align: GridAlignment;
+    headerAlign: GridAlignment;
+  }
+
+  const baseColDef: BaseColDef = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
