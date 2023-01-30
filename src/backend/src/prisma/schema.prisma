@@ -317,7 +317,7 @@ model Task {
   status          Task_Status
   deletedBy       User?         @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
   deletedByUserId Int?
-  dateDeleted     DateTime?     @default(now())
+  dateDeleted     DateTime?
   createdBy       User          @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
   createdByUserId Int
   dateCreated     DateTime      @default(now())
