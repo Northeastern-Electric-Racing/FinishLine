@@ -57,7 +57,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     await mutateAsync(auth.user!.teamAsLeadId!).catch((err) => {
       alert(err);
     });
-    setProjTeamId(auth.user!.teamAsLeadId!)
+    setProjTeamId(auth.user!.teamAsLeadId!);
     handleDropdownClose();
   };
 
@@ -81,7 +81,11 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const assignToMyTeamBtn = (
-    <MenuItem hidden={!auth.user.teamAsLeadId} disabled={projTeamId === auth.user.teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem
+      hidden={!auth.user.teamAsLeadId}
+      disabled={projTeamId === auth.user.teamAsLeadId}
+      onClick={handleAssignToMyTeam}
+    >
       Assign to My Team
     </MenuItem>
   );
