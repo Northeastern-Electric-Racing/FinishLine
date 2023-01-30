@@ -10,12 +10,6 @@ CREATE TYPE "Role" AS ENUM ('APP_ADMIN', 'ADMIN', 'LEADERSHIP', 'MEMBER', 'GUEST
 -- CreateEnum
 CREATE TYPE "Scope_CR_Why_Type" AS ENUM ('ESTIMATION', 'SCHOOL', 'MANUFACTURING', 'DESIGN', 'RULES', 'OTHER_PROJECT', 'OTHER');
 
--- CreateEnum
-CREATE TYPE "Task_Status" AS ENUM ('IN_BACKLOG', 'IN_PROGRESS', 'DONE');
-
--- CreateENum 
-CREATE TYPE "Task_Priority" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
-
 -- CreateTable
 CREATE TABLE "User" (
     "userId" SERIAL NOT NULL,
@@ -173,50 +167,6 @@ CREATE TABLE "_dependencies" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
-
---CreateTable 
-CREATE TABLE "Task" (
-    "taskId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "notes" TEXT NOT NULL,
-    "deadline" TIMESTAMP(3) NOT NULL,
-    "priority" "Task_Priority" NOT NULL,
-    "status"  "Task_Status" NOT NULL,
-    "deletedByUserId" INTEGER,
-    "dateDeleted"  TIMESTAMP(3),
-    "createdByUserId" INTEGER NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "projectId" INTEGER NOT NULL,
-
-    PRIMARY KEY ("taskId")
-);
-
--- CreateTable
-CREATE TABLE "_tasksAsAssignee" (
-    "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
-);
-
--- CreateIndex
-CREATE UNIQUE INDEX "_taskssAsAssignee_AB_unique" ON "_tasksAsAssignee"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_tasksAsAssignee_B_index" ON "_tasksAsAssignee"("B");
-
--- AddForeignKey
-ALTER TABLE "Task" ADD FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Task" ADD FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Task" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_tasksAsAssignee" ADD FOREIGN KEY ("A") REFERENCES "Task"("taskId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_tasksAsAssignee" ADD FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User.googleAuthId_unique" ON "User"("googleAuthId");
