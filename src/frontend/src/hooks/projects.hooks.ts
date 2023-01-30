@@ -81,6 +81,7 @@ export const useSetProjectTeam = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['teams']);
+        queryClient.invalidateQueries(['projects', wbsNum]);
       }
     }
   );

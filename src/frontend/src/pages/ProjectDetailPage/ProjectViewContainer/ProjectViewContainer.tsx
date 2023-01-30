@@ -23,6 +23,7 @@ import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -31,15 +32,14 @@ interface ProjectViewContainerProps {
 
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
   const auth = useAuth();
-  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-
-  const [projTeamId, setProjTeamId] = useState(proj.team?.teamId);
+  const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const dropdownOpen = Boolean(anchorEl);
 
   if (!auth.user) return <LoadingIndicator />;
 
+  const dropdownOpen = Boolean(anchorEl);
+  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsLeadId } = auth.user;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -56,10 +56,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   };
 
   const handleAssignToMyTeam = async () => {
-    await mutateAsync(teamAsLeadId).catch((err) => {
-      alert(err);
-    });
-    setProjTeamId(teamAsLeadId);
+    try {
+      await mutateAsync(teamAsLeadId);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
     handleDropdownClose();
   };
 
@@ -83,7 +86,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const assignToMyTeamButton = (
-    <MenuItem disabled={projTeamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
       Assign to My Team
     </MenuItem>
   );
