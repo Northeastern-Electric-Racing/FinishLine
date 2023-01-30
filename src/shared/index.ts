@@ -9,6 +9,7 @@ export * from './src/types/user-types';
 export * from './src/types/work-package-types';
 export * from './src/types/risk-types';
 export * from './src/types/team-types';
+export * from './src/types/task-types';
 
 export * from './src/validate-wbs';
 
