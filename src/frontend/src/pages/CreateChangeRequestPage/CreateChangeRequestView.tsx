@@ -210,6 +210,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               color="secondary"
               sx={{ mt: 1 }}
               onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
+              style={{marginLeft: '15px'}}
             >
               Add Reason
             </Button>
