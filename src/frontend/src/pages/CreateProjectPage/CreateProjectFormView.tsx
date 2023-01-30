@@ -21,8 +21,6 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useState } from 'react';
 
-// d4dd361f-3f44-4fdf-b49e-db42049d544e
-
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   carNumber: yup
@@ -131,7 +129,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
                     {teams.map((t) => (
                       <MenuItem key={t.teamName} value={t.teamId} onClick={() => setTeam(t.teamId)}>
                         {t.teamName}
-                        {console.log(t.teamId)}
                       </MenuItem>
                     ))}
                   </TextField>
