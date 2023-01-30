@@ -81,10 +81,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const assignToMyTeamButton = (
-    <MenuItem
-      disabled={projTeamId === auth.user.teamAsLeadId}
-      onClick={handleAssignToMyTeam}
-    >
+    <MenuItem disabled={projTeamId === auth.user.teamAsLeadId} onClick={handleAssignToMyTeam}>
       Assign to My Team
     </MenuItem>
   );
@@ -102,7 +99,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
-        {auth.user.teamAsLeadId &&assignToMyTeamButton}
+        {auth.user.teamAsLeadId && assignToMyTeamButton}
       </Menu>
     </div>
   );
