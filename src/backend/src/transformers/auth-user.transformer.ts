@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { AuthenticatedUser } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
-import { getTeamForLead } from '../utils/users.utils';
 
 const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
   return {
@@ -12,7 +11,7 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     emailId: user.emailId,
     role: user.role,
     defaultTheme: user.userSettings?.defaultTheme,
-    teamAsLeadId: getTeamForLead(user.userId)
+    teamAsLeadId: user.teamAsLead?.teamId,
   };
 };
 

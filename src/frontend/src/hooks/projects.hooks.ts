@@ -65,12 +65,17 @@ export const useEditSingleProject = (wbsNum: WbsNumber) => {
   );
 };
 
-export const useSetProjectTeam = (wbsNum: WbsNumber, team: string) => {
+/**
+ * Custom React Hook to set the team for a project
+ * @param wbsNum the project to set the team for
+ * @param teamId the id of the team to set the project to
+ */
+export const useSetProjectTeam = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['projects', 'edit', 'teams'],
-    async () => {
-      const { data } = await setProjectTeam(wbsNum, team);
+    async (teamId: string) => {
+      const { data } = await setProjectTeam(wbsNum, teamId);
       return data;
     },
     {

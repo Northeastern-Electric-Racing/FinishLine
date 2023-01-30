@@ -51,6 +51,13 @@ export const editSingleProject = (payload: any) => {
   });
 };
 
-export const setProjectTeam = (wbsNum: WbsNumber, team: string) => {
-  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), team);
+/**
+ * Sets the project's team.
+ * @param wbsNum the wbsNum of the project
+ * @param teamId the id of the team the project is being assigned to
+ */
+export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
+    teamId
+  });
 };
