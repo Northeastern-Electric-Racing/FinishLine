@@ -18,6 +18,18 @@ enum CR_Type {
   ACTIVATION
 }
 
+enum Task_Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Task_Status {
+  IN_BACKLOG
+  IN_PROGRESS
+  DONE
+}
+
 enum WBS_Element_Status {
   INACTIVE
   ACTIVE
@@ -78,6 +90,9 @@ model User {
   resolvedRisks             Risk[]               @relation(name: "resolvedBy")
   deletedRisks              Risk[]               @relation(name: "deletedBy")
   createdProposedSolutions  Proposed_Solution[]
+  createdTasks              Task[]               @relation(name: "createdBy")
+  deletedTasks              Task[]               @relation(name: "deletedBy")
+  assignedTasks             Task[]               @relation(name: "assignedTo")
 }
 
 model Team {
@@ -237,6 +252,7 @@ model Project {
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
   risks                 Risk[]
+  tasks                 Task[]
 }
 
 model Work_Package {
@@ -289,4 +305,22 @@ model Risk {
   resolvedAt       DateTime?
   deletedByUserId  Int?
   deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+}
+
+model Task {
+  taskId          String        @id @default(uuid())
+  title           String
+  notes           String
+  deadline        DateTime
+  assignees       User[]        @relation(name: "assignedTo")
+  priority        Task_Priority
+  status          Task_Status
+  deletedBy       User?         @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+  deletedByUserId Int?
+  dateDeleted     DateTime?     @default(now())
+  createdBy       User          @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
+  createdByUserId Int
+  dateCreated     DateTime      @default(now())
+  project         Project       @relation(fields: [projectId], references: [projectId])
+  projectId       Int
 }
