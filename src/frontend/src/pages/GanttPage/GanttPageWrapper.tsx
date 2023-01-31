@@ -150,9 +150,10 @@ const GanttPageWrapper: FC = () => {
         }
       });
       setGanttDisplayObjects(newGanttDisplayObjects);
+    } else {
+      const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
+      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     }
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const startHandler = (value: Date | null) => {
