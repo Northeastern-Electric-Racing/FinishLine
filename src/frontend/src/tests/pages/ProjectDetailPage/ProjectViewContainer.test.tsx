@@ -13,6 +13,7 @@ import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewCo
 
 jest.mock('../../../utils/axios');
 jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/toasts.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

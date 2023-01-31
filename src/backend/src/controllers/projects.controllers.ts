@@ -1,7 +1,7 @@
 import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
 export default class ProjectsController {
