@@ -10,12 +10,14 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import { Select } from '@mui/material';
 import { MenuItem } from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -141,12 +143,27 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
           </div>
         </DialogContent>
         <DialogActions>
-          <Button color="secondary" variant="outlined" form="activate-work-package-form" onClick={onHide}>
-            Cancel
-          </Button>
-          <Button color="success" variant="contained" type="submit" form="activate-work-package-form">
-            Submit
-          </Button>
+          <Box textAlign="left" sx={{ my: 2 }}>
+            <NERFailButton
+              color="secondary"
+              variant="outlined"
+              form="activate-work-package-form"
+              onClick={onHide}
+              sx={{ mx: 1 }}
+            >
+              Cancel
+            </NERFailButton>
+
+            <NERSuccessButton
+              color="success"
+              variant="contained"
+              type="submit"
+              form="activate-work-package-form"
+              sx={{ mx: 1 }}
+            >
+              Submit
+            </NERSuccessButton>
+          </Box>
         </DialogActions>
       </Dialog>
     </form>
