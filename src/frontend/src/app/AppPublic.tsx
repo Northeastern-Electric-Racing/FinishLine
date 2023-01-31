@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
+import { Switch, Route, Redirect, useHistory, RouteComponentProps } from 'react-router-dom';
 import { useAuth } from '../hooks/auth.hooks';
 import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
@@ -14,14 +14,8 @@ const AppPublic: React.FC = () => {
   const auth = useAuth();
   const history = useHistory();
   const theme = useProvideThemeToggle();
-
   const devUserId = localStorage.getItem('devUserId');
-
-  interface AppRenderInput {
-    location: string;
-  }
-
-  const render = (e: AppRenderInput) => {
+  const render: ((props: RouteComponentProps) => React.ReactNode) | undefined = (e) => {
     // if logged in, go to authenticated app
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
