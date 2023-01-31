@@ -140,8 +140,17 @@ const GanttPageWrapper: FC = () => {
   };
 
   const expandedHandler = (value: boolean) => {
-    // quick fix for gantt chart not updating when any expander arrow is clicked reload
-    if (value === expanded) return window.location.reload();
+    // No more forced reloads
+    if (value === expanded) {
+      const newGanttDisplayObjects = ganttDisplayObjects.map((object) => {
+        if (object.type === 'project') {
+          return { ...object, hideChildren: !value };
+        } else {
+          return object;
+        }
+      });
+      setGanttDisplayObjects(newGanttDisplayObjects);
+    }
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
@@ -156,6 +165,22 @@ const GanttPageWrapper: FC = () => {
     if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, end: value };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const resetHandler = () => {
+    // No more forced reloads
+    if (query.get('expanded') === null) {
+      const newGanttDisplayObjects = ganttDisplayObjects.map((object) => {
+        if (object.type === 'project') {
+          return { ...object, hideChildren: true };
+        } else {
+          return object;
+        }
+      });
+      setGanttDisplayObjects(newGanttDisplayObjects);
+    } else {
+      history.push(routes.GANTT);
+    }
   };
 
   return (
@@ -174,10 +199,7 @@ const GanttPageWrapper: FC = () => {
         selectedTeam={selectedTeam}
         currentStart={start}
         currentEnd={end}
-        resetHandler={() => {
-          // quick fix for gantt chart not updating when any expander arrow is clicked
-          history.location.search === '' ? window.location.reload() : history.push(routes.GANTT);
-        }}
+        resetHandler={resetHandler}
       />
       <GanttPage ganttDisplayObjects={ganttDisplayObjects} updateGanttDisplayObjects={setGanttDisplayObjects} />
     </>
