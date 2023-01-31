@@ -24,20 +24,31 @@ const Login = () => {
 
   if (auth.isLoading) return <LoadingIndicator />;
 
+  /**
+   * Produce the path of the page redirected from the login page.
+   * @param queryArgs the query args sent from the login page, containing page, value1, value2, ..., and other args
+   * @returns the path, with args, redirected to
+   */
+  const redirectQueryArgsToPath = (queryArgs: URLSearchParams): string => {
+    const pageName: string = queryArgs.get('page')!;
+    queryArgs.delete('page');
+
+    const intermediatePathValues: string[] = [];
+    for (let valueIdx = 1; queryArgs.has(`value${valueIdx}`); valueIdx++) {
+      // collect all the &valueX=... args, in order, from login query args
+      intermediatePathValues.push(`/${queryArgs.get(`value${valueIdx}`)!}`);
+      queryArgs.delete(`value${valueIdx}`);
+    }
+
+    const pathString: string = `/${pageName}${intermediatePathValues.join('')}`;
+    return `${pathString}?${queryArgs.toString()}`;
+  };
+
   const redirectAfterLogin = () => {
     if (!query.has('page')) {
       history.push(routes.HOME);
     } else {
-      const pageName: string = query.get('page')!;
-      query.delete('page');
-      const intermediatePathValues: string[] = [];
-      for (let valueIdx = 1; query.has(`value${valueIdx}`); valueIdx++) {
-        // collect all the &valueX=... args, in order, from login query args
-        intermediatePathValues.push(`/${query.get(`value${valueIdx}`)!}`);
-        query.delete(`value${valueIdx}`);
-      }
-      const pathString: string = `/${pageName}${intermediatePathValues.join('')}`;
-      history.push(`${pathString}?${query.toString()}`);
+      history.push(redirectQueryArgsToPath(query));
     }
   };
 
