@@ -18,16 +18,9 @@ import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
 import { Typography } from '@mui/material';
-import { useGetVersionNumber } from '../../hooks/misc.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../../pages/ErrorPage';
 
 const Sidebar: React.FC = () => {
   const auth = useAuth();
-  const { isLoading, isError, error, data } = useGetVersionNumber();
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !data) return <LoadingIndicator />;
 
   const linkItems: LinkItem[] = [
     {
@@ -74,7 +67,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>{data.tag_name}</Typography>
+      <Typography className={styles.versionNumber}>3.6.0</Typography>
     </div>
   );
 };
