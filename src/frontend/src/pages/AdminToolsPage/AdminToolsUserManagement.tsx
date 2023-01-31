@@ -130,7 +130,12 @@ const AdminToolsUserMangaement: React.FC = () => {
 };
 
 export default AdminToolsUserMangaement;
-function useToast(e: unknown) {
+function alert(e: unknown) {
   throw new Error('Function not implemented.');
 }
+
+/*
+function useToast(e: unknown){
+  throw new Error('Function not implemented.');
+}*/
 
