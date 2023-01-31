@@ -36,19 +36,23 @@ const AppPublic: React.FC = () => {
 
     // otherwise, the user needs to login manually
     // prepare query args to store path after login
-    const pathParts: string[] = history.location.pathname.split('/').slice(1);
-    // if the URL ended in an extra '/' we don't want to clutter the query args
-    if (pathParts[pathParts.length - 1] === '') pathParts.pop();
-    const asQueryArg = (pathPart: string, idx: number): string => {
-      if (idx === 0) return `page=${pathPart}`;
-      else return `value${idx}=${pathPart}`;
-    };
-    const pathArgs: string = `?${pathParts.map(asQueryArg).join('&')}`;
+    const redirectPathParts: string[] = history.location.pathname.split('/').slice(1);
+    // if the path ended in an trailing '/' we don't want to clutter the query args with empty param
+    if (redirectPathParts[redirectPathParts.length - 1] === '') redirectPathParts.pop();
+    const redirectPathQueryArgs: string = redirectPathParts
+      .slice(1) // "valueX=" starts from second part of the path
+      .reduce(
+        (prevArgs: string, pathPart: string, idx: number): string => `${prevArgs}&value${idx + 1}=${pathPart}`,
+        `?page=${redirectPathParts[0]}`
+      );
+    const redirectQueryArgs =
+      redirectPathQueryArgs + (history.location.search ? `&${history.location.search.slice(1)}` : '');
+
     return (
       <Redirect
         to={{
           pathname: routes.LOGIN,
-          search: pathArgs + (history.location.search ? `&${history.location.search.slice(1)}` : ''),
+          search: redirectQueryArgs,
           state: { from: e.location }
         }}
       />

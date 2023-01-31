@@ -32,7 +32,7 @@ const Login = () => {
       query.delete('page');
       const intermediatePathValues: string[] = [];
       for (let valueIdx = 1; query.has(`value${valueIdx}`); valueIdx++) {
-        // get all the &valueX=... args from login query args
+        // collect all the &valueX=... args, in order, from login query args
         intermediatePathValues.push(`/${query.get(`value${valueIdx}`)!}`);
         query.delete(`value${valueIdx}`);
       }
