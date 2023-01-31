@@ -42,7 +42,7 @@ const CreateWorkPackageForm: React.FC = () => {
       const wbsNumValidated = validateWBS(wbsNum);
 
       if (!isProject(wbsNumValidated)) {
-        toast.error('Please enter a valid Project WBS Number.');
+        toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
       const depWbsNums = dependencies.map((dependency: any) => {
@@ -71,7 +71,7 @@ const CreateWorkPackageForm: React.FC = () => {
     } catch (e: unknown) {
       console.log(e);
       if (e instanceof Error) {
-        toast.error(e.message);
+        toast.error(e.message, 3000);
       }
     }
   };
