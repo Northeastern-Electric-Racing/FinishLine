@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Folder, FormatListBulleted, FormatListNumbered, Slideshow } from '@mui/icons-material';
+import { Folder, FormatListBulleted, FormatListNumbered, CoPresent } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Project } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
@@ -51,7 +51,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </Grid>
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
-            <Slideshow sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
             <Link href={project.slideDeckLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
               Slide Deck
             </Link>
