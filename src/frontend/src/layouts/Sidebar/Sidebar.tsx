@@ -54,21 +54,22 @@ const Sidebar: React.FC = () => {
       name: 'Teams',
       icon: faUsers,
       route: routes.TEAMS
-    },
-    {
-      name: 'Info',
-      icon: faQuestionCircle,
-      route: routes.INFO
     }
   ];
 
   if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
-    linkItems.splice(4, 0, {
+    linkItems.push({
       name: 'Admin Tools',
       icon: faToolbox,
       route: routes.ADMIN_TOOLS
     });
   }
+
+  linkItems.push({
+    name: 'Info',
+    icon: faQuestionCircle,
+    route: routes.INFO
+  });
 
   return (
     <div className={styles.sidebar}>
