@@ -75,7 +75,7 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, what, why, budgetImpact } = req.body;
+      const { wbsNum, type, what, why } = req.body;
       const submitter = await getCurrentUser(res);
       const id = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
@@ -84,8 +84,7 @@ export default class ChangeRequestsController {
         wbsNum.workPackageNumber,
         type,
         what,
-        why,
-        budgetImpact
+        why
       );
       return res.status(200).json({ message: `${id}` });
     } catch (error: unknown) {
