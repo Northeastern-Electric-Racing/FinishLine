@@ -8,7 +8,6 @@ import { validateWBS, isProject } from 'shared';
 import WorkPackagePage from './WorkPackageDetailPage/WorkPackagePage';
 import ErrorPage from './ErrorPage';
 import ProjectPage from './ProjectDetailPage/ProjectPage';
-import { SystemUpdateOutlined } from '@mui/icons-material';
 
 const WBSDetails: React.FC = () => {
   interface ParamTypes {
