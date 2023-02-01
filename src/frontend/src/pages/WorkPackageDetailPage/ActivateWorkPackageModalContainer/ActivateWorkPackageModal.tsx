@@ -144,23 +144,11 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
         </DialogContent>
         <DialogActions>
           <Box textAlign="left" sx={{ my: 2 }}>
-            <NERFailButton
-              color="secondary"
-              variant="outlined"
-              form="activate-work-package-form"
-              onClick={onHide}
-              sx={{ mx: 1 }}
-            >
+            <NERFailButton variant="outlined" form="activate-work-package-form" onClick={onHide} sx={{ mx: 2 }}>
               Cancel
             </NERFailButton>
 
-            <NERSuccessButton
-              color="success"
-              variant="contained"
-              type="submit"
-              form="activate-work-package-form"
-              sx={{ mx: 1 }}
-            >
+            <NERSuccessButton variant="contained" type="submit" form="activate-work-package-form" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
           </Box>
