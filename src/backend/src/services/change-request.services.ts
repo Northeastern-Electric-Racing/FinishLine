@@ -7,6 +7,7 @@ import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/c
 import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import { createChangeJsonNonList } from '../utils/work-packages.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -91,11 +92,14 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = {
-          changeRequestId: crId,
-          implementerId: reviewer.userId,
-          detail: buildChangeDetail('Budget', String(foundCR.wbsElement.project.budget), String(newBudget))
-        };
+        const change = createChangeJsonNonList(
+          'Budget',
+          String(foundCR.wbsElement.project.budget),
+          String(newBudget),
+          crId,
+          reviewer.userId,
+          foundCR.wbsElement.wbsElementId
+        );
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -119,17 +123,24 @@ export default class ChangeRequestsService {
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
         const changes = [
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
-          },
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
-          }
+          createChangeJsonNonList(
+            'Budget',
+            String(wpProj.budget),
+            String(newBudget),
+            crId,
+            reviewer.userId,
+            foundCR.wbsElement.wbsElementId
+          ),
+          createChangeJsonNonList(
+            'Duration',
+            String(foundCR.wbsElement.workPackage.duration),
+            String(updatedDuration),
+            crId,
+            reviewer.userId,
+            foundCR.wbsElement.wbsElementId
+          )
         ];
+        changes.filter((a: any): boolean => a.notEqual(undefined));
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {
