@@ -7,14 +7,13 @@ import { Button, IconButton, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useEditTeamDescription } from '../../hooks/teams.hooks';
-import { Team } from 'shared';
+import { Team, isUnderWordCount, countWords } from 'shared';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import { isUnderWordCount, countWords } from 'shared';
 
 interface DescriptionPageBlockProps {
   team: Team;

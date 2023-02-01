@@ -72,7 +72,12 @@ const CreditsPage: React.FC = () => {
     { name: 'Kenneth Wan', color: '#00FFFF' },
     { name: 'Madeline Engle', color: '#FF2D76' },
     { name: 'Parth Kabra', color: '#e53774' },
-    { name: 'Riley Platz', color: '#2d2fa6' }
+    { name: 'Riley Platz', color: '#2d2fa6' },
+    { name: 'Shree Singhal', color: '#ff7ca4' },
+    { name: 'Isaac Levine', color: '#6a3941' },
+    { name: 'Andrew Tsai', color: '#3281a8' },
+    { name: 'Ahnaf Inkiad', color: '#ab38b5' },
+    { name: 'Aaryan Jain', color: '#e53774' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

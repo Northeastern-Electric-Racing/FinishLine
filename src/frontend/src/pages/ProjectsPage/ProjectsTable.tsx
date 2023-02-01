@@ -13,20 +13,20 @@ import { useTheme } from '@mui/material';
 import { useState } from 'react';
 import { WbsElementStatus } from 'shared';
 
-/**
- * Table of all projects.
- */
-
 interface BaseColDef {
   flex: number;
   align: GridAlignment;
   headerAlign: GridAlignment;
 }
 
+/**
+ * Table of all projects.
+ */
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-  const [pageSize, setPageSize] = useState(30);
+  if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
+  const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
 
   const baseColDef: BaseColDef = {
     flex: 1,
@@ -121,7 +121,6 @@ const ProjectsTable: React.FC = () => {
   ];
 
   const theme = useTheme();
-
   return (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
@@ -130,9 +129,12 @@ const ProjectsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={pageSize}
+        pageSize={Number(pageSize)}
         rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('projectsTableRowCount', newPageSize.toString());
+          setPageSize(newPageSize.toString());
+        }}
         loading={isLoading}
         error={error}
         rows={

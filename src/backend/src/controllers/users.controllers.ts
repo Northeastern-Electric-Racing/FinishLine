@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
 
