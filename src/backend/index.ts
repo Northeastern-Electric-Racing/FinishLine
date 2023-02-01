@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/utils';
+import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';

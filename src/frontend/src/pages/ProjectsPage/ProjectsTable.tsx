@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridAlignment, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
@@ -13,15 +13,22 @@ import { useTheme } from '@mui/material';
 import { useState } from 'react';
 import { WbsElementStatus } from 'shared';
 
+interface BaseColDef {
+  flex: number;
+  align: GridAlignment;
+  headerAlign: GridAlignment;
+}
+
 /**
  * Table of all projects.
  */
 const ProjectsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
-  const [pageSize, setPageSize] = useState(30);
+  if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
+  const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
 
-  const baseColDef: any = {
+  const baseColDef: BaseColDef = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
@@ -114,7 +121,6 @@ const ProjectsTable: React.FC = () => {
   ];
 
   const theme = useTheme();
-
   return (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
@@ -123,9 +129,12 @@ const ProjectsTable: React.FC = () => {
         autoHeight
         disableSelectionOnClick
         density="compact"
-        pageSize={pageSize}
+        pageSize={Number(pageSize)}
         rowsPerPageOptions={[15, 30, 60, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('projectsTableRowCount', newPageSize.toString());
+          setPageSize(newPageSize.toString());
+        }}
         loading={isLoading}
         error={error}
         rows={
