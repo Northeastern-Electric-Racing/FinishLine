@@ -114,10 +114,10 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
         </form>
       </DialogContent>
       <DialogActions>
-        <NERFailButton form="stage-gate-work-package-form" onClick={onHide}>
+        <NERFailButton form="stage-gate-work-package-form" sx={{ mx: 1, mb: 1 }} onClick={onHide}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton type="submit" form="stage-gate-work-package-form">
+        <NERSuccessButton type="submit" sx={{ mx: 1, mb: 1 }} form="stage-gate-work-package-form">
           Submit
         </NERSuccessButton>
       </DialogActions>
