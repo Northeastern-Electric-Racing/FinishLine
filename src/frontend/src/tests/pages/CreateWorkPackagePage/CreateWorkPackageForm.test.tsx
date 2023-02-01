@@ -14,6 +14,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/utils.hooks');
+jest.mock('../../../hooks/toasts.hooks');
 
 jest.mock('../../../components/ReactHookTextField', () => {
   return {
