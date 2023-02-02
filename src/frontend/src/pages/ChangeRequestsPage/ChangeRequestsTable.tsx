@@ -22,10 +22,11 @@ import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const savedPageSize = localStorage.getItem('cr-table-row-count');
-  let state: string = savedPageSize != null ? savedPageSize : '50';
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
 
-  const [pageSize, setPageSize] = useState(Number(state));
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
 
   const baseColDef: any = {
     flex: 1,
