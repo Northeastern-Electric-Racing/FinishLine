@@ -9,8 +9,7 @@ import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
-import { TextField, Typography } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { TextField, Typography, IconButton } from '@mui/material';
 
 interface ProposedSolutionFormProps {
   description?: string;
