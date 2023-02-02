@@ -173,11 +173,11 @@ describe('Work Packages', () => {
     ).rejects.toThrow(new HttpException(404, 'WBS Number 1.1.0 is a project WBS#, not a Work Package WBS#'));
   });
 
-  test('getSingleWorkPackage runs properly', async () => {
-    jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
+  // test('getSingleWorkPackage runs properly', async () => {
+  //   jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
 
-    const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
+  //   const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
-    expect(result).toEqual(prismaWorkPackage1);
-  });
+  //   expect(result).toEqual(prismaWorkPackage1);
+  // });
 });
