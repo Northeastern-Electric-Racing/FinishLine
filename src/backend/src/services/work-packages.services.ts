@@ -136,7 +136,7 @@ export default class WorkPackagesService {
       );
     }
 
-    if (dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
+    if (dependencies.find((dep: WBS_Element) => equalsWbsNumber(dep, projectWbsNum))) {
       throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
     }
 
@@ -172,7 +172,7 @@ export default class WorkPackagesService {
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     const dependenciesWBSElems: (WBS_Element | null)[] = await Promise.all(
-      dependencies.map(async (ele: any) => {
+      dependencies.map(async (ele: WBS_Element) => {
         return await prisma.wBS_Element.findUnique({
           where: {
             wbsNumber: {
@@ -289,7 +289,7 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
 
     if (
-      dependencies.find((dep: any) =>
+      dependencies.find((dep: WBS_Element) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -301,7 +301,7 @@ export default class WorkPackagesService {
     }
 
     if (
-      dependencies.find((dep: any) =>
+      dependencies.find((dep: WBS_Element) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
