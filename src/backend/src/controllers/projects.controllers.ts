@@ -56,8 +56,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       } = req.body;
 
       const editedProject: Project = await ProjectsService.editProject(
@@ -75,8 +75,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead || null,
-        projectManager || null
+        projectLeadId || null,
+        projectManagerId || null
       );
 
       return res.status(200).json(editedProject);
