@@ -95,7 +95,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
     const payload = {
       projectId: projectId,
-      createdById: userId,
       detail: newDetail
     };
 
