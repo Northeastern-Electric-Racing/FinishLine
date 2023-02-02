@@ -22,6 +22,8 @@ import {
   Breakpoint
 } from '@mui/material';
 import { useToast } from '../../hooks/toasts.hooks';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import NERFailButton from '../../components/NERFailButton';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -205,26 +207,24 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </form>
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="contained"
-            color="success"
-            type="submit"
-            form="review-notes-form"
-            sx={{ textTransform: 'none', fontSize: 16 }}
-            onClick={() => handleAcceptDeny(true)}
-          >
-            Accept
-          </Button>
-          <Button
+          <NERFailButton
             type="submit"
             form="review-notes-form"
             variant="contained"
-            color="error"
-            sx={{ textTransform: 'none', fontSize: 16 }}
+            sx={{ mx: 1, textTransform: 'none', fontSize: 16 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
-          </Button>
+          </NERFailButton>
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            form="review-notes-form"
+            sx={{ mx: 1, textTransform: 'none', fontSize: 16 }}
+            onClick={() => handleAcceptDeny(true)}
+          >
+            Accept
+          </NERSuccessButton>
         </DialogActions>
       </Dialog>
     );
