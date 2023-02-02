@@ -20,8 +20,8 @@ interface ActivateWorkPackageModalContainerProps {
 }
 
 export interface FormInput {
-  projectLeadId: number;
-  projectManagerId: number;
+  projectLeadId: number | '';
+  projectManagerId: number | '';
   startDate: string;
   confirmDetails: boolean;
 }

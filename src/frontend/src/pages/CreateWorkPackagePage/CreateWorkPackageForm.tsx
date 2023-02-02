@@ -4,6 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
+import { useToast } from '../../hooks/toasts.hooks';
 import { isProject, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
@@ -25,6 +26,7 @@ export interface CreateWorkPackageFormInputs {
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
+  const toast = useToast();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 
@@ -40,7 +42,7 @@ const CreateWorkPackageForm: React.FC = () => {
       const wbsNumValidated = validateWBS(wbsNum);
 
       if (!isProject(wbsNumValidated)) {
-        alert('Please enter a valid Project WBS Number.');
+        toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
       const depWbsNums = dependencies.map((dependency: any) => {
@@ -59,7 +61,7 @@ const CreateWorkPackageForm: React.FC = () => {
           projectNumber: wbsNumValidated.projectNumber,
           workPackageNumber: wbsNumValidated.workPackageNumber
         },
-        startDate,
+        startDate: startDate.toLocaleDateString(),
         duration,
         dependencies: depWbsNums,
         expectedActivities,
@@ -69,7 +71,7 @@ const CreateWorkPackageForm: React.FC = () => {
     } catch (e: unknown) {
       console.log(e);
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message, 3000);
       }
     }
   };

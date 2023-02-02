@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-request.services';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
@@ -75,7 +75,7 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, what, why, budgetImpact } = req.body;
+      const { wbsNum, type, what, why } = req.body;
       const submitter = await getCurrentUser(res);
       const id = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
@@ -84,8 +84,7 @@ export default class ChangeRequestsController {
         wbsNum.workPackageNumber,
         type,
         what,
-        why,
-        budgetImpact
+        why
       );
       return res.status(200).json({ message: `${id}` });
     } catch (error: unknown) {

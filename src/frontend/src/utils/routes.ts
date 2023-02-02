@@ -8,6 +8,7 @@ const HOME = `/`;
 const LOGIN = `/login`;
 const SETTINGS = `/settings`;
 const INFO = `/info`;
+const GANTT = `/gantt`;
 const CREDITS = `/credits`;
 
 /**************** Projects Section ****************/
@@ -39,6 +40,8 @@ export const routes = {
 
   TEAMS,
   TEAMS_BY_ID,
+
+  GANTT,
 
   PROJECTS,
   PROJECTS_BY_WBS,

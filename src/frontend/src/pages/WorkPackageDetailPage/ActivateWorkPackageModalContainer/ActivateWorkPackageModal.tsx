@@ -32,9 +32,9 @@ const schema = yup.object().shape({
   confirmDetails: yup.boolean().required()
 });
 
-const defaultValues = {
-  projectLeadId: -1,
-  projectManagerId: -1,
+const defaultValues: FormInput = {
+  projectLeadId: '',
+  projectManagerId: '',
   startDate: new Date().toLocaleDateString(),
   confirmDetails: false
 };
