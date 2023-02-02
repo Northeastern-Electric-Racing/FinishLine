@@ -9,7 +9,6 @@ risksRouter.get('/:projectId', RisksController.getRisksForProject);
 risksRouter.post(
   '/create',
   intMinZero(body('projectId')),
-  intMinZero(body('createdById')),
   nonEmptyString(body('detail')),
   validateInputs,
   RisksController.createRisk
