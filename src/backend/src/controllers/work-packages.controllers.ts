@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {

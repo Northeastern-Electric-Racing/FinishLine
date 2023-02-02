@@ -3,8 +3,9 @@ import { Role, User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { NotFoundException, AccessDeniedException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
+import { isUnderWordCount } from 'shared';
 
 export default class TeamsService {
   /**
@@ -57,6 +58,9 @@ export default class TeamsService {
     // this throws if any of the users aren't found
     const users = await getUsers(userIds);
 
+    if (users.map((user) => user.userId).includes(team.leader.userId))
+      throw new HttpException(400, 'team leader cannot be a member!');
+
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
       return {
@@ -72,6 +76,36 @@ export default class TeamsService {
         members: {
           set: transformedUsers
         }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Changes the description of the given team to be the new description
+   * @param user The user who is editing the description
+   * @param teamId The id for the team that is being edited
+   * @param newDescription the new description for the team
+   * @returns The team with the new description
+   */
+  static async editDescription(user: User, teamId: string, newDescription: string): Promise<Team> {
+    if (!isUnderWordCount(newDescription, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (!(user.role === Role.APP_ADMIN || user.role === Role.ADMIN || user.userId === team.leaderId))
+      throw new AccessDeniedException();
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        description: newDescription
       },
       ...teamQueryArgs
     });

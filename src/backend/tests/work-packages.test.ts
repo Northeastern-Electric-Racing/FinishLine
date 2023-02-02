@@ -1,6 +1,6 @@
 import prisma from '../src/prisma/prisma';
 import { batman, wonderwoman } from './test-data/users.test-data';
-import { wbsElement1 } from './test-data/projects.test-data';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
@@ -8,6 +8,7 @@ import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import { prismaProject1 } from './test-data/projects.test-data';
 
 describe('Work Packages', () => {
   /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
@@ -86,7 +87,9 @@ describe('Work Packages', () => {
 
   test('createWorkPackage fails if any elements in the dependencies are null', async () => {
     jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(wbsElement1);
+    jest
+      .spyOn(prisma.wBS_Element, 'findUnique')
+      .mockResolvedValueOnce({ ...prismaWbsElement1, project: prismaProject1 } as any);
     jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
     const callCreateWP = async () => {

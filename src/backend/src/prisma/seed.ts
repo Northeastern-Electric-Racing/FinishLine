@@ -17,7 +17,7 @@ const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
   for (const seedUser of dbSeedAllUsers) {
-    await prisma.user.create({ data: { ...seedUser, userSettings: { create: {} } } });
+    await prisma.user.create({ data: seedUser });
   }
 
   for (const seedSession of dbSeedAllSessions) {

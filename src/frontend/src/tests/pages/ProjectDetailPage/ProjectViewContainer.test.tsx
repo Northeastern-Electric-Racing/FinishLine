@@ -11,7 +11,9 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 
+jest.mock('../../../utils/axios');
 jest.mock('../../../hooks/auth.hooks');
+jest.mock('../../../hooks/toasts.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

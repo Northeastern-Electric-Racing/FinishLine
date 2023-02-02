@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import { useAuth } from '../../../hooks/auth.hooks';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
@@ -23,6 +22,8 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -40,7 +41,6 @@ interface ProjectEditContainerProps {
 }
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
-  const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
@@ -80,12 +80,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   } = useFieldArray({ control, name: 'constraints' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
-  if (allUsers.isLoading || !allUsers.data || !auth.user) return <LoadingIndicator />;
+  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
-  const { userId } = auth.user;
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: any) => {
@@ -103,7 +102,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       googleDriveFolderLink,
       taskListLink,
       slideDeckLink,
-      userId,
       projectId: project.id,
       crId: parseInt(data.crId),
       rules,
@@ -194,13 +192,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         </Button>
       </PageBlock>
 
-      <Box textAlign="center" sx={{ my: 2 }}>
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
-        </Button>
-        <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+      <Box textAlign="right" sx={{ my: 2 }}>
+        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
           Cancel
-        </Button>
+        </NERFailButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+          Submit
+        </NERSuccessButton>
       </Box>
     </form>
   );

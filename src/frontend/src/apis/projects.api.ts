@@ -19,7 +19,7 @@ export const getAllProjects = () => {
 };
 
 /**
- * Fetches a single change request.
+ * Fetches a single project.
  *
  * @param wbsNum Project WBS number of the requested project.
  */
@@ -48,5 +48,16 @@ export const createSingleProject = (payload: any) => {
 export const editSingleProject = (payload: any) => {
   return axios.post<{ message: string }>(apiUrls.projectsEdit(), {
     ...payload
+  });
+};
+
+/**
+ * Sets the project's team.
+ * @param wbsNum the wbsNum of the project
+ * @param teamId the id of the team the project is being assigned to
+ */
+export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
+    teamId
   });
 };
