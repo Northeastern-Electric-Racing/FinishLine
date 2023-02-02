@@ -10,4 +10,3 @@ export interface GridColDefStyle {
     align: GridAlignment,
     headerAlign: GridAlignment
   }
-  
