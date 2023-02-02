@@ -64,14 +64,14 @@ export default class UsersController {
   }
 
   // for dev login only!
-  static async logUserInDev(req: any, res: any, next: NextFunction) {
+  static async logUserInDev(req: Request, res: Response, next: NextFunction) {
     try {
       if (process.env.NODE_ENV === 'production') throw new AccessDeniedException('Cant dev login on production!');
 
       const { userId } = req.body;
       const header = req.headers['user-agent'];
 
-      const user = await UsersService.logUserInDev(userId, header);
+      const user = await UsersService.logUserInDev(userId, header!);
 
       res.status(200).json(user);
     } catch (error: unknown) {
