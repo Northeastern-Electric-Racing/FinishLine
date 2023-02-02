@@ -4,11 +4,13 @@
  */
 
 import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -56,6 +58,18 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Propose a Solution</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={onClose}
+        sx={{
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500]
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent
         sx={{
           '&::-webkit-scrollbar': {
