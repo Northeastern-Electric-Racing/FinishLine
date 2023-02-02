@@ -13,6 +13,7 @@ interface ProjectGanttProps {
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
+  workPackages.sort((a, b) =>  (a.wbsNum + '').localeCompare(b.wbsNum + ''));
   const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, wp.progress, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {

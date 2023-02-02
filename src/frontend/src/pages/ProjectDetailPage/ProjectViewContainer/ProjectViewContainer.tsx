@@ -90,7 +90,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <ProjectDetails project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
-      <ProjectGantt workPackages={proj.workPackages} />
+      <ProjectGantt workPackages={proj.workPackages.sort((a, b) =>  (a.wbsNum + '').localeCompare(b.wbsNum + ''))} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />
       <DescriptionList
