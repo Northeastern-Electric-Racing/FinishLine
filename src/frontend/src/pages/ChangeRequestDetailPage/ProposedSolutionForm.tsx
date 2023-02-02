@@ -168,7 +168,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
-                  placeholder="# needed"
+                  placeholder="# of weeks needed"
                   error={!!formState.errors.timelineImpact}
                   helperText={formState.errors.timelineImpact?.message}
                 />
