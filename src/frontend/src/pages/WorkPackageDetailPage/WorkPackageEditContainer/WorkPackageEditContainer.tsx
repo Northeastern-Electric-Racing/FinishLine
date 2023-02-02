@@ -190,7 +190,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           remove={removeDeliverable}
         />
       </PageBlock>
-      <Box textAlign="center" sx={{ my: 2 }}>
+      <Box textAlign="right" sx={{ my: 2 }}>
         <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 2 }}>
           Cancel
         </NERFailButton>
