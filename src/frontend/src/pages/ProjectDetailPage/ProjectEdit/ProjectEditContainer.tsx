@@ -88,7 +88,17 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: any) => {
-    const { name, budget, summary, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
+    const {
+      name,
+      budget,
+      summary,
+      bomLink,
+      googleDriveFolderLink,
+      taskListLink,
+      slideDeckLink,
+      projectLeadId,
+      projectManagerId
+    } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -108,8 +118,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       goals,
       features,
       otherConstraints,
-      projectLead: data.projectLeadId,
-      projectManager: data.projectManagerId
+      projectLeadId,
+      projectManagerId
     };
 
     try {
