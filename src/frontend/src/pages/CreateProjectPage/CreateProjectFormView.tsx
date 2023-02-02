@@ -9,14 +9,16 @@ import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { FormControl, FormLabel } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
 import { SubmitButton } from '../../components/SubmitButton';
+import { useAllTeams } from '../../hooks/teams.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -32,7 +34,8 @@ const schema = yup.object().shape({
     .required('CR ID is required')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
-  summary: yup.string().required('Summary is required')
+  summary: yup.string().required('Summary is required'),
+  teamId: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
@@ -43,7 +46,6 @@ interface CreateProjectFormViewProps {
 
 const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
   const query = useQuery();
-
   const {
     handleSubmit,
     control,
@@ -54,9 +56,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       name: '',
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
-      summary: ''
+      summary: '',
+      teamId: ''
     }
   });
+
+  const { isLoading, data: teams } = useAllTeams();
+  if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
     <form
@@ -97,7 +103,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} md={3}>
             <FormControl>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
@@ -105,6 +111,25 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
                 control={control}
                 placeholder="Enter project name..."
                 errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={9}>
+            <FormControl sx={{ width: 197 }}>
+              <FormLabel>Team</FormLabel>
+              <Controller
+                name="teamId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    {teams.map((t) => (
+                      <MenuItem key={t.teamName} value={t.teamId}>
+                        {t.teamName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
               />
             </FormControl>
           </Grid>

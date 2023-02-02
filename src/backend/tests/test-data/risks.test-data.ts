@@ -1,5 +1,5 @@
 import { Risk as PrismaRisk } from '@prisma/client';
-import { Risk as SharedRisk } from 'shared';
+import { Risk as SharedRisk, WbsElementStatus } from 'shared';
 import { batman } from './users.test-data';
 
 export const prismaRisk1: PrismaRisk = {
@@ -41,6 +41,7 @@ export const sharedRisk1: SharedRisk = {
       carNumber: 1,
       projectNumber: 2,
       workPackageNumber: 3
-    }
+    },
+    status: WbsElementStatus.Active
   }
 };

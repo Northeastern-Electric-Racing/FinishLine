@@ -3,7 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faToolbox, faUsers } from '@fortawesome/free-solid-svg-icons';
+import {
+  faExchangeAlt,
+  faFolder,
+  faHome,
+  faQuestionCircle,
+  faToolbox,
+  faUsers,
+  faChartGantt
+} from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
@@ -13,11 +21,17 @@ import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
   const auth = useAuth();
+
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: faHome,
       route: routes.HOME
+    },
+    {
+      name: 'Gantt',
+      icon: faChartGantt,
+      route: routes.GANTT
     },
     {
       name: 'Projects',
@@ -33,24 +47,27 @@ const Sidebar: React.FC = () => {
       name: 'Teams',
       icon: faUsers,
       route: routes.TEAMS
-    },
-    {
-      name: 'Info',
-      icon: faQuestionCircle,
-      route: routes.INFO
     }
   ];
+
   if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
-    linkItems.splice(4, 0, {
+    linkItems.push({
       name: 'Admin Tools',
       icon: faToolbox,
       route: routes.ADMIN_TOOLS
     });
   }
+
+  linkItems.push({
+    name: 'Info',
+    icon: faQuestionCircle,
+    route: routes.INFO
+  });
+
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.5.4</Typography>
+      <Typography className={styles.versionNumber}>3.6.0</Typography>
     </div>
   );
 };

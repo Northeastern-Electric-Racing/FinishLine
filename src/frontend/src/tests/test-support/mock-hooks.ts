@@ -1,7 +1,8 @@
-import { AuthenticatedUser, DescriptionBullet, User } from 'shared';
+import { AuthenticatedUser, DescriptionBullet, User, WorkPackage } from 'shared';
 import { mockUseMutationResult, mockUseQueryResult } from './test-data/test-utils.stub';
 import { exampleAdminUser } from './test-data/users.stub';
 import { UseMutationResult } from 'react-query';
+import { VersionObject } from '../../utils/types';
 
 export const mockLogUserInReturnValue = mockUseMutationResult<AuthenticatedUser>(
   false,
@@ -32,3 +33,9 @@ export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionB
   { id: 1, detail: 'detail', dateAdded: new Date() },
   undefined
 );
+
+export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
+  mockUseQueryResult<VersionObject>(false, false, versionObject);
+
+export const mockUseAllWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
+  mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());

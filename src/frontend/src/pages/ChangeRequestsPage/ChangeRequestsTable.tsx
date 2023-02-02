@@ -13,11 +13,10 @@ import ErrorPage from '../ErrorPage';
 import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Link } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { NERButton } from '../../components/NERButton';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -137,22 +136,14 @@ const ChangeRequestsTable: React.FC = () => {
           title={'Change Requests'}
           previousPages={[]}
           actionButton={
-            <Button
-              style={{
-                textTransform: 'none',
-                fontSize: 16,
-                backgroundColor: '#ff0000',
-                borderColor: '#0062cc',
-                boxShadow: 'none'
-              }}
-              component={Link}
-              to={routes.CHANGE_REQUESTS_NEW}
+            <NERButton
               variant="contained"
               disabled={auth.user?.role === 'GUEST'}
               startIcon={<Add />}
+              onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
             >
               New Change Request
-            </Button>
+            </NERButton>
           }
         />
       </div>
