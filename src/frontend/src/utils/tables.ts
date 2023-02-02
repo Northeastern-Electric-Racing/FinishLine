@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { GridAlignment } from "@mui/x-data-grid";
+import { GridAlignment } from '@mui/x-data-grid';
 
 export interface GridColDefStyle {
-    flex: number,
-    align: GridAlignment,
-    headerAlign: GridAlignment
-  }
+  flex: number;
+  align: GridAlignment;
+  headerAlign: GridAlignment;
+}
