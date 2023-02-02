@@ -20,8 +20,6 @@ import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 import { GridColDefStyle } from '../../utils/tables';
 
-
-
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
