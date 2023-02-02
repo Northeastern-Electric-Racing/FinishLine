@@ -309,8 +309,8 @@ export default class ProjectsService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLeadId,
-            projectManagerId: projectManagerId
+            projectLeadId,
+            projectManagerId
           }
         }
       },
