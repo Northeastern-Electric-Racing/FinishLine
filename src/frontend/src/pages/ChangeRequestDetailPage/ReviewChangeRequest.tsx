@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { ChangeRequest } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -46,7 +47,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       accepted,
       psId
     }).catch((error) => {
-      alert(error);
+      useToast();
       throw new Error(error);
     });
   };
