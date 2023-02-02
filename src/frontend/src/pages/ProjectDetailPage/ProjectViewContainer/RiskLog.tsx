@@ -33,6 +33,8 @@ import { wbsPipe } from '../../../utils/pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
 import { NERButton } from '../../../components/NERButton';
+import { useToast } from '../../../hooks/toasts.hooks';
+
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
@@ -53,6 +55,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
   const [newDetail, setNewDetail] = useState('');
   const [show, setShow] = useState(false);
   const risksQuery = useGetRisksForProject(projectId);
+  const toast = useToast();
 
   if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
 
@@ -85,7 +88,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
     } catch (e) {
       if (e instanceof Error) {
         console.log(e);
-        alert(e.message);
+        toast.error(e.message);
       }
     }
   };
@@ -104,7 +107,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
       setNewDetail('');
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
       }
     }
   };
@@ -119,7 +122,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
       await deleteMutateAsync(payload);
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
       }
     }
   };
