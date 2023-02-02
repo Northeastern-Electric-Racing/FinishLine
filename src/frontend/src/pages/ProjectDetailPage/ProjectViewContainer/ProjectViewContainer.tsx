@@ -21,6 +21,9 @@ import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -29,10 +32,15 @@ interface ProjectViewContainerProps {
 
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
   const auth = useAuth();
-  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-
+  const toast = useToast();
+  const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  if (!auth.user) return <LoadingIndicator />;
+
   const dropdownOpen = Boolean(anchorEl);
+  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  const { teamAsLeadId } = auth.user;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -47,12 +55,25 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
-  const isGuest = auth.user?.role === 'GUEST';
+  const handleAssignToMyTeam = async () => {
+    try {
+      await mutateAsync(teamAsLeadId);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+    handleDropdownClose();
+  };
+
+  const isGuest = auth.user.role === 'GUEST';
+
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
       Edit
     </MenuItem>
   );
+
   const createCRBtn = (
     <MenuItem
       component={Link}
@@ -63,6 +84,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       Request Change
     </MenuItem>
   );
+
+  const assignToMyTeamButton = (
+    <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+      Assign to My Team
+    </MenuItem>
+  );
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -76,6 +104,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
+        {teamAsLeadId && assignToMyTeamButton}
       </Menu>
     </div>
   );
