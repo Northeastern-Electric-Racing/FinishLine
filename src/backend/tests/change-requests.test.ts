@@ -12,7 +12,7 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaWorkPackage1 } from './test-data/work-packages.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { CR_Type } from '@prisma/client';
-import ChangeRequestsService from '../src/services/change-request.services';
+import ChangeRequestsService from '../src/services/change-requests.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
