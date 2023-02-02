@@ -1,3 +1,4 @@
+
 import { Role } from '@prisma/client';
 
 export const rankUserRole = (role: Role) => {
