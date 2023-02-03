@@ -474,7 +474,7 @@ export default class ChangeRequestsService {
     type: CR_Type,
     what: string,
     why: Scope_CR_Why[]
-  ): Promise<Number> {
+  ): Promise<number> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
