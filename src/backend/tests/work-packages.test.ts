@@ -10,6 +10,7 @@ import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { prismaWorkPackage1 } from './test-data/work-packages.test-data';
+import workPackageTransformer from '../src/transformers/work-packages.transformer';
 
 describe('Work Packages', () => {
   /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
@@ -167,7 +168,15 @@ describe('Work Packages', () => {
     ).rejects.toThrow(new NotFoundException('Work Package', '1.1.1'));
   });
 
-  test('getSingleWorkPackage fails if project wbs number given', async () => {
+  test('getSingleWorkPackage fails if the project does not exist', async () => {
+    jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
+
+    await expect(
+      async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 100, workPackageNumber: 1 })
+    ).rejects.toThrow(new NotFoundException('Work Package', '1.100.1'));
+  });
+
+  test('getSingleWorkPackage fails if a project wbs number given (work_package number of 0)', async () => {
     await expect(
       async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
     ).rejects.toThrow(new HttpException(404, 'WBS Number 1.1.0 is a project WBS#, not a Work Package WBS#'));
@@ -178,6 +187,6 @@ describe('Work Packages', () => {
 
   //   const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
-  //   expect(result).toEqual(prismaWorkPackage1);
+  //   expect(result).toEqual(workPackageTransformer(prismaWorkPackage1));
   // });
 });
