@@ -17,6 +17,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
+import { WbsNumber } from 'shared';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -57,6 +58,17 @@ const GanttPageWrapper: FC = () => {
   };
 
   const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
+    projects.sort((a, b) => {
+      const aWbsNum = a.wbsNum as WbsNumber;
+      const bWbsNum = b.wbsNum as WbsNumber;
+      if (aWbsNum.carNumber !== bWbsNum.carNumber) {
+        return aWbsNum.carNumber - bWbsNum.carNumber;
+      }
+      if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
+        return aWbsNum.projectNumber - bWbsNum.projectNumber;
+      }
+      return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
+    });
     return {
       id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
       name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
@@ -75,6 +87,18 @@ const GanttPageWrapper: FC = () => {
 
   useEffect(() => {
     const transformProjectToGanttObject = (project: Project): Task => {
+      project.workPackages.sort((a, b) => {
+        const aWbsNum = a.wbsNum as WbsNumber;
+        const bWbsNum = b.wbsNum as WbsNumber;
+        if (aWbsNum.carNumber !== bWbsNum.carNumber) {
+          return aWbsNum.carNumber - bWbsNum.carNumber;
+        }
+        if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
+          return aWbsNum.projectNumber - bWbsNum.projectNumber;
+        }
+        return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
+      });
+
       const progress =
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
         100;
