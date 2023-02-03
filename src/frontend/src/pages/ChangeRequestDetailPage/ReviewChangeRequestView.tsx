@@ -211,7 +211,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             type="submit"
             form="review-notes-form"
             variant="contained"
-            sx={{ mx: 1, textTransform: 'none', fontSize: 16 }}
+            sx={{ mx: 1 }}
             onClick={() => handleAcceptDeny(false)}
           >
             Deny
@@ -220,7 +220,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             variant="contained"
             type="submit"
             form="review-notes-form"
-            sx={{ mx: 1, textTransform: 'none', fontSize: 16 }}
+            sx={{ mx: 1 }}
             onClick={() => handleAcceptDeny(true)}
           >
             Accept
