@@ -1,4 +1,3 @@
-import prisma from '../prisma/prisma';
 import { Project, validateWBS, WbsNumber } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/utils';

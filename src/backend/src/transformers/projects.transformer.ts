@@ -10,44 +10,32 @@ import {
   calculateTimelineStatus
 } from 'shared';
 import { calculateProjectStatus } from '../utils/projects.utils';
-import projectRelationArgs from '../prisma-query-args/projects.query-args';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { userTransformer } from '../utils/users.utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import riskTransformer from '../transformers/risks.transformer';
 
-const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectRelationArgs>): Project => {
-  /*payload: Prisma.ProjectGetPayload<typeof manyRelationArgs> | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
-): Project => {
-  const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
-  const project = 'project' in payload ? payload.project! : payload;
-  const wbsNum = wbsNumOf(wbsElement);
-  let team = undefined;
-  if (project.team) {
-    team = {
-      teamId: project.team.teamId,
-      teamName: project.team.teamName
-    };
-  }
-  const { projectLead, projectManager } = wbsElement;*/
+const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
+  const { wbsElement } = project;
 
   return {
     id: project.projectId,
-    wbsNum: wbsNumOf(project.wbsElement),
-    dateCreated: project.wbsElement.dateCreated,
-    name: project.wbsElement.name,
+    wbsNum: wbsNumOf(wbsElement),
+    dateCreated: wbsElement.dateCreated,
+    name: wbsElement.name,
     status: calculateProjectStatus(project),
-    projectLead: project.wbsElement.projectLead ? userTransformer(project.wbsElement.projectLead) : undefined,
-    projectManager: project.wbsElement.projectManager ? userTransformer(project.wbsElement.projectManager) : undefined,
-    changes: project.wbsElement.changes.map((change) => ({
+    projectLead: wbsElement.projectLead ? userTransformer(wbsElement.projectLead) : undefined,
+    projectManager: wbsElement.projectManager ? userTransformer(wbsElement.projectManager) : undefined,
+    changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
-      wbsNum: wbsNumOf(project.wbsElement),
+      wbsNum: wbsNumOf(wbsElement),
       implementer: userTransformer(change.implementer),
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    team: project.team,
+    team: project.team ? project.team : undefined,
     summary: project.summary,
     budget: project.budget,
     gDriveLink: project.googleDriveFolderLink ?? undefined,

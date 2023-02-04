@@ -1,6 +1,6 @@
-import { Role, User, Team } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { isProject, Project, TimelineStatus, WbsElementStatus, WbsNumber, DescriptionBullet } from 'shared';
+import { isProject, Project, WbsNumber, DescriptionBullet } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import projectTransformer from '../transformers/projects.transformer';
@@ -13,8 +13,8 @@ import {
   editDescriptionBullets
 } from '../utils/projects.utils';
 import { getUserFullName, createRulesChangesJson, createDescriptionBulletChangesJson } from '../utils/projects.utils';
-import { descBulletConverter, wbsNumOf } from '../utils/utils';
-// SHOULD GO BACK AND ADD COMMENTS?
+import { descBulletConverter } from '../utils/utils';
+
 export default class ProjectsService {
   static async getAllProjects(): Promise<Project[]> {
     const projects = await prisma.project.findMany({ where: { wbsElement: { dateDeleted: null } }, ...projectQueryArgs });
@@ -31,52 +31,29 @@ export default class ProjectsService {
       );
     }
 
-    const wbsEle = await prisma.wBS_Element.findUnique({
+    // I DON'T GET THIS PART
+    const { carNumber, projectNumber, workPackageNumber } = parsedWbs;
+
+    const project = await prisma.project.findFirst({
       where: {
-        wbsNumber: {
-          //dateDeleted: null,
-          carNumber: parsedWbs.carNumber,
-          projectNumber: parsedWbs.projectNumber,
-          workPackageNumber: parsedWbs.workPackageNumber
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
         }
       },
       ...projectQueryArgs
     });
 
-    if (!wbsEle)
+    if (!project)
       throw new NotFoundException(
         'Project',
         `${parsedWbs.carNumber}.${parsedWbs.projectNumber}.${parsedWbs.workPackageNumber}`
       );
 
-    if (wbsEle.dateDeleted) throw new AccessDeniedException('This project has been deleted!');
+    if (project.wbsElement.dateDeleted) throw new AccessDeniedException('This project has been deleted!');
 
-    return projectTransformer(wbsEle);
-
-    /*const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-
-    if (!isProject(parsedWbs)) {
-      return res.status(404).json({ message: `${req.params.wbsNum} is not a valid project WBS #!` });
-    }
-
-    const wbsEle = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          carNumber: parsedWbs.carNumber,
-          projectNumber: parsedWbs.projectNumber,
-          workPackageNumber: parsedWbs.workPackageNumber
-        }
-      },
-      ...uniqueRelationArgs
-    });
-
-    if (!wbsEle) return res.status(404).json({ message: `project ${req.params.wbsNum} not found!` });
-    if (wbsEle.dateDeleted) return res.status(400).json({ message: 'This project has been deleted!' });
-
-    //hover over to see the type below
-    //const project = projectTransformer(wbsEle)
-
-    return res.status(200).json(projectTransformer(wbsEle));*/
+    return projectTransformer(project);
   }
   static async newProject(
     user: User,
@@ -139,24 +116,16 @@ export default class ProjectsService {
     goals: DescriptionBullet[],
     features: DescriptionBullet[],
     otherConstraints: DescriptionBullet[],
-    name: string,
-    googleDriveFolderLink: string,
-    slideDeckLink: string,
-    bomLink: string,
-    taskListLink: string,
-    projectLead: User,
-    projectManager: User
+    // DON'T GET THIS PART
+    name: string | null,
+    googleDriveFolderLink: string | null,
+    slideDeckLink: string | null,
+    bomLink: string | null,
+    taskListLink: string | null,
+    // WHY IS IT A NUMBER
+    projectLead: number | null,
+    projectManager: number | null
   ): Promise<void> {
-    // NOT SURE IF THIS PART MAKES SENSE?
-
-    // Create optional arg values
-    const googleDriveFolderLinkUpdated = googleDriveFolderLink === undefined ? null : googleDriveFolderLink;
-    const slideDeckLinkUpdated = slideDeckLink === undefined ? null : slideDeckLink;
-    const bomLinkUpdated = bomLink === undefined ? null : bomLink;
-    const taskListLinkUpdated = taskListLink === undefined ? null : taskListLink;
-    const projectLeadUpdated = projectLead === undefined ? null : projectLead;
-    const projectManagerUpdated = projectManager === undefined ? null : projectManager;
-
     // verify user is allowed to edit projects
     if (user.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -204,7 +173,7 @@ export default class ProjectsService {
     const driveChangeJson = createChangeJsonNonList(
       'google drive folder link',
       originalProject.googleDriveFolderLink,
-      googleDriveFolderLinkUpdated,
+      googleDriveFolderLink,
       crId,
       userId,
       wbsElementId
@@ -212,23 +181,16 @@ export default class ProjectsService {
     const slideChangeJson = createChangeJsonNonList(
       'slide deck link',
       originalProject.slideDeckLink,
-      slideDeckLinkUpdated,
+      slideDeckLink,
       crId,
       userId,
       wbsElementId
     );
-    const bomChangeJson = createChangeJsonNonList(
-      'bom link',
-      originalProject.bomLink,
-      bomLinkUpdated,
-      crId,
-      userId,
-      wbsElementId
-    );
+    const bomChangeJson = createChangeJsonNonList('bom link', originalProject.bomLink, bomLink, crId, userId, wbsElementId);
     const taskChangeJson = createChangeJsonNonList(
       'task list link',
       originalProject.taskListLink,
-      taskListLinkUpdated,
+      taskListLink,
       crId,
       userId,
       wbsElementId
@@ -238,7 +200,7 @@ export default class ProjectsService {
     const projectManagerChangeJson = createChangeJsonNonList(
       'project manager',
       await getUserFullName(originalProject.wbsElement.projectManagerId),
-      await getUserFullName(projectManager.userId),
+      await getUserFullName(projectManager),
       crId,
       userId,
       wbsElementId
@@ -246,7 +208,7 @@ export default class ProjectsService {
     const projectLeadChangeJson = createChangeJsonNonList(
       'project lead',
       await getUserFullName(originalProject.wbsElement.projectLeadId),
-      await getUserFullName(projectLead.userId),
+      await getUserFullName(projectLead),
       crId,
       userId,
       wbsElementId
@@ -325,10 +287,10 @@ export default class ProjectsService {
       data: {
         budget,
         summary,
-        googleDriveFolderLinkUpdated,
-        slideDeckLinkUpdated,
-        bomLinkUpdated,
-        taskListLinkUpdated,
+        googleDriveFolderLink,
+        slideDeckLink,
+        bomLink,
+        taskListLink,
         rules,
         wbsElement: {
           update: {
@@ -337,7 +299,8 @@ export default class ProjectsService {
             projectManagerId: projectManager
           }
         }
-      }
+      },
+      ...projectQueryArgs
     });
 
     // Update any deleted description bullets to have their date deleted as right now

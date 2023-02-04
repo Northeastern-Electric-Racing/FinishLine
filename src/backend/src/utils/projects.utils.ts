@@ -1,22 +1,7 @@
-import { Prisma, WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import {
-  Project,
-  WbsElementStatus,
-  DescriptionBullet,
-  calculateEndDate,
-  calculateProjectEndDate,
-  calculatePercentExpectedProgress,
-  calculateTimelineStatus,
-  calculateDuration,
-  calculateProjectStartDate
-} from 'shared';
-import { descBulletConverter, wbsNumOf } from './utils';
-import { userTransformer } from './users.utils';
-import riskQueryArgs from '../prisma-query-args/risks.query-args';
-import riskTransformer from '../transformers/risks.transformer';
+import { WbsElementStatus, DescriptionBullet } from 'shared';
 import { buildChangeDetail } from '../utils/utils';
-import { calculateWorkPackageProgress } from './work-packages.utils';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -32,43 +17,8 @@ export const calculateProjectStatus = (proj: { workPackages: { wbsElement: { sta
   return WbsElementStatus.Inactive;
 };
 
-export const manyRelationArgs = Prisma.validator<Prisma.ProjectArgs>()({
-  include: {
-    wbsElement: {
-      include: {
-        projectLead: true,
-        projectManager: true,
-        changes: { include: { implementer: true } }
-      }
-    },
-    team: true,
-    goals: { where: { dateDeleted: null } },
-    features: { where: { dateDeleted: null } },
-    otherConstraints: { where: { dateDeleted: null } },
-    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
-    workPackages: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
-        }
-      },
-      include: {
-        wbsElement: {
-          include: {
-            projectLead: true,
-            projectManager: true,
-            changes: { include: { implementer: true } }
-          }
-        },
-        dependencies: true,
-        expectedActivities: true,
-        deliverables: true
-      }
-    }
-  }
-});
-
-export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
+// WHY SHOULD I DELETE THE UNIQUERELATIONARGS
+/*export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
   include: {
     project: {
       include: {
@@ -102,96 +52,7 @@ export const uniqueRelationArgs = Prisma.validator<Prisma.WBS_ElementArgs>()({
     projectManager: true,
     changes: { include: { implementer: true } }
   }
-});
-
-export const projectTransformer = (
-  payload: Prisma.ProjectGetPayload<typeof manyRelationArgs> | Prisma.WBS_ElementGetPayload<typeof uniqueRelationArgs>
-): Project => {
-  const wbsElement = 'wbsElement' in payload ? payload.wbsElement : payload;
-  const project = 'project' in payload ? payload.project! : payload;
-  const wbsNum = wbsNumOf(wbsElement);
-  let team = undefined;
-  if (project.team) {
-    team = {
-      teamId: project.team.teamId,
-      teamName: project.team.teamName
-    };
-  }
-  const { projectLead, projectManager } = wbsElement;
-
-  return {
-    id: project.projectId,
-    wbsNum,
-    dateCreated: wbsElement.dateCreated,
-    name: wbsElement.name,
-    status: calculateProjectStatus(project),
-    projectLead: projectLead ? userTransformer(projectLead) : undefined,
-    projectManager: projectManager ? userTransformer(projectManager) : undefined,
-    changes: wbsElement.changes.map((change) => ({
-      changeId: change.changeId,
-      changeRequestId: change.changeRequestId,
-      wbsNum,
-      implementer: userTransformer(change.implementer),
-      detail: change.detail,
-      dateImplemented: change.dateImplemented
-    })),
-    team,
-    summary: project.summary,
-    budget: project.budget,
-    gDriveLink: project.googleDriveFolderLink ?? undefined,
-    taskListLink: project.taskListLink ?? undefined,
-    slideDeckLink: project.slideDeckLink ?? undefined,
-    bomLink: project.bomLink ?? undefined,
-    rules: project.rules,
-    duration: calculateDuration(project.workPackages),
-    startDate: calculateProjectStartDate(project.workPackages),
-    endDate: calculateProjectEndDate(project.workPackages),
-    goals: project.goals.map(descBulletConverter),
-    features: project.features.map(descBulletConverter),
-    otherConstraints: project.otherConstraints.map(descBulletConverter),
-    risks: project.risks.map(riskTransformer),
-    workPackages: project.workPackages.map((workPackage) => {
-      const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
-      const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
-      const expectedProgress = calculatePercentExpectedProgress(
-        workPackage.startDate,
-        workPackage.duration,
-        workPackage.wbsElement.status
-      );
-
-      return {
-        id: workPackage.workPackageId,
-        wbsNum: wbsNumOf(workPackage.wbsElement),
-        dateCreated: workPackage.wbsElement.dateCreated,
-        name: workPackage.wbsElement.name,
-        status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
-        projectManager: workPackage.wbsElement.projectManager
-          ? userTransformer(workPackage.wbsElement.projectManager)
-          : undefined,
-        changes: workPackage.wbsElement.changes.map((change) => ({
-          changeId: change.changeId,
-          changeRequestId: change.changeRequestId,
-          wbsNum: wbsNumOf(workPackage.wbsElement),
-          implementer: userTransformer(change.implementer),
-          detail: change.detail,
-          dateImplemented: change.dateImplemented
-        })),
-        orderInProject: workPackage.orderInProject,
-        progress,
-        startDate: workPackage.startDate,
-        endDate,
-        duration: workPackage.duration,
-        expectedProgress,
-        timelineStatus: calculateTimelineStatus(progress, expectedProgress),
-        dependencies: workPackage.dependencies.map(wbsNumOf),
-        expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
-        deliverables: workPackage.deliverables.map(descBulletConverter),
-        projectName: wbsElement.name
-      };
-    })
-  };
-};
+});*/
 
 // gets highest current project number
 export const getHighestProjectNumber = async (carNumber: number) => {
