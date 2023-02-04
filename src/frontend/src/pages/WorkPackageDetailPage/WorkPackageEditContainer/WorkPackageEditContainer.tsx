@@ -191,10 +191,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         />
       </PageBlock>
       <Box textAlign="right" sx={{ my: 2 }}>
-        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 2 }}>
+        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
           Submit
         </NERSuccessButton>
       </Box>
