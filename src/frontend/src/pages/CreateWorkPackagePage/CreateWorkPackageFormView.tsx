@@ -221,13 +221,13 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <NERSuccessButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </NERSuccessButton>
-          <NERFailButton variant="outlined" color="secondary" onClick={onCancel}>
+        <Box textAlign="right" gap={2} sx={{ mt: 2 }}>
+          <NERFailButton variant="outlined" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+            Create
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>
