@@ -141,7 +141,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
         </DialogContent>
         <DialogActions>
           <NERFailButton
-            className={'ml-3'}
             variant="contained"
             type="submit"
             form="review-notes-form"
