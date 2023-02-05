@@ -178,6 +178,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
                     checked={risk.isResolved}
                     data-testid={`testCheckbox${idx}`}
                     onChange={() => handleCheck(risk)}
+                    disabled={isLoading}
                   />
                 }
               />
