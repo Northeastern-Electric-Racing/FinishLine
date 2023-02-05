@@ -15,4 +15,3 @@ export const rankUserRole = (role: Role) => {
         return 1;
     }
   };
-  
