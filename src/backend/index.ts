@@ -46,7 +46,7 @@ app.use('/work-packages', workPackagesRouter);
 app.use('/risks', risksRouter);
 app.use('/change-requests', changeRequestsRouter);
 app.use('/description-bullets', descriptionBulletsRouter);
-app.use('/tasks', tasksRouter)
+app.use('/tasks', tasksRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
