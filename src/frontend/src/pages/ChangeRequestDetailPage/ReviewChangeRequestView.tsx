@@ -150,29 +150,27 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           </form>
         </DialogContent>
         <DialogActions>
-          <Button
-            color="success"
+          <NERFailButton
+            className={'ml-3'}
             variant="contained"
             type="submit"
             form="review-notes-form"
-            sx={{ textTransform: 'none', fontSize: 16 }}
+            sx={{ mx: 1 }}
+            onClick={() => handleAcceptDeny(false)}
+          >
+            Deny
+          </NERFailButton>
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            form="review-notes-form"
+            sx={{ mx: 1 }}
             onClick={() => {
               selected > -1 ? handleAcceptDeny(true) : toast.error('Please select a proposed solution!', 4500);
             }}
           >
             Accept
-          </Button>
-          <Button
-            color="error"
-            className={'ml-3'}
-            variant="contained"
-            type="submit"
-            form="review-notes-form"
-            sx={{ textTransform: 'none', fontSize: 16 }}
-            onClick={() => handleAcceptDeny(false)}
-          >
-            Deny
-          </Button>
+          </NERSuccessButton>
         </DialogActions>
       </Dialog>
     );
