@@ -44,7 +44,7 @@ export const TaskListTableDefault: React.FC<{
                 >
                   {expanderSymbol}
                 </div>
-                <div>{t.name}</div>
+                <div className={styles.taskListNameText}>{t.name}</div>
               </div>
             </div>
           </div>
