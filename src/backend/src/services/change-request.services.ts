@@ -140,7 +140,7 @@ export default class ChangeRequestsService {
             foundCR.wbsElement.wbsElementId
           )
         ];
-        changes.filter((a: any): boolean => a.notEqual(undefined));
+        changes.filter((a: any): boolean => a !== undefined);
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {
