@@ -61,9 +61,9 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    crId: number,
-    userId: number
+    crId: number
   ): Promise<string> {
+    const { userId } = user;
     // verify user is allowed to create projects
     if (user.role === Role.GUEST) throw new AccessDeniedException();
 

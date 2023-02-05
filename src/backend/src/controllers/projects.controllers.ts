@@ -25,11 +25,11 @@ export default class ProjectsController {
 
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamId, carNumber, name, summary, crId, userId } = req.body;
+      const { teamId, carNumber, name, summary, crId } = req.body;
 
       const user = await getCurrentUser(res);
 
-      const wbsString: string = await ProjectsService.newProject(user, teamId, carNumber, name, summary, crId, userId);
+      const wbsString: string = await ProjectsService.newProject(user, teamId, carNumber, name, summary, crId);
       res.status(200).json(wbsString);
     } catch (error: unknown) {
       next(error);
