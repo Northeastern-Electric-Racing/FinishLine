@@ -114,5 +114,25 @@ describe('Risks', () => {
         ...riskQueryArgs
       });
     });
+
+    test('createRisk(), the the endpoint works as intended', async () => {
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+      jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk1);
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1);
+
+      const projectId = 0;
+      const detail = 'detail';
+      const res = await RisksService.createRisk(batman, projectId, detail);
+
+      expect(res).toStrictEqual(sharedRisk1);
+      expect(prisma.risk.create).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.create).toHaveBeenCalledWith({
+        data: {
+          detail,
+          projectId,
+          createdByUserId: batman.userId
+        }
+      });
+    });
   });
 });
