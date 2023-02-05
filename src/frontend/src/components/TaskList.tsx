@@ -20,7 +20,7 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   const addTaskButton: React.ReactNode = (
     <NERButton
       variant="contained"
-      disabled={auth.user?.role !== 'ADMIN' && auth.user?.role !== 'APP_ADMIN'}
+      disabled={auth.user?.role === 'GUEST'}
       startIcon={<Add />}
       onClick={() => alert("addTaskButton doesn't work yet. If you want to work on it go to issue #762")}
     >

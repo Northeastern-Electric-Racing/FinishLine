@@ -7,13 +7,7 @@ import { render, screen } from '@testing-library/react';
 import { routerWrapperBuilder } from '../test-support/test-utils';
 import * as authHooks from '../../hooks/auth.hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import {
-  exampleAdminUser,
-  exampleAppAdminUser,
-  exampleGuestUser,
-  exampleLeadershipUser,
-  exampleMemberUser
-} from '../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../test-support/test-data/users.stub';
 import TaskList from '../../components/TaskList';
 
 /**
@@ -52,27 +46,10 @@ describe('Rendering TaskList Component', () => {
     expect(screen.getByText('New Task')).toBeInTheDocument();
   });
 
-  it('enables New Task button for app admins', () => {
-    spyUseAuthHook.mockReturnValue(mockAuth(false, exampleAppAdminUser));
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeEnabled();
-  });
-
-  it('enables New Task button for admins', () => {
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeEnabled();
-  });
-
-  it('disables New Task button for leadership', () => {
+  it('enables New Task button for leadership', () => {
     spyUseAuthHook.mockReturnValue(mockAuth(false, exampleLeadershipUser));
     renderComponent();
-    expect(screen.getByText('New Task')).toBeDisabled();
-  });
-
-  it('disables New Task button for members', () => {
-    spyUseAuthHook.mockReturnValue(mockAuth(false, exampleMemberUser));
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeDisabled();
+    expect(screen.getByText('New Task')).toBeEnabled();
   });
 
   it('disables New Task button for guests', () => {
