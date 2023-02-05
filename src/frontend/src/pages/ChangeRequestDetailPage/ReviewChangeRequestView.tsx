@@ -10,17 +10,7 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  TextField,
-  Typography,
-  Breakpoint
-} from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography, Breakpoint } from '@mui/material';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
