@@ -9,13 +9,14 @@ import PageBlock from '../layouts/PageBlock';
 import { NERButton } from './NERButton';
 import { useAuth } from '../hooks/auth.hooks';
 import { Add } from '@mui/icons-material';
+import { Auth } from '../utils/types';
 
 interface TaskListProps {
   defaultClosed?: boolean;
 }
 
 const TaskList = ({ defaultClosed }: TaskListProps) => {
-  const auth = useAuth();
+  const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
   const addTaskButton: React.ReactNode = (
     <NERButton
@@ -28,9 +29,9 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
     </NERButton>
   );
 
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState<number>(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
   };
 
