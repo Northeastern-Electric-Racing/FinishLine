@@ -76,7 +76,6 @@ const AdminToolsUserMangaement: React.FC = () => {
       setUser(null);
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
         toast.error(e.message);
       }
     }
