@@ -69,11 +69,10 @@ const GanttPageWrapper: FC = () => {
     return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
   };
 
-  
-
   useEffect(() => {
     const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
       projects.sort(sortWbs);
+
       return {
         id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
         name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
