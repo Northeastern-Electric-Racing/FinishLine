@@ -21,5 +21,6 @@
     "editor.defaultFormatter": "Prisma.prisma"
   },
   "editor.formatOnSave": true,
-  "jest.autoRun": {}
+  "jest.autoRun": {},
+  "codetogether.virtualCursorJoin": "ownVirtualCursor"
 }
