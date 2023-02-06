@@ -87,6 +87,5 @@ export interface ImplementedChange {
   wbsNum: WbsNumber;
   implementer: User;
   detail: string;
-  dateImplemented: Date;
-  
+  dateImplemented: Date;  
 }
