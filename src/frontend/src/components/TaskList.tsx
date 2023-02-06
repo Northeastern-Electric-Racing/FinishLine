@@ -15,6 +15,7 @@ interface TaskListProps {
   defaultClosed?: boolean;
 }
 
+// Page block containing task list view
 const TaskList = ({ defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
