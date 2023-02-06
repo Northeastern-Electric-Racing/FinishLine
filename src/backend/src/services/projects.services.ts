@@ -1,5 +1,4 @@
 import { Role, User } from '@prisma/client';
-import { where } from 'sequelize';
 import { isProject, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
