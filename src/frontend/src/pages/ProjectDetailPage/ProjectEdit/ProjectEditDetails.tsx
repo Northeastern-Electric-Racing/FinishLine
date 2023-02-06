@@ -16,30 +16,30 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
   return (
     <PageBlock title="Project Details">
       <Grid container spacing={1}>
-          <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-            <FormControl sx={{ width: 675 }}>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter project name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-            <FormControl sx={{ width: 200 }}>
-              <FormLabel>Budget</FormLabel>
-              <ReactHookTextField
-                name="budget"
-                control={control}
-                type="number"
-                placeholder="Enter budget..."
-                icon={<AttachMoneyIcon />}
-                errorMessage={errors.budget}
-              />
-            </FormControl>
-          </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <FormControl sx={{ width: 675 }}>
+            <FormLabel>Project Name</FormLabel>
+            <ReactHookTextField
+              name="name"
+              control={control}
+              placeholder="Enter project name..."
+              errorMessage={errors.name}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <FormControl sx={{ width: 200 }}>
+            <FormLabel>Budget</FormLabel>
+            <ReactHookTextField
+              name="budget"
+              control={control}
+              type="number"
+              placeholder="Enter budget..."
+              icon={<AttachMoneyIcon />}
+              errorMessage={errors.budget}
+            />
+          </FormControl>
+        </Grid>
         <Grid item xs={12}>
           <Controller
             name="projectLeadId"
@@ -65,13 +65,13 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             render={({ field: { onChange, value } }) => (
               <FormControl>
                 <FormLabel>Project Manager</FormLabel>
-              <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </TextField>
+                <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </FormControl>
             )}
           />
