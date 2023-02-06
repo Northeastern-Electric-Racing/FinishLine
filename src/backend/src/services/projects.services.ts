@@ -395,15 +395,15 @@ export default class ProjectsService {
    * Delete the the project in the database along with all its work packages.
    * @returns the project that is deleted.
    */
-  static async deleteProject(user: User, _wbsNumber: WbsNumber): Promise<WbsNumber> {
-    if (!isProject(_wbsNumber)) throw new HttpException(400, `${wbsPipe(_wbsNumber)} is not a valid project WBS #!`);
+  static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<WbsNumber> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     if (user.role === Role.GUEST || user.role === Role.LEADERSHIP || user.role === Role.MEMBER) {
       throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
     }
 
     const deletedProject = await prisma.wBS_Element.delete({
       where: {
-        wbsNumber: _wbsNumber
+        wbsNumber
       }
     });
 
