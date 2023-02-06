@@ -88,4 +88,5 @@ export interface ImplementedChange {
   implementer: User;
   detail: string;
   dateImplemented: Date;
+  
 }
