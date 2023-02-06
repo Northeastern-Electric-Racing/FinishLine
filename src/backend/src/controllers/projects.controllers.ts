@@ -5,6 +5,16 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
 export default class ProjectsController {
+  static async deleteProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const deletedProjectNumber: WbsNumber = await ProjectsService.deleteProject(user, wbsNumber);
+      res.status(200).json(wbsPipe(deletedProjectNumber));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
   static async getAllProjects(_req: Request, res: Response, next: NextFunction) {
     try {
       const projects: Project[] = await ProjectsService.getAllProjects();
