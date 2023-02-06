@@ -81,14 +81,15 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <><FormLabel>Project Lead</FormLabel>
-              <TextField select onChange={onChange} value={value} fullWidth>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <>
+                <FormLabel>Project Lead</FormLabel>
+                <TextField select onChange={onChange} value={value} fullWidth>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </>
             )}
           />
@@ -99,29 +100,30 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <><FormLabel>Project Manager</FormLabel>
-              <TextField select onChange={onChange} value={value} fullWidth>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <>
+                <FormLabel>Project Manager</FormLabel>
+                <TextField select onChange={onChange} value={value} fullWidth>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </>
             )}
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <FormControl>
-          <FormLabel>Duration</FormLabel>
-          <ReactHookTextField
-            name="duration"
-            control={control}
-            type="number"
-            placeholder="Enter duration..."
-            sx={{ width: 200 }}
-            errorMessage={errors.budget}
-          />
+            <FormLabel>Duration</FormLabel>
+            <ReactHookTextField
+              name="duration"
+              control={control}
+              type="number"
+              placeholder="Enter duration..."
+              sx={{ width: 200 }}
+              errorMessage={errors.budget}
+            />
           </FormControl>
         </Grid>
       </Grid>
