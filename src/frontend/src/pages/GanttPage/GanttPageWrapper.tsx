@@ -72,7 +72,6 @@ const GanttPageWrapper: FC = () => {
   useEffect(() => {
     const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
       projects.sort(sortWbs);
-
       return {
         id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
         name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
@@ -88,7 +87,6 @@ const GanttPageWrapper: FC = () => {
         }
       };
     };
-
     const transformProjectToGanttObject = (project: Project): Task => {
       project.workPackages.sort(sortWbs);
 
