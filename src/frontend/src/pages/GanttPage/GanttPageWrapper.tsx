@@ -57,47 +57,41 @@ const GanttPageWrapper: FC = () => {
     end
   };
 
-  const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
-    projects.sort((a, b) => {
-      const aWbsNum = a.wbsNum as WbsNumber;
-      const bWbsNum = b.wbsNum as WbsNumber;
-      if (aWbsNum.carNumber !== bWbsNum.carNumber) {
-        return aWbsNum.carNumber - bWbsNum.carNumber;
-      }
-      if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
-        return aWbsNum.projectNumber - bWbsNum.projectNumber;
-      }
-      return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
-    });
-    return {
-      id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
-      name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
-      start: wp.startDate,
-      end: wp.endDate,
-      progress: wp.progress,
-      project: projectWbsPipe(wp.wbsNum),
-      type: 'task',
-      styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
-      displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
-      onClick: () => {
-        window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
-      }
-    };
+  const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
+    const aWbsNum = a.wbsNum;
+    const bWbsNum = b.wbsNum;
+    if (aWbsNum.carNumber !== bWbsNum.carNumber) {
+      return aWbsNum.carNumber - bWbsNum.carNumber;
+    }
+    if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
+      return aWbsNum.projectNumber - bWbsNum.projectNumber;
+    }
+    return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
   };
 
+  
+
   useEffect(() => {
+    const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
+      projects.sort(sortWbs);
+      return {
+        id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
+        name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
+        start: wp.startDate,
+        end: wp.endDate,
+        progress: wp.progress,
+        project: projectWbsPipe(wp.wbsNum),
+        type: 'task',
+        styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
+        displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
+        onClick: () => {
+          window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
+        }
+      };
+    };
+
     const transformProjectToGanttObject = (project: Project): Task => {
-      project.workPackages.sort((a, b) => {
-        const aWbsNum = a.wbsNum as WbsNumber;
-        const bWbsNum = b.wbsNum as WbsNumber;
-        if (aWbsNum.carNumber !== bWbsNum.carNumber) {
-          return aWbsNum.carNumber - bWbsNum.carNumber;
-        }
-        if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
-          return aWbsNum.projectNumber - bWbsNum.projectNumber;
-        }
-        return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
-      });
+      project.workPackages.sort(sortWbs);
 
       const progress =
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
