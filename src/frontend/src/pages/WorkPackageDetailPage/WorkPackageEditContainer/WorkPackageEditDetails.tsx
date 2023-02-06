@@ -6,7 +6,7 @@
 import { User, WbsElementStatus } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -26,13 +26,16 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       control={control}
       rules={{ required: true }}
       render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Status">
-          {statuses.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
-          ))}
-        </TextField>
+        <FormControl>
+          <FormLabel>Status</FormLabel>
+          <TextField select onChange={onChange} value={value}>
+            {statuses.map((t) => (
+              <MenuItem key={t} value={t}>
+                {t}
+              </MenuItem>
+            ))}
+          </TextField>
+        </FormControl>
       )}
     />
   );
@@ -41,11 +44,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
     <PageBlock title="Work Package Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <FormLabel>Work Package Name</FormLabel>
           <ReactHookTextField
             name="name"
             control={control}
             sx={{ width: 10 / 10 }}
-            label="Work Package Name"
+            placeholder="Enter work package name..."
             errorMessage={errors.name}
           />
         </Grid>
@@ -56,8 +60,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <>
+                <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
                 <DatePicker
-                  label={'Start Date (YYYY-MM-DD)'}
                   inputFormat="yyyy-MM-dd"
                   onChange={onChange}
                   className={'padding: 10'}
@@ -77,13 +81,15 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
+              <><FormLabel>Project Lead</FormLabel>
+              <TextField select onChange={onChange} value={value} fullWidth>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
                   </MenuItem>
                 ))}
               </TextField>
+              </>
             )}
           />
         </Grid>
@@ -93,25 +99,30 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
+              <><FormLabel>Project Manager</FormLabel>
+              <TextField select onChange={onChange} value={value} fullWidth>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
                   </MenuItem>
                 ))}
               </TextField>
+              </>
             )}
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <FormControl>
+          <FormLabel>Duration</FormLabel>
           <ReactHookTextField
             name="duration"
             control={control}
             type="number"
-            label="Duration"
-            sx={{ width: 3 / 10 }}
+            placeholder="Enter duration..."
+            sx={{ width: 200 }}
             errorMessage={errors.budget}
           />
+          </FormControl>
         </Grid>
       </Grid>
     </PageBlock>
