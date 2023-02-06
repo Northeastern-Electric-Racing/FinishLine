@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import ChangeRequestsService from '../services/change-request.services';
+import ChangeRequestsService from '../services/change-requests.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
 export default class ChangeRequestsController {

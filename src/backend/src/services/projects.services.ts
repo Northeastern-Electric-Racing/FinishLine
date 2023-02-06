@@ -122,8 +122,8 @@ export default class ProjectsService {
    * @param slideDeckLink the new slideDeckLink of the project
    * @param bomLink the new bomLink of the project
    * @param taskListLink the new taskListLink of the project
-   * @param projectLead the new projectLead of the project
-   * @param projectManager the new projectManager of the project
+   * @param projectLeadId the new projectLead of the project
+   * @param projectManagerId the new projectManager of the project
    * @returns the edited project
    */
   static async editProject(
@@ -141,8 +141,8 @@ export default class ProjectsService {
     slideDeckLink: string | null,
     bomLink: string | null,
     taskListLink: string | null,
-    projectLead: number | null,
-    projectManager: number | null
+    projectLeadId: number | null,
+    projectManagerId: number | null
   ): Promise<Project> {
     if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot edit projects');
     const { userId } = user;
@@ -215,7 +215,7 @@ export default class ProjectsService {
     const projectManagerChangeJson = createChangeJsonNonList(
       'project manager',
       await getUserFullName(originalProject.wbsElement.projectManagerId),
-      await getUserFullName(projectManager),
+      await getUserFullName(projectManagerId),
       crId,
       userId,
       wbsElementId
@@ -223,7 +223,7 @@ export default class ProjectsService {
     const projectLeadChangeJson = createChangeJsonNonList(
       'project lead',
       await getUserFullName(originalProject.wbsElement.projectLeadId),
-      await getUserFullName(projectLead),
+      await getUserFullName(projectLeadId),
       crId,
       userId,
       wbsElementId
@@ -309,8 +309,8 @@ export default class ProjectsService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager
+            projectLeadId,
+            projectManagerId
           }
         }
       },
