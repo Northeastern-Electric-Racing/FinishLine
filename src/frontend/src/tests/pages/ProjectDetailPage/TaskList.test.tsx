@@ -4,11 +4,11 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { routerWrapperBuilder } from '../test-support/test-utils';
-import * as authHooks from '../../hooks/auth.hooks';
-import { mockAuth } from '../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../test-support/test-data/users.stub';
-import TaskList from '../../components/TaskList';
+import { routerWrapperBuilder } from '../../test-support/test-utils';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
+import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
 
 /**
  * Sets up the component under test with the desired values and renders it.

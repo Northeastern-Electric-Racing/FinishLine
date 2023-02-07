@@ -5,11 +5,11 @@
 
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { useState } from 'react';
-import PageBlock from '../layouts/PageBlock';
-import { NERButton } from './NERButton';
-import { useAuth } from '../hooks/auth.hooks';
+import PageBlock from '../../../layouts/PageBlock';
+import { NERButton } from '../../../components/NERButton';
+import { useAuth } from '../../../hooks/auth.hooks';
 import { Add } from '@mui/icons-material';
-import { Auth } from '../utils/types';
+import { Auth } from '../../../utils/types';
 
 interface TaskListProps {
   defaultClosed?: boolean;
