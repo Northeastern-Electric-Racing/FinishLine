@@ -88,8 +88,13 @@ const GanttPageWrapper: FC = () => {
         hideChildren: !expanded,
         styles:
           progress === 100
-            ? { progressColor: '#66bb6a', backgroundColor: '#66bb6a' }
-            : { progressColor: '#e50000', backgroundColor: '#ff0000' },
+            ? {
+                progressColor: '#66bb6a',
+                backgroundColor: '#66bb6a',
+                progressSelectedColor: '#47a04b',
+                backgroundSelectedColor: '#47a04b'
+              }
+            : {},
         displayOrder: project.id,
         onClick: () => {
           window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
