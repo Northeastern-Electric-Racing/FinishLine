@@ -1,6 +1,7 @@
 import { Role, User } from '@prisma/client';
 import { isProject, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
@@ -15,6 +16,7 @@ import {
 } from '../utils/projects.utils';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
+import WorkPackagesService from './work-packages.services';
 
 export default class ProjectsService {
   /**
@@ -417,7 +419,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
 
-    const { wbsElementId } = project;
+    const { wbsElementId, projectId } = project;
     const dateDeleted: Date = new Date();
     const deletedProject = await prisma.wBS_Element.update({
       where: {
@@ -429,8 +431,19 @@ export default class ProjectsService {
       }
     });
 
-    // const wbsNumbersForAllWorkPackages = await WorkPackagesService.getAllWorkPackages({});
-    // wbsNumbersForAllWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
+    const dependentWorkPackages = await prisma.work_Package.findMany({
+      where: { projectId, wbsElement: { dateDeleted: null } },
+      ...workPackageQueryArgs
+    });
+
+    const dependentDescriptionBullets = await prisma.description_Bullet.findMany({
+      where: {
+        projectIdFeatures: projectId,
+        dateDeleted: null
+      }
+    });
+
+    // dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
     return deletedProject;
   }
 }
