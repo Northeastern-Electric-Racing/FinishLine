@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import { NERButton } from '../../../components/NERButton';
@@ -11,6 +11,7 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { Add } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
 import { useToast } from '../../../hooks/toasts.hooks';
+import TaskListTabPanel from './TaskListTabPanel';
 
 interface TaskListProps {
   defaultClosed?: boolean;
@@ -41,32 +42,6 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
 
   // TabPanel stuff copied from https://mui.com/material-ui/react-tabs/ unless we install @mui/lab
 
-  interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-  }
-
-  const TabPanel = (props: TabPanelProps) => {
-    const { children, value, index, ...other } = props;
-
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-      >
-        {value === index && (
-          <Box sx={{ p: 3 }}>
-            <Typography>{children}</Typography>
-          </Box>
-        )}
-      </div>
-    );
-  };
-
   return (
     <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -76,15 +51,9 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0}>
-        Tasks In Progess
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        Tasks In Backlog
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        Tasks Done
-      </TabPanel>
+      <TaskListTabPanel value={value} index={0} />
+      <TaskListTabPanel value={value} index={1} />
+      <TaskListTabPanel value={value} index={2} />
     </PageBlock>
   );
 };
