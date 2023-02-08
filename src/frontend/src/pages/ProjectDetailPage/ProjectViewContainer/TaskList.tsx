@@ -10,6 +10,7 @@ import { NERButton } from '../../../components/NERButton';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { Add } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface TaskListProps {
   defaultClosed?: boolean;
@@ -19,12 +20,14 @@ interface TaskListProps {
 const TaskList = ({ defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
+  const toast = useToast();
+
   const addTaskButton: React.ReactNode = (
     <NERButton
       variant="contained"
       disabled={auth.user?.role === 'GUEST'}
       startIcon={<Add />}
-      onClick={() => alert("addTaskButton doesn't work yet. If you want to work on it go to issue #762")}
+      onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
     >
       New Task
     </NERButton>
