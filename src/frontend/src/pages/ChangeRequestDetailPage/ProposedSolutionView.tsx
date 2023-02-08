@@ -9,8 +9,7 @@ import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import { dollarsPipe, weeksPipe } from '../../utils/pipes';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionViewProps {
@@ -31,7 +30,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
           }}
           sx={{ position: 'absolute', right: 75 }}
         >
-          <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+          <DeleteIcon data-testid={'deleteIcon'} />
         </Button>
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
