@@ -401,14 +401,34 @@ export default class ProjectsService {
       throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
     }
 
-    const deletedProject = await prisma.wBS_Element.delete({
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+
+    const dateDeleted: Date = new Date();
+    const deletedProject = await prisma.wBS_Element.update({
       where: {
         wbsNumber
+      },
+      data: {
+        dateDeleted
       }
     });
 
-    // const wbsNumbersForAllWorkPackages = await WorkPackagesService.getAllWorkPackages({});
-    // wbsNumbersForAllWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
-    return deletedProject;
+    // // const wbsNumbersForAllWorkPackages = await WorkPackagesService.getAllWorkPackages({});
+    // // wbsNumbersForAllWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
+    // return deletedProject;
   }
 }
