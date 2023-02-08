@@ -21,6 +21,8 @@ interface TaskListProps {
 const TaskList = ({ defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
+
+  // delete me when you actually implement onClick
   const toast = useToast();
 
   const addTaskButton: React.ReactNode = (

@@ -10,6 +10,9 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
 
+// delete me when you actually implement onClick
+jest.mock('../../../hooks/toasts.hooks');
+
 /**
  * Sets up the component under test with the desired values and renders it.
  */
