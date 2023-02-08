@@ -11,7 +11,7 @@ import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../..
 import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
 
 jest.mock('../../../hooks/auth.hooks');
-// delete me when you actually implement onClick
+// TODO: delete me when you actually implement onClick
 jest.mock('../../../hooks/toasts.hooks');
 
 /**

@@ -22,7 +22,7 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
-  // delete me when you actually implement onClick
+  // TODO: delete me when you actually implement onClick
   const toast = useToast();
 
   const [value, setValue] = useState<number>(0);
