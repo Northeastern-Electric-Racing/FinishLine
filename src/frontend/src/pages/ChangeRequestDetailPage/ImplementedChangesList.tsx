@@ -6,11 +6,12 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { styled } from '@mui/material/styles';
-import { Link, ListItem, List, Tooltip, Typography, TooltipProps, tooltipClasses } from '@mui/material';
+import { Link, ListItem, List, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
+import { useWindowSize } from '../../hooks/changes-list.hooks';
+import DynamicTooltip from '../../components/DynamicTooltip';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -24,40 +25,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
     setBodyWidth(window.document.body.offsetWidth);
   });
 
-  function useWindowSize() {
-    const [innerWidth, setInnerWidth] = useState<number>(0);
-    function determinePosition() {
-      return window.innerWidth < bodyWidth ? 'top' : 'right';
-    }
-    const [position, setPosition] = useState<'top' | 'right'>(determinePosition());
-    useLayoutEffect(() => {
-      function updateTooltipProps() {
-        setInnerWidth(window.innerWidth);
-        setPosition(determinePosition());
-      }
-      window.addEventListener('resize', () => {
-        updateTooltipProps();
-      });
-      updateTooltipProps();
-      return () =>
-        window.removeEventListener('resize', () => {
-          updateTooltipProps();
-        });
-    }, []);
-    return [innerWidth, position];
-  }
-
-  let [innerWidth, position] = useWindowSize() as [number, 'top' | 'right'];
-
-  // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
-  const DynamicTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))({
-    [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: `${(innerWidth as number) / 2}px`,
-      overflowWrap: 'break-word'
-    }
-  });
+  let [innerWidth, position] = useWindowSize(bodyWidth) as [number, 'top' | 'right'];
 
   return (
     <PageBlock
@@ -75,6 +43,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                 </Typography>
               }
               placement={position}
+              innerWidth={innerWidth}
               arrow
             >
               <Typography>

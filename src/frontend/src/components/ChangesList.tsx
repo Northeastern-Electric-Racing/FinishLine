@@ -4,15 +4,15 @@
  */
 
 import { Link } from '@mui/material';
-import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
 import BulletList from './BulletList';
-import styled from '@emotion/styled';
-import { useState, useLayoutEffect } from 'react';
+import { useState } from 'react';
+import { useWindowSize } from '../hooks/changes-list.hooks';
+import DynamicTooltip from './DynamicTooltip';
 
 interface ChangesListProps {
   changes: ImplementedChange[];
@@ -25,40 +25,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
     setBodyWidth(window.document.body.offsetWidth);
   });
 
-  function useWindowSize() {
-    const [innerWidth, setInnerWidth] = useState<number>(0);
-    function determinePosition() {
-      return window.innerWidth < bodyWidth ? 'top' : 'right';
-    }
-    const [position, setPosition] = useState<'top' | 'right'>(determinePosition());
-    useLayoutEffect(() => {
-      function updateTooltipProps() {
-        setInnerWidth(window.innerWidth);
-        setPosition(determinePosition());
-      }
-      window.addEventListener('resize', () => {
-        updateTooltipProps();
-      });
-      updateTooltipProps();
-      return () =>
-        window.removeEventListener('resize', () => {
-          updateTooltipProps();
-        });
-    }, []);
-    return [innerWidth, position];
-  }
-
-  let [innerWidth, position] = useWindowSize() as [number, 'top' | 'right'];
-
-  // https://mui.com/material-ui/react-tooltip/#VariableWidth.tsx
-  const DynamicTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))({
-    [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: `${(innerWidth as number) / 2}px`,
-      overflowWrap: 'break-word'
-    }
-  });
+  let [innerWidth, position] = useWindowSize(bodyWidth) as [number, 'top' | 'right'];
 
   return (
     <BulletList
@@ -80,6 +47,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
               </>
             }
             placement={position}
+            innerWidth={innerWidth}
             arrow
           >
             <Typography component="span">{ic.detail}</Typography>
