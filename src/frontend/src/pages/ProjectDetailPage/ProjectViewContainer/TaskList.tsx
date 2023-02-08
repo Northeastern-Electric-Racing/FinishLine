@@ -25,22 +25,26 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   // delete me when you actually implement onClick
   const toast = useToast();
 
-  const addTaskButton: React.ReactNode = (
-    <NERButton
-      variant="contained"
-      disabled={auth.user?.role === 'GUEST'}
-      startIcon={<Add />}
-      onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
-    >
-      New Task
-    </NERButton>
-  );
-
   const [value, setValue] = useState<number>(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
   };
+
+  const addTaskButton: JSX.Element = (
+    <NERButton
+      variant="contained"
+      disabled={auth.user?.role === 'GUEST'}
+      startIcon={<Add />}
+      sx={{
+        height: 32,
+        px: '12px'
+      }}
+      onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
+    >
+      New Task
+    </NERButton>
+  );
 
   // TabPanel stuff copied from https://mui.com/material-ui/react-tabs/ unless we install @mui/lab
 
