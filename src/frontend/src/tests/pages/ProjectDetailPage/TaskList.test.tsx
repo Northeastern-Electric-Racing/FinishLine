@@ -10,6 +10,7 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
 
+jest.mock('../../../hooks/auth.hooks');
 // delete me when you actually implement onClick
 jest.mock('../../../hooks/toasts.hooks');
 
@@ -25,7 +26,7 @@ const renderComponent = () => {
   );
 };
 
-describe('Rendering TaskList Component', () => {
+describe('TaskList component', () => {
   const spyUseAuthHook = jest.spyOn(authHooks, 'useAuth');
 
   beforeEach(() => {
@@ -44,20 +45,22 @@ describe('Rendering TaskList Component', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
   });
 
-  it('renders New Task button', () => {
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeInTheDocument();
-  });
+  describe('New Task button', () => {
+    it('renders New Task button', () => {
+      renderComponent();
+      expect(screen.getByText('New Task')).toBeInTheDocument();
+    });
 
-  it('enables New Task button for leadership', () => {
-    spyUseAuthHook.mockReturnValue(mockAuth(false, exampleLeadershipUser));
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeEnabled();
-  });
+    it('enables New Task button for leadership', () => {
+      spyUseAuthHook.mockReturnValue(mockAuth(false, exampleLeadershipUser));
+      renderComponent();
+      expect(screen.getByText('New Task')).toBeEnabled();
+    });
 
-  it('disables New Task button for guests', () => {
-    spyUseAuthHook.mockReturnValue(mockAuth(false, exampleGuestUser));
-    renderComponent();
-    expect(screen.getByText('New Task')).toBeDisabled();
+    it('disables New Task button for guests', () => {
+      spyUseAuthHook.mockReturnValue(mockAuth(false, exampleGuestUser));
+      renderComponent();
+      expect(screen.getByText('New Task')).toBeDisabled();
+    });
   });
 });
