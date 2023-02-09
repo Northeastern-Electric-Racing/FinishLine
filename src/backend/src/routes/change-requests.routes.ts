@@ -67,6 +67,8 @@ changeRequestsRouter.post(
   ChangeRequestsController.createStandardChangeRequest
 );
 
+changeRequestsRouter.post('/:crid/delete', ChangeRequestsController.deleteChangeRequest);
+
 changeRequestsRouter.post(
   '/new/proposed-solution',
   intMinZero(body('submitterId')),

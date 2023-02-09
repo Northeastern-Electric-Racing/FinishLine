@@ -582,4 +582,26 @@ export default class ChangeRequestsService {
 
     return createProposedSolution.proposedSolutionId;
   }
+
+  /**
+   * Deletes the Change Request
+   * @param submitter The user who deleted the change request
+   * @param crId the change request to be deleted
+   */
+  static async deleteChangeRequest(submitter: User, crId: number): Promise<void> {
+    // verify user is allowed to delete change requests
+    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN')) throw new AccessDeniedException();
+
+    // ensure existence of change request
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId }
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    prisma.change_Request.update({
+      where: { crId },
+      data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
+    });
+  }
 }
