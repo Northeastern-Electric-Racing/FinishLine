@@ -288,7 +288,8 @@ describe('Change Requests', () => {
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
     });
   });
-  describe('addProposedSolution', () => {
+
+  describe('add Proposed Solution', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
@@ -341,7 +342,7 @@ describe('Change Requests', () => {
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('accepted addProposedSolution', async () => {
+    test('accepted new Proposed Solution', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
       jest.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
