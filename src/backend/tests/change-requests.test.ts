@@ -288,4 +288,40 @@ describe('Change Requests', () => {
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Delete Change Request', () => {
+    test('User does not have permissions', async () => {
+      await expect(() => ChangeRequestsService.deleteChangeRequest(wonderwoman, 1)).rejects.toThrow(
+        new AccessDeniedException()
+      );
+    });
+
+    test('Change Request does not exist', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
+        new NotFoundException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already deleted', async () => {
+      jest
+        .spyOn(prisma.change_Request, 'findUnique')
+        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
+      await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
+        new HttpException(400, 'This change request has already been deleted!')
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request successfully deleted', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest
+        .spyOn(prisma.change_Request, 'update')
+        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date(), deletedByUserId: superman.userId });
+      await ChangeRequestsService.deleteChangeRequest(superman, 1);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    });
+  });
 });
