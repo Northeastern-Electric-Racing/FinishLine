@@ -117,7 +117,7 @@ export default class ProjectsService {
     features: DescriptionBullet[],
     otherConstraints: DescriptionBullet[],
     // DON'T GET THIS PART
-    name: string | null,
+    name: string,
     googleDriveFolderLink: string | null,
     slideDeckLink: string | null,
     bomLink: string | null,
