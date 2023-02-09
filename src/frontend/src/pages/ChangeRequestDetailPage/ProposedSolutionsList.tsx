@@ -48,10 +48,9 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
   return (
     <>
       <div className={styles.proposedSolutionsList}>
-        {proposedSolutions.map((proposedSolution, i) => {
-          const component = <ProposedSolutionView key={i} proposedSolution={proposedSolution} />;
-          return proposedSolution.approved ? component : <div style={{ opacity: 0.5 }}>{component}</div>;
-        })}
+        {proposedSolutions.map((proposedSolution, i) => (
+          <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
+        ))}
       </div>
       {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
         <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
