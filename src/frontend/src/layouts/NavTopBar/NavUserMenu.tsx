@@ -91,11 +91,7 @@ const NavUserMenu: React.FC = () => {
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        {process.env.NODE_ENV === 'development' && googleAuthClientId
-          ? { googleLogout, devLogout }
-          : googleAuthClientId
-          ? googleLogout
-          : devLogout}
+        {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
   );
