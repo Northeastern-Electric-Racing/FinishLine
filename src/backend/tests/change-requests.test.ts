@@ -307,7 +307,7 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('access denied', async () => {
+    test('user access denied', async () => {
       await expect(() =>
         ChangeRequestsService.addProposedSolution(wonderwoman, crId, budgetImpact, description, timelineImpact, scopeImpact)
       ).rejects.toThrow(new AccessDeniedException());
@@ -331,7 +331,7 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('nonexistent scope CR', async () => {
+    test('scope CR not found', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
       await expect(() =>
