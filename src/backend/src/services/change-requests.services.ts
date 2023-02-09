@@ -601,7 +601,7 @@ export default class ChangeRequestsService {
 
     if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
 
-    prisma.change_Request.update({
+    await prisma.change_Request.update({
       where: { crId },
       data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
     });
