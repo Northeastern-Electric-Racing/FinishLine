@@ -46,8 +46,6 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
     </NERButton>
   );
 
-  // TabPanel stuff copied from https://mui.com/material-ui/react-tabs/ unless we install @mui/lab
-
   return (
     <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
