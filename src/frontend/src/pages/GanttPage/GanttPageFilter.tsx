@@ -136,7 +136,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item xs={12} md={2}>
           <FormControl sx={{ width: '100%' }}>
             <FormLabel>Status</FormLabel>
-            <Select value={status} onChange={statusHandler}>
+            <Select value={status} onChange={statusHandler} autoWidth>
               <MenuItem value="All Statuses">All Statuses</MenuItem>
               {Object.values(WbsElementStatus).map((status) => {
                 return (
@@ -151,7 +151,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item xs={12} md={2}>
           <FormControl sx={{ width: '100%' }}>
             <FormLabel>Team</FormLabel>
-            <Select value={selectedTeam} onChange={teamHandler}>
+            <Select value={selectedTeam} onChange={teamHandler} autoWidth>
               <MenuItem value="All Teams">All Teams</MenuItem>
               {teamList.map((team) => (
                 <MenuItem key={team} value={team}>
