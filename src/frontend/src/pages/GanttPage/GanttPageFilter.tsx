@@ -134,7 +134,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
         {carFilters}
         <Grid item xs={12} md={2}>
-          <FormControl sx={{ width: '100%' }}>
+          <FormControl sx={{ maxWidth: '100%', wordBreak: 'break-all' }}>
             <FormLabel>Status</FormLabel>
             <Select value={status} onChange={statusHandler} autoWidth>
               <MenuItem value="All Statuses">All Statuses</MenuItem>
@@ -149,7 +149,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={2}>
-          <FormControl sx={{ width: '100%' }}>
+          <FormControl sx={{ maxWidth: '100%', wordBreak: 'break-all' }}>
             <FormLabel>Team</FormLabel>
             <Select value={selectedTeam} onChange={teamHandler} autoWidth>
               <MenuItem value="All Teams">All Teams</MenuItem>
