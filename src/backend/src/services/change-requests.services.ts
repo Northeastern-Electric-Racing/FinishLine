@@ -601,8 +601,7 @@ export default class ChangeRequestsService {
 
     if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
 
-    if (foundCR.reviewerId)
-      throw new HttpException(400, `Cannot delete a reviewed change request!`);
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot delete a reviewed change request!`);
 
     await prisma.change_Request.update({
       where: { crId },
