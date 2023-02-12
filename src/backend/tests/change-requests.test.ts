@@ -314,6 +314,16 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    test('Change request already reviewed', async () => {
+      jest
+        .spyOn(prisma.change_Request, 'findUnique')
+        .mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1});
+      await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
+        new HttpException(400, 'Cannot delete a reviewed change request!')
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
     test('Change request successfully deleted', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest
