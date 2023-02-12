@@ -55,7 +55,7 @@ export default class ProjectsService {
 
     return projectTransformer(project);
   }
-  static async newProject(
+  static async createProject(
     user: User,
     teamId: string,
     carNumber: number,

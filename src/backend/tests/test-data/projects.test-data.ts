@@ -1,11 +1,10 @@
-import { Prisma, WBS_Element_Status } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { Project as PrismaProject } from '@prisma/client';
-import { WBS_Element as PrismaWBSElement } from '@prisma/client';
 import { projectQueryArgs } from '../../src/prisma-query-args/projects.query-args';
 import { batman } from './users.test-data';
 import { prismaTeam1 } from './teams.test-data';
-import { prismaRisk1, prismaRisk2 } from './risks.test-data';
+import { prismaRisk1 } from './risks.test-data';
 // WHEN IT SHOWS 'PRISMAPROJECT & { .... }' DOES THAT MEAN I CAN JUST PUT A VARIABLE OF TYPE PRISMAPROJECT IN OR DO I HAVE TO WRITE OUT ALL THE FIELDS OF PRISMAPROJECT?
 
 export const prismaProject1: PrismaProject = {

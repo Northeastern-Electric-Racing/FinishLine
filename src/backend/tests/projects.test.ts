@@ -1,17 +1,13 @@
 import request from 'supertest';
-import express from 'express';
-import projectRouter from '../src/routes/projects.routes';
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber, projectTransformer } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { project1, wbsElement1 } from './test-data/projects.test-data';
+import { project1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
-
-//const app = express();
-//app.use(express.json());
-//app.use('/', projectRouter);
+import ProjectsService from '../src/services/projects.services';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 //jest.mock('../src/utils/projects.utils');
 //const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -56,11 +52,14 @@ describe('Projects', () => {
   });*/
 
   test('createProject works', async () => {
-    const { teamId, carNumber, name, summary, crId } = project1;
+    const { teamId, wbsElement, summary } = project1;
+    const { carNumber, name } = wbsElement;
+    const crId = 10;
     mockGetHighestProjectNumber.mockResolvedValue(0);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
-      wbsElementId: 1,
+      ...prismaWbsElement1
+      /*wbsElementId: 1,
       status: 'ACTIVE',
       carNumber: 1,
       projectNumber: 2,
@@ -70,11 +69,16 @@ describe('Projects', () => {
       deletedByUserId: null,
       name: 'car',
       projectLeadId: 4,
-      projectManagerId: 5
+      projectManagerId: 5*/
     });
-    const res = await request(app).post('/new').send(newProjectPayload);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual('1.2.3');
+
+    const wbsString = await ProjectsService.createProject(batman, teamId, carNumber, name, summary, crId);
+
+    expect(wbsString).toStrictEqual(
+      `${prismaWbsElement1.carNumber}.${prismaWbsElement1.projectNumber}.${prismaWbsElement1.workPackageNumber}`
+    );
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.user.create).toHaveBeenCalledTimes(1);
   });
 
   /*test('editProject fails with feature with no detail', async () => {

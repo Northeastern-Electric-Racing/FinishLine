@@ -29,7 +29,7 @@ export default class ProjectsController {
 
       const user = await getCurrentUser(res);
 
-      const wbsString: string = await ProjectsService.newProject(user, teamId, carNumber, name, summary, crId);
+      const wbsString: string = await ProjectsService.createProject(user, teamId, carNumber, name, summary, crId);
       res.status(200).json(wbsString);
     } catch (error: unknown) {
       next(error);
