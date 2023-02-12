@@ -3,12 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { NERButton } from '../../../components/NERButton';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { Add } from '@mui/icons-material';
+import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskListTabPanel from './TaskListTabPanel';
@@ -32,18 +31,20 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   };
 
   const addTaskButton: JSX.Element = (
-    <NERButton
-      variant="contained"
+    <Button
+      variant="outlined"
       disabled={auth.user?.role === 'GUEST'}
-      startIcon={<Add />}
+      startIcon={<AddTask />}
       sx={{
         height: 32,
-        px: '12px'
+        px: '12px',
+        textTransform: 'none',
+        fontSize: 16
       }}
       onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
     >
       New Task
-    </NERButton>
+    </Button>
   );
 
   return (
