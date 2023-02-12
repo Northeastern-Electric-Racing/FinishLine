@@ -62,6 +62,13 @@ enum Scope_CR_Why_Type {
   OTHER
 }
 
+enum WP_Stage {
+  RESEARCH
+  DESIGN
+  MANUFACTURING
+  INTEGRATION
+}
+
 model User {
   userId       Int            @id @default(autoincrement())
   firstName    String
@@ -267,6 +274,7 @@ model Work_Package {
   dependencies       WBS_Element[]        @relation(name: "dependencies")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
+  stage              WP_Stage?
 }
 
 model Description_Bullet {

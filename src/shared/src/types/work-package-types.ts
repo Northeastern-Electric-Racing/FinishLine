@@ -9,3 +9,10 @@ export enum TimelineStatus {
   Behind = 'BEHIND',
   VeryBehind = 'VERY_BEHIND'
 }
+
+export enum WPStage {
+  Research = 'RESEARCH',
+  Design = 'DESIGN',
+  Manufacturing = 'MANUFACTURING',
+  Integration = 'INTEGRATION'
+}

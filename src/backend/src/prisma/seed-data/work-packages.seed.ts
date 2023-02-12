@@ -3,10 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status, WP_Stage } from '@prisma/client';
 
 const dbSeedWorkPackage1: any = {
   projectId: 1,
+  stage: WP_Stage.DESIGN,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 1,
@@ -43,6 +44,7 @@ const dbSeedWorkPackage1: any = {
 
 const dbSeedWorkPackage2: any = {
   projectId: 1,
+  stage: WP_Stage.INTEGRATION,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 1,
@@ -84,6 +86,7 @@ const dbSeedWorkPackage2: any = {
 
 const dbSeedWorkPackage3: any = {
   projectId: 5,
+  stage: WP_Stage.MANUFACTURING,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 25,
