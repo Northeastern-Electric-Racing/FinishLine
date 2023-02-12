@@ -6,6 +6,7 @@ import { prismaRisk1, prismaRisk2, sharedRisk1 } from './test-data/risks.test-da
 import { batman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
+import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
 
 describe('Risks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -17,6 +18,17 @@ describe('Risks', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  test('getRisksForProject fails when unknown projectId given', async () => {
+    const fakeProjectId = 100;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+    jest.spyOn(prisma.risk, 'findMany').mockResolvedValue([]);
+
+    await expect(() => RisksService.getRisksForProject(fakeProjectId)).rejects.toThrow(
+      new NotFoundException('Project', fakeProjectId)
+    );
+    expect(prisma.risk.findMany).toHaveBeenCalledTimes(0);
   });
 
   test('getRisksForProject works', async () => {
@@ -101,6 +113,36 @@ describe('Risks', () => {
         },
         ...riskQueryArgs
       });
+    });
+
+    test('the risk that is trying to be edited does not exist', async () => {
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+
+      const riskId = 'riskId';
+      const resolved = false;
+      const detail = 'detail';
+      await expect(() => RisksService.editRisk(batman, riskId, detail, resolved)).rejects.toThrow(
+        new NotFoundException('Risk', riskId)
+      );
+      expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(0);
+    });
+
+    test('the user does not have permissions to edit the risk', async () => {
+      jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
+
+      const riskId = 'riskId';
+      const resolved = false;
+      const detail = 'detail';
+      await expect(() => RisksService.editRisk(batman, riskId, detail, resolved)).rejects.toThrow(
+        new AccessDeniedException()
+      );
+      expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
   });
 });

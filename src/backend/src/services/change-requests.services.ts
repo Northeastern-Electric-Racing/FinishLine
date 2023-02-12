@@ -473,9 +473,8 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: Scope_CR_Why[],
-    budgetImpact: number
-  ): Promise<Number> {
+    why: Scope_CR_Why[]
+  ): Promise<number> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -527,7 +526,7 @@ export default class ChangeRequestsService {
       const slackMsg =
         `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
         `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId, budgetImpact);
+      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
     }
 
     return createdCR.crId;

@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, superman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, batmanSettings, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
 import {
   prismaProposedSolution1,
   whipExpectedActivites,
@@ -12,7 +12,7 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaWorkPackage1 } from './test-data/work-packages.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { CR_Type } from '@prisma/client';
-import ChangeRequestsService from '../src/services/change-request.services';
+import ChangeRequestsService from '../src/services/change-requests.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
@@ -286,6 +286,71 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
       expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('add Proposed Solution', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    const crId = 1;
+    const budgetImpact = 100;
+    const timelineImpact = 10;
+    const scopeImpact = 'huge';
+    const description = 'Change Color from Orange to Black';
+
+    test('change request not found error', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      await expect(() =>
+        ChangeRequestsService.addProposedSolution(superman, crId, budgetImpact, description, timelineImpact, scopeImpact)
+      ).rejects.toThrow(new NotFoundException('Change Request', crId));
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('user access denied', async () => {
+      await expect(() =>
+        ChangeRequestsService.addProposedSolution(wonderwoman, crId, budgetImpact, description, timelineImpact, scopeImpact)
+      ).rejects.toThrow(new AccessDeniedException());
+    });
+
+    test('change request deleted', async () => {
+      jest
+        .spyOn(prisma.change_Request, 'findUnique')
+        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date('1/1/2023') });
+      await expect(() =>
+        ChangeRequestsService.addProposedSolution(greenlantern, crId, budgetImpact, description, timelineImpact, scopeImpact)
+      ).rejects.toThrow(new HttpException(400, 'This change request has been deleted!'));
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('already accepted change request', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
+      await expect(() =>
+        ChangeRequestsService.addProposedSolution(aquaman, crId, budgetImpact, description, timelineImpact, scopeImpact)
+      ).rejects.toThrow(new HttpException(400, 'Cannot create proposed solutions on a reviewed change request!'));
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('scope CR not found', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
+      await expect(() =>
+        ChangeRequestsService.addProposedSolution(aquaman, crId, budgetImpact, description, timelineImpact, scopeImpact)
+      ).rejects.toThrow(new NotFoundException('Change Request', crId));
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('accepted new Proposed Solution', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
+      jest.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
+      const response = await ChangeRequestsService.addProposedSolution(aquaman, crId, 1000, description, 10, 'huge');
+      expect(response).toStrictEqual(prismaProposedSolution1.proposedSolutionId);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
     });
   });
 });

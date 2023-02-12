@@ -13,16 +13,19 @@ import ErrorPage from '../ErrorPage';
 import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Link } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { NERButton } from '../../components/NERButton';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(50);
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
+
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
 
   const baseColDef: any = {
     flex: 1,
@@ -137,22 +140,14 @@ const ChangeRequestsTable: React.FC = () => {
           title={'Change Requests'}
           previousPages={[]}
           actionButton={
-            <Button
-              style={{
-                textTransform: 'none',
-                fontSize: 16,
-                backgroundColor: '#ff0000',
-                borderColor: '#0062cc',
-                boxShadow: 'none'
-              }}
-              component={Link}
-              to={routes.CHANGE_REQUESTS_NEW}
+            <NERButton
               variant="contained"
               disabled={auth.user?.role === 'GUEST'}
               startIcon={<Add />}
+              onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
             >
               New Change Request
-            </Button>
+            </NERButton>
           }
         />
       </div>
@@ -162,7 +157,10 @@ const ChangeRequestsTable: React.FC = () => {
         density="compact"
         pageSize={pageSize}
         rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('cr-table-row-count', String(newPageSize));
+          setPageSize(newPageSize);
+        }}
         loading={isLoading}
         error={error}
         rows={

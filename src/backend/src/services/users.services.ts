@@ -1,12 +1,12 @@
 import { Role, User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, User } from 'shared';
+import { AuthenticatedUser, ThemeName, User } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
-import { rankUserRole } from '../utils/users.utils';
+import { rankUserRole } from 'shared';
 import { generateAccessToken } from '../utils/auth.utils';
 
 export default class UsersService {
@@ -64,7 +64,7 @@ export default class UsersService {
    * @returns the updated settings
    * @throws if the user does not exist
    */
-  static async updateUserSettings(user: PrismaUser, defaultTheme: any, slackId: string): Promise<User_Settings> {
+  static async updateUserSettings(user: PrismaUser, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
