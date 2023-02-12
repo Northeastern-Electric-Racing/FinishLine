@@ -24,7 +24,7 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   // TODO: delete me when you actually implement onClick
   const toast = useToast();
 
-  const [value, setValue] = useState<number>(0);
+  const [value, setValue] = useState<number>(1);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
@@ -51,8 +51,8 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
     <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
-          <Tab label="In Progress" aria-label="in-progress" />
           <Tab label="In Backlog" aria-label="in-backlog" />
+          <Tab label="In Progress" aria-label="in-progress" />
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
