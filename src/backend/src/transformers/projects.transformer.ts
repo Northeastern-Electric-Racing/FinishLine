@@ -7,7 +7,8 @@ import {
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
   calculateDuration,
-  calculateProjectStartDate
+  calculateProjectStartDate,
+  WPStage
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import riskTransformer from '../transformers/risks.transformer';
@@ -90,7 +91,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         dependencies: workPackage.dependencies.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter),
-        projectName: wbsElement.name
+        projectName: wbsElement.name,
+        stage: (workPackage.stage as WPStage) ?? undefined
       };
     })
   };

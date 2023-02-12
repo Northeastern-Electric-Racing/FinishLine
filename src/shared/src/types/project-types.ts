@@ -65,7 +65,7 @@ export interface WorkPackage extends WbsElement {
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
   projectName: string;
-  stage: WPStage;
+  stage?: WPStage;
 }
 
 export interface DescriptionBullet {
