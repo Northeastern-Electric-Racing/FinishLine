@@ -33,6 +33,8 @@ import { wbsPipe } from '../../../utils/pipes';
 import { useHistory } from 'react-router';
 import { WbsNumber, User } from 'shared';
 import { NERButton } from '../../../components/NERButton';
+import NERFailButton from '../../../components/NERFailButton';
+import NERSuccessButton from '../../../components/NERSuccessButton';
 interface RiskLogProps {
   projectId: number;
   wbsNum: WbsNumber;
@@ -215,8 +217,12 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Close</Button>
-            <Button type="submit">Save Changes</Button>
+            <NERFailButton onClick={handleClose} sx={{ mx: 2 }}>
+              Closesx=
+            </NERFailButton>
+            <NERSuccessButton type="submit" sx={{ mx: 2 }}>
+              Save Changes
+            </NERSuccessButton>
           </DialogActions>
         </form>
       </Dialog>
