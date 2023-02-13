@@ -17,7 +17,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
     <PageBlock title="Project Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: 675 }}>
+          <FormControl sx={{ width: '60%' }}>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
               name="name"
@@ -28,7 +28,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: 200 }}>
+          <FormControl sx={{ width: '30%' }}>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
               name="budget"
@@ -41,43 +41,47 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={12}>
-          <Controller
-            name="projectLeadId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <FormControl>
-                <FormLabel>Project Lead</FormLabel>
-                <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </FormControl>
-            )}
-          />
-          <Controller
-            name="projectManagerId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <FormControl>
-                <FormLabel>Project Manager</FormLabel>
-                <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </FormControl>
-            )}
-          />
+          <FormControl>
+            <Controller
+              name="projectLeadId"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <FormLabel>Project Lead</FormLabel>
+                  <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
+                    {users.map((t) => (
+                      <MenuItem key={t.userId} value={t.userId}>
+                        {fullNamePipe(t)}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </>
+              )}
+            />
+          </FormControl>
+          <FormControl>
+            <Controller
+              name="projectManagerId"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <FormLabel>Project Manager</FormLabel>
+                  <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
+                    {users.map((t) => (
+                      <MenuItem key={t.userId} value={t.userId}>
+                        {fullNamePipe(t)}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </>
+              )}
+            />
+          </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: 675 }}>
+          <FormControl sx={{ width: '30%' }}>
             <FormLabel>Slide Deck Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
@@ -88,7 +92,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: 675 }}>
+          <FormControl sx={{ width: '30%' }}>
             <FormLabel>Google Drive Folder Link</FormLabel>
             <ReactHookTextField
               name="googleDriveFolderLink"
@@ -99,7 +103,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: 675 }}>
+          <FormControl sx={{ width: '30%' }}>
             <FormLabel>Bom Link</FormLabel>
             <ReactHookTextField
               name="bomLink"
@@ -110,7 +114,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: 675 }}>
+          <FormControl sx={{ width: '30%' }}>
             <FormLabel>Task List Link</FormLabel>
             <ReactHookTextField
               name="taskListLink"
