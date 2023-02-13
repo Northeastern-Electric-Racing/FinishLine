@@ -15,6 +15,7 @@ import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { RoleEnum, User } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
@@ -24,6 +25,7 @@ const AdminToolsUserMangaement: React.FC = () => {
   const { isLoading, isError, error, data: users } = useAllUsers();
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
+  const toast = useToast();
 
   const styles = {
     roleSelectStyle: {
@@ -73,7 +75,9 @@ const AdminToolsUserMangaement: React.FC = () => {
       setHideSuccessLabel(false);
       setUser(null);
     } catch (e) {
-      alert(e);
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
     }
   };
 
