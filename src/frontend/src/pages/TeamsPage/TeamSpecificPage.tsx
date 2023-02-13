@@ -8,7 +8,6 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ActiveProjectCardView from './ProjectCardsView';
 import DescriptionPageBlock from './DescriptionPageBlock';
-import TeamsPage from './TeamsPage';
 import { routes } from '../../utils/routes';
 
 interface ParamTypes {
