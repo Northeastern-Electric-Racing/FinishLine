@@ -15,9 +15,12 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Projects', () => {
   beforeEach(() => {
-    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+    /*jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
       return prismaChangeRequest1;
-    });
+    });*/
+    jest.spyOn(projectUtils, 'hasProjectPermissions').mockResolvedValue(true);
+    jest.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string);
   });
 
   afterEach(() => {
@@ -55,7 +58,7 @@ describe('Projects', () => {
     const { teamId, wbsElement, summary } = project1;
     const { carNumber, name } = wbsElement;
     const crId = 10;
-    mockGetHighestProjectNumber.mockResolvedValue(0);
+    //mockGetHighestProjectNumber.mockResolvedValue(0);
     jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     jest.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({
       ...prismaWbsElement1
@@ -78,7 +81,25 @@ describe('Projects', () => {
       `${prismaWbsElement1.carNumber}.${prismaWbsElement1.projectNumber}.${prismaWbsElement1.workPackageNumber}`
     );
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.user.create).toHaveBeenCalledTimes(1);
+    expect(prisma.wBS_Element.create).toHaveBeenCalledTimes(1);
+  });
+
+  test('getSingleProject works', async () => {
+    const { wbsElement } = project1;
+    jest.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(wbsElement);
+    mockProjectTransformer.mockReturnValue({ message: 'projectTransformer called' });
+
+    const project = await ProjectsService.getSingleProject(wbsElement);
+
+    expect(project).toStrictEqual(project1);
+    expect(prisma.wBS_Element.findFirst).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
+  });
+
+  test('getAllProjects works', async () => {
+    jest.spyOn(prisma.project, 'findMany').mockResolvedValue([]);
+    expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
+    expect(res.body).toStrictEqual([]);
   });
 
   /*test('editProject fails with feature with no detail', async () => {
@@ -117,22 +138,6 @@ describe('Projects', () => {
     expect(res.statusCode).toBe(404);
     expect(res.body).toStrictEqual({ message: 'project 2.4.0 not found!' });
   });*/
-
-  test('getSingleProject works', async () => {
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(wbsElement1);
-    mockProjectTransformer.mockReturnValue({ message: 'projectTransformer called' });
-    const res = await request(app).get('/1.2.0');
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toStrictEqual({ message: 'projectTransformer called' });
-  });
-
-  test('getAllProjects works', async () => {
-    jest.spyOn(prisma.project, 'findMany').mockResolvedValue([]);
-    const res = await request(app).get('');
-    expect(res.statusCode).toBe(200);
-    expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
-    expect(res.body).toStrictEqual([]);
-  });
 
   /*test('setProjectTeam fails given invalid project wbs number', async () => {
     const res = await request(app).post('/1.0.1/set-team').send({ teamId: 'test' });
