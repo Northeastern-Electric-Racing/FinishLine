@@ -20,4 +20,14 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async editTaskStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.body;
+      const user: User = await getCurrentUser(res);
+      // TODO: call service function to edit task
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
