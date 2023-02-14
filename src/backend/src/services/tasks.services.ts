@@ -4,6 +4,7 @@ import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { getUsers } from '../utils/users.utils';
 
 export default class TasksService {
   /**
@@ -41,6 +42,9 @@ export default class TasksService {
 
     if (requestedWbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
 
+    // this throws if any of the users aren't found
+    const users = await getUsers(assignees);
+
     const createdTask = await prisma.task.create({
       data: {
         wbsElement: { connect: { wbsNumber: wbsNum } },
@@ -50,7 +54,7 @@ export default class TasksService {
         priority,
         status,
         createdBy: { connect: { userId: createdBy.userId } },
-        assignees: { connect: assignees.map((userId) => ({ userId })) }
+        assignees: { connect: users.map((user) => ({ userId: user.userId })) }
       },
       ...taskQueryArgs
     });
