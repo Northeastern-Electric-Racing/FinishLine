@@ -24,6 +24,42 @@ export const taskSaveTheDayPrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> =
   createdBy: batman
 };
 
+export const taskSaveTheDayInProgressPrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> = {
+  taskId: '1',
+  wbsElementId: 1,
+  dateCreated: new Date(),
+  title: 'Save the day',
+  notes: 'Save people from burning building',
+  deadline: new Date(),
+  priority: 'HIGH',
+  status: 'IN_PROGRESS',
+  deletedByUserId: null,
+  dateDeleted: null,
+  createdByUserId: 1,
+  assignees: [greenlantern, wonderwoman],
+  wbsElement: prismaWbsElement1,
+  deletedBy: null,
+  createdBy: batman
+};
+
+export const taskSaveTheDayDonePrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> = {
+  taskId: '1',
+  wbsElementId: 1,
+  dateCreated: new Date(),
+  title: 'Save the day',
+  notes: 'Save people from burning building',
+  deadline: new Date(),
+  priority: 'HIGH',
+  status: 'DONE',
+  deletedByUserId: null,
+  dateDeleted: null,
+  createdByUserId: 1,
+  assignees: [greenlantern, wonderwoman],
+  wbsElement: prismaWbsElement1,
+  deletedBy: null,
+  createdBy: batman
+};
+
 export const taskSaveTheDayShared: SharedTask = {
   taskId: '1',
   wbsNum: {
@@ -37,6 +73,44 @@ export const taskSaveTheDayShared: SharedTask = {
   deadline: new Date(),
   priority: TaskPriority.High,
   status: TaskStatus.IN_BACKLOG,
+  assignees: [greenlantern, wonderwoman],
+  createdBy: userTransformer(batman),
+  dateDeleted: undefined,
+  deletedBy: undefined
+};
+
+export const taskSaveTheDayInProgressShared: SharedTask = {
+  taskId: '1',
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 0
+  },
+  dateCreated: new Date(),
+  title: 'Save the day',
+  notes: 'Save people from burning building',
+  deadline: new Date(),
+  priority: TaskPriority.High,
+  status: TaskStatus.IN_PROGRESS,
+  assignees: [greenlantern, wonderwoman],
+  createdBy: userTransformer(batman),
+  dateDeleted: undefined,
+  deletedBy: undefined
+};
+
+export const taskSaveTheDayDoneShared: SharedTask = {
+  taskId: '1',
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 0
+  },
+  dateCreated: new Date(),
+  title: 'Save the day',
+  notes: 'Save people from burning building',
+  deadline: new Date(),
+  priority: TaskPriority.High,
+  status: TaskStatus.DONE,
   assignees: [greenlantern, wonderwoman],
   createdBy: userTransformer(batman),
   dateDeleted: undefined,
