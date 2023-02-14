@@ -290,10 +290,6 @@ describe('Change Requests', () => {
   });
 
   describe('add Proposed Solution', () => {
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
-
     const crId = 1;
     const budgetImpact = 100;
     const timelineImpact = 10;
