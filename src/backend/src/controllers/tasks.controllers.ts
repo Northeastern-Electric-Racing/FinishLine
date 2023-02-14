@@ -28,7 +28,10 @@ export default class TasksController {
       const taskId = req.params.taskId;
 
       const user: User = await getCurrentUser(res);
-      // TODO: call service function to edit task
+
+      const updatedTask = await TasksService.editTaskStatus(user, taskId, status);
+
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
       next(error);
     }
