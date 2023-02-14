@@ -19,7 +19,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const allowedHeaders = isProd ? prodHeaders : '*';
 const options: cors.CorsOptions = {
   origin: ['http://localhost:3000', 'https://finishlinebyner.com', 'https://qa.finishlinebyner.com'],
-  methods: 'GET, POST',
+  methods: 'GET, POST, DELETE',
   credentials: true,
   preflightContinue: true,
   exposedHeaders: '*',
