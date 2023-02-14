@@ -66,14 +66,35 @@ describe('Tasks', () => {
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    test('create task fails when assignees do not exist has been deleted', async () => {
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([wonderwoman]);
+
+      await expect(() =>
+        TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
+          batman.userId,
+          wonderwoman.userId
+        ])
+      ).rejects.toThrow(new HttpException(404, `User(s) with the following ids not found: 1`));
+
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
+    });
+
     test('create task succeeds', async () => {
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       jest.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
-      const task = await TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', []);
+      const task = await TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
+        batman.userId,
+        wonderwoman.userId
+      ]);
 
       expect(task).toStrictEqual(taskSaveTheDayShared);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.create).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
   });
 });
