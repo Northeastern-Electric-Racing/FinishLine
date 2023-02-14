@@ -134,14 +134,14 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
         {carFilters}
         <Grid item xs={12} md={2}>
-          <FormControl sx={{ maxWidth: '100%', wordBreak: 'break-all' }}>
+          <FormControl sx={{ width: '100%' }}>
             <FormLabel>Status</FormLabel>
-            <Select value={status} onChange={statusHandler} autoWidth>
+            <Select value={status} onChange={statusHandler}>
               <MenuItem value="All Statuses">All Statuses</MenuItem>
               {Object.values(WbsElementStatus).map((status) => {
                 return (
                   <MenuItem key={status} value={status}>
-                    {status}
+                    {status.length > 25 ? `${status.substring(0, 25)}...` : status}
                   </MenuItem>
                 );
               })}
@@ -149,13 +149,13 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={2}>
-          <FormControl sx={{ maxWidth: '100%', wordBreak: 'break-all' }}>
+          <FormControl sx={{ width: '100%' }}>
             <FormLabel>Team</FormLabel>
-            <Select value={selectedTeam} onChange={teamHandler} autoWidth>
+            <Select value={selectedTeam} onChange={teamHandler}>
               <MenuItem value="All Teams">All Teams</MenuItem>
               {teamList.map((team) => (
                 <MenuItem key={team} value={team}>
-                  {team}
+                  {team.length > 25 ? `${team.substring(0, 25)}...` : team}
                 </MenuItem>
               ))}
             </Select>
