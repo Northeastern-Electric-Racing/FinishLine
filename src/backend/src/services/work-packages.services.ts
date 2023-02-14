@@ -493,36 +493,10 @@ export default class WorkPackagesService {
 
     const { carNumber, projectNumber, workPackageNumber } = parsedWbs;
 
-    // Verify if the work package to be deleted exist
+    // Verify if the work package to be deleted exist and if it already has been deleted
     const work_package = await prisma.work_Package.findFirst({
       where: {
         wbsElement: {
-          carNumber,
-          projectNumber,
-          workPackageNumber
-        }
-      }
-    });
-
-    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(parsedWbs));
-
-    // Delete a description bullets that is related to the work package to be deleted
-    await prisma.description_Bullet.deleteMany({
-      where: {
-        workPackageExpectedActivities: work_package
-      }
-    });
-
-    await prisma.description_Bullet.deleteMany({
-      where: {
-        workPackageDeliverables: work_package
-      }
-    });
-
-    // Verifiy if given wbs num's element exists
-    const WbsElement = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
           carNumber,
           projectNumber,
           workPackageNumber
@@ -531,32 +505,117 @@ export default class WorkPackagesService {
       ...workPackageQueryArgs
     });
 
-    if (!WbsElement) throw new NotFoundException('WBS Element', wbsPipe(parsedWbs));
+    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(parsedWbs));
+    if (work_package.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has been deleted!');
 
-    // Remove a work package to be deleted from related wbs_element's work package list
-    const workPackages = WbsElement.dependencies as Work_Package[];
+    // // Delete a description bullets that is related to the work package to be deleted
+    // await prisma.description_Bullet.deleteMany({
+    //   where: {
+    //     workPackageExpectedActivities: work_package
+    //   }
+    // });
 
-    const updatedWorkPackages = workPackages.filter((wp) => wp !== work_package);
+    // await prisma.description_Bullet.deleteMany({
+    //   where: {
+    //     workPackageDeliverables: work_package
+    //   }
+    // });
 
+    // // Verifiy if given wbs num's element exists
+    // const WbsElement = await prisma.wBS_Element.findUnique({
+    //   where: {
+    //     wbsNumber: {
+    //       carNumber,
+    //       projectNumber,
+    //       workPackageNumber
+    //     }
+    //   },
+    //   ...workPackageQueryArgs
+    // });
+
+    // if (!WbsElement) throw new NotFoundException('WBS Element', wbsPipe(parsedWbs));
+
+    // // Remove a work package to be deleted from related wbs_element's work package list
+    // const workPackages = WbsElement.dependencies as Work_Package[];
+
+    // const updatedWorkPackages = workPackages.filter((wp) => wp !== work_package);
+
+    // await prisma.wBS_Element.update({
+    //   where: {
+    //     wbsNumber: {
+    //       carNumber,
+    //       projectNumber,
+    //       workPackageNumber
+    //     }
+    //   },
+    //   data: {
+    //     dependentWorkPackages: {
+    //       set: updatedWorkPackages
+    //     }
+    //   }
+    // });
+
+    const { wbsElementId, workPackageId } = work_package;
+
+    // Soft delete the given wp's wbs by soft deleting crs and task
     await prisma.wBS_Element.update({
       where: {
-        wbsNumber: {
-          carNumber,
-          projectNumber,
-          workPackageNumber
-        }
+        wbsElementId
       },
       data: {
-        dependentWorkPackages: {
-          set: updatedWorkPackages
-        }
+        changeRequests: await prisma.change_Request.updateMany({
+          where: {
+            crId: 0
+          },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: submitter.userId
+          }
+        }),
+        Task: await prisma.task.updateMany({
+          where: {
+            taskId: ''
+          },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: submitter.userId
+          }
+        })
       }
     });
 
-    // Finally, delete a work package
-    await prisma.work_Package.delete({
+    // soft delete the work package by soft deleting its related fields
+    await prisma.work_Package.update({
       where: {
-        workPackageId: work_package.workPackageId
+        workPackageId
+      },
+      data: {
+        deliverables: await prisma.description_Bullet.updateMany({
+          where: {
+            workPackageDeliverables: work_package
+          },
+          data: {
+            dateDeleted: new Date()
+          }
+        }),
+        expectedActivities: await prisma.description_Bullet.updateMany({
+          where: {
+            workPackageDeliverables: work_package
+          },
+          data: {
+            dateDeleted: new Date()
+          }
+        }),
+        // soft delete all associated wbs_elements in this wp
+        dependencies: await prisma.wBS_Element.updateMany({
+          where: {
+            wbsElementId
+          },
+          data: {
+            dateDeleted: new Date(),
+            deletedByUserId: submitter.userId
+          }
+        })
       }
     });
   }
