@@ -61,4 +61,24 @@ export default class TasksService {
 
     return taskTransformer(createdTask);
   }
+
+  /**
+   * Edits the status of a task in the database
+   * @param user the user editing the task
+   * @param taskId the id of the task
+   * @param status the new status
+   * @returns the updated task
+   * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
+   */
+  static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
+    if (user.role === Role.GUEST) throw new AccessDeniedException();
+
+    // Get the original task and check if it exists
+    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+
+    const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
+    return taskTransformer(updatedTask);
+  }
 }
