@@ -141,7 +141,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               {Object.values(WbsElementStatus).map((status) => {
                 return (
                   <MenuItem key={status} value={status}>
-                    {status.length > 25 ? `${status.substring(0, 25)}...` : status}
+                    {status.length > 50 ? `${status.substring(0, 50)}...` : status}
                   </MenuItem>
                 );
               })}
@@ -155,7 +155,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               <MenuItem value="All Teams">All Teams</MenuItem>
               {teamList.map((team) => (
                 <MenuItem key={team} value={team}>
-                  {team.length > 25 ? `${team.substring(0, 25)}...` : team}
+                  {team.length > 50 ? `${team.substring(0, 50)}...` : team}
                 </MenuItem>
               ))}
             </Select>
