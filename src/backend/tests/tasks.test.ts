@@ -66,7 +66,7 @@ describe('Tasks', () => {
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('create task fails when assignees do not exist has been deleted', async () => {
+    test('create task fails when assignees do not exist', async () => {
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([wonderwoman]);
 
