@@ -48,6 +48,12 @@
   display: flex;
 }
 
+.taskListNameText {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .taskListExpander {
   color: rgb(86 86 86);
   font-size: 0.6rem;
