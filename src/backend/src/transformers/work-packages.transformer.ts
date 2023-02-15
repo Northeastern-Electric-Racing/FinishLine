@@ -36,7 +36,8 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wo
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    projectName: wpInput.project.wbsElement.name
+    projectName: wpInput.project.wbsElement.name,
+    stage: wpInput.stage || undefined
   } as WorkPackage;
 };
 
