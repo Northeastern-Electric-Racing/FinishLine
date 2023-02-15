@@ -31,6 +31,10 @@ export const validateInputs = (req: Request, res: Response, next: Function): Res
   next();
 };
 
-export const buildChangeDetail = (thingChanged: string, oldValue: string, newValue: string): string => {
+export const buildChangeDetail = (
+  thingChanged: string,
+  oldValue: string | number,
+  newValue: string | number | null
+): string => {
   return `Changed ${thingChanged} from "${oldValue}" to "${newValue}"`;
 };

@@ -23,6 +23,8 @@ import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -188,13 +190,13 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           remove={removeDeliverable}
         />
       </PageBlock>
-      <Box textAlign="center" sx={{ my: 2 }}>
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
-          Submit
-        </Button>
-        <Button variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+      <Box textAlign="right" sx={{ my: 2 }}>
+        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
           Cancel
-        </Button>
+        </NERFailButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+          Submit
+        </NERSuccessButton>
       </Box>
     </form>
   );
