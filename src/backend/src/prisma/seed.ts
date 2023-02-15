@@ -14,9 +14,10 @@ import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions.seed';
 import ProjectsService from '../services/projects.services';
-import ChangeRequestsService from '../services/change-request.services';
+import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
+import RisksService from '../services/risks.services';
 
 const prisma = new PrismaClient();
 
@@ -50,27 +51,18 @@ const performSeed: () => Promise<void> = async () => {
     });
   }
 
-  // for (const seedProject of dbSeedAllProjects) {
-  //   await prisma.project.create({
-  //     data: {
-  //       wbsElement: { create: { ...seedProject.wbsElementFields } },
-  //       ...seedProject.projectFields,
-  //       goals: { create: seedProject.goals },
-  //       features: { create: seedProject.features },
-  //       otherConstraints: { create: seedProject.otherConstraints }
-  //     }
-  //   });
-  // }
-
-  const initialProject = await prisma.project.create({
+  /**
+   * Make initial project so that we can start to create other stuff
+   */
+  const genesisProject = await prisma.project.create({
     data: {
       wbsElement: {
         create: {
           carNumber: 0,
           projectNumber: 0,
           workPackageNumber: 0,
-          dateCreated: new Date('09/01/2022'),
-          name: 'Car 0',
+          dateCreated: new Date('01/01/2023'),
+          name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
           projectLeadId: batman.userId,
           projectManagerId: cyborg.userId
@@ -83,11 +75,14 @@ const performSeed: () => Promise<void> = async () => {
     ...projectQueryArgs
   });
 
+  /**
+   * Make an initial change request using the wbs of the genesis project
+   */
   const changeRequest1Id: number = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
-    initialProject.wbsElement.carNumber,
-    initialProject.wbsElement.projectNumber,
-    initialProject.wbsElement.workPackageNumber,
+    genesisProject.wbsElement.carNumber,
+    genesisProject.wbsElement.projectNumber,
+    genesisProject.wbsElement.workPackageNumber,
     CR_Type.OTHER,
     'Initial Change Request',
     [
@@ -95,12 +90,27 @@ const performSeed: () => Promise<void> = async () => {
         scopeCrWhyId: -1,
         scopeCrId: -1,
         type: Scope_CR_Why_Type.INITIALIZATION,
-        explain: 'need this to initialize all this seed data'
+        explain: 'need this to initialize all the seed data'
       }
-    ],
-    0
+    ]
   );
 
+  // make a proposed solution for it
+  const proposedSolution1Id: string = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequest1Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
+  );
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequest1Id, 'LGTM', true, proposedSolution1Id);
+
+  /**
+   * TEAMS
+   */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(calRipken.userId));
@@ -113,11 +123,13 @@ const performSeed: () => Promise<void> = async () => {
       (user) => user.userId
     )
   );
-
   await TeamsService.setTeamMembers(johnHarbaugh, ravens.teamId, [lamarJackson.userId]);
   await TeamsService.setTeamMembers(calRipken, orioles.teamId, [adleyRutschman.userId]);
   await TeamsService.setTeamMembers(thomasEmrax, huskies.teamId, [joeShmoe.userId, joeBlow.userId]);
 
+  /**
+   * PROJECTS
+   */
   const project1WbsNumber = await ProjectsService.createProject(
     thomasEmrax,
     changeRequest1Id,
@@ -127,7 +139,7 @@ const performSeed: () => Promise<void> = async () => {
     huskies.teamId
   );
 
-  const project1 = await prisma.project.findFirst({
+  const project1 = await prisma.project.findFirstOrThrow({
     where: {
       wbsElement: {
         carNumber: project1WbsNumber.carNumber,
@@ -137,7 +149,6 @@ const performSeed: () => Promise<void> = async () => {
     },
     ...projectQueryArgs
   });
-  if (!project1) return;
   await ProjectsService.editProject(
     joeShmoe,
     project1.projectId,
@@ -167,15 +178,48 @@ const performSeed: () => Promise<void> = async () => {
     joeBlow.userId
   );
 
-  for (const seedRisk of dbSeedAllRisks) {
-    await prisma.risk.create({
-      data: {
-        createdBy: { connect: { userId: seedRisk.createdByUserId } },
-        project: { connect: { projectId: seedRisk.projectId } },
-        ...seedRisk.fields
+  await RisksService.createRisk(thomasEmrax, project1.projectId, 'This one could get too expensive');
+  await RisksService.createRisk(joeShmoe, project1.projectId, 'This Imact could Attenuate too much!');
+  const risk3Id = await RisksService.createRisk(thomasEmrax, project1.projectId, 'At risk of nuclear explosion');
+  const risk3 = await prisma.risk.findUniqueOrThrow({ where: { id: risk3Id } });
+  await RisksService.editRisk(thomasEmrax, risk3Id, risk3.detail, true);
+
+  const project2WbsNumber = await ProjectsService.createProject(
+    thomasEmrax,
+    changeRequest1Id,
+    1,
+    'Bodywork',
+    'Develop rules-compliant bodywork',
+    huskies.teamId
+  );
+  const project2 = await prisma.project.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: project2WbsNumber.carNumber,
+        projectNumber: project2WbsNumber.projectNumber,
+        workPackageNumber: project2WbsNumber.workPackageNumber
       }
-    });
-  }
+    },
+    ...projectQueryArgs
+  });
+  await ProjectsService.editProject(
+    thomasEmrax,
+    project2.projectId,
+    changeRequest1Id,
+    project2.wbsElement.name,
+    50,
+    project2.summary,
+    ['T12.3.2', 'T8.2.6'],
+    [{ id: -1, detail: 'Decrease weight by 90% from 4.8 pounds to 0.48 pounds' }],
+    [{ id: -1, detail: 'Provides removable section for easy access to the pedal box' }],
+    [{ id: -1, detail: 'Compatible with a side-pod chassis design' }],
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
 
   for (const seedWorkPackage of dbSeedAllWorkPackages) {
     await prisma.work_Package.create({
