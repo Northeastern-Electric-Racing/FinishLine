@@ -1,14 +1,5 @@
 import { Task_Priority, Task_Status } from '@prisma/client';
-import { ValidationChain } from 'express-validator';
 import { TaskPriority, TaskStatus } from 'shared';
-
-export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['LOW', 'MEDIUM', 'HIGH']);
-};
-
-export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['IN_BACKLOG', 'IN_PROGRESS', 'DONE']);
-};
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({

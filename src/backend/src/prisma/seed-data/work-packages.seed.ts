@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 
 const dbSeedWorkPackage1: any = {
   projectId: 1,
@@ -19,6 +19,7 @@ const dbSeedWorkPackage1: any = {
   },
   workPackageFields: {
     orderInProject: 1,
+    stage: Work_Package_Stage.RESEARCH,
     startDate: new Date('01/01/21'),
     duration: 3
   },
@@ -55,6 +56,7 @@ const dbSeedWorkPackage2: any = {
   },
   workPackageFields: {
     orderInProject: 2,
+    stage: Work_Package_Stage.DESIGN,
     startDate: new Date('01/01/21'),
     duration: 5
   },
@@ -96,6 +98,7 @@ const dbSeedWorkPackage3: any = {
   },
   workPackageFields: {
     orderInProject: 3,
+    stage: Work_Package_Stage.MANUFACTURING,
     startDate: new Date('01/01/21'),
     duration: 2
   },
