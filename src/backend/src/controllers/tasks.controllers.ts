@@ -25,7 +25,7 @@ export default class TasksController {
     try {
       const { status } = req.body;
 
-      const taskId = req.params.taskId;
+      const { taskId } = req.params;
 
       const user: User = await getCurrentUser(res);
 
