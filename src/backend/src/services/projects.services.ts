@@ -1,7 +1,6 @@
 import { Role, User } from '@prisma/client';
 import { isProject, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
@@ -419,11 +418,10 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
 
-    const { wbsElementId, projectId } = project;
+    const { projectId } = project;
     const dateDeleted: Date = new Date();
     const deletedProject = await prisma.project.update({
       where: {
-        wbsElementId,
         projectId
       },
       data: {
@@ -456,13 +454,24 @@ export default class ProjectsService {
               dateDeleted
             }
           }
+        },
+        risks: {
+          updateMany: {
+            where: {
+              projectId
+            },
+            data: {
+              deletedByUserId: user.userId,
+              dateDeleted
+            }
+          }
         }
       },
       ...projectQueryArgs
     });
 
     /*
-    
+
     const dependentWorkPackages = await prisma.work_Package.findMany({
       where: {
         projectId
@@ -473,6 +482,7 @@ export default class ProjectsService {
 
     */
 
+    // return projectTransformer(deletedProject);
     return projectTransformer(deletedProject);
   }
 }
