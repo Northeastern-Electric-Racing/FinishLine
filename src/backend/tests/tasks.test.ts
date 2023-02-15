@@ -1,18 +1,20 @@
+import { Task_Status } from '@prisma/client';
+import { WbsNumber } from 'shared';
+import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
 import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman } from './test-data/users.test-data';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import TasksService from '../src/services/tasks.services';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import * as taskTransformer from '../src/transformers/tasks.transformer';
+import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import {
   invalidTaskNotes,
+  taskSaveTheDayDeletedPrisma,
   taskSaveTheDayInProgressPrisma,
   taskSaveTheDayInProgressShared,
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
 } from './test-data/tasks.test-data';
-import { WbsNumber } from 'shared';
-import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
-import * as taskTransformer from '../src/transformers/tasks.transformer';
+import { batman, wonderwoman } from './test-data/users.test-data';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -114,7 +116,7 @@ describe('Tasks', () => {
 
       const taskId = '1';
       // Update from IN_PROGRESS to IN_BACKLOG
-      const updatedTask = await TasksService.editTaskStatus(batman, taskId, 'IN_BACKLOG');
+      const updatedTask = await TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG);
 
       expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
       expect(prisma.task.update).toHaveBeenCalledTimes(1);
@@ -126,5 +128,36 @@ describe('Tasks', () => {
         ...taskQueryArgs
       });
     });
+  });
+
+  test('edit task fails when task does not exist', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+    const fakeTaskId = '100';
+    await expect(() => TasksService.editTaskStatus(batman, fakeTaskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+      new NotFoundException('Task', fakeTaskId)
+    );
+  });
+
+  test('edit task fails if user does not have permission', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+    jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+    const taskId = '1';
+    // Try updating from IN_PROGRESS to IN_BACKLOG
+    await expect(() => TasksService.editTaskStatus(wonderwoman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+      new AccessDeniedException()
+    );
+  });
+
+  test('edit task fails if task is deleted', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+    const taskId = '1';
+    // Try updating from IN_PROGRESS to IN_BACKLOG
+    await expect(() => TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+      new HttpException(400, 'Cant edit a deleted Task!')
+    );
   });
 });

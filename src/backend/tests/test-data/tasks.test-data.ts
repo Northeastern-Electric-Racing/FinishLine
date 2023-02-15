@@ -42,7 +42,7 @@ export const taskSaveTheDayInProgressPrisma: Prisma.TaskGetPayload<typeof taskQu
   createdBy: batman
 };
 
-export const taskSaveTheDayDonePrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> = {
+export const taskSaveTheDayDeletedPrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> = {
   taskId: '1',
   wbsElementId: 1,
   dateCreated: new Date(),
@@ -52,11 +52,11 @@ export const taskSaveTheDayDonePrisma: Prisma.TaskGetPayload<typeof taskQueryArg
   priority: 'HIGH',
   status: 'DONE',
   deletedByUserId: null,
-  dateDeleted: null,
+  dateDeleted: new Date(),
   createdByUserId: 1,
   assignees: [greenlantern, wonderwoman],
   wbsElement: prismaWbsElement1,
-  deletedBy: null,
+  deletedBy: batman,
   createdBy: batman
 };
 
@@ -98,7 +98,7 @@ export const taskSaveTheDayInProgressShared: SharedTask = {
   deletedBy: undefined
 };
 
-export const taskSaveTheDayDoneShared: SharedTask = {
+export const taskSaveTheDayDeletedShared: SharedTask = {
   taskId: '1',
   wbsNum: {
     carNumber: 1,
@@ -113,8 +113,8 @@ export const taskSaveTheDayDoneShared: SharedTask = {
   status: TaskStatus.DONE,
   assignees: [greenlantern, wonderwoman],
   createdBy: userTransformer(batman),
-  dateDeleted: undefined,
-  deletedBy: undefined
+  dateDeleted: new Date(),
+  deletedBy: batman
 };
 
 export const invalidTaskNotes: string =
