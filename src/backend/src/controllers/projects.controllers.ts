@@ -103,8 +103,8 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const deletedProjectNumber: WbsNumber = await ProjectsService.deleteProject(user, wbsNumber);
-      res.status(200).json(wbsPipe(deletedProjectNumber));
+      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber);
+      res.status(200).json(deletedProject);
     } catch (error: unknown) {
       next(error);
     }

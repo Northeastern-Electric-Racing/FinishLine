@@ -397,7 +397,7 @@ export default class ProjectsService {
    * Delete the the project in the database along with all its work packages.
    * @returns the project that is deleted.
    */
-  static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<WbsNumber> {
+  static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     if (user.role === Role.GUEST || user.role === Role.LEADERSHIP || user.role === Role.MEMBER) {
       throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
@@ -421,29 +421,58 @@ export default class ProjectsService {
 
     const { wbsElementId, projectId } = project;
     const dateDeleted: Date = new Date();
-    const deletedProject = await prisma.wBS_Element.update({
+    const deletedProject = await prisma.project.update({
       where: {
-        wbsElementId
+        wbsElementId,
+        projectId
       },
       data: {
-        dateDeleted,
-        deletedBy: { update: user }
-      }
+        wbsElement: {
+          update: {
+            dateDeleted,
+            deletedByUserId: user.userId
+          }
+        },
+        goals: {
+          updateMany: {
+            where: {},
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        features: {
+          updateMany: {
+            where: {},
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        otherConstraints: {
+          updateMany: {
+            where: {},
+            data: {
+              dateDeleted
+            }
+          }
+        }
+      },
+      ...projectQueryArgs
     });
 
+    /*
+    
     const dependentWorkPackages = await prisma.work_Package.findMany({
-      where: { projectId, wbsElement: { dateDeleted: null } },
-      ...workPackageQueryArgs
-    });
-
-    const dependentDescriptionBullets = await prisma.description_Bullet.findMany({
       where: {
-        projectIdFeatures: projectId,
-        dateDeleted: null
+        projectId
       }
     });
 
-    // dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
-    return deletedProject;
+    dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
+
+    */
+
+    return projectTransformer(deletedProject);
   }
 }
