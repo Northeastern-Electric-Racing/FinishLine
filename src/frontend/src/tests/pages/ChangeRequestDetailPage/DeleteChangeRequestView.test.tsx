@@ -48,5 +48,9 @@ describe('delete change request page test suite', () => {
   it("doesn't display modal", () => {
     renderComponent(false);
     expect(screen.queryByText(`Delete Change Request #${exampleStandardChangeRequest.crId}`)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(`Are you sure you want to delete Change Request #${exampleStandardChangeRequest.crId}?`)
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(`This action cannot be undone!`)).not.toBeInTheDocument();
   });
 });
