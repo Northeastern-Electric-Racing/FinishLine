@@ -43,14 +43,11 @@ const AppPublic: React.FC = () => {
         (prevArgs: string, pathPart: string, idx: number): string => `${prevArgs}&value${idx + 1}=${pathPart}`,
         `?page=${redirectPathParts[0]}`
       );
-    const redirectQueryArgs =
-      redirectPathQueryArgs + (history.location.search ? `&${history.location.search.slice(1)}` : '');
 
     return (
       <Redirect
         to={{
           pathname: routes.LOGIN,
-          search: redirectQueryArgs,
           state: { from: e.location }
         }}
       />
