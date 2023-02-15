@@ -13,6 +13,7 @@ tasksRouter.post(
   body('deadline').isDate(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
+  body('assignees').isArray(),
   intMinZero(body('assignees.*')),
   validateInputs,
   TasksController.createTask

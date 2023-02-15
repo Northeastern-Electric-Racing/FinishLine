@@ -57,7 +57,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
       },
       dependencies: [],
       expectedActivities: [],
-      deliverables: []
+      deliverables: [],
+      stage: null
     }
   ],
   goals: [],
