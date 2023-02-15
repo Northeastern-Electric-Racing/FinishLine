@@ -217,10 +217,10 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             />
           </DialogContent>
           <DialogActions>
-            <NERFailButton onClick={handleClose} sx={{ mx: 2 }}>
-              Closesx=
+            <NERFailButton onClick={handleClose} sx={{ mx: 1 }}>
+              Closes
             </NERFailButton>
-            <NERSuccessButton type="submit" sx={{ mx: 2 }}>
+            <NERSuccessButton type="submit" sx={{ mx: 1 }}>
               Save Changes
             </NERSuccessButton>
           </DialogActions>
