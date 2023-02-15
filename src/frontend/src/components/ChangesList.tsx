@@ -16,7 +16,7 @@ interface ChangesListProps {
   changes: ImplementedChange[];
 }
 
-const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
+const ChangesList = ({ changes }: ChangesListProps) => {
   return (
     <BulletList
       title={'Changes'}

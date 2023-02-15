@@ -10,7 +10,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
 
-const TeamsPage: React.FC = () => {
+const TeamsPage = () => {
   const { isLoading, isError, data: teams, error } = useAllTeams();
 
   if (isLoading) return <LoadingIndicator />;

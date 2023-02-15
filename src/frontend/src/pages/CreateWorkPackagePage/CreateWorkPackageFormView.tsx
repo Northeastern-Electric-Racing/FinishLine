@@ -48,7 +48,7 @@ interface CreateWorkPackageFormViewProps {
   onCancel: (e: any) => void;
 }
 
-const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView = ({ allowSubmit, onSubmit, onCancel }: CreateWorkPackageFormViewProps) => {
   const query = useQuery();
 
   const {

@@ -14,7 +14,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
 
-interface CreateChangeRequestProps {}
+// interface CreateChangeRequestProps {}
 
 export interface FormInput {
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
@@ -22,7 +22,7 @@ export interface FormInput {
   why: { type: ChangeRequestReason; explain: string }[];
 }
 
-const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
+const CreateChangeRequest = () => {
   const auth = useAuth();
   const query = useQuery();
   const history = useHistory();

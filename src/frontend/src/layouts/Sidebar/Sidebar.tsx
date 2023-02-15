@@ -19,7 +19,7 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
 import { Typography } from '@mui/material';
 
-const Sidebar: React.FC = () => {
+const Sidebar = () => {
   const auth = useAuth();
 
   const linkItems: LinkItem[] = [

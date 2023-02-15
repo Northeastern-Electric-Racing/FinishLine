@@ -14,7 +14,7 @@ interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
-const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
+const WorkPackageDetails = ({ workPackage }: WorkPackageDetailsProps) => {
   return (
     <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
       <Grid container spacing={1}>

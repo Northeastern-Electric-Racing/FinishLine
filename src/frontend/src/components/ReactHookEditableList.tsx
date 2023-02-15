@@ -10,7 +10,7 @@ interface ReactHookEditableListProps {
   remove: UseFieldArrayRemove;
 }
 
-const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, register, append, remove }) => {
+const ReactHookEditableList = ({ name, ls, register, append, remove }: ReactHookEditableListProps): JSX.Element => {
   return (
     <>
       {ls.map((_element, i) => {

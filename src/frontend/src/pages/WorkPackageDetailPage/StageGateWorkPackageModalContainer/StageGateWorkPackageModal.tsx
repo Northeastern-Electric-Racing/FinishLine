@@ -35,7 +35,7 @@ const schema = yup.object().shape({
   confirmDone: yup.boolean().required()
 });
 
-const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
+const StageGateWorkPackageModal = ({ wbsNum, modalShow, onHide, onSubmit }: StageGateWorkPackageModalProps) => {
   const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });

@@ -14,11 +14,7 @@ interface ProposedSolutionSelectItemProps {
   onClick: () => void;
 }
 
-const ProposedSolutionSelectItem: React.FC<ProposedSolutionSelectItemProps> = ({
-  proposedSolution,
-  selected,
-  onClick: setter
-}) => {
+const ProposedSolutionSelectItem = ({ proposedSolution, selected, onClick: setter }: ProposedSolutionSelectItemProps) => {
   const component = (
     <Box
       sx={{

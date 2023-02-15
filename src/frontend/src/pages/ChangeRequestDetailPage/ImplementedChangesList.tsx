@@ -15,7 +15,7 @@ interface ImplementedChangesListProps {
   overallDateImplemented?: Date;
 }
 
-const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
+const ImplementedChangesList = ({ changes, overallDateImplemented }: ImplementedChangesListProps) => {
   return (
     <PageBlock
       title={'Implemented Changes'}

@@ -28,7 +28,7 @@ export type TaskGanttContentProps = {
   setSelectedTask: (taskId: string) => void;
 } & EventOption;
 
-export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
+export const TaskGanttContent = ({
   tasks,
   dates,
   ganttEvent,
@@ -51,7 +51,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   onDoubleClick,
   onClick,
   onDelete
-}) => {
+}: TaskGanttContentProps) => {
   const point = svg?.current?.createSVGPoint();
   const [xStep, setXStep] = useState(0);
   const [initEventX1Delta, setInitEventX1Delta] = useState(0);

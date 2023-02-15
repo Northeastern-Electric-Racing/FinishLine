@@ -9,7 +9,7 @@ import ChangeRequestDetails from '../ChangeRequestDetailPage/ChangeRequestDetail
 import ChangeRequestsTable from './ChangeRequestsTable';
 import CreateChangeRequest from '../CreateChangeRequestPage/CreateChangeRequest';
 
-const ChangeRequests: React.FC = () => {
+const ChangeRequests = () => {
   return (
     <Switch>
       <Route path={routes.CHANGE_REQUESTS_NEW} component={CreateChangeRequest} />

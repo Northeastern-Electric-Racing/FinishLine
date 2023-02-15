@@ -9,7 +9,7 @@ import WorkPackagePage from './WorkPackageDetailPage/WorkPackagePage';
 import ErrorPage from './ErrorPage';
 import ProjectPage from './ProjectDetailPage/ProjectPage';
 
-const WBSDetails: React.FC = () => {
+const WBSDetails = () => {
   interface ParamTypes {
     wbsNum: string;
   }

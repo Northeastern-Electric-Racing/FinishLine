@@ -10,7 +10,7 @@ import ErrorPage from '../ErrorPage';
 interface ActiveProjectCardViewProps {
   project: ProjectPreview;
 }
-const ActiveProjectCardView: React.FC<ActiveProjectCardViewProps> = ({ project }) => {
+const ActiveProjectCardView = ({ project }: ActiveProjectCardViewProps) => {
   const { isLoading, isError, error, data } = useSingleProject(project.wbsNum);
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;

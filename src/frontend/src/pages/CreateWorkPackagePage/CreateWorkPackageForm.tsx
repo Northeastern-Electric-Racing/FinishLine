@@ -23,7 +23,7 @@ export interface CreateWorkPackageFormInputs {
   deliverables: { bulletId: number; detail: string }[];
 }
 
-const CreateWorkPackageForm: React.FC = () => {
+const CreateWorkPackageForm = () => {
   const history = useHistory();
   const auth = useAuth();
   const toast = useToast();

@@ -24,7 +24,7 @@ import ErrorPage from '../ErrorPage';
 import { Grid, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 
-const UpcomingDeadlines: React.FC = () => {
+const UpcomingDeadlines = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, daysUntilDeadline });
   const theme = useTheme();

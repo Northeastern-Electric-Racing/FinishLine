@@ -9,7 +9,7 @@ import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';
 
-const Home: React.FC = () => {
+const Home = () => {
   const auth = useAuth();
   return (
     <>

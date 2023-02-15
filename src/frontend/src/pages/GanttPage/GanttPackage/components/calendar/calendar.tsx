@@ -22,7 +22,7 @@ export type CalendarProps = {
   fontSize: string;
 };
 
-export const Calendar: React.FC<CalendarProps> = ({
+export const Calendar = ({
   dateSetup,
   locale,
   viewMode,
@@ -31,7 +31,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   columnWidth,
   fontFamily,
   fontSize
-}) => {
+}: CalendarProps) => {
   const getCalendarValuesForYear = () => {
     const topValues: ReactChild[] = [];
     const bottomValues: ReactChild[] = [];

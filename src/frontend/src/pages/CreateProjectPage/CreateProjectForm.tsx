@@ -18,7 +18,7 @@ export interface CreateProjectFormInputs {
   teamId: string;
 }
 
-const CreateProjectForm: React.FC = () => {
+const CreateProjectForm = () => {
   const auth = useAuth();
   const history = useHistory();
   const { isLoading, mutateAsync } = useCreateSingleProject();

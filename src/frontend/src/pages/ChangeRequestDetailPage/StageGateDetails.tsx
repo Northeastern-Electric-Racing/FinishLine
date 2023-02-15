@@ -12,7 +12,7 @@ interface StageGateDetailsProps {
   cr: StageGateChangeRequest;
 }
 
-const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
+const StageGateDetails = ({ cr }: StageGateDetailsProps) => {
   return (
     <PageBlock title={'Stage Gate Change Request Details'}>
       <Grid container spacing={1}>

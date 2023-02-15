@@ -12,7 +12,7 @@ interface ProjectEditDetailsProps {
   errors: any;
 }
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
+const ProjectEditDetails = ({ users, control, errors }: ProjectEditDetailsProps) => {
   return (
     <PageBlock title="Project Details">
       <Grid container spacing={1}>

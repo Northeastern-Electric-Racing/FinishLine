@@ -17,7 +17,7 @@ interface WorkPackagePageProps {
   wbsNum: WbsNumber;
 }
 
-const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
+const WorkPackagePage = ({ wbsNum }: WorkPackagePageProps) => {
   const query = useQuery();
   const { isLoading, isError, data, error } = useSingleWorkPackage(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');

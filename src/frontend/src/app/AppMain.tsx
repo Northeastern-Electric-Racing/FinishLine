@@ -8,7 +8,7 @@ import AppContext from './AppContext';
 import AppPublic from './AppPublic';
 import { ToastProvider } from '../components/Toast/ToastProvider';
 
-const AppMain: React.FC = () => {
+const AppMain = () => {
   return (
     <AppContext>
       <ToastProvider>

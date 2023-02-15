@@ -9,7 +9,11 @@ import { Auth } from '../utils/types';
 
 export const AuthContext = createContext<Auth | undefined>(undefined);
 
-const AppContextAuth: React.FC = (props) => {
+type Props = {
+  children?: React.ReactNode;
+};
+
+const AppContextAuth = (props: Props) => {
   const auth = useProvideAuth();
   return <AuthContext.Provider value={auth}>{props.children}</AuthContext.Provider>;
 };

@@ -73,7 +73,7 @@ interface ChangeRequestDetailsProps {
   changeRequest: ChangeRequest;
 }
 
-const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
+const ChangeRequestDetailsView = ({
   isUserAllowedToReview,
   isUserAllowedToImplement,
   changeRequest

@@ -8,7 +8,7 @@ import styles from '../stylesheets/pages/page-not-found.module.css';
  * A display for when the project reaches an unknown page.
  * @returns page containing error message.
  */
-export const PageNotFound: React.FC = () => {
+export const PageNotFound = () => {
   return (
     <div className={`pt-5 ${styles.page_not_found}`}>
       <h1 className={styles.title}>404</h1>

@@ -3,6 +3,12 @@ import { Task } from '../../types/public-types';
 import { BarTask } from '../../types/bar-task';
 import styles from '../../../../../stylesheets/pages/gantt-page.module.css';
 
+export type TooltipContentProps = {
+  task: Task;
+  fontSize: string;
+  fontFamily: string;
+};
+
 export type TooltipProps = {
   task: BarTask;
   arrowIndent: number;
@@ -17,13 +23,10 @@ export type TooltipProps = {
   rowHeight: number;
   fontSize: string;
   fontFamily: string;
-  TooltipContent: React.FC<{
-    task: Task;
-    fontSize: string;
-    fontFamily: string;
-  }>;
+  TooltipContent: (TooltipContentProps: TooltipContentProps) => JSX.Element;
 };
-export const Tooltip: React.FC<TooltipProps> = ({
+
+export const Tooltip = ({
   task,
   rowHeight,
   rtl,
@@ -37,7 +40,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   headerHeight,
   taskListWidth,
   TooltipContent
-}) => {
+}: TooltipProps) => {
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [relatedY, setRelatedY] = useState(0);
   const [relatedX, setRelatedX] = useState(0);
@@ -103,11 +106,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   );
 };
 
-export const StandardTooltipContent: React.FC<{
-  task: Task;
-  fontSize: string;
-  fontFamily: string;
-}> = ({ task, fontSize, fontFamily }) => {
+export const StandardTooltipContent = ({ task, fontSize, fontFamily }: TooltipContentProps) => {
   const style = {
     fontSize,
     fontFamily

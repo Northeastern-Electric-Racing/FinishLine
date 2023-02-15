@@ -14,7 +14,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import Button from '@mui/material/Button';
 
-const NavUserMenu: React.FC = () => {
+const NavUserMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();

@@ -26,7 +26,7 @@ const renderSlackId = (settings: UserSettings) => {
 };
 
 /** Component to display user settings */
-const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
+const UserSettingsView = ({ settings }: UserSettingsViewProps) => {
   return (
     <>
       <Grid item md={4} lg={2}>

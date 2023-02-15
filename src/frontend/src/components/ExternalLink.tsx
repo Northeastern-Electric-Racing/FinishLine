@@ -14,7 +14,7 @@ interface ExternalLinkProps {
 }
 
 // Common component for all external links to open in new tab
-const ExternalLink: React.FC<ExternalLinkProps> = ({ icon, link, description }) => {
+const ExternalLink = ({ icon, link, description }: ExternalLinkProps): JSX.Element => {
   return (
     <Stack direction="row" alignItems="center">
       {icon}

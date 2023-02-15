@@ -10,7 +10,7 @@ import WBSDetails from '../WBSDetails';
 import CreateProjectForm from '../CreateProjectPage/CreateProjectForm';
 import CreateWorkPackageForm from '../CreateWorkPackagePage/CreateWorkPackageForm';
 
-const Projects: React.FC = () => {
+const Projects = () => {
   return (
     <Switch>
       <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />

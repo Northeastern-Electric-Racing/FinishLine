@@ -24,7 +24,7 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
 }
 
-const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options, size, placeholder, sx, value }) => {
+const NERAutocomplete = ({ id, onChange, options, size, placeholder, sx, value }: NERAutocompleteProps) => {
   const theme = useTheme();
 
   const autocompleteStyle = {

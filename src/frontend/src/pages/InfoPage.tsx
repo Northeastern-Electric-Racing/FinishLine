@@ -15,7 +15,7 @@ import PageTitle from '../layouts/PageTitle/PageTitle';
 import PageBlock from '../layouts/PageBlock';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const InfoPage: React.FC = () => {
+const InfoPage = () => {
   return (
     <>
       <PageTitle title="Information" previousPages={[]} />

@@ -16,6 +16,7 @@ import { SxProps, Theme, useTheme } from '@mui/material';
 interface PageBlockProps {
   title?: string;
   headerRight?: ReactNode;
+  children?: ReactNode;
   style?: SxProps<Theme>;
   defaultClosed?: boolean;
 }
@@ -28,7 +29,7 @@ interface PageBlockProps {
  * @param style Optional styling for the pageblock
  * @param defaultClosed Sets the pageblock to be closed (collapsed) by default.
  */
-const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultClosed }) => {
+const PageBlock = ({ title, headerRight, children, style, defaultClosed }: PageBlockProps) => {
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultClosed);
 

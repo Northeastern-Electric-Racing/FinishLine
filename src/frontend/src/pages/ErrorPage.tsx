@@ -13,7 +13,7 @@ interface ErrorPageProps {
 }
 
 // Common page to display an error
-const ErrorPage: React.FC<ErrorPageProps> = ({ message, error }) => {
+const ErrorPage = ({ message, error }: ErrorPageProps) => {
   return (
     <div className={styles.text}>
       <h3>Oops, sorry!</h3>

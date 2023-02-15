@@ -26,7 +26,7 @@ const userToAutocompleteOption = (user: User): { label: string; id: number } => 
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 
-const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
+const TeamMembersPageBlock = ({ team }: TeamMembersPageBlockProps) => {
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));

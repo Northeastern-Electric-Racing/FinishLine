@@ -41,13 +41,7 @@ const defaultValues: FormInput = {
   confirmDetails: false
 };
 
-const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
-  allUsers,
-  wbsNum,
-  modalShow,
-  onHide,
-  onSubmit
-}) => {
+const ActivateWorkPackageModal = ({ allUsers, wbsNum, modalShow, onHide, onSubmit }: ActivateWorkPackageModalProps) => {
   const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema),
     defaultValues

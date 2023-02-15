@@ -11,7 +11,7 @@ interface GanttPageProps {
   updateGanttDisplayObjects: (ganttDisplayObjects: Task[]) => void;
 }
 
-const GanttPage: React.FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttDisplayObjects }) => {
+const GanttPage = ({ ganttDisplayObjects, updateGanttDisplayObjects }: GanttPageProps) => {
   // This is separate from the expand/collapse button
   const handleExpanderClick = (task: Task) => {
     updateGanttDisplayObjects(ganttDisplayObjects.map((t) => (t.id === task.id ? task : t)));

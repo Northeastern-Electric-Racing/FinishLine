@@ -26,7 +26,7 @@ const styles = {
   }
 };
 
-const AppAuthenticated: React.FC = () => {
+const AppAuthenticated = (): JSX.Element => {
   return (
     <>
       <NavTopBar />

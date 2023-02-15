@@ -12,7 +12,7 @@ interface ProjectGanttProps {
   workPackages: WorkPackage[];
 }
 
-const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
+const ProjectGantt = ({ workPackages }: ProjectGanttProps) => {
   const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, wp.progress, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {

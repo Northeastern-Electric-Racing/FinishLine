@@ -19,7 +19,7 @@ interface DescriptionPageBlockProps {
   team: Team;
 }
 
-const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => {
+const DescriptionPageBlock = ({ team }: DescriptionPageBlockProps) => {
   const auth = useAuth();
   const theme = useTheme();
   const [isEditingDescription, setIsEditingDescription] = useState(false);

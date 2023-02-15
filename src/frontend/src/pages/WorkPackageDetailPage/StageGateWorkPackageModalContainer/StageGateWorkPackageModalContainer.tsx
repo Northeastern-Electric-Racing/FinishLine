@@ -23,11 +23,7 @@ export interface FormInput {
   confirmDone: boolean;
 }
 
-const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalContainerProps> = ({
-  wbsNum,
-  modalShow,
-  handleClose
-}) => {
+const StageGateWorkPackageModalContainer = ({ wbsNum, modalShow, handleClose }: StageGateWorkPackageModalContainerProps) => {
   const auth = useAuth();
   const history = useHistory();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();

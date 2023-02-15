@@ -19,7 +19,7 @@ interface ProjectDetailsProps {
   project: Project;
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
+const ProjectDetails = ({ project }: ProjectDetailsProps) => {
   const theme = useTheme();
   return (
     <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>

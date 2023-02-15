@@ -8,7 +8,7 @@ import { routes } from '../../utils/routes';
 import TeamsPage from './TeamsPage';
 import TeamSpecificPage from './TeamSpecificPage';
 
-const Teams: React.FC = () => {
+const Teams = () => {
   return (
     <Switch>
       <Route path={routes.TEAMS_BY_ID} component={TeamSpecificPage} />

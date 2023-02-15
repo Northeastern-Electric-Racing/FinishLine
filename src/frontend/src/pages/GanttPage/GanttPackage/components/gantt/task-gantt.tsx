@@ -12,14 +12,7 @@ export type TaskGanttProps = {
   scrollY: number;
   scrollX: number;
 };
-export const TaskGantt: React.FC<TaskGanttProps> = ({
-  gridProps,
-  calendarProps,
-  barProps,
-  ganttHeight,
-  scrollY,
-  scrollX
-}) => {
+export const TaskGantt = ({ gridProps, calendarProps, barProps, ganttHeight, scrollY, scrollX }: TaskGanttProps) => {
   const ganttSVGRef = useRef<SVGSVGElement>(null);
   const horizontalContainerRef = useRef<HTMLDivElement>(null);
   const verticalGanttContainerRef = useRef<HTMLDivElement>(null);

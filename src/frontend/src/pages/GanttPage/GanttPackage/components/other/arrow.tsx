@@ -9,7 +9,7 @@ type ArrowProps = {
   arrowIndent: number;
   rtl: boolean;
 };
-export const Arrow: React.FC<ArrowProps> = ({ taskFrom, taskTo, rowHeight, taskHeight, arrowIndent, rtl }) => {
+export const Arrow = ({ taskFrom, taskTo, rowHeight, taskHeight, arrowIndent, rtl }: ArrowProps) => {
   let path: string;
   let trianglePoints: string;
   if (rtl) {

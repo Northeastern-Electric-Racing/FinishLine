@@ -23,7 +23,7 @@ const styles = {
   }
 };
 
-const BulletList: React.FC<BulletListProps> = ({ title, headerRight, list, ordered, defaultClosed }) => {
+const BulletList = ({ title, headerRight, list, ordered, defaultClosed }: BulletListProps): JSX.Element => {
   const listPrepared = list.map((bullet, idx) => <li key={idx}>{bullet}</li>);
   let builtList = <ul style={styles.bulletList}>{listPrepared}</ul>;
   if (ordered) {

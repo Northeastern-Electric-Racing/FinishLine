@@ -19,7 +19,7 @@ import ErrorPage from '../ErrorPage';
 import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 
-const WorkPackagesByTimelineStatus: React.FC = () => {
+const WorkPackagesByTimelineStatus = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, timelineStatus });
   const theme = useTheme();

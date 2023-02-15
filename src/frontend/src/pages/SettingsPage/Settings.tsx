@@ -60,7 +60,7 @@ const NERSwitch = styled((props: SwitchProps) => (
   }
 }));
 
-const Settings: React.FC = () => {
+const Settings = () => {
   const auth = useAuth();
   const [showAlert, setShowAlert] = useState(false);
 

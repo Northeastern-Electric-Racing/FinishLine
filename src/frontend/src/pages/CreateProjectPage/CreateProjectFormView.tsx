@@ -44,7 +44,7 @@ interface CreateProjectFormViewProps {
   onSubmit: (project: CreateProjectFormInputs) => void;
 }
 
-const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
+const CreateProjectFormView = ({ allowSubmit, onCancel, onSubmit }: CreateProjectFormViewProps) => {
   const query = useQuery();
   const {
     handleSubmit,

@@ -22,7 +22,7 @@ export type TaskItemProps = {
   ) => any;
 };
 
-export const TaskItem: React.FC<TaskItemProps> = (props) => {
+export const TaskItem = (props: TaskItemProps) => {
   const { task, isDelete, isSelected, onEventStart } = {
     ...props
   };

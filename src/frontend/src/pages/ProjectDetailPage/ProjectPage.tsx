@@ -16,7 +16,7 @@ interface ProjectPageProps {
   wbsNum: WbsNumber;
 }
 
-const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
+const ProjectPage = ({ wbsNum }: ProjectPageProps) => {
   const query = useQuery();
   const { isLoading, isError, data, error } = useSingleProject(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');

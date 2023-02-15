@@ -9,7 +9,7 @@ interface RulesListProps {
   rules: string[];
 }
 
-const RulesList: React.FC<RulesListProps> = ({ rules }) => {
+const RulesList = ({ rules }: RulesListProps) => {
   return (
     <HorizontalList
       title={'Rules'}

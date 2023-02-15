@@ -20,7 +20,7 @@ interface PageTitleProps {
  * @param previousPages The pages in the breadcrumb between home and the current page
  * @param actionButton The button to display on the right side of the page title
  */
-const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton }) => {
+const PageTitle = ({ title, previousPages, actionButton }: PageTitleProps) => {
   return (
     <>
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />

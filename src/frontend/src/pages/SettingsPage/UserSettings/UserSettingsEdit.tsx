@@ -24,7 +24,7 @@ const schema = yup.object().shape({
     .required('Default theme is required'),
   slackId: yup.string().optional()
 });
-const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
+const UserSettingsEdit = ({ currentSettings, onSubmit }: UserSettingsEditProps) => {
   const { handleSubmit, control } = useForm<FormInput>({
     defaultValues: currentSettings,
     resolver: yupResolver(schema)

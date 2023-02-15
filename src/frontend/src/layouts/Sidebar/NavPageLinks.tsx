@@ -13,7 +13,7 @@ interface NavPageLinkProps {
   linkItems: LinkItem[];
 }
 
-const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProps) => {
+const NavPageLinks = ({ linkItems }: NavPageLinkProps) => {
   const genNavItems = (linkItems: LinkItem[]) => {
     return linkItems.map((item) => {
       return (

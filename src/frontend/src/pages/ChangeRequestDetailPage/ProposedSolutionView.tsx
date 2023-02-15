@@ -19,7 +19,7 @@ interface ProposedSolutionViewProps {
   onDelete?: (proposedSolution: ProposedSolution) => void;
 }
 
-const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
+const ProposedSolutionView = ({ proposedSolution, showDeleteButton, onDelete }: ProposedSolutionViewProps) => {
   return (
     <PageBlock title="">
       {showDeleteButton && onDelete !== undefined ? (

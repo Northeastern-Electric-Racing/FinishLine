@@ -22,7 +22,7 @@ interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
 }
 
-const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) => {
+const WorkPackageSummary = ({ workPackage }: WorkPackageSummaryProps) => {
   const expectedActivitiesList = (
     <ul>
       {workPackage.expectedActivities.slice(0, 3).map((item, idx) => (

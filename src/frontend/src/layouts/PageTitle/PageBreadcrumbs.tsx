@@ -16,7 +16,7 @@ interface PageTitleProps {
 }
 
 // Common component for adding breadcrumbs to a page
-const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousPages }) => {
+const PageBreadcrumbs = ({ currentPageTitle, previousPages }: PageTitleProps) => {
   return (
     <Breadcrumbs sx={{ my: 1 }}>
       <Link component={RouterLink} to={routes.HOME}>

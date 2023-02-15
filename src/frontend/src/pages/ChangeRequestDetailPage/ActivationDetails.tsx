@@ -13,7 +13,7 @@ interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
 }
 
-const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
+const ActivationDetails = ({ cr }: ActivationDetailsProps) => {
   return (
     <PageBlock title={'Activation Change Request Details'}>
       <Grid container>

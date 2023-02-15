@@ -33,7 +33,7 @@ interface CheckListProps {
   isDisabled: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
+const CheckList = ({ title, headerRight, items, isDisabled }: CheckListProps) => {
   const auth = useAuth();
   const { isLoading, mutateAsync } = useCheckDescriptionBullet();
   const [showConfirm, setShowConfirm] = useState<boolean>(false);

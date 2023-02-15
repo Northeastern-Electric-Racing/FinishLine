@@ -35,14 +35,14 @@ interface WorkPackageViewContainerProps {
   allowRequestChange: boolean;
 }
 
-const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
+const WorkPackageViewContainer = ({
   workPackage,
   enterEditMode,
   allowEdit,
   allowActivate,
   allowStageGate,
   allowRequestChange
-}) => {
+}: WorkPackageViewContainerProps) => {
   const auth = useAuth();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);

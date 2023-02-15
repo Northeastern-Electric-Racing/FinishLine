@@ -14,7 +14,10 @@ const wbsRegex: RegExp = /([1-9]{1}([0-9]{1})?)\.([1-9]{1}([0-9]{1})?)\.[0-9]{1,
 
 // to allow configuring paths/routes within tests
 const routerWrapperBuilder = ({ path = routes.HOME, route = routes.HOME }) => {
-  const RouterWrapper: React.FC = ({ children }) => {
+  type Props = {
+    children?: React.ReactNode;
+  };
+  const RouterWrapper = ({ children }: Props) => {
     return (
       <MemoryRouter initialEntries={[route]}>
         <Route path={path}>{children}</Route>

@@ -13,7 +13,7 @@ interface ParamTypes {
   teamId: string;
 }
 
-const TeamSpecificPage: React.FC = () => {
+const TeamSpecificPage = () => {
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
 

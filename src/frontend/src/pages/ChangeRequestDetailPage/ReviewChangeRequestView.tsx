@@ -27,12 +27,7 @@ const schema = yup.object().shape({
   accepted: yup.boolean().required()
 });
 
-const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
-  cr,
-  modalShow,
-  onHide,
-  onSubmit
-}: ReviewChangeRequestViewProps) => {
+const ReviewChangeRequestsView = ({ cr, modalShow, onHide, onSubmit }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
   const toast = useToast();
 

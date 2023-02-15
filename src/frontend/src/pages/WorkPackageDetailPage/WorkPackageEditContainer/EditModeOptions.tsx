@@ -10,7 +10,7 @@ interface EditModeOptionsProps {
   exitEditMode: () => void;
 }
 
-const EditModeOptions: React.FC<EditModeOptionsProps> = ({ exitEditMode }) => {
+const EditModeOptions = ({ exitEditMode }: EditModeOptionsProps) => {
   return (
     <div className={styles.editModeOptionsContainer}>
       <Button type="submit" color="success" variant="contained">

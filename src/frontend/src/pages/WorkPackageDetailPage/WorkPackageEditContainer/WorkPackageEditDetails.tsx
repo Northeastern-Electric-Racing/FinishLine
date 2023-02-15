@@ -11,7 +11,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 
-interface Props {
+interface WorkPackageEditDetailsProps {
   users: User[];
   control: any;
   errors: any;
@@ -19,7 +19,7 @@ interface Props {
 
 const statuses = Object.values(WbsElementStatus);
 
-const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
+const WorkPackageEditDetails = ({ users, control, errors }: WorkPackageEditDetailsProps) => {
   const statusSelect = (
     <Controller
       name="wbsElementStatus"

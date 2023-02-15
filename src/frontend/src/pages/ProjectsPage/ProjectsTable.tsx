@@ -22,7 +22,7 @@ interface BaseColDef {
 /**
  * Table of all projects.
  */
-const ProjectsTable: React.FC = () => {
+const ProjectsTable = () => {
   const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');

@@ -39,7 +39,7 @@ const schema = yup.object().shape({
     .integer('Timeline Impact must be an integer')
 });
 
-const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
+const ProposedSolutionForm = ({
   description,
   budgetImpact,
   timelineImpact,
@@ -48,7 +48,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   onAdd,
   open,
   onClose
-}) => {
+}: ProposedSolutionFormProps) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }

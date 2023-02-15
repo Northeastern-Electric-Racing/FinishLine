@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 import { NERButton } from '../../components/NERButton';
 
-const ChangeRequestsTable: React.FC = () => {
+const ChangeRequestsTable = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
   if (localStorage.getItem('cr-table-row-count') === null) {

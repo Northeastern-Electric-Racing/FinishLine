@@ -2,13 +2,15 @@ import React, { SyntheticEvent, useRef, useEffect } from 'react';
 import styles from './horizontal-scroll.module.css';
 import { useAuth } from '../../../../../hooks/auth.hooks';
 
-export const HorizontalScroll: React.FC<{
+export type HorizontalScrollProps = {
   scroll: number;
   svgWidth: number;
   taskListWidth: number;
   rtl: boolean;
   onScroll: (event: SyntheticEvent<HTMLDivElement>) => void;
-}> = ({ scroll, svgWidth, taskListWidth, rtl, onScroll }) => {
+};
+
+export const HorizontalScroll = ({ scroll, svgWidth, taskListWidth, rtl, onScroll }: HorizontalScrollProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

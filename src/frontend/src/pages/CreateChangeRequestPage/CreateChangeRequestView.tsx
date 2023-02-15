@@ -59,7 +59,7 @@ const schema = yup.object().shape({
     )
 });
 
-const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
+const CreateChangeRequestsView = ({
   wbsNum,
   setWbsNum,
   crDesc,
@@ -67,7 +67,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   proposedSolutions,
   setProposedSolutions,
   handleCancel
-}) => {
+}: CreateChangeRequestViewProps) => {
   const {
     handleSubmit,
     control,

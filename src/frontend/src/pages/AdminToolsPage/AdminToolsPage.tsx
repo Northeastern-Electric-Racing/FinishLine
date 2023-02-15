@@ -6,7 +6,7 @@
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import AdminToolsUserMangaement from './AdminToolsUserManagement';
 
-const AdminToolsPage: React.FC = () => {
+const AdminToolsPage = () => {
   return (
     <>
       <PageTitle title={'Admin Tools'} previousPages={[]} />

@@ -1,7 +1,8 @@
 import React from 'react';
 import styles from '../../../../../stylesheets/pages/gantt-page.module.css';
 import { Task } from '../../types/public-types';
-export const TaskListTableDefault: React.FC<{
+
+export type TaskListHeaderDefaultProps = {
   rowHeight: number;
   rowWidth: string;
   fontFamily: string;
@@ -10,7 +11,16 @@ export const TaskListTableDefault: React.FC<{
   selectedTaskId: string;
   setSelectedTask: (taskId: string) => void;
   onExpanderClick: (task: Task) => void;
-}> = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize, onExpanderClick }) => {
+};
+
+export const TaskListTableDefault = ({
+  rowHeight,
+  rowWidth,
+  tasks,
+  fontFamily,
+  fontSize,
+  onExpanderClick
+}: TaskListHeaderDefaultProps) => {
   return (
     <div
       className={styles.taskListWrapper}

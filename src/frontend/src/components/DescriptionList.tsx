@@ -11,7 +11,7 @@ interface DescriptionListProps {
   items: DescriptionBullet[];
 }
 
-const DescriptionList: React.FC<DescriptionListProps> = ({ title, items }) => {
+const DescriptionList = ({ title, items }: DescriptionListProps) => {
   return (
     <BulletList
       title={title}

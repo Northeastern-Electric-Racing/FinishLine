@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import AdminToolsPage from './AdminToolsPage';
 
-const AdminTools: React.FC = () => {
+const AdminTools = () => {
   const auth = useAuth();
 
   if (!auth.user) return <LoadingIndicator />;

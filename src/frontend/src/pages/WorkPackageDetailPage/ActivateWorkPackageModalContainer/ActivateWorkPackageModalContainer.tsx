@@ -26,11 +26,7 @@ export interface FormInput {
   confirmDetails: boolean;
 }
 
-const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContainerProps> = ({
-  wbsNum,
-  modalShow,
-  handleClose
-}) => {
+const ActivateWorkPackageModalContainer = ({ wbsNum, modalShow, handleClose }: ActivateWorkPackageModalContainerProps) => {
   const auth = useAuth();
   const users = useAllUsers();
   const history = useHistory();

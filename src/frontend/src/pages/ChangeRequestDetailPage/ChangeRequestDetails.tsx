@@ -10,7 +10,7 @@ import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
-const ChangeRequestDetails: React.FC = () => {
+const ChangeRequestDetails = () => {
   interface ParamTypes {
     id: string;
   }

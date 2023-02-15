@@ -23,11 +23,7 @@ export interface FormInput {
   psId: string;
 }
 
-const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
-  modalShow,
-  handleClose,
-  cr
-}: ReviewChangeRequestProps) => {
+const ReviewChangeRequest = ({ modalShow, handleClose, cr }: ReviewChangeRequestProps) => {
   interface ParamTypes {
     id: string;
   }

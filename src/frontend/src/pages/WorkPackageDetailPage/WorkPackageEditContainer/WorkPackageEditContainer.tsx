@@ -37,7 +37,7 @@ interface WorkPackageEditContainerProps {
   exitEditMode: () => void;
 }
 
-const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
+const WorkPackageEditContainer = ({ workPackage, exitEditMode }: WorkPackageEditContainerProps) => {
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();

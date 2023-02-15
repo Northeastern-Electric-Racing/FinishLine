@@ -12,7 +12,7 @@ import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import React from 'react';
 
-const UsefulLinks: React.FC = () => {
+const UsefulLinks = () => {
   const theme = useTheme();
   const links = [
     <>

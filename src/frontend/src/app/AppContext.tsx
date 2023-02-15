@@ -7,7 +7,11 @@ import AppContextAuth from './AppContextAuth';
 import AppContextQuery from './AppContextQuery';
 import AppContextTheme from './AppContextTheme';
 
-const AppContext: React.FC = (props) => {
+type Props = {
+  children?: React.ReactNode;
+};
+
+const AppContext = (props: Props) => {
   return (
     <AppContextQuery>
       <AppContextAuth>

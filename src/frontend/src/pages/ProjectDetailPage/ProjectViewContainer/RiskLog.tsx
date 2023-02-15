@@ -46,7 +46,7 @@ const sortRisksByDate = (a: Risk, b: Risk) => {
   return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
 };
 
-const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projManager }) => {
+const RiskLog = ({ projectId, wbsNum, projLead, projManager }: RiskLogProps) => {
   const history = useHistory();
   const auth = useAuth();
   const { mutateAsync: createMutateAsync } = useCreateSingleRisk();

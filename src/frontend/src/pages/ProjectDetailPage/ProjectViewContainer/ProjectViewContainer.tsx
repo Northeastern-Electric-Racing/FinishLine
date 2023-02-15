@@ -30,7 +30,7 @@ interface ProjectViewContainerProps {
   enterEditMode: () => void;
 }
 
-const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
+const ProjectViewContainer = ({ proj, enterEditMode }: ProjectViewContainerProps) => {
   const auth = useAuth();
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);

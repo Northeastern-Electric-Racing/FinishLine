@@ -14,7 +14,11 @@ import { useAuth } from '../hooks/auth.hooks';
 
 export const ThemeToggleContext = createContext({ activeTheme: 'light', toggleTheme: () => {} });
 
-const AppContextSettings: React.FC = (props) => {
+type Props = {
+  children?: React.ReactNode;
+};
+
+const AppContextSettings = (props: Props) => {
   const auth = useAuth();
   const theme = useProvideThemeToggle();
 

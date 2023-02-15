@@ -22,7 +22,7 @@ interface ReactHookTextFieldProps {
   errorMessage?: FieldError;
 }
 
-const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
+const ReactHookTextField = ({
   name,
   control,
   rules,
@@ -37,7 +37,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   rows,
   endAdornment,
   errorMessage
-}) => {
+}: ReactHookTextFieldProps) => {
   const defaultRules = { required: true };
 
   let inputProps = {};

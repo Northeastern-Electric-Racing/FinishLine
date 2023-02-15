@@ -6,14 +6,7 @@ import { BarProgressHandle } from './bar-progress-handle';
 import { TaskItemProps } from '../task-item';
 import styles from './bar.module.css';
 
-export const Bar: React.FC<TaskItemProps> = ({
-  task,
-  isProgressChangeable,
-  isDateChangeable,
-  rtl,
-  onEventStart,
-  isSelected
-}) => {
+export const Bar = ({ task, isProgressChangeable, isDateChangeable, rtl, onEventStart, isSelected }: TaskItemProps) => {
   const progressPoint = getProgressPoint(+!rtl * task.progressWidth + task.progressX, task.y, task.height);
   const handleHeight = task.height - 2;
   return (

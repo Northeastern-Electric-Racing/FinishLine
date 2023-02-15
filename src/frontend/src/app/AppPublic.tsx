@@ -10,7 +10,7 @@ import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 
-const AppPublic: React.FC = () => {
+const AppPublic = () => {
   const auth = useAuth();
   const history = useHistory();
   const theme = useProvideThemeToggle();

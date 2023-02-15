@@ -24,7 +24,7 @@ export interface FormInput {
   slackId: string;
 }
 
-const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
+const UserSettings = ({ userId }: UserSettingsProps) => {
   const [edit, setEdit] = useState(false);
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
   const update = useUpdateUserSettings();

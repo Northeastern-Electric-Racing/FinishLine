@@ -17,7 +17,7 @@ const style = {
   maxWidth: '140px',
   fontWeight: 'bold'
 };
-const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetailsProps) => {
+const StandardDetails = ({ cr }: StandardDetailsProps) => {
   return (
     <PageBlock title={'Standard Change Request Details'}>
       <Grid container spacing={1}>

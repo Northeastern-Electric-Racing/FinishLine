@@ -40,7 +40,7 @@ interface ProjectEditContainerProps {
   exitEditMode: () => void;
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
+const ProjectEditContainer = ({ project, exitEditMode }: ProjectEditContainerProps) => {
   const query = useQuery();
   const allUsers = useAllUsers();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;

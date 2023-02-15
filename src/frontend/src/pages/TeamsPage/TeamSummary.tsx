@@ -13,7 +13,7 @@ interface TeamSummaryProps {
   team: Team;
 }
 
-const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
+const TeamSummary = ({ team }: TeamSummaryProps) => {
   const projectsList = team.projects.map((project, idx) => (
     <React.Fragment key={project.name}>
       <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>

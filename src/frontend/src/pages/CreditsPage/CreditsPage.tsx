@@ -8,7 +8,7 @@ import { useState } from 'react';
 import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
 import PageBlock from '../../layouts/PageBlock';
 
-const CreditsPage: React.FC = () => {
+const CreditsPage = () => {
   // This is the list of names that get displayed, add yours here!
   // each item in the list is a JSON (javascript object notation) object that has the keys
   // 'name' and 'color', and optionally 'sx' if you want to use a special style

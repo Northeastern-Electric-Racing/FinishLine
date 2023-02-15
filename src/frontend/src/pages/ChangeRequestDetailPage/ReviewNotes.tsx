@@ -14,7 +14,7 @@ interface ReviewNotesProps {
   dateReviewed?: Date;
 }
 
-const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
+const ReviewNotes = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
     <PageBlock
       title={'Review Notes'}

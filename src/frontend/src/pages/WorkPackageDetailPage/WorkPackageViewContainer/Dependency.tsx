@@ -15,7 +15,7 @@ interface DependencyProps {
   handleDelete: any;
 }
 
-const Dependency: React.FC<DependencyProps> = ({ wbsNumber, handleDelete }) => {
+const Dependency = ({ wbsNumber, handleDelete }: DependencyProps) => {
   const history = useHistory();
 
   function handleLinkClick() {
