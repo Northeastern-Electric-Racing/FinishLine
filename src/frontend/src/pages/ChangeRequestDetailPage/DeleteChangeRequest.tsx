@@ -40,13 +40,14 @@ const DeleteChangeRequest: React.FC<DeleteChangeRequestProps> = ({
       throw new Error(error);
     });
     history.goBack();
+    toast.success(`Change Request #${crId} Deleted Successfully!`);
   };
 
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <DeleteChangeRequestView cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  return <DeleteChangeRequestView changeRequest={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default DeleteChangeRequest;

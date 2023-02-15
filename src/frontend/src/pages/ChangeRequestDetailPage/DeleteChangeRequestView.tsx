@@ -13,20 +13,17 @@ import NERFailButton from '../../components/NERFailButton';
 import { DeleteChangeRequestInputs } from './DeleteChangeRequest';
 
 interface DeleteChangeRequestViewProps {
-  cr: ChangeRequest;
+  changeRequest: ChangeRequest;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: DeleteChangeRequestInputs) => Promise<void>;
 }
 
-const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ cr, modalShow, onHide, onSubmit }) => {
-  const crIDTester = (crId: string | undefined) => {
-    if (!crId) return false;
-    return crId === cr.crId.toString();
-  };
+const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ changeRequest, modalShow, onHide, onSubmit }) => {
+  const changeRequestIdTester = (crId: string | undefined) => crId !== undefined && crId === changeRequest.crId.toString();
 
   const schema = yup.object().shape({
-    crId: yup.string().required().test('cr-id-test', 'Change Request ID does not match', crIDTester)
+    crId: yup.string().required().test('cr-id-test', 'Change Request ID does not match', changeRequestIdTester)
   });
 
   const {
@@ -46,9 +43,9 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ cr, m
 
   return (
     <Dialog fullWidth maxWidth="md" open={modalShow} onClose={onHide}>
-      <DialogTitle className={'font-weight-bold'}>{`Delete Change Request #${cr.crId}`}</DialogTitle>
+      <DialogTitle className={'font-weight-bold'}>{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
       <DialogContent>
-        <Typography>Are you sure you want to delete Change Request #{cr.crId}?</Typography>
+        <Typography>Are you sure you want to delete Change Request #{changeRequest.crId}?</Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
         <form
           id="delete-cr-form"
@@ -76,6 +73,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ cr, m
                   required
                   variant="outlined"
                   id="crId-input"
+                  type="number"
                   autoComplete="off"
                   onChange={onChange}
                   value={value}

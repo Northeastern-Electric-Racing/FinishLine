@@ -30,11 +30,7 @@ const ChangeRequestDetails: React.FC = () => {
       }
       isUserAllowedToImplement={auth.user?.role !== 'GUEST'}
       isUserAllowedToDelete={
-        auth.user?.role === RoleEnum.ADMIN ||
-        auth.user?.role === RoleEnum.APP_ADMIN ||
-        auth.user?.userId === data?.submitter.userId //&&
-        // !data?.dateReviewed // Can't delete a CR that has been reviewed
-        // TODO: The above needs a second look
+        (auth.user?.role === RoleEnum.ADMIN || auth.user?.role === RoleEnum.APP_ADMIN) && !data?.dateReviewed // Can't delete a CR that has been reviewed
       }
       changeRequest={data!}
     />

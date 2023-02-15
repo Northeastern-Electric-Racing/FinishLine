@@ -90,12 +90,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
 
-  const reviewBtn = (
-    <NERButton variant="contained" onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
-      Review
-    </NERButton>
-  );
-
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -103,6 +97,27 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
+
+  const unreviewedActionsDropdown = (
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="unreviewed-cr-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          Review
+        </MenuItem>
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
+        </MenuItem>
+      </Menu>
+    </div>
+  );
 
   const implementCrDropdown = (
     <div>
@@ -139,15 +154,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         >
           Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
         </MenuItem>
-        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
-          Delete
-        </MenuItem>
       </Menu>
     </div>
   );
 
   let actionDropdown = <></>;
-  if (changeRequest.accepted === undefined) actionDropdown = reviewBtn;
+  if (changeRequest.accepted === undefined) actionDropdown = unreviewedActionsDropdown;
   if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
 
   return (
