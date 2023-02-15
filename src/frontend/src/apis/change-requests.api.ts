@@ -53,6 +53,15 @@ export const reviewChangeRequest = (
 };
 
 /**
+ * Delete a change request.
+ *
+ * @param crId The ID of the change request being deleted.
+ */
+export const deleteChangeRequest = (crId: number) => {
+  return axios.delete<{ message: string }>(apiUrls.changeRequestDelete(`${crId}`));
+};
+
+/**
  * Create a standard change request.
  *
  * @param payload The standard change request payload.

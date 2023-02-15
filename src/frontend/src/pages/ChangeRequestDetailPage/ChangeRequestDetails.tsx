@@ -9,6 +9,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { RoleEnum } from 'shared';
 
 const ChangeRequestDetails: React.FC = () => {
   interface ParamTypes {
@@ -28,6 +29,13 @@ const ChangeRequestDetails: React.FC = () => {
         auth.user?.role !== 'GUEST' && auth.user?.role !== 'MEMBER' && auth.user?.userId !== data?.submitter.userId
       }
       isUserAllowedToImplement={auth.user?.role !== 'GUEST'}
+      isUserAllowedToDelete={
+        auth.user?.role === RoleEnum.ADMIN ||
+        auth.user?.role === RoleEnum.APP_ADMIN ||
+        auth.user?.userId === data?.submitter.userId //&&
+        // !data?.dateReviewed // Can't delete a CR that has been reviewed
+        // TODO: The above needs a second look
+      }
       changeRequest={data!}
     />
   );

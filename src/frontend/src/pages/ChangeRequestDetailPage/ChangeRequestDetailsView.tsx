@@ -26,6 +26,7 @@ import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
+import DeleteChangeRequest from './DeleteChangeRequest';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -70,22 +71,27 @@ const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   isUserAllowedToImplement: boolean;
+  isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
 }
 
 const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToReview,
   isUserAllowedToImplement,
+  isUserAllowedToDelete,
   changeRequest
 }: ChangeRequestDetailsProps) => {
-  const [modalShow, setModalShow] = useState<boolean>(false);
-  const handleClose = () => setModalShow(false);
-  const handleOpen = () => setModalShow(true);
+  const [reviewModalShow, setReviewModalShow] = useState<boolean>(false);
+  const handleReviewClose = () => setReviewModalShow(false);
+  const handleReviewOpen = () => setReviewModalShow(true);
+  const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const handleDeleteClose = () => setDeleteModalShow(false);
+  const handleDeleteOpen = () => setDeleteModalShow(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
 
   const reviewBtn = (
-    <NERButton variant="contained" onClick={handleOpen} disabled={!isUserAllowedToReview}>
+    <NERButton variant="contained" onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
       Review
     </NERButton>
   );
@@ -132,6 +138,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           onClick={handleDropdownClose}
         >
           Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
+        </MenuItem>
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
         </MenuItem>
       </Menu>
     </div>
@@ -186,7 +195,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
+      {reviewModalShow && (
+        <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
+      )}
+      {deleteModalShow && (
+        <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
+      )}
     </>
   );
 };
