@@ -7,7 +7,6 @@ import { WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
 
 const dbSeedWorkPackage1: any = {
   projectId: 1,
-  stage: Work_Package_Stage.RESEARCH,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 1,
@@ -20,6 +19,7 @@ const dbSeedWorkPackage1: any = {
   },
   workPackageFields: {
     orderInProject: 1,
+    stage: Work_Package_Stage.RESEARCH,
     startDate: new Date('01/01/21'),
     duration: 3
   },
@@ -44,7 +44,6 @@ const dbSeedWorkPackage1: any = {
 
 const dbSeedWorkPackage2: any = {
   projectId: 1,
-  stage: Work_Package_Stage.DESIGN,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 1,
@@ -57,6 +56,7 @@ const dbSeedWorkPackage2: any = {
   },
   workPackageFields: {
     orderInProject: 2,
+    stage: Work_Package_Stage.DESIGN,
     startDate: new Date('01/01/21'),
     duration: 5
   },
@@ -86,7 +86,6 @@ const dbSeedWorkPackage2: any = {
 
 const dbSeedWorkPackage3: any = {
   projectId: 5,
-  stage: Work_Package_Stage.MANUFACTURING,
   wbsElementFields: {
     carNumber: 1,
     projectNumber: 25,
@@ -99,6 +98,7 @@ const dbSeedWorkPackage3: any = {
   },
   workPackageFields: {
     orderInProject: 3,
+    stage: Work_Package_Stage.MANUFACTURING,
     startDate: new Date('01/01/21'),
     duration: 2
   },

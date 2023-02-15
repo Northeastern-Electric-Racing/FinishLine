@@ -92,7 +92,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter),
         projectName: wbsElement.name,
-        stage: (workPackage.stage ?? undefined) as WorkPackageStage
+        stage: (workPackage.stage || undefined) as WorkPackageStage
       };
     })
   };
