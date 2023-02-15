@@ -5,7 +5,7 @@
 
 import { User } from './user-types';
 import { ImplementedChange } from './change-request-types';
-import { TimelineStatus } from './work-package-types';
+import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
 import { Risk } from './risk-types';
 
@@ -65,6 +65,7 @@ export interface WorkPackage extends WbsElement {
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
   projectName: string;
+  stage?: WorkPackageStage;
 }
 
 export interface DescriptionBullet {

@@ -64,4 +64,5 @@ type NotFoundObjectNames =
   | 'WBS Element'
   | 'Proposed Solution'
   | 'Team'
-  | 'User Settings';
+  | 'User Settings'
+  | 'Task';

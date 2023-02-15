@@ -16,3 +16,11 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
+
+export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(['LOW', 'MEDIUM', 'HIGH']);
+};
+
+export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(['IN_BACKLOG', 'IN_PROGRESS', 'DONE']);
+};
