@@ -80,7 +80,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'grey'
+                  bgcolor: 'green'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>0</Box>
@@ -125,7 +125,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'grey'
+                  bgcolor: 'green'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>1</Box>
@@ -170,7 +170,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'grey'
+                  bgcolor: 'green'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>2</Box>
