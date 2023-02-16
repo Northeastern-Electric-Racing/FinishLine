@@ -37,10 +37,11 @@ const performSeed: () => Promise<void> = async () => {
   const greenLantern = await prisma.user.create({ data: dbSeedAllUsers.greenLantern });
   const martianManhunter = await prisma.user.create({ data: dbSeedAllUsers.martianManhunter });
   const nightwing = await prisma.user.create({ data: dbSeedAllUsers.nightwing });
+  const brandonHyde = await prisma.user.create({ data: dbSeedAllUsers.brandonHyde });
   const calRipken = await prisma.user.create({ data: dbSeedAllUsers.calRipken });
   const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
-  const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.calRipken });
-  const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
+  const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
+  const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
 
   for (const seedSession of dbSeedAllSessions) {
     await prisma.session.create({
@@ -87,8 +88,6 @@ const performSeed: () => Promise<void> = async () => {
     'Initial Change Request',
     [
       {
-        scopeCrWhyId: -1,
-        scopeCrId: -1,
         type: Scope_CR_Why_Type.INITIALIZATION,
         explain: 'need this to initialize all the seed data'
       }
@@ -113,7 +112,7 @@ const performSeed: () => Promise<void> = async () => {
    */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
-  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(calRipken.userId));
+  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
 
   await TeamsService.setTeamMembers(
@@ -124,7 +123,7 @@ const performSeed: () => Promise<void> = async () => {
     )
   );
   await TeamsService.setTeamMembers(johnHarbaugh, ravens.teamId, [lamarJackson.userId]);
-  await TeamsService.setTeamMembers(calRipken, orioles.teamId, [adleyRutschman.userId]);
+  await TeamsService.setTeamMembers(brandonHyde, orioles.teamId, [adleyRutschman.userId, calRipken.userId]);
   await TeamsService.setTeamMembers(thomasEmrax, huskies.teamId, [joeShmoe.userId, joeBlow.userId]);
 
   /**
@@ -221,68 +220,105 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  for (const seedWorkPackage of dbSeedAllWorkPackages) {
-    await prisma.work_Package.create({
-      data: {
-        wbsElement: { create: { ...seedWorkPackage.wbsElementFields } },
-        project: { connect: { projectId: seedWorkPackage.projectId } },
-        ...seedWorkPackage.workPackageFields,
-        expectedActivities: { create: seedWorkPackage.expectedActivities },
-        deliverables: { create: seedWorkPackage.deliverables }
+  const project3WbsNumber = await ProjectsService.createProject(
+    thomasEmrax,
+    changeRequest1Id,
+    1,
+    'Battery Box',
+    'Develop rules-compliant battery box.',
+    huskies.teamId
+  );
+  const project3 = await prisma.project.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: project3WbsNumber.carNumber,
+        projectNumber: project3WbsNumber.projectNumber,
+        workPackageNumber: project3WbsNumber.workPackageNumber
       }
-    });
-  }
+    },
+    ...projectQueryArgs
+  });
+  await ProjectsService.editProject(
+    thomasEmrax,
+    project3.projectId,
+    changeRequest1Id,
+    project3.wbsElement.name,
+    5000,
+    project3.summary,
+    ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
+    [{ id: -1, detail: 'Decrease weight by 60% from 100 pounds to 40 pounds' }],
+    [{ id: -1, detail: 'Provides 50,000 Wh of energy discharge' }],
+    [{ id: -1, detail: 'Maximum power consumption of 25 watts from the low voltage system' }],
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
 
-  for (const seedChangeRequest of dbSeedAllChangeRequests) {
-    const data: any = {
-      submitter: { connect: { userId: seedChangeRequest.submitterId } },
-      wbsElement: { connect: { wbsElementId: seedChangeRequest.wbsElementId } },
-      ...seedChangeRequest.changeRequestFields,
-      changes: { create: seedChangeRequest.changes }
-    };
-    if (seedChangeRequest.scopeChangeRequestFields) {
-      data.scopeChangeRequest = {
-        create: {
-          ...seedChangeRequest.scopeChangeRequestFields.otherFields,
-          why: { create: seedChangeRequest.scopeChangeRequestFields.why }
-        }
-      };
-    }
-    if (seedChangeRequest.activationChangeRequestFields) {
-      data.activationChangeRequest = {
-        create: {
-          ...seedChangeRequest.activationChangeRequestFields.otherFields,
-          projectLead: {
-            connect: { userId: seedChangeRequest.activationChangeRequestFields.projectLeadId }
-          },
-          projectManager: {
-            connect: { userId: seedChangeRequest.activationChangeRequestFields.projectManagerId }
-          }
-        }
-      };
-    }
-    if (seedChangeRequest.stageGateChangeRequestFields) {
-      data.stageGateChangeRequest = {
-        create: { ...seedChangeRequest.stageGateChangeRequestFields }
-      };
-    }
-    await prisma.change_Request.create({ data });
-  }
+  // for (const seedWorkPackage of dbSeedAllWorkPackages) {
+  //   await prisma.work_Package.create({
+  //     data: {
+  //       wbsElement: { create: { ...seedWorkPackage.wbsElementFields } },
+  //       project: { connect: { projectId: seedWorkPackage.projectId } },
+  //       ...seedWorkPackage.workPackageFields,
+  //       expectedActivities: { create: seedWorkPackage.expectedActivities },
+  //       deliverables: { create: seedWorkPackage.deliverables }
+  //     }
+  //   });
+  // }
 
-  for (const seedProposedSolution of dbSeedAllProposedSolutions) {
-    await prisma.proposed_Solution.create({
-      data: {
-        description: seedProposedSolution.description,
-        timelineImpact: seedProposedSolution.timelineImpact,
-        scopeImpact: seedProposedSolution.scopeImpact,
-        budgetImpact: seedProposedSolution.budgetImpact,
-        changeRequestId: seedProposedSolution.changeRequestId,
-        createdByUserId: seedProposedSolution.createdByUserId,
-        dateCreated: seedProposedSolution.dateCreated,
-        approved: seedProposedSolution.approved
-      }
-    });
-  }
+  // for (const seedChangeRequest of dbSeedAllChangeRequests) {
+  //   const data: any = {
+  //     submitter: { connect: { userId: seedChangeRequest.submitterId } },
+  //     wbsElement: { connect: { wbsElementId: seedChangeRequest.wbsElementId } },
+  //     ...seedChangeRequest.changeRequestFields,
+  //     changes: { create: seedChangeRequest.changes }
+  //   };
+  //   if (seedChangeRequest.scopeChangeRequestFields) {
+  //     data.scopeChangeRequest = {
+  //       create: {
+  //         ...seedChangeRequest.scopeChangeRequestFields.otherFields,
+  //         why: { create: seedChangeRequest.scopeChangeRequestFields.why }
+  //       }
+  //     };
+  //   }
+  //   if (seedChangeRequest.activationChangeRequestFields) {
+  //     data.activationChangeRequest = {
+  //       create: {
+  //         ...seedChangeRequest.activationChangeRequestFields.otherFields,
+  //         projectLead: {
+  //           connect: { userId: seedChangeRequest.activationChangeRequestFields.projectLeadId }
+  //         },
+  //         projectManager: {
+  //           connect: { userId: seedChangeRequest.activationChangeRequestFields.projectManagerId }
+  //         }
+  //       }
+  //     };
+  //   }
+  //   if (seedChangeRequest.stageGateChangeRequestFields) {
+  //     data.stageGateChangeRequest = {
+  //       create: { ...seedChangeRequest.stageGateChangeRequestFields }
+  //     };
+  //   }
+  //   await prisma.change_Request.create({ data });
+  // }
+
+  // for (const seedProposedSolution of dbSeedAllProposedSolutions) {
+  //   await prisma.proposed_Solution.create({
+  //     data: {
+  //       description: seedProposedSolution.description,
+  //       timelineImpact: seedProposedSolution.timelineImpact,
+  //       scopeImpact: seedProposedSolution.scopeImpact,
+  //       budgetImpact: seedProposedSolution.budgetImpact,
+  //       changeRequestId: seedProposedSolution.changeRequestId,
+  //       createdByUserId: seedProposedSolution.createdByUserId,
+  //       dateCreated: seedProposedSolution.dateCreated,
+  //       approved: seedProposedSolution.approved
+  //     }
+  //   });
+  // }
 };
 
 performSeed()

@@ -162,6 +162,14 @@ const nightwing: Prisma.UserCreateInput = {
   role: Role.GUEST
 };
 
+const brandonHyde: Prisma.UserCreateInput = {
+  firstName: 'Brandon',
+  lastName: 'Hyde',
+  email: 'brandon.hyde@orioles.com',
+  googleAuthId: 'letsgoOs',
+  role: Role.LEADERSHIP
+};
+
 const calRipken: Prisma.UserCreateInput = {
   firstName: 'Cal',
   lastName: 'Ripken',
@@ -210,6 +218,7 @@ export const dbSeedAllUsers = {
   greenLantern,
   martianManhunter,
   nightwing,
+  brandonHyde,
   calRipken,
   adleyRutschman,
   johnHarbaugh,
