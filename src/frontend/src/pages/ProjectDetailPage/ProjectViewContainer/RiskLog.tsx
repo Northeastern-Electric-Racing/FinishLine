@@ -218,7 +218,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
           </DialogContent>
           <DialogActions>
             <NERFailButton onClick={handleClose} sx={{ mx: 1 }}>
-              Closes
+              Close
             </NERFailButton>
             <NERSuccessButton type="submit" sx={{ mx: 1 }}>
               Save Changes
