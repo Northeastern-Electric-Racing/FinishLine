@@ -15,7 +15,6 @@ import {
   WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
-import { dbSeedAllSessions } from './seed-data/session.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ProjectsService from '../services/projects.services';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -27,6 +26,7 @@ import { validateWBS, WbsElementStatus } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { descBulletConverter } from '../utils/utils';
 import TasksService from '../services/tasks.services';
+import DescriptionBulletsService from '../services/description-bullets.services';
 
 const prisma = new PrismaClient();
 
@@ -51,15 +51,6 @@ const performSeed: () => Promise<void> = async () => {
   const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
   const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
   const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
-
-  for (const seedSession of dbSeedAllSessions) {
-    await prisma.session.create({
-      data: {
-        ...seedSession.fields,
-        user: { connect: { userId: seedSession.userId } }
-      }
-    });
-  }
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -388,6 +379,7 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     thomasEmrax.userId
   );
+  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
 
   const workPackage2WbsString = await WorkPackagesService.createWorkPackage(
     thomasEmrax,
