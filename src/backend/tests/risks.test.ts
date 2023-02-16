@@ -165,7 +165,7 @@ describe('Risks', () => {
       jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk1);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
 
-      const { projectId } = prismaProject1;
+      const projectId = 1;
       const detail = 'detail';
       const res = await RisksService.createRisk(batman, projectId, detail);
       expect(res).toStrictEqual(prismaRisk1.id);
