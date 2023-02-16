@@ -59,6 +59,10 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             checkedIcon={<LooksOneOutlinedIcon />}
             onChange={car1Handler}
             sx={{
+              justifyContent: 'right',
+              alignItems: 'right',
+              height: '50px',
+              width: '50px',
               color: 'white',
               '&.Mui-checked': {
                 color: '#ef4345'
@@ -66,8 +70,17 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               '& .MuiSvgIcon-root': {
                 fontSize: '2rem'
               },
-              paddingLeft: 0
+              paddingLeft: 0,
+
+              '&:hover': {
+                justifyContent: 'right',
+                alignItems: 'right',
+                height: '50px',
+                width: '50px',
+                backgroundColor: '#522f2f'
+              }
             }}
+            disableRipple={true}
           />
         </Grid>
         <Grid item>
@@ -77,6 +90,10 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             checkedIcon={<LooksTwoOutlinedIcon />}
             onChange={car2Handler}
             sx={{
+              justifyContent: 'right',
+              alignItems: 'right',
+              height: '50px',
+              width: '50px',
               color: 'white',
               '&.Mui-checked': {
                 color: '#ef4345'
@@ -84,7 +101,14 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               '& .MuiSvgIcon-root': {
                 fontSize: '2rem'
               },
-              paddingLeft: 0
+              paddingLeft: 0,
+              '&:hover': {
+                justifyContent: 'right',
+                alignItems: 'right',
+                height: '50px',
+                width: '50px',
+                backgroundColor: '#522f2f'
+              }
             }}
           />
         </Grid>
