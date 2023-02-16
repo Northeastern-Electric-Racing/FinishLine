@@ -127,7 +127,7 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(thomasEmrax, huskies.teamId, [joeShmoe.userId, joeBlow.userId]);
 
   /**
-   * PROJECTS
+   * Projects
    */
   const project1WbsNumber = await ProjectsService.createProject(
     thomasEmrax,
