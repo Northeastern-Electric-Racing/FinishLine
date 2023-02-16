@@ -8,7 +8,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
       include: {
         projectLead: true,
         projectManager: true,
-        Task: { where: { dateDeleted: null }, ...taskQueryArgs },
+        tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
       }
     },

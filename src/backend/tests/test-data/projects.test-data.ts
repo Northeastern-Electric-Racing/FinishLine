@@ -30,7 +30,7 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     dateDeleted: null,
     deletedByUserId: null,
     changes: [],
-    Task: []
+    tasks: []
   },
   workPackages: [
     {
