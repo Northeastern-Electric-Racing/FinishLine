@@ -7,7 +7,8 @@ export const prismaWorkPackage1: PrismaWorkPackage = {
   projectId: 1,
   orderInProject: 1,
   startDate: new Date('10/10/2022'),
-  duration: 10
+  duration: 10,
+  stage: null
 };
 
 export const sharedWorkPackage: WorkPackage = {

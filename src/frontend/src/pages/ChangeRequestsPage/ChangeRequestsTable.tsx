@@ -21,7 +21,11 @@ import { NERButton } from '../../components/NERButton';
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(50);
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
+
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
 
   const baseColDef: any = {
     flex: 1,
@@ -153,7 +157,10 @@ const ChangeRequestsTable: React.FC = () => {
         density="compact"
         pageSize={pageSize}
         rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('cr-table-row-count', String(newPageSize));
+          setPageSize(newPageSize);
+        }}
         loading={isLoading}
         error={error}
         rows={

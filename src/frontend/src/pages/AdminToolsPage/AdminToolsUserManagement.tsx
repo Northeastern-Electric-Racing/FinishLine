@@ -15,6 +15,7 @@ import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { RoleEnum, User } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const AdminToolsUserMangaement: React.FC = () => {
   const [role, setRole] = useState('');
@@ -24,6 +25,7 @@ const AdminToolsUserMangaement: React.FC = () => {
   const { isLoading, isError, error, data: users } = useAllUsers();
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
+  const toast = useToast();
 
   const styles = {
     roleSelectStyle: {
@@ -42,10 +44,10 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const usersSearchOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: number } | null
+    value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const user = users.find((user: User) => user.userId === value.id);
+      const user = users.find((user: User) => user.userId.toString() === value.id);
       if (user) {
         setUser(user);
         setRole(user.role);
@@ -73,12 +75,14 @@ const AdminToolsUserMangaement: React.FC = () => {
       setHideSuccessLabel(false);
       setUser(null);
     } catch (e) {
-      alert(e);
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
     }
   };
 
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
+  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
   return (
