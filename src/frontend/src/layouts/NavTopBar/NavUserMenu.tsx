@@ -12,7 +12,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
-import Button from '@mui/material/Button';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -32,6 +31,31 @@ const NavUserMenu: React.FC = () => {
     auth!.signout();
     history.push(routes.HOME);
   };
+
+  const googleLogout = (
+    <GoogleLogout
+      clientId={googleAuthClientId!}
+      //jsSrc={'accounts.google.com/gsi/client'}
+      onLogoutSuccess={logout}
+      render={(renderProps) => (
+        <MenuItem component="div" sx={{ py: 0 }}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Logout</ListItemText>
+        </MenuItem>
+      )}
+    />
+  );
+
+  const devLogout = (
+    <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
+  );
 
   return (
     <>
@@ -79,27 +103,7 @@ const NavUserMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
-        {googleAuthClientId && (
-          <GoogleLogout
-            clientId={googleAuthClientId}
-            //jsSrc={'accounts.google.com/gsi/client'}
-            onLogoutSuccess={logout}
-            render={(renderProps) => (
-              <MenuItem component="div" sx={{ py: 0 }}>
-                <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>Logout</ListItemText>
-              </MenuItem>
-            )}
-          />
-        )}
-        <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Logout</ListItemText>
-        </MenuItem>
+        {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
   );
