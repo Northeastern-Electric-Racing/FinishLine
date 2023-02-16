@@ -3,20 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  faExchangeAlt,
-  faFolder,
-  faHome,
-  faQuestionCircle,
-  faToolbox,
-  faUsers,
-  faChartGantt
-} from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Home, Description, Folder, SwapHoriz, Group, Timeline } from '@material-ui/icons';
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
@@ -25,27 +17,27 @@ const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
-      icon: faHome,
+      icon: <Home />,
       route: routes.HOME
     },
     {
       name: 'Gantt',
-      icon: faChartGantt,
+      icon: <Timeline />,
       route: routes.GANTT
     },
     {
       name: 'Projects',
-      icon: faFolder,
+      icon: <Folder />,
       route: routes.PROJECTS
     },
     {
       name: 'Change Requests',
-      icon: faExchangeAlt,
+      icon: <SwapHoriz />,
       route: routes.CHANGE_REQUESTS
     },
     {
       name: 'Teams',
-      icon: faUsers,
+      icon: <Group />,
       route: routes.TEAMS
     }
   ];
@@ -53,14 +45,14 @@ const Sidebar: React.FC = () => {
   if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
     linkItems.push({
       name: 'Admin Tools',
-      icon: faToolbox,
+      icon: <Description />,
       route: routes.ADMIN_TOOLS
     });
   }
 
   linkItems.push({
     name: 'Info',
-    icon: faQuestionCircle,
+    icon: <Description />,
     route: routes.INFO
   });
 
