@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CR_Type, PrismaClient, Scope_CR_Why_Type, Team, WBS_Element_Status } from '@prisma/client';
+import {
+  CR_Type,
+  PrismaClient,
+  Scope_CR_Why_Type,
+  Task_Priority,
+  Task_Status,
+  Team,
+  WBS_Element_Status
+} from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
-import { dbSeedAllProjects } from './seed-data/projects.seed';
-import { dbSeedAllWorkPackages } from './seed-data/work-packages.seed';
-import { dbSeedAllChangeRequests } from './seed-data/change-requests.seed';
 import { dbSeedAllSessions } from './seed-data/session.seed';
-import { dbSeedAllRisks } from './seed-data/risks.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
-import { dbSeedAllProposedSolutions } from './seed-data/proposed-solutions.seed';
 import ProjectsService from '../services/projects.services';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
@@ -22,6 +26,7 @@ import WorkPackagesService from '../services/work-packages.services';
 import { validateWBS, WbsElementStatus } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { descBulletConverter } from '../utils/utils';
+import TasksService from '../services/tasks.services';
 
 const prisma = new PrismaClient();
 
@@ -384,68 +389,128 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  // for (const seedWorkPackage of dbSeedAllWorkPackages) {
-  //   await prisma.work_Package.create({
-  //     data: {
-  //       wbsElement: { create: { ...seedWorkPackage.wbsElementFields } },
-  //       project: { connect: { projectId: seedWorkPackage.projectId } },
-  //       ...seedWorkPackage.workPackageFields,
-  //       expectedActivities: { create: seedWorkPackage.expectedActivities },
-  //       deliverables: { create: seedWorkPackage.deliverables }
-  //     }
-  //   });
-  // }
+  const workPackage2WbsString = await WorkPackagesService.createWorkPackage(
+    thomasEmrax,
+    project1WbsNumber,
+    'Adhesive Shear Strength Test',
+    changeRequest1Id,
+    '01/22/2023',
+    5,
+    [],
+    [
+      'Build a test procedure for destructively measuring the shear strength of various adhesives interacting with foam and steel plates',
+      'Design and manufacture test fixtures to perform destructive testing',
+      'Write a report to summarize findings'
+    ],
+    [
+      'Lab report with full data on the shear strength of adhesives under test including a summary and conclusion of which adhesive is best'
+    ]
+  );
+  const workPackage2WbsNumber = validateWBS(workPackage2WbsString);
+  const workPackage2 = await prisma.work_Package.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: workPackage2WbsNumber.carNumber,
+        projectNumber: workPackage2WbsNumber.projectNumber,
+        workPackageNumber: workPackage2WbsNumber.workPackageNumber
+      }
+    },
+    ...workPackageQueryArgs
+  });
+  await WorkPackagesService.editWorkPackage(
+    thomasEmrax,
+    workPackage2.workPackageId,
+    workPackage2.wbsElement.name,
+    changeRequest1Id,
+    workPackage2.startDate.toString(),
+    workPackage2.duration,
+    workPackage2.dependencies,
+    workPackage2.expectedActivities.map(descBulletConverter),
+    workPackage2.deliverables.map(descBulletConverter),
+    WbsElementStatus.Inactive,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
 
-  // for (const seedChangeRequest of dbSeedAllChangeRequests) {
-  //   const data: any = {
-  //     submitter: { connect: { userId: seedChangeRequest.submitterId } },
-  //     wbsElement: { connect: { wbsElementId: seedChangeRequest.wbsElementId } },
-  //     ...seedChangeRequest.changeRequestFields,
-  //     changes: { create: seedChangeRequest.changes }
-  //   };
-  //   if (seedChangeRequest.scopeChangeRequestFields) {
-  //     data.scopeChangeRequest = {
-  //       create: {
-  //         ...seedChangeRequest.scopeChangeRequestFields.otherFields,
-  //         why: { create: seedChangeRequest.scopeChangeRequestFields.why }
-  //       }
-  //     };
-  //   }
-  //   if (seedChangeRequest.activationChangeRequestFields) {
-  //     data.activationChangeRequest = {
-  //       create: {
-  //         ...seedChangeRequest.activationChangeRequestFields.otherFields,
-  //         projectLead: {
-  //           connect: { userId: seedChangeRequest.activationChangeRequestFields.projectLeadId }
-  //         },
-  //         projectManager: {
-  //           connect: { userId: seedChangeRequest.activationChangeRequestFields.projectManagerId }
-  //         }
-  //       }
-  //     };
-  //   }
-  //   if (seedChangeRequest.stageGateChangeRequestFields) {
-  //     data.stageGateChangeRequest = {
-  //       create: { ...seedChangeRequest.stageGateChangeRequestFields }
-  //     };
-  //   }
-  //   await prisma.change_Request.create({ data });
-  // }
+  const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
+    thomasEmrax,
+    project5WbsNumber,
+    'Manufacture Wiring Harness',
+    changeRequest1Id,
+    '02/01/2023',
+    3,
+    [],
+    [
+      'Manufacutre section A of the wiring harness',
+      'Determine which portion of the wiring harness is important',
+      'Solder wiring segments together and heat shrink properly',
+      'Cut all wires to length'
+    ],
+    ['Completed wiring harness for the entire car']
+  );
+  const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 
-  // for (const seedProposedSolution of dbSeedAllProposedSolutions) {
-  //   await prisma.proposed_Solution.create({
-  //     data: {
-  //       description: seedProposedSolution.description,
-  //       timelineImpact: seedProposedSolution.timelineImpact,
-  //       scopeImpact: seedProposedSolution.scopeImpact,
-  //       budgetImpact: seedProposedSolution.budgetImpact,
-  //       changeRequestId: seedProposedSolution.changeRequestId,
-  //       createdByUserId: seedProposedSolution.createdByUserId,
-  //       dateCreated: seedProposedSolution.dateCreated,
-  //       approved: seedProposedSolution.approved
-  //     }
-  //   });
-  // }
+  /**
+   * Change Requests
+   */
+  await ChangeRequestsService.createStageGateChangeRequest(
+    thomasEmrax,
+    workPackage1WbsNumber.carNumber,
+    workPackage1WbsNumber.projectNumber,
+    workPackage1WbsNumber.workPackageNumber,
+    CR_Type.STAGE_GATE,
+    0,
+    true
+  );
+
+  const changeRequest2Id = await ChangeRequestsService.createStandardChangeRequest(
+    thomasEmrax,
+    project2WbsNumber.carNumber,
+    project2WbsNumber.projectNumber,
+    project2WbsNumber.workPackageNumber,
+    CR_Type.DEFINITION_CHANGE,
+    'Change the bodywork to be hot pink',
+    [
+      { type: Scope_CR_Why_Type.DESIGN, explain: 'It would be really pretty' },
+      { type: Scope_CR_Why_Type.ESTIMATION, explain: 'I estimate that it would be really pretty' }
+    ]
+  );
+  await ChangeRequestsService.addProposedSolution(thomasEmrax, changeRequest2Id, 50, 'Buy hot pink paint', 1, 'n/a');
+  await ChangeRequestsService.addProposedSolution(
+    thomasEmrax,
+    changeRequest2Id,
+    40,
+    'Buy slightly cheaper but lower quality hot pink paint',
+    1,
+    'n/a'
+  );
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2Id, 'What the hell Thomas', false, null);
+
+  await ChangeRequestsService.createActivationChangeRequest(
+    thomasEmrax,
+    workPackage3WbsNumber.carNumber,
+    workPackage3WbsNumber.projectNumber,
+    workPackage3WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    thomasEmrax.userId,
+    joeShmoe.userId,
+    new Date('02/01/2023'),
+    true
+  );
+
+  /**
+   * Tasks
+   */
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Research attenuation',
+    "I don't know what attenuation is yet",
+    new Date('01/01/2024'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
+  );
 };
 
 performSeed()
