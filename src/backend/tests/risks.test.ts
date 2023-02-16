@@ -172,6 +172,5 @@ describe('Risks', () => {
       expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.risk.create).toHaveBeenCalledTimes(0);
     });
-
   });
 });
