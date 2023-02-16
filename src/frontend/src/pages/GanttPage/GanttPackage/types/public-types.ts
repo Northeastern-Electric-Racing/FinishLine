@@ -107,22 +107,31 @@ export interface StylingOption {
   arrowColor?: string;
   arrowIndent?: number;
   todayColor?: string;
-  TooltipContent?: (task: Task, fontSize: string, fontFamily: string) => JSX.Element;
-  TaskListHeader?: (headerHeight: number, rowWidth: string, fontFamily: string, fontSize: string) => JSX.Element;
-  TaskListTable?: (
-    rowHeight: number,
-    rowWidth: string,
-    fontFamily: string,
-    fontSize: string,
-    locale: string,
-    tasks: Task[],
-    selectedTaskId: string,
+  TooltipContent?: React.FC<{
+    task: Task;
+    fontSize: string;
+    fontFamily: string;
+  }>;
+  TaskListHeader?: React.FC<{
+    headerHeight: number;
+    rowWidth: string;
+    fontFamily: string;
+    fontSize: string;
+  }>;
+  TaskListTable?: React.FC<{
+    rowHeight: number;
+    rowWidth: string;
+    fontFamily: string;
+    fontSize: string;
+    locale: string;
+    tasks: Task[];
+    selectedTaskId: string;
     /**
      * Sets selected task by id
      */
-    setSelectedTask: (taskId: string) => void,
-    onExpanderClick: (task: Task) => void
-  ) => JSX.Element;
+    setSelectedTask: (taskId: string) => void;
+    onExpanderClick: (task: Task) => void;
+  }>;
 }
 
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {

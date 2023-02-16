@@ -12,7 +12,7 @@ export type GridBodyProps = {
   todayColor: string;
   rtl: boolean;
 };
-export const GridBody = ({ tasks, dates, rowHeight, svgWidth, columnWidth, todayColor, rtl }: GridBodyProps) => {
+export const GridBody: React.FC<GridBodyProps> = ({ tasks, dates, rowHeight, svgWidth, columnWidth, todayColor, rtl }) => {
   let y = 0;
   const gridRows: ReactChild[] = [];
   for (const task of tasks) {

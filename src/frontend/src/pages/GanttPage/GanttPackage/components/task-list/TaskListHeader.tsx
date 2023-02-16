@@ -1,14 +1,12 @@
 import React from 'react';
 import styles from '../../../../../stylesheets/pages/gantt-page.module.css';
 
-export type TaskListHeaderDefaultProps = {
+export const TaskListHeaderDefault: React.FC<{
   headerHeight: number;
   rowWidth: string;
   fontFamily: string;
   fontSize: string;
-};
-
-export const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize, rowWidth }: TaskListHeaderDefaultProps) => {
+}> = ({ headerHeight, fontFamily, fontSize, rowWidth }) => {
   return (
     <div
       className={styles.ganttTable}

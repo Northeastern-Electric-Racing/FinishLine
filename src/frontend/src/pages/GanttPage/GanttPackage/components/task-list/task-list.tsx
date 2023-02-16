@@ -2,25 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { BarTask } from '../../types/bar-task';
 import { Task } from '../../types/public-types';
 
-export type TaskListHeaderProps = {
-  headerHeight: number;
-  rowWidth: string;
-  fontFamily: string;
-  fontSize: string;
-};
-
-export type TaskListTableProps = {
-  rowHeight: number;
-  rowWidth: string;
-  fontFamily: string;
-  fontSize: string;
-  locale: string;
-  tasks: Task[];
-  selectedTaskId: string;
-  setSelectedTask: (taskId: string) => void;
-  onExpanderClick: (task: Task) => void;
-};
-
 export type TaskListProps = {
   headerHeight: number;
   rowWidth: string;
@@ -36,11 +17,26 @@ export type TaskListProps = {
   selectedTask: BarTask | undefined;
   setSelectedTask: (task: string) => void;
   onExpanderClick: (task: Task) => void;
-  TaskListHeader: (TaskListHeaderProps: TaskListHeaderProps) => JSX.Element;
-  TaskListTable: (TaskListTableProps: TaskListTableProps) => JSX.Element;
+  TaskListHeader: React.FC<{
+    headerHeight: number;
+    rowWidth: string;
+    fontFamily: string;
+    fontSize: string;
+  }>;
+  TaskListTable: React.FC<{
+    rowHeight: number;
+    rowWidth: string;
+    fontFamily: string;
+    fontSize: string;
+    locale: string;
+    tasks: Task[];
+    selectedTaskId: string;
+    setSelectedTask: (taskId: string) => void;
+    onExpanderClick: (task: Task) => void;
+  }>;
 };
 
-export const TaskList = ({
+export const TaskList: React.FC<TaskListProps> = ({
   headerHeight,
   fontFamily,
   fontSize,
@@ -57,7 +53,7 @@ export const TaskList = ({
   horizontalContainerClass,
   TaskListHeader,
   TaskListTable
-}: TaskListProps) => {
+}) => {
   const horizontalContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (horizontalContainerRef.current) {

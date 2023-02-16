@@ -19,7 +19,7 @@ type BarDisplayProps = {
   };
   onMouseDown: (event: React.MouseEvent<SVGPolygonElement, MouseEvent>) => void;
 };
-export const BarDisplay = ({
+export const BarDisplay: React.FC<BarDisplayProps> = ({
   x,
   y,
   width,
@@ -30,7 +30,7 @@ export const BarDisplay = ({
   barCornerRadius,
   styles,
   onMouseDown
-}: BarDisplayProps) => {
+}) => {
   const getProcessColor = () => {
     return isSelected ? styles.progressSelectedColor : styles.progressColor;
   };
