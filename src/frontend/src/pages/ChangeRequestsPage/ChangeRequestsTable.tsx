@@ -16,14 +16,19 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(50);
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
 
-  const baseColDef: any = {
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
+
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
@@ -153,7 +158,10 @@ const ChangeRequestsTable: React.FC = () => {
         density="compact"
         pageSize={pageSize}
         rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('cr-table-row-count', String(newPageSize));
+          setPageSize(newPageSize);
+        }}
         loading={isLoading}
         error={error}
         rows={
