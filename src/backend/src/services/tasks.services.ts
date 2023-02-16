@@ -4,6 +4,7 @@ import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { hasPermissionToEditTask } from '../utils/tasks.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TasksService {
@@ -71,7 +72,8 @@ export default class TasksService {
    * @throws if the task does not exist, the task is already deleted, or if the user does not have permissions
    */
   static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission) throw new AccessDeniedException();
 
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
