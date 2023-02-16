@@ -159,6 +159,19 @@ describe('Risks', () => {
       expect(prisma.risk.create).toHaveBeenCalledTimes(0);
     });
 
-    
+    test('the user has permissions to create the risk', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+
+      const projectId = 1;
+      const detail = 'detail';
+      await expect(() => RisksService.createRisk(batman, projectId, detail)).rejects.toThrow();
+
+      expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.create).toHaveBeenCalledTimes(0);
+    });
+
   });
 });
