@@ -18,6 +18,10 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import RisksService from '../services/risks.services';
+import WorkPackagesService from '../services/work-packages.services';
+import { validateWBS, WbsElementStatus } from 'shared';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { descBulletConverter } from '../utils/utils';
 
 const prisma = new PrismaClient();
 
@@ -77,7 +81,7 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   /**
-   * Make an initial change request using the wbs of the genesis project
+   * Make an initial change request for car 1 using the wbs of the genesis project
    */
   const changeRequest1Id: number = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -254,6 +258,129 @@ const performSeed: () => Promise<void> = async () => {
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     joeShmoe.userId,
+    thomasEmrax.userId
+  );
+
+  const project4WbsNumber = await ProjectsService.createProject(
+    thomasEmrax,
+    changeRequest1Id,
+    1,
+    'Motor Controller Integration',
+    'Develop rules-compliant motor controller integration.',
+    huskies.teamId
+  );
+  const project4 = await prisma.project.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: project4WbsNumber.carNumber,
+        projectNumber: project4WbsNumber.projectNumber,
+        workPackageNumber: project4WbsNumber.workPackageNumber
+      }
+    },
+    ...projectQueryArgs
+  });
+  await ProjectsService.editProject(
+    thomasEmrax,
+    project4.projectId,
+    changeRequest1Id,
+    project4.wbsElement.name,
+    0,
+    project4.summary,
+    [],
+    [{ id: -1, detail: 'Power consumption stays under 10 watts from the low voltage system' }],
+    [{ id: -1, detail: 'Capable of interfacing via I2C or comparable serial interface.' }],
+    [
+      { id: -1, detail: 'Must be compatible with chain drive' },
+      { id: -1, detail: 'Must be well designed and whatnot' }
+    ],
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    joeShmoe.userId,
+    joeBlow.userId
+  );
+
+  const project5WbsNumber = await ProjectsService.createProject(
+    thomasEmrax,
+    changeRequest1Id,
+    1,
+    'Wiring Harness',
+    'Develop rules-compliant wiring harness.',
+    huskies.teamId
+  );
+  const project5 = await prisma.project.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: project5WbsNumber.carNumber,
+        projectNumber: project5WbsNumber.projectNumber,
+        workPackageNumber: project5WbsNumber.workPackageNumber
+      }
+    },
+    ...projectQueryArgs
+  });
+  await ProjectsService.editProject(
+    thomasEmrax,
+    project5.projectId,
+    changeRequest1Id,
+    project5.wbsElement.name,
+    234,
+    project5.summary,
+    ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
+    [{ id: -1, detail: 'Decrease installed component costs by 63% from $2,700 to $1000' }],
+    [
+      { id: -1, detail: 'All wires are bundled and secured to the chassis at least every 6 inches' },
+      { id: -1, detail: 'Wires are not wireless' }
+    ],
+    [{ id: -1, detail: 'Utilizes 8020 frame construction' }],
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    'https://youtu.be/dQw4w9WgXcQ',
+    thomasEmrax.userId,
+    joeBlow.userId
+  );
+
+  /**
+   * Work Packages
+   */
+  const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
+    joeShmoe,
+    project1WbsNumber,
+    'Bodywork Concept of Design',
+    changeRequest1Id,
+    '01/01/2023',
+    3,
+    [],
+    [
+      'Assess the bodywork captsone and determine what can be learned from their deliverables',
+      'Compare various material, design, segmentation, and mounting choices available and propose the best combination'
+    ],
+    ['High-level anaylsis of options and direction to go in for the project']
+  );
+  const workPackage1WbsNumber = validateWBS(workPackage1WbsString);
+  const workPackage1 = await prisma.work_Package.findFirstOrThrow({
+    where: {
+      wbsElement: {
+        carNumber: workPackage1WbsNumber.carNumber,
+        projectNumber: workPackage1WbsNumber.projectNumber,
+        workPackageNumber: workPackage1WbsNumber.workPackageNumber
+      }
+    },
+    ...workPackageQueryArgs
+  });
+  await WorkPackagesService.editWorkPackage(
+    thomasEmrax,
+    workPackage1.workPackageId,
+    workPackage1.wbsElement.name,
+    changeRequest1Id,
+    workPackage1.startDate.toString(),
+    workPackage1.duration,
+    workPackage1.dependencies,
+    workPackage1.expectedActivities.map(descBulletConverter),
+    workPackage1.deliverables.map(descBulletConverter),
+    WbsElementStatus.Active,
+    thomasEmrax.userId,
     thomasEmrax.userId
   );
 
