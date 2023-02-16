@@ -3,7 +3,7 @@ import RisksService from '../src/services/risks.services';
 import prisma from '../src/prisma/prisma';
 import riskQueryArgs from '../src/prisma-query-args/risks.query-args';
 import { prismaRisk1, prismaRisk2, sharedRisk1 } from './test-data/risks.test-data';
-import { batman } from './test-data/users.test-data';
+import { batman, wonderwoman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
@@ -144,5 +144,21 @@ describe('Risks', () => {
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
+
+    test('the user does not have permissions to create the risk', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+
+      const projectId = 1;
+      const detail = 'detail';
+      await expect(() => RisksService.createRisk(wonderwoman, projectId, detail)).rejects.toThrow();
+
+      expect(prisma.project.findUnique).toHaveBeenCalledTimes(0);
+      expect(prisma.risk.create).toHaveBeenCalledTimes(0);
+    });
+
+    
   });
 });
