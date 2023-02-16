@@ -1,7 +1,7 @@
 import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
 export default class ProjectsController {
@@ -56,8 +56,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       } = req.body;
 
       const editedProject: Project = await ProjectsService.editProject(
@@ -75,8 +75,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead || null,
-        projectManager || null
+        projectLeadId || null,
+        projectManagerId || null
       );
 
       return res.status(200).json(editedProject);

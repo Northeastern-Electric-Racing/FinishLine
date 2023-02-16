@@ -473,9 +473,8 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: Scope_CR_Why[],
-    budgetImpact: number
-  ): Promise<Number> {
+    why: Scope_CR_Why[]
+  ): Promise<number> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -527,7 +526,7 @@ export default class ChangeRequestsService {
       const slackMsg =
         `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
         `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId, budgetImpact);
+      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
     }
 
     return createdCR.crId;
@@ -582,5 +581,31 @@ export default class ChangeRequestsService {
     });
 
     return createProposedSolution.proposedSolutionId;
+  }
+
+  /**
+   * Deletes the Change Request
+   * @param submitter The user who deleted the change request
+   * @param crId the change request to be deleted
+   */
+  static async deleteChangeRequest(submitter: User, crId: number): Promise<void> {
+    // verify user is allowed to delete change requests
+    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN')) throw new AccessDeniedException();
+
+    // ensure existence of change request
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId }
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
+
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot delete a reviewed change request!`);
+
+    await prisma.change_Request.update({
+      where: { crId },
+      data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
+    });
   }
 }

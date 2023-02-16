@@ -5,6 +5,8 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import Sidebar from '../../../layouts/Sidebar/Sidebar';
+import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
+import * as miscHooks from '../../../hooks/misc.hooks';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -20,6 +22,7 @@ const renderComponent = () => {
 
 describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
+    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
     expect(screen.getByText(/Home/i)).toBeInTheDocument();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();

@@ -29,6 +29,25 @@ const NavUserMenu: React.FC = () => {
     history.push(routes.HOME);
   };
 
+  const googleLogout = (
+    <GoogleLogout
+      clientId={googleAuthClientId!}
+      //jsSrc={'accounts.google.com/gsi/client'}
+      onLogoutSuccess={logout}
+      render={(renderProps) => (
+        <MenuItem component="div" sx={{ py: 0 }}>
+          Logout
+        </MenuItem>
+      )}
+    />
+  );
+
+  const devLogout = (
+    <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+      <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+    </MenuItem>
+  );
+
   return (
     <>
       <IconButton
@@ -72,28 +91,7 @@ const NavUserMenu: React.FC = () => {
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        <MenuItem onClick={handleClose} component="div" sx={{ py: 0 }}>
-          {googleAuthClientId ? (
-            <GoogleLogout
-              clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-              //jsSrc={'accounts.google.com/gsi/client'}
-              onLogoutSuccess={logout}
-              render={(renderProps) => (
-                <Button
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled}
-                  sx={{ padding: 0, minHeight: 0, minWidth: 0 }}
-                >
-                  Logout
-                </Button>
-              )}
-            />
-          ) : (
-            <Button onClick={logout} sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>
-              Logout
-            </Button>
-          )}
-        </MenuItem>
+        {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
   );
