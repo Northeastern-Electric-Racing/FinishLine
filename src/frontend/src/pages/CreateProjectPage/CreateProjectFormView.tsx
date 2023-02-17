@@ -147,16 +147,15 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ project, 
             </FormControl>
           </Grid>
         </Grid>
+        <Box display="flex" gap={2} sx={{ mt: 2 }}>
+          <NERFailButton variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
       </PageBlock>
-
-      <Box display="flex" gap={2} sx={{ mt: 2 }}>
-        <NERFailButton variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
-          Submit
-        </NERSuccessButton>
-      </Box>
     </form>
   );
 };
