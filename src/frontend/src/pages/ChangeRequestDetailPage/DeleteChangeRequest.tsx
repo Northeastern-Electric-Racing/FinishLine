@@ -37,7 +37,6 @@ const DeleteChangeRequest: React.FC<DeleteChangeRequestProps> = ({
       if (error instanceof Error) {
         toast.error(error.message);
       }
-      throw new Error(error);
     });
     history.goBack();
     toast.success(`Change Request #${crId} Deleted Successfully!`);

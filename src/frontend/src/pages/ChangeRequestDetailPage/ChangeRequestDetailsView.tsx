@@ -112,7 +112,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
           Review
         </MenuItem>
-        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen} sx={{ borderTop: 1 }}>
           Delete
         </MenuItem>
       </Menu>

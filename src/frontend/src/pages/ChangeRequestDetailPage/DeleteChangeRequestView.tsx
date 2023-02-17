@@ -4,13 +4,24 @@
  */
 
 import { ChangeRequest } from 'shared';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
-import { Controller, useForm } from 'react-hook-form';
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormLabel,
+  IconButton,
+  Typography
+} from '@mui/material';
+import { useForm } from 'react-hook-form';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import NERFailButton from '../../components/NERFailButton';
 import { DeleteChangeRequestInputs } from './DeleteChangeRequest';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface DeleteChangeRequestViewProps {
   changeRequest: ChangeRequest;
@@ -29,12 +40,13 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
   const {
     handleSubmit,
     control,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       crId: ''
-    }
+    },
+    mode: 'onChange'
   });
 
   const onSubmitWrapper = async (data: DeleteChangeRequestInputs) => {
@@ -42,10 +54,27 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
   };
 
   return (
-    <Dialog fullWidth maxWidth="md" open={modalShow} onClose={onHide}>
-      <DialogTitle className={'font-weight-bold'}>{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
+    <Dialog open={modalShow} onClose={onHide}>
+      <DialogTitle
+        className={'font-weight-bold'}
+        sx={{ borderBottom: 1 }}
+      >{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={onHide}
+        sx={{
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500]
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent>
-        <Typography>Are you sure you want to delete Change Request #{changeRequest.crId}?</Typography>
+        <Typography sx={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+          Are you sure you want to delete Change Request #{changeRequest.crId}?
+        </Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
         <form
           id="delete-cr-form"
@@ -55,44 +84,26 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
             handleSubmit(onSubmitWrapper)(e);
           }}
         >
-          <Controller
-            name="crId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <>
-                <Typography
-                  sx={{
-                    paddingTop: 1,
-                    paddingBottom: 1
-                  }}
-                >
-                  To confirm deletion, please type in the ID number of this Change Request.
-                </Typography>
-                <TextField
-                  required
-                  variant="outlined"
-                  id="crId-input"
-                  type="number"
-                  autoComplete="off"
-                  onChange={onChange}
-                  value={value}
-                  fullWidth
-                  sx={{ width: 1 }}
-                  error={!!errors.crId}
-                  placeholder="Enter Change Request ID here"
-                  helperText={errors.crId?.message}
-                />
-              </>
-            )}
-          />
+          <FormControl>
+            <FormLabel sx={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+              To confirm deletion, please type in the ID number of this Change Request.
+            </FormLabel>
+            <ReactHookTextField
+              control={control}
+              name="crId"
+              errorMessage={errors.crId}
+              placeholder="Enter Change Request ID here"
+              sx={{ width: 1 }}
+              type="number"
+            />
+          </FormControl>
         </form>
       </DialogContent>
       <DialogActions>
         <NERSuccessButton variant="contained" sx={{ mx: 1 }} onClick={onHide}>
           Cancel
         </NERSuccessButton>
-        <NERFailButton variant="contained" type="submit" form="delete-cr-form" sx={{ mx: 1 }}>
+        <NERFailButton variant="contained" type="submit" form="delete-cr-form" sx={{ mx: 1 }} disabled={!isValid}>
           Delete
         </NERFailButton>
       </DialogActions>
