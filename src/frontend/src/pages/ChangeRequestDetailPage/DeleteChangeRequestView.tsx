@@ -69,7 +69,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
         <CloseIcon />
       </IconButton>
       <DialogContent>
-        <Typography sx={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+        <Typography sx={{ marginBottom: '1rem' }}>
           Are you sure you want to delete Change Request #{changeRequest.crId}?
         </Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
@@ -82,7 +82,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
           }}
         >
           <FormControl>
-            <FormLabel sx={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+            <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
               To confirm deletion, please type in the ID number of this Change Request.
             </FormLabel>
             <ReactHookTextField
