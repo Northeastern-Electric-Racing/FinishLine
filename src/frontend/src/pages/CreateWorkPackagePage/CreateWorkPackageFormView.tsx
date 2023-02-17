@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { routes } from '../../utils/routes';
@@ -23,6 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import { WorkPackageStage } from 'shared';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -33,6 +35,7 @@ const schema = yup.object().shape({
     .required('CR ID is required')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
+  stage: yup.string(),
   startDate: yup.date().required('Start Date is required'),
   duration: yup
     .number()
@@ -50,7 +53,6 @@ interface CreateWorkPackageFormViewProps {
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
   const query = useQuery();
-
   const {
     handleSubmit,
     control,
@@ -62,6 +64,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       name: '',
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
+      stage: '',
       startDate: new Date(),
       duration: null,
       dependencies: [] as { wbsNum: string }[],
@@ -137,7 +140,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={5}>
-            <FormControl>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
@@ -148,8 +151,21 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
+              <FormLabel>Work Package Stage</FormLabel>
+              <TextField select name="stage" id="wp-stage-select">
+                <MenuItem value={''}>None</MenuItem>
+                {Object.values(WorkPackageStage).map((v) => (
+                  <MenuItem value={v} key={v}>
+                    {v}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Project WBS Number</FormLabel>
               <ReactHookTextField
                 name="wbsNum"
@@ -159,8 +175,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <FormControl>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
               <Controller
                 name="startDate"
@@ -178,8 +194,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Duration</FormLabel>
               <ReactHookTextField
                 name="duration"

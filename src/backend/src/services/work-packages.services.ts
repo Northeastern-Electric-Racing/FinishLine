@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element, Work_Package_Stage } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
@@ -115,6 +115,7 @@ export default class WorkPackagesService {
     projectWbsNum: WbsNumber,
     name: string,
     crId: number,
+    stage: Work_Package_Stage | null,
     startDate: string,
     duration: number,
     dependencies: WbsNumber[],
@@ -224,6 +225,7 @@ export default class WorkPackagesService {
             }
           }
         },
+        stage,
         project: { connect: { projectId } },
         startDate: date,
         duration,

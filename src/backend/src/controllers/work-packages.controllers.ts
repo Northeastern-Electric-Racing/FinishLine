@@ -32,7 +32,8 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
+      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables, stage } =
+        req.body;
 
       const user = await getCurrentUser(res);
 
@@ -41,6 +42,7 @@ export default class WorkPackagesController {
         projectWbsNum,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
