@@ -21,6 +21,14 @@ import { WbsNumber } from 'shared';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 
+interface GanttDisplayProject extends Project {
+  displayOrder: number;
+}
+
+interface GanttDisplayWorkPackage extends WorkPackage {
+  displayOrder: number;
+}
+
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
  */
@@ -70,8 +78,7 @@ const GanttPageWrapper: FC = () => {
   };
 
   useEffect(() => {
-    const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
-      projects.sort(sortWbs);
+    const transformWPToGanttObject = (wp: GanttDisplayWorkPackage, projects: GanttDisplayProject[]): Task => {
       return {
         id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
         name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
@@ -81,15 +88,13 @@ const GanttPageWrapper: FC = () => {
         project: projectWbsPipe(wp.wbsNum),
         type: 'task',
         styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
-        displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
+        displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.displayOrder,
         onClick: () => {
           window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
         }
       };
     };
-    const transformProjectToGanttObject = (project: Project): Task => {
-      project.workPackages.sort(sortWbs);
-
+    const transformProjectToGanttObject = (project: GanttDisplayProject): Task => {
       const progress =
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
         100;
@@ -110,7 +115,7 @@ const GanttPageWrapper: FC = () => {
                 backgroundSelectedColor: '#47a04b'
               }
             : {},
-        displayOrder: project.id,
+        displayOrder: project.displayOrder,
         onClick: () => {
           window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
         }
@@ -127,9 +132,21 @@ const GanttPageWrapper: FC = () => {
         end
       };
       const filteredProjects = filterGanttProjects(projects, ganttFilters);
-      const projTasks = filteredProjects.map(transformProjectToGanttObject);
-      const workPackages = filteredProjects.flatMap((p) => p.workPackages);
-      const wpTasks = workPackages.map((wp) => transformWPToGanttObject(wp, filteredProjects));
+      const sortedProjects = filteredProjects.sort(sortWbs);
+      const indexedProjects = sortedProjects.map((p) => {
+        const displayProject = p as GanttDisplayProject;
+        displayProject.displayOrder = sortedProjects.indexOf(displayProject);
+        return displayProject;
+      });
+      const projTasks = indexedProjects.map(transformProjectToGanttObject);
+      const workPackages = indexedProjects.flatMap((p) => p.workPackages);
+      const sortedWPs = workPackages.sort(sortWbs);
+      const indexedWPs = sortedWPs.map((wp) => {
+        const displayWP = wp as GanttDisplayWorkPackage;
+        displayWP.displayOrder = sortedWPs.indexOf(displayWP);
+        return displayWP;
+      });
+      const wpTasks = indexedWPs.map((wp) => transformWPToGanttObject(wp, indexedProjects));
       setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
       setGanttDisplayObjects([...projTasks, ...wpTasks]);
     }
