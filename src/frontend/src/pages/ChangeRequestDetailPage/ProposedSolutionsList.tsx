@@ -49,7 +49,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
     <>
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
-          <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
+          <ProposedSolutionView key={i} proposedSolution={proposedSolution} crReviewed={crReviewed} />
         ))}
       </div>
       {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
