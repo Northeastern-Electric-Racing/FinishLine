@@ -3,19 +3,22 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Project } from 'shared';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { FormControl, FormLabel } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
+import { useAllTeams } from '../../hooks/teams.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+
+import { NERFailButton } from '../../components/NERFailButton';
 import { NERSuccessButton } from '../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
@@ -32,18 +35,17 @@ const schema = yup.object().shape({
     .required('CR ID is required')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
-  summary: yup.string().required('Summary is required')
+  summary: yup.string().required('Summary is required'),
+  teamId: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
-  allowSubmit: boolean;
-  onCancel: (e: any) => void;
-  onSubmit: (project: CreateProjectFormInputs) => void;
+  project: Project;
+  exitEditMode: () => void;
 }
 
-const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
+const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ project, exitEditMode }) => {
   const query = useQuery();
-
   const {
     handleSubmit,
     control,
@@ -54,9 +56,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       name: '',
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
-      summary: ''
+      summary: '',
+      teamId: ''
     }
   });
+
+  const { isLoading, data: teams } = useAllTeams();
+  if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
     <form
@@ -64,7 +70,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleSubmit(onSubmit)(e);
+        handleSubmit(exitEditMode)(e);
       }}
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
@@ -97,7 +103,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} md={3}>
             <FormControl>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
@@ -105,6 +111,25 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
                 control={control}
                 placeholder="Enter project name..."
                 errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={9}>
+            <FormControl sx={{ width: 197 }}>
+              <FormLabel>Team</FormLabel>
+              <Controller
+                name="teamId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    {teams.map((t) => (
+                      <MenuItem key={t.teamName} value={t.teamId}>
+                        {t.teamName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
               />
             </FormControl>
           </Grid>
@@ -122,12 +147,16 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
         </Grid>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </PageBlock>
+
+      <Box display="flex" gap={2} sx={{ mt: 2 }}>
+        <NERFailButton variant="contained" color="error" onClick={exitEditMode} sx={{ mx: 2 }}>
+          Cancel
+        </NERFailButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 2 }}>
+          Submit
+        </NERSuccessButton>
+      </Box>
     </form>
   );
 };
