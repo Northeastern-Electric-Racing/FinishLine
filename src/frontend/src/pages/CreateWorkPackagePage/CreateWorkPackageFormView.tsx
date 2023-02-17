@@ -20,8 +20,9 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { SubmitButton } from '../../components/SubmitButton';
 import { wbsTester } from '../../utils/form';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -220,13 +221,13 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
+        <Box textAlign="right" gap={2} sx={{ mt: 2 }}>
+          <NERFailButton variant="outlined" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
-          </Button>
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+            Create
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>
