@@ -55,10 +55,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
 
   return (
     <Dialog open={modalShow} onClose={onHide}>
-      <DialogTitle
-        className={'font-weight-bold'}
-        sx={{ borderBottom: 1 }}
-      >{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
+      <DialogTitle className={'font-weight-bold'}>{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onHide}
