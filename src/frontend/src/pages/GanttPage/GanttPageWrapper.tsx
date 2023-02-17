@@ -135,7 +135,7 @@ const GanttPageWrapper: FC = () => {
       const sortedProjects = filteredProjects.sort(sortWbs);
       const indexedProjects = sortedProjects.map((p) => {
         const displayProject = p as GanttDisplayProject;
-        displayProject.displayOrder = sortedProjects.indexOf(displayProject);
+        displayProject.displayOrder = sortedProjects.indexOf(displayProject) + 1;
         return displayProject;
       });
       const projTasks = indexedProjects.map(transformProjectToGanttObject);
@@ -143,7 +143,7 @@ const GanttPageWrapper: FC = () => {
       const sortedWPs = workPackages.sort(sortWbs);
       const indexedWPs = sortedWPs.map((wp) => {
         const displayWP = wp as GanttDisplayWorkPackage;
-        displayWP.displayOrder = sortedWPs.indexOf(displayWP);
+        displayWP.displayOrder = sortedWPs.indexOf(displayWP) + 1;
         return displayWP;
       });
       const wpTasks = indexedWPs.map((wp) => transformWPToGanttObject(wp, indexedProjects));
