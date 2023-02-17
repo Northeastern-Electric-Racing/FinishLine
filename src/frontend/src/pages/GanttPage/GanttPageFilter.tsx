@@ -4,8 +4,6 @@
  */
 
 import { WbsElementStatus } from 'shared';
-//import LooksOneOutlinedIcon from '@mui/icons-material/LooksOneOutlined';
-//import LooksTwoOutlinedIcon from '@mui/icons-material/LooksTwoOutlined';
 import PageBlock from '../../layouts/PageBlock';
 import { Box, Button, Checkbox, FormControl, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -57,8 +55,6 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item>
           <Checkbox
             defaultChecked
-            //icon={<FiberManualRecordOutlinedIcon />}
-            //checkedIcon={<FiberManualRecordOutlinedIcon />}
             icon={
               <Box
                 sx={{
@@ -80,7 +76,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'green'
+                  bgcolor: 'red'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>0</Box>
@@ -102,8 +98,6 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item>
           <Checkbox
             defaultChecked
-            //icon={<LooksOneOutlinedIcon />}
-            //checkedIcon={<LooksOneOutlinedIcon />}
             icon={
               <Box
                 sx={{
@@ -125,7 +119,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'green'
+                  bgcolor: 'red'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>1</Box>
@@ -147,8 +141,6 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item>
           <Checkbox
             defaultChecked
-            //icon={<LooksTwoOutlinedIcon />}
-            //checkedIcon={<LooksTwoOutlinedIcon />}
             icon={
               <Box
                 sx={{
@@ -170,7 +162,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                   border: '2px solid white',
                   width: '2rem',
                   height: '2rem',
-                  bgcolor: 'green'
+                  bgcolor: 'red'
                 }}
               >
                 <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>2</Box>
