@@ -144,37 +144,37 @@ describe('Risks', () => {
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
+  });
 
-    describe('createRisk', () => {
-      test('the user does not have permissions to create the risk', async () => {
-        jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-        jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk2);
-        jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
-        jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+  describe('createRisk', () => {
+    test('the user does not have permissions to create the risk', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk2);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk2);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
 
-        const projectId = 1;
-        const detail = 'detail';
-        await expect(() => RisksService.createRisk(wonderwoman, projectId, detail)).rejects.toThrow(
-          new AccessDeniedException('Guests cannot create risks!')
-        );
+      const projectId = 1;
+      const detail = 'detail';
+      await expect(() => RisksService.createRisk(wonderwoman, projectId, detail)).rejects.toThrow(
+        new AccessDeniedException('Guests cannot create risks!')
+      );
 
-        expect(prisma.project.findUnique).toHaveBeenCalledTimes(0);
-        expect(prisma.risk.create).toHaveBeenCalledTimes(0);
-      });
+      expect(prisma.project.findUnique).toHaveBeenCalledTimes(0);
+      expect(prisma.risk.create).toHaveBeenCalledTimes(0);
+    });
 
-      test('the createRisk endpoint works as intended', async () => {
-        jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
-        jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk1);
-        jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk1);
-        jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
+    test('the createRisk endpoint works as intended', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
+      jest.spyOn(prisma.risk, 'create').mockResolvedValue(prismaRisk1);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk1);
+      jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
 
-        const projectId = 1;
-        const detail = 'detail';
-        const res = await RisksService.createRisk(batman, projectId, detail);
-        expect(res).toStrictEqual(prismaRisk1.id);
-        expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
-        expect(prisma.risk.create).toHaveBeenCalledTimes(1);
-      });
+      const projectId = 1;
+      const detail = 'detail';
+      const res = await RisksService.createRisk(batman, projectId, detail);
+      expect(res).toStrictEqual(prismaRisk1.id);
+      expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.create).toHaveBeenCalledTimes(1);
     });
   });
 });
