@@ -28,6 +28,7 @@ import { descBulletConverter } from '../utils/utils';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
+import { seedWorkPackage } from './seed-data/work-packages.seed';
 
 const prisma = new PrismaClient();
 
@@ -252,7 +253,8 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Work Packages
    */
-  const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
+  /** Work Package 1 */
+  const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
     project1WbsNumber,
     'Bodywork Concept of Design',
@@ -264,36 +266,17 @@ const performSeed: () => Promise<void> = async () => {
       'Assess the bodywork captsone and determine what can be learned from their deliverables',
       'Compare various material, design, segmentation, and mounting choices available and propose the best combination'
     ],
-    ['High-level anaylsis of options and direction to go in for the project']
-  );
-  const workPackage1WbsNumber = validateWBS(workPackage1WbsString);
-  const workPackage1 = await prisma.work_Package.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: workPackage1WbsNumber.carNumber,
-        projectNumber: workPackage1WbsNumber.projectNumber,
-        workPackageNumber: workPackage1WbsNumber.workPackageNumber
-      }
-    },
-    ...workPackageQueryArgs
-  });
-  await WorkPackagesService.editWorkPackage(
+    ['High-level anaylsis of options and direction to go in for the project'],
     thomasEmrax,
-    workPackage1.workPackageId,
-    workPackage1.wbsElement.name,
-    changeRequest1Id,
-    workPackage1.startDate.toString(),
-    workPackage1.duration,
-    workPackage1.dependencies,
-    workPackage1.expectedActivities.map(descBulletConverter),
-    workPackage1.deliverables.map(descBulletConverter),
     WbsElementStatus.Active,
     thomasEmrax.userId,
     thomasEmrax.userId
   );
+
   await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
 
-  const workPackage2WbsString = await WorkPackagesService.createWorkPackage(
+  /** Work Package 2 */
+  const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
     thomasEmrax,
     project1WbsNumber,
     'Adhesive Shear Strength Test',
@@ -308,34 +291,14 @@ const performSeed: () => Promise<void> = async () => {
     ],
     [
       'Lab report with full data on the shear strength of adhesives under test including a summary and conclusion of which adhesive is best'
-    ]
-  );
-  const workPackage2WbsNumber = validateWBS(workPackage2WbsString);
-  const workPackage2 = await prisma.work_Package.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: workPackage2WbsNumber.carNumber,
-        projectNumber: workPackage2WbsNumber.projectNumber,
-        workPackageNumber: workPackage2WbsNumber.workPackageNumber
-      }
-    },
-    ...workPackageQueryArgs
-  });
-  await WorkPackagesService.editWorkPackage(
+    ],
     thomasEmrax,
-    workPackage2.workPackageId,
-    workPackage2.wbsElement.name,
-    changeRequest1Id,
-    workPackage2.startDate.toString(),
-    workPackage2.duration,
-    workPackage2.dependencies,
-    workPackage2.expectedActivities.map(descBulletConverter),
-    workPackage2.deliverables.map(descBulletConverter),
     WbsElementStatus.Inactive,
     joeShmoe.userId,
     thomasEmrax.userId
   );
 
+  /** Work Package 3 */
   const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
     thomasEmrax,
     project5WbsNumber,
