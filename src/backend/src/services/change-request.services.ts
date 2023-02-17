@@ -100,19 +100,25 @@ export default class ChangeRequestsService {
           reviewer.userId,
           foundCR.wbsElement.wbsElementId
         );
-        await prisma.project.update({
-          where: { projectId: foundCR.wbsElement.project.projectId },
-          data: {
-            budget: newBudget,
-            wbsElement: {
-              update: {
-                changes: {
-                  create: change
+        console.log('kkkk');
+        try {
+          await prisma.project.update({
+            where: { projectId: foundCR.wbsElement.project.projectId },
+            data: {
+              budget: newBudget,
+              wbsElement: {
+                update: {
+                  changes: {
+                    create: change
+                  }
                 }
               }
             }
-          }
-        });
+          });
+        } catch (error) {
+          console.log('kkkk');
+          console.log(error);
+        }
       } else if (foundCR.wbsElement.workPackage) {
         const wpProj = await prisma.project.findUnique({
           where: { projectId: foundCR.wbsElement.workPackage.projectId }
@@ -140,7 +146,6 @@ export default class ChangeRequestsService {
             foundCR.wbsElement.wbsElementId
           )
         ];
-        changes.filter((a: any): boolean => a !== undefined);
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {

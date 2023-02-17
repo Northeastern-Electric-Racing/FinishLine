@@ -21,6 +21,7 @@ export const createChangeJsonNonList = (
   wbsElementId: number
 ) => {
   if (oldValue == null) {
+    console.log('that');
     return {
       changeRequestId: crId,
       implementerId,
@@ -28,6 +29,7 @@ export const createChangeJsonNonList = (
       detail: `Added ${nameOfField} "${newValue}"`
     };
   } else if (oldValue !== newValue) {
+    console.log('this');
     return {
       changeRequestId: crId,
       implementerId,
@@ -35,6 +37,7 @@ export const createChangeJsonNonList = (
       detail: buildChangeDetail(nameOfField, oldValue, newValue)
     };
   }
+  console.log('that');
   return undefined;
 };
 
