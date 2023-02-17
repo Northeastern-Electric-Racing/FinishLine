@@ -10,6 +10,11 @@ import WorkPackagesService from '../../services/work-packages.services';
 import { descBulletConverter } from '../../utils/utils';
 import prisma from '../prisma';
 
+/**
+ * Creates a work package with the given data using service functions. This has to be done by:
+ * 1) creating the work package
+ * 2) editing the work package
+ */
 export const seedWorkPackage = async (
   creator: User,
   projectWbsNumber: WbsNumber,
