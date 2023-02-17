@@ -154,14 +154,20 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
           <Grid item xs={12} md={6}>
             <FormControl sx={{ width: '100%' }}>
               <FormLabel>Work Package Stage</FormLabel>
-              <TextField select name="stage" id="wp-stage-select">
-                <MenuItem value={''}>None</MenuItem>
-                {Object.values(WorkPackageStage).map((v) => (
-                  <MenuItem value={v} key={v}>
-                    {v}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <Controller
+                name="stage"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    <MenuItem value={''}>None</MenuItem>
+                    {Object.values(WorkPackageStage).map((stage) => (
+                      <MenuItem key={stage} value={stage}>
+                        {stage}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
