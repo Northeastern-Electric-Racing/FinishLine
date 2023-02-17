@@ -34,6 +34,7 @@ workPackagesRouter.post(
   nonEmptyString(body('name')),
   body('startDate').isDate(),
   intMinZero(body('duration')),
+  body('stage').isString(),
   intMinZero(body('dependencies.*.carNumber')),
   intMinZero(body('dependencies.*.projectNumber')),
   intMinZero(body('dependencies.*.workPackageNumber')),

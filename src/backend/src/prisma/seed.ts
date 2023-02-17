@@ -12,7 +12,8 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  WBS_Element_Status
+  WBS_Element_Status,
+  Work_Package_Stage
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
@@ -259,6 +260,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Bodywork Concept of Design',
     changeRequest1Id,
+    null,
     '01/01/2023',
     3,
     [],
@@ -281,6 +283,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Adhesive Shear Strength Test',
     changeRequest1Id,
+    Work_Package_Stage.DESIGN,
     '01/22/2023',
     5,
     [],

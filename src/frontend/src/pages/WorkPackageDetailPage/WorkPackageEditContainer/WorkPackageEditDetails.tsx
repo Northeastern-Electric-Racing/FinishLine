@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WbsElementStatus } from 'shared';
+import { User, WbsElementStatus, WorkPackageStage } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid, MenuItem, TextField } from '@mui/material';
@@ -26,10 +26,27 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       control={control}
       rules={{ required: true }}
       render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Status">
+        <TextField select onChange={onChange} value={value} label="Status" fullWidth>
           {statuses.map((t) => (
             <MenuItem key={t} value={t}>
               {t}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+    />
+  );
+
+  const stageSelect = (
+    <Controller
+      name="stage"
+      control={control}
+      render={({ field: { onChange, value } }) => (
+        <TextField select onChange={onChange} value={value} label="Stage" fullWidth>
+          <MenuItem value={''}>None</MenuItem>
+          {Object.values(WorkPackageStage).map((stage) => (
+            <MenuItem key={stage} value={stage}>
+              {stage}
             </MenuItem>
           ))}
         </TextField>
@@ -41,13 +58,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
     <PageBlock title="Work Package Details">
       <Grid container spacing={1}>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <ReactHookTextField
-            name="name"
-            control={control}
-            sx={{ width: 10 / 10 }}
-            label="Work Package Name"
-            errorMessage={errors.name}
-          />
+          <ReactHookTextField name="name" control={control} fullWidth label="Work Package Name" errorMessage={errors.name} />
         </Grid>
         <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           <Controller
@@ -109,9 +120,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             control={control}
             type="number"
             label="Duration"
-            sx={{ width: 3 / 10 }}
             errorMessage={errors.budget}
+            fullWidth
           />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          {stageSelect}
         </Grid>
       </Grid>
     </PageBlock>

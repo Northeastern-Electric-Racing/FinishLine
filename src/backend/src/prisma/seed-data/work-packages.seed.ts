@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, Work_Package_Stage } from '@prisma/client';
 import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
 import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
 import WorkPackagesService from '../../services/work-packages.services';
@@ -20,6 +20,7 @@ export const seedWorkPackage = async (
   projectWbsNumber: WbsNumber,
   name: string,
   changeRequestId: number,
+  stage: Work_Package_Stage | null,
   startDate: string,
   duration: number,
   dependencies: WbsNumber[],
@@ -63,6 +64,7 @@ export const seedWorkPackage = async (
     workPackage.workPackageId,
     workPackage.wbsElement.name,
     changeRequestId,
+    stage,
     workPackage.startDate.toString(),
     workPackage.duration,
     workPackage.dependencies,

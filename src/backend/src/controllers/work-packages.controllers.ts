@@ -68,7 +68,8 @@ export default class WorkPackagesController {
         deliverables,
         wbsElementStatus,
         projectLead,
-        projectManager
+        projectManager,
+        stage
       } = req.body;
 
       const user = await getCurrentUser(res);
@@ -78,6 +79,7 @@ export default class WorkPackagesController {
         workPackageId,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
