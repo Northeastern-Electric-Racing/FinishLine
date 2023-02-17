@@ -58,7 +58,8 @@ export const exampleProject1: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage1, exampleWorkPackage2],
-  risks: []
+  risks: [],
+  tasks: []
 };
 
 export const exampleProject2: Project = {
@@ -96,7 +97,8 @@ export const exampleProject2: Project = {
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  risks: []
+  risks: [],
+  tasks: []
 };
 
 export const exampleProject3: Project = {
@@ -140,7 +142,8 @@ export const exampleProject3: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   workPackages: [exampleWorkPackage1],
-  risks: []
+  risks: [],
+  tasks: []
 };
 
 export const exampleProject4: Project = {
@@ -178,7 +181,8 @@ export const exampleProject4: Project = {
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleWorkPackage2],
-  risks: []
+  risks: [],
+  tasks: []
 };
 
 export const exampleProject5: Project = {
@@ -216,7 +220,8 @@ export const exampleProject5: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
   workPackages: [exampleWorkPackage3],
-  risks: []
+  risks: [],
+  tasks: []
 };
 
 export const exampleAllProjects: Project[] = [

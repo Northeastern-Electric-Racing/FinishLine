@@ -8,6 +8,7 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ActiveProjectCardView from './ProjectCardsView';
 import DescriptionPageBlock from './DescriptionPageBlock';
+import { routes } from '../../utils/routes';
 
 interface ParamTypes {
   teamId: string;
@@ -22,7 +23,7 @@ const TeamSpecificPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle title={`Team ${data.teamName}`} previousPages={[]} />
+      <PageTitle title={`Team ${data.teamName}`} previousPages={[{ name: 'Teams', route: routes.TEAMS }]} />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TeamMembersPageBlock team={data} />
