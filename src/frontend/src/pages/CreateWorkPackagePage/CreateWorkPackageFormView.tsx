@@ -90,7 +90,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   } = useFieldArray({ control, name: 'dependencies' });
 
   const dependenciesFormControl = (
-    <FormControl>
+    <FormControl fullWidth>
       <FormLabel>Dependencies</FormLabel>
       {dependencies.map((_element, i) => {
         return (
@@ -129,7 +129,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <PageBlock title={''}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={7}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
                 name="name"
@@ -140,7 +140,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={5}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
@@ -152,7 +152,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Work Package Stage</FormLabel>
               <Controller
                 name="stage"
@@ -171,7 +171,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Project WBS Number</FormLabel>
               <ReactHookTextField
                 name="wbsNum"
@@ -182,7 +182,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
               <Controller
                 name="startDate"
@@ -201,7 +201,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Duration</FormLabel>
               <ReactHookTextField
                 name="duration"
@@ -219,7 +219,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             {dependenciesFormControl}
           </Grid>
           <Grid item xs={12} md={2}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Expected Activities</FormLabel>
               <ReactHookEditableList
                 name="expectedActivities"
@@ -231,7 +231,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             </FormControl>
           </Grid>
           <Grid item xs={12} md={2}>
-            <FormControl sx={{ width: '100%' }}>
+            <FormControl fullWidth>
               <FormLabel>Deliverables</FormLabel>
               <ReactHookEditableList
                 name="deliverables"
