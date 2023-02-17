@@ -27,6 +27,7 @@ import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args'
 import { descBulletConverter } from '../utils/utils';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
+import { seedProject } from './seed-data/projects.seed';
 
 const prisma = new PrismaClient();
 
@@ -110,11 +111,13 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * TEAMS
    */
+  /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
 
+  /** Setting Team Members */
   await TeamsService.setTeamMembers(
     batman,
     justiceLeague.teamId,
@@ -129,46 +132,21 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Projects
    */
-  const project1WbsNumber = await ProjectsService.createProject(
+
+  /** Project 1 */
+  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1Id,
     1,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
-    huskies.teamId
-  );
-
-  const project1 = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: project1WbsNumber.carNumber,
-        projectNumber: project1WbsNumber.projectNumber,
-        workPackageNumber: project1WbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
-  await ProjectsService.editProject(
+    huskies.teamId,
     joeShmoe,
-    project1.projectId,
-    changeRequest1Id,
-    project1.wbsElement.name,
-    project1.budget,
-    project1.summary,
+    124,
     ['EV3.5.2'],
-    [{ id: -1, detail: 'Decrease size by 90% from 247 cubic inches to 24.7 cubic inches' }],
-    [
-      {
-        id: -1,
-        detail: 'Capable of absorbing 5000N in a head-on collision'
-      }
-    ],
-    [
-      {
-        id: -1,
-        detail: 'Cannot go further towards the rear of the car than the front roll hoop'
-      }
-    ],
+    ['Decrease size by 90% from 247 cubic inches to 24.7 cubic inches'],
+    ['Capable of absorbing 5000N in a head-on collision'],
+    ['Cannot go further towards the rear of the car than the front roll hoop'],
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
@@ -177,41 +155,26 @@ const performSeed: () => Promise<void> = async () => {
     joeBlow.userId
   );
 
-  await RisksService.createRisk(thomasEmrax, project1.projectId, 'This one could get too expensive');
-  await RisksService.createRisk(joeShmoe, project1.projectId, 'This Imact could Attenuate too much!');
-  const risk3Id = await RisksService.createRisk(thomasEmrax, project1.projectId, 'At risk of nuclear explosion');
+  await RisksService.createRisk(thomasEmrax, project1Id, 'This one could get too expensive');
+  await RisksService.createRisk(joeShmoe, project1Id, 'This Imact could Attenuate too much!');
+  const risk3Id = await RisksService.createRisk(thomasEmrax, project1Id, 'At risk of nuclear explosion');
   const risk3 = await prisma.risk.findUniqueOrThrow({ where: { id: risk3Id } });
   await RisksService.editRisk(thomasEmrax, risk3Id, risk3.detail, true);
 
-  const project2WbsNumber = await ProjectsService.createProject(
+  /** Project 2 */
+  const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1Id,
     1,
     'Bodywork',
     'Develop rules-compliant bodywork',
-    huskies.teamId
-  );
-  const project2 = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: project2WbsNumber.carNumber,
-        projectNumber: project2WbsNumber.projectNumber,
-        workPackageNumber: project2WbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
-  await ProjectsService.editProject(
+    huskies.teamId,
     thomasEmrax,
-    project2.projectId,
-    changeRequest1Id,
-    project2.wbsElement.name,
     50,
-    project2.summary,
     ['T12.3.2', 'T8.2.6'],
-    [{ id: -1, detail: 'Decrease weight by 90% from 4.8 pounds to 0.48 pounds' }],
-    [{ id: -1, detail: 'Provides removable section for easy access to the pedal box' }],
-    [{ id: -1, detail: 'Compatible with a side-pod chassis design' }],
+    ['Decrease weight by 90% from 4.8 pounds to 0.48 pounds'],
+    ['Provides removable section for easy access to the pedal box'],
+    ['Compatible with a side-pod chassis design'],
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
@@ -220,35 +183,20 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  const project3WbsNumber = await ProjectsService.createProject(
+  /** Project 3 */
+  const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1Id,
     1,
     'Battery Box',
     'Develop rules-compliant battery box.',
-    huskies.teamId
-  );
-  const project3 = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: project3WbsNumber.carNumber,
-        projectNumber: project3WbsNumber.projectNumber,
-        workPackageNumber: project3WbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
-  await ProjectsService.editProject(
+    huskies.teamId,
     thomasEmrax,
-    project3.projectId,
-    changeRequest1Id,
-    project3.wbsElement.name,
     5000,
-    project3.summary,
     ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
-    [{ id: -1, detail: 'Decrease weight by 60% from 100 pounds to 40 pounds' }],
-    [{ id: -1, detail: 'Provides 50,000 Wh of energy discharge' }],
-    [{ id: -1, detail: 'Maximum power consumption of 25 watts from the low voltage system' }],
+    ['Decrease weight by 60% from 100 pounds to 40 pounds'],
+    ['Provides 50,000 Wh of energy discharge'],
+    ['Maximum power consumption of 25 watts from the low voltage system'],
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
@@ -257,38 +205,20 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
-  const project4WbsNumber = await ProjectsService.createProject(
+  /** Project 4 */
+  const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1Id,
     1,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
-    huskies.teamId
-  );
-  const project4 = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: project4WbsNumber.carNumber,
-        projectNumber: project4WbsNumber.projectNumber,
-        workPackageNumber: project4WbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
-  await ProjectsService.editProject(
+    huskies.teamId,
     thomasEmrax,
-    project4.projectId,
-    changeRequest1Id,
-    project4.wbsElement.name,
     0,
-    project4.summary,
     [],
-    [{ id: -1, detail: 'Power consumption stays under 10 watts from the low voltage system' }],
-    [{ id: -1, detail: 'Capable of interfacing via I2C or comparable serial interface.' }],
-    [
-      { id: -1, detail: 'Must be compatible with chain drive' },
-      { id: -1, detail: 'Must be well designed and whatnot' }
-    ],
+    ['Power consumption stays under 10 watts from the low voltage system'],
+    ['Capable of interfacing via I2C or comparable serial interface.'],
+    ['Must be compatible with chain drive', 'Must be well designed and whatnot'],
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
@@ -297,38 +227,20 @@ const performSeed: () => Promise<void> = async () => {
     joeBlow.userId
   );
 
-  const project5WbsNumber = await ProjectsService.createProject(
+  /** Project 5 */
+  const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
     thomasEmrax,
     changeRequest1Id,
     1,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
-    huskies.teamId
-  );
-  const project5 = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: project5WbsNumber.carNumber,
-        projectNumber: project5WbsNumber.projectNumber,
-        workPackageNumber: project5WbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
-  await ProjectsService.editProject(
+    huskies.teamId,
     thomasEmrax,
-    project5.projectId,
-    changeRequest1Id,
-    project5.wbsElement.name,
     234,
-    project5.summary,
     ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
-    [{ id: -1, detail: 'Decrease installed component costs by 63% from $2,700 to $1000' }],
-    [
-      { id: -1, detail: 'All wires are bundled and secured to the chassis at least every 6 inches' },
-      { id: -1, detail: 'Wires are not wireless' }
-    ],
-    [{ id: -1, detail: 'Utilizes 8020 frame construction' }],
+    ['Decrease installed component costs by 63% from $2,700 to $1000'],
+    ['All wires are bundled and secured to the chassis at least every 6 inches', 'Wires are not wireless'],
+    ['Utilizes 8020 frame construction'],
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
     'https://youtu.be/dQw4w9WgXcQ',
