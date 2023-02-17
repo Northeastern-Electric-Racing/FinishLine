@@ -3,84 +3,61 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-const about = `# About the Project
+import { Prisma } from '@prisma/client';
 
-FinishLine by NER is intended to assist NER’s Project Management Office (PMO) and other leadership with increasing efficiency in two aspects:
+const oriolesDescription = `
+The Baltimore Orioles are an American professional baseball team based in Baltimore. The Orioles compete in Major League Baseball (MLB) as a member club of the American League (AL) East division. As one of the American League's eight charter teams in 1901, the franchise spent its first year as a major league club in Milwaukee, Wisconsin, as the Milwaukee Brewers before moving to St. Louis, Missouri, to become the St. Louis Browns in 1902. After 52 years in St. Louis, the franchise was purchased in November 1953 by a syndicate of Baltimore business and civic interests led by attorney and civic activist Clarence Miles and Mayor Thomas D'Alesandro Jr. The team's current owner is American trial lawyer Peter Angelos.
 
-1. understanding the state of the club’s projects and
-2. handling the processes and procedures associated with a formal project and change management system
-
-To access the app, you can go [here](https://finishlinebyner.com) and sign in with your husky Google email.
-
-## Tech Stack
-
-This project is a full-stack Typescript web application that uses React on the frontend and Express on the backend. Yarn workspaces are used to maintain it as a monorepo.
-
-As the project evolves, technologies may be added or removed.
-The current tech stack list is provided below:
-
-- TypeScript
-- Node.js
-- Express
-- React
-- Prisma
-- PostgreSQL
-- Jest
-
-The app is deployed on AWS Elastic Beanstalk using the Docker configuration for the backend and Netlify for the frontend. It uses AWS RDS for the database.
-
-## History
-
-The NER PM Dashboard v1 was created in July of 2020 as a Google Apps Script web application attached to the database Google Sheet file.
-Major development took place during July and August prior to the start of the Fall 2020 semester.
-During Fall 2020, two developers make incremental improvements, and then in Spring 2020 a team of developers was formed.
-
-The NER PM Dashboard v2 was hypothesized during the Fall 2020 semester as the v1 developers ran into platform and framework limitations.
-Research, planning, and project initiation for v2 began in Spring 2021.
-The end of Summer 2021 was selected as the initial launch deadline for v2, but was not met.
-In Fall 2021, the team of developers was formalized into NER's Software Solutions team and grew to 20+ members.
-January 18, 2022 was selected as the adjusted launch deadline for v2, but was yet again not met.
-In Spring 2022, the Software Solutions team grew to 70+ members.
-The application finally launched in May of 2022.
-
-However, there were more technical limitations with v2. This led to the creation of NER PM Dashboard v3 in Summer 2022. The biggest change was using Express on the backend instead of Netlify Lambdas. It also generally cleaned up the repo and used Yarn workspaces as a better way to keep the monorepo instead of the workarounds used in v2. It was also rebranded to FinishLine by NER.
-
-## More Reading
-
-If you're curious, check out the [deployment & production application documentation](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/Deployment.md) and the [product management](https://github.com/Northeastern-Electric-Racing/FinishLine/blob/develop/docs/ProductManagement.md) details too.
+The Orioles adopted their team name in honor of the official state bird of Maryland; it had been used previously by several baseball clubs in the city, including another AL charter member franchise also named the "Baltimore Orioles", which moved to New York in 1903 to eventually become the Yankees. Nicknames for the team include the "O's" and the "Birds".
 `;
 
-const dbSeedTeam1 = {
-  fields: {
-    teamName: 'Ravens',
-    slackId: 'asdf',
-    description:
-      '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)'
-  },
-  leaderId: 1,
-  projectIds: [{ projectId: 1 }, { projectId: 2 }],
-  memberIds: [{ userId: 2 }, { userId: 3 }]
+const ravensDescription = `
+The Baltimore Ravens are a professional American football team based in Baltimore. The Ravens compete in the National Football League (NFL) as a member club of the American Football Conference (AFC) North division. The team plays its home games at M&T Bank Stadium and is headquartered in Owings Mills, Maryland.[7]
+
+The Ravens played the Super Bowl XLVII against the San Francisco 49ers. Baltimore built a 28–6 lead early in the third quarter before a partial power outage in the Superdome suspended play for 34 minutes (earning the game the added nickname of the Blackout Bowl).[31][32] After play resumed, San Francisco scored 17 unanswered third-quarter points to cut the Ravens' lead, 28–23, and continued to chip away in the fourth quarter. With the Ravens leading late in the game, 34–29, the 49ers advanced to the Baltimore 7-yard line just before the two-minute warning but turned the ball over on downs. The Ravens then took an intentional safety in the waning moments of the game to preserve the victory. Baltimore quarterback Joe Flacco, who completed 22 of 33 passes for 287 yards and three touchdowns, was named Super Bowl MVP.`;
+
+const ravens = (leaderId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Ravens',
+      slackId: 'asdf',
+      description: ravensDescription,
+      leaderId
+    }
+  };
 };
 
-const dbSeedTeam2 = {
-  fields: {
-    teamName: 'Orioles',
-    slackId: 'jkl;',
-    description: about
-  },
-  leaderId: 2,
-  projectIds: [{ projectId: 3 }, { projectId: 4 }, { projectId: 5 }],
-  memberIds: [{ userId: 4 }, { userId: 5 }]
+const orioles = (leaderId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Orioles',
+      slackId: 'jkl;',
+      description: oriolesDescription,
+      leaderId
+    }
+  };
 };
 
-const dbSeedTeam3 = {
-  fields: {
-    teamName: 'Huskies',
-    slackId: 'ruff'
-  },
-  leaderId: 3,
-  projectIds: [],
-  memberIds: [{ userId: 6 }]
+const justiceLeague = (leaderId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Justice League',
+      slackId: 'dc',
+      leaderId
+    }
+  };
 };
 
-export const dbSeedAllTeams = [dbSeedTeam1, dbSeedTeam2, dbSeedTeam3];
+const huskies = (leaderId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Huskies',
+      slackId: 'neu',
+      leaderId,
+      description:
+        '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)'
+    }
+  };
+};
+
+export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies };
