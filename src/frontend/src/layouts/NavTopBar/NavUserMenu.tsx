@@ -29,6 +29,10 @@ const NavUserMenu: React.FC = () => {
     history.push(routes.HOME);
   };
 
+  const goAdminTools = () => {
+    history.push(routes.ADMIN_TOOLS);
+ };
+
   const googleLogout = (
     <GoogleLogout
       clientId={googleAuthClientId!}
@@ -45,6 +49,12 @@ const NavUserMenu: React.FC = () => {
   const devLogout = (
     <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
       <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+    </MenuItem>
+  );
+
+  const adminTools = (
+    <MenuItem onClick={goAdminTools} component="div" sx={{ py: 0 }}>
+      <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Admin Tools</Button>
     </MenuItem>
   );
 
@@ -92,6 +102,7 @@ const NavUserMenu: React.FC = () => {
           Settings
         </MenuItem>
         {googleAuthClientId ? googleLogout : devLogout}
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? adminTools : null}
       </Menu>
     </>
   );

@@ -8,7 +8,6 @@ import {
   faFolder,
   faHome,
   faQuestionCircle,
-  faToolbox,
   faUsers,
   faChartGantt
 } from '@fortawesome/free-solid-svg-icons';
@@ -16,11 +15,9 @@ import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { useAuth } from '../../hooks/auth.hooks';
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
-  const auth = useAuth();
 
   const linkItems: LinkItem[] = [
     {
@@ -49,14 +46,6 @@ const Sidebar: React.FC = () => {
       route: routes.TEAMS
     }
   ];
-
-  if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
-    linkItems.push({
-      name: 'Admin Tools',
-      icon: faToolbox,
-      route: routes.ADMIN_TOOLS
-    });
-  }
 
   linkItems.push({
     name: 'Info',
