@@ -159,7 +159,9 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <TextField select onChange={onChange} value={value}>
-                    <MenuItem value={'None'} key={'None'}>None</MenuItem>
+                    <MenuItem value={'None'} key={'None'}>
+                      None
+                    </MenuItem>
                     {Object.values(WorkPackageStage).map((stage) => (
                       <MenuItem key={stage} value={stage}>
                         {stage}
