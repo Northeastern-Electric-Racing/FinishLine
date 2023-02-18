@@ -99,7 +99,7 @@ export default class WorkPackagesController {
       const user = await getCurrentUser(res);
 
       await WorkPackagesService.deleteWorkPackage(user, req.params.wbsNum);
-      return res.status(200).json({ message: 'Work package deleted successfully' });
+      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       next(error);
     }
