@@ -21,7 +21,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <TaskList />
+      <TaskList tasks={[]} />
     </RouterWrapper>
   );
 };
