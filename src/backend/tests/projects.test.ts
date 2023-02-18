@@ -130,6 +130,9 @@ describe('Projects', () => {
       wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date(), deletedByUserId: batman.userId }
     };
     jest.spyOn(prisma.project, 'update').mockResolvedValue(expectedUpdate);
+    jest.spyOn(prisma.change_Request, 'findMany').mockResolvedValue([]);
+    jest.spyOn(prisma.change_Request, 'findMany').mockResolvedValue([]);
+    jest.spyOn(prisma.work_Package, 'findMany').mockResolvedValue([]);
     await ProjectsService.deleteProject(batman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 });
     expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
     expect(prisma.project.update).toHaveBeenCalledTimes(1);
