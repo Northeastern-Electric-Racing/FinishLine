@@ -31,7 +31,7 @@ const NavUserMenu: React.FC = () => {
 
   const goAdminTools = () => {
     history.push(routes.ADMIN_TOOLS);
- };
+  };
 
   const googleLogout = (
     <GoogleLogout

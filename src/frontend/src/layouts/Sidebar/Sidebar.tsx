@@ -3,14 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  faExchangeAlt,
-  faFolder,
-  faHome,
-  faQuestionCircle,
-  faUsers,
-  faChartGantt
-} from '@fortawesome/free-solid-svg-icons';
+import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers, faChartGantt } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
@@ -18,7 +11,6 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
-
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
