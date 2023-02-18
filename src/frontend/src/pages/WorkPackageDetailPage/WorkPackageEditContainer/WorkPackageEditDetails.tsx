@@ -20,7 +20,7 @@ interface Props {
 const statuses = Object.values(WbsElementStatus);
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
-  const statusSelect = (
+  const StatusSelect = () => (
     <Controller
       name="wbsElementStatus"
       control={control}
@@ -37,7 +37,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
     />
   );
 
-  const stageSelect = (
+  const StageSelect = () => (
     <Controller
       name="stage"
       control={control}
@@ -80,7 +80,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           />
         </Grid>
         <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
-          {statusSelect}
+          <StatusSelect />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
@@ -125,7 +125,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          {stageSelect}
+          <StageSelect />
         </Grid>
       </Grid>
     </PageBlock>
