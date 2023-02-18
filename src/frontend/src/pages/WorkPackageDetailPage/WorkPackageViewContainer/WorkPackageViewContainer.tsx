@@ -20,6 +20,11 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import EditIcon from '@mui/icons-material/Edit';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -73,16 +78,25 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={!allowEdit}>
+      <ListItemIcon>
+        <EditIcon fontSize="small" />
+      </ListItemIcon>
       Edit
     </MenuItem>
   );
   const activateBtn = (
     <MenuItem onClick={handleClickActivate} disabled={!allowActivate}>
+      <ListItemIcon>
+        <KeyboardDoubleArrowUpIcon fontSize="small" />
+      </ListItemIcon>
       Activate
     </MenuItem>
   );
   const stageGateBtn = (
     <MenuItem onClick={handleClickStageGate} disabled={!allowStageGate}>
+      <ListItemIcon>
+        <DoneOutlineIcon fontSize="small" />
+      </ListItemIcon>
       Stage Gate
     </MenuItem>
   );
@@ -93,6 +107,9 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       disabled={!allowRequestChange}
       onClick={handleDropdownClose}
     >
+      <ListItemIcon>
+        <SyncAltIcon fontSize="small" />
+      </ListItemIcon>
       Request Change
     </MenuItem>
   );
