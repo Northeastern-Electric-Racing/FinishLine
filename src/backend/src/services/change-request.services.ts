@@ -8,6 +8,7 @@ import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } f
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import { createChangeJsonNonList } from '../utils/work-packages.utils';
+import { createChange } from '../utils/work-packages.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -92,13 +93,12 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = createChangeJsonNonList(
+        const change = createChange(
           'Budget',
           String(foundCR.wbsElement.project.budget),
           String(newBudget),
           crId,
-          reviewer.userId,
-          foundCR.wbsElement.wbsElementId
+          reviewer.userId
         );
         console.log('kkkk');
         try {
@@ -129,21 +129,13 @@ export default class ChangeRequestsService {
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
         const changes = [
-          createChangeJsonNonList(
-            'Budget',
-            String(wpProj.budget),
-            String(newBudget),
-            crId,
-            reviewer.userId,
-            foundCR.wbsElement.wbsElementId
-          ),
-          createChangeJsonNonList(
+          createChange('Budget', String(wpProj.budget), String(newBudget), crId, reviewer.userId),
+          createChange(
             'Duration',
             String(foundCR.wbsElement.workPackage.duration),
             String(updatedDuration),
             crId,
-            reviewer.userId,
-            foundCR.wbsElement.wbsElementId
+            reviewer.userId
           )
         ];
         await prisma.project.update({
