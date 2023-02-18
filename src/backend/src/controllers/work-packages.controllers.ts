@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
@@ -32,8 +32,12 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables, stage } =
-        req.body;
+      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
+      let { stage } = req.body;
+
+      if (!Object.values(WorkPackageStage).includes(stage)) {
+        stage = null;
+      }
 
       const user = await getCurrentUser(res);
 

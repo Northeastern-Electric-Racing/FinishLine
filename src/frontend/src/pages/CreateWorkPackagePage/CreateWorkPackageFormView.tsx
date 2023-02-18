@@ -64,7 +64,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       name: '',
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
-      stage: '',
+      stage: 'None',
       startDate: new Date(),
       duration: null,
       dependencies: [] as { wbsNum: string }[],
@@ -159,7 +159,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <TextField select onChange={onChange} value={value}>
-                    <MenuItem value={''}>None</MenuItem>
+                    <MenuItem value={'None'} key={'None'}>None</MenuItem>
                     {Object.values(WorkPackageStage).map((stage) => (
                       <MenuItem key={stage} value={stage}>
                         {stage}
