@@ -131,8 +131,5 @@
     ]
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@mui/icons-material": "latest"
-  }
+  "license": "ISC"
 }
