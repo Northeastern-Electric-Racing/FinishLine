@@ -547,8 +547,7 @@ export default class WorkPackagesService {
                 }
               }
             },
-            dateDeleted: new Date(),
-            deletedByUserId: submitter.userId
+            dateDeleted: new Date()
           }
         },
         // Soft delete wp's related dsecription_bullet fields
