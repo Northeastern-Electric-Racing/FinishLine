@@ -15,7 +15,8 @@ import {
 } from '../utils/projects.utils';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
-import WorkPackagesService from './work-packages.services';
+import ChangeRequestsService from './change-requests.services';
+// import WorkPackagesService from './work-packages.services';
 
 export default class ProjectsService {
   /**
@@ -392,8 +393,13 @@ export default class ProjectsService {
 
     return;
   }
+
   /**
-   * Delete the the project in the database along with all its work packages.
+   * Delete the the project in the database along with all its dependencies.
+   * @param user the user who is trying to delete the project
+   * @param wbsNumber the wbsNumber of the project
+   * @throws if the wbs number does not correspond to a project, the user trying to
+   * delete the project is not admin/app-admin, or the project is not found.
    * @returns the project that is deleted.
    */
   static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
@@ -418,7 +424,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
 
-    const { projectId } = project;
+    const { projectId, wbsElementId } = project;
     const dateDeleted: Date = new Date();
     const deletedProject = await prisma.project.update({
       where: {
@@ -433,7 +439,9 @@ export default class ProjectsService {
         },
         goals: {
           updateMany: {
-            where: {},
+            where: {
+              projectIdGoals: projectId
+            },
             data: {
               dateDeleted
             }
@@ -441,7 +449,9 @@ export default class ProjectsService {
         },
         features: {
           updateMany: {
-            where: {},
+            where: {
+              projectIdFeatures: projectId
+            },
             data: {
               dateDeleted
             }
@@ -449,7 +459,9 @@ export default class ProjectsService {
         },
         otherConstraints: {
           updateMany: {
-            where: {},
+            where: {
+              projectIdOtherConstraints: projectId
+            },
             data: {
               dateDeleted
             }
@@ -478,9 +490,16 @@ export default class ProjectsService {
       }
     });
 
-    dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(eachWP));
-
+    dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(user, eachWP));
     */
+
+    const dependentChangeRequests = await prisma.change_Request.findMany({
+      where: {
+        wbsElementId
+      }
+    });
+
+    dependentChangeRequests.map((eachCR) => ChangeRequestsService.deleteChangeRequest(user, eachCR.crId));
 
     // return projectTransformer(deletedProject);
     return projectTransformer(deletedProject);

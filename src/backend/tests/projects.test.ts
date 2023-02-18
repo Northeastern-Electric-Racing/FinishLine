@@ -122,4 +122,58 @@ describe('Projects', () => {
     // no error, no return value
     await ProjectsService.setProjectTeam(aquaman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 }, 'teamId');
   });
+
+  test('deleteProject works correctly', async () => {
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+    const expectedUpdate = {
+      ...prismaProject1,
+      wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date(), deletedByUserId: batman.userId }
+    };
+    jest.spyOn(prisma.project, 'update').mockResolvedValue(expectedUpdate);
+    await ProjectsService.deleteProject(batman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 });
+    expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+    expect(prisma.project.update).toHaveBeenCalledTimes(1);
+  });
+
+  test('deleteProject fails when bad role', async () => {
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+    const expectedUpdate = {
+      ...prismaProject1,
+      wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date(), deletedByUserId: batman.userId }
+    };
+    jest.spyOn(prisma.project, 'update').mockResolvedValue(expectedUpdate);
+    await expect(
+      async () => await ProjectsService.deleteProject(wonderwoman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
+    ).rejects.toThrowError(AccessDeniedException);
+    expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
+    expect(prisma.project.update).toHaveBeenCalledTimes(0);
+  });
+
+  test('deleteProject fails when wp, not project, given', async () => {
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+    const expectedUpdate = {
+      ...prismaProject1,
+      wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date(), deletedByUserId: batman.userId }
+    };
+    jest.spyOn(prisma.project, 'update').mockResolvedValue(expectedUpdate);
+    await expect(
+      async () => await ProjectsService.deleteProject(batman, { carNumber: 1, projectNumber: 1, workPackageNumber: 1 })
+    ).rejects.toThrowError(HttpException);
+    expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
+    expect(prisma.project.update).toHaveBeenCalledTimes(0);
+  });
+
+  test('deleteProject fails when project not found', async () => {
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+    const expectedUpdate = {
+      ...prismaProject1,
+      wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date(), deletedByUserId: batman.userId }
+    };
+    jest.spyOn(prisma.project, 'update').mockResolvedValue(expectedUpdate);
+    await expect(
+      async () => await ProjectsService.deleteProject(batman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
+    ).rejects.toThrowError(HttpException);
+    expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+    expect(prisma.project.update).toHaveBeenCalledTimes(0);
+  });
 });
