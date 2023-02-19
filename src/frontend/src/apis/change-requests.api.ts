@@ -93,20 +93,13 @@ export const createActivationChangeRequest = (
  * Create a stage gate change request.
  * @param submitterId The ID of the user creating the change request.
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
- * @param leftoverBudget the amount of leftover budget in the WBS element being stage gated.
  * @param confirmDone are all details of the WBS element being stage gated fully completed?
  */
-export const createStageGateChangeRequest = (
-  submitterId: number,
-  wbsNum: WbsNumber,
-  leftoverBudget: number,
-  confirmDone: boolean
-) => {
+export const createStageGateChangeRequest = (submitterId: number, wbsNum: WbsNumber, confirmDone: boolean) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStageGate(), {
     submitterId,
     wbsNum,
     type: ChangeRequestType.StageGate,
-    leftoverBudget,
     confirmDone
   });
 };

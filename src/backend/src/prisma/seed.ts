@@ -326,7 +326,6 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1WbsNumber.projectNumber,
     workPackage1WbsNumber.workPackageNumber,
     CR_Type.STAGE_GATE,
-    0,
     true
   );
 
