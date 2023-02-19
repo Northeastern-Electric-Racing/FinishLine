@@ -44,37 +44,43 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
 
   return (
     <PageBlock title="Work Package Details">
-      <Grid container xs={12} sx={{ my: 1 }}>
-        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'} xs={12}>
-          <FormControl sx={{ width: '70%' }}>
-            <FormLabel>Work Package Name</FormLabel>
-            <ReactHookTextField
-              name="name"
-              control={control}
-              placeholder="Enter work package name..."
-              errorMessage={errors.name}
-            />
-          </FormControl>
-          <FormControl sx={{ width: '20%' }}>
-            <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
-            <Controller
-              name="startDate"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <DatePicker
-                    inputFormat="yyyy-MM-dd"
-                    onChange={onChange}
-                    className={'padding: 10'}
-                    value={value}
-                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
-                  />
-                </>
-              )}
-            />
-          </FormControl>
-          {statusSelect}
+      <Grid container xs={12}>
+        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'}>
+          <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+            <FormControl sx={{ width: '100%' }}>
+              <FormLabel>Work Package Name</FormLabel>
+              <ReactHookTextField
+                name="name"
+                control={control}
+                placeholder="Enter work package name..."
+                errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={'auto'} sx={{ mt: 1 }}>
+            <FormControl>
+              <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+              <Controller
+                name="startDate"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <DatePicker
+                      inputFormat="yyyy-MM-dd"
+                      onChange={onChange}
+                      className={'padding: 10'}
+                      value={value}
+                      renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                    />
+                  </>
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3} sx={{ mt: 1 }}>
+            {statusSelect}
+          </Grid>
         </Grid>
         <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'} xs={12}>
           <FormControl sx={{ width: '40%' }}>
