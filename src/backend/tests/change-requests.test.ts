@@ -102,6 +102,14 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    test('the associated scope of cr does not exist', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
+      await expect(() =>
+        ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, null)
+      ).rejects.toThrow(new NotFoundException('Change Request', crId));
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
     test('proposed solution id not found', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
       jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(null);
