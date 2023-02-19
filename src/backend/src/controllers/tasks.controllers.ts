@@ -3,7 +3,6 @@ import { getCurrentUser } from '../utils/auth.utils';
 import TasksService from '../services/tasks.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { User } from '@prisma/client';
-import { getUsers } from '../utils/users.utils';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
