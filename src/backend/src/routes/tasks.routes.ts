@@ -18,4 +18,13 @@ tasksRouter.post(
   TasksController.createTask
 );
 
+tasksRouter.post(
+  '/:taskId/edit',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('notes')),
+  body('deadline'),
+  isTaskPriority(body('priority')),
+  TasksController.editTask
+);
+
 export default tasksRouter;

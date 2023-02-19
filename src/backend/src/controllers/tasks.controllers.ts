@@ -3,6 +3,7 @@ import { getCurrentUser } from '../utils/auth.utils';
 import TasksService from '../services/tasks.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { User } from '@prisma/client';
+import { getUsers } from '../utils/users.utils';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
@@ -16,6 +17,22 @@ export default class TasksController {
       const task = await TasksService.createTask(createdBy, wbsNum, title, notes, deadline, priority, status, assignees);
 
       res.status(200).json(task);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { title, notes, priority, deadline } = req.body;
+
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updateTask = await TasksService.editTask(user, taskId, title, notes, priority, deadline);
+
+      res.status(200).json(updateTask);
     } catch (error: unknown) {
       next(error);
     }

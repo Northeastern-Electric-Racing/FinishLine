@@ -57,4 +57,23 @@ export default class TasksService {
 
     return taskTransformer(createdTask);
   }
+
+  static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
+    if (user.role === Role.GUEST) throw new AccessDeniedException();
+
+    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+
+    if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
+
+    if (!isUnderWordCount(notes, 150)) throw new HttpException(400, 'Notes must be less than 250 words');
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: { title, notes, priority, deadline },
+      ...taskQueryArgs
+    });
+    return taskTransformer(updatedTask);
+  }
 }
