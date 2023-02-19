@@ -13,6 +13,8 @@ import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import Button from '@mui/material/Button';
+import { ListItemIcon, ListItemText } from '@mui/material';
+import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -50,7 +52,10 @@ const NavUserMenu: React.FC = () => {
 
   const adminTools = (
     <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
-      Admin Tools
+      <ListItemIcon>
+            <HomeRepairServiceIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Admin Tools</ListItemText>
     </MenuItem>
   );
 
