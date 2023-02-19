@@ -6,12 +6,9 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { Link, ListItem, List, Typography } from '@mui/material';
+import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
-import { useState } from 'react';
-import { useWindowSize } from '../../hooks/changes-list.hooks';
-import DynamicTooltip from '../../components/DynamicTooltip';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -19,14 +16,6 @@ interface ImplementedChangesListProps {
 }
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
-  const [bodyWidth, setBodyWidth] = useState<number>(window.document.body.offsetWidth);
-
-  window.document.body.addEventListener('resize', () => {
-    setBodyWidth(window.document.body.offsetWidth);
-  });
-
-  let [innerWidth, position] = useWindowSize(bodyWidth) as [number, 'top' | 'right'];
-
   return (
     <PageBlock
       title={'Implemented Changes'}
@@ -35,15 +24,31 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
-            <DynamicTooltip
+            <Tooltip
               id="tooltip"
               title={
                 <Typography>
                   {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
                 </Typography>
               }
-              placement={position}
-              innerWidth={innerWidth}
+              PopperProps={{
+                popperOptions: {
+                  modifiers: [
+                    {
+                      name: 'preventOverflow',
+                      enabled: true,
+                      options: {
+                        boundariesElement: 'window'
+                      }
+                    },
+                    {
+                      name: 'arrow',
+                      enabled: true
+                    }
+                  ]
+                }
+              }}
+              placement="right"
               arrow
             >
               <Typography>
@@ -55,7 +60,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                 }
                 ] {ic.detail}
               </Typography>
-            </DynamicTooltip>
+            </Tooltip>
           </ListItem>
         ))}
       </List>

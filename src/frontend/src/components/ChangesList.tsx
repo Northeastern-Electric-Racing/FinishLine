@@ -4,29 +4,19 @@
  */
 
 import { Link } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
 import BulletList from './BulletList';
-import { useState } from 'react';
-import { useWindowSize } from '../hooks/changes-list.hooks';
-import DynamicTooltip from './DynamicTooltip';
 
 interface ChangesListProps {
   changes: ImplementedChange[];
 }
 
 const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
-  const [bodyWidth, setBodyWidth] = useState<number>(window.document.body.offsetWidth);
-
-  window.document.body.addEventListener('resize', () => {
-    setBodyWidth(window.document.body.offsetWidth);
-  });
-
-  let [innerWidth, position] = useWindowSize(bodyWidth) as [number, 'top' | 'right'];
-
   return (
     <BulletList
       title={'Changes'}
@@ -37,7 +27,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
             #{ic.changeRequestId}
           </Link>
           ]{' '}
-          <DynamicTooltip
+          <Tooltip
             id="tooltip"
             title={
               <>
@@ -46,12 +36,28 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
                 </Typography>
               </>
             }
-            placement={position}
-            innerWidth={innerWidth}
+            PopperProps={{
+              popperOptions: {
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    enabled: true,
+                    options: {
+                      boundariesElement: 'window'
+                    }
+                  },
+                  {
+                    name: 'arrow',
+                    enabled: true
+                  }
+                ]
+              }
+            }}
+            placement="right"
             arrow
           >
             <Typography component="span">{ic.detail}</Typography>
-          </DynamicTooltip>
+          </Tooltip>
         </>
       ))}
       readOnly={true}
