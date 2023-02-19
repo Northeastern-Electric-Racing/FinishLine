@@ -6,7 +6,7 @@
 import { Box, IconButton, Link, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridColumnHeaderParams } from '@mui/x-data-grid';
 import { RoleEnum, Task, TaskStatus, UserPreview } from 'shared';
-import { datePipe } from '../../../utils/pipes';
+import { datePipe, userPreviewFullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
@@ -40,10 +40,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
 
-  const namePipe = (user: UserPreview) => {
-    return user.firstName + ' ' + user.lastName + ', ';
-  };
-
   const renderActionButtons = () => (
     <>
       <IconButton onClick={handleMenu}>
@@ -75,7 +71,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           </ListItemIcon>
           Delete
         </MenuItem>
-        {status !== TaskStatus.IN_BACKLOG && (
+        {status === TaskStatus.IN_PROGRESS && (
           <MenuItem onClick={handleClose} disabled={disabled}>
             <ListItemIcon>
               <PauseIcon fontSize="small" />
@@ -91,7 +87,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             Move to In Progress
           </MenuItem>
         )}
-        {status !== TaskStatus.DONE && (
+        {status === TaskStatus.IN_PROGRESS && (
           <MenuItem onClick={handleClose} disabled={disabled}>
             <ListItemIcon>
               <CheckIcon fontSize="small" />
@@ -158,7 +154,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const rows = tasks.map((task: Task, idx: number) => {
     const date = new Date(task.deadline);
     const assigneeString = task.assignees.reduce(
-      (accumulator: string, currentVal: UserPreview) => accumulator + namePipe(currentVal),
+      (accumulator: string, currentVal: UserPreview) => accumulator + userPreviewFullNamePipe(currentVal),
       ''
     );
     return {
