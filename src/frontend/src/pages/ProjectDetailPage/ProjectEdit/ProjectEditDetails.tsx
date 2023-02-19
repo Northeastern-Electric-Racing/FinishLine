@@ -15,9 +15,9 @@ interface ProjectEditDetailsProps {
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
   return (
     <PageBlock title="Project Details">
-      <Grid container spacing={1}>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: '80%' }}>
+      <Grid container xs={12} sx={{ my: 1 }}>
+        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'}>
+          <FormControl sx={{ width: '60%' }}>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
               name="name"
@@ -26,9 +26,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
               errorMessage={errors.name}
             />
           </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: '30%' }}>
+          <FormControl sx={{ width: '15%' }}>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
               name="budget"
@@ -40,90 +38,88 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12}>
-          <FormControl>
-            <FormLabel>Project Lead</FormLabel>
-            <Controller
-              name="projectLeadId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Project Manager</FormLabel>
-            <Controller
-              name="projectManagerId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '30%' }}>
-            <FormLabel>Slide Deck Link</FormLabel>
-            <ReactHookTextField
-              name="slideDeckLink"
-              control={control}
-              placeholder="Enter slide deck link..."
-              errorMessage={errors.slideDeckLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '30%' }}>
-            <FormLabel>Google Drive Folder Link</FormLabel>
-            <ReactHookTextField
-              name="googleDriveFolderLink"
-              control={control}
-              placeholder="Enter Google Drive folder link..."
-              errorMessage={errors.googleDriveFolderLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '30%' }}>
-            <FormLabel>Bom Link</FormLabel>
-            <ReactHookTextField
-              name="bomLink"
-              control={control}
-              placeholder="Enter bom link..."
-              errorMessage={errors.bomLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '30%' }}>
-            <FormLabel>Task List Link</FormLabel>
-            <ReactHookTextField
-              name="taskListLink"
-              control={control}
-              placeholder="Enter task list link..."
-              errorMessage={errors.taskListLink}
-            />
-          </FormControl>
-        </Grid>
+        <FormControl>
+          <FormLabel>Project Lead</FormLabel>
+          <Controller
+            name="projectLeadId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </>
+            )}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Project Manager</FormLabel>
+          <Controller
+            name="projectManagerId"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </>
+            )}
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sx={{ my: 1 }}>
+        <FormControl sx={{ width: '30%' }}>
+          <FormLabel>Slide Deck Link</FormLabel>
+          <ReactHookTextField
+            name="slideDeckLink"
+            control={control}
+            placeholder="Enter slide deck link..."
+            errorMessage={errors.slideDeckLink}
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sx={{ my: 1 }}>
+        <FormControl sx={{ width: '30%' }}>
+          <FormLabel>Google Drive Folder Link</FormLabel>
+          <ReactHookTextField
+            name="googleDriveFolderLink"
+            control={control}
+            placeholder="Enter Google Drive folder link..."
+            errorMessage={errors.googleDriveFolderLink}
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sx={{ my: 1 }}>
+        <FormControl sx={{ width: '30%' }}>
+          <FormLabel>Bom Link</FormLabel>
+          <ReactHookTextField
+            name="bomLink"
+            control={control}
+            placeholder="Enter bom link..."
+            errorMessage={errors.bomLink}
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sx={{ my: 1 }}>
+        <FormControl sx={{ width: '30%' }}>
+          <FormLabel>Task List Link</FormLabel>
+          <ReactHookTextField
+            name="taskListLink"
+            control={control}
+            placeholder="Enter task list link..."
+            errorMessage={errors.taskListLink}
+          />
+        </FormControl>
       </Grid>
     </PageBlock>
   );
