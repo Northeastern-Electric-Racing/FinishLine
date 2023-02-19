@@ -53,9 +53,9 @@ const NavUserMenu: React.FC = () => {
   const adminTools = (
     <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
       <ListItemIcon>
-            <HomeRepairServiceIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Admin Tools</ListItemText>
+        <HomeRepairServiceIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Admin Tools</ListItemText>
     </MenuItem>
   );
 
