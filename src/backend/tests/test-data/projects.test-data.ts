@@ -29,7 +29,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     projectManager: superman,
     dateDeleted: null,
     deletedByUserId: null,
-    changes: []
+    changes: [],
+    tasks: []
   },
   workPackages: [
     {
@@ -57,7 +58,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
       },
       dependencies: [],
       expectedActivities: [],
-      deliverables: []
+      deliverables: [],
+      stage: null
     }
   ],
   goals: [],
@@ -90,5 +92,6 @@ export const sharedProject1: SharedProject = {
   features: [],
   otherConstraints: [],
   workPackages: [],
-  risks: []
+  risks: [],
+  tasks: []
 };

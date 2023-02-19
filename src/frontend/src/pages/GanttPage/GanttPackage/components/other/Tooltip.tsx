@@ -124,7 +124,7 @@ export const StandardTooltipContent: React.FC<{
           duration > 1 ? 'days' : 'day'
         }`}</p>
       )}
-      <p className={styles.tooltipDefaultContainerParagraph}>{`Percentage done: ${task.progress}%`}</p>
+      <p className={styles.tooltipDefaultContainerParagraph}>{`Percentage done: ${task.progress.toFixed(2)}%`}</p>
       <p className={styles.tooltipDefaultContainerParagraph}>{`End date: ${new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric'

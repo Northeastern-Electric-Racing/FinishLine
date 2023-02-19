@@ -107,7 +107,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: any } | null
+    value: { label: string; id: string } | null
   ) => {
     if (value) {
       setWbsNum(value.id);
