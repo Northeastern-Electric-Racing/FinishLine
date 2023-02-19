@@ -5,6 +5,7 @@ import { projectQueryArgs } from '../../src/prisma-query-args/projects.query-arg
 import { batman } from './users.test-data';
 import { prismaTeam1 } from './teams.test-data';
 import { prismaRisk1 } from './risks.test-data';
+import { WBS_Element_Status } from '@prisma/client';
 // WHEN IT SHOWS 'PRISMAPROJECT & { .... }' DOES THAT MEAN I CAN JUST PUT A VARIABLE OF TYPE PRISMAPROJECT IN OR DO I HAVE TO WRITE OUT ALL THE FIELDS OF PRISMAPROJECT?
 
 export const prismaProject1: PrismaProject = {
@@ -22,35 +23,11 @@ export const prismaProject1: PrismaProject = {
 
 export const project1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
   ...prismaProject1,
-  /*projectId: 1,
-  wbsElementId: 3,
-  budget: 3,
-  summary: 'ajsjdfk',
-  rules: ['a'],
-  googleDriveFolderLink: 'https://drive.google.com/drive/folders/1',
-  slideDeckLink: 'https://docs.google.com/presentation/d/1',
-  bomLink: 'https://docs.google.com/spreadsheets/d/1',
-  taskListLink: 'https://docs.google.com/spreadsheets/d/1',
-  teamId: '1',*/
   wbsElement: {
     ...prismaWbsElement1,
     projectLead: batman,
     projectManager: batman,
     changes: []
-    // wbsElementId: 100,
-    // dateCreated: new Date('06/23/99'),
-    // dateDeleted: new Date('06/26/99'),
-    // carNumber: 3,
-    // projectNumber: 4,
-    // workPackageNumber: 1,
-    // name: 'Project 1',
-    // status: WBS_Element_Status.ACTIVE,
-    // projectLeadId: 1,
-    // projectManagerId: 1,
-    // deletedByUserId: 2,
-    // projectLead: batman,
-    // projectManager: batman,
-    // changes: []
   },
   goals: [],
   features: [],
@@ -76,20 +53,62 @@ export const project1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
         projectLead: batman,
         projectManager: batman,
         changes: []
-        /*wbsElementId: 100,
-        dateCreated: new Date('06/23/99'),
-        dateDeleted: new Date('06/26/99'),
-        carNumber: 3,
-        projectNumber: 4,
-        workPackageNumber: 1,
-        name: 'Project 1',
-        status: WBS_Element_Status.ACTIVE,
-        projectLeadId: 1,
-        projectManagerId: 1,
-        deletedByUserId: 2,
+      },
+      dependencies: [],
+      expectedActivities: [],
+      deliverables: [],
+      workPackageId: 5,
+      wbsElementId: 4,
+      projectId: 1,
+      orderInProject: 2,
+      startDate: new Date('06/26/99'),
+      duration: 3
+    }
+  ]
+};
+
+export const sharedProject1 = {
+  id: 1,
+  wbsNum: 20,
+  dateCreated: new Date('05/22/16'),
+  name: 'name',
+  status: WBS_Element_Status.ACTIVE,
+  projectLead: batman,
+  projectManager: '',
+  changes: [],
+  team: prismaTeam1,
+  summary: 'ajsjdfk',
+  budget: 3,
+  gDriveLink: 'https://drive.google.com/drive/folders/1',
+  taskListLink: 'https://docs.google.com/spreadsheets/d/1',
+  slideDeckLink: 'https://docs.google.com/presentation/d/1',
+  bomLink: 'https://docs.google.com/spreadsheets/d/1',
+  rules: [],
+  duration: 3,
+  startDate: new Date('06/26/17'),
+  endDate: new Date('06/27/17'),
+  goals: [],
+  features: [],
+  otherConstraints: [],
+  risks: [
+    {
+      ...prismaRisk1,
+      deletedBy: batman,
+      project: {
+        ...prismaProject1,
+        wbsElement: prismaWbsElement1
+      },
+      createdBy: batman,
+      resolvedBy: batman
+    }
+  ],
+  workPackages: [
+    {
+      wbsElement: {
+        ...prismaWbsElement1,
         projectLead: batman,
         projectManager: batman,
-        changes: []*/
+        changes: []
       },
       dependencies: [],
       expectedActivities: [],
@@ -118,7 +137,7 @@ export const project1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
   projectManagerId: 5
 };*/
 
-const newProjectPayload = {
+/*const newProjectPayload = {
   userId: 1,
   crId: 2,
   name: 'build a car',
@@ -141,4 +160,4 @@ const editProjectPayload = {
   taskListLink: 'i',
   projectLead: 5,
   projectManager: 6
-};
+};*/
