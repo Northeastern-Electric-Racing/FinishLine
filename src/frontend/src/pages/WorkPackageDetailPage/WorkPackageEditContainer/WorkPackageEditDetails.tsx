@@ -44,21 +44,18 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
 
   return (
     <PageBlock title="Work Package Details">
-      <Grid container spacing={1}>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl>
+      <Grid container xs={12} sx={{ my: 1 }}>
+        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'} xs={12}>
+          <FormControl sx={{ width: '70%' }}>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
               name="name"
               control={control}
-              sx={{ width: '140%' }}
               placeholder="Enter work package name..."
               errorMessage={errors.name}
             />
           </FormControl>
-        </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
-          <FormControl>
+          <FormControl sx={{ width: '20%' }}>
             <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
               name="startDate"
@@ -77,12 +74,10 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               )}
             />
           </FormControl>
-        </Grid>
-        <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
           {statusSelect}
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl>
+        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'} xs={12}>
+          <FormControl sx={{ width: '40%' }}>
             <FormLabel>Project Lead</FormLabel>
             <Controller
               name="projectLead"
@@ -101,9 +96,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               )}
             />
           </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl>
+          <FormControl sx={{ width: '40%' }}>
             <FormLabel>Project Manager</FormLabel>
             <Controller
               name="projectManager"
