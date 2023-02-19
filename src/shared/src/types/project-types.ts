@@ -5,9 +5,10 @@
 
 import { User } from './user-types';
 import { ImplementedChange } from './change-request-types';
-import { TimelineStatus } from './work-package-types';
+import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
 import { Risk } from './risk-types';
+import { Task } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -49,6 +50,7 @@ export interface Project extends WbsElement {
   workPackages: WorkPackage[];
   team?: TeamPreview;
   risks: Risk[];
+  tasks: Task[];
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
@@ -65,6 +67,7 @@ export interface WorkPackage extends WbsElement {
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
   projectName: string;
+  stage?: WorkPackageStage;
 }
 
 export interface DescriptionBullet {

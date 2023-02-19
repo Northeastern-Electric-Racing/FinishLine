@@ -13,7 +13,8 @@ tasksRouter.post(
   body('deadline').isDate(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
-  intMinZero(body('assignees.*')).isArray(),
+  body('assignees').isArray(),
+  intMinZero(body('assignees.*')),
   validateInputs,
   TasksController.createTask
 );
