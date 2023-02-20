@@ -80,7 +80,6 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
   const handleCheck = async (risk: Risk) => {
     const payload = {
-      userId: userId,
       id: risk.id,
       detail: risk.detail,
       resolved: !risk.isResolved
