@@ -15,7 +15,7 @@ workPackagesRouter.post(
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
   intMinZero(body('projectWbsNum.workPackageNumber')),
-  nonEmptyString(body('stage')),
+  isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('dependencies.*.carNumber')),

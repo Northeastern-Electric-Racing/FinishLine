@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
@@ -33,9 +33,9 @@ export default class WorkPackagesController {
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
       const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
-      let { stage } = req.body;
 
-      if (!Object.values(WorkPackageStage).includes(stage)) {
+      let { stage } = req.body;
+      if (stage === 'NONE') {
         stage = null;
       }
 
@@ -76,12 +76,11 @@ export default class WorkPackagesController {
         projectLead,
         projectManager
       } = req.body;
-      console.log('test')
+
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
       }
-      console.log(stage)
 
       const user = await getCurrentUser(res);
 

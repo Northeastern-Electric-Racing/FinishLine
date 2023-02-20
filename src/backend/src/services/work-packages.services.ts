@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, Work_Package_Stage } from '@prisma/client';
+import { Role, User, WBS_Element } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
@@ -103,6 +103,7 @@ export default class WorkPackagesService {
    * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
+   * @param stage the stage of the work package
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
    * @param dependencies the WBS elements that need to be completed before this WP
@@ -116,7 +117,7 @@ export default class WorkPackagesService {
     projectWbsNum: WbsNumber,
     name: string,
     crId: number,
-    stage: Work_Package_Stage | null,
+    stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     dependencies: WbsNumber[],
