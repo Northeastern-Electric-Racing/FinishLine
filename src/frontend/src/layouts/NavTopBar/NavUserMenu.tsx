@@ -102,7 +102,7 @@ const NavUserMenu: React.FC = () => {
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? AdminTools : null}
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
         {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
