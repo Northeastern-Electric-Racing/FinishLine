@@ -50,7 +50,7 @@ const NavUserMenu: React.FC = () => {
     </MenuItem>
   );
 
-  const adminTools = (
+  const AdminTools = () => (
     <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
       <ListItemIcon>
         <HomeRepairServiceIcon fontSize="small" />
@@ -102,7 +102,7 @@ const NavUserMenu: React.FC = () => {
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
           Settings
         </MenuItem>
-        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? adminTools : null}
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? AdminTools : null}
         {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
