@@ -45,84 +45,86 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
-        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'}>
-          <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-            <FormControl sx={{ width: '100%' }}>
-              <FormLabel>Work Package Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter work package name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={'auto'} sx={{ mt: 1 }}>
-            <FormControl>
-              <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormControl sx={{ width: '90%' }}>
+            <FormLabel>Work Package Name</FormLabel>
+            <ReactHookTextField
+              name="name"
+              control={control}
+              placeholder="Enter work package name..."
+              errorMessage={errors.name}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={'auto'} sx={{ mt: 1 }}>
+          <FormControl sx={{ width: '90%' }}>
+            <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+            <Controller
+              name="startDate"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <DatePicker
+                    inputFormat="yyyy-MM-dd"
+                    onChange={onChange}
+                    className={'padding: 10'}
+                    value={value}
+                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                  />
+                </>
+              )}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3} sx={{ mt: 1 }}>
+          {statusSelect}
+        </Grid>
+        <Grid container sx={{ my: 1 }}>
+          <Grid item xs={6}>
+            <FormControl sx={{ width: '90%' }}>
+              <FormLabel>Project Lead</FormLabel>
               <Controller
-                name="startDate"
+                name="projectLead"
                 control={control}
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
                   <>
-                    <DatePicker
-                      inputFormat="yyyy-MM-dd"
-                      onChange={onChange}
-                      className={'padding: 10'}
-                      value={value}
-                      renderInput={(params) => <TextField autoComplete="off" {...params} />}
-                    />
+                    <TextField select onChange={onChange} value={value} fullWidth>
+                      {users.map((t) => (
+                        <MenuItem key={t.userId} value={t.userId}>
+                          {fullNamePipe(t)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </>
                 )}
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3} sx={{ mt: 1 }}>
-            {statusSelect}
+          <Grid item xs={6}>
+            <FormControl sx={{ width: '90%' }}>
+              <FormLabel>Project Manager</FormLabel>
+              <Controller
+                name="projectManager"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextField select onChange={onChange} value={value} fullWidth>
+                      {users.map((t) => (
+                        <MenuItem key={t.userId} value={t.userId}>
+                          {fullNamePipe(t)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </>
+                )}
+              />
+            </FormControl>
           </Grid>
         </Grid>
-        <Grid container sx={{ marginBottom: '0.5%' }} gap={'5px'} xs={12}>
-          <FormControl sx={{ width: '40%' }}>
-            <FormLabel>Project Lead</FormLabel>
-            <Controller
-              name="projectLead"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} fullWidth>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
-          <FormControl sx={{ width: '40%' }}>
-            <FormLabel>Project Manager</FormLabel>
-            <Controller
-              name="projectManager"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} fullWidth>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={6} sx={{ my: 1 }}>
           <FormControl>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
