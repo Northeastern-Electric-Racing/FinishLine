@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, UserPreview } from 'shared';
+import { WbsNumber, User, wbsPipe } from 'shared';
 
 /**
  * Pipes:
@@ -32,13 +32,8 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: User) => {
+export const fullNamePipe = (user?: Pick<User, 'firstName' | 'lastName'>) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
-};
-
-/** Display user preview by their name "Joe Shmoe" */
-export const userPreviewFullNamePipe = (user: UserPreview) => {
-  return user.firstName + ' ' + user.lastName + ', ';
 };
 
 /** Display boolean as "YES" or "NO" */
