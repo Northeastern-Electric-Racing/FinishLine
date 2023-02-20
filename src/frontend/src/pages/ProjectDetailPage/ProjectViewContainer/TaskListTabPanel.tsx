@@ -85,42 +85,43 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = React.useMemo<GridColumns<Row>>(() => {
     const baseColDef: GridColDefStyle = {
-      flex: 1,
+      flex: 2,
       align: 'center',
       headerAlign: 'center'
     };
 
     return [
-      { ...baseColDef, field: 'title', headerName: 'Title', type: 'string', width: 90 },
+      { flex: 3, align: 'left', headerAlign: 'center', field: 'title', headerName: 'Title', type: 'string', width: 90 },
       {
         ...baseColDef,
+        flex: 1,
         field: 'notes',
         headerName: 'Notes',
-        renderCell: renderNotes,
-        width: 150
+        renderCell: renderNotes
       },
       {
         ...baseColDef,
         field: 'deadline',
-        headerName: 'Deadline',
-        width: 150
+        headerName: 'Deadline'
       },
       {
         ...baseColDef,
+        flex: 1,
         field: 'priority',
-        headerName: 'Priority',
-        width: 150
+        headerName: 'Priority'
       },
       {
-        ...baseColDef,
+        flex: 3,
         field: 'assignee',
         headerName: 'Assignee',
-        width: 150
+        align: 'left',
+        headerAlign: 'center'
       },
       {
         field: 'actions',
         type: 'actions',
         headerName: 'Actions',
+        width: 70,
         getActions: (params: GridRowParams) => {
           const actions: JSX.Element[] = [];
           if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
@@ -167,8 +168,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             />
           );
           return actions;
-        },
-        width: 150
+        }
       }
     ];
   }, [deleteRow, disabled, moveToBacklog, moveToDone, moveToInProgress, status, theme.palette.mode]);
@@ -216,7 +216,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
               '.MuiDataGrid-cell:focus-within': {
                 outline: 'none'
               },
-              '.MuiDataGrid-columnHeader--alignCenter': {
+              '.MuiDataGrid-columnHeader': {
                 borderBottom: 1
               },
               '.MuiDataGrid-columnHeader:focus-within': {
