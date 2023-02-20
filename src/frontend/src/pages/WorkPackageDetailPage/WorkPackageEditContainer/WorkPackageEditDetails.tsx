@@ -43,7 +43,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       control={control}
       render={({ field: { onChange, value } }) => (
         <TextField select onChange={onChange} value={value} label="Stage" fullWidth>
-          <MenuItem value={''}>None</MenuItem>
+          <MenuItem value={'NONE'}>NONE</MenuItem>
           {Object.values(WorkPackageStage).map((stage) => (
             <MenuItem key={stage} value={stage}>
               {stage}

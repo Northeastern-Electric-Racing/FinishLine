@@ -68,9 +68,14 @@ export default class WorkPackagesController {
         deliverables,
         wbsElementStatus,
         projectLead,
-        projectManager,
-        stage
+        projectManager
       } = req.body;
+      console.log('test')
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+      console.log(stage)
 
       const user = await getCurrentUser(res);
 

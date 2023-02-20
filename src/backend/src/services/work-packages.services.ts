@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, Work_Package_Stage } from '@prisma/client';
+import { Role, User, WBS_Element } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
@@ -7,7 +7,8 @@ import {
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
-  WorkPackage
+  WorkPackage,
+  WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
@@ -260,7 +261,7 @@ export default class WorkPackagesService {
     workPackageId: number,
     name: string,
     crId: number,
-    stage: Work_Package_Stage | null,
+    stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     dependencies: WbsNumber[],

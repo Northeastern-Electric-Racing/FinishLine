@@ -5,6 +5,7 @@
 
 import { Prisma, User, Work_Package_Stage } from '@prisma/client';
 import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
+import { WorkPackageStage } from 'shared';
 import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
 import WorkPackagesService from '../../services/work-packages.services';
 import { descBulletConverter } from '../../utils/utils';
@@ -64,7 +65,7 @@ export const seedWorkPackage = async (
     workPackage.workPackageId,
     workPackage.wbsElement.name,
     changeRequestId,
-    stage,
+    stage as WorkPackageStage,
     workPackage.startDate.toString(),
     workPackage.duration,
     workPackage.dependencies,

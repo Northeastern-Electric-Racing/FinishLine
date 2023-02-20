@@ -55,7 +55,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
-      stage: workPackage.stage || '',
+      stage: workPackage.stage || 'NONE',
       startDate,
       duration,
       dependencies: workPackage.dependencies.map((dep) => {

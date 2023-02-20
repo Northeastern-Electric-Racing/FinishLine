@@ -23,7 +23,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import RisksService from '../services/risks.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { validateWBS, WbsElementStatus } from 'shared';
+import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { descBulletConverter } from '../utils/utils';
 import TasksService from '../services/tasks.services';
