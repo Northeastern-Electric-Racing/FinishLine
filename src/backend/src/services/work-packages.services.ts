@@ -7,7 +7,8 @@ import {
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
-  WorkPackage
+  WorkPackage,
+  WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
@@ -262,6 +263,7 @@ export default class WorkPackagesService {
     workPackageId: number,
     name: string,
     crId: number,
+    stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     dependencies: WbsNumber[],
@@ -344,6 +346,7 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
+    const stageChangeJson = createChangeJsonNonList('stage', originalWorkPackage.stage, stage, crId, userId, wbsElementId!);
     const startDateChangeJson = createChangeJsonDates(
       'start date',
       originalWorkPackage.startDate,
@@ -400,6 +403,7 @@ export default class WorkPackagesService {
     if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
     if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
+    if (stageChangeJson !== undefined) changes.push(stageChangeJson);
 
     const projectManagerChangeJson = createChangeJsonNonList(
       'project manager',
@@ -449,6 +453,7 @@ export default class WorkPackagesService {
             projectManagerId: projectManager
           }
         },
+        stage,
         dependencies: {
           set: [], // remove all the connections then add all the given ones
           connect: depsIds.map((ele) => ({ wbsElementId: ele }))

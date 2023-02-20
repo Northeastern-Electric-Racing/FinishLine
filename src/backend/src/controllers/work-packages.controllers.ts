@@ -76,6 +76,12 @@ export default class WorkPackagesController {
         projectLead,
         projectManager
       } = req.body;
+      console.log('test')
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+      console.log(stage)
 
       const user = await getCurrentUser(res);
 
@@ -84,6 +90,7 @@ export default class WorkPackagesController {
         workPackageId,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
