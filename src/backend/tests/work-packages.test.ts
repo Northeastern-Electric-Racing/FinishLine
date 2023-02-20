@@ -6,7 +6,8 @@ import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
-import { User, WBS_Element, WBS_Element_Status, Work_Package_Stage } from '@prisma/client';
+import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 
@@ -38,13 +39,13 @@ describe('Work Packages', () => {
   ];
   const expectedActivities = ['ayo'];
   const deliverables = ['ajdhjakfjafja'];
-  const stage = Work_Package_Stage.DESIGN;
+  const stage = WorkPackageStage.Design;
   const createWorkPackageArgs: [
     User,
     WbsNumber,
     string,
     number,
-    Work_Package_Stage,
+    WorkPackageStage,
     string,
     number,
     WBS_Element[],
