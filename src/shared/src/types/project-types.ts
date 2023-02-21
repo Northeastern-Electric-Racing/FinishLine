@@ -8,6 +8,7 @@ import { ImplementedChange } from './change-request-types';
 import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
 import { Risk } from './risk-types';
+import { Task } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -49,6 +50,7 @@ export interface Project extends WbsElement {
   workPackages: WorkPackage[];
   team?: TeamPreview;
   risks: Risk[];
+  tasks: Task[];
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
