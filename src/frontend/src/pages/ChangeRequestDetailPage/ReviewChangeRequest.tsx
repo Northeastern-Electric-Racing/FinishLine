@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { ChangeRequest } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -35,6 +36,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   const crId = parseInt(id);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
+  const toast = useToast();
 
   const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
     handleClose();
@@ -46,7 +48,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       accepted,
       psId
     }).catch((error) => {
-      alert(error);
+      toast.error(error);
       throw new Error(error);
     });
   };
