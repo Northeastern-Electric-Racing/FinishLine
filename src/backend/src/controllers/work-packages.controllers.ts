@@ -34,6 +34,11 @@ export default class WorkPackagesController {
     try {
       const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
 
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
       const user = await getCurrentUser(res);
 
       const wbsString: string = await WorkPackagesService.createWorkPackage(
@@ -41,6 +46,7 @@ export default class WorkPackagesController {
         projectWbsNum,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
@@ -71,6 +77,11 @@ export default class WorkPackagesController {
         projectManager
       } = req.body;
 
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
       const user = await getCurrentUser(res);
 
       await WorkPackagesService.editWorkPackage(
@@ -78,6 +89,7 @@ export default class WorkPackagesController {
         workPackageId,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
@@ -88,6 +100,19 @@ export default class WorkPackagesController {
         projectManager
       );
       return res.status(200).json({ message: 'Work package updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Delete a work package that corresponds to the given wbs number
+  static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+
+      await WorkPackagesService.deleteWorkPackage(user, wbsNum);
+      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       next(error);
     }

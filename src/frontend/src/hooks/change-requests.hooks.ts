@@ -12,7 +12,8 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest,
-  addProposedSolution
+  addProposedSolution,
+  deleteChangeRequest
 } from '../apis/change-requests.api';
 
 /**
@@ -52,6 +53,25 @@ export const useReviewChangeRequest = () => {
         reviewPayload.reviewNotes,
         reviewPayload.psId
       );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a change request.
+ */
+export const useDeleteChangeRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['change requests', 'delete'],
+    async (id: number) => {
+      const { data } = await deleteChangeRequest(id);
       return data;
     },
     {
