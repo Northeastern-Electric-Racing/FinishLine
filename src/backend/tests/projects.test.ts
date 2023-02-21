@@ -9,6 +9,9 @@ import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import WorkPackagesService from '../src/services/work-packages.services';
+import { WbsNumber } from 'shared';
+import { User } from '@prisma/client';
 
 jest.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -19,6 +22,7 @@ describe('Projects', () => {
       .spyOn(changeRequestUtils, 'validateChangeRequestAccepted')
       .mockImplementation(async (_crId) => prismaChangeRequest1);
     jest.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
+    jest.spyOn(WorkPackagesService, 'deleteWorkPackage').mockImplementation(async (_user: User, _wbsNum: WbsNumber) => {});
   });
 
   afterEach(() => {

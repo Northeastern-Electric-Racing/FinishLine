@@ -510,7 +510,7 @@ export default class WorkPackagesService {
     if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
 
     // Verify if the work package to be deleted exist and if it already has been deleted
-    const work_package = await prisma.work_Package.findFirst({
+    const workPackage = await prisma.work_Package.findFirst({
       where: {
         wbsElement: {
           carNumber,
@@ -521,10 +521,10 @@ export default class WorkPackagesService {
       ...workPackageQueryArgs
     });
 
-    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (work_package.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
 
-    const { wbsElementId, workPackageId } = work_package;
+    const { wbsElementId, workPackageId } = workPackage;
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;

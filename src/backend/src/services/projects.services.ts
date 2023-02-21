@@ -15,8 +15,7 @@ import {
 } from '../utils/projects.utils';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
-import ChangeRequestsService from './change-requests.services';
-// import WorkPackagesService from './work-packages.services';
+import WorkPackagesService from './work-packages.services';
 
 export default class ProjectsService {
   /**
@@ -404,7 +403,7 @@ export default class ProjectsService {
    */
   static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
-    if (user.role === Role.GUEST || user.role === Role.LEADERSHIP || user.role === Role.MEMBER) {
+    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN) {
       throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
     }
 
@@ -425,7 +424,10 @@ export default class ProjectsService {
     if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
 
     const { projectId, wbsElementId } = project;
+
     const dateDeleted: Date = new Date();
+    const deletedByUserId = user.userId;
+
     const deletedProject = await prisma.project.update({
       where: {
         projectId
@@ -434,7 +436,13 @@ export default class ProjectsService {
         wbsElement: {
           update: {
             dateDeleted,
-            deletedByUserId: user.userId
+            deletedByUserId,
+            changeRequests: {
+              updateMany: {
+                where: { wbsElementId },
+                data: { dateDeleted, deletedByUserId }
+              }
+            }
           }
         },
         goals: {
@@ -473,7 +481,7 @@ export default class ProjectsService {
               projectId
             },
             data: {
-              deletedByUserId: user.userId,
+              deletedByUserId,
               dateDeleted
             }
           }
@@ -482,26 +490,20 @@ export default class ProjectsService {
       ...projectQueryArgs
     });
 
-    /*
-
-    const dependentWorkPackages = await prisma.work_Package.findMany({
+    // need to delete each of the project's work packages as well
+    const workPackages = await prisma.work_Package.findMany({
       where: {
         projectId
-      }
+      },
+      include: { wbsElement: true }
     });
 
-    dependentWorkPackages.map((eachWP) => WorkPackagesService.deleteWorkPackage(user, eachWP));
-    */
+    await Promise.all(
+      workPackages.map(
+        async (workPackage) => await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement))
+      )
+    );
 
-    const dependentChangeRequests = await prisma.change_Request.findMany({
-      where: {
-        wbsElementId
-      }
-    });
-
-    dependentChangeRequests.map((eachCR) => ChangeRequestsService.deleteChangeRequest(user, eachCR.crId));
-
-    // return projectTransformer(deletedProject);
     return projectTransformer(deletedProject);
   }
 }
