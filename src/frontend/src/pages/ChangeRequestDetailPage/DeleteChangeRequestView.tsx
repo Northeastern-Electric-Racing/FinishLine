@@ -55,7 +55,14 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
 
   return (
     <Dialog open={modalShow} onClose={onHide}>
-      <DialogTitle className={'font-weight-bold'}>{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
+      <DialogTitle
+        className="font-weight-bold"
+        sx={{
+          '&.MuiDialogTitle-root': {
+            padding: '1rem 1.5rem 0'
+          }
+        }}
+      >{`Delete Change Request #${changeRequest.crId}`}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onHide}
@@ -68,7 +75,13 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent>
+      <DialogContent
+        sx={{
+          '&.MuiDialogContent-root': {
+            padding: '1rem 1.5rem'
+          }
+        }}
+      >
         <Typography sx={{ marginBottom: '1rem' }}>
           Are you sure you want to delete Change Request #{changeRequest.crId}?
         </Typography>

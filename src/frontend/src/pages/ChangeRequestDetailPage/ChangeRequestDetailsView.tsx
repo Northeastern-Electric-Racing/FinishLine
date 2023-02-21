@@ -25,7 +25,7 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link, Divider } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
 
 const convertStatus = (cr: ChangeRequest): string => {
@@ -112,7 +112,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
           Review
         </MenuItem>
-        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen} sx={{ borderTop: 1 }}>
+        <Divider />
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
           Delete
         </MenuItem>
       </Menu>
