@@ -45,8 +45,8 @@ const renderComponent = (workPackage = exampleWorkPackage5) => {
 };
 
 describe('Work Package Details Component', () => {
-  describe('WP Stage Button', () => {
-    it('does not render a label when work package has no stage', () => {
+  describe('Work Package Stage Button', () => {
+    it('does not render a stage label when work package has no stage', () => {
       mockHook(false, false, users);
       const { container } = renderComponent();
       expect(container.getElementsByClassName('MuiChip-label').length).toBe(1);
@@ -85,7 +85,7 @@ describe('Work Package Details Component', () => {
     });
   });
 
-  describe.skip('WP Fields', () => {
+  describe.skip('Work Package Detail Fields', () => {
     it('renders all the fields, example 1', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleResearchWorkPackage;
