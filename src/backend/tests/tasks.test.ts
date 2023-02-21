@@ -101,7 +101,7 @@ describe('Tasks', () => {
         wonderwoman.userId
       ]);
 
-      expect(task).toStrictEqual(taskSaveTheDayShared);
+      expect(task).toStrictEqual(taskTransformer(taskSaveTheDayPrisma));
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.create).toHaveBeenCalledTimes(1);
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);

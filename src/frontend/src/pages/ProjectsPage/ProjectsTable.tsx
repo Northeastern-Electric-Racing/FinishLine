@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { DataGrid, GridAlignment, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
@@ -12,12 +12,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useTheme } from '@mui/material';
 import { useState } from 'react';
 import { WbsElementStatus } from 'shared';
-
-interface BaseColDef {
-  flex: number;
-  align: GridAlignment;
-  headerAlign: GridAlignment;
-}
+import { GridColDefStyle } from '../../utils/tables';
 
 /**
  * Table of all projects.
@@ -28,7 +23,7 @@ const ProjectsTable: React.FC = () => {
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
 
-  const baseColDef: BaseColDef = {
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
