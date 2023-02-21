@@ -79,9 +79,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             )}
           />
         </Grid>
-        <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
-          <StatusSelect />
-        </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
             name="projectLead"
