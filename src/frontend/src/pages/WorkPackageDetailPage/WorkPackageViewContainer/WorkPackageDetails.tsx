@@ -22,8 +22,6 @@ const workPackageStageLabelMap: Record<WorkPackageStage, string> = {
 };
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
-  console.log(workPackage);
-
   return (
     <PageBlock
       title={'Work Package Details'}
