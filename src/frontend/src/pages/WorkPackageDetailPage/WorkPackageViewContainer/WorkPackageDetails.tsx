@@ -3,23 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage, WorkPackageStage } from 'shared';
+import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Chip, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
-
-const workPackageStageLabelMap: Record<WorkPackageStage, string> = {
-  [WorkPackageStage.Research]: 'Research',
-  [WorkPackageStage.Design]: 'Design',
-  [WorkPackageStage.Manufacturing]: 'Manufacturing',
-  [WorkPackageStage.Integration]: 'Integration'
-};
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
@@ -27,20 +21,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
       title={'Work Package Details'}
       headerRight={
         <>
-          {workPackage.stage ? (
-            <b>
-              <Chip
-                size="small"
-                label={workPackageStageLabelMap[workPackage.stage]}
-                color="success"
-                variant="outlined"
-                sx={{
-                  fontSize: 14,
-                  mx: '5px'
-                }}
-              />
-            </b>
-          ) : null}
+          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
           <WbsStatus status={workPackage.status} />
         </>
       }
