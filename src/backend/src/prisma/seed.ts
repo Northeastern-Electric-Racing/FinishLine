@@ -304,7 +304,7 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Manufacture Wiring Harness',
     changeRequest1Id,
-    WorkPackageStage.Design,
+    WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
     [],

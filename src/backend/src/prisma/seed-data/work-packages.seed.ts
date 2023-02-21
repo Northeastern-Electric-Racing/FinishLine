@@ -40,7 +40,7 @@ export const seedWorkPackage = async (
     projectWbsNumber,
     name,
     changeRequestId,
-    stage as WorkPackageStage,
+    stage,
     startDate,
     duration,
     dependencies,
