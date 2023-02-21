@@ -61,6 +61,7 @@ describe('Work Packages', () => {
     jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
       return prismaChangeRequest1;
     });
+
     jest.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
   });
 
