@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 import { WbsElementStatus } from 'shared';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -15,6 +15,7 @@ workPackagesRouter.post(
   intMinZero(body('projectWbsNum.carNumber')),
   intMinZero(body('projectWbsNum.projectNumber')),
   intMinZero(body('projectWbsNum.workPackageNumber')),
+  isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
   intMinZero(body('dependencies.*.carNumber')),
@@ -34,6 +35,7 @@ workPackagesRouter.post(
   nonEmptyString(body('name')),
   body('startDate').isDate(),
   intMinZero(body('duration')),
+  isWorkPackageStageOrNone(body('stage')),
   intMinZero(body('dependencies.*.carNumber')),
   intMinZero(body('dependencies.*.projectNumber')),
   intMinZero(body('dependencies.*.workPackageNumber')),
