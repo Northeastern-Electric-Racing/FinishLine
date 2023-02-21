@@ -589,15 +589,16 @@ export default class ChangeRequestsService {
    * @param crId the change request to be deleted
    */
   static async deleteChangeRequest(submitter: User, crId: number): Promise<void> {
-    // verify user is allowed to delete change requests
-    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN')) throw new AccessDeniedException();
-
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId }
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    // verify user is allowed to delete change requests
+    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
+      throw new AccessDeniedException();
 
     if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
 
