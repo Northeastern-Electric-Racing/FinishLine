@@ -42,7 +42,7 @@ const WorkPackageStageChip: React.FC<WorkPackageStageChipProps> = ({ stage }) =>
         variant="outlined"
         sx={{
           fontSize: 14,
-          mx: '5px'
+          mr: '5px'
         }}
       />
     </b>
