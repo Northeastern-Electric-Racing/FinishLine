@@ -347,7 +347,14 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
-    const stageChangeJson = createChangeJsonNonList('stage', originalWorkPackage.stage, stage, crId, userId, wbsElementId!);
+    const stageChangeJson = createChangeJsonNonList(
+      'stage',
+      originalWorkPackage.stage,
+      stage ?? 'None',
+      crId,
+      userId,
+      wbsElementId!
+    );
     const startDateChangeJson = createChangeJsonDates(
       'start date',
       originalWorkPackage.startDate,
