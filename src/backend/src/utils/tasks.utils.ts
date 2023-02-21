@@ -29,30 +29,62 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
         select: {
           projectLeadId: true,
           projectManagerId: true,
-          project: { select: { team: { select: { leaderId: true, members: { select: { userId: true } } } } } },
+          project: {
+            select: {
+              team: {
+                select: {
+                  leaderId: true,
+                  members: {
+                    select: {
+                      userId: true
+                    }
+                  }
+                }
+              }
+            }
+          },
           workPackage: {
-            select: { project: { select: { team: { select: { leaderId: true, members: { select: { userId: true } } } } } } }
+            select: {
+              project: {
+                select: {
+                  team: {
+                    select: {
+                      leaderId: true,
+                      members: {
+                        select: {
+                          userId: true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
   });
 
+  if (!task) {
+    return false;
+  }
+
   // Check if the user created the task
-  if (task?.createdByUserId === user.userId) {
+  if (task.createdByUserId === user.userId) {
     return true;
   }
 
   // Check if the task's wbsElement's projectLead or projectManager created the task
-  if (task?.wbsElement.projectLeadId === user.userId) {
+  if (task.wbsElement.projectLeadId === user.userId) {
     return true;
   }
-  if (task?.wbsElement.projectManagerId === user.userId) {
+  if (task.wbsElement.projectManagerId === user.userId) {
     return true;
   }
 
   // Check if the user is the project leader or on the project team
-  if (task?.wbsElement.project?.team?.leaderId === user.userId) {
+  if (task.wbsElement.project?.team?.leaderId === user.userId) {
     return true;
   }
   const projectTeamUserIds = task?.wbsElement.project?.team?.members?.map((user) => user.userId);
@@ -61,7 +93,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   }
 
   // Do the same thing, but for the work package's project
-  if (task?.wbsElement.workPackage?.project?.team?.leaderId === user.userId) {
+  if (task.wbsElement.workPackage?.project?.team?.leaderId === user.userId) {
     return true;
   }
   const workPackageProjectTeamMemberUserIds = task?.wbsElement.workPackage?.project?.team?.members?.map(
