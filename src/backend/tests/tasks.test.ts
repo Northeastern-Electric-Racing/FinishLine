@@ -166,7 +166,7 @@ describe('Tasks', () => {
 
       const taskId = '1';
       // Try updating from IN_PROGRESS to IN_BACKLOG
-      await expect(() => TasksService.editTaskStatus(wonderwoman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+      await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
         new AccessDeniedException(
           'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
         )
