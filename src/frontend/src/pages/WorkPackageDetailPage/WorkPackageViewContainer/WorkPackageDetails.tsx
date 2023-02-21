@@ -3,20 +3,39 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage } from 'shared';
+import { WorkPackage, WorkPackageStage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid } from '@mui/material';
+import { Chip, Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
+const workPackageStageLabelMap: Record<WorkPackageStage, string> = {
+  [WorkPackageStage.Research]: 'Research',
+  [WorkPackageStage.Design]: 'Design',
+  [WorkPackageStage.Manufacturing]: 'Manufacturing',
+  [WorkPackageStage.Integration]: 'Integration'
+};
+
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
+  console.log(workPackage);
+
   return (
-    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
+    <PageBlock
+      title={'Work Package Details'}
+      headerRight={
+        <>
+          {workPackage.stage ? (
+            <Chip size="small" label={workPackageStageLabelMap[workPackage.stage]} sx={{ fontSize: 14 }} />
+          ) : null}
+          <WbsStatus status={workPackage.status} />
+        </>
+      }
+    >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
           <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
