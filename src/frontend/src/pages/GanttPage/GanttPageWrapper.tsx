@@ -39,6 +39,7 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
+  const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
@@ -56,6 +57,7 @@ const GanttPageWrapper: FC = () => {
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   const defaultGanttFilters: GanttFilters = {
+    showCar0,
     showCar1,
     showCar2,
     status,
@@ -123,6 +125,7 @@ const GanttPageWrapper: FC = () => {
     };
     if (projects) {
       const ganttFilters: GanttFilters = {
+        showCar0,
         showCar1,
         showCar2,
         status,
@@ -150,11 +153,16 @@ const GanttPageWrapper: FC = () => {
       setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
       setGanttDisplayObjects([...projTasks, ...wpTasks]);
     }
-  }, [end, expanded, projects, showCar1, showCar2, start, status, selectedTeam]);
+  }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
+
+  const car0Handler = (event: ChangeEvent<HTMLInputElement>) => {
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar0: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
 
   const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
@@ -225,6 +233,7 @@ const GanttPageWrapper: FC = () => {
     <>
       <PageTitle previousPages={[]} title="Gantt Chart"></PageTitle>
       <GanttPageFilter
+        car0Handler={car0Handler}
         car1Handler={car1Handler}
         car2Handler={car2Handler}
         status={status}
