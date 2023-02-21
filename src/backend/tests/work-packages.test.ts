@@ -7,6 +7,7 @@ import { AccessDeniedException, HttpException, NotFoundException } from '../src/
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
@@ -40,17 +41,19 @@ describe('Work Packages', () => {
   ];
   const expectedActivities = ['ayo'];
   const deliverables = ['ajdhjakfjafja'];
-  const createWorkPackageArgs: [User, WbsNumber, string, number, string, number, WBS_Element[], string[], string[]] = [
-    batman,
-    projectWbsNum,
-    name,
-    crId,
-    startDate,
-    duration,
-    dependencies,
-    expectedActivities,
-    deliverables
-  ];
+  const stage = WorkPackageStage.Design;
+  const createWorkPackageArgs: [
+    User,
+    WbsNumber,
+    string,
+    number,
+    WorkPackageStage,
+    string,
+    number,
+    WBS_Element[],
+    string[],
+    string[]
+  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, dependencies, expectedActivities, deliverables];
   /*********************************************************/
 
   afterEach(() => {
@@ -61,6 +64,7 @@ describe('Work Packages', () => {
     jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
       return prismaChangeRequest1;
     });
+
     jest.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
   });
 
@@ -77,6 +81,7 @@ describe('Work Packages', () => {
         },
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,
@@ -111,6 +116,7 @@ describe('Work Packages', () => {
         projectWbsNum,
         name,
         crId,
+        stage,
         startDate,
         duration,
         dependencies,

@@ -55,6 +55,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
+      stage: workPackage.stage || 'NONE',
       startDate,
       duration,
       dependencies: workPackage.dependencies.map((dep) => {
@@ -100,7 +101,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies } = data;
+    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
@@ -119,7 +120,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         }),
         expectedActivities,
         deliverables,
-        wbsElementStatus
+        wbsElementStatus,
+        stage
       };
       await mutateAsync(payload);
       exitEditMode();
