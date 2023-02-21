@@ -3,8 +3,9 @@ import { batman, wonderwoman } from './test-data/users.test-data';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import TasksService from '../src/services/tasks.services';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import { invalidTaskNotes, taskSaveTheDayPrisma, taskSaveTheDayShared } from './test-data/tasks.test-data';
+import { invalidTaskNotes, taskSaveTheDayPrisma } from './test-data/tasks.test-data';
 import { WbsNumber } from 'shared';
+import taskTransformer from '../src/transformers/tasks.transformer';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -91,7 +92,7 @@ describe('Tasks', () => {
         wonderwoman.userId
       ]);
 
-      expect(task).toStrictEqual(taskSaveTheDayShared);
+      expect(task).toStrictEqual(taskTransformer(taskSaveTheDayPrisma));
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.create).toHaveBeenCalledTimes(1);
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
