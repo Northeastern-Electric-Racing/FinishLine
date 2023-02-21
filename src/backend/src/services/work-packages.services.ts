@@ -1,10 +1,9 @@
-import { Role, User, WBS_Element, Work_Package } from '@prisma/client';
+import { Role, User, WBS_Element } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
   isProject,
   TimelineStatus,
-  validateWBS,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
@@ -487,16 +486,13 @@ export default class WorkPackagesService {
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: string): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
 
-    // Verify if given WBS number represents work package
-    const parsedWbs: WbsNumber = validateWBS(wbsNum);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
-    if (parsedWbs.workPackageNumber === 0) throw new HttpException(400, `${wbsNum} is not a valid work package WBS!`);
-
-    const { carNumber, projectNumber, workPackageNumber } = parsedWbs;
+    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
 
     // Verify if the work package to be deleted exist and if it already has been deleted
     const work_package = await prisma.work_Package.findFirst({
@@ -510,13 +506,15 @@ export default class WorkPackagesService {
       ...workPackageQueryArgs
     });
 
-    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(parsedWbs));
-
-    if (work_package.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has been deleted!');
+    if (!work_package) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    if (work_package.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
 
     const { wbsElementId, workPackageId } = work_package;
 
-    // Soft delete the work package by soft deleting its related fields
+    const dateDeleted = new Date();
+    const deletedByUserId = submitter.userId;
+
+    // Soft delete the work package by updating its related "deleted" fields
     await prisma.work_Package.update({
       where: {
         workPackageId
@@ -531,23 +529,24 @@ export default class WorkPackagesService {
                   wbsElementId
                 },
                 data: {
-                  dateDeleted: new Date(),
-                  deletedByUserId: submitter.userId
+                  dateDeleted,
+                  deletedByUserId
                 }
               }
             },
-            Task: {
+            tasks: {
               updateMany: {
                 where: {
                   wbsElementId
                 },
                 data: {
-                  dateDeleted: new Date(),
-                  deletedByUserId: submitter.userId
+                  dateDeleted,
+                  deletedByUserId
                 }
               }
             },
-            dateDeleted: new Date()
+            dateDeleted,
+            deletedByUserId
           }
         },
         // Soft delete wp's related dsecription_bullet fields
@@ -557,7 +556,7 @@ export default class WorkPackagesService {
               workPackageIdDeliverables: workPackageId
             },
             data: {
-              dateDeleted: new Date()
+              dateDeleted
             }
           }
         },
@@ -567,19 +566,7 @@ export default class WorkPackagesService {
               workPackageIdExpectedActivities: workPackageId
             },
             data: {
-              dateDeleted: new Date()
-            }
-          }
-        },
-        // Soft delete all associated wbs_elements in this wp
-        dependencies: {
-          updateMany: {
-            where: {
-              wbsElementId
-            },
-            data: {
-              dateDeleted: new Date(),
-              deletedByUserId: submitter.userId
+              dateDeleted
             }
           }
         }

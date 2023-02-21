@@ -159,48 +159,50 @@ describe('Work Packages', () => {
     expect(calculateWorkPackageProgress([], [])).toBe(0);
   });
 
-  describe('delete a work pakcage', () => {
+  describe('deleteWorkPackage', () => {
+    const wbsNum: WbsNumber = { carNumber: 1, projectNumber: 2, workPackageNumber: 3 };
+
     test('User does not have submit permission', async () => {
-      await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, '1.1.1')).rejects.toThrow(
+      await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
         new AccessDeniedException()
       );
     });
 
     test('Work package does not exist', async () => {
       jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
-      await expect(() => WorkPackageService.deleteWorkPackage(batman, '1.1.1')).rejects.toThrow(
-        new NotFoundException('Work Package', '1.1.1')
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+        new NotFoundException('Work Package', '1.2.3')
       );
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
     });
 
-    test('Work package wbs has wrong work package number', async () => {
-      await expect(() => WorkPackageService.deleteWorkPackage(batman, '1.1.0')).rejects.toThrow(
-        new HttpException(400, '1.1.0 is not a valid work package WBS!')
+    test('Work package wbs has invalid work package number', async () => {
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, { ...wbsNum, workPackageNumber: 0 })).rejects.toThrow(
+        new HttpException(400, '1.2.0 is not a valid work package WBS!')
       );
     });
 
-    // test('Work package already deleted', async () => {
-    //   jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
-    //     ...prismaWorkPackage1,
-    //     wbsElementId: 1,
-    //     wbsElement: { ...prismaWbsElement1, workPackageNumber: 1, dateDeleted: new Date(), deletedByUserId: batman.userId }
-    //   });
-    //   await expect(() => WorkPackageService.deleteWorkPackage(batman, '1.2.1')).rejects.toThrow(
-    //     new HttpException(400, 'This work package has already been deleted!')
-    //   );
-    //   expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
-    // });
+    test('Work package already deleted', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
+        ...prismaWorkPackage1,
+        wbsElement: { dateDeleted: new Date() }
+      } as any);
 
-    // test('Work package successfully deleted', async () => {
-    //   jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
-    //   jest.spyOn(prisma.work_Package, 'update').mockResolvedValue({
-    //     ...prismaWorkPackage1,
-    //     wbsElement: { ...prismaWbsElement1, workPackageNumber: 1, dateDeleted: new Date(), deletedByUserId: batman.userId }
-    //   });
-    //   await WorkPackageService.deleteWorkPackage(batman, '1.2.1');
-    //   expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
-    //   expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
-    // });
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+        new HttpException(400, 'This work package has already been deleted!')
+      );
+
+      expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
+    });
+
+    test('Work package successfully deleted', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
+      jest.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
+
+      await WorkPackageService.deleteWorkPackage(batman, wbsNum);
+
+      expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
+    });
   });
 });
