@@ -48,7 +48,9 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       accepted,
       psId
     }).catch((error) => {
-      toast.error(error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
       throw new Error(error);
     });
   };
