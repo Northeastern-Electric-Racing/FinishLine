@@ -16,8 +16,7 @@ import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
-import { WbsNumber } from 'shared';
+import { filterGanttProjects, buildGanttSearchParams, GanttFilters, sortWbs } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -65,18 +64,6 @@ const GanttPageWrapper: FC = () => {
     expanded,
     start,
     end
-  };
-
-  const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
-    const aWbsNum = a.wbsNum;
-    const bWbsNum = b.wbsNum;
-    if (aWbsNum.carNumber !== bWbsNum.carNumber) {
-      return aWbsNum.carNumber - bWbsNum.carNumber;
-    }
-    if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
-      return aWbsNum.projectNumber - bWbsNum.projectNumber;
-    }
-    return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
   };
 
   useEffect(() => {
@@ -135,23 +122,27 @@ const GanttPageWrapper: FC = () => {
         end
       };
       const filteredProjects = filterGanttProjects(projects, ganttFilters);
-      const sortedProjects = filteredProjects.sort(sortWbs);
-      const indexedProjects = sortedProjects.map((p) => {
+      const sortedProjects = filteredProjects.sort(sortWbs).map((p) => {
+        // GanttDisplayProject = Project + displayOrder property
         const displayProject = p as GanttDisplayProject;
-        displayProject.displayOrder = sortedProjects.indexOf(displayProject) + 1;
+        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+        // 1-indexed
+        displayProject.displayOrder = filteredProjects.indexOf(displayProject) + 1;
         return displayProject;
       });
-      const projTasks = indexedProjects.map(transformProjectToGanttObject);
-      const workPackages = indexedProjects.flatMap((p) => p.workPackages);
-      const sortedWPs = workPackages.sort(sortWbs);
-      const indexedWPs = sortedWPs.map((wp) => {
+      const projectTasks = sortedProjects.map(transformProjectToGanttObject);
+      const workPackages = sortedProjects.flatMap((p) => p.workPackages);
+      const sortedWorkPackages = workPackages.sort(sortWbs).map((wp) => {
+        // GanttDisplayWorkPackage = WorkPackage + displayOrder property
         const displayWP = wp as GanttDisplayWorkPackage;
-        displayWP.displayOrder = sortedWPs.indexOf(displayWP) + 1;
+        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+        // 1-indexed
+        displayWP.displayOrder = workPackages.indexOf(displayWP) + 1;
         return displayWP;
       });
-      const wpTasks = indexedWPs.map((wp) => transformWPToGanttObject(wp, indexedProjects));
+      const wpTasks = sortedWorkPackages.map((wp) => transformWPToGanttObject(wp, sortedProjects));
       setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
-      setGanttDisplayObjects([...projTasks, ...wpTasks]);
+      setGanttDisplayObjects([...projectTasks, ...wpTasks]);
     }
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
