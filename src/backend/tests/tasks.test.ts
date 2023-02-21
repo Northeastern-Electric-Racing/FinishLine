@@ -28,6 +28,10 @@ describe('Tasks', () => {
     jest.clearAllMocks();
   });
 
+  beforeEach(() => {
+    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
+  });
+
   describe('createTask', () => {
     test('create task fails when user does not have permission', async () => {
       await expect(() =>
@@ -101,7 +105,7 @@ describe('Tasks', () => {
         wonderwoman.userId
       ]);
 
-      expect(task).toStrictEqual(taskTransformer(taskSaveTheDayPrisma));
+      expect(task).toStrictEqual(taskSaveTheDayShared);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.create).toHaveBeenCalledTimes(1);
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
