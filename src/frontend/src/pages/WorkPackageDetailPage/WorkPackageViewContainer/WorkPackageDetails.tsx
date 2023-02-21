@@ -28,7 +28,18 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
       headerRight={
         <>
           {workPackage.stage ? (
-            <Chip size="small" label={workPackageStageLabelMap[workPackage.stage]} sx={{ fontSize: 14 }} />
+            <b>
+              <Chip
+                size="small"
+                label={workPackageStageLabelMap[workPackage.stage]}
+                color="success"
+                variant="outlined"
+                sx={{
+                  fontSize: 14,
+                  mx: '5px'
+                }}
+              />
+            </b>
           ) : null}
           <WbsStatus status={workPackage.status} />
         </>
