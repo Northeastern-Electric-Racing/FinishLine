@@ -1,11 +1,20 @@
-import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman } from './test-data/users.test-data';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import TasksService from '../src/services/tasks.services';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import { invalidTaskNotes, taskSaveTheDayPrisma } from './test-data/tasks.test-data';
+import { Task_Status } from '@prisma/client';
 import { WbsNumber } from 'shared';
-import taskTransformer from '../src/transformers/tasks.transformer';
+import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
+import prisma from '../src/prisma/prisma';
+import TasksService from '../src/services/tasks.services';
+import * as taskTransformer from '../src/transformers/tasks.transformer';
+import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  invalidTaskNotes,
+  taskSaveTheDayDeletedPrisma,
+  taskSaveTheDayInProgressPrisma,
+  taskSaveTheDayInProgressShared,
+  taskSaveTheDayPrisma,
+  taskSaveTheDayShared
+} from './test-data/tasks.test-data';
+import { aquaman, batman, greenlantern, wonderwoman } from './test-data/users.test-data';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -17,6 +26,10 @@ describe('Tasks', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
   });
 
   describe('createTask', () => {
@@ -92,10 +105,101 @@ describe('Tasks', () => {
         wonderwoman.userId
       ]);
 
-      expect(task).toStrictEqual(taskTransformer(taskSaveTheDayPrisma));
+      expect(task).toStrictEqual(taskSaveTheDayShared);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.create).toHaveBeenCalledTimes(1);
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('editTaskStatus', () => {
+    test('edit task status succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Update from IN_PROGRESS to IN_BACKLOG
+      const updatedTask = await TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG);
+
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          status: 'IN_BACKLOG'
+        },
+        ...taskQueryArgs
+      });
+    });
+
+    test('edit task status succeeds if the user is an assignee', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Update from IN_PROGRESS to IN_BACKLOG
+      // Greenlantern is a wbs element assignee
+      const updatedTask = await TasksService.editTaskStatus(greenlantern, taskId, Task_Status.IN_BACKLOG);
+
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          status: 'IN_BACKLOG'
+        },
+        ...taskQueryArgs
+      });
+    });
+
+    test('edit task fails when task does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+      const fakeTaskId = '100';
+      await expect(() => TasksService.editTaskStatus(batman, fakeTaskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new NotFoundException('Task', fakeTaskId)
+      );
+    });
+
+    test('edit task fails if user does not have permission', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
+    });
+
+    test('edit task fails if the user did not create the task or is not an assignee', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      // Aquaman is a leader, but did not create this task
+      await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
+    });
+
+    test('edit task fails if task is deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      await expect(() => TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new HttpException(400, 'Cant edit a deleted Task!')
+      );
     });
   });
 });

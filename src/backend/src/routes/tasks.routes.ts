@@ -18,5 +18,6 @@ tasksRouter.post(
   validateInputs,
   TasksController.createTask
 );
+tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
 
 export default tasksRouter;
