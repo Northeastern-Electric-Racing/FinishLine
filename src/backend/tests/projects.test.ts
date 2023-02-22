@@ -82,7 +82,7 @@ describe('Projects', () => {
     );
   });
 
-  test('createProject fails when unknown user role is a guest', async () => {
+  test('createProject fails when user role is a guest', async () => {
     await expect(
       async () => await ProjectsService.createProject(wonderwoman, 'teamId', 1, 'name', 'summary', 2)
     ).rejects.toThrow(new AccessDeniedException());
@@ -110,22 +110,15 @@ describe('Projects', () => {
   // EDIT PROJECT
 
   test('editProject works', async () => {
-    const {
-      projectId,
-      budget,
-      summary,
-      rules,
-      goals,
-      features,
-      otherConstraints,
-      googleDriveFolderLink,
-      slideDeckLink,
-      bomLink,
-      taskListLink,
-      wbsElement
-    } = project1;
-    const { name, projectLead, projectManager } = wbsElement;
+    const { projectId, budget, summary, rules, googleDriveFolderLink, slideDeckLink, bomLink, taskListLink, wbsElement } =
+      project1;
+    const { name } = wbsElement;
     const crId = 10;
+    const goals = [];
+    const features = [];
+    const otherConstraints = [];
+    const projectLead = 10;
+    const projectManager = 11;
 
     jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
     jest.spyOn(prisma.project, 'update').mockResolvedValue(project1);
@@ -152,5 +145,124 @@ describe('Projects', () => {
 
     expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
     expect(prisma.project.update).toHaveBeenCalledTimes(1);
+  });
+
+  test('editProject fails when user role is a guest', async () => {
+    await expect(
+      async () =>
+        await ProjectsService.editProject(
+          wonderwoman,
+          1,
+          2,
+          wonderwoman.userId,
+          200,
+          'sum',
+          [],
+          [],
+          [],
+          [],
+          'name',
+          'link1',
+          'link2',
+          'link3',
+          'link4',
+          2,
+          5
+        )
+    ).rejects.toThrow(new AccessDeniedException());
+  });
+
+  test('editProject fails when null project provided', async () => {
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+    await expect(
+      async () =>
+        await ProjectsService.editProject(
+          wonderwoman,
+          1,
+          2,
+          wonderwoman.userId,
+          200,
+          'sum',
+          [],
+          [],
+          [],
+          [],
+          'name',
+          'link1',
+          'link2',
+          'link3',
+          'link4',
+          2,
+          5
+        )
+    ).rejects.toThrow(new NotFoundException('Project', 'projectId'));
+  });
+
+  test('editProject fails when dateDeleted of project is not null', async () => {
+    project1.wbsElement.dateDeleted = null;
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
+
+    await expect(
+      async () =>
+        await ProjectsService.editProject(
+          wonderwoman,
+          1,
+          2,
+          wonderwoman.userId,
+          200,
+          'sum',
+          [],
+          [],
+          [],
+          [],
+          'name',
+          'link1',
+          'link2',
+          'link3',
+          'link4',
+          2,
+          5
+        )
+    ).rejects.toThrow(new HttpException(400, 'Cannot edit a deleted project!'));
+  });
+
+  // SET PROJECT
+
+  test('setProjectTeam works', async () => {
+    const { wbsElement, teamId } = project1;
+
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(project1);
+    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(project1);
+
+    await ProjectsService.setProjectTeam(wbsElement, teamId, batman);
+
+    expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.project.update).toHaveBeenCalledTimes(1);
+  });
+
+  test('setProjectTeam fails when user role is a guest', async () => {
+    await expect(
+      async () =>
+        await ProjectsService.setProject(
+          wonderwoman,
+          1,
+          2,
+          wonderwoman.userId,
+          200,
+          'sum',
+          [],
+          [],
+          [],
+          [],
+          'name',
+          'link1',
+          'link2',
+          'link3',
+          'link4',
+          2,
+          5
+        )
+    ).rejects.toThrow(new AccessDeniedException());
   });
 });
