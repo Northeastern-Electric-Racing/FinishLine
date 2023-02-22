@@ -12,8 +12,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
-import Button from '@mui/material/Button';
-import { ListItemIcon, ListItemText } from '@mui/material';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
