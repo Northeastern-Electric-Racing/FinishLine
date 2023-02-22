@@ -19,5 +19,6 @@ tasksRouter.post(
   TasksController.createTask
 );
 tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
+tasksRouter.post('/:taskId/edit-assignees', body('assignees').isArray(), TasksController.editTaskAssignees);
 
 export default tasksRouter;

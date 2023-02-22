@@ -36,4 +36,11 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async editTaskAssignees(req: Request, res: Response, next: NextFunction) {
+    try {
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
