@@ -15,6 +15,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import React from 'react';
+import { useSetTaskStatus } from '../../../hooks/tasks.hooks';
 
 //this is needed to fix some weird bug with getActions()
 declare global {
@@ -36,6 +37,7 @@ interface TaskListTabPanelProps {
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status } = props;
+  const editTaskStatus = useSetTaskStatus();
 
   const auth = useAuth();
 
@@ -50,26 +52,26 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToBacklog = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to backlog');
+    (id: string) => async () => {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
     },
-    []
+    [editTaskStatus]
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToInProgress = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to in progress');
+    (id: string) => async () => {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
     },
-    []
+    [editTaskStatus]
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToDone = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to done');
+    (id: string) => async () => {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
     },
-    []
+    [editTaskStatus]
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -80,7 +82,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     []
   );
 
-  type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string };
+  type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = React.useMemo<GridColumns<Row>>(() => {
@@ -129,7 +131,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
               <GridActionsCellItem
                 icon={<PlayArrowIcon fontSize="small" />}
                 label="Move to In Progress"
-                onClick={moveToInProgress(params.id)}
+                onClick={moveToInProgress(params.row.taskId)}
                 showInMenu
                 disabled={disabled}
               />
@@ -139,7 +141,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
               <GridActionsCellItem
                 icon={<PauseIcon fontSize="small" />}
                 label="Move to Backlog"
-                onClick={moveToBacklog(params.id)}
+                onClick={moveToBacklog(params.row.taskId)}
                 showInMenu
                 disabled={disabled}
               />
@@ -148,7 +150,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
               <GridActionsCellItem
                 icon={<CheckIcon fontSize="small" />}
                 label="Move to Done"
-                onClick={moveToDone(params.id)}
+                onClick={moveToDone(params.row.taskId)}
                 showInMenu
                 disabled={disabled}
               />
@@ -184,7 +186,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       title: task.title,
       deadline: datePipe(date),
       priority: task.priority,
-      assignee: assigneeString.substring(0, assigneeString.length - 2)
+      assignee: assigneeString.substring(0, assigneeString.length - 2),
+      taskId: task.taskId
     };
   });
 

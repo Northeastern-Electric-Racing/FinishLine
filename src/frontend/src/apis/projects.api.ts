@@ -61,3 +61,9 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
     teamId
   });
 };
+
+export const editSingleTaskStatus = (id: number, status: string) => {
+  return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
+    status
+  });
+};
