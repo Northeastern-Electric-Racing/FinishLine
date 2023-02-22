@@ -11,7 +11,7 @@ interface WorkPackageStageChipProps {
   stage: WorkPackageStage;
 }
 
-// maps stage to the desired color state
+// maps stage to the desired color
 const colorMap: Record<WorkPackageStage, string> = {
   [WorkPackageStage.Research]: yellow[900],
   [WorkPackageStage.Design]: green[600],
