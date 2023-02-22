@@ -38,7 +38,7 @@ const AppPublic: React.FC = () => {
 
     // if the path ended in an trailing '/' we don't want to clutter the query args with empty param
     if (redirectPathParts[redirectPathParts.length - 1] === '') redirectPathParts.pop();
-    console.log(redirectPathParts);
+
     const redirectPathQueryArgs: string =
       redirectPathParts.length === 0
         ? ''
