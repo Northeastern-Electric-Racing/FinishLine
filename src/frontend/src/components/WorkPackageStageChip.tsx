@@ -4,20 +4,19 @@
  */
 
 import Chip from '@mui/material/Chip';
+import { yellow, green, blue, purple } from '@mui/material/colors';
 import { WorkPackageStage } from 'shared';
 
 interface WorkPackageStageChipProps {
   stage: WorkPackageStage;
 }
 
-type WorkPackageStageChipColor = 'primary' | 'secondary' | 'success' | 'default' | 'error' | 'info' | 'warning';
-
 // maps stage to the desired color state
-const colorMap: Record<WorkPackageStage, WorkPackageStageChipColor> = {
-  [WorkPackageStage.Research]: 'success',
-  [WorkPackageStage.Design]: 'success',
-  [WorkPackageStage.Manufacturing]: 'success',
-  [WorkPackageStage.Integration]: 'success'
+const colorMap: Record<WorkPackageStage, string> = {
+  [WorkPackageStage.Research]: yellow[900],
+  [WorkPackageStage.Design]: green[600],
+  [WorkPackageStage.Manufacturing]: blue[600],
+  [WorkPackageStage.Integration]: purple[400]
 };
 
 // maps stage to the desired badge display text
@@ -30,7 +29,8 @@ const textMap: Record<WorkPackageStage, string> = {
 
 // Convert work package stage into badge for display
 const WorkPackageStageChip: React.FC<WorkPackageStageChipProps> = ({ stage }) => {
-  const color: WorkPackageStageChipColor = colorMap[stage];
+  const color: string = colorMap[stage];
+
   const text: string = textMap[stage];
 
   return (
@@ -38,11 +38,12 @@ const WorkPackageStageChip: React.FC<WorkPackageStageChipProps> = ({ stage }) =>
       <Chip
         size="small"
         label={text}
-        color={color}
         variant="outlined"
         sx={{
           fontSize: 14,
-          mr: '5px'
+          mr: '5px',
+          color,
+          borderColor: color
         }}
       />
     </b>
