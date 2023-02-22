@@ -3,8 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Link, useTheme } from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColumns, GridRowId, GridRowParams } from '@mui/x-data-grid';
+import { Box, useTheme, Link } from '@mui/material';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColumns,
+  GridRenderCellParams,
+  GridRowId,
+  GridRowParams
+} from '@mui/x-data-grid';
 import { RoleEnum, Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
@@ -15,6 +22,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import React from 'react';
+import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
+import { useState } from 'react';
+import { useEditTask } from '../../../hooks/tasks.hooks';
+import ErrorPage from '../../ErrorPage';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 //this is needed to fix some weird bug with getActions()
 declare global {
@@ -36,17 +48,51 @@ interface TaskListTabPanelProps {
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status } = props;
-
+  const [modalShow, setModalShow] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const auth = useAuth();
+  const { isLoading, isError, mutateAsync, error } = useEditTask();
+  const toast = useToast();
 
-  if (!auth.user) return <LoadingIndicator />;
+  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const disabled = auth.user.role === RoleEnum.GUEST;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const theme = useTheme();
 
-  const renderNotes = () => <Link>See Notes</Link>;
+  const renderNotes = (params: GridRenderCellParams<Task>) => (
+    <Link
+      onClick={() => {
+        setSelectedTask(params.row.task);
+        setModalShow(true);
+      }}
+    >
+      See Notes
+    </Link>
+  );
+
+  const handleClose = () => {
+    setModalShow(false);
+    setSelectedTask(undefined);
+  };
+
+  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
+    handleClose();
+    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
+    await mutateAsync({
+      taskId,
+      notes,
+      title,
+      deadline,
+      priority,
+      assignees
+    }).catch((error) => {
+      toast.error(error.message);
+      throw new Error(error);
+    });
+  };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToBacklog = React.useCallback(
@@ -184,7 +230,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       title: task.title,
       deadline: datePipe(date),
       priority: task.priority,
-      assignee: assigneeString.substring(0, assigneeString.length - 2)
+      assignee: assigneeString.substring(0, assigneeString.length - 2),
+      task: task
     };
   });
 
@@ -225,6 +272,9 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             }}
           />
         </Box>
+      )}
+      {modalShow && (
+        <TaskListNotesModal modalShow={modalShow} onHide={handleClose} onSubmit={handleEditTask} task={selectedTask!} />
       )}
     </div>
   );

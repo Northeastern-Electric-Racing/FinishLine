@@ -63,6 +63,10 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
+/**************** Task Endpoints ****************/
+const tasks = () => `${API_URL}/tasks`;
+const editTaskById = (taskId: string) => `${tasks}/${taskId}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -104,6 +108,9 @@ export const apiUrls = {
   teamsById,
   teamsSetMembers,
   teamsSetDescription,
+
+  tasks,
+  editTaskById,
 
   descriptionBulletsCheck,
 
