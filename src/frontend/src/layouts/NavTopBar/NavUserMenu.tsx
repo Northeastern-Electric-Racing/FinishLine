@@ -15,6 +15,10 @@ import { routes } from '../../utils/routes';
 import Button from '@mui/material/Button';
 import { ListItemIcon, ListItemText } from '@mui/material';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -38,7 +42,10 @@ const NavUserMenu: React.FC = () => {
       onLogoutSuccess={logout}
       render={(renderProps) => (
         <MenuItem component="div" sx={{ py: 0 }}>
-          Logout
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Logout</ListItemText>
         </MenuItem>
       )}
     />
@@ -46,7 +53,10 @@ const NavUserMenu: React.FC = () => {
 
   const devLogout = (
     <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
-      <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
     </MenuItem>
   );
 
@@ -100,7 +110,10 @@ const NavUserMenu: React.FC = () => {
           {auth.user?.email}
         </MenuItem>
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
-          Settings
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
         {googleAuthClientId ? googleLogout : devLogout}
