@@ -47,6 +47,7 @@ const workPackagesEdit = () => `${workPackages()}/edit`;
 const changeRequests = () => `${API_URL}/change-requests`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
+const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
@@ -94,6 +95,7 @@ export const apiUrls = {
   changeRequests,
   changeRequestsById,
   changeRequestsReview,
+  changeRequestDelete,
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,
