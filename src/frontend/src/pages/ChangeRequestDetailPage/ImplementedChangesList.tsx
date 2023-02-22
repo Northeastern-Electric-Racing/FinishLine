@@ -26,6 +26,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
           <ListItem key={idx}>
             <Tooltip
               id="tooltip"
+              placement="right"
               title={
                 <Typography>
                   {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
@@ -35,20 +36,14 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                 popperOptions: {
                   modifiers: [
                     {
-                      name: 'preventOverflow',
-                      enabled: true,
+                      name: 'flip',
                       options: {
-                        boundariesElement: 'window'
+                        fallbackPlacements: ['top', 'bottom']
                       }
-                    },
-                    {
-                      name: 'arrow',
-                      enabled: true
                     }
                   ]
                 }
               }}
-              placement="right"
               arrow
             >
               <Typography>

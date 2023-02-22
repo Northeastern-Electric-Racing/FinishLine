@@ -29,6 +29,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
           ]{' '}
           <Tooltip
             id="tooltip"
+            placement="right"
             title={
               <>
                 <Typography variant="body2">
@@ -37,23 +38,18 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
               </>
             }
             PopperProps={{
+              disablePortal: true,
               popperOptions: {
                 modifiers: [
                   {
-                    name: 'preventOverflow',
-                    enabled: true,
+                    name: 'flip',
                     options: {
-                      boundariesElement: 'window'
+                      fallbackPlacements: ['top', 'bottom']
                     }
-                  },
-                  {
-                    name: 'arrow',
-                    enabled: true
                   }
                 ]
               }
             }}
-            placement="right"
             arrow
           >
             <Typography component="span">{ic.detail}</Typography>
