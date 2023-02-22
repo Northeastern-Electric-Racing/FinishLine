@@ -68,124 +68,177 @@ describe('Work Packages', () => {
     jest.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
   });
 
-  test('createWorkPackage fails if WBS number does not represent a project', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage(
-        batman,
-        {
-          carNumber: 1,
-          projectNumber: 2,
-          workPackageNumber: 2
-        },
-        name,
-        crId,
-        stage,
-        startDate,
-        duration,
-        dependencies,
-        expectedActivities,
-        deliverables
-      );
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'Given WBS Number 1.2.2 is not for a project.'));
-  });
-
-  test('createWorkPackage fails if any elements in the dependencies are null', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest
-      .spyOn(prisma.wBS_Element, 'findUnique')
-      .mockResolvedValueOnce({ ...prismaWbsElement1, project: prismaProject1 } as any);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the dependencies was not found.'));
-  });
-
-  test('createWorkPackage fails if user does not have access', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage(
-        wonderwoman,
-        projectWbsNum,
-        name,
-        crId,
-        stage,
-        startDate,
-        duration,
-        dependencies,
-        expectedActivities,
-        deliverables
-      );
-    };
-
-    await expect(callCreateWP).rejects.toThrow(AccessDeniedException);
-  });
-
-  test('createWorkPackage fails when changeRequest validation fails', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
-    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
-      throw new HttpException(400, 'error');
-    });
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'error'));
-  });
-
-  test('createWorkPackage fails if the associated wbsElem returns null', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
-  });
-
-  test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
-    jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-    jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-
-    const callCreateWP = async () => {
-      return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
-    };
-
-    await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
-  });
-
   test('calculateWorkPackageProgress', async () => {
     expect(calculateWorkPackageProgress([], [])).toBe(0);
   });
 
-  test('getSingleWorkPackage fails if the work package does not exist', async () => {
-    jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
+  describe('createWorkPackage', () => {
+    test('createWorkPackage fails if WBS number does not represent a project', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
-    await expect(
-      async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 })
-    ).rejects.toThrow(new NotFoundException('Work Package', '1.1.1'));
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage(
+          batman,
+          {
+            carNumber: 1,
+            projectNumber: 2,
+            workPackageNumber: 2
+          },
+          name,
+          crId,
+          stage,
+          startDate,
+          duration,
+          dependencies,
+          expectedActivities,
+          deliverables
+        );
+      };
+
+      await expect(callCreateWP).rejects.toThrowError(
+        new HttpException(400, 'Given WBS Number 1.2.2 is not for a project.')
+      );
+    });
+
+    test('createWorkPackage fails if any elements in the dependencies are null', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest
+        .spyOn(prisma.wBS_Element, 'findUnique')
+        .mockResolvedValueOnce({ ...prismaWbsElement1, project: prismaProject1 } as any);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
+      };
+
+      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the dependencies was not found.'));
+    });
+
+    test('createWorkPackage fails if user does not have access', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage(
+          wonderwoman,
+          projectWbsNum,
+          name,
+          crId,
+          stage,
+          startDate,
+          duration,
+          dependencies,
+          expectedActivities,
+          deliverables
+        );
+      };
+
+      await expect(callCreateWP).rejects.toThrow(AccessDeniedException);
+    });
+
+    test('createWorkPackage fails when changeRequest validation fails', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+        throw new HttpException(400, 'error');
+      });
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
+      };
+
+      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'error'));
+    });
+
+    test('createWorkPackage fails if the associated wbsElem returns null', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
+      };
+
+      await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
+    });
+
+    test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
+      };
+
+      await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
+    });
   });
 
-  test('getSingleWorkPackage fails if a project wbs number given (work_package number of 0)', async () => {
-    await expect(
-      async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
-    ).rejects.toThrow(new HttpException(404, 'WBS Number 1.1.0 is a project WBS#, not a Work Package WBS#'));
+  describe('deleteWorkPackage', () => {
+    const wbsNum: WbsNumber = { carNumber: 1, projectNumber: 2, workPackageNumber: 3 };
+
+    test('User does not have submit permission', async () => {
+      await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
+        new AccessDeniedException()
+      );
+    });
+
+    test('Work package does not exist', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+        new NotFoundException('Work Package', '1.2.3')
+      );
+      expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
+    });
+
+    test('Work package wbs has invalid work package number', async () => {
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, { ...wbsNum, workPackageNumber: 0 })).rejects.toThrow(
+        new HttpException(400, '1.2.0 is not a valid work package WBS!')
+      );
+    });
+
+    test('Work package already deleted', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
+        ...prismaWorkPackage1,
+        wbsElement: { dateDeleted: new Date() }
+      } as any);
+
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+        new HttpException(400, 'This work package has already been deleted!')
+      );
+
+      expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
+    });
+
+    test('Work package successfully deleted', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
+      jest.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
+
+      await WorkPackageService.deleteWorkPackage(batman, wbsNum);
+
+      expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
+    });
   });
 
-  test('getSingleWorkPackage runs properly', async () => {
-    jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
+  describe('getSingleWorkPackage', () => {
+    test('getSingleWorkPackage fails if the work package does not exist', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
 
-    const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
+      await expect(
+        async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 })
+      ).rejects.toThrow(new NotFoundException('Work Package', '1.1.1'));
+    });
 
-    expect(result).toStrictEqual(sharedWorkPackage);
+    test('getSingleWorkPackage fails if a project wbs number given (work_package number of 0)', async () => {
+      await expect(
+        async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
+      ).rejects.toThrow(new HttpException(404, 'WBS Number 1.1.0 is a project WBS#, not a Work Package WBS#'));
+    });
+
+    test('getSingleWorkPackage runs properly', async () => {
+      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
+
+      const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
+
+      expect(result).toStrictEqual(sharedWorkPackage);
+    });
   });
 });

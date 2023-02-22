@@ -20,4 +20,4 @@ jobs:
       - name: Install modules
         run: yarn install && yarn prisma:generate
       - name: Run linting check
-        run: yarn lint
+        run: yarn lint --max-warnings=0

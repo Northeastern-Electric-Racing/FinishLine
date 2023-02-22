@@ -495,4 +495,97 @@ export default class WorkPackagesService {
     // create the changes in prisma
     await prisma.change.createMany({ data: changes });
   }
+
+  /**
+   * Deletes the Work Package
+   * @param submitter The user who deleted the work package
+   * @param wbsNum The work package number to be deleted
+   */
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
+    // Verify submitter is allowed to delete work packages
+    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
+
+    // Verify if the work package to be deleted exist and if it already has been deleted
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+
+    const { wbsElementId, workPackageId } = workPackage;
+
+    const dateDeleted = new Date();
+    const deletedByUserId = submitter.userId;
+
+    // Soft delete the work package by updating its related "deleted" fields
+    await prisma.work_Package.update({
+      where: {
+        workPackageId
+      },
+      data: {
+        // Soft delete the given wp's wbs by soft deleting crs and task
+        wbsElement: {
+          update: {
+            changeRequests: {
+              updateMany: {
+                where: {
+                  wbsElementId
+                },
+                data: {
+                  dateDeleted,
+                  deletedByUserId
+                }
+              }
+            },
+            tasks: {
+              updateMany: {
+                where: {
+                  wbsElementId
+                },
+                data: {
+                  dateDeleted,
+                  deletedByUserId
+                }
+              }
+            },
+            dateDeleted,
+            deletedByUserId
+          }
+        },
+        // Soft delete wp's related dsecription_bullet fields
+        deliverables: {
+          updateMany: {
+            where: {
+              workPackageIdDeliverables: workPackageId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        expectedActivities: {
+          updateMany: {
+            where: {
+              workPackageIdExpectedActivities: workPackageId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        }
+      }
+    });
+  }
 }
