@@ -7,7 +7,8 @@ import {
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
-  WorkPackage
+  WorkPackage,
+  WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
@@ -102,6 +103,7 @@ export default class WorkPackagesService {
    * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
+   * @param stage the stage of the work package
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
    * @param dependencies the WBS elements that need to be completed before this WP
@@ -115,9 +117,10 @@ export default class WorkPackagesService {
     projectWbsNum: WbsNumber,
     name: string,
     crId: number,
+    stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WBS_Element[],
+    dependencies: WbsNumber[],
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
@@ -136,7 +139,7 @@ export default class WorkPackagesService {
       );
     }
 
-    if (dependencies.find((dep: any) => equalsWbsNumber(dep, projectWbsNum))) {
+    if (dependencies.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
       throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
     }
 
@@ -172,7 +175,7 @@ export default class WorkPackagesService {
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
     const dependenciesWBSElems: (WBS_Element | null)[] = await Promise.all(
-      dependencies.map(async (ele: any) => {
+      dependencies.map(async (ele: WbsNumber) => {
         return await prisma.wBS_Element.findUnique({
           where: {
             wbsNumber: {
@@ -224,6 +227,7 @@ export default class WorkPackagesService {
             }
           }
         },
+        stage,
         project: { connect: { projectId } },
         startDate: date,
         duration,
@@ -260,9 +264,10 @@ export default class WorkPackagesService {
     workPackageId: number,
     name: string,
     crId: number,
+    stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WBS_Element[],
+    dependencies: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
     wbsElementStatus: WbsElementStatus,
@@ -289,7 +294,7 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
 
     if (
-      dependencies.find((dep: any) =>
+      dependencies.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -301,7 +306,7 @@ export default class WorkPackagesService {
     }
 
     if (
-      dependencies.find((dep: any) =>
+      dependencies.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -338,6 +343,14 @@ export default class WorkPackagesService {
       'name',
       originalWorkPackage.wbsElement.name,
       name,
+      crId,
+      userId,
+      wbsElementId!
+    );
+    const stageChangeJson = createChangeJsonNonList(
+      'stage',
+      originalWorkPackage.stage,
+      stage ?? 'None',
       crId,
       userId,
       wbsElementId!
@@ -398,6 +411,7 @@ export default class WorkPackagesService {
     if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
     if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
+    if (stageChangeJson !== undefined) changes.push(stageChangeJson);
 
     const projectManagerChangeJson = createChangeJsonNonList(
       'project manager',
@@ -447,6 +461,7 @@ export default class WorkPackagesService {
             projectManagerId: projectManager
           }
         },
+        stage,
         dependencies: {
           set: [], // remove all the connections then add all the given ones
           connect: depsIds.map((ele) => ({ wbsElementId: ele }))
@@ -479,5 +494,98 @@ export default class WorkPackagesService {
 
     // create the changes in prisma
     await prisma.change.createMany({ data: changes });
+  }
+
+  /**
+   * Deletes the Work Package
+   * @param submitter The user who deleted the work package
+   * @param wbsNum The work package number to be deleted
+   */
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
+    // Verify submitter is allowed to delete work packages
+    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
+
+    // Verify if the work package to be deleted exist and if it already has been deleted
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+
+    const { wbsElementId, workPackageId } = workPackage;
+
+    const dateDeleted = new Date();
+    const deletedByUserId = submitter.userId;
+
+    // Soft delete the work package by updating its related "deleted" fields
+    await prisma.work_Package.update({
+      where: {
+        workPackageId
+      },
+      data: {
+        // Soft delete the given wp's wbs by soft deleting crs and task
+        wbsElement: {
+          update: {
+            changeRequests: {
+              updateMany: {
+                where: {
+                  wbsElementId
+                },
+                data: {
+                  dateDeleted,
+                  deletedByUserId
+                }
+              }
+            },
+            tasks: {
+              updateMany: {
+                where: {
+                  wbsElementId
+                },
+                data: {
+                  dateDeleted,
+                  deletedByUserId
+                }
+              }
+            },
+            dateDeleted,
+            deletedByUserId
+          }
+        },
+        // Soft delete wp's related dsecription_bullet fields
+        deliverables: {
+          updateMany: {
+            where: {
+              workPackageIdDeliverables: workPackageId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        expectedActivities: {
+          updateMany: {
+            where: {
+              workPackageIdExpectedActivities: workPackageId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        }
+      }
+    });
   }
 }

@@ -6,6 +6,7 @@
 import { Project } from 'shared';
 
 export interface GanttFilters {
+  showCar0: boolean;
   showCar1: boolean;
   showCar2: boolean;
   status: string;
@@ -16,6 +17,10 @@ export interface GanttFilters {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
+  const decodedTeam = decodeURIComponent(ganttFilters.selectedTeam);
+  const car0Check = (project: Project) => {
+    return project.wbsNum.carNumber !== 0;
+  };
   const car1Check = (project: Project) => {
     return project.wbsNum.carNumber !== 1;
   };
@@ -26,7 +31,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return project.team?.teamName === ganttFilters.selectedTeam;
+    return project.team?.teamName === decodedTeam;
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
@@ -34,6 +39,9 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   const endCheck = (project: Project) => {
     return project.endDate && ganttFilters.end ? project.endDate <= ganttFilters.end : false;
   };
+  if (!ganttFilters.showCar0) {
+    projects = projects.filter(car0Check);
+  }
   if (!ganttFilters.showCar1) {
     projects = projects.filter(car1Check);
   }
@@ -43,7 +51,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   if (ganttFilters.status !== 'All Statuses') {
     projects = projects.filter(statusCheck);
   }
-  if (ganttFilters.selectedTeam !== 'All Teams') {
+  if (decodedTeam !== 'All Teams') {
     projects = projects.filter(teamCheck);
   }
   if (ganttFilters.start) {
@@ -56,15 +64,14 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
-  const startString = ganttFilters.start?.toLocaleDateString();
-  const endString = ganttFilters.end?.toLocaleDateString();
   return (
     `?status=${ganttFilters.status}` +
+    `&showCar0=${ganttFilters.showCar0}` +
     `&showCar1=${ganttFilters.showCar1}` +
     `&showCar2=${ganttFilters.showCar2}` +
-    `&selectedTeam=${ganttFilters.selectedTeam}` +
+    `&selectedTeam=${encodeURIComponent(ganttFilters.selectedTeam)}` +
     `&expanded=${ganttFilters.expanded}` +
-    `&start=${startString ?? null}` +
-    `&end=${endString ?? null}`
+    `&start=${ganttFilters.start?.toLocaleDateString() ?? null}` +
+    `&end=${ganttFilters.end?.toLocaleDateString() ?? null}`
   );
 };

@@ -44,8 +44,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSu
         <Typography variant="body1" sx={{ mb: 1 }}>
           Login Required. Students must use their Husky Google account.
         </Typography>
-        {googleAuthClientId && googleLogin}
-        {process.env.NODE_ENV === 'development' && loginDev}
+        {process.env.NODE_ENV === 'development' ? loginDev : googleLogin}
       </CardContent>
       <CardActions>
         <Typography variant="caption">
