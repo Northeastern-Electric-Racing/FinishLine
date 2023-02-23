@@ -62,6 +62,12 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
   });
 };
 
+/**
+ * Sets the task's status.
+ * @param id the id of the task
+ * @param status the Task_Status that the task is being set to
+ * @returns
+ */
 export const editSingleTaskStatus = (id: number, status: string) => {
   return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
     status

@@ -18,6 +18,8 @@ import React from 'react';
 import { useSetTaskStatus } from '../../../hooks/tasks.hooks';
 
 //this is needed to fix some weird bug with getActions()
+//see comment by michaldudak commented on Dec 5, 2022
+//https://github.com/mui/material-ui/issues/35287
 declare global {
   namespace React {
     interface DOMAttributes<T> {
@@ -35,22 +37,20 @@ interface TaskListTabPanelProps {
   status: TaskStatus;
 }
 
+type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
+
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status } = props;
   const editTaskStatus = useSetTaskStatus();
 
   const auth = useAuth();
 
-  if (!auth.user) return <LoadingIndicator />;
+  const disabled = auth.user?.role === RoleEnum.GUEST;
 
-  const disabled = auth.user.role === RoleEnum.GUEST;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const theme = useTheme();
 
   const renderNotes = () => <Link>See Notes</Link>;
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToBacklog = React.useCallback(
     (id: string) => async () => {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
@@ -58,7 +58,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [editTaskStatus]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToInProgress = React.useCallback(
     (id: string) => async () => {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
@@ -66,7 +65,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [editTaskStatus]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToDone = React.useCallback(
     (id: string) => async () => {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
@@ -74,7 +72,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [editTaskStatus]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const deleteRow = React.useCallback(
     (id: GridRowId) => () => {
       console.log('move to done');
@@ -82,9 +79,56 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     []
   );
 
-  type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
+  const getActions = React.useCallback(
+    (params: GridRowParams) => {
+      const actions: JSX.Element[] = [];
+      if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
+        actions.push(
+          <GridActionsCellItem
+            icon={<PlayArrowIcon fontSize="small" />}
+            label="Move to In Progress"
+            onClick={moveToInProgress(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+      } else if (status === TaskStatus.IN_PROGRESS) {
+        actions.push(
+          <GridActionsCellItem
+            icon={<PauseIcon fontSize="small" />}
+            label="Move to Backlog"
+            onClick={moveToBacklog(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+        actions.push(
+          <GridActionsCellItem
+            icon={<CheckIcon fontSize="small" />}
+            label="Move to Done"
+            onClick={moveToDone(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+      }
+      actions.push(
+        <GridActionsCellItem
+          sx={{
+            borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
+          }}
+          icon={<DeleteIcon fontSize="small" />}
+          label="Delete"
+          onClick={deleteRow(params.id)}
+          showInMenu
+          disabled
+        />
+      );
+      return actions;
+    },
+    [deleteRow, disabled, moveToBacklog, moveToDone, moveToInProgress, status, theme.palette.mode]
+  );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = React.useMemo<GridColumns<Row>>(() => {
     const baseColDef: GridColDefStyle = {
       flex: 2,
@@ -124,56 +168,10 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         type: 'actions',
         headerName: 'Actions',
         width: 70,
-        getActions: (params: GridRowParams) => {
-          const actions: JSX.Element[] = [];
-          if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
-            actions.push(
-              <GridActionsCellItem
-                icon={<PlayArrowIcon fontSize="small" />}
-                label="Move to In Progress"
-                onClick={moveToInProgress(params.row.taskId)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-          } else if (status === TaskStatus.IN_PROGRESS) {
-            actions.push(
-              <GridActionsCellItem
-                icon={<PauseIcon fontSize="small" />}
-                label="Move to Backlog"
-                onClick={moveToBacklog(params.row.taskId)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-            actions.push(
-              <GridActionsCellItem
-                icon={<CheckIcon fontSize="small" />}
-                label="Move to Done"
-                onClick={moveToDone(params.row.taskId)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-          }
-          actions.push(
-            <GridActionsCellItem
-              sx={{
-                borderTop:
-                  theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
-              }}
-              icon={<DeleteIcon fontSize="small" />}
-              label="Delete"
-              onClick={deleteRow(params.id)}
-              showInMenu
-              disabled
-            />
-          );
-          return actions;
-        }
+        getActions: getActions
       }
     ];
-  }, [deleteRow, disabled, moveToBacklog, moveToDone, moveToInProgress, status, theme.palette.mode]);
+  }, [getActions]);
 
   const rows = tasks.map((task: Task, idx: number) => {
     const date = new Date(task.deadline);
@@ -190,6 +188,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       taskId: task.taskId
     };
   });
+
+  if (!auth.user) return <LoadingIndicator />;
 
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
