@@ -4,7 +4,6 @@
  */
 
 import { Link } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';

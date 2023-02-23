@@ -6,7 +6,7 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
+import { Link, ListItem, List, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
 import DynamicTooltip from '../../components/DynamicTooltip';
