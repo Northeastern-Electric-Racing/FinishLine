@@ -19,6 +19,8 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -148,12 +150,12 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
           </Grid>
         </Grid>
         <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
+          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
-          </Button>
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>
