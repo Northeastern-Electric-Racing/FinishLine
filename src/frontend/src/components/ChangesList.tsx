@@ -11,6 +11,7 @@ import { fullNamePipe, datePipe } from '../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../utils/routes';
 import BulletList from './BulletList';
+import DynamicTooltip from './DynamicTooltip';
 
 interface ChangesListProps {
   changes: ImplementedChange[];
@@ -26,34 +27,11 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
           <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
             #{ic.changeRequestId}
           </Link>
-          ]{' '}
-          <Tooltip
-            id="tooltip"
-            placement="right"
-            title={
-              <>
-                <Typography variant="body2">
-                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
-                </Typography>
-              </>
-            }
-            PopperProps={{
-              disablePortal: true,
-              popperOptions: {
-                modifiers: [
-                  {
-                    name: 'flip',
-                    options: {
-                      fallbackPlacements: ['top', 'bottom']
-                    }
-                  }
-                ]
-              }
-            }}
-            arrow
-          >
-            <Typography component="span">{ic.detail}</Typography>
-          </Tooltip>
+          ]
+          <DynamicTooltip
+            title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}
+            children={<Typography component="span">{ic.detail}</Typography>}
+          ></DynamicTooltip>
         </>
       ))}
       readOnly={true}
