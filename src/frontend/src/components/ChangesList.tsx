@@ -27,10 +27,9 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
             #{ic.changeRequestId}
           </Link>
           ]
-          <DynamicTooltip
-            title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}
-            children={<Typography component="span">{ic.detail}</Typography>}
-          ></DynamicTooltip>
+          <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
+            {<Typography component="span">{ic.detail}</Typography>}
+          </DynamicTooltip>
         </>
       ))}
       readOnly={true}

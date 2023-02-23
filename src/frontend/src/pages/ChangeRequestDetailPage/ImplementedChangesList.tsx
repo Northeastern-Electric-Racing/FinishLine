@@ -25,9 +25,8 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
-            <DynamicTooltip
-              title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}
-              children={
+            <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
+              {
                 <Typography>
                   [
                   {
@@ -38,7 +37,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
                   ] {ic.detail}
                 </Typography>
               }
-            ></DynamicTooltip>
+            </DynamicTooltip>
           </ListItem>
         ))}
       </List>
