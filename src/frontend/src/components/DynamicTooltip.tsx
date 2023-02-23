@@ -19,6 +19,13 @@ const DynamicTooltip: React.FC<DynamicTooltipProps> = ({ title, children }) => {
               options: {
                 fallbackPlacements: ['top', 'bottom']
               }
+            },
+            {
+              name: 'offset',
+              options: {
+                // I think this should allow a plain value as well, not functions
+                offset: [0, -10] // distance: 10px
+              }
             }
           ]
         }
