@@ -25,6 +25,7 @@ import WorkPackageEditDetails from './WorkPackageEditDetails';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -38,6 +39,7 @@ interface WorkPackageEditContainerProps {
 }
 
 const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
+  const toast = useToast();
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
@@ -125,7 +127,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
         return;
       }
     }
