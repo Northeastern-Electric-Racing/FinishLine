@@ -4,7 +4,6 @@
  */
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -16,7 +15,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
-import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
