@@ -11,13 +11,15 @@ import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskListTabPanel from './TaskListTabPanel';
+import { Task, TaskStatus } from 'shared';
 
 interface TaskListProps {
+  tasks: Task[];
   defaultClosed?: boolean;
 }
 
 // Page block containing task list view
-const TaskList = ({ defaultClosed }: TaskListProps) => {
+const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -25,6 +27,10 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
   const toast = useToast();
 
   const [value, setValue] = useState<number>(1);
+
+  const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
+  const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
+  const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
@@ -56,9 +62,9 @@ const TaskList = ({ defaultClosed }: TaskListProps) => {
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
-      <TaskListTabPanel value={value} index={0} />
-      <TaskListTabPanel value={value} index={1} />
-      <TaskListTabPanel value={value} index={2} />
+      <TaskListTabPanel tasks={backLogTasks} value={value} index={0} status={TaskStatus.IN_BACKLOG} />
+      <TaskListTabPanel tasks={inProgressTasks} value={value} index={1} status={TaskStatus.IN_PROGRESS} />
+      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} />
     </PageBlock>
   );
 };

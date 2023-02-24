@@ -379,6 +379,39 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId]
   );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Design Attenuator',
+    'Autocad?',
+    new Date('01/01/2024'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    joeBlow,
+    project1WbsNumber,
+    'Research Impact',
+    'Autocad?',
+    new Date('01/01/2024'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId, joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Build Attenuator',
+    'WOOOO',
+    new Date('01/01/2024'),
+    Task_Priority.LOW,
+    Task_Status.DONE,
+    [joeShmoe.userId]
+  );
 };
 
 performSeed()

@@ -9,6 +9,7 @@ import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 jest.mock('../../../hooks/auth.hooks');
 // TODO: delete me when you actually implement onClick
@@ -19,10 +20,13 @@ jest.mock('../../../hooks/toasts.hooks');
  */
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
+  const queryClient = new QueryClient();
   return render(
-    <RouterWrapper>
-      <TaskList />
-    </RouterWrapper>
+    <QueryClientProvider client={queryClient}>
+      <RouterWrapper>
+        <TaskList tasks={[]} />
+      </RouterWrapper>
+    </QueryClientProvider>
   );
 };
 
