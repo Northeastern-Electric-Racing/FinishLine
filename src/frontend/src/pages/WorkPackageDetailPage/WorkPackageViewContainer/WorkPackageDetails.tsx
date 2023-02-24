@@ -9,6 +9,7 @@ import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -16,7 +17,15 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
-    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
+    <PageBlock
+      title={'Work Package Details'}
+      headerRight={
+        <>
+          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+          <WbsStatus status={workPackage.status} />
+        </>
+      }
+    >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
           <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
