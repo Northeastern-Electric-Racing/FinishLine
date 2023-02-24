@@ -163,9 +163,6 @@ describe('Work Packages', () => {
     });
 
     test("fails if the dependencies include the work package's own project", async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-
       const argsToTest: [
         User,
         WbsNumber,
@@ -197,7 +194,6 @@ describe('Work Packages', () => {
         ...prismaWorkPackage1,
         wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       jest.spyOn(prisma.work_Package, 'create').mockResolvedValue(newPrismaWp);
@@ -207,7 +203,12 @@ describe('Work Packages', () => {
       };
 
       await expect(callCreateWP()).resolves.toEqual('1.2.3');
+
+      // check that prisma functions (or functions that call prisma functions)
+      // are called exactly as many times as needed
       expect(prisma.work_Package.create).toHaveBeenCalledTimes(1);
+      expect(changeRequestUtils.validateChangeRequestAccepted).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + dependencies.length);
     });
   });
 
