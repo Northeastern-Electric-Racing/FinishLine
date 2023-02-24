@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from 'react-query';
-import { editSingleTaskStatus } from '../apis/projects.api';
+import { editSingleTaskStatus } from '../apis/tasks.api';
 
 export const useSetTaskStatus = () => {
   const queryClient = useQueryClient();
@@ -16,7 +16,7 @@ export const useSetTaskStatus = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['projects', 'tasks']);
       }
     }
   );

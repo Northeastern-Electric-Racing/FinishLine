@@ -3,8 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Link, useTheme } from '@mui/material';
-import { DataGrid, GridActionsCellItem, GridColumns, GridRowId, GridRowParams } from '@mui/x-data-grid';
+import { Box, Link, Typography, useTheme } from '@mui/material';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColumns,
+  GridRenderCellParams,
+  GridRowId,
+  GridRowParams
+} from '@mui/x-data-grid';
 import { RoleEnum, Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
@@ -53,6 +60,12 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const renderNotes = () => <Link>See Notes</Link>;
 
+  const renderPriority = (params: GridRenderCellParams) => {
+    const { priority } = params.row;
+    const color = priority === 'HIGH' ? '#ef4345' : priority === 'LOW' ? '#00ab41' : '#FFA500';
+    return <Typography sx={{ color }}>{priority}</Typography>;
+  };
+
   const moveToBacklog = React.useCallback(
     (id: string) => async () => {
       try {
@@ -60,11 +73,11 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       } catch (e: unknown) {
         console.log(e);
         if (e instanceof Error) {
-          toast.error(e.message, 3000);
+          toast.error(e.message, 6000);
         }
       }
     },
-    [editTaskStatus]
+    [editTaskStatus, toast]
   );
 
   const moveToInProgress = React.useCallback(
@@ -74,7 +87,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       } catch (e: unknown) {
         console.log(e);
         if (e instanceof Error) {
-          toast.error(e.message, 3000);
+          toast.error(e.message, 6000);
         }
       }
     },
@@ -88,7 +101,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       } catch (e: unknown) {
         console.log(e);
         if (e instanceof Error) {
-          toast.error(e.message, 3000);
+          toast.error(e.message, 6000);
         }
       }
     },
@@ -177,13 +190,14 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         ...baseColDef,
         flex: 1,
         field: 'priority',
-        headerName: 'Priority'
+        headerName: 'Priority',
+        renderCell: renderPriority
       },
       {
         flex: 3,
         field: 'assignee',
         headerName: 'Assignee',
-        align: 'left',
+        align: 'center',
         headerAlign: 'center'
       },
       {
@@ -191,7 +205,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         type: 'actions',
         headerName: 'Actions',
         width: 70,
-        getActions: getActions
+        getActions
       }
     ];
   }, [getActions]);
