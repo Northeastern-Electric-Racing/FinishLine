@@ -161,6 +161,54 @@ describe('Work Packages', () => {
 
       await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
     });
+
+    test("fails if the dependencies include the work package's own project", async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+
+      const argsToTest: [
+        User,
+        WbsNumber,
+        string,
+        number,
+        WorkPackageStage,
+        string,
+        number,
+        WbsNumber[],
+        string[],
+        string[]
+      ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, [projectWbsNum], expectedActivities, deliverables];
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, argsToTest);
+      };
+
+      await expect(callCreateWP()).rejects.toThrow(
+        new HttpException(400, 'A Work Package cannot have its own project as a dependency')
+      );
+    });
+
+    test('the endpoint completes successfully', async () => {
+      const foundWbsElem = {
+        ...prismaWbsElement1,
+        project: { carNumber: 1, projectNumber: 2, workPackageNumber: 0, projectId: 55, workPackages: [] }
+      };
+      const newPrismaWp = {
+        ...prismaWorkPackage1,
+        wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+      };
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.work_Package, 'create').mockResolvedValue(newPrismaWp);
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
+      };
+
+      await expect(callCreateWP()).resolves.toEqual('1.2.3');
+      expect(prisma.work_Package.create).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('deleteWorkPackage', () => {
