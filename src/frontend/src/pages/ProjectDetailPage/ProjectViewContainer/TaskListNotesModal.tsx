@@ -4,7 +4,7 @@
  */
 
 import { User } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
+import { fullNamePipe, datePipe } from '../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -20,7 +20,9 @@ import {
   FormControl,
   FormLabel,
   Breakpoint,
-  MenuItem
+  MenuItem,
+  Typography,
+  IconButton
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -31,6 +33,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
+import { useState } from 'react';
+import { Edit } from '@mui/icons-material';
+
 interface TaskListNotesModalProps {
   task: Task;
   modalShow: boolean;
@@ -39,12 +44,12 @@ interface TaskListNotesModalProps {
 }
 
 export interface FormInput {
-  taskId: string | undefined;
-  title: String | undefined;
-  notes: String | undefined;
-  assignees: number[] | undefined;
-  deadline: Date | undefined;
-  priority: TaskPriority | undefined;
+  taskId: String;
+  title: String;
+  notes: String;
+  assignees: number[];
+  deadline: Date;
+  priority: TaskPriority;
 }
 
 const schema = yup.object().shape({
@@ -63,7 +68,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
 }: TaskListNotesModalProps) => {
   const { isLoading, isError, error, data: users } = useAllUsers();
   const auth = useAuth();
-
+  const [isEditMode, setIsEditMode] = useState(false);
   const {
     handleSubmit,
     control,
@@ -86,10 +91,48 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
   };
   const options = users.sort((a, b) => (a.firstName > b.firstName ? 1 : -1)).map(userToAutocompleteOption);
-
   const dialogWidth: Breakpoint = 'md';
-
   const renderModal: () => JSX.Element = () => {
+    return (
+      <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
+        <DialogTitle className={'font-weight-bold'}>{task.title}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography fontWeight={'bold'}>
+                Priority: <Typography display={'inline'}> {task.priority}</Typography>
+              </Typography>
+            </Grid>
+            <Grid item xs={11} md={5}>
+              <Typography fontWeight={'bold'}>
+                Deadline:
+                <Typography display={'inline'}> {datePipe(new Date(task.deadline))}</Typography>
+              </Typography>
+            </Grid>
+            <Grid item xs={1} md={1}>
+              <IconButton onClick={() => setIsEditMode(true)}>
+                <Edit />
+              </IconButton>
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Typography fontWeight={'bold'}>
+                Assignees(s):
+                <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography fontWeight={'bold'}>Notes:</Typography>
+              <Box sx={{ height: '200px', overflow: 'auto', border: 'solid', borderWidth: '1', borderColor: '#EF4345' }}>
+                <Typography> {task.notes}</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  const renderEditModal: () => JSX.Element = () => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
         <DialogTitle className={'font-weight-bold'}>{task.title}</DialogTitle>
@@ -203,7 +246,13 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
               </Grid>
             </Grid>
             <Box textAlign="right" gap={2} sx={{ mt: 2 }}>
-              <NERFailButton variant="outlined" onClick={() => onHide()} sx={{ mx: 1 }}>
+              <NERFailButton
+                variant="outlined"
+                onClick={() => {
+                  setIsEditMode(false);
+                }}
+                sx={{ mx: 1 }}
+              >
                 Cancel
               </NERFailButton>
               <NERSuccessButton variant="contained" disabled={auth.user!.role === 'GUEST'} type="submit" sx={{ mx: 1 }}>
@@ -216,7 +265,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     );
   };
 
-  return renderModal();
+  return isEditMode ? renderEditModal() : renderModal();
 };
 
 export default TaskListNotesModal;
