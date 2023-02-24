@@ -20,4 +20,20 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async editTaskStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.body;
+
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.editTaskStatus(user, taskId, status);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

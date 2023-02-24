@@ -18,6 +18,7 @@ import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub
 import { useEditTask } from '../../../hooks/tasks.hooks';
 import { UseMutationResult } from 'react-query';
 import { mockUseMutationResult } from '../../test-support/test-data/test-utils.stub';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 jest.mock('../../../hooks/auth.hooks');
 // TODO: delete me when you actually implement onClick
@@ -47,10 +48,13 @@ const users = [exampleAdminUser, exampleLeadershipUser];
  */
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
+  const queryClient = new QueryClient();
   return render(
-    <RouterWrapper>
-      <TaskList tasks={[]} />
-    </RouterWrapper>
+    <QueryClientProvider client={queryClient}>
+      <RouterWrapper>
+        <TaskList tasks={[]} />
+      </RouterWrapper>
+    </QueryClientProvider>
   );
 };
 

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project } from 'shared';
+import { Project, WbsNumber } from 'shared';
 
 export interface GanttFilters {
   showCar0: boolean;
@@ -74,4 +74,21 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     `&start=${ganttFilters.start?.toLocaleDateString() ?? null}` +
     `&end=${ganttFilters.end?.toLocaleDateString() ?? null}`
   );
+};
+
+/**
+ * Comparator to sort WBS Numbers in ascending order.
+ * @param a WBS Number 1
+ * @param b WBS Number 2
+ */
+export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
+  const aWbsNum = a.wbsNum;
+  const bWbsNum = b.wbsNum;
+  if (aWbsNum.carNumber !== bWbsNum.carNumber) {
+    return aWbsNum.carNumber - bWbsNum.carNumber;
+  }
+  if (aWbsNum.projectNumber !== bWbsNum.projectNumber) {
+    return aWbsNum.projectNumber - bWbsNum.projectNumber;
+  }
+  return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
 };

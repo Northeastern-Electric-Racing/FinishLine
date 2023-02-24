@@ -24,6 +24,10 @@ const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 
+/**************** Tasks Endpoints ********************/
+const tasks = () => `${API_URL}/tasks`;
+const taskEditStatus = (id: string) => `${tasks()}/${id}/edit-status`;
+
 /**************** Risks Endpoints ********************/
 const risks = () => `${API_URL}/risks`;
 const risksByProjectId = (projectId: number) => `${risks()}/${projectId}`;
@@ -47,6 +51,7 @@ const workPackagesEdit = () => `${workPackages()}/edit`;
 const changeRequests = () => `${API_URL}/change-requests`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
+const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
@@ -84,6 +89,8 @@ export const apiUrls = {
   projectsEdit,
   projectsSetTeam,
 
+  taskEditStatus,
+
   risks,
   risksByProjectId,
   risksCreate,
@@ -98,6 +105,7 @@ export const apiUrls = {
   changeRequests,
   changeRequestsById,
   changeRequestsReview,
+  changeRequestDelete,
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,

@@ -5,7 +5,7 @@
 
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
-import { isProject, validateWBS } from 'shared';
+import { isProject, validateWBS, WorkPackageStage } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
@@ -17,6 +17,7 @@ export interface CreateWorkPackageFormInputs {
   startDate: Date;
   duration: number;
   crId: string;
+  stage: WorkPackageStage | null;
   wbsNum: string;
   dependencies: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
@@ -33,7 +34,7 @@ const CreateWorkPackageForm: React.FC = () => {
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, dependencies, wbsNum } = data;
+    const { name, startDate, duration, crId, dependencies, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
@@ -65,7 +66,8 @@ const CreateWorkPackageForm: React.FC = () => {
         duration,
         dependencies: depWbsNums,
         expectedActivities,
-        deliverables
+        deliverables,
+        stage
       });
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {

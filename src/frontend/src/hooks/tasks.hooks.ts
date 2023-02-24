@@ -5,7 +5,7 @@
 
 import { useQueryClient, useMutation } from 'react-query';
 import { TaskPriority } from 'shared';
-import { editTask } from '../apis/tasks.api';
+import { editTask, editSingleTaskStatus } from '../apis/tasks.api';
 
 interface TaskPayload {
   taskId: string;
@@ -34,6 +34,22 @@ export const useEditTask = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['tasks']);
+      }
+    }
+  );
+};
+
+export const useSetTaskStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['tasks', 'edit-status'],
+    async (editStatusTaskPayload: any) => {
+      const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects', 'tasks']);
       }
     }
   );

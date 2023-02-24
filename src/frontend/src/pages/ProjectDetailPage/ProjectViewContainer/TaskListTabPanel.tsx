@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, useTheme, Link } from '@mui/material';
+import { Box, Link, Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -24,11 +24,13 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import React from 'react';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 import { useState } from 'react';
-import { useEditTask } from '../../../hooks/tasks.hooks';
+import { useEditTask, useSetTaskStatus } from '../../../hooks/tasks.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 //this is needed to fix some weird bug with getActions()
+//see comment by michaldudak commented on Dec 5, 2022
+//https://github.com/mui/material-ui/issues/35287
 declare global {
   namespace React {
     interface DOMAttributes<T> {
@@ -46,20 +48,18 @@ interface TaskListTabPanelProps {
   status: TaskStatus;
 }
 
+type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
+
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
-  const auth = useAuth();
-  const { isLoading, isError, mutateAsync, error } = useEditTask();
+  const editTaskStatus = useSetTaskStatus();
   const toast = useToast();
+  const auth = useAuth();
 
-  if (isLoading || !auth.user) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  const disabled = auth.user?.role === RoleEnum.GUEST;
 
-  const disabled = auth.user.role === RoleEnum.GUEST;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const theme = useTheme();
 
   const renderNotes = (params: GridRenderCellParams<Task>) => (
@@ -78,47 +78,54 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     setSelectedTask(undefined);
   };
 
-  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
-    handleClose();
-    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
-    await mutateAsync({
-      taskId,
-      notes,
-      title,
-      deadline,
-      priority,
-      assignees
-    }).catch((error) => {
-      toast.error(error.message);
-      throw new Error(error);
-    });
+  const renderPriority = (params: GridRenderCellParams) => {
+    const { priority } = params.row;
+    const color = priority === 'HIGH' ? '#ef4345' : priority === 'LOW' ? '#00ab41' : '#FFA500';
+    return <Typography sx={{ color }}>{priority}</Typography>;
   };
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToBacklog = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to backlog');
+    (id: string) => async () => {
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 6000);
+        }
+      }
     },
-    []
+    [editTaskStatus, toast]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToInProgress = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to in progress');
+    (id: string) => async () => {
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 6000);
+        }
+      }
     },
-    []
+    [editTaskStatus, toast]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const moveToDone = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to done');
+    (id: string) => async () => {
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 6000);
+        }
+      }
     },
-    []
+    [editTaskStatus, toast]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const deleteRow = React.useCallback(
     (id: GridRowId) => () => {
       console.log('move to done');
@@ -126,9 +133,56 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     []
   );
 
-  type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string };
+  const getActions = React.useCallback(
+    (params: GridRowParams) => {
+      const actions: JSX.Element[] = [];
+      if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
+        actions.push(
+          <GridActionsCellItem
+            icon={<PlayArrowIcon fontSize="small" />}
+            label="Move to In Progress"
+            onClick={moveToInProgress(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+      } else if (status === TaskStatus.IN_PROGRESS) {
+        actions.push(
+          <GridActionsCellItem
+            icon={<PauseIcon fontSize="small" />}
+            label="Move to Backlog"
+            onClick={moveToBacklog(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+        actions.push(
+          <GridActionsCellItem
+            icon={<CheckIcon fontSize="small" />}
+            label="Move to Done"
+            onClick={moveToDone(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+      }
+      actions.push(
+        <GridActionsCellItem
+          sx={{
+            borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
+          }}
+          icon={<DeleteIcon fontSize="small" />}
+          label="Delete"
+          onClick={deleteRow(params.id)}
+          showInMenu
+          disabled
+        />
+      );
+      return actions;
+    },
+    [deleteRow, disabled, moveToBacklog, moveToDone, moveToInProgress, status, theme.palette.mode]
+  );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = React.useMemo<GridColumns<Row>>(() => {
     const baseColDef: GridColDefStyle = {
       flex: 2,
@@ -154,13 +208,14 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         ...baseColDef,
         flex: 1,
         field: 'priority',
-        headerName: 'Priority'
+        headerName: 'Priority',
+        renderCell: renderPriority
       },
       {
         flex: 3,
         field: 'assignee',
         headerName: 'Assignee',
-        align: 'left',
+        align: 'center',
         headerAlign: 'center'
       },
       {
@@ -168,59 +223,12 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         type: 'actions',
         headerName: 'Actions',
         width: 70,
-        getActions: (params: GridRowParams) => {
-          const actions: JSX.Element[] = [];
-          if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
-            actions.push(
-              <GridActionsCellItem
-                icon={<PlayArrowIcon fontSize="small" />}
-                label="Move to In Progress"
-                onClick={moveToInProgress(params.id)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-          } else if (status === TaskStatus.IN_PROGRESS) {
-            actions.push(
-              <GridActionsCellItem
-                icon={<PauseIcon fontSize="small" />}
-                label="Move to Backlog"
-                onClick={moveToBacklog(params.id)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-            actions.push(
-              <GridActionsCellItem
-                icon={<CheckIcon fontSize="small" />}
-                label="Move to Done"
-                onClick={moveToDone(params.id)}
-                showInMenu
-                disabled={disabled}
-              />
-            );
-          }
-          actions.push(
-            <GridActionsCellItem
-              sx={{
-                borderTop:
-                  theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
-              }}
-              icon={<DeleteIcon fontSize="small" />}
-              label="Delete"
-              onClick={deleteRow(params.id)}
-              showInMenu
-              disabled
-            />
-          );
-          return actions;
-        }
+        getActions
       }
     ];
-  }, [deleteRow, disabled, moveToBacklog, moveToDone, moveToInProgress, status, theme.palette.mode]);
+  }, [getActions]);
 
   const rows = tasks.map((task: Task, idx: number) => {
-    const date = new Date(task.deadline);
     const assigneeString = task.assignees.reduce(
       (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
       ''
@@ -228,12 +236,34 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     return {
       id: idx,
       title: task.title,
-      deadline: datePipe(date),
+      deadline: datePipe(task.deadline),
       priority: task.priority,
       assignee: assigneeString.substring(0, assigneeString.length - 2),
-      task: task
+      task: task,
+      taskId: task.taskId
     };
   });
+
+  const { isLoading, isError, mutateAsync, error } = useEditTask();
+
+  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
+    handleClose();
+    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
+    await mutateAsync({
+      taskId,
+      notes,
+      title,
+      deadline,
+      priority,
+      assignees
+    }).catch((error) => {
+      toast.error(error.message);
+      throw new Error(error);
+    });
+  };
 
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
