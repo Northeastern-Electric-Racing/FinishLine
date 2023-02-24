@@ -26,7 +26,8 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
-const taskEditStatus = (id: string) => `${tasks()}/${id}/edit-status`;
+const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
+const editTaskById = (taskId: string) => `${tasks}/${taskId}/edit`;
 
 /**************** Risks Endpoints ********************/
 const risks = () => `${API_URL}/risks`;
@@ -68,10 +69,6 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
-/**************** Task Endpoints ****************/
-const tasks = () => `${API_URL}/tasks`;
-const editTaskById = (taskId: string) => `${tasks}/${taskId}/edit`;
-
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -89,6 +86,8 @@ export const apiUrls = {
   projectsEdit,
   projectsSetTeam,
 
+  tasks,
+  editTaskById,
   taskEditStatus,
 
   risks,
@@ -116,9 +115,6 @@ export const apiUrls = {
   teamsById,
   teamsSetMembers,
   teamsSetDescription,
-
-  tasks,
-  editTaskById,
 
   descriptionBulletsCheck,
 
