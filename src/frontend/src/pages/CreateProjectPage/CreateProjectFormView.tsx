@@ -151,7 +151,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
           <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
             Create
           </NERSuccessButton>
         </Box>
