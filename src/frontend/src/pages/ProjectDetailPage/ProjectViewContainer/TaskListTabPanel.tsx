@@ -16,6 +16,7 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import React from 'react';
 import { useSetTaskStatus } from '../../../hooks/tasks.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -42,6 +43,7 @@ type Row = { id: number; title: string; deadline: string; priority: TaskPriority
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status } = props;
   const editTaskStatus = useSetTaskStatus();
+  const toast = useToast();
 
   const auth = useAuth();
 
@@ -53,23 +55,44 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const moveToBacklog = React.useCallback(
     (id: string) => async () => {
-      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 3000);
+        }
+      }
     },
     [editTaskStatus]
   );
 
   const moveToInProgress = React.useCallback(
     (id: string) => async () => {
-      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 3000);
+        }
+      }
     },
-    [editTaskStatus]
+    [editTaskStatus, toast]
   );
 
   const moveToDone = React.useCallback(
     (id: string) => async () => {
-      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
+      try {
+        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
+      } catch (e: unknown) {
+        console.log(e);
+        if (e instanceof Error) {
+          toast.error(e.message, 3000);
+        }
+      }
     },
-    [editTaskStatus]
+    [editTaskStatus, toast]
   );
 
   const deleteRow = React.useCallback(
@@ -174,7 +197,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   }, [getActions]);
 
   const rows = tasks.map((task: Task, idx: number) => {
-    const date = new Date(task.deadline);
     const assigneeString = task.assignees.reduce(
       (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
       ''
@@ -182,7 +204,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     return {
       id: idx,
       title: task.title,
-      deadline: datePipe(date),
+      deadline: datePipe(task.deadline),
       priority: task.priority,
       assignee: assigneeString.substring(0, assigneeString.length - 2),
       taskId: task.taskId
