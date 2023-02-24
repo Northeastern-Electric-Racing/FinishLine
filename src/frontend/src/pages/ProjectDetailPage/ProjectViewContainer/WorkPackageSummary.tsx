@@ -17,6 +17,7 @@ import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
@@ -58,6 +59,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             {workPackage.name}
           </Link>
         </Box>
+        {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
         <WbsStatus status={workPackage.status} />
         <Typography paddingLeft={2}>{weeksPipe(workPackage.duration)}</Typography>
       </AccordionSummary>

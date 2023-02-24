@@ -12,6 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
+import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -54,6 +55,15 @@ const NavUserMenu: React.FC = () => {
         <LogoutIcon fontSize="small" />
       </ListItemIcon>
       <ListItemText>Logout</ListItemText>
+    </MenuItem>
+  );
+
+  const AdminTools = () => (
+    <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
+      <ListItemIcon>
+        <HomeRepairServiceIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Admin Tools</ListItemText>
     </MenuItem>
   );
 
@@ -103,6 +113,7 @@ const NavUserMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
         {googleAuthClientId ? googleLogout : devLogout}
       </Menu>
     </>
