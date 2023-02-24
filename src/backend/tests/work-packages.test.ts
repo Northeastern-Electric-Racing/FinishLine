@@ -6,7 +6,7 @@ import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
-import { User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { User } from '@prisma/client';
 import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
@@ -24,19 +24,11 @@ describe('Work Packages', () => {
   const crId = 1;
   const startDate = '2022-09-18';
   const duration = 5;
-  const dependencies = [
+  const dependencies: WbsNumber[] = [
     {
-      wbsElementId: 65,
-      dateCreated: new Date('11/24/2021'),
       carNumber: 1,
       projectNumber: 1,
-      workPackageNumber: 1,
-      name: 'prereq',
-      status: WBS_Element_Status.COMPLETE,
-      projectLeadId: null,
-      projectManagerId: null,
-      dateDeleted: null,
-      deletedByUserId: null
+      workPackageNumber: 1
     }
   ];
   const expectedActivities = ['ayo'];
@@ -50,7 +42,7 @@ describe('Work Packages', () => {
     WorkPackageStage,
     string,
     number,
-    WBS_Element[],
+    WbsNumber[],
     string[],
     string[]
   ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, dependencies, expectedActivities, deliverables];
