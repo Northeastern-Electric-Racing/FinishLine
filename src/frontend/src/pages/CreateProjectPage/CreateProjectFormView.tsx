@@ -152,7 +152,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             Cancel
           </NERFailButton>
           <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
+            Create
           </NERSuccessButton>
         </Box>
       </PageBlock>
