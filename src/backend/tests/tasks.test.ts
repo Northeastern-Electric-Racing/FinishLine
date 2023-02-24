@@ -102,10 +102,6 @@ describe('Tasks', () => {
 });
 
 describe('Edit Tasks', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   const taskId = '1';
   const fakeTitle = 'Dont save the day';
   const fakeNotes = 'Leave the people in the burning building';

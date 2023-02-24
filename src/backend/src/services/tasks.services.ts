@@ -62,6 +62,16 @@ export default class TasksService {
     return taskTransformer(createdTask);
   }
 
+  /**
+   * Edits a Task in the database
+   * @param user the user editing the task
+   * @param taskId the task that is being edited
+   * @param title the new title for the task
+   * @param notes the new notes for the task
+   * @param priority the new priority for the task
+   * @param deadline the new deadline for the task
+   * @returns the sucessfully edited task
+   */
   static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
     if (user.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -71,7 +81,7 @@ export default class TasksService {
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
 
-    if (!isUnderWordCount(notes, 150)) throw new HttpException(400, 'Notes must be less than 250 words');
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     const updatedTask = await prisma.task.update({
       where: { taskId },
