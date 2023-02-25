@@ -40,7 +40,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item>
+        <Grid item sx={{ my: 1 }}>
           <FormControl>
             <FormLabel>Project Lead</FormLabel>
             <Controller
@@ -61,7 +61,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item>
+        <Grid item sx={{ my: 1 }}>
           <FormControl>
             <FormLabel>Project Manager</FormLabel>
             <Controller
