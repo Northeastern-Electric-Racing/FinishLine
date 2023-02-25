@@ -102,4 +102,17 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
+  // Delete a work package that corresponds to the given wbs number
+  static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+
+      await WorkPackagesService.deleteWorkPackage(user, wbsNum);
+      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

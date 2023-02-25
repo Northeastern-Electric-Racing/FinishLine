@@ -49,5 +49,6 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.editWorkPackage
 );
+workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
 
 export default workPackagesRouter;

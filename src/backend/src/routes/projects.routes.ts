@@ -45,5 +45,6 @@ projectRouter.post(
   ProjectsController.editProject
 );
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
+projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 
 export default projectRouter;
