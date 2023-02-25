@@ -20,7 +20,7 @@ interface Props {
 const statuses = Object.values(WbsElementStatus);
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
-  const StatusSelect = (
+  const StatusSelect = () => (
     <FormControl>
       <FormLabel>Status</FormLabel>
       <Controller
@@ -43,22 +43,24 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
   );
 
   const StageSelect = () => (
-    <Controller
-      name="stage"
-      control={control}
-      render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Stage" fullWidth>
-          <MenuItem value={'NONE'}>NONE</MenuItem>
-          {Object.values(WorkPackageStage).map((stage) => (
-            <MenuItem key={stage} value={stage}>
-              {stage}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
-    />
+    <FormControl>
+      <FormLabel>Stage Select</FormLabel>
+      <Controller
+        name="stage"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextField select onChange={onChange} value={value} fullWidth>
+            <MenuItem value={'NONE'}>NONE</MenuItem>
+            {Object.values(WorkPackageStage).map((stage) => (
+              <MenuItem key={stage} value={stage}>
+                {stage}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      />
+    </FormControl>
   );
-
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
