@@ -214,10 +214,10 @@ describe('Tasks', () => {
       const taskId = '1';
       const userIds = [
         {
-          userId: 2
+          userId: superman.userId
         },
         {
-          userId: 3
+          userId: wonderwoman.userId
         }
       ];
       const updatedTask = await TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId]);
