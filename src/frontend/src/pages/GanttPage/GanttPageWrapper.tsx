@@ -16,9 +16,17 @@ import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
+import { filterGanttProjects, buildGanttSearchParams, GanttFilters, sortWbs } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
+
+interface GanttDisplayProject extends Project {
+  displayOrder: number;
+}
+
+interface GanttDisplayWorkPackage extends WorkPackage {
+  displayOrder: number;
+}
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -30,6 +38,7 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
+  const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
@@ -47,6 +56,7 @@ const GanttPageWrapper: FC = () => {
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   const defaultGanttFilters: GanttFilters = {
+    showCar0,
     showCar1,
     showCar2,
     status,
@@ -56,25 +66,24 @@ const GanttPageWrapper: FC = () => {
     end
   };
 
-  const transformWPToGanttObject = (wp: WorkPackage, projects: Project[]): Task => {
-    return {
-      id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
-      name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
-      start: wp.startDate,
-      end: wp.endDate,
-      progress: wp.progress,
-      project: projectWbsPipe(wp.wbsNum),
-      type: 'task',
-      styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
-      displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.id,
-      onClick: () => {
-        window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
-      }
-    };
-  };
-
   useEffect(() => {
-    const transformProjectToGanttObject = (project: Project): Task => {
+    const transformWPToGanttObject = (wp: GanttDisplayWorkPackage, projects: GanttDisplayProject[]): Task => {
+      return {
+        id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
+        name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
+        start: wp.startDate,
+        end: wp.endDate,
+        progress: wp.progress,
+        project: projectWbsPipe(wp.wbsNum),
+        type: 'task',
+        styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
+        displayOrder: projects.find((p) => p.workPackages.find((w) => w.id === wp.id))!.displayOrder,
+        onClick: () => {
+          window.open(`/projects/${wbsPipe(wp.wbsNum)}`, '_blank');
+        }
+      };
+    };
+    const transformProjectToGanttObject = (project: GanttDisplayProject): Task => {
       const progress =
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
         100;
@@ -95,7 +104,7 @@ const GanttPageWrapper: FC = () => {
                 backgroundSelectedColor: '#47a04b'
               }
             : {},
-        displayOrder: project.id,
+        displayOrder: project.displayOrder,
         onClick: () => {
           window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
         }
@@ -103,6 +112,7 @@ const GanttPageWrapper: FC = () => {
     };
     if (projects) {
       const ganttFilters: GanttFilters = {
+        showCar0,
         showCar1,
         showCar2,
         status,
@@ -112,17 +122,38 @@ const GanttPageWrapper: FC = () => {
         end
       };
       const filteredProjects = filterGanttProjects(projects, ganttFilters);
-      const projTasks = filteredProjects.map(transformProjectToGanttObject);
-      const workPackages = filteredProjects.flatMap((p) => p.workPackages);
-      const wpTasks = workPackages.map((wp) => transformWPToGanttObject(wp, filteredProjects));
+      const sortedProjects = filteredProjects.sort(sortWbs).map((p) => {
+        // GanttDisplayProject = Project + displayOrder property
+        const displayProject = p as GanttDisplayProject;
+        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+        // 1-indexed
+        displayProject.displayOrder = filteredProjects.indexOf(displayProject) + 1;
+        return displayProject;
+      });
+      const projectTasks = sortedProjects.map(transformProjectToGanttObject);
+      const workPackages = sortedProjects.flatMap((p) => p.workPackages);
+      const sortedWorkPackages = workPackages.sort(sortWbs).map((wp) => {
+        // GanttDisplayWorkPackage = WorkPackage + displayOrder property
+        const displayWP = wp as GanttDisplayWorkPackage;
+        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+        // 1-indexed
+        displayWP.displayOrder = workPackages.indexOf(displayWP) + 1;
+        return displayWP;
+      });
+      const wpTasks = sortedWorkPackages.map((wp) => transformWPToGanttObject(wp, sortedProjects));
       setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
-      setGanttDisplayObjects([...projTasks, ...wpTasks]);
+      setGanttDisplayObjects([...projectTasks, ...wpTasks]);
     }
-  }, [end, expanded, projects, showCar1, showCar2, start, status, selectedTeam]);
+  }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
+
+  const car0Handler = (event: ChangeEvent<HTMLInputElement>) => {
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar0: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
 
   const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
@@ -193,6 +224,7 @@ const GanttPageWrapper: FC = () => {
     <>
       <PageTitle previousPages={[]} title="Gantt Chart"></PageTitle>
       <GanttPageFilter
+        car0Handler={car0Handler}
         car1Handler={car1Handler}
         car2Handler={car2Handler}
         status={status}

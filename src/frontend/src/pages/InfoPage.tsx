@@ -6,14 +6,17 @@
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { faScroll, faCode, faBolt, faCog, faDollarSign, faSearch } from '@fortawesome/free-solid-svg-icons';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CodeIcon from '@mui/icons-material/Code';
 import ChatIcon from '@mui/icons-material/Chat';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import EventIcon from '@mui/icons-material/Event';
 import ExternalLink from '../components/ExternalLink';
 import PageTitle from '../layouts/PageTitle/PageTitle';
 import PageBlock from '../layouts/PageBlock';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const InfoPage: React.FC = () => {
   return (
@@ -60,8 +63,10 @@ const InfoPage: React.FC = () => {
       <PageBlock title="Calendars">
         <Grid container>
           <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faScroll} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Club-Wide Meetings & Events</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <EventIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Club-Wide Meetings & Events
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
@@ -72,8 +77,10 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
           <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faBolt} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Electrical Meetings</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <ElectricBoltIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Electrical Meetings
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
@@ -84,8 +91,10 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
           <Grid item md={4} lg={6}>
-            <FontAwesomeIcon icon={faCog} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Mechanical Meetings</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <SettingsIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Mechanical Meetings
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
@@ -96,8 +105,10 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
           <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faDollarSign} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Business Meetings</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <AttachMoneyIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Business Meetings
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
@@ -108,8 +119,10 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
           <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faCode} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Software Meetings</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <CodeIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Software Meetings
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
@@ -120,8 +133,10 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
           <Grid item md={4} lg={6}>
-            <FontAwesomeIcon icon={faSearch} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Engineering Reviews</Typography>
+            <Typography display="inline-flex" alignItems="center" style={{ marginTop: '5px' }}>
+              <SearchIcon className="mx-2" style={{ margin: '0px 5px' }} fontSize="small" />
+              Engineering Reviews
+            </Typography>
             <ExternalLink
               description="Public URL"
               link="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WbsElementStatus } from 'shared';
+import { User, WbsElementStatus, WorkPackageStage } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
@@ -20,7 +20,7 @@ interface Props {
 const statuses = Object.values(WbsElementStatus);
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
-  const statusSelect = (
+  const StatusSelect = (
     <FormControl>
       <FormLabel>Status</FormLabel>
       <Controller
@@ -40,6 +40,23 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
         )}
       />
     </FormControl>
+  );
+
+  const StageSelect = () => (
+    <Controller
+      name="stage"
+      control={control}
+      render={({ field: { onChange, value } }) => (
+        <TextField select onChange={onChange} value={value} label="Stage" fullWidth>
+          <MenuItem value={'NONE'}>NONE</MenuItem>
+          {Object.values(WorkPackageStage).map((stage) => (
+            <MenuItem key={stage} value={stage}>
+              {stage}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+    />
   );
 
   return (
@@ -78,7 +95,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           </FormControl>
         </Grid>
         <Grid item xs={12} md={3} sx={{ mt: 1 }}>
-          {statusSelect}
+          <StatusSelect />
         </Grid>
         <Grid container sx={{ my: 1 }}>
           <Grid item xs={6}>
@@ -136,6 +153,9 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               errorMessage={errors.budget}
             />
           </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+          <StageSelect />
         </Grid>
       </Grid>
     </PageBlock>
