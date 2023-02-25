@@ -26,6 +26,7 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
+const tasksCreate = (wbsNum: string) => `${tasks}/${wbsNum}`;
 const taskEditStatus = (id: string) => `${tasks()}/${id}/edit-status`;
 
 /**************** Risks Endpoints ********************/
@@ -85,6 +86,7 @@ export const apiUrls = {
   projectsEdit,
   projectsSetTeam,
 
+  tasksCreate,
   taskEditStatus,
 
   risks,

@@ -9,24 +9,22 @@ import PageBlock from '../../../layouts/PageBlock';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
-import { useToast } from '../../../hooks/toasts.hooks';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus } from 'shared';
+import { Task, TaskStatus, WbsNumber } from 'shared';
 
 interface TaskListProps {
   tasks: Task[];
+  currentProject: WbsNumber;
   defaultClosed?: boolean;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
+const TaskList = ({ tasks, currentProject, defaultClosed }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
-  // TODO: delete me when you actually implement onClick
-  const toast = useToast();
-
   const [value, setValue] = useState<number>(1);
+  const [addTask, setAddTask] = useState(false);
 
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
@@ -47,7 +45,7 @@ const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
         textTransform: 'none',
         fontSize: 16
       }}
-      onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
+      onClick={() => setAddTask(true)}
     >
       New Task
     </Button>
@@ -62,9 +60,33 @@ const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
-      <TaskListTabPanel tasks={backLogTasks} value={value} index={0} status={TaskStatus.IN_BACKLOG} />
-      <TaskListTabPanel tasks={inProgressTasks} value={value} index={1} status={TaskStatus.IN_PROGRESS} />
-      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} />
+      <TaskListTabPanel
+        tasks={backLogTasks}
+        value={value}
+        index={0}
+        status={TaskStatus.IN_BACKLOG}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentProject={currentProject}
+      />
+      <TaskListTabPanel
+        tasks={inProgressTasks}
+        value={value}
+        index={1}
+        status={TaskStatus.IN_PROGRESS}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentProject={currentProject}
+      />
+      <TaskListTabPanel
+        tasks={doneTasks}
+        value={value}
+        index={2}
+        status={TaskStatus.DONE}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentProject={currentProject}
+      />
     </PageBlock>
   );
 };

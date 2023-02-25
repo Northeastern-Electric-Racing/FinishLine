@@ -3,8 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+
+export const createSingleTask = (wbsNum: WbsNumber, payload: any) => {
+  return axios.post<{ message: string }>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
+    ...payload
+  });
+};
 
 /**
  * Sets the task's status.

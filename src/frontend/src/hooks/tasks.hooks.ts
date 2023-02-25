@@ -4,7 +4,24 @@
  */
 
 import { useMutation, useQueryClient } from 'react-query';
-import { editSingleTaskStatus } from '../apis/tasks.api';
+import { WbsNumber } from 'shared';
+import { createSingleTask, editSingleTaskStatus } from '../apis/tasks.api';
+
+export const useCreateTask = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['tasks'],
+    async (createSingleTaskPayload: any) => {
+      const { data } = await createSingleTask(wbsNum, createSingleTaskPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects', 'tasks']);
+      }
+    }
+  );
+};
 
 export const useSetTaskStatus = () => {
   const queryClient = useQueryClient();
