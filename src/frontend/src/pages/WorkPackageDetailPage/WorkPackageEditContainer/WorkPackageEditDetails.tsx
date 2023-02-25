@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WbsElementStatus, WorkPackageStage } from 'shared';
+import { User, WorkPackageStage } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { Grid, MenuItem, TextField } from '@mui/material';
@@ -17,26 +17,7 @@ interface Props {
   errors: any;
 }
 
-const statuses = Object.values(WbsElementStatus);
-
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
-  const StatusSelect = () => (
-    <Controller
-      name="wbsElementStatus"
-      control={control}
-      rules={{ required: true }}
-      render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Status" fullWidth>
-          {statuses.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
-    />
-  );
-
   const StageSelect = () => (
     <Controller
       name="stage"

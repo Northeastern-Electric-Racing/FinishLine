@@ -4,6 +4,7 @@ import {
   equalsWbsNumber,
   isProject,
   TimelineStatus,
+  WbsElementStatus,
   WbsNumber,
   wbsPipe,
   WorkPackage,
@@ -33,6 +34,7 @@ export default class WorkPackagesService {
    * @returns a list of work packages
    */
   static async getAllWorkPackages(query: {
+    status?: WbsElementStatus;
     timelineStatus?: TimelineStatus;
     daysUntilDeadline?: string;
   }): Promise<WorkPackage[]> {
@@ -43,6 +45,7 @@ export default class WorkPackagesService {
 
     const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
       let passes = true;
+      if (query.status) passes &&= wp.status === query.status;
       if (query.timelineStatus) passes &&= wp.timelineStatus === query.timelineStatus;
       if (query.daysUntilDeadline) {
         const daysToDeadline = Math.round((wp.endDate.getTime() - new Date().getTime()) / 86400000);
@@ -252,6 +255,7 @@ export default class WorkPackagesService {
    * @param dependencies the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
+   * @param WbsElementStatus the new status for this work package
    * @param projectLead the new lead for this work package
    * @param projectManager the new manager for this work package
    */
@@ -266,6 +270,7 @@ export default class WorkPackagesService {
     dependencies: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
+    wbsElementStatus: WbsElementStatus,
     projectLead: number,
     projectManager: number
   ): Promise<void> {
@@ -366,6 +371,14 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
+    const wbsElementStatusChangeJson = createChangeJsonNonList(
+      'status',
+      originalWorkPackage.wbsElement.status,
+      wbsElementStatus,
+      crId,
+      userId,
+      wbsElementId!
+    );
     const dependenciesChangeJson = await createDependenciesChangesJson(
       originalWorkPackage.dependencies.map((element) => element.wbsElementId),
       depsIds.map((elem) => elem as number),
@@ -397,6 +410,7 @@ export default class WorkPackagesService {
     if (nameChangeJson !== undefined) changes.push(nameChangeJson);
     if (startDateChangeJson !== undefined) changes.push(startDateChangeJson);
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
+    if (wbsElementStatusChangeJson !== undefined) changes.push(wbsElementStatusChangeJson);
     if (stageChangeJson !== undefined) changes.push(stageChangeJson);
 
     const projectManagerChangeJson = createChangeJsonNonList(
@@ -443,6 +457,7 @@ export default class WorkPackagesService {
           update: {
             name,
             projectLeadId: projectLead,
+            status: wbsElementStatus,
             projectManagerId: projectManager
           }
         },
