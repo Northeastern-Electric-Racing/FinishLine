@@ -66,7 +66,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
+  const handleClickDelete = async () => {
+
+  };
+
   const isGuest = auth.user.role === 'GUEST';
+
+  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
 
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
@@ -91,6 +97,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </MenuItem>
   );
 
+  const deleteButton = (
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      Delete
+    </MenuItem>
+  );
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -105,6 +117,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         {editBtn}
         {createCRBtn}
         {teamAsLeadId && assignToMyTeamButton}
+        {deleteButton}
       </Menu>
     </div>
   );
