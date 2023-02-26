@@ -139,7 +139,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                 <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
               </Typography>
             </Grid>
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={12}>
               <Typography fontWeight={'bold'}>
                 Assignee(s):
                 <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
