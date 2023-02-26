@@ -10,7 +10,8 @@ import {
   createSingleProject,
   getAllProjects,
   getSingleProject,
-  setProjectTeam
+  setProjectTeam,
+  deleteProject
 } from '../apis/projects.api';
 
 /**
@@ -82,6 +83,25 @@ export const useSetProjectTeam = (wbsNum: WbsNumber) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['teams']);
         queryClient.invalidateQueries(['projects', wbsNum]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a work package.
+ */
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['project', 'delete'],
+    async (wbsNumber: WbsNumber) => {
+      const { data } = await deleteProject(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['project']);
       }
     }
   );
