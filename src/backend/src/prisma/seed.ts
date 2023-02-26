@@ -417,15 +417,14 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     "Drive Northeastern Electric Racing's Hand-Built Car That Tops Out at 100 mph",
     "It was a chilly November night and Matthew McCauley's breath was billowing out in front of him when he took hold " +
-      'of the wheel and put pedal to the metal.\n\n' +
-      "Accelerating down straightaways and taking corners with finesse, it's easy to forget McCauley, in his blue racing " +
-      "jacket and jet black helmet, is racing laps around the roof of Columbus Parking Garage on Northeastern's Boston " +
-      "campus. But that's the reality of Northeastern Electric Racing, a student club that has made due and found massive " +
-      'success in the world of electric racing despite its relative rookie status.\n\n' +
-      "McCauley, NER's chief electrical engineer, has seen the club's car, Cinnamon, go from a 5-foot drive test to " +
-      'hitting 60 miles per hour in competitions.\n\n' +
-      '"It\'s a go-kart that has 110 kilowatts of power, 109 kilowatts of power," says McCauley, a fourth-year ' +
-      'electrical and computer engineering student. "That\'s over 100 horsepower."',
+      "of the wheel and put pedal to the metal.Accelerating down straightaways and taking corners with finesse, it's " +
+      'easy to forget McCauley, in his blue racing jacket and jet black helmet, is racing laps around the roof of ' +
+      "Columbus Parking Garage on Northeastern's Boston campus. But that's the reality of Northeastern Electric " +
+      'Racing, a student club that has made due and found massive success in the world of electric racing despite its ' +
+      "relative rookie status. McCauley, NER's chief electrical engineer, has seen the club's car, Cinnamon, go from " +
+      'a 5-foot drive test to hitting 60 miles per hour in competitions. "It\'s a go-kart that has 110 kilowatts of ' +
+      'power, 109 kilowatts of power," says McCauley, a fourth-year electrical and computer engineering student. ' +
+      '"That\'s over 100 horsepower."',
     new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
