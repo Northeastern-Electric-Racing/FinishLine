@@ -42,7 +42,7 @@ const AdminToolsWorkPackageMangaement: React.FC = () => {
   const handleClick = async () => {
     setHideSuccessLabel(true);
     if (!workPackage) return;
-    // if (!auth.user) return <LoadingIndicator />;
+    if (!auth.user) return <LoadingIndicator />;
     try {
       //await WorkPackagesService.deleteWorkPackage({ ...auth.user, googleAuthId: 'testGoogleAuthId' }, workPackage.wbsNum);
       setHideSuccessLabel(false);

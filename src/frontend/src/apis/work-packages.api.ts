@@ -51,3 +51,12 @@ export const editWorkPackage = (payload: any) => {
     ...payload
   });
 };
+
+/**
+ * Delete a work package.
+ *
+ * @param wbsNum The WBS Number of the Work Package being deleted.
+ */
+export const deleteWorkPackage = (wbsNumber: WbsNumber) => {
+  return axios.delete<{ message: string }>(apiUrls.workPackagesDelete(`${wbsPipe(wbsNumber)}`));
+};
