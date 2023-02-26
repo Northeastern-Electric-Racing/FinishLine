@@ -430,6 +430,19 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.DONE,
     [superman.userId]
   );
+
+  await TasksService.createTask(
+    batman,
+    project3WbsNumber,
+    'Power the Battery Box',
+    'With all our powers combined, we can win any Electric Racing competition!',
+    new Date('2024-05-01T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [wonderwoman, flash, aquaman, superman, hawkMan, hawkWoman, cyborg, greenLantern, martianManhunter].map(
+      (user) => user.userId
+    )
+  );
 };
 
 performSeed()
