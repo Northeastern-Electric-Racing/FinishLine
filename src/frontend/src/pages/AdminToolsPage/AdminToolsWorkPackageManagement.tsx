@@ -14,10 +14,8 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 //import WorkPackagesService from '../../../../backend/src/services/work-packages.services';
-import { useAuth } from '../../hooks/auth.hooks';
 
 const AdminToolsWorkPackageMangaement: React.FC = () => {
-  const auth = useAuth();
   const [workPackage, setWorkPackage] = useState<WorkPackage | null>(null);
   const [hideSuccessLabel, setHideSuccessLabel] = useState(true);
   const { isLoading, isError, error, data: workPackages } = useAllWorkPackages();

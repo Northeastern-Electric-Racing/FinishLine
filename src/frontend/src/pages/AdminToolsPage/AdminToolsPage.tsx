@@ -13,8 +13,8 @@ const AdminToolsPage: React.FC = () => {
     <>
       <PageTitle title={'Admin Tools'} previousPages={[]} />
       <AdminToolsUserMangaement />
-      <AdminToolsWorkPackageMangaement />
       <AdminToolsProjectManagement />
+      <AdminToolsWorkPackageMangaement />
     </>
   );
 };
