@@ -27,6 +27,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import TaskList from './TaskList';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -126,6 +127,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
+      <TaskList tasks={proj.tasks} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />

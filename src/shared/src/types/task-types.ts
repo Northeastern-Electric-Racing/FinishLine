@@ -13,8 +13,8 @@ export enum TaskPriority {
 }
 
 export enum TaskStatus {
-  IN_BACKLOG = 'IN BACKLOG',
-  IN_PROGRESS = 'IN PROGRESS',
+  IN_BACKLOG = 'IN_BACKLOG',
+  IN_PROGRESS = 'IN_PROGRESS',
   DONE = 'DONE'
 }
 
