@@ -33,7 +33,7 @@ export const useEditTask = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['tasks']);
+        queryClient.invalidateQueries(['projects', 'tasks']);
       }
     }
   );

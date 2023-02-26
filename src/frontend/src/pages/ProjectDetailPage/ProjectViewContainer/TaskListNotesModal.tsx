@@ -25,7 +25,6 @@ import {
   IconButton
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -34,7 +33,7 @@ import ErrorPage from '../../ErrorPage';
 import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useState } from 'react';
-import { Edit } from '@mui/icons-material';
+import { Close, Edit } from '@mui/icons-material';
 
 interface TaskListNotesModalProps {
   task: Task;
@@ -92,37 +91,63 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   };
   const options = users.sort((a, b) => (a.firstName > b.firstName ? 1 : -1)).map(userToAutocompleteOption);
   const dialogWidth: Breakpoint = 'md';
-  const renderModal: () => JSX.Element = () => {
+  const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
+  const ViewModal: React.FC = () => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
-        <DialogTitle className={'font-weight-bold'}>{task.title}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold', fontSize: '30' }}>
+          {task.title}{' '}
+          <IconButton
+            aria-label="close"
+            onClick={onHide}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500]
+            }}
+          >
+            <Close />
+          </IconButton>
+          <IconButton
+            onClick={() => setIsEditMode(true)}
+            aria-label="edit"
+            sx={{
+              position: 'absolute',
+              right: 40,
+              top: 8,
+              color: (theme) => theme.palette.grey[500]
+            }}
+          >
+            <Edit />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography fontWeight={'bold'}>
-                Priority: <Typography display={'inline'}> {task.priority}</Typography>
+                Priority:{' '}
+                <Typography display={'inline'} color={priorityColor}>
+                  {' '}
+                  {task.priority}
+                </Typography>
               </Typography>
             </Grid>
-            <Grid item xs={11} md={5}>
+            <Grid item xs={12} md={6}>
               <Typography fontWeight={'bold'}>
                 Deadline:
-                <Typography display={'inline'}> {datePipe(new Date(task.deadline))}</Typography>
+                <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
               </Typography>
-            </Grid>
-            <Grid item xs={1} md={1}>
-              <IconButton onClick={() => setIsEditMode(true)}>
-                <Edit />
-              </IconButton>
             </Grid>
             <Grid item xs={12} md={8}>
               <Typography fontWeight={'bold'}>
-                Assignees(s):
+                Assignee(s):
                 <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
               </Typography>
             </Grid>
             <Grid item xs={12} md={12}>
               <Typography fontWeight={'bold'}>Notes:</Typography>
-              <Box sx={{ height: '200px', overflow: 'auto', border: 'solid', borderWidth: '1', borderColor: '#EF4345' }}>
+              <Box sx={{ height: '200px', overflow: 'auto' }}>
                 <Typography> {task.notes}</Typography>
               </Box>
             </Grid>
@@ -132,7 +157,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     );
   };
 
-  const renderEditModal: () => JSX.Element = () => {
+  const EditModal: React.FC = () => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
         <DialogTitle className={'font-weight-bold'}>{task.title}</DialogTitle>
@@ -152,11 +177,22 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
               <Grid item xs={12} md={7}>
                 <FormControl sx={{ width: '100%' }}>
                   <FormLabel>Title</FormLabel>
-                  <ReactHookTextField
-                    name="title"
+                  <Controller
+                    name={'title'}
                     control={control}
-                    placeholder="Enter Task Title..."
-                    errorMessage={errors.title}
+                    rules={{ required: true }}
+                    render={({ field: { onChange, value } }) => (
+                      <TextField
+                        required
+                        onChange={onChange}
+                        value={value}
+                        inputProps={{
+                          maxlength: isUnderWordCount(value, 15) ? null : 0
+                        }}
+                        helperText={`${countWords(value)}/15 words`}
+                        error={!isUnderWordCount(value, 15)}
+                      />
+                    )}
                   />
                 </FormControl>
               </Grid>
@@ -167,7 +203,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                     name="priority"
                     control={control}
                     render={({ field: { onChange, value } }) => (
-                      <TextField select onChange={onChange} value={value}>
+                      <TextField select onChange={onChange} value={value} error={!!errors.priority}>
                         {Object.values(TaskPriority).map((p) => (
                           <MenuItem key={p} value={p}>
                             {p}
@@ -195,7 +231,9 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         getOptionLabel={(option) => option.label}
                         onChange={(_, value) => onChange(value.map((v) => v.id))}
                         value={value.map((v) => options.find((o) => o.id === v)!)}
-                        renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+                        renderInput={(params) => (
+                          <TextField {...params} variant="standard" placeholder="Select A User" error={!!errors.assignees} />
+                        )}
                       />
                     )}
                   />
@@ -214,7 +252,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         onChange={onChange}
                         className={'padding: 10'}
                         value={value}
-                        renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                        renderInput={(params) => <TextField autoComplete="off" {...params} error={!!errors.deadline} />}
                       />
                     )}
                   />
@@ -265,7 +303,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     );
   };
 
-  return isEditMode ? renderEditModal() : renderModal();
+  return isEditMode ? <EditModal /> : <ViewModal />;
 };
 
 export default TaskListNotesModal;
