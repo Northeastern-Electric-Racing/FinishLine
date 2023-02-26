@@ -13,6 +13,7 @@ import { wbsPipe, WorkPackage } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { useAuth } from '../../hooks/auth.hooks';
 //import WorkPackagesService from '../../../../backend/src/services/work-packages.services';
 
 const AdminToolsWorkPackageMangaement: React.FC = () => {
@@ -21,6 +22,7 @@ const AdminToolsWorkPackageMangaement: React.FC = () => {
   const { isLoading, isError, error, data: workPackages } = useAllWorkPackages();
   const theme = useTheme();
   const toast = useToast();
+  const auth = useAuth();
 
   if (isLoading || !workPackages) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
