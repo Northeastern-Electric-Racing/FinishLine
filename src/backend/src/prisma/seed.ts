@@ -404,6 +404,17 @@ const performSeed: () => Promise<void> = async () => {
   await TasksService.createTask(
     joeShmoe,
     project1WbsNumber,
+    'Impact Test',
+    'Toss a pear at our impact attenuator as hard as you can to see how well it can attenuate impact.',
+    new Date('2024-02-17T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
     'Build Attenuator',
     'WOOOO',
     new Date('01/01/2024'),
@@ -428,7 +439,18 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [superman.userId]
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Double-Check Inventory',
+    'Nobody really wants to do this...',
+    new Date('2023-04-01T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_BACKLOG,
+    []
   );
 
   await TasksService.createTask(
@@ -439,9 +461,7 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-05-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [wonderwoman, flash, aquaman, superman, hawkMan, hawkWoman, cyborg, greenLantern, martianManhunter].map(
-      (user) => user.userId
-    )
+    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
   );
 };
 
