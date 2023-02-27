@@ -72,7 +72,6 @@ export default class WorkPackagesController {
         dependencies,
         expectedActivities,
         deliverables,
-        wbsElementStatus,
         projectLead,
         projectManager
       } = req.body;
@@ -95,7 +94,6 @@ export default class WorkPackagesController {
         dependencies,
         expectedActivities,
         deliverables,
-        wbsElementStatus,
         projectLead,
         projectManager
       );
