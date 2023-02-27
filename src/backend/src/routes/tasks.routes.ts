@@ -23,7 +23,7 @@ tasksRouter.post(
   '/:taskId/edit',
   nonEmptyString(body('title')),
   nonEmptyString(body('notes')),
-  body('deadline'),
+  body('deadline').isDate(),
   isTaskPriority(body('priority')),
   TasksController.editTask
 );

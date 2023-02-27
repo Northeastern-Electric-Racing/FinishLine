@@ -74,7 +74,8 @@ export default class TasksService {
    * @returns the sucessfully edited task
    */
   static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission) throw new AccessDeniedException();
 
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
