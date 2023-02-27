@@ -405,11 +405,45 @@ const performSeed: () => Promise<void> = async () => {
     joeShmoe,
     project1WbsNumber,
     'Impact Test',
-    'Toss a pear at our impact attenuator as hard as you can to see how well it can attenuate impact.',
+    'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
+      'attenuate impact.',
     new Date('2024-02-17T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    joeBlow,
+    project1WbsNumber,
+    'Review Compliance',
+    'I think there are some rules we may or may not have overlooked...',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project1WbsNumber,
+    'Decorate Impact Attenuator',
+    'You know you want to.',
+    new Date('2024-01-20T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    lamarJackson,
+    project1WbsNumber,
+    'Meet with the Department of Transportation',
+    'Discuss design decisions',
+    new Date('2023-05-19T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId]
   );
 
   await TasksService.createTask(
@@ -443,6 +477,17 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await TasksService.createTask(
+    brandonHyde,
+    project1WbsNumber,
+    'Safety Training',
+    'how to use (or not use) the impact attenuator',
+    new Date('2023-03-15T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
     thomasEmrax,
     project2WbsNumber,
     'Double-Check Inventory',
@@ -454,6 +499,39 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Aerodynamics Test',
+    'Wind go wooooosh',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    johnHarbaugh,
+    project2WbsNumber,
+    'Ask Sponsors About Logo Sticker Placement',
+    'the more sponsors the cooler we look',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Discuss Design With Powertrain Team',
+    '',
+    new Date('2023-10-31T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.DONE,
+    [thomasEmrax.userId]
+  );
+
+  await TasksService.createTask(
     batman,
     project3WbsNumber,
     'Power the Battery Box',
@@ -462,6 +540,61 @@ const performSeed: () => Promise<void> = async () => {
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project3WbsNumber,
+    'Wire Up Battery Box',
+    'Too many wires... how to even keep track?',
+    new Date('2024-02-29T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project3WbsNumber,
+    'Vibration Tests',
+    "Battery box shouldn't blow up in the middle of racing...",
+    new Date('2024-03-17T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project3WbsNumber,
+    'Buy some Battery Juice',
+    'mmm battery juice',
+    new Date('2024-04-15T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_BACKLOG,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project4WbsNumber,
+    'Schematics',
+    'schematics go brrrrr',
+    new Date('2024-04-15T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    batman,
+    project5WbsNumber,
+    'Cost Assessment',
+    'So this is where our funding goes',
+    new Date('2023-06-23T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
   );
 };
 
