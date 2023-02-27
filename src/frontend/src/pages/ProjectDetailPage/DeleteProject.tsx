@@ -1,4 +1,3 @@
-
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
@@ -22,11 +21,7 @@ export interface DeleteProjectInputs {
   projectId: string;
 }
 
-const DeleteProject: React.FC<DeleteProjectProps> = ({
-  modalShow,
-  handleClose,
-  project
-}: DeleteProjectProps) => {
+const DeleteProject: React.FC<DeleteProjectProps> = ({ modalShow, handleClose, project }: DeleteProjectProps) => {
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteProject();
@@ -51,4 +46,3 @@ const DeleteProject: React.FC<DeleteProjectProps> = ({
 };
 
 export default DeleteProject;
-

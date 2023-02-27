@@ -82,9 +82,7 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
           }
         }}
       >
-        <Typography sx={{ marginBottom: '1rem' }}>
-          Are you sure you want to delete Project #{project.id}?
-        </Typography>
+        <Typography sx={{ marginBottom: '1rem' }}>Are you sure you want to delete Project #{project.id}?</Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
         <form
           id="delete-cr-form"
