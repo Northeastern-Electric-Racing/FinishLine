@@ -18,6 +18,15 @@ tasksRouter.post(
   validateInputs,
   TasksController.createTask
 );
+
 tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
+tasksRouter.post(
+  '/:taskId/edit-assignees',
+  body('assignees').isArray(),
+  intMinZero(body('assignees.*')),
+  TasksController.editTaskAssignees
+);
+
+tasksRouter.delete('/:taskId/delete', TasksController.deleteTask);
 
 export default tasksRouter;

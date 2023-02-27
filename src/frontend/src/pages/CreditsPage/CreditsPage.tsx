@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Button, Typography } from '@mui/material'; // some imports from libraries
+import { Grid, Typography } from '@mui/material'; // some imports from libraries
+import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
 import PageBlock from '../../layouts/PageBlock';
@@ -109,9 +110,9 @@ const CreditsPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <div style={{ justifyContent: 'center', display: 'flex' }}>
-        <Button onClick={() => setDisplaySnark(displaySnark + 1)} variant="contained">
+        <NERButton variant="contained" onClick={() => setDisplaySnark(displaySnark + 1)}>
           {displaySnark < snark.length ? snark[displaySnark] : '>:('}
-        </Button>
+        </NERButton>
       </div>
     </div>
   );
