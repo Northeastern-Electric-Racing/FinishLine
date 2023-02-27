@@ -232,9 +232,7 @@ describe('Tasks', () => {
       jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
 
-      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(
-        new AccessDeniedException('You do not have permission to delete this task')
-      );
+      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(new AccessDeniedException());
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
@@ -247,10 +245,10 @@ describe('Tasks', () => {
 
       const deletedTask = await TasksService.deleteTask(batman, mockTaskId);
 
-      expect(deletedTask).toEqual(taskSaveTheDayShared);
+      expect(deletedTask).toEqual(taskSaveTheDayDeletedPrisma.taskId);
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.task.delete).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
     });
   });
 });

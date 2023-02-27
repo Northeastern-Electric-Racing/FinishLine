@@ -37,11 +37,15 @@ export default class TasksController {
     }
   }
 
-  //get user, checks the given user
-  static async getUser(req: Request, res: Response, next: NextFunction) {
+  static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const currentUser: User = await getCurrentUser(res);
-      res.status(200).json(currentUser);
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.deleteTask(user, taskId);
+
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
       next(error);
     }
