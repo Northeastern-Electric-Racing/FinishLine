@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { validateWBS, WbsNumber, wbsPipe } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
 import {
   Dialog,
   DialogActions,
