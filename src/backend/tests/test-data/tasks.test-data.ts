@@ -51,7 +51,7 @@ export const taskSaveTheDayDeletedPrisma: Prisma.TaskGetPayload<typeof taskQuery
   deadline: new Date('12-25-2000'),
   priority: 'HIGH',
   status: 'DONE',
-  deletedByUserId: null,
+  deletedByUserId: 1,
   dateDeleted: new Date(),
   createdByUserId: 1,
   assignees: [greenlantern, wonderwoman],

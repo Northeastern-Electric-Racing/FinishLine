@@ -52,4 +52,18 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async deleteTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.deleteTask(user, taskId);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
