@@ -8,7 +8,7 @@ import { AxiosResponse } from 'axios';
 import { WorkPackage } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleAllWorkPackages, exampleWorkPackage1 } from '../test-support/test-data/work-packages.stub';
+import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../test-support/test-data/work-packages.stub';
 import { exampleWbsWorkPackage1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
@@ -27,12 +27,12 @@ describe('work package hooks', () => {
 
   it('handles getting a single work package', async () => {
     const mockedGetSingleWorkPackage = getSingleWorkPackage as jest.Mock<Promise<AxiosResponse<WorkPackage>>>;
-    mockedGetSingleWorkPackage.mockReturnValue(mockPromiseAxiosResponse<WorkPackage>(exampleWorkPackage1));
+    mockedGetSingleWorkPackage.mockReturnValue(mockPromiseAxiosResponse<WorkPackage>(exampleResearchWorkPackage));
 
     const { result, waitFor } = renderHook(() => useSingleWorkPackage(exampleWbsWorkPackage1), {
       wrapper
     });
     await waitFor(() => result.current.isSuccess);
-    expect(result.current.data).toEqual(exampleWorkPackage1);
+    expect(result.current.data).toEqual(exampleResearchWorkPackage);
   });
 });

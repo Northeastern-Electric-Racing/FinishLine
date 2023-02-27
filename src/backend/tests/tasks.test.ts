@@ -1,12 +1,21 @@
-import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman, superman } from './test-data/users.test-data';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import TasksService from '../src/services/tasks.services';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import { invalidTaskNotes, taskSaveTheDayPrisma, taskSaveTheDayShared } from './test-data/tasks.test-data';
+import { Task_Priority, Task_Status } from '@prisma/client';
 import { WbsNumber } from 'shared';
-import { Task_Priority } from '@prisma/client';
-import taskTransformer from '../src/transformers/tasks.transformer';
+import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
+import prisma from '../src/prisma/prisma';
+import TasksService from '../src/services/tasks.services';
+import * as taskTransformer from '../src/transformers/tasks.transformer';
+import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import * as userUtils from '../src/utils/users.utils';
+import {
+  invalidTaskNotes,
+  taskSaveTheDayDeletedPrisma,
+  taskSaveTheDayInProgressPrisma,
+  taskSaveTheDayInProgressShared,
+  taskSaveTheDayPrisma,
+  taskSaveTheDayShared
+} from './test-data/tasks.test-data';
+import { aquaman, batman, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -18,6 +27,10 @@ describe('Tasks', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
   });
 
   describe('createTask', () => {
@@ -99,67 +112,304 @@ describe('Tasks', () => {
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
   });
-});
 
-describe('Edit Tasks', () => {
-  const taskId = '1';
-  const fakeTitle = 'Dont save the day';
-  const fakeNotes = 'Leave the people in the burning building';
-  const fakePriority = Task_Priority.LOW;
-  const fakeDeadline = new Date();
+  describe('editTaskStatus', () => {
+    test('edit task status succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
-  test('user access denied', async () => {
-    await expect(() =>
-      TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-    ).rejects.toThrow(new AccessDeniedException());
+      const taskId = '1';
+      // Update from IN_PROGRESS to IN_BACKLOG
+      const updatedTask = await TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG);
+
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          status: 'IN_BACKLOG'
+        },
+        ...taskQueryArgs
+      });
+    });
+
+    test('edit task status succeeds if the user is an assignee', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Update from IN_PROGRESS to IN_BACKLOG
+      // Greenlantern is a wbs element assignee
+      const updatedTask = await TasksService.editTaskStatus(greenlantern, taskId, Task_Status.IN_BACKLOG);
+
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          status: 'IN_BACKLOG'
+        },
+        ...taskQueryArgs
+      });
+    });
+
+    test('edit task fails when task does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+      const fakeTaskId = '100';
+      await expect(() => TasksService.editTaskStatus(batman, fakeTaskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new NotFoundException('Task', fakeTaskId)
+      );
+    });
+
+    test('edit task fails if user does not have permission', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
+    });
+
+    test('edit task fails if the user did not create the task or is not an assignee', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      // Aquaman is a leader, but did not create this task
+      await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
+    });
+
+    test('edit task fails if task is deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      const taskId = '1';
+      // Try updating from IN_PROGRESS to IN_BACKLOG
+      await expect(() => TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
+        new HttpException(400, 'Cant edit a deleted Task!')
+      );
+    });
   });
 
-  test('Task not found', async () => {
-    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
-    await expect(() =>
-      TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-    ).rejects.toThrow(new NotFoundException('Task', taskId));
-    expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+  describe('editTaskAssignees', () => {
+    test('edit task assignee succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+
+      const taskId = '1';
+      const userIds = [
+        {
+          userId: superman.userId
+        },
+        {
+          userId: wonderwoman.userId
+        }
+      ];
+      const updatedTask = await TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId]);
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          assignees: {
+            set: userIds
+          }
+        },
+        ...taskQueryArgs
+      });
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+    });
+
+    test('edit task assignees fails when task does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+      const fakeTaskId = '100';
+      await expect(() =>
+        TasksService.editTaskAssignees(batman, fakeTaskId, [superman.userId, wonderwoman.userId])
+      ).rejects.toThrow(new NotFoundException('Task', fakeTaskId));
+    });
+
+    test('edit task assignees fails if user does not have permission', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+      const taskId = '1';
+      await expect(() =>
+        TasksService.editTaskAssignees(aquaman, taskId, [superman.userId, wonderwoman.userId])
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
+    });
+
+    test('edit task assignees fails if task is deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      const taskId = '1';
+      await expect(() =>
+        TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId])
+      ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
+    });
   });
 
-  test('Task deleted', async () => {
-    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue({ ...taskSaveTheDayPrisma, dateDeleted: new Date('1/1/2023') });
-    await expect(() =>
-      TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-    ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
-    expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+  describe('deleteTask', () => {
+    const mockTaskId = '4';
+
+    test('delete task fails when task does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new NotFoundException('Task', mockTaskId)
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when task is already deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new HttpException(400, 'Cant delete a deleted Task!')
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when wbs element does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new NotFoundException('WBS Element', taskSaveTheDayPrisma.wbsElementId)
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when wbs element is deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new HttpException(400, "This task's wbs element has been deleted!")
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when user does not have permission', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+
+      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(new AccessDeniedException());
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.task, 'delete').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      const deletedTask = await TasksService.deleteTask(batman, mockTaskId);
+
+      expect(deletedTask).toEqual(taskSaveTheDayPrisma.taskId);
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+    });
   });
 
-  test('Title over Limit', async () => {
-    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-    await expect(() =>
-      TasksService.editTask(superman, taskId, 'A B C D E F G H I J K L M N O', invalidTaskNotes, fakePriority, fakeDeadline)
-    ).rejects.toThrow(new HttpException(400, 'Title must be less than 15 words'));
-    expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
-  });
+  describe('editTask', () => {
+    const taskId = '1';
+    const fakeTitle = 'Dont save the day';
+    const fakeNotes = 'Leave the people in the burning building';
+    const fakePriority = Task_Priority.LOW;
+    const fakeDeadline = new Date();
 
-  test('Notes over limit', async () => {
-    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-    await expect(() =>
-      TasksService.editTask(superman, taskId, fakeTitle, invalidTaskNotes, fakePriority, fakeDeadline)
-    ).rejects.toThrow(new HttpException(400, 'Notes must be less than 250 words'));
-    expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
-  });
+    test('user access denied', async () => {
+      await expect(() =>
+        TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
+      ).rejects.toThrow(new AccessDeniedException());
+    });
 
-  test('Task successfully edited', async () => {
-    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-    const updatedSaveTheDay = {
-      ...taskSaveTheDayPrisma,
-      title: fakeTitle,
-      notes: fakeNotes,
-      priority: fakePriority,
-      deadline: fakeDeadline
-    };
-    jest.spyOn(prisma.task, 'update').mockResolvedValue(updatedSaveTheDay);
-    const response = await TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline);
+    test('Task not found', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+      await expect(() =>
+        TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
+      ).rejects.toThrow(new NotFoundException('Task', taskId));
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
 
-    expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.task.update).toHaveBeenCalledTimes(1);
-    expect(response).toStrictEqual(taskTransformer(updatedSaveTheDay));
+    test('Task deleted', async () => {
+      jest
+        .spyOn(prisma.task, 'findUnique')
+        .mockResolvedValue({ ...taskSaveTheDayPrisma, dateDeleted: new Date('1/1/2023') });
+      await expect(() =>
+        TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
+      ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Title over Limit', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      await expect(() =>
+        TasksService.editTask(
+          superman,
+          taskId,
+          'A B C D E F G H I J K L M N O',
+          invalidTaskNotes,
+          fakePriority,
+          fakeDeadline
+        )
+      ).rejects.toThrow(new HttpException(400, 'Title must be less than 15 words'));
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Notes over limit', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      await expect(() =>
+        TasksService.editTask(superman, taskId, fakeTitle, invalidTaskNotes, fakePriority, fakeDeadline)
+      ).rejects.toThrow(new HttpException(400, 'Notes must be less than 250 words'));
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Task successfully edited', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      const updatedSaveTheDay = {
+        ...taskSaveTheDayPrisma,
+        title: fakeTitle,
+        notes: fakeNotes,
+        priority: fakePriority,
+        deadline: fakeDeadline
+      };
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(updatedSaveTheDay);
+      const response = await TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline);
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(response).toStrictEqual(taskTransformer.default(updatedSaveTheDay));
+    });
   });
 });

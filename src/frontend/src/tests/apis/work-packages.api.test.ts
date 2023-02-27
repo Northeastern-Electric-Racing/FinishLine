@@ -6,7 +6,7 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { apiUrls } from '../../utils/urls';
-import { exampleAllWorkPackages, exampleWorkPackage1 } from '../test-support/test-data/work-packages.stub';
+import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../test-support/test-data/work-packages.stub';
 import { getAllWorkPackages, getSingleWorkPackage } from '../../apis/work-packages.api';
 
 // Mock the server endpoint(s) that the component will hit
@@ -38,7 +38,7 @@ describe('work package api methods', () => {
   it('handles getting a single work packages', async () => {
     server.use(
       rest.get(apiUrls.workPackagesByWbsNum('1.1.1'), (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(exampleWorkPackage1));
+        return res(ctx.status(200), ctx.json(exampleResearchWorkPackage));
       })
     );
 

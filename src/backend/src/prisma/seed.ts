@@ -12,19 +12,17 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  WBS_Element_Status
+  WBS_Element_Status,
+  Work_Package_Stage
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
-import ProjectsService from '../services/projects.services';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import RisksService from '../services/risks.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { validateWBS, WbsElementStatus } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { descBulletConverter } from '../utils/utils';
+import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -259,6 +257,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Bodywork Concept of Design',
     changeRequest1Id,
+    WorkPackageStage.Design,
     '01/01/2023',
     3,
     [],
@@ -281,6 +280,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Adhesive Shear Strength Test',
     changeRequest1Id,
+    WorkPackageStage.Research,
     '01/22/2023',
     5,
     [],
@@ -304,6 +304,7 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Manufacture Wiring Harness',
     changeRequest1Id,
+    WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
     [],
@@ -326,7 +327,6 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1WbsNumber.projectNumber,
     workPackage1WbsNumber.workPackageNumber,
     CR_Type.STAGE_GATE,
-    0,
     true
   );
 

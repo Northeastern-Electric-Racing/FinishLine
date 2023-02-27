@@ -12,7 +12,8 @@ import {
   getAllChangeRequests,
   getSingleChangeRequest,
   reviewChangeRequest,
-  addProposedSolution
+  addProposedSolution,
+  deleteChangeRequest
 } from '../apis/change-requests.api';
 
 /**
@@ -63,6 +64,25 @@ export const useReviewChangeRequest = () => {
 };
 
 /**
+ * Custom React Hook to delete a change request.
+ */
+export const useDeleteChangeRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['change requests', 'delete'],
+    async (id: number) => {
+      const { data } = await deleteChangeRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React Hook to create a standard change request.
  */
 export const useCreateStandardChangeRequest = () => {
@@ -94,12 +114,7 @@ export const useCreateActivationChangeRequest = () => {
  */
 export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'stage gate'], async (payload: any) => {
-    const { data } = await createStageGateChangeRequest(
-      payload.submitterId,
-      payload.wbsNum,
-      payload.leftoverBudget,
-      payload.confirmDone
-    );
+    const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
     return data;
   });
 };
