@@ -73,36 +73,42 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <Controller
-            name="projectLead"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+          <FormControl sx={{ width: '90%' }}>
+            <FormLabel>Project Lead</FormLabel>
+            <Controller
+              name="projectLead"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <TextField select onChange={onChange} value={value} fullWidth>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <Controller
-            name="projectManager"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
-                {users.map((t) => (
-                  <MenuItem key={t.userId} value={t.userId}>
-                    {fullNamePipe(t)}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+          <FormControl sx={{ width: '90%' }}>
+            <FormLabel>Project Manager</FormLabel>
+            <Controller
+              name="projectManager"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <TextField select onChange={onChange} value={value} fullWidth>
+                  {users.map((t) => (
+                    <MenuItem key={t.userId} value={t.userId}>
+                      {fullNamePipe(t)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ my: 1 }}>
           <FormControl>
