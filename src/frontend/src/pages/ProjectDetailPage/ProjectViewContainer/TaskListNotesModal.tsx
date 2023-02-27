@@ -22,14 +22,13 @@ import {
   Breakpoint,
   MenuItem,
   Typography,
-  IconButton
+  IconButton,
+  useTheme
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useState } from 'react';
@@ -67,8 +66,8 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   onHide,
   onSubmit
 }: TaskListNotesModalProps) => {
-  const { isLoading, isError, error, data: users } = useAllUsers();
   const auth = useAuth();
+  const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
   const {
     handleSubmit,
@@ -85,17 +84,16 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
       assignees: task.assignees.map((assignee) => assignee.userId)
     }
   });
-  if (!auth.user || isLoading || !users) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (!auth.user) return <LoadingIndicator />;
 
   const userToAutocompleteOption = (user: User): { label: string; id: number } => {
     return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
   };
 
   const options = team
-    ? users
+    ? team.members
+        .concat(team.leader)
         .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-        .filter((user) => team.members.map((user) => user.userId).includes(user.userId))
         .map(userToAutocompleteOption)
     : [];
 
@@ -131,7 +129,22 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
             <Edit />
           </IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+            '&::-webkit-scrollbar': {
+              height: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.divider,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            }
+          }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography fontWeight={'bold'}>
@@ -170,7 +183,22 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
         <DialogTitle className={'font-weight-bold'}>{task.title}</DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+            '&::-webkit-scrollbar': {
+              height: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.divider,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            }
+          }}
+        >
           <form
             id={'create-work-package-form'}
             onSubmit={(e) => {

@@ -1,10 +1,11 @@
 import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
 import { isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
 import taskQueryArgs from '../prisma-query-args/tasks.query-args';
+import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { hasPermissionToEditTask } from '../utils/tasks.utils';
+import { hasPermissionToEditTask, validateAssignees } from '../utils/tasks.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TasksService {
@@ -35,9 +36,12 @@ export default class TasksService {
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
 
-    if (!isUnderWordCount(notes, 150)) throw new HttpException(400, 'Notes must be less than 250 words');
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
-    const requestedWbsElement = await prisma.wBS_Element.findUnique({ where: { wbsNumber: wbsNum } });
+    const requestedWbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsNumber: wbsNum },
+      include: { project: { include: { team: { ...teamQueryArgs } } } }
+    });
 
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
 
@@ -45,6 +49,10 @@ export default class TasksService {
 
     // this throws if any of the users aren't found
     const users = await getUsers(assignees);
+
+    const projectTeam = requestedWbsElement.project?.team;
+
+    validateAssignees(users, projectTeam);
 
     const createdTask = await prisma.task.create({
       data: {
@@ -139,6 +147,20 @@ export default class TasksService {
 
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);
+
+    // get the wbs element of the task
+    const taskWbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsElementId: originalTask.wbsElementId },
+      include: { project: { include: { team: { ...teamQueryArgs } } } }
+    });
+
+    //check if the wbs element exists
+    if (!taskWbsElement) throw new NotFoundException('WBS Element', originalTask.wbsElementId);
+
+    //validate that the assignees are part of the project team
+    const projectTeam = taskWbsElement.project?.team;
+
+    validateAssignees(assigneeUsers, projectTeam);
 
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {

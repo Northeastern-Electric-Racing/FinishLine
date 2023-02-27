@@ -17,6 +17,8 @@ import {
 } from './test-data/tasks.test-data';
 import { aquaman, batman, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import { prismaProject1 } from './test-data/projects.test-data';
+import { prismaTeam1 } from './test-data/teams.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -25,6 +27,8 @@ describe('Tasks', () => {
     projectNumber: 2,
     workPackageNumber: 0
   };
+  const mockProjectWithTeam = { ...prismaProject1, team: { ...prismaTeam1 } };
+  const mockWBSElementWithProject = { ...prismaWbsElement1, project: { ...mockProjectWithTeam } };
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -98,7 +102,7 @@ describe('Tasks', () => {
     });
 
     test('create task succeeds', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
@@ -208,20 +212,21 @@ describe('Tasks', () => {
   describe('editTaskAssignees', () => {
     test('edit task assignee succeeds', async () => {
       jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
-      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
 
       const taskId = '1';
       const userIds = [
         {
-          userId: superman.userId
+          userId: batman.userId
         },
         {
           userId: wonderwoman.userId
         }
       ];
-      const updatedTask = await TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId]);
+      const updatedTask = await TasksService.editTaskAssignees(batman, taskId, [batman.userId, wonderwoman.userId]);
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.update).toHaveBeenCalledTimes(1);
