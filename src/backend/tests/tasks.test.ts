@@ -5,6 +5,7 @@ import prisma from '../src/prisma/prisma';
 import TasksService from '../src/services/tasks.services';
 import * as taskTransformer from '../src/transformers/tasks.transformer';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import * as userUtils from '../src/utils/users.utils';
 import {
   invalidTaskNotes,
   taskSaveTheDayDeletedPrisma,
@@ -13,7 +14,7 @@ import {
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
 } from './test-data/tasks.test-data';
-import { aquaman, batman, greenlantern, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Tasks', () => {
@@ -201,5 +202,71 @@ describe('Tasks', () => {
         new HttpException(400, 'Cant edit a deleted Task!')
       );
     });
+  });
+
+  describe('editTaskAssignees', () => {
+    test('edit task assignee succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+
+      const taskId = '1';
+      const userIds = [
+        {
+          userId: superman.userId
+        },
+        {
+          userId: wonderwoman.userId
+        }
+      ];
+      const updatedTask = await TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId]);
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { taskId },
+        data: {
+          assignees: {
+            set: userIds
+          }
+        },
+        ...taskQueryArgs
+      });
+      expect(updatedTask).toStrictEqual(taskSaveTheDayInProgressShared);
+    });
+  });
+
+  test('edit task assignees fails when task does not exist', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+    const fakeTaskId = '100';
+    await expect(() =>
+      TasksService.editTaskAssignees(batman, fakeTaskId, [superman.userId, wonderwoman.userId])
+    ).rejects.toThrow(new NotFoundException('Task', fakeTaskId));
+  });
+
+  test('edit task assignees fails if user does not have permission', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+    jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+
+    const taskId = '1';
+    await expect(() =>
+      TasksService.editTaskAssignees(aquaman, taskId, [superman.userId, wonderwoman.userId])
+    ).rejects.toThrow(
+      new AccessDeniedException(
+        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+      )
+    );
+  });
+
+  test('edit task assignees fails if task is deleted', async () => {
+    jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+    const taskId = '1';
+    await expect(() =>
+      TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId])
+    ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
   });
 });

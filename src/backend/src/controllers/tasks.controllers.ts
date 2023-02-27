@@ -36,4 +36,20 @@ export default class TasksController {
       next(error);
     }
   }
+
+  static async editTaskAssignees(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assignees } = req.body;
+
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.editTaskAssignees(user, taskId, assignees);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
