@@ -21,6 +21,6 @@ tasksRouter.post(
 
 tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
 
-tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
+tasksRouter.delete('/:taskId/delete', TasksController.deleteTask);
 
 export default tasksRouter;

@@ -216,12 +216,34 @@ describe('Tasks', () => {
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('delete task fails when wbs element does not exist', async () => {
+    test('delete task fails when task is already deleted', async () => {
       jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new HttpException(400, 'Cant delete a deleted Task!')
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when wbs element does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
-        new NotFoundException('WBS Element', taskSaveTheDayDeletedPrisma.wbsElementId)
+        new NotFoundException('WBS Element', taskSaveTheDayPrisma.wbsElementId)
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when wbs element is deleted', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new HttpException(400, "This task's wbs element has been deleted!")
       );
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
@@ -229,7 +251,7 @@ describe('Tasks', () => {
     });
 
     test('delete task fails when user does not have permission', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
 
       await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(new AccessDeniedException());
@@ -239,13 +261,13 @@ describe('Tasks', () => {
     });
 
     test('delete task succeeds', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       jest.spyOn(prisma.task, 'delete').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       const deletedTask = await TasksService.deleteTask(batman, mockTaskId);
 
-      expect(deletedTask).toEqual(taskSaveTheDayDeletedPrisma.taskId);
+      expect(deletedTask).toEqual(taskSaveTheDayPrisma.taskId);
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.update).toHaveBeenCalledTimes(1);
