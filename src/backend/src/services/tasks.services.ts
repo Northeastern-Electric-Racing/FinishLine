@@ -64,6 +64,36 @@ export default class TasksService {
   }
 
   /**
+   * Edits a Task in the database
+   * @param user the user editing the task
+   * @param taskId the task that is being edited
+   * @param title the new title for the task
+   * @param notes the new notes for the task
+   * @param priority the new priority for the task
+   * @param deadline the new deadline for the task
+   * @returns the sucessfully edited task
+   */
+  static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission) throw new AccessDeniedException();
+
+    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+
+    if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
+
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: { title, notes, priority, deadline },
+      ...taskQueryArgs
+    });
+    return taskTransformer(updatedTask);
+  }
+
+  /**
    * Edits the status of a task in the database
    * @param user the user editing the task
    * @param taskId the id of the task
