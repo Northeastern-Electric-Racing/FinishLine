@@ -40,12 +40,21 @@ describe('Tasks', () => {
 
   describe('createTask', () => {
     test('create task fails when user does not have permission', async () => {
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
       await expect(() =>
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(new AccessDeniedException());
+
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
 
     test('create task fails when title is over word count', async () => {
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
       await expect(() =>
         TasksService.createTask(
           batman,
@@ -58,12 +67,20 @@ describe('Tasks', () => {
           []
         )
       ).rejects.toThrow(new HttpException(400, 'Title must be less than 15 words'));
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
 
     test('create task fails when notes is over word count', async () => {
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', invalidTaskNotes, mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(new HttpException(400, 'Notes must be less than 250 words'));
+
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
 
     test('create task fails when wbs element doesnt exist', async () => {
