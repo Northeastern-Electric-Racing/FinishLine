@@ -12,7 +12,7 @@ import {
   GridRowId,
   GridRowParams
 } from '@mui/x-data-grid';
-import { RoleEnum, Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
+import { Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -24,7 +24,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import React from 'react';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 import { useState } from 'react';
-import { useEditTask, useSetTaskStatus } from '../../../hooks/tasks.hooks';
+import { useEditTask, useEditTaskAssignees, useSetTaskStatus } from '../../../hooks/tasks.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 
@@ -47,21 +47,21 @@ interface TaskListTabPanelProps {
   tasks: Task[];
   team?: TeamPreview;
   status: TaskStatus;
+  hasPerms: boolean;
 }
 
 type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, team } = props;
+  const { value, index, tasks, status, team, hasPerms } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
   const toast = useToast();
   const auth = useAuth();
-
-  const disabled = auth.user?.role === RoleEnum.GUEST;
-
   const theme = useTheme();
+
+  const disabled = !hasPerms;
 
   const renderNotes = (params: GridRenderCellParams<Task>) => (
     <Link
@@ -246,24 +246,38 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   });
 
   const { isLoading, isError, mutateAsync, error } = useEditTask();
+  const {
+    isLoading: assigneeIsLoading,
+    isError: assigneeIsError,
+    mutateAsync: assigneeMutateAsync,
+    error: assigneeError
+  } = useEditTaskAssignees();
 
-  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
   const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
-    handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
     await mutateAsync({
       taskId,
       notes,
       title,
       deadline,
-      priority,
+      priority
+    }).catch((error) => {
+      toast.error(error.message);
+      throw new Error(error);
+    });
+    await assigneeMutateAsync({
+      taskId,
       assignees
     }).catch((error) => {
       toast.error(error.message);
       throw new Error(error);
     });
+    toast.success('Task edited successfully');
+    handleClose();
   };
 
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
@@ -311,6 +325,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           onSubmit={handleEditTask}
           task={selectedTask!}
           team={team}
+          hasPerms={hasPerms}
         />
       )}
     </div>

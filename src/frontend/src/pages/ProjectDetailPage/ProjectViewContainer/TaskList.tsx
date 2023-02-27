@@ -17,10 +17,11 @@ interface TaskListProps {
   tasks: Task[];
   team?: TeamPreview;
   defaultClosed?: boolean;
+  hasPerms: boolean;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, defaultClosed, team }: TaskListProps) => {
+const TaskList = ({ tasks, defaultClosed, team, hasPerms }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -63,9 +64,23 @@ const TaskList = ({ tasks, defaultClosed, team }: TaskListProps) => {
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
-      <TaskListTabPanel tasks={backLogTasks} value={value} index={0} status={TaskStatus.IN_BACKLOG} team={team} />
-      <TaskListTabPanel tasks={inProgressTasks} value={value} index={1} status={TaskStatus.IN_PROGRESS} team={team} />
-      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} team={team} />
+      <TaskListTabPanel
+        tasks={backLogTasks}
+        value={value}
+        index={0}
+        status={TaskStatus.IN_BACKLOG}
+        team={team}
+        hasPerms={hasPerms}
+      />
+      <TaskListTabPanel
+        tasks={inProgressTasks}
+        value={value}
+        index={1}
+        status={TaskStatus.IN_PROGRESS}
+        team={team}
+        hasPerms={hasPerms}
+      />
+      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} team={team} hasPerms={hasPerms} />
     </PageBlock>
   );
 };

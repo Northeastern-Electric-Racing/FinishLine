@@ -32,15 +32,9 @@ export default class TasksService {
     status: Task_Status,
     assignees: number[]
   ): Promise<Task> {
-    if (createdBy.role === Role.GUEST) throw new AccessDeniedException();
-
-    if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
-
-    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
-
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsNumber: wbsNum },
-      include: { project: { include: { team: { ...teamQueryArgs } } } }
+      include: { project: { include: { team: { ...teamQueryArgs }, wbsElement: true } } }
     });
 
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
@@ -50,9 +44,28 @@ export default class TasksService {
     // this throws if any of the users aren't found
     const users = await getUsers(assignees);
 
-    const projectTeam = requestedWbsElement.project?.team;
+    const { project } = requestedWbsElement;
+
+    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
+
+    const projectTeam = project.team;
 
     validateAssignees(users, projectTeam);
+
+    if (
+      (createdBy.role === Role.GUEST && !projectTeam!.members.map((user) => user.userId).includes(createdBy.userId)) ||
+      (createdBy.role === Role.MEMBER &&
+        !(
+          project.wbsElement.projectLeadId === createdBy.userId || project.wbsElement.projectManagerId === createdBy.userId
+        )) ||
+      !(projectTeam!.leaderId === createdBy.userId)
+    ) {
+      throw new AccessDeniedException();
+    }
+
+    if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
+
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     const createdTask = await prisma.task.create({
       data: {

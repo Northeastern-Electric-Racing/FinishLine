@@ -5,7 +5,7 @@
 
 import { useQueryClient, useMutation } from 'react-query';
 import { TaskPriority } from 'shared';
-import { editTask, editSingleTaskStatus } from '../apis/tasks.api';
+import { editTask, editSingleTaskStatus, editTaskAssignees } from '../apis/tasks.api';
 
 interface TaskPayload {
   taskId: string;
@@ -16,6 +16,10 @@ interface TaskPayload {
   assignees: number[];
 }
 
+/**
+ * Custom React Hook for editing a task
+ * @returns the edit task mutation'
+ */
 export const useEditTask = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
@@ -26,9 +30,9 @@ export const useEditTask = () => {
         taskPayload.title,
         taskPayload.notes,
         taskPayload.priority,
-        taskPayload.deadline,
-        taskPayload.assignees
+        taskPayload.deadline
       );
+
       return data;
     },
     {
@@ -39,6 +43,30 @@ export const useEditTask = () => {
   );
 };
 
+/**
+ * custom react hook for editing task assignees
+ * @returns the edit task assignees mutation
+ */
+export const useEditTaskAssignees = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['tasks', 'edit-assignees'],
+    async (editAssigneesTaskPayload: any) => {
+      const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects', 'tasks']);
+      }
+    }
+  );
+};
+
+/**
+ * custom react hook for editing task status
+ * @returns the edit task status mutation
+ */
 export const useSetTaskStatus = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(

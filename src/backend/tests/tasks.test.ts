@@ -15,7 +15,7 @@ import {
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
 } from './test-data/tasks.test-data';
-import { aquaman, batman, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
@@ -41,7 +41,7 @@ describe('Tasks', () => {
   describe('createTask', () => {
     test('create task fails when user does not have permission', async () => {
       await expect(() =>
-        TasksService.createTask(wonderwoman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
+        TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(new AccessDeniedException());
     });
 

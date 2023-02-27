@@ -40,6 +40,7 @@ interface TaskListNotesModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
+  hasPerms: boolean;
 }
 
 export interface FormInput {
@@ -64,7 +65,8 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   team,
   modalShow,
   onHide,
-  onSubmit
+  onSubmit,
+  hasPerms
 }: TaskListNotesModalProps) => {
   const auth = useAuth();
   const theme = useTheme();
@@ -119,6 +121,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
           <IconButton
             onClick={() => setIsEditMode(true)}
             aria-label="edit"
+            disabled={!hasPerms}
             sx={{
               position: 'absolute',
               right: 40,

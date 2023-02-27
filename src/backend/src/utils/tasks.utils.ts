@@ -89,7 +89,10 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
 };
 
 //validates that the assignees are part of the project team
-export const validateAssignees = (users: User[], projectTeam: Prisma.TeamGetPayload<typeof teamQueryArgs> | undefined | null) => {
+export const validateAssignees = (
+  users: User[],
+  projectTeam: Prisma.TeamGetPayload<typeof teamQueryArgs> | undefined | null
+) => {
   //checks if the project exists
   if (!projectTeam) throw new HttpException(400, `Project team does not exist!`);
 

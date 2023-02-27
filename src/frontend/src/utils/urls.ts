@@ -27,7 +27,8 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
 const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
-const editTaskById = (taskId: string) => `${tasks}/${taskId}/edit`;
+const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
+const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
 
 /**************** Risks Endpoints ********************/
 const risks = () => `${API_URL}/risks`;
@@ -89,6 +90,7 @@ export const apiUrls = {
   tasks,
   editTaskById,
   taskEditStatus,
+  editTaskAssignees,
 
   risks,
   risksByProjectId,

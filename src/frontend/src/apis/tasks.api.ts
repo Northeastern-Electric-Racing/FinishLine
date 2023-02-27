@@ -17,16 +17,24 @@ import { apiUrls } from '../utils/urls';
  * @param assignees the new assignees
  * @returns the edited task
  */
-export const editTask = (
-  taskId: string,
-  title: string,
-  notes: string,
-  priority: TaskPriority,
-  deadline: Date,
-  assignees: number[]
-) => {
+export const editTask = (taskId: string, title: string, notes: string, priority: TaskPriority, deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.editTaskById(taskId), {
-    params: { title, notes, priority, deadline, assignees }
+    title,
+    notes,
+    priority,
+    deadline
+  });
+};
+
+/**
+ * Sets the task's assignees.
+ * @param taskId the id of the task
+ * @param assignees the ids of the users to assign to the task
+ * @returns the edited task
+ */
+export const editTaskAssignees = (taskId: string, assignees: number[]) => {
+  return axios.post<{ message: string }>(apiUrls.editTaskAssignees(taskId), {
+    assignees
   });
 };
 
