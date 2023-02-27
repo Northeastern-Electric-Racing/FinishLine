@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WorkPackage, WbsNumber } from 'shared';
 import {
   createSingleWorkPackage,
+  deleteWorkPackage,
   editWorkPackage,
   getAllWorkPackages,
   getSingleWorkPackage
@@ -62,6 +63,25 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages', wbsNum]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a work package.
+ */
+export const useDeleteWorkPackage = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['work packages', 'delete'],
+    async (wbsNum: WbsNumber) => {
+      const { data } = await deleteWorkPackage(wbsNum);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );
