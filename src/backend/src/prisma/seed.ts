@@ -549,7 +549,7 @@ const performSeed: () => Promise<void> = async () => {
     'Too many wires... how to even keep track?',
     new Date('2024-02-29T00:00:00-05:00'),
     Task_Priority.HIGH,
-    Task_Status.IN_BACKLOG,
+    Task_Status.IN_PROGRESS,
     [joeShmoe.userId]
   );
 
@@ -571,7 +571,7 @@ const performSeed: () => Promise<void> = async () => {
     'mmm battery juice',
     new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
-    Task_Status.IN_BACKLOG,
+    Task_Status.DONE,
     [joeBlow.userId]
   );
 
