@@ -24,16 +24,15 @@ import CloseIcon from '@mui/icons-material/Close';
 import { DeleteWorkPackageInputs } from './DeleteWorkPackage';
 
 interface DeleteWorkPackageViewProps {
-  wbsNum: WbsNumber;
+  workPackage: WbsNumber;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: DeleteWorkPackageInputs) => Promise<void>;
 }
 
-const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ wbsNum, modalShow, onHide, onSubmit }) => {
-  //   console.log(wbsPipe(wbsNum));
-  //   const workPackageWbsTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(workPackage);
-  const workPackageWbsTester = (wbsNum: string | undefined) => true;
+const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPackage, modalShow, onHide, onSubmit }) => {
+  const workPackageWbsTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(workPackage);
+  // const workPackageWbsTester = (wbsNum: string | undefined) => true;
 
   const schema = yup.object().shape({
     wbsNum: yup.string().required().test('wp-wbs-test', 'Work Package WBS Number does not match', workPackageWbsTester)
@@ -64,7 +63,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ wbsNum, m
             padding: '1rem 1.5rem 0'
           }
         }}
-      >{`Delete Work Package #${wbsPipe(wbsNum)}`}</DialogTitle>
+      >{`Delete Work Package #${wbsPipe(workPackage)}`}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onHide}
@@ -85,7 +84,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ wbsNum, m
         }}
       >
         <Typography sx={{ marginBottom: '1rem' }}>
-          Are you sure you want to delete Work Package #{wbsPipe(wbsNum)}?
+          Are you sure you want to delete Work Package #{wbsPipe(workPackage)}?
         </Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
         <form
@@ -102,10 +101,11 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ wbsNum, m
             </FormLabel>
             <ReactHookTextField
               control={control}
-              name="wpWBS"
+              name="wbsNum"
               errorMessage={errors.wbsNum}
               placeholder="Enter Work Package WBS # here"
               sx={{ width: 1 }}
+              type="string"
             />
           </FormControl>
         </form>

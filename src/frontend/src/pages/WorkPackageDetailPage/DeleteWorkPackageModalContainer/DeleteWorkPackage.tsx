@@ -46,7 +46,7 @@ const DeleteWorkPackage: React.FC<DeleteWorkPackageRequestProps> = ({
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <DeleteWorkPackageView wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  return <DeleteWorkPackageView workPackage={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default DeleteWorkPackage;
