@@ -86,4 +86,31 @@ export default class TasksService {
     const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
     return taskTransformer(updatedTask);
   }
+
+  /**
+   * Delete task in the database
+   * @param taskId the id number of the given task
+   * @param currentUser the current user currently accessing the task
+   * @returns the deleted task
+   * @throws if the user does not have permission
+   */
+
+  static async deleteTask(currentUser: User, taskId: string): Promise<Task> {
+    const task = await prisma.task.findUnique({ where: { taskId }, ...taskQueryArgs });
+    if (!task) throw new NotFoundException('Task', taskId);
+
+    const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
+    if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
+
+    // this checks the current users permissions
+    const isAdmin = currentUser.role === Role.APP_ADMIN;
+    const isLead = wbsElement.projectLeadId === currentUser.userId;
+    if (!isAdmin && !isLead) {
+      throw new AccessDeniedException('');
+    }
+
+    const deletedTask = await prisma.task.delete({ where: { taskId }, ...taskQueryArgs });
+
+    return taskTransformer(deletedTask);
+  }
 }

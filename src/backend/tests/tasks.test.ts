@@ -202,4 +202,55 @@ describe('Tasks', () => {
       );
     });
   });
+
+  describe('deleteTask', () => {
+    const mockTaskId = '4';
+
+    test('delete task fails when task does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new NotFoundException('Task', mockTaskId)
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when wbs element does not exist', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
+        new NotFoundException('WBS Element', taskSaveTheDayDeletedPrisma.wbsElementId)
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task fails when user does not have permission', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+
+      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(
+        new AccessDeniedException('You do not have permission to delete this task')
+      );
+
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('delete task succeeds', async () => {
+      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.task, 'delete').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+
+      const deletedTask = await TasksService.deleteTask(batman, mockTaskId);
+
+      expect(deletedTask).toEqual(taskSaveTheDayShared);
+      expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.task.delete).toHaveBeenCalledTimes(1);
+    });
+  });
 });

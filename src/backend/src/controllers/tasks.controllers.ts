@@ -36,4 +36,14 @@ export default class TasksController {
       next(error);
     }
   }
+
+  //get user, checks the given user
+  static async getUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const currentUser: User = await getCurrentUser(res);
+      res.status(200).json(currentUser);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
