@@ -12,7 +12,7 @@ import {
   GridRowId,
   GridRowParams
 } from '@mui/x-data-grid';
-import { RoleEnum, Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
+import { RoleEnum, Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -45,13 +45,14 @@ interface TaskListTabPanelProps {
   index: number;
   value: number;
   tasks: Task[];
+  team?: TeamPreview;
   status: TaskStatus;
 }
 
 type Row = { id: number; title: string; deadline: string; priority: TaskPriority; assignee: string; taskId: string };
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status } = props;
+  const { value, index, tasks, status, team } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
@@ -304,7 +305,13 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         </Box>
       )}
       {modalShow && (
-        <TaskListNotesModal modalShow={modalShow} onHide={handleClose} onSubmit={handleEditTask} task={selectedTask!} />
+        <TaskListNotesModal
+          modalShow={modalShow}
+          onHide={handleClose}
+          onSubmit={handleEditTask}
+          task={selectedTask!}
+          team={team}
+        />
       )}
     </div>
   );

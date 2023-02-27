@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from 'shared';
+import { TeamPreview, User } from 'shared';
 import { fullNamePipe, datePipe } from '../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -37,6 +37,7 @@ import { Close, Edit } from '@mui/icons-material';
 
 interface TaskListNotesModalProps {
   task: Task;
+  team?: TeamPreview;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
@@ -61,6 +62,7 @@ const schema = yup.object().shape({
 
 const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   task,
+  team,
   modalShow,
   onHide,
   onSubmit
@@ -89,7 +91,14 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   const userToAutocompleteOption = (user: User): { label: string; id: number } => {
     return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
   };
-  const options = users.sort((a, b) => (a.firstName > b.firstName ? 1 : -1)).map(userToAutocompleteOption);
+
+  const options = team
+    ? users
+        .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+        .filter((user) => team.members.map((user) => user.userId).includes(user.userId))
+        .map(userToAutocompleteOption)
+    : [];
+
   const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const ViewModal: React.FC = () => {
