@@ -28,14 +28,5 @@ describe('help page component', () => {
     expect(screen.getByText(/Support/)).toBeInTheDocument();
     expect(screen.getByText(/Message in Slack/)).toBeInTheDocument();
     expect(screen.getByText(/GitHub/)).toBeInTheDocument();
-    expect(screen.getByText(/Calendars/)).toBeInTheDocument();
-    expect(screen.getAllByText(/Public URL/).length).toEqual(6);
-    expect(screen.getAllByText(/iCal URL/).length).toEqual(6);
-    expect(screen.getByText(/Club-Wide Meetings & Events/)).toBeInTheDocument();
-    expect(screen.getByText(/Electrical Meetings/)).toBeInTheDocument();
-    expect(screen.getByText(/Mechanical Meetings/)).toBeInTheDocument();
-    expect(screen.getByText(/Business Meetings/)).toBeInTheDocument();
-    expect(screen.getByText(/Software Meetings/)).toBeInTheDocument();
-    expect(screen.getByText(/Engineering Reviews/)).toBeInTheDocument();
   });
 });

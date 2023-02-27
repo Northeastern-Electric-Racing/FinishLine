@@ -72,7 +72,6 @@ export const seedWorkPackage = async (
     workPackage.dependencies,
     workPackage.expectedActivities.map(descBulletConverter),
     workPackage.deliverables.map(descBulletConverter),
-    status,
     projectLead,
     projectManager
   );

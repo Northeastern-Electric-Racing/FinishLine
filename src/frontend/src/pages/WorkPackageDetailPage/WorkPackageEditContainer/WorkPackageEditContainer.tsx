@@ -41,7 +41,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
-  const { name, startDate, duration, status } = workPackage;
+  const { name, startDate, duration } = workPackage;
   const {
     register,
     handleSubmit,
@@ -63,8 +63,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         return { wbsNum };
       }),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
-      deliverables: bulletsToObject(workPackage.deliverables),
-      wbsElementStatus: status
+      deliverables: bulletsToObject(workPackage.deliverables)
     }
   });
   // lists of stuff
@@ -101,7 +100,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies, stage } = data;
+    const { name, projectLead, projectManager, startDate, duration, crId, dependencies, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
@@ -120,7 +119,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         }),
         expectedActivities,
         deliverables,
-        wbsElementStatus,
         stage
       };
       await mutateAsync(payload);

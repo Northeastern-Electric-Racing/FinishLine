@@ -88,6 +88,49 @@ export default class TasksService {
   }
 
   /**
+   * Edits the assignees of a task in the database
+   * @param user the user editing the task
+   * @param taskId the id of the task
+   * @param assignees the new assignees
+   * @returns the updated task
+   * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
+   */
+  static async editTaskAssignees(user: User, taskId: string, assignees: number[]): Promise<Task> {
+    // Get the original task and check if it exists
+    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission)
+      throw new AccessDeniedException(
+        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+      );
+
+    // this throws if any of the users aren't found
+    const assigneeUsers = await getUsers(assignees);
+
+    // retrieve userId for every assignee to update task's assignees in the database
+    const transformedAssigneeUsers = assigneeUsers.map((user) => {
+      return {
+        userId: user.userId
+      };
+    });
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: {
+        assignees: {
+          set: transformedAssigneeUsers
+        }
+      },
+      ...taskQueryArgs
+    });
+
+    return taskTransformer(updatedTask);
+  }
+
+  /**
    * Delete task in the database
    * @param taskId the id number of the given task
    * @param currentUser the current user currently accessing the task
