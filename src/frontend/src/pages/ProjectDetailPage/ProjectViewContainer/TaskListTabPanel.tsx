@@ -3,18 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Link, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Link, TextField, Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
   GridCellParams,
   GridColumns,
   GridRenderCellParams,
+  GridRenderEditCellParams,
   GridRowId,
-  GridRowParams
+  GridRowModel,
+  GridRowParams,
+  useGridApiContext
 } from '@mui/x-data-grid';
 import { RoleEnum, Task, TaskPriority, TaskStatus, UserPreview, WbsNumber } from 'shared';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
+import { fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
 import PauseIcon from '@mui/icons-material/Pause';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -23,7 +26,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSetTaskStatus } from '../../../hooks/tasks.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
@@ -53,16 +56,81 @@ interface TaskListTabPanelProps {
 type Row = {
   id: number;
   title: string;
-  deadline: string;
+  deadline: Date;
   priority: TaskPriority;
   assignee: string;
   taskId: string;
   notes: string;
 };
 
+function TitleEdit(params: GridRenderEditCellParams) {
+  const { id, value, field } = params;
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value; // The new value entered by the user
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+  };
+
+  const handleRef = (element: HTMLDivElement) => {
+    if (element) {
+      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+      input?.focus();
+    }
+  };
+
+  return (
+    <TextField
+      fullWidth
+      variant="outlined"
+      placeholder="Enter a title"
+      value={value}
+      onChange={handleValueChange}
+      ref={handleRef}
+    />
+  );
+}
+
+function AssigneeEdit(params: GridRenderEditCellParams) {
+  const { id, value, field } = params;
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = (_: any, newValue: any) => {
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+  };
+
+  const handleRef = (element: HTMLDivElement) => {
+    if (element) {
+      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+      input?.focus();
+    }
+  };
+
+  return (
+    <Autocomplete
+      fullWidth
+      isOptionEqualToValue={(option, value) => option === value}
+      filterSelectedOptions
+      multiple
+      id="tags-standard"
+      options={['Hello', 'Hi']}
+      getOptionLabel={(option) => option}
+      onChange={handleValueChange}
+      value={[value]} // TODO: make assignees an array with a custom method
+      renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
+      ref={handleRef}
+    />
+  );
+}
+
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status, addTask, onAddCancel, currentProject } = props;
   const editTaskStatus = useSetTaskStatus();
+  const [title, setTitle] = useState('');
+  const [deadline, setDeadline] = useState(new Date());
+  const [priority, setPriority] = useState(TaskPriority.High);
+  const [assignee, setAssignee] = useState('');
+
   const toast = useToast();
 
   const auth = useAuth();
@@ -71,14 +139,24 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const theme = useTheme();
 
-  const renderNotes = (params: GridRenderCellParams) =>
-    params.id === -1 ? <Typography> {params.row.notes} </Typography> : <Link>See Notes</Link>;
+  const renderNotes = (params: GridRenderCellParams) => (
+    //params.id === -1 add in to disable
+    <Link>See Notes</Link>
+  );
 
   const renderPriority = (params: GridRenderCellParams) => {
     const { priority } = params.row;
     const color = priority === 'HIGH' ? '#ef4345' : priority === 'LOW' ? '#00ab41' : '#FFA500';
     return <Typography sx={{ color }}>{priority}</Typography>;
   };
+
+  const renderTitleEdit = React.useCallback((params: GridRenderEditCellParams) => {
+    return <TitleEdit {...params} />;
+  }, []);
+
+  const renderAssigneeEdit = React.useCallback((params: GridRenderEditCellParams) => {
+    return <AssigneeEdit {...params} />;
+  }, []);
 
   const moveToBacklog = React.useCallback(
     (id: string) => async () => {
@@ -228,6 +306,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         headerName: 'Title',
         type: 'string',
         width: 90,
+        renderEditCell: renderTitleEdit,
         editable: true
       },
       {
@@ -235,13 +314,13 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         flex: 1,
         field: 'notes',
         headerName: 'Notes',
-        renderCell: renderNotes,
-        editable: true
+        renderCell: renderNotes
       },
       {
         ...baseColDef,
         field: 'deadline',
         headerName: 'Deadline',
+        type: 'date',
         editable: true
       },
       {
@@ -252,7 +331,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         renderCell: renderPriority,
         editable: true,
         type: 'singleSelect',
-        valueOptions: ['HIGH', 'MEDIUM', 'LOW']
+        valueOptions: [TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]
       },
       {
         flex: 3,
@@ -260,6 +339,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         headerName: 'Assignee',
         align: 'center',
         headerAlign: 'center',
+        renderEditCell: renderAssigneeEdit,
         editable: true
       },
       {
@@ -271,7 +351,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         editable: true
       }
     ];
-  }, [getActions]);
+  }, [getActions, renderTitleEdit, renderAssigneeEdit]);
 
   const rows = tasks.map((task: Task, idx: number) => {
     const assigneeString = task.assignees.reduce(
@@ -281,7 +361,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     return {
       id: idx,
       title: task.title,
-      deadline: datePipe(task.deadline),
+      deadline: task.deadline,
       priority: task.priority,
       assignee: assigneeString.substring(0, assigneeString.length - 2),
       taskId: task.taskId,
@@ -291,14 +371,30 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   if (addTask) {
     rows.push({
       id: -1,
-      title: '',
-      deadline: new Date().toDateString(),
-      priority: TaskPriority.High,
-      assignee: '',
+      title: title,
+      deadline: deadline,
+      priority: priority,
+      assignee: assignee,
       taskId: '-1',
       notes: ''
     });
   }
+
+  const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
+    setTitle(newRow.title);
+    setPriority(newRow.priority);
+    setDeadline(newRow.deadline);
+    setAssignee(newRow.assignee);
+    return {
+      id: newRow.id,
+      title: newRow.title,
+      deadline: newRow.deadline,
+      priority: newRow.priority,
+      assignee: newRow.assignee,
+      taskId: newRow.tasId,
+      notes: newRow.notes
+    };
+  }, []);
 
   if (!auth.user) return <LoadingIndicator />;
 
@@ -318,6 +414,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             pageSize={5}
             isCellEditable={isCellEditable}
             experimentalFeatures={{ newEditingApi: true }}
+            processRowUpdate={processRowUpdate}
             rowsPerPageOptions={[5]}
             sx={{
               '&.MuiDataGrid-root .MuiDataGrid-cell:focus': {
