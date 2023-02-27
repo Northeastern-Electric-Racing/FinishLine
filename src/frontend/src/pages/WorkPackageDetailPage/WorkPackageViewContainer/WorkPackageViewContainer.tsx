@@ -86,7 +86,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     handleDropdownClose();
   };
 
-  const editBtn = (
+  const editButton = (
     <MenuItem onClick={handleClickEdit} disabled={!allowEdit}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
@@ -94,7 +94,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       Edit
     </MenuItem>
   );
-  const activateBtn = (
+  const activateButton = (
     <MenuItem onClick={handleClickActivate} disabled={!allowActivate}>
       <ListItemIcon>
         <KeyboardDoubleArrowUpIcon fontSize="small" />
@@ -102,7 +102,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       Activate
     </MenuItem>
   );
-  const stageGateBtn = (
+  const stageGateButton = (
     <MenuItem onClick={handleClickStageGate} disabled={!allowStageGate}>
       <ListItemIcon>
         <DoneOutlineIcon fontSize="small" />
@@ -110,7 +110,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       Stage Gate
     </MenuItem>
   );
-  const deleteBtn = (
+  const deleteButton = (
     <MenuItem onClick={handleClickDelete} disabled={!allowDelete}>
       <ListItemIcon>
         <Delete fontSize="small" />
@@ -118,7 +118,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       Delete
     </MenuItem>
   );
-  const createCRBtn = (
+  const createCRButton = (
     <MenuItem
       component={Link}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
@@ -142,11 +142,11 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         Actions
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {editBtn}
-        {workPackage.status === WbsElementStatus.Inactive ? activateBtn : ''}
-        {workPackage.status === WbsElementStatus.Active ? stageGateBtn : ''}
-        {createCRBtn}
-        {deleteBtn}
+        {editButton}
+        {workPackage.status === WbsElementStatus.Inactive ? activateButton : ''}
+        {workPackage.status === WbsElementStatus.Active ? stageGateButton : ''}
+        {createCRButton}
+        {deleteButton}
       </Menu>
     </div>
   );

@@ -32,7 +32,6 @@ interface DeleteWorkPackageViewProps {
 
 const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPackage, modalShow, onHide, onSubmit }) => {
   const workPackageWbsTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(workPackage);
-  // const workPackageWbsTester = (wbsNum: string | undefined) => true;
 
   const schema = yup.object().shape({
     wbsNum: yup.string().required().test('wp-wbs-test', 'Work Package WBS Number does not match', workPackageWbsTester)
