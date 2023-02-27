@@ -53,12 +53,14 @@ export default class TasksService {
     validateAssignees(users, projectTeam);
 
     if (
-      (createdBy.role === Role.GUEST && !projectTeam!.members.map((user) => user.userId).includes(createdBy.userId)) ||
+      (createdBy.role === Role.GUEST &&
+        !projectTeam!.members.map((user) => user.userId).includes(createdBy.userId) &&
+        !(projectTeam!.leaderId === createdBy.userId)) ||
       (createdBy.role === Role.MEMBER &&
         !(
           project.wbsElement.projectLeadId === createdBy.userId || project.wbsElement.projectManagerId === createdBy.userId
-        )) ||
-      !(projectTeam!.leaderId === createdBy.userId)
+        ) &&
+        !(projectTeam!.leaderId === createdBy.userId))
     ) {
       throw new AccessDeniedException();
     }
