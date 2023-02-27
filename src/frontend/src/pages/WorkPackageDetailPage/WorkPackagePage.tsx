@@ -23,6 +23,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
   const auth = useAuth();
   const isGuest = auth.user?.role === 'GUEST';
+  const isAdmin = auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN';
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -39,6 +40,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
       allowActivate={!isGuest}
       allowStageGate={!isGuest}
       allowRequestChange={!isGuest}
+      allowDelete={isAdmin}
     />
   );
 };
