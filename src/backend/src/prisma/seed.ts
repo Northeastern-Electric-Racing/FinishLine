@@ -440,7 +440,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Meet with the Department of Transportation',
     'Discuss design decisions',
-    new Date('2023-05-19T00:00:00-05:00'),
+    new Date('2023-05-19T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
     [thomasEmrax.userId]
@@ -481,7 +481,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Safety Training',
     'how to use (or not use) the impact attenuator',
-    new Date('2023-03-15T00:00:00-05:00'),
+    new Date('2023-03-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
@@ -492,7 +492,7 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Double-Check Inventory',
     'Nobody really wants to do this...',
-    new Date('2023-04-01T00:00:00-05:00'),
+    new Date('2023-04-01T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
     []
@@ -525,7 +525,7 @@ const performSeed: () => Promise<void> = async () => {
     project2WbsNumber,
     'Discuss Design With Powertrain Team',
     '',
-    new Date('2023-10-31T00:00:00-05:00'),
+    new Date('2023-10-31T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.DONE,
     [thomasEmrax.userId]
@@ -536,7 +536,7 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Power the Battery Box',
     'With all our powers combined, we can win any Electric Racing competition!',
-    new Date('2024-05-01T00:00:00-05:00'),
+    new Date('2024-05-01T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
     [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
@@ -569,7 +569,7 @@ const performSeed: () => Promise<void> = async () => {
     project3WbsNumber,
     'Buy some Battery Juice',
     'mmm battery juice',
-    new Date('2024-04-15T00:00:00-05:00'),
+    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
     [joeBlow.userId]
@@ -580,7 +580,7 @@ const performSeed: () => Promise<void> = async () => {
     project4WbsNumber,
     'Schematics',
     'schematics go brrrrr',
-    new Date('2024-04-15T00:00:00-05:00'),
+    new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
     [joeBlow.userId]
@@ -591,7 +591,7 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Cost Assessment',
     'So this is where our funding goes',
-    new Date('2023-06-23T00:00:00-05:00'),
+    new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId]
