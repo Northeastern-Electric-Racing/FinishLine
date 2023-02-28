@@ -17,7 +17,7 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects', 'tasks']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -33,7 +33,7 @@ export const useSetTaskStatus = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects', 'tasks']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
