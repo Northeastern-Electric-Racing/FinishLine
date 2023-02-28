@@ -51,7 +51,6 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
       if (error instanceof Error) {
         toast.error(error.message);
       }
-      throw new Error(error);
     });
   };
 
