@@ -26,7 +26,7 @@ export interface VersionObject {
   tag_name: string;
 }
 
-export interface EditSingleObjectPayload {
+export interface EditSingleProjectPayload {
   projectId: number;
   crId: number;
   name: string;
