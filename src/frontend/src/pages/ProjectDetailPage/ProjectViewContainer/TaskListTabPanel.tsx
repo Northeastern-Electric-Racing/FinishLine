@@ -11,12 +11,11 @@ import {
   GridColumns,
   GridRenderCellParams,
   GridRenderEditCellParams,
-  GridRowId,
   GridRowModel,
   GridRowParams,
   useGridApiContext
 } from '@mui/x-data-grid';
-import { RoleEnum, Task, TaskPriority, TaskStatus, UserPreview, WbsNumber } from 'shared';
+import { Task, TaskPriority, TaskStatus, UserPreview, WbsNumber, TeamPreview, User } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 import { GridColDefStyle } from '../../../utils/tables';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -27,7 +26,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import React, { useState } from 'react';
-import { useSetTaskStatus } from '../../../hooks/tasks.hooks';
+import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
+import { useCreateTask, useEditTask, useEditTaskAssignees, useSetTaskStatus } from '../../../hooks/tasks.hooks';
+import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 //this is needed to fix some weird bug with getActions()
@@ -47,10 +48,12 @@ interface TaskListTabPanelProps {
   index: number;
   value: number;
   tasks: Task[];
+  team?: TeamPreview;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
   currentProject: WbsNumber;
+  hasPerms: boolean;
 }
 
 type Row = {
@@ -58,9 +61,10 @@ type Row = {
   title: string;
   deadline: Date;
   priority: TaskPriority;
-  assignee: string;
+  assignees: UserPreview[];
   taskId: string;
   notes: string;
+  task: Task;
 };
 
 function TitleEdit(params: GridRenderEditCellParams) {
@@ -91,58 +95,49 @@ function TitleEdit(params: GridRenderEditCellParams) {
   );
 }
 
-function AssigneeEdit(params: GridRenderEditCellParams) {
-  const { id, value, field } = params;
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = (_: any, newValue: any) => {
-    apiRef.current.setEditCellValue({ id, field, value: newValue });
-  };
-
-  const handleRef = (element: HTMLDivElement) => {
-    if (element) {
-      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
-      input?.focus();
-    }
-  };
-
-  return (
-    <Autocomplete
-      fullWidth
-      isOptionEqualToValue={(option, value) => option === value}
-      filterSelectedOptions
-      multiple
-      id="tags-standard"
-      options={['Hello', 'Hi']}
-      getOptionLabel={(option) => option}
-      onChange={handleValueChange}
-      value={[value]} // TODO: make assignees an array with a custom method
-      renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
-      ref={handleRef}
-    />
-  );
-}
-
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, addTask, onAddCancel, currentProject } = props;
+  const { value, index, tasks, status, addTask, onAddCancel, currentProject, team, hasPerms } = props;
+  const [modalShow, setModalShow] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
   const [title, setTitle] = useState('');
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
-  const [assignee, setAssignee] = useState('');
+  const [assignees, setAssignees] = useState<UserPreview[]>([]);
+  const { mutateAsync: createTaskMutate } = useCreateTask(currentProject);
 
   const toast = useToast();
-
   const auth = useAuth();
-
-  const disabled = auth.user?.role === RoleEnum.GUEST;
-
   const theme = useTheme();
 
-  const renderNotes = (params: GridRenderCellParams) => (
-    //params.id === -1 add in to disable
-    <Link>See Notes</Link>
-  );
+  const disabled = !hasPerms;
+
+  const renderNotes = (params: GridRenderCellParams<Task>) =>
+    params.id === -1 ? (
+      <Link>See Notes</Link>
+    ) : (
+      <Link
+        onClick={() => {
+          setSelectedTask(params.row.task);
+          setModalShow(true);
+        }}
+      >
+        See Notes
+      </Link>
+    );
+
+  const renderAssignees = (params: GridRenderCellParams) => {
+    const assigneeString = params.row.assignees.reduce(
+      (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
+      ''
+    );
+    return <Typography>{assigneeString.substring(0, assigneeString.length - 2)}</Typography>;
+  };
+
+  const handleClose = () => {
+    setModalShow(false);
+    setSelectedTask(undefined);
+  };
 
   const renderPriority = (params: GridRenderCellParams) => {
     const { priority } = params.row;
@@ -153,6 +148,58 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const renderTitleEdit = (params: GridRenderEditCellParams) => {
     return <TitleEdit {...params} />;
   };
+
+  function AssigneeEdit(params: GridRenderEditCellParams) {
+    const { value } = params;
+
+    console.log(team);
+
+    const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+      return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
+    };
+
+    const options = !!team
+      ? team.members
+          .concat(team.leader)
+          .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+          .map(userToAutocompleteOption)
+      : [];
+
+    const handleValueChange = (
+      _: any,
+      newValue: {
+        label: string;
+        id: number;
+      }[]
+    ) => {
+      const users = newValue.map((v: { label: string; id: number }) => team!.members.find((o) => o.userId === v.id)!);
+      setAssignees(users);
+    };
+
+    const handleRef = (element: HTMLDivElement) => {
+      if (element) {
+        const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+        input?.focus();
+      }
+    };
+
+    return (
+      <Autocomplete
+        fullWidth
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        filterSelectedOptions
+        multiple
+        id="tags-standard"
+        options={options}
+        getOptionLabel={(option) => option.label}
+        onChange={handleValueChange}
+        value={assignees.map((u: UserPreview) => options.find((o) => o.id === u.userId)!)}
+        // TODO: make assignees an array with a custom method
+        renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
+        ref={handleRef}
+      />
+    );
+  }
 
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
     return <AssigneeEdit {...params} />;
@@ -191,27 +238,34 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     }
   };
 
-  const deleteRow = (id: GridRowId) => () => {
-    console.log('move to done');
+  const deleteRow = (id: string) => () => {
+    console.log('delete');
   };
 
-  const createTask = (params: GridRowParams) => () => {
-    console.log(currentProject);
-    console.log(params);
-    //plug in useCreateTask once you figure out all the edit stuff
+  const createTask = async () => {
+    await createTaskMutate({
+      title: title,
+      notes: '',
+      deadline: deadline,
+      priority: priority,
+      status: status,
+      assignees: assignees.map((user) => user.userId)
+    }).finally(deleteCreateTask);
   };
 
-  const deleteCreateTask = () => () => {
+  const deleteCreateTask = () => {
+    setTitle('');
+    setDeadline(new Date());
+    setPriority(TaskPriority.High);
+    setAssignees([]);
     onAddCancel();
   };
 
   const getActions = (params: GridRowParams) => {
     const actions: JSX.Element[] = [];
     if (params.id === -1) {
-      actions.push(<GridActionsCellItem icon={<SaveIcon fontSize="small" />} label="Save" onClick={createTask(params)} />);
-      actions.push(
-        <GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask()} />
-      );
+      actions.push(<GridActionsCellItem icon={<SaveIcon fontSize="small" />} label="Save" onClick={createTask} />);
+      actions.push(<GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask} />);
     } else {
       if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
         actions.push(
@@ -250,9 +304,9 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           }}
           icon={<DeleteIcon fontSize="small" />}
           label="Delete"
-          onClick={deleteRow(params.id)}
+          onClick={() => deleteRow(params.row.taskId)}
           showInMenu
-          disabled
+          disabled={disabled}
         />
       );
     }
@@ -303,11 +357,12 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     },
     {
       flex: 3,
-      field: 'assignee',
+      field: 'assignees',
       headerName: 'Assignee',
       align: 'center',
       headerAlign: 'center',
       renderEditCell: renderAssigneeEdit,
+      renderCell: renderAssignees,
       editable: true
     },
     {
@@ -321,18 +376,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   ];
 
   const rows = tasks.map((task: Task, idx: number) => {
-    const assigneeString = task.assignees.reduce(
-      (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
-      ''
-    );
     return {
       id: idx,
       title: task.title,
       deadline: task.deadline,
       priority: task.priority,
-      assignee: assigneeString.substring(0, assigneeString.length - 2),
+      assignees: task.assignees,
+      notes: task.notes,
       taskId: task.taskId,
-      notes: task.notes
+      task: task
     };
   });
   if (addTask) {
@@ -341,29 +393,77 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       title: title,
       deadline: deadline,
       priority: priority,
-      assignee: assignee,
+      assignees: assignees,
       taskId: '-1',
-      notes: ''
+      notes: '',
+      task: {
+        taskId: '',
+        wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 2 },
+        title: '',
+        notes: '',
+        dateCreated: new Date(),
+        createdBy: { userId: 0, firstName: '', lastName: '', email: '', role: 'GUEST' },
+        assignees: [],
+        deadline: new Date(),
+        priority: TaskPriority.High,
+        status: TaskStatus.DONE
+      }
     });
   }
 
-  const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
-    setTitle(newRow.title);
-    setPriority(newRow.priority);
-    setDeadline(newRow.deadline);
-    setAssignee(newRow.assignee);
-    return {
-      id: newRow.id,
-      title: newRow.title,
-      deadline: newRow.deadline,
-      priority: newRow.priority,
-      assignee: newRow.assignee,
-      taskId: newRow.tasId,
-      notes: newRow.notes
-    };
-  }, []);
+  const processRowUpdate = React.useCallback(
+    async (newRow: GridRowModel) => {
+      setTitle(newRow.title);
+      setPriority(newRow.priority);
+      setDeadline(newRow.deadline);
+      return {
+        id: newRow.id,
+        title: newRow.title,
+        deadline: newRow.deadline,
+        priority: newRow.priority,
+        assignees: assignees,
+        taskId: newRow.tasId,
+        notes: newRow.notes,
+        task: newRow.task
+      };
+    },
+    [assignees]
+  );
 
-  if (!auth.user) return <LoadingIndicator />;
+  const { isLoading, isError, mutateAsync, error } = useEditTask();
+  const {
+    isLoading: assigneeIsLoading,
+    isError: assigneeIsError,
+    mutateAsync: assigneeMutateAsync,
+    error: assigneeError
+  } = useEditTaskAssignees();
+
+  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
+
+  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
+    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
+    await mutateAsync({
+      taskId,
+      notes,
+      title,
+      deadline,
+      priority
+    }).catch((error) => {
+      toast.error(error.message);
+      throw new Error(error);
+    });
+    await assigneeMutateAsync({
+      taskId,
+      assignees
+    }).catch((error) => {
+      toast.error(error.message);
+      throw new Error(error);
+    });
+    toast.success('Task edited successfully');
+    handleClose();
+  };
 
   const isCellEditable = (params: GridCellParams) => {
     return params.id === -1;
@@ -408,6 +508,16 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             }}
           />
         </Box>
+      )}
+      {modalShow && (
+        <TaskListNotesModal
+          modalShow={modalShow}
+          onHide={handleClose}
+          onSubmit={handleEditTask}
+          task={selectedTask!}
+          team={team}
+          hasPerms={hasPerms}
+        />
       )}
     </div>
   );

@@ -323,7 +323,7 @@ export default class ChangeRequestsService {
     projectManagerId: number,
     startDate: Date,
     confirmDetails: boolean
-  ): Promise<Number> {
+  ): Promise<number> {
     // verify user is allowed to create activation change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -386,7 +386,6 @@ export default class ChangeRequestsService {
    * @param projectNumber  the project number for the wbs element
    * @param workPackageNumber  the work package number for the wbs element
    * @param type  the type of cr
-   * @param leftoverBudget  the leftover budget
    * @param confirmDone  whether or not to confirm
    * @returns the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not stage gate
@@ -397,7 +396,6 @@ export default class ChangeRequestsService {
     projectNumber: number,
     workPackageNumber: number,
     type: CR_Type,
-    leftoverBudget: number,
     confirmDone: boolean
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
@@ -424,7 +422,7 @@ export default class ChangeRequestsService {
         type,
         stageGateChangeRequest: {
           create: {
-            leftoverBudget,
+            leftoverBudget: 0,
             confirmDone
           }
         }

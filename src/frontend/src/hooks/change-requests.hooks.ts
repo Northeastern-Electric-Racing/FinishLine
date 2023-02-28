@@ -114,12 +114,7 @@ export const useCreateActivationChangeRequest = () => {
  */
 export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'stage gate'], async (payload: any) => {
-    const { data } = await createStageGateChangeRequest(
-      payload.submitterId,
-      payload.wbsNum,
-      payload.leftoverBudget,
-      payload.confirmDone
-    );
+    const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
     return data;
   });
 };

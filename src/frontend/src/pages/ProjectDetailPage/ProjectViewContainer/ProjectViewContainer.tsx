@@ -19,6 +19,9 @@ import { routes } from '../../../utils/routes';
 import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import EditIcon from '@mui/icons-material/Edit';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -71,6 +74,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
+      <ListItemIcon>
+        <EditIcon fontSize="small" />
+      </ListItemIcon>
       Edit
     </MenuItem>
   );
@@ -82,6 +88,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       disabled={isGuest}
       onClick={handleDropdownClose}
     >
+      <ListItemIcon>
+        <SyncAltIcon fontSize="small" />
+      </ListItemIcon>
       Request Change
     </MenuItem>
   );
@@ -110,6 +119,14 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </div>
   );
 
+  const hasPerms =
+    !(auth.user.role === 'GUEST' && !proj.team?.members.map((user) => user.userId).includes(auth.user.userId)) &&
+    !(
+      auth.user.role === 'MEMBER' &&
+      (proj.projectLead?.userId !== auth.user.userId || proj.projectManager?.userId !== auth.user.userId) &&
+      !(proj.team?.leader.userId === auth.user.userId)
+    );
+
   return (
     <>
       <PageTitle
@@ -118,7 +135,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
-      <TaskList tasks={proj.tasks} currentProject={proj.wbsNum} />
+      <TaskList tasks={proj.tasks} team={proj.team} hasPerms={hasPerms} currentProject={proj.wbsNum} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />

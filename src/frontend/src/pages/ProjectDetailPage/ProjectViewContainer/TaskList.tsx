@@ -10,16 +10,18 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus, WbsNumber } from 'shared';
+import { Task, TaskStatus, WbsNumber, TeamPreview } from 'shared';
 
 interface TaskListProps {
   tasks: Task[];
-  currentProject: WbsNumber;
+  team?: TeamPreview;
   defaultClosed?: boolean;
+  hasPerms: boolean;
+  currentProject: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, currentProject, defaultClosed }: TaskListProps) => {
+const TaskList = ({ tasks, currentProject, defaultClosed, team, hasPerms }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -68,6 +70,8 @@ const TaskList = ({ tasks, currentProject, defaultClosed }: TaskListProps) => {
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
         currentProject={currentProject}
+        team={team}
+        hasPerms={hasPerms}
       />
       <TaskListTabPanel
         tasks={inProgressTasks}
@@ -77,12 +81,16 @@ const TaskList = ({ tasks, currentProject, defaultClosed }: TaskListProps) => {
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
         currentProject={currentProject}
+        team={team}
+        hasPerms={hasPerms}
       />
       <TaskListTabPanel
         tasks={doneTasks}
         value={value}
         index={2}
         status={TaskStatus.DONE}
+        team={team}
+        hasPerms={hasPerms}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
         currentProject={currentProject}
