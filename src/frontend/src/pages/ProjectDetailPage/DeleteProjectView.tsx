@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
 import {
   Dialog,
   DialogActions,
@@ -24,17 +24,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import { DeleteProjectInputs } from './DeleteProject';
 
 interface DeleteProjectViewProps {
-  project: Project;
+  project: WbsNumber;
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: DeleteProjectInputs) => Promise<void>;
 }
 
 const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalShow, onHide, onSubmit }) => {
-  const projectIdTester = (projectId: string | undefined) => projectId !== undefined && projectId === project.id.toString();
+  const projectWbsNumTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(project);
 
   const schema = yup.object().shape({
-    projectId: yup.string().required().test('project-id-test', 'Project ID does not match', projectIdTester)
+    wbsNum: yup.string().required().test('project-wbs-test', 'Project WBS does not match', projectWbsNumTester)
   });
 
   const {
@@ -44,7 +44,7 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      projectId: ''
+      wbsNum: ''
     },
     mode: 'onChange'
   });
@@ -62,7 +62,7 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
             padding: '1rem 1.5rem 0'
           }
         }}
-      >{`Delete Project #${project.id}`}</DialogTitle>
+      >{`Delete Project #${wbsPipe(project)}`}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onHide}
@@ -82,10 +82,10 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
           }
         }}
       >
-        <Typography sx={{ marginBottom: '1rem' }}>Are you sure you want to delete Project #{project.id}?</Typography>
+        <Typography sx={{ marginBottom: '1rem' }}>Are you sure you want to delete Project #{wbsPipe(project)}?</Typography>
         <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
         <form
-          id="delete-cr-form"
+          id="delete-project-form"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -94,15 +94,15 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
         >
           <FormControl>
             <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-              To confirm deletion, please type in the ID number of this Project.
+              To confirm deletion, please type in the WBS number of this Project.
             </FormLabel>
             <ReactHookTextField
               control={control}
-              name="projectId"
-              errorMessage={errors.projectId}
-              placeholder="Enter Project ID here"
+              name="wbsNum"
+              errorMessage={errors.wbsNum}
+              placeholder="Enter Project WBS here"
               sx={{ width: 1 }}
-              type="number"
+              type="string"
             />
           </FormControl>
         </form>

@@ -159,7 +159,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         ))}
       </PageBlock>
       <ChangesList changes={proj.changes} />
-      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} project={proj} />}
+      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
 };

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project } from 'shared';
+import { validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -14,35 +14,35 @@ import { useDeleteProject } from '../../hooks/projects.hooks';
 interface DeleteProjectProps {
   modalShow: boolean;
   handleClose: () => void;
-  project: Project;
+  wbsNum: WbsNumber;
 }
 
 export interface DeleteProjectInputs {
-  projectId: string;
+  wbsNum: string;
 }
 
-const DeleteProject: React.FC<DeleteProjectProps> = ({ modalShow, handleClose, project }: DeleteProjectProps) => {
+const DeleteProject: React.FC<DeleteProjectProps> = ({ modalShow, handleClose, wbsNum }: DeleteProjectProps) => {
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteProject();
 
-  const handleConfirm = async ({ projectId }: DeleteProjectInputs) => {
+  const handleConfirm = async ({ wbsNum }: DeleteProjectInputs) => {
     handleClose();
-    const numProjectId = parseInt(projectId);
-    await mutateAsync(numProjectId).catch((error) => {
+    const wbsNumber = validateWBS(wbsNum);
+    await mutateAsync(wbsNumber).catch((error) => {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     });
     history.goBack();
-    toast.success(`Project #${projectId} Deleted Successfully!`);
+    toast.success(`Project #${wbsPipe(wbsNumber)} Deleted Successfully!`);
   };
 
   if (isLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <DeleteProjectView project={project} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  return <DeleteProjectView project={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default DeleteProject;
