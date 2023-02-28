@@ -44,9 +44,9 @@ interface TaskListNotesModalProps {
 }
 
 export interface FormInput {
-  taskId: String;
-  title: String;
-  notes: String;
+  taskId: string;
+  title: string;
+  notes: string;
   assignees: number[];
   deadline: Date;
   priority: TaskPriority;

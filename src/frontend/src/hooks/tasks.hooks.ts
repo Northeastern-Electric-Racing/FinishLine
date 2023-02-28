@@ -13,7 +13,6 @@ interface TaskPayload {
   title: string;
   deadline: Date;
   priority: TaskPriority;
-  assignees: number[];
 }
 
 /**
@@ -22,7 +21,7 @@ interface TaskPayload {
  */
 export const useEditTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, TaskPayload>(
     ['tasks', 'edit'],
     async (taskPayload: TaskPayload) => {
       const { data } = await editTask(
@@ -37,7 +36,7 @@ export const useEditTask = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects', 'tasks']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -57,7 +56,7 @@ export const useEditTaskAssignees = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects', 'tasks']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -77,7 +76,7 @@ export const useSetTaskStatus = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects', 'tasks']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
