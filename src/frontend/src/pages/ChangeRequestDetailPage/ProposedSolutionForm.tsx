@@ -9,7 +9,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography } from '@mui/material';
-
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 interface ProposedSolutionFormProps {
   description?: string;
   budgetImpact?: number;
@@ -178,16 +179,24 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           {readOnly ? (
             ''
           ) : (
-            <Box display="flex" flexDirection="row-reverse">
-              <Button
+            <Box textAlign="right" sx={{ my: 2 }}>
+              <NERFailButton
+                variant="contained"
+                onClick={onClose}
+                form="individual-proposed-solution-form"
+                sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
+              >
+                Cancel
+              </NERFailButton>
+              <NERSuccessButton
                 color="success"
                 variant="contained"
                 type="submit"
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Add
-              </Button>
+                Submit
+              </NERSuccessButton>
             </Box>
           )}
         </form>
