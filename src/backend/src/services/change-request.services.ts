@@ -7,7 +7,6 @@ import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/c
 import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
-import { createChangeJsonNonList } from '../utils/work-packages.utils';
 import { createChange } from '../utils/work-packages.utils';
 
 export default class ChangeRequestsService {
@@ -100,25 +99,19 @@ export default class ChangeRequestsService {
           crId,
           reviewer.userId
         );
-        console.log('kkkk');
-        try {
-          await prisma.project.update({
-            where: { projectId: foundCR.wbsElement.project.projectId },
-            data: {
-              budget: newBudget,
-              wbsElement: {
-                update: {
-                  changes: {
-                    create: change
-                  }
+        await prisma.project.update({
+          where: { projectId: foundCR.wbsElement.project.projectId },
+          data: {
+            budget: newBudget,
+            wbsElement: {
+              update: {
+                changes: {
+                  create: change
                 }
               }
             }
-          });
-        } catch (error) {
-          console.log('kkkk');
-          console.log(error);
-        }
+          }
+        });
       } else if (foundCR.wbsElement.workPackage) {
         const wpProj = await prisma.project.findUnique({
           where: { projectId: foundCR.wbsElement.workPackage.projectId }

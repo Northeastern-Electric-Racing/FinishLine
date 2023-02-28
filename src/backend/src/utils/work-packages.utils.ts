@@ -46,7 +46,7 @@ export const createChange = (nameOfField: string, oldValue: any, newValue: any, 
       implementerId,
       detail: `Added ${nameOfField} "${newValue}"`
     };
-  } else if (oldValue !== newValue) {
+  } else if (oldValue !== newValue && newValue !== null) {
     return {
       changeRequestId: crId,
       implementerId,
