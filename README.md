@@ -16,4 +16,4 @@ Our onboarding docs are on Confluence! [Check them out here](https://nerdocs.atl
 
 ## How to Contribute
 
-Check out the [contributor guide](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/8060929/Software+Contributor+Guide). This will take you through the steps of finding a ticket, making a branch, committing code, creating a pull request, etc! If you do not follow this guide, (i.e., properly tagging your commits and branches), your PRs will not be accepted.
+To start contributing, first check out the [contributor guide](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/8060929/Software+Contributor+Guide). This will take you through the steps of finding a ticket, making a branch, committing code, creating a pull request, etc! If you do not follow this guide, (i.e., properly tagging your commits and branches), your PRs will not be accepted.
