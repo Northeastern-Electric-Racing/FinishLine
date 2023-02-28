@@ -80,7 +80,14 @@ const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListPr
         team={team}
         hasTaskPermissions={hasTaskPermissions}
       />
-      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} team={team} hasTaskPermissions={hasTaskPermissions} />
+      <TaskListTabPanel
+        tasks={doneTasks}
+        value={value}
+        index={2}
+        status={TaskStatus.DONE}
+        team={team}
+        hasTaskPermissions={hasTaskPermissions}
+      />
     </PageBlock>
   );
 };
