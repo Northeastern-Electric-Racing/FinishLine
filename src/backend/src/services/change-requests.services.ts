@@ -323,7 +323,7 @@ export default class ChangeRequestsService {
     projectManagerId: number,
     startDate: Date,
     confirmDetails: boolean
-  ): Promise<Number> {
+  ): Promise<number> {
     // verify user is allowed to create activation change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 

@@ -272,6 +272,20 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
+  const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    thomasEmrax,
+    workPackage1.wbsElement.carNumber,
+    workPackage1.wbsElement.projectNumber,
+    workPackage1.wbsElement.workPackageNumber,
+    'ACTIVATION',
+    workPackage1.project.wbsElement.projectLeadId!,
+    workPackage1.project.wbsElement.projectManagerId!,
+    new Date(),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, null);
+
   await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
 
   /** Work Package 2 */
