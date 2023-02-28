@@ -150,208 +150,175 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     return <Typography sx={{ color }}>{priority}</Typography>;
   };
 
-  const renderTitleEdit = React.useCallback((params: GridRenderEditCellParams) => {
+  const renderTitleEdit = (params: GridRenderEditCellParams) => {
     return <TitleEdit {...params} />;
-  }, []);
+  };
 
-  const renderAssigneeEdit = React.useCallback((params: GridRenderEditCellParams) => {
+  const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
     return <AssigneeEdit {...params} />;
-  }, []);
+  };
 
-  const moveToBacklog = React.useCallback(
-    (id: string) => async () => {
-      try {
-        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
-      } catch (e: unknown) {
-        console.log(e);
-        if (e instanceof Error) {
-          toast.error(e.message, 6000);
-        }
+  const moveToBacklog = (id: string) => async () => {
+    try {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
+    } catch (e: unknown) {
+      console.log(e);
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
       }
-    },
-    [editTaskStatus, toast]
-  );
+    }
+  };
 
-  const moveToInProgress = React.useCallback(
-    (id: string) => async () => {
-      try {
-        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
-      } catch (e: unknown) {
-        console.log(e);
-        if (e instanceof Error) {
-          toast.error(e.message, 6000);
-        }
+  const moveToInProgress = (id: string) => async () => {
+    try {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
+    } catch (e: unknown) {
+      console.log(e);
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
       }
-    },
-    [editTaskStatus, toast]
-  );
+    }
+  };
 
-  const moveToDone = React.useCallback(
-    (id: string) => async () => {
-      try {
-        await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
-      } catch (e: unknown) {
-        console.log(e);
-        if (e instanceof Error) {
-          toast.error(e.message, 6000);
-        }
+  const moveToDone = (id: string) => async () => {
+    try {
+      await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
+    } catch (e: unknown) {
+      console.log(e);
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
       }
-    },
-    [editTaskStatus, toast]
-  );
+    }
+  };
 
-  const deleteRow = React.useCallback(
-    (id: GridRowId) => () => {
-      console.log('move to done');
-    },
-    []
-  );
+  const deleteRow = (id: GridRowId) => () => {
+    console.log('move to done');
+  };
 
-  const createTask = React.useCallback(
-    (params: GridRowParams) => () => {
-      console.log(currentProject);
-      console.log(params);
-      //plug in useCreateTask once you figure out all the edit stuff
-    },
-    [currentProject]
-  );
+  const createTask = (params: GridRowParams) => () => {
+    console.log(currentProject);
+    console.log(params);
+    //plug in useCreateTask once you figure out all the edit stuff
+  };
 
-  const deleteCreateTask = React.useCallback(
-    () => () => {
-      onAddCancel();
-    },
-    [onAddCancel]
-  );
+  const deleteCreateTask = () => () => {
+    onAddCancel();
+  };
 
-  const getActions = React.useCallback(
-    (params: GridRowParams) => {
-      const actions: JSX.Element[] = [];
-      if (params.id === -1) {
-        actions.push(<GridActionsCellItem icon={<SaveIcon fontSize="small" />} label="Save" onClick={createTask(params)} />);
-        actions.push(
-          <GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask()} />
-        );
-      } else {
-        if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
-          actions.push(
-            <GridActionsCellItem
-              icon={<PlayArrowIcon fontSize="small" />}
-              label="Move to In Progress"
-              onClick={moveToInProgress(params.row.taskId)}
-              showInMenu
-              disabled={disabled}
-            />
-          );
-        } else if (status === TaskStatus.IN_PROGRESS) {
-          actions.push(
-            <GridActionsCellItem
-              icon={<PauseIcon fontSize="small" />}
-              label="Move to Backlog"
-              onClick={moveToBacklog(params.row.taskId)}
-              showInMenu
-              disabled={disabled}
-            />
-          );
-          actions.push(
-            <GridActionsCellItem
-              icon={<CheckIcon fontSize="small" />}
-              label="Move to Done"
-              onClick={moveToDone(params.row.taskId)}
-              showInMenu
-              disabled={disabled}
-            />
-          );
-        }
+  const getActions = (params: GridRowParams) => {
+    const actions: JSX.Element[] = [];
+    if (params.id === -1) {
+      actions.push(<GridActionsCellItem icon={<SaveIcon fontSize="small" />} label="Save" onClick={createTask(params)} />);
+      actions.push(
+        <GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask()} />
+      );
+    } else {
+      if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
         actions.push(
           <GridActionsCellItem
-            sx={{
-              borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
-            }}
-            icon={<DeleteIcon fontSize="small" />}
-            label="Delete"
-            onClick={deleteRow(params.id)}
+            icon={<PlayArrowIcon fontSize="small" />}
+            label="Move to In Progress"
+            onClick={moveToInProgress(params.row.taskId)}
             showInMenu
-            disabled
+            disabled={disabled}
+          />
+        );
+      } else if (status === TaskStatus.IN_PROGRESS) {
+        actions.push(
+          <GridActionsCellItem
+            icon={<PauseIcon fontSize="small" />}
+            label="Move to Backlog"
+            onClick={moveToBacklog(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
+          />
+        );
+        actions.push(
+          <GridActionsCellItem
+            icon={<CheckIcon fontSize="small" />}
+            label="Move to Done"
+            onClick={moveToDone(params.row.taskId)}
+            showInMenu
+            disabled={disabled}
           />
         );
       }
-      return actions;
+      actions.push(
+        <GridActionsCellItem
+          sx={{
+            borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
+          }}
+          icon={<DeleteIcon fontSize="small" />}
+          label="Delete"
+          onClick={deleteRow(params.id)}
+          showInMenu
+          disabled
+        />
+      );
+    }
+    return actions;
+  };
+
+  const baseColDef: GridColDefStyle = {
+    flex: 2,
+    align: 'center',
+    headerAlign: 'center'
+  };
+
+  const columns: GridColumns<Row> = [
+    {
+      flex: 3,
+      align: 'left',
+      headerAlign: 'center',
+      field: 'title',
+      headerName: 'Title',
+      type: 'string',
+      width: 90,
+      renderEditCell: renderTitleEdit,
+      editable: true
     },
-    [
-      createTask,
-      deleteCreateTask,
-      deleteRow,
-      disabled,
-      moveToBacklog,
-      moveToDone,
-      moveToInProgress,
-      status,
-      theme.palette.mode
-    ]
-  );
-
-  const columns = React.useMemo<GridColumns<Row>>(() => {
-    const baseColDef: GridColDefStyle = {
-      flex: 2,
+    {
+      ...baseColDef,
+      flex: 1,
+      field: 'notes',
+      headerName: 'Notes',
+      renderCell: renderNotes
+    },
+    {
+      ...baseColDef,
+      field: 'deadline',
+      headerName: 'Deadline',
+      type: 'date',
+      editable: true
+    },
+    {
+      ...baseColDef,
+      flex: 1,
+      field: 'priority',
+      headerName: 'Priority',
+      renderCell: renderPriority,
+      editable: true,
+      type: 'singleSelect',
+      valueOptions: [TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]
+    },
+    {
+      flex: 3,
+      field: 'assignee',
+      headerName: 'Assignee',
       align: 'center',
-      headerAlign: 'center'
-    };
-
-    return [
-      {
-        flex: 3,
-        align: 'left',
-        headerAlign: 'center',
-        field: 'title',
-        headerName: 'Title',
-        type: 'string',
-        width: 90,
-        renderEditCell: renderTitleEdit,
-        editable: true
-      },
-      {
-        ...baseColDef,
-        flex: 1,
-        field: 'notes',
-        headerName: 'Notes',
-        renderCell: renderNotes
-      },
-      {
-        ...baseColDef,
-        field: 'deadline',
-        headerName: 'Deadline',
-        type: 'date',
-        editable: true
-      },
-      {
-        ...baseColDef,
-        flex: 1,
-        field: 'priority',
-        headerName: 'Priority',
-        renderCell: renderPriority,
-        editable: true,
-        type: 'singleSelect',
-        valueOptions: [TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]
-      },
-      {
-        flex: 3,
-        field: 'assignee',
-        headerName: 'Assignee',
-        align: 'center',
-        headerAlign: 'center',
-        renderEditCell: renderAssigneeEdit,
-        editable: true
-      },
-      {
-        field: 'actions',
-        type: 'actions',
-        headerName: 'Actions',
-        width: 70,
-        getActions,
-        editable: true
-      }
-    ];
-  }, [getActions, renderTitleEdit, renderAssigneeEdit]);
+      headerAlign: 'center',
+      renderEditCell: renderAssigneeEdit,
+      editable: true
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
+      width: 70,
+      getActions,
+      editable: true
+    }
+  ];
 
   const rows = tasks.map((task: Task, idx: number) => {
     const assigneeString = task.assignees.reduce(
