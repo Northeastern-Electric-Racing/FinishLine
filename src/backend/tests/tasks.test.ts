@@ -6,6 +6,7 @@ import TasksService from '../src/services/tasks.services';
 import * as taskTransformer from '../src/transformers/tasks.transformer';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import * as userUtils from '../src/utils/users.utils';
+import * as taskUtils from '../src/utils/tasks.utils';
 import {
   invalidTaskNotes,
   taskSaveTheDayDeletedPrisma,
@@ -348,7 +349,12 @@ describe('Tasks', () => {
     const fakePriority = Task_Priority.LOW;
     const fakeDeadline = new Date();
 
+    beforeEach(() => {
+      jest.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(true);
+    });
+
     test('user access denied', async () => {
+      jest.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(false);
       await expect(() =>
         TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
       ).rejects.toThrow(new AccessDeniedException());
