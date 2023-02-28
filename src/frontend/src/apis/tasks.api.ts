@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { TaskPriority } from 'shared';
+import { TaskPriority, TaskStatus } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -44,7 +44,7 @@ export const editTaskAssignees = (taskId: string, assignees: number[]) => {
  * @param status the Task_Status that the task is being set to
  * @returns
  */
-export const editSingleTaskStatus = (id: number, status: string) => {
+export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
   return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
     status
   });

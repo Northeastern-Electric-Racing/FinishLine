@@ -46,11 +46,11 @@ interface TaskListTabPanelProps {
   tasks: Task[];
   team?: TeamPreview;
   status: TaskStatus;
-  hasPerms: boolean;
+  hasTaskPermissions: boolean;
 }
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, team, hasPerms } = props;
+  const { value, index, tasks, status, team, hasTaskPermissions } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
@@ -58,7 +58,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const auth = useAuth();
   const theme = useTheme();
 
-  const disabled = !hasPerms;
+  const disabled = !hasTaskPermissions;
 
   const renderNotes = (params: GridRenderCellParams<Task>) => (
     <Link
@@ -249,7 +249,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
   const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
-    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
     await mutateAsync({
       taskId,
       notes,
@@ -258,14 +257,12 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       priority
     }).catch((error) => {
       toast.error(error.message);
-      throw new Error(error);
     });
     await assigneeMutateAsync({
       taskId,
       assignees
     }).catch((error) => {
       toast.error(error.message);
-      throw new Error(error);
     });
     toast.success('Task edited successfully');
     handleClose();
@@ -316,7 +313,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           onSubmit={handleEditTask}
           task={selectedTask!}
           team={team}
-          hasPerms={hasPerms}
+          hasTaskPermissions={hasTaskPermissions}
         />
       )}
     </div>

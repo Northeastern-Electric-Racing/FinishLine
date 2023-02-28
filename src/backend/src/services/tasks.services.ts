@@ -5,7 +5,7 @@ import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { hasPermissionToEditTask, validateAssignees } from '../utils/tasks.utils';
+import { hasPermissionToEditTask, validateTeamAndAssignees } from '../utils/tasks.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TasksService {
@@ -50,18 +50,23 @@ export default class TasksService {
 
     const projectTeam = project.team;
 
-    validateAssignees(users, projectTeam);
+    validateTeamAndAssignees(users, projectTeam);
 
-    if (
-      (createdBy.role === Role.GUEST &&
-        !projectTeam!.members.map((user) => user.userId).includes(createdBy.userId) &&
-        !(projectTeam!.leaderId === createdBy.userId)) ||
-      (createdBy.role === Role.MEMBER &&
-        !(
-          project.wbsElement.projectLeadId === createdBy.userId || project.wbsElement.projectManagerId === createdBy.userId
-        ) &&
-        !(projectTeam!.leaderId === createdBy.userId))
-    ) {
+    const isGuestAndMemberOfTeamOrTeamLead =
+      createdBy.role === Role.GUEST &&
+      (projectTeam!.members.map((member) => member.userId).includes(createdBy.userId) ||
+        projectTeam!.leaderId === createdBy.userId);
+
+    const isMemberAndProjectLeadOrManagerOrTeamLead =
+      createdBy.role === Role.MEMBER &&
+      (project.wbsElement.projectLeadId === createdBy.userId ||
+        project.wbsElement.projectManagerId === createdBy.userId ||
+        projectTeam!.leaderId === createdBy.userId);
+
+    const isLeadershipOrAbove =
+      createdBy.role === Role.ADMIN || createdBy.role === Role.APP_ADMIN || createdBy.role === Role.LEADERSHIP;
+
+    if (!isLeadershipOrAbove && !isGuestAndMemberOfTeamOrTeamLead && !isMemberAndProjectLeadOrManagerOrTeamLead) {
       throw new AccessDeniedException();
     }
 
@@ -175,7 +180,7 @@ export default class TasksService {
     //validate that the assignees are part of the project team
     const projectTeam = taskWbsElement.project?.team;
 
-    validateAssignees(assigneeUsers, projectTeam);
+    validateTeamAndAssignees(assigneeUsers, projectTeam);
 
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {

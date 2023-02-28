@@ -17,11 +17,11 @@ interface TaskListProps {
   tasks: Task[];
   team?: TeamPreview;
   defaultClosed?: boolean;
-  hasPerms: boolean;
+  hasTaskPermissions: boolean;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, defaultClosed, team, hasPerms }: TaskListProps) => {
+const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -70,7 +70,7 @@ const TaskList = ({ tasks, defaultClosed, team, hasPerms }: TaskListProps) => {
         index={0}
         status={TaskStatus.IN_BACKLOG}
         team={team}
-        hasPerms={hasPerms}
+        hasTaskPermissions={hasTaskPermissions}
       />
       <TaskListTabPanel
         tasks={inProgressTasks}
@@ -78,9 +78,9 @@ const TaskList = ({ tasks, defaultClosed, team, hasPerms }: TaskListProps) => {
         index={1}
         status={TaskStatus.IN_PROGRESS}
         team={team}
-        hasPerms={hasPerms}
+        hasTaskPermissions={hasTaskPermissions}
       />
-      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} team={team} hasPerms={hasPerms} />
+      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} team={team} hasTaskPermissions={hasTaskPermissions} />
     </PageBlock>
   );
 };

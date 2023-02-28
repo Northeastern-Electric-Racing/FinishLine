@@ -89,8 +89,8 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
 };
 
 //validates that the assignees are part of the project team
-export const validateAssignees = (
-  users: User[],
+export const validateTeamAndAssignees = (
+  assignees: User[],
   projectTeam: Prisma.TeamGetPayload<typeof teamQueryArgs> | undefined | null
 ) => {
   //checks if the project exists
@@ -98,6 +98,6 @@ export const validateAssignees = (
 
   //checks if the assignees are part of the project team
   const teamMembersIds = projectTeam.members.concat(projectTeam.leader).map((user) => user.userId);
-  if (users.some((assignee) => !teamMembersIds.includes(assignee.userId)))
+  if (assignees.some((assignee) => !teamMembersIds.includes(assignee.userId)))
     throw new HttpException(400, `Assignees must be part of the project team!`);
 };
