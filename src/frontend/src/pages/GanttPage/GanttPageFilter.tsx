@@ -84,6 +84,9 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             }
             onChange={car0Handler}
             sx={{
+              justifyContent: 'end',
+              height: '50px',
+              width: '50px',
               color: 'white',
               '&.Mui-checked': {
                 color: '#ef4345'
@@ -91,7 +94,13 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               '& .MuiSvgIcon-root': {
                 fontSize: '2rem'
               },
-              paddingLeft: 0
+              paddingLeft: 0,
+              '&:hover': {
+                justifyContent: 'end',
+                height: '50px',
+                width: '50px',
+                backgroundColor: '#522f2f'
+              }
             }}
           />
         </Grid>
@@ -127,8 +136,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             }
             onChange={car1Handler}
             sx={{
-              justifyContent: 'right',
-              alignItems: 'right',
+              justifyContent: 'end',
               height: '50px',
               width: '50px',
               color: 'white',
@@ -139,10 +147,8 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
                 fontSize: '2rem'
               },
               paddingLeft: 0,
-
               '&:hover': {
-                justifyContent: 'right',
-                alignItems: 'right',
+                justifyContent: 'end',
                 height: '50px',
                 width: '50px',
                 backgroundColor: '#522f2f'
@@ -183,8 +189,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
             }
             onChange={car2Handler}
             sx={{
-              justifyContent: 'right',
-              alignItems: 'right',
+              justifyContent: 'end',
               height: '50px',
               width: '50px',
               color: 'white',
@@ -196,8 +201,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
               },
               paddingLeft: 0,
               '&:hover': {
-                justifyContent: 'right',
-                alignItems: 'right',
+                justifyContent: 'end',
                 height: '50px',
                 width: '50px',
                 backgroundColor: '#522f2f'
