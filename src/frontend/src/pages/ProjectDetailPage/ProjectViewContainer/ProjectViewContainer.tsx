@@ -27,6 +27,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import DeleteProject from '../DeleteProject';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -34,6 +35,11 @@ interface ProjectViewContainerProps {
 }
 
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
+  const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const handleDeleteClose = () => setDeleteModalShow(false);
+  const handleClickDelete = () => {
+    setDeleteModalShow(true);
+  };
   const auth = useAuth();
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
@@ -71,6 +77,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const isGuest = auth.user.role === 'GUEST';
 
+  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
+
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
       <ListItemIcon>
@@ -100,6 +108,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </MenuItem>
   );
 
+  const deleteButton = (
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      Delete
+    </MenuItem>
+  );
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -114,6 +128,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         {editBtn}
         {createCRBtn}
         {teamAsLeadId && assignToMyTeamButton}
+        {deleteButton}
       </Menu>
     </div>
   );
@@ -144,6 +159,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         ))}
       </PageBlock>
       <ChangesList changes={proj.changes} />
+      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
 };
