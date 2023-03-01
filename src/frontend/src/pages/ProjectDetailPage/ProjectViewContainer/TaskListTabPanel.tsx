@@ -74,12 +74,13 @@ type Row = {
 };
 
 function TitleEdit(params: GridRenderEditCellParams) {
-  const { id, value, field } = params;
+  const { id, value, field, setTitle } = params;
   const apiRef = useGridApiContext();
 
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
+    setTitle(newValue);
   };
 
   const handleRef = (element: HTMLDivElement) => {
@@ -112,10 +113,40 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const { mutateAsync: createTaskMutate } = useCreateTask(currentWbsNumber);
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
+  const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
+  const {
+    isLoading: assigneeIsLoading,
+    isError: assigneeIsError,
+    mutateAsync: editTaskAssigneesMutateAsync,
+    error: assigneeError
+  } = useEditTaskAssignees();
 
   const toast = useToast();
   const auth = useAuth();
   const theme = useTheme();
+
+  const processRowUpdate = React.useCallback(
+    async (newRow: GridRowModel) => {
+      setTitle(newRow.title);
+      setPriority(newRow.priority);
+      setDeadline(newRow.deadline);
+      return {
+        id: newRow.id,
+        title: newRow.title,
+        deadline: newRow.deadline,
+        priority: newRow.priority,
+        assignees: assignees,
+        taskId: newRow.tasId,
+        notes: newRow.notes,
+        task: newRow.task
+      };
+    },
+    [assignees]
+  );
+
+  if (isLoading || assigneeIsLoading || !auth.user || !team) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
   const disabled = !hasTaskPermissions;
 
@@ -153,24 +184,22 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   };
 
   const renderTitleEdit = (params: GridRenderEditCellParams) => {
-    return <TitleEdit {...params} />;
+    return <TitleEdit {...params} setTitle={setTitle} />;
   };
 
   function AssigneeEdit(params: GridRenderEditCellParams) {
-    const { value } = params;
+    if (!team) return <LoadingIndicator />;
 
-    console.log(team);
+    const { value } = params;
 
     const userToAutocompleteOption = (user: User): { label: string; id: number } => {
       return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
     };
 
-    const options = !!team
-      ? team.members
-          .concat(team.leader)
-          .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-          .map(userToAutocompleteOption)
-      : [];
+    const options = team.members
+      .concat(team.leader)
+      .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+      .map(userToAutocompleteOption);
 
     const handleValueChange = (
       _: any,
@@ -179,7 +208,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         id: number;
       }[]
     ) => {
-      const users = newValue.map((v: { label: string; id: number }) => team!.members.find((o) => o.userId === v.id)!);
+      const teamMembers = team.members.concat(team.leader);
+      const users = newValue.map((user) => teamMembers.find((o) => o.userId === user.id)!);
       setAssignees(users);
     };
 
@@ -433,37 +463,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       }
     });
   }
-
-  const processRowUpdate = React.useCallback(
-    async (newRow: GridRowModel) => {
-      setTitle(newRow.title);
-      setPriority(newRow.priority);
-      setDeadline(newRow.deadline);
-      return {
-        id: newRow.id,
-        title: newRow.title,
-        deadline: newRow.deadline,
-        priority: newRow.priority,
-        assignees: assignees,
-        taskId: newRow.tasId,
-        notes: newRow.notes,
-        task: newRow.task
-      };
-    },
-    [assignees]
-  );
-
-  const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
-  const {
-    isLoading: assigneeIsLoading,
-    isError: assigneeIsError,
-    mutateAsync: editTaskAssigneesMutateAsync,
-    error: assigneeError
-  } = useEditTaskAssignees();
-
-  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
   const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
     try {
