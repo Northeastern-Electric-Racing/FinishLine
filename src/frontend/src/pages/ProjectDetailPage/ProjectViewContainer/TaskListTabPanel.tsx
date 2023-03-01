@@ -105,6 +105,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const { mutateAsync: createTaskMutate } = useCreateTask(currentProject);
+  console.log(currentProject);
 
   const toast = useToast();
   const auth = useAuth();
@@ -114,7 +115,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const renderNotes = (params: GridRenderCellParams<Task>) =>
     params.id === -1 ? (
-      <Link>See Notes</Link>
+      <Link color="#808080">See Notes</Link>
     ) : (
       <Link
         onClick={() => {
@@ -201,6 +202,12 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     );
   }
 
+  const transformDate = (date: Date) => {
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
+    return `${date.getFullYear().toString()}/${month}/${day}`;
+  };
+
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
     return <AssigneeEdit {...params} />;
   };
@@ -245,12 +252,13 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const createTask = async () => {
     await createTaskMutate({
       title: title,
-      notes: '',
-      deadline: deadline,
+      deadline: transformDate(deadline),
       priority: priority,
       status: status,
       assignees: assignees.map((user) => user.userId)
-    }).finally(deleteCreateTask);
+    })
+      .finally(deleteCreateTask)
+      .catch((e) => toast.error(e.message, 6000));
   };
 
   const deleteCreateTask = () => {

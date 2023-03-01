@@ -26,7 +26,7 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
-const tasksCreate = (wbsNum: string) => `${tasks}/${wbsNum}`;
+const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
 const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
 const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
 const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
