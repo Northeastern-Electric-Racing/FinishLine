@@ -31,15 +31,17 @@ const DeleteWorkPackage: React.FC<DeleteWorkPackageRequestProps> = ({
   const { isLoading, isError, error, mutateAsync } = useDeleteWorkPackage();
 
   const handleConfirm = async ({ wbsNum }: DeleteWorkPackageInputs) => {
-    handleClose();
-    const wbsNumber = validateWBS(wbsNum);
-    await mutateAsync(wbsNumber).catch((error) => {
+    try {
+      const wbsNumber = validateWBS(wbsNum);
+      await mutateAsync(wbsNumber);
+      handleClose();
+      history.goBack();
+      toast.success(`Project #${wbsPipe(wbsNumber)} Deleted Successfully!`);
+    } catch (e) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
-    });
-    history.goBack();
-    toast.success(`Work Package #${wbsPipe(wbsNumber)} Deleted Successfully!`);
+    }
   };
 
   if (isLoading) return <LoadingIndicator />;
