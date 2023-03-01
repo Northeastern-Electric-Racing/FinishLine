@@ -47,7 +47,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   fontFamily = 'Arial, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue',
   fontSize = '14px',
   arrowIndent = 20,
-  todayColor = 'rgba(252, 248, 150, 0.5)',
+  todayColor = 'rgba(3, 152, 252, .25)',
   viewDate,
   TooltipContent = StandardTooltipContent,
   TaskListHeader = TaskListHeaderDefault,
