@@ -98,4 +98,15 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async deleteProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber);
+      res.status(200).json(deletedProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

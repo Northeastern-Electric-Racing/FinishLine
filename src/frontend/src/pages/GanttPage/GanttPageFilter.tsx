@@ -4,10 +4,8 @@
  */
 
 import { WbsElementStatus } from 'shared';
-import LooksOneOutlinedIcon from '@mui/icons-material/LooksOneOutlined';
-import LooksTwoOutlinedIcon from '@mui/icons-material/LooksTwoOutlined';
 import PageBlock from '../../layouts/PageBlock';
-import { Button, Checkbox, FormControl, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
+import { Box, Button, Checkbox, FormControl, FormLabel, Grid, MenuItem, Select, TextField } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
@@ -16,6 +14,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
 interface GanttPageFilterProps {
+  car0Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car1Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car2Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   status: string;
@@ -32,6 +31,7 @@ interface GanttPageFilterProps {
 }
 
 const GanttPageFilter: FC<GanttPageFilterProps> = ({
+  car0Handler,
   car1Handler,
   car2Handler,
   status,
@@ -47,16 +47,84 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   resetHandler
 }) => {
   const carFilters = (
-    <Grid item container direction="column" xs={12} md={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
+    <Grid item container direction="column" xs={5} md={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
       <Grid item xs={12} md={1}>
         Car
       </Grid>
-      <Grid item container xs={12} md={1}>
+      <Grid item container xs={10} md={1}>
         <Grid item>
           <Checkbox
             defaultChecked
-            icon={<LooksOneOutlinedIcon />}
-            checkedIcon={<LooksOneOutlinedIcon />}
+            icon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9 }}>0</Box>
+              </Box>
+            }
+            checkedIcon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem',
+                  backgroundColor: '#ef4345'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>0</Box>
+              </Box>
+            }
+            onChange={car0Handler}
+            sx={{
+              color: 'white',
+              '&.Mui-checked': {
+                color: '#ef4345'
+              },
+              '& .MuiSvgIcon-root': {
+                fontSize: '2rem'
+              },
+              paddingLeft: 0
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <Checkbox
+            defaultChecked
+            icon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9 }}>1</Box>
+              </Box>
+            }
+            checkedIcon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem',
+                  backgroundColor: '#ef4345'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>1</Box>
+              </Box>
+            }
             onChange={car1Handler}
             sx={{
               color: 'white',
@@ -73,8 +141,33 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
         <Grid item>
           <Checkbox
             defaultChecked
-            icon={<LooksTwoOutlinedIcon />}
-            checkedIcon={<LooksTwoOutlinedIcon />}
+            icon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9 }}>2</Box>
+              </Box>
+            }
+            checkedIcon={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '2px solid white',
+                  width: '2rem',
+                  height: '2rem',
+                  backgroundColor: '#ef4345'
+                }}
+              >
+                <Box sx={{ fontSize: '1.4rem', marginLeft: 0.9, color: 'white' }}>2</Box>
+              </Box>
+            }
             onChange={car2Handler}
             sx={{
               color: 'white',

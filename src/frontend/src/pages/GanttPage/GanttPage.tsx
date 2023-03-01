@@ -21,6 +21,7 @@ const GanttPage: React.FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttD
     <Gantt
       tasks={ganttDisplayObjects}
       viewMode={ViewMode.Week}
+      viewDate={new Date()}
       preStepsCount={1}
       locale={'US'}
       onExpanderClick={handleExpanderClick}
