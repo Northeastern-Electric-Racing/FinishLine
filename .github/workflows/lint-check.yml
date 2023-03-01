@@ -1,4 +1,4 @@
-name: Run Linting Check
+name: Linting Check
 on:
   push:
     branches:
