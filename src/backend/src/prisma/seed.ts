@@ -12,8 +12,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
-  WBS_Element_Status,
-  Work_Package_Stage
+  WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';

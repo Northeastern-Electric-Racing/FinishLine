@@ -11,15 +11,17 @@ import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus } from 'shared';
+import { Task, TaskStatus, TeamPreview } from 'shared';
 
 interface TaskListProps {
   tasks: Task[];
+  team?: TeamPreview;
   defaultClosed?: boolean;
+  hasTaskPermissions: boolean;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
+const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -62,9 +64,30 @@ const TaskList = ({ tasks, defaultClosed }: TaskListProps) => {
           <Tab label="Done" aria-label="done" />
         </Tabs>
       </Box>
-      <TaskListTabPanel tasks={backLogTasks} value={value} index={0} status={TaskStatus.IN_BACKLOG} />
-      <TaskListTabPanel tasks={inProgressTasks} value={value} index={1} status={TaskStatus.IN_PROGRESS} />
-      <TaskListTabPanel tasks={doneTasks} value={value} index={2} status={TaskStatus.DONE} />
+      <TaskListTabPanel
+        tasks={backLogTasks}
+        value={value}
+        index={0}
+        status={TaskStatus.IN_BACKLOG}
+        team={team}
+        hasTaskPermissions={hasTaskPermissions}
+      />
+      <TaskListTabPanel
+        tasks={inProgressTasks}
+        value={value}
+        index={1}
+        status={TaskStatus.IN_PROGRESS}
+        team={team}
+        hasTaskPermissions={hasTaskPermissions}
+      />
+      <TaskListTabPanel
+        tasks={doneTasks}
+        value={value}
+        index={2}
+        status={TaskStatus.DONE}
+        team={team}
+        hasTaskPermissions={hasTaskPermissions}
+      />
     </PageBlock>
   );
 };
