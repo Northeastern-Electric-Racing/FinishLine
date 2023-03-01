@@ -38,8 +38,8 @@ const DeleteWorkPackage: React.FC<DeleteWorkPackageRequestProps> = ({
       history.goBack();
       toast.success(`Project #${wbsPipe(wbsNumber)} Deleted Successfully!`);
     } catch (e) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+      if (e instanceof Error) {
+        toast.error(e.message);
       }
     }
   };
