@@ -16,12 +16,12 @@ interface TaskListProps {
   tasks: Task[];
   team?: TeamPreview;
   defaultClosed?: boolean;
-  hasPerms: boolean;
+  hasTaskPermissions: boolean;
   currentWbsNumber: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasPerms }: TaskListProps) => {
+const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -71,7 +71,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasPerms }: Ta
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}
         team={team}
-        hasPerms={hasPerms}
+        hasTaskPermissions={hasTaskPermissions}
       />
       <TaskListTabPanel
         tasks={inProgressTasks}
@@ -82,15 +82,16 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasPerms }: Ta
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}
         team={team}
-        hasPerms={hasPerms}
+        hasTaskPermissions={hasTaskPermissions}
       />
+
       <TaskListTabPanel
         tasks={doneTasks}
         value={value}
         index={2}
         status={TaskStatus.DONE}
         team={team}
-        hasPerms={hasPerms}
+        hasTaskPermissions={hasTaskPermissions}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}

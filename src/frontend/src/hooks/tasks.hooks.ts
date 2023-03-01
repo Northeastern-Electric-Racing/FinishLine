@@ -79,9 +79,9 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, { taskId: string; assignees: number[] }>(
     ['tasks', 'edit-assignees'],
-    async (editAssigneesTaskPayload: any) => {
+    async (editAssigneesTaskPayload: { taskId: string; assignees: number[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
       return data;
     },
@@ -99,9 +99,9 @@ export const useEditTaskAssignees = () => {
  */
 export const useSetTaskStatus = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
-    async (editStatusTaskPayload: any) => {
+    async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
       return data;
     },
@@ -113,15 +113,15 @@ export const useSetTaskStatus = () => {
   );
 };
 
-interface deleteTaskPayload {
+interface DeleteTaskPayload {
   taskId: string;
 }
 
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, deleteTaskPayload>(
+  return useMutation<{ message: string }, Error, DeleteTaskPayload>(
     ['tasks', 'delete'],
-    async (deleteTaskPayload: deleteTaskPayload) => {
+    async (deleteTaskPayload: DeleteTaskPayload) => {
       const { data } = await deleteSingleTask(deleteTaskPayload.taskId);
       return data;
     },

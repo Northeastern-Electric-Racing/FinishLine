@@ -40,7 +40,7 @@ interface TaskListNotesModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
-  hasPerms: boolean;
+  hasTaskPermissions: boolean;
 }
 
 export interface FormInput {
@@ -66,7 +66,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   modalShow,
   onHide,
   onSubmit,
-  hasPerms
+  hasTaskPermissions
 }: TaskListNotesModalProps) => {
   const auth = useAuth();
   const theme = useTheme();
@@ -121,7 +121,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
           <IconButton
             onClick={() => setIsEditMode(true)}
             aria-label="edit"
-            disabled={!hasPerms}
+            disabled={!hasTaskPermissions}
             sx={{
               position: 'absolute',
               right: 40,
@@ -227,7 +227,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         onChange={onChange}
                         value={value}
                         inputProps={{
-                          maxlength: isUnderWordCount(value, 15) ? null : 0
+                          maxLength: isUnderWordCount(value, 15) ? null : 0
                         }}
                         helperText={`${countWords(value)}/15 words`}
                         error={!isUnderWordCount(value, 15)}
@@ -313,7 +313,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         multiline
                         rows={5}
                         inputProps={{
-                          maxlength: isUnderWordCount(value, 250) ? null : 0
+                          maxLength: isUnderWordCount(value, 250) ? null : 0
                         }}
                         helperText={`${countWords(value)}/250 words`}
                         error={!isUnderWordCount(value, 250)}

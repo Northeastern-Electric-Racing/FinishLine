@@ -59,7 +59,7 @@ interface TaskListTabPanelProps {
   addTask: boolean;
   onAddCancel: () => void;
   currentWbsNumber: WbsNumber;
-  hasPerms: boolean;
+  hasTaskPermissions: boolean;
 }
 
 type Row = {
@@ -102,7 +102,7 @@ function TitleEdit(params: GridRenderEditCellParams) {
 }
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, addTask, onAddCancel, currentWbsNumber, team, hasPerms } = props;
+  const { value, index, tasks, status, addTask, onAddCancel, currentWbsNumber, team, hasTaskPermissions } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
@@ -117,7 +117,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const auth = useAuth();
   const theme = useTheme();
 
-  const disabled = !hasPerms;
+  const disabled = !hasTaskPermissions;
 
   const renderNotes = (params: GridRenderCellParams<Task>) =>
     params.id === -1 ? (
@@ -453,11 +453,11 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [assignees]
   );
 
-  const { isLoading, isError, mutateAsync, error } = useEditTask();
+  const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
   const {
     isLoading: assigneeIsLoading,
     isError: assigneeIsError,
-    mutateAsync: assigneeMutateAsync,
+    mutateAsync: editTaskAssigneesMutateAsync,
     error: assigneeError
   } = useEditTaskAssignees();
 
@@ -466,25 +466,24 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
   const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
-    if (auth.user?.userId === undefined) throw new Error('Cannot edit a task while not being logged in');
-    await mutateAsync({
-      taskId,
-      notes,
-      title,
-      deadline,
-      priority
-    }).catch((error) => {
-      toast.error(error.message);
-      throw new Error(error);
-    });
-    await assigneeMutateAsync({
-      taskId,
-      assignees
-    }).catch((error) => {
-      toast.error(error.message);
-      throw new Error(error);
-    });
-    toast.success('Task edited successfully');
+    try {
+      await editTaskMutateAsync({
+        taskId,
+        notes,
+        title,
+        deadline,
+        priority
+      });
+      await editTaskAssigneesMutateAsync({
+        taskId,
+        assignees
+      });
+      toast.success('Task edited successfully!');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
     handleClose();
   };
 
@@ -539,7 +538,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           onSubmit={handleEditTask}
           task={selectedTask!}
           team={team}
-          hasPerms={hasPerms}
+          hasTaskPermissions={hasTaskPermissions}
         />
       )}
     </div>

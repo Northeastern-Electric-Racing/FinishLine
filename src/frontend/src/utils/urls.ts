@@ -23,6 +23,7 @@ const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
+const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -50,6 +51,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
+const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -88,6 +90,7 @@ export const apiUrls = {
   projectsCreate,
   projectsEdit,
   projectsSetTeam,
+  projectsDelete,
 
   tasksCreate,
   tasks,
@@ -106,6 +109,7 @@ export const apiUrls = {
   workPackagesByWbsNum,
   workPackagesCreate,
   workPackagesEdit,
+  workPackagesDelete,
 
   changeRequests,
   changeRequestsById,

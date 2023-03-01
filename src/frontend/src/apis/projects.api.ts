@@ -62,14 +62,11 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
   });
 };
 
-/**
- * Sets the task's status.
- * @param id the id of the task
- * @param status the Task_Status that the task is being set to
- * @returns
+/*
+ * Delete a project.
+ *
+ * @param wbsNum The WBS Number of the Project being deleted.
  */
-export const editSingleTaskStatus = (id: number, status: string) => {
-  return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
-    status
-  });
+export const deleteProject = (wbsNumber: WbsNumber) => {
+  return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
 };

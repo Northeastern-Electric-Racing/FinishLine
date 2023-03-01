@@ -28,6 +28,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList';
+import DeleteProject from '../DeleteProject';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -35,6 +36,11 @@ interface ProjectViewContainerProps {
 }
 
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
+  const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const handleDeleteClose = () => setDeleteModalShow(false);
+  const handleClickDelete = () => {
+    setDeleteModalShow(true);
+  };
   const auth = useAuth();
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
@@ -72,6 +78,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const isGuest = auth.user.role === 'GUEST';
 
+  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
+
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
       <ListItemIcon>
@@ -101,6 +109,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </MenuItem>
   );
 
+  const deleteButton = (
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      Delete
+    </MenuItem>
+  );
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -115,11 +129,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         {editBtn}
         {createCRBtn}
         {teamAsLeadId && assignToMyTeamButton}
+        {deleteButton}
       </Menu>
     </div>
   );
 
-  const hasPerms =
+  const hasTaskPermissions =
     !(auth.user.role === 'GUEST' && !proj.team?.members.map((user) => user.userId).includes(auth.user.userId)) &&
     !(
       auth.user.role === 'MEMBER' &&
@@ -135,7 +150,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
-      <TaskList tasks={proj.tasks} team={proj.team} hasPerms={hasPerms} currentWbsNumber={proj.wbsNum} />
+      <TaskList tasks={proj.tasks} team={proj.team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={proj.wbsNum} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
@@ -154,6 +169,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         ))}
       </PageBlock>
       <ChangesList changes={proj.changes} />
+      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
 };

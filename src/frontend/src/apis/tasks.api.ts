@@ -3,9 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import { TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
-import { TaskPriority } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -72,8 +71,8 @@ export const editTaskAssignees = (taskId: string, assignees: number[]) => {
  * @param status the Task_Status that the task is being set to
  * @returns
  */
-export const editSingleTaskStatus = (id: number, status: string) => {
-  return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
+export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
+  return axios.post<{ message: string }>(apiUrls.taskEditStatus(id), {
     status
   });
 };

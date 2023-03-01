@@ -7,6 +7,7 @@ import * as taskTransformer from '../src/transformers/tasks.transformer';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import * as userUtils from '../src/utils/users.utils';
 import * as taskUtils from '../src/utils/tasks.utils';
+import * as teamUtils from '../src/utils/teams.utils';
 import {
   invalidTaskNotes,
   taskSaveTheDayDeletedPrisma,
@@ -36,23 +37,27 @@ describe('Tasks', () => {
 
   beforeEach(() => {
     jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
+    jest.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(true);
+    jest.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(true);
   });
 
   describe('createTask', () => {
-    test('create task fails when user does not have permission', async () => {
+    beforeEach(() => {
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+    });
+
+    test('create task fails when user does not have permission', async () => {
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+      jest.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(false);
 
       await expect(() =>
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(new AccessDeniedException());
 
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
 
     test('create task fails when title is over word count', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
 
       await expect(() =>
@@ -72,7 +77,6 @@ describe('Tasks', () => {
     });
 
     test('create task fails when notes is over word count', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
 
       await expect(() =>
@@ -103,23 +107,21 @@ describe('Tasks', () => {
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    test('create task fails when assignees do not exist', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([wonderwoman]);
+    test('create task fails when assignees are not on the project team', async () => {
+      jest.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(false);
+      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([]);
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
           batman.userId,
           wonderwoman.userId
         ])
-      ).rejects.toThrow(new HttpException(404, `User(s) with the following ids not found: 1`));
+      ).rejects.toThrow(new HttpException(400, `All assignees must be part of the project's team!`));
 
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
 
     test('create task succeeds', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
@@ -131,7 +133,6 @@ describe('Tasks', () => {
       expect(task).toStrictEqual(taskSaveTheDayShared);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.task.create).toHaveBeenCalledTimes(1);
-      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -228,7 +229,9 @@ describe('Tasks', () => {
 
   describe('editTaskAssignees', () => {
     test('edit task assignee succeeds', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      jest
+        .spyOn(prisma.task, 'findUnique')
+        .mockResolvedValue({ ...taskSaveTheDayPrisma, wbsElement: { project: { team: {} } } } as any);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
