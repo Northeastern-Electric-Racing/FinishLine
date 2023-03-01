@@ -51,7 +51,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       <Grid item xs={12} md={1}>
         Car
       </Grid>
-      <Grid item container xs={10} md={1} sx={{ flexWrap: 'nowrap' }}>
+      <Grid item container xs={10} md={1}>
         <Grid item>
           <Checkbox
             defaultChecked
