@@ -1,4 +1,4 @@
-name: Run Prettier Check
+name: Prettier Check
 on:
   push:
     branches:
