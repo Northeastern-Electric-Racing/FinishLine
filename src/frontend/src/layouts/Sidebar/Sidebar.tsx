@@ -8,7 +8,7 @@ import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Home, Description, Folder, SwapHoriz, Group, Timeline } from '@material-ui/icons';
+import { Home, Description, Folder, SwapHoriz, Group, Timeline } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
