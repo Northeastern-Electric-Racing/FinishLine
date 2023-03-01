@@ -227,7 +227,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         onChange={onChange}
                         value={value}
                         inputProps={{
-                          maxlength: isUnderWordCount(value, 15) ? null : 0
+                          maxLength: isUnderWordCount(value, 15) ? null : 0
                         }}
                         helperText={`${countWords(value)}/15 words`}
                         error={!isUnderWordCount(value, 15)}
@@ -313,7 +313,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         multiline
                         rows={5}
                         inputProps={{
-                          maxlength: isUnderWordCount(value, 250) ? null : 0
+                          maxLength: isUnderWordCount(value, 250) ? null : 0
                         }}
                         helperText={`${countWords(value)}/250 words`}
                         error={!isUnderWordCount(value, 250)}
