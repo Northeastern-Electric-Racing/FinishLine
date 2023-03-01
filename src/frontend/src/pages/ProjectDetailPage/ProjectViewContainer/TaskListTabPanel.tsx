@@ -52,7 +52,7 @@ interface TaskListTabPanelProps {
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
-  currentProject: WbsNumber;
+  currentWbsNumber: WbsNumber;
   hasPerms: boolean;
 }
 
@@ -96,7 +96,7 @@ function TitleEdit(params: GridRenderEditCellParams) {
 }
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, addTask, onAddCancel, currentProject, team, hasPerms } = props;
+  const { value, index, tasks, status, addTask, onAddCancel, currentWbsNumber, team, hasPerms } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
@@ -104,8 +104,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
-  const { mutateAsync: createTaskMutate } = useCreateTask(currentProject);
-  console.log(currentProject);
+  const { mutateAsync: createTaskMutate } = useCreateTask(currentWbsNumber);
 
   const toast = useToast();
   const auth = useAuth();
@@ -378,8 +377,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       type: 'actions',
       headerName: 'Actions',
       width: 70,
-      getActions,
-      editable: true
+      getActions
     }
   ];
 
@@ -396,7 +394,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     };
   });
   if (addTask) {
-    rows.push({
+    rows.unshift({
       id: -1,
       title: title,
       deadline: deadline,

@@ -3,14 +3,35 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, wbsPipe } from 'shared';
+import { TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { TaskPriority } from 'shared';
 import { apiUrls } from '../utils/urls';
 
-export const createSingleTask = (wbsNum: WbsNumber, payload: any) => {
+/**
+ * Api call to create a task
+ * @param wbsNum wbsNum of the wbsElement that the task is associated with
+ * @param title the title of the task
+ * @param deadline the datestring deadline of the task
+ * @param priority the priority of the task
+ * @param status the status of the task
+ * @param assignees the ids of the users assigned to the task
+ * @returns
+ */
+export const createSingleTask = (
+  wbsNum: WbsNumber,
+  title: string,
+  deadline: string,
+  priority: TaskPriority,
+  status: TaskStatus,
+  assignees: number[]
+) => {
   return axios.post<{ message: string }>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
-    ...payload
+    title,
+    deadline,
+    priority,
+    status,
+    assignees
   });
 };
 

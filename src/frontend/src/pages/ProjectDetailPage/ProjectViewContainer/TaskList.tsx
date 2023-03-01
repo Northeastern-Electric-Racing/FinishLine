@@ -17,11 +17,11 @@ interface TaskListProps {
   team?: TeamPreview;
   defaultClosed?: boolean;
   hasPerms: boolean;
-  currentProject: WbsNumber;
+  currentWbsNumber: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, currentProject, defaultClosed, team, hasPerms }: TaskListProps) => {
+const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasPerms }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
@@ -69,7 +69,7 @@ const TaskList = ({ tasks, currentProject, defaultClosed, team, hasPerms }: Task
         status={TaskStatus.IN_BACKLOG}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentProject={currentProject}
+        currentWbsNumber={currentWbsNumber}
         team={team}
         hasPerms={hasPerms}
       />
@@ -80,7 +80,7 @@ const TaskList = ({ tasks, currentProject, defaultClosed, team, hasPerms }: Task
         status={TaskStatus.IN_PROGRESS}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentProject={currentProject}
+        currentWbsNumber={currentWbsNumber}
         team={team}
         hasPerms={hasPerms}
       />
@@ -93,7 +93,7 @@ const TaskList = ({ tasks, currentProject, defaultClosed, team, hasPerms }: Task
         hasPerms={hasPerms}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentProject={currentProject}
+        currentWbsNumber={currentWbsNumber}
       />
     </PageBlock>
   );
