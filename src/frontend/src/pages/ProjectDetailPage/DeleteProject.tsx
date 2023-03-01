@@ -27,15 +27,17 @@ const DeleteProject: React.FC<DeleteProjectProps> = ({ modalShow, handleClose, w
   const { isLoading, isError, error, mutateAsync } = useDeleteProject();
 
   const handleConfirm = async ({ wbsNum }: DeleteProjectInputs) => {
-    handleClose();
-    const wbsNumber = validateWBS(wbsNum);
-    await mutateAsync(wbsNumber).catch((error) => {
+    try {
+      const wbsNumber = validateWBS(wbsNum);
+      await mutateAsync(wbsNumber);
+      handleClose();
+      history.goBack();
+      toast.success(`Project #${wbsPipe(wbsNumber)} Deleted Successfully!`);
+    } catch (e) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
-    });
-    history.goBack();
-    toast.success(`Project #${wbsPipe(wbsNumber)} Deleted Successfully!`);
+    }
   };
 
   if (isLoading) return <LoadingIndicator />;

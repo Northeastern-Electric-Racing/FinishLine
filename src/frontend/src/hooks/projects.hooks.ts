@@ -94,14 +94,14 @@ export const useSetProjectTeam = (wbsNum: WbsNumber) => {
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
-    ['project', 'delete'],
+    ['projects', 'delete'],
     async (wbsNumber: WbsNumber) => {
       const { data } = await deleteProject(wbsNumber);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['project']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
