@@ -150,7 +150,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
-      <TaskList tasks={proj.tasks} team={proj.team} hasTaskPermissions={hasTaskPermissions} />
+      <TaskList tasks={proj.tasks} team={proj.team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={proj.wbsNum} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />

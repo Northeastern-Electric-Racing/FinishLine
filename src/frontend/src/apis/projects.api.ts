@@ -62,11 +62,11 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
   });
 };
 
-/**
+/*
  * Delete a project.
  *
  * @param wbsNum The WBS Number of the Project being deleted.
  */
 export const deleteProject = (wbsNumber: WbsNumber) => {
-  return axios.delete<{ message: string }>(apiUrls.projectsDelete(`${wbsPipe(wbsNumber)}`));
+  return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
 };

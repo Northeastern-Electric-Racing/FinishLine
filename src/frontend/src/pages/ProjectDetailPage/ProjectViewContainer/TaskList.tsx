@@ -9,26 +9,24 @@ import PageBlock from '../../../layouts/PageBlock';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { AddTask } from '@mui/icons-material';
 import { Auth } from '../../../utils/types';
-import { useToast } from '../../../hooks/toasts.hooks';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus, TeamPreview } from 'shared';
+import { Task, TaskStatus, WbsNumber, TeamPreview } from 'shared';
 
 interface TaskListProps {
   tasks: Task[];
   team?: TeamPreview;
   defaultClosed?: boolean;
   hasTaskPermissions: boolean;
+  currentWbsNumber: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
+const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
-  // TODO: delete me when you actually implement onClick
-  const toast = useToast();
-
   const [value, setValue] = useState<number>(1);
+  const [addTask, setAddTask] = useState(false);
 
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
@@ -49,7 +47,7 @@ const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListPr
         textTransform: 'none',
         fontSize: 16
       }}
-      onClick={() => toast.error("This button doesn't work yet. If you want to work on it go to issue #762", 3000)}
+      onClick={() => setAddTask(true)}
     >
       New Task
     </Button>
@@ -69,6 +67,9 @@ const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListPr
         value={value}
         index={0}
         status={TaskStatus.IN_BACKLOG}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentWbsNumber={currentWbsNumber}
         team={team}
         hasTaskPermissions={hasTaskPermissions}
       />
@@ -77,9 +78,13 @@ const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListPr
         value={value}
         index={1}
         status={TaskStatus.IN_PROGRESS}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentWbsNumber={currentWbsNumber}
         team={team}
         hasTaskPermissions={hasTaskPermissions}
       />
+
       <TaskListTabPanel
         tasks={doneTasks}
         value={value}
@@ -87,6 +92,9 @@ const TaskList = ({ tasks, defaultClosed, team, hasTaskPermissions }: TaskListPr
         status={TaskStatus.DONE}
         team={team}
         hasTaskPermissions={hasTaskPermissions}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+        currentWbsNumber={currentWbsNumber}
       />
     </PageBlock>
   );

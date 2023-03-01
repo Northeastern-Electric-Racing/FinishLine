@@ -3,9 +3,40 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useQueryClient, useMutation } from 'react-query';
-import { TaskPriority, TaskStatus } from 'shared';
-import { editTask, editSingleTaskStatus, editTaskAssignees } from '../apis/tasks.api';
+import { useMutation, useQueryClient } from 'react-query';
+import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
+import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+
+interface CreateTaskPayload {
+  title: string;
+  deadline: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  assignees: number[];
+}
+
+export const useCreateTask = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, CreateTaskPayload>(
+    ['tasks'],
+    async (createTaskPayload: CreateTaskPayload) => {
+      const { data } = await createSingleTask(
+        wbsNum,
+        createTaskPayload.title,
+        createTaskPayload.deadline,
+        createTaskPayload.priority,
+        createTaskPayload.status,
+        createTaskPayload.assignees
+      );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
 
 interface TaskPayload {
   taskId: string;
@@ -72,6 +103,26 @@ export const useSetTaskStatus = () => {
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+interface DeleteTaskPayload {
+  taskId: string;
+}
+
+export const useDeleteTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, DeleteTaskPayload>(
+    ['tasks', 'delete'],
+    async (deleteTaskPayload: DeleteTaskPayload) => {
+      const { data } = await deleteSingleTask(deleteTaskPayload.taskId);
       return data;
     },
     {
