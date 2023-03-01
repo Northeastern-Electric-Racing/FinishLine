@@ -45,7 +45,7 @@ export const editTaskAssignees = (taskId: string, assignees: number[]) => {
  * @returns
  */
 export const editSingleTaskStatus = (id: string, status: TaskStatus) => {
-  return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
+  return axios.post<{ message: string }>(apiUrls.taskEditStatus(id), {
     status
   });
 };

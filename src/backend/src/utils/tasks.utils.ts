@@ -1,8 +1,6 @@
-import { Prisma, Role, Task_Priority, Task_Status, User } from '@prisma/client';
+import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
 import { TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma';
-import teamQueryArgs from '../prisma-query-args/teams.query-args';
-import { HttpException } from './errors.utils';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({
@@ -86,18 +84,4 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   if (task.wbsElement.workPackage?.project?.team?.leaderId === user.userId) return true;
 
   return false;
-};
-
-//validates that the assignees are part of the project team
-export const validateTeamAndAssignees = (
-  assignees: User[],
-  projectTeam: Prisma.TeamGetPayload<typeof teamQueryArgs> | undefined | null
-) => {
-  //checks if the project exists
-  if (!projectTeam) throw new HttpException(400, `Project team does not exist!`);
-
-  //checks if the assignees are part of the project team
-  const teamMembersIds = projectTeam.members.concat(projectTeam.leader).map((user) => user.userId);
-  if (assignees.some((assignee) => !teamMembersIds.includes(assignee.userId)))
-    throw new HttpException(400, `Assignees must be part of the project team!`);
 };
