@@ -36,6 +36,6 @@ tasksRouter.post(
   TasksController.editTaskAssignees
 );
 
-tasksRouter.delete('/:taskId/delete', TasksController.deleteTask);
+tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
 
 export default tasksRouter;

@@ -27,7 +27,13 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import React, { useState } from 'react';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
-import { useCreateTask, useEditTask, useEditTaskAssignees, useSetTaskStatus } from '../../../hooks/tasks.hooks';
+import {
+  useCreateTask,
+  useDeleteTask,
+  useEditTask,
+  useEditTaskAssignees,
+  useSetTaskStatus
+} from '../../../hooks/tasks.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 
@@ -105,6 +111,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const { mutateAsync: createTaskMutate } = useCreateTask(currentWbsNumber);
+  const { mutateAsync: deleteTaskMutate } = useDeleteTask();
 
   const toast = useToast();
   const auth = useAuth();
@@ -244,8 +251,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     }
   };
 
-  const deleteRow = (id: string) => () => {
-    console.log('delete');
+  const deleteRow = (id: string) => async () => {
+    try {
+      await deleteTaskMutate({ taskId: id }).finally(() => toast.success('Task Successfully Deleted!'));
+    } catch (e: unknown) {
+      console.log(e);
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
+      }
+    }
   };
 
   const createTask = async () => {
@@ -256,7 +270,10 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       status: status,
       assignees: assignees.map((user) => user.userId)
     })
-      .finally(deleteCreateTask)
+      .finally(() => {
+        toast.success('Task Successfully Created!');
+        deleteCreateTask();
+      })
       .catch((e) => toast.error(e.message, 6000));
   };
 
@@ -311,7 +328,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           }}
           icon={<DeleteIcon fontSize="small" />}
           label="Delete"
-          onClick={() => deleteRow(params.row.taskId)}
+          onClick={deleteRow(params.row.taskId)}
           showInMenu
           disabled={disabled}
         />

@@ -5,7 +5,7 @@
 
 import { useMutation, useQueryClient } from 'react-query';
 import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
-import { createSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
+import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
 
 interface CreateTaskPayload {
   title: string;
@@ -103,6 +103,26 @@ export const useSetTaskStatus = () => {
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: any) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+interface deleteTaskPayload {
+  taskId: string;
+}
+
+export const useDeleteTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, deleteTaskPayload>(
+    ['tasks', 'delete'],
+    async (deleteTaskPayload: deleteTaskPayload) => {
+      const { data } = await deleteSingleTask(deleteTaskPayload.taskId);
       return data;
     },
     {

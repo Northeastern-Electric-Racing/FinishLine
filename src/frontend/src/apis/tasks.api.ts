@@ -9,7 +9,7 @@ import { TaskPriority } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
- * Api call to create a task
+ * Api call to create a task.
  * @param wbsNum wbsNum of the wbsElement that the task is associated with
  * @param title the title of the task
  * @param deadline the datestring deadline of the task
@@ -36,7 +36,7 @@ export const createSingleTask = (
 };
 
 /**
- * Api call to edit a task
+ * Api call to edit a task.
  * @param taskId The task to edit
  * @param title the new title
  * @param notes the new notes
@@ -76,4 +76,13 @@ export const editSingleTaskStatus = (id: number, status: string) => {
   return axios.post<{ message: string }>(apiUrls.taskEditStatus(`${id}`), {
     status
   });
+};
+
+/**
+ * Soft deletes a task.
+ * @param taskId
+ * @returns
+ */
+export const deleteSingleTask = (taskId: string) => {
+  return axios.post<{ message: string }>(apiUrls.deleteTask(taskId), {});
 };
