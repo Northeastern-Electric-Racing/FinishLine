@@ -24,3 +24,7 @@ export const isTaskPriority = (validationObject: ValidationChain): ValidationCha
 export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn(['IN_BACKLOG', 'IN_PROGRESS', 'DONE']);
 };
+
+export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(['RESEARCH', 'DESIGN', 'MANUFACTURING', 'INTEGRATION', 'NONE']);
+};

@@ -44,7 +44,6 @@ changeRequestsRouter.post(
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.StageGate),
-  intMinZero(body('leftoverBudget')),
   body('confirmDone').isBoolean(),
   validateInputs,
   ChangeRequestsController.createStageGateChangeRequest
@@ -52,7 +51,6 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/standard',
-  intMinZero(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),

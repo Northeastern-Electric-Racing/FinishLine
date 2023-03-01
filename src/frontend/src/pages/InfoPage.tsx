@@ -6,14 +6,12 @@
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { faScroll, faCode, faBolt, faCog, faDollarSign, faSearch } from '@fortawesome/free-solid-svg-icons';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CodeIcon from '@mui/icons-material/Code';
 import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageTitle from '../layouts/PageTitle/PageTitle';
 import PageBlock from '../layouts/PageBlock';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const InfoPage: React.FC = () => {
   return (
@@ -53,82 +51,6 @@ const InfoPage: React.FC = () => {
               icon={<CodeIcon />}
               description={'Submit a ticket on GitHub'}
               link={'https://github.com/Northeastern-Electric-Racing/FinishLine/issues/new/choose'}
-            />
-          </Grid>
-        </Grid>
-      </PageBlock>
-      <PageBlock title="Calendars">
-        <Grid container>
-          <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faScroll} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Club-Wide Meetings & Events</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/l2vtfdaeu2lisoip58tijijtvc%40group.calendar.google.com/public/basic.ics"
-            />
-          </Grid>
-          <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faBolt} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Electrical Meetings</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/npitbmnpkcnpcftfu259tthq6g%40group.calendar.google.com/public/basic.ics"
-            />
-          </Grid>
-          <Grid item md={4} lg={6}>
-            <FontAwesomeIcon icon={faCog} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Mechanical Meetings</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/qrtikitnuchp43873l1h17mhe8%40group.calendar.google.com/public/basic.ics"
-            />
-          </Grid>
-          <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faDollarSign} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Business Meetings</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/j3hkd9o6onheu4fvhojno6qdf4%40group.calendar.google.com/public/basic.ics"
-            />
-          </Grid>
-          <Grid item md={4} lg={3}>
-            <FontAwesomeIcon icon={faCode} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Software Meetings</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/55gqs0qvt4mjcmsqn8ln8a5njg%40group.calendar.google.com/public/basic.ics"
-            />
-          </Grid>
-          <Grid item md={4} lg={6}>
-            <FontAwesomeIcon icon={faSearch} className="mx-2" style={{ margin: '0px 5px' }} />{' '}
-            <Typography display="inline">Engineering Reviews</Typography>
-            <ExternalLink
-              description="Public URL"
-              link="https://calendar.google.com/calendar/embed?src=qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com&ctz=America%2FNew_York"
-            />
-            <ExternalLink
-              description="iCal URL"
-              link="https://calendar.google.com/calendar/ical/qqojrdj50ob1m79vt2h3blmn1s%40group.calendar.google.com/public/basic.ics"
             />
           </Grid>
         </Grid>

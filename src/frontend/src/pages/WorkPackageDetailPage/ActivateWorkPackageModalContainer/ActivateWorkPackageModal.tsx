@@ -147,7 +147,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             <NERFailButton variant="outlined" form="activate-work-package-form" onClick={onHide} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-
             <NERSuccessButton variant="contained" type="submit" form="activate-work-package-form" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
