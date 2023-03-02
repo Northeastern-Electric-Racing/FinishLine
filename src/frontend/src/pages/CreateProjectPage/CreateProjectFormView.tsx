@@ -57,7 +57,12 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
       summary: '',
-      teamId: ''
+      teamId: '',
+      links: '',
+      goals: '',
+      features: '',
+      constraints: '',
+      rules: ''
     }
   });
 
@@ -78,21 +83,20 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
     >
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
-        <Grid container spacing={2}>
+        <Grid container>
           <Grid item xs={12} md={3}>
-            <FormControl>
-              <FormLabel>Change Request ID</FormLabel>
+            <FormControl sx={{ width: '98%' }}>
+              <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
-                name="crId"
+                name="name"
                 control={control}
-                placeholder="Enter change request ID..."
-                errorMessage={errors.crId}
-                type="number"
+                placeholder="Enter project name..."
+                errorMessage={errors.name}
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl>
+          <Grid item xs={12} md={3}>
+            <FormControl sx={{ width: '98%' }}>
               <FormLabel>Car Number</FormLabel>
               <ReactHookTextField
                 name="carNumber"
@@ -104,18 +108,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
           <Grid item xs={12} md={3}>
-            <FormControl>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter project name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl sx={{ width: 197 }}>
+            <FormControl sx={{ width: '98%' }}>
               <FormLabel>Team</FormLabel>
               <Controller
                 name="teamId"
@@ -133,27 +126,81 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl sx={{ minWidth: 325, width: '37%' }}>
-              <FormLabel>Project Summary</FormLabel>
+          <Grid item xs={12} md={3}>
+            <FormControl sx={{ width: '100%' }}>
+              <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
-                name="summary"
+                name="crId"
                 control={control}
-                placeholder="Enter summary..."
-                errorMessage={errors.summary}
-                multiline
-                rows={5}
+                placeholder="Enter change request ID..."
+                errorMessage={errors.crId}
+                type="number"
               />
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
+        <Grid item xs={12} md={3}>
+          <FormControl sx={{ width: '100%' }}>
+            <FormLabel>Project Summary</FormLabel>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              placeholder="Enter summary..."
+              errorMessage={errors.summary}
+              multiline
+              rows={5}
+            />
+          </FormControl>
+        </Grid>
+        <Grid container>
+          <Grid item xs={12} md={3}>
+            <FormControl sx={{ width: '95%' }}>
+              <FormLabel>Links</FormLabel>
+              <ReactHookTextField name="Links" control={control} placeholder="Enter links..." errorMessage={errors.links} />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl sx={{ width: '95%' }}>
+              <FormLabel>Goals</FormLabel>
+              <ReactHookTextField name="Goals" control={control} placeholder="Enter goals..." errorMessage={errors.goals} />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl sx={{ width: '95%' }}>
+              <FormLabel>Features</FormLabel>
+              <ReactHookTextField
+                name="Features"
+                control={control}
+                placeholder="Enter features..."
+                errorMessage={errors.features}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl sx={{ width: '95%' }}>
+              <FormLabel>Constraints</FormLabel>
+              <ReactHookTextField
+                name="Constraints"
+                control={control}
+                placeholder="Enter constraints..."
+                errorMessage={errors.constraints}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl sx={{ width: '100%' }}>
+              <FormLabel>Rules</FormLabel>
+              <ReactHookTextField name="Rules" control={control} placeholder="Enter rules..." errorMessage={errors.rules} />
+            </FormControl>
+          </Grid>
+        </Grid>
+        <Box display="flex" gap={2} sx={{ mt: 2, justifyContent: 'flex-end' }}>
           <Button variant="outlined" color="secondary" onClick={onCancel}>
             Cancel
           </Button>
+          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+            Create
+          </SubmitButton>
         </Box>
       </PageBlock>
     </form>
