@@ -5,8 +5,8 @@
 
 import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
-import { useState } from 'react';
-import { Link, useRouteMatch } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { Task, TaskStatus, TeamPreview, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import PageBlock from '../../../layouts/PageBlock';
@@ -37,6 +37,13 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   // Default to the "in-progress" tab
   const initialValue: number = tabUrlValues.indexOf(tabValueString ?? 'in-progress');
   const [value, setValue] = useState<number>(initialValue);
+
+  // Change tab when the browser forward/back button is pressed
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'in-progress');
+    setValue(newTabValue);
+  }, [pathname]);
 
   const [addTask, setAddTask] = useState(false);
 
