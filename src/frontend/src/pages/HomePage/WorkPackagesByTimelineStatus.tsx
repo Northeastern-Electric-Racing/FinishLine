@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { datePipe, wbsPipe, fullNamePipe, percentPipe, timelinePipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
@@ -56,7 +56,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
       }}
     >
       {workPackages.data?.length === 0
-        ? `No ${timelineStatus} work packages`
+        ? `No ${timelinePipe(timelineStatus)} work packages`
         : workPackages.data?.map((wp) => (
             <Card
               variant="outlined"
@@ -99,7 +99,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
           >
             {Object.values(TimelineStatus).map((status) => (
               <MenuItem key={status} value={status}>
-                {status}
+                {timelinePipe(status)}
               </MenuItem>
             ))}
           </Select>
