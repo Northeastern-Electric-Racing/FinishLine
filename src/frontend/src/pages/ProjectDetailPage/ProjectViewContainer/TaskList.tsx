@@ -3,14 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
-import PageBlock from '../../../layouts/PageBlock';
+import { Link, useRouteMatch } from 'react-router-dom';
+import { Task, TaskStatus, TeamPreview, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { AddTask } from '@mui/icons-material';
+import PageBlock from '../../../layouts/PageBlock';
+import { routes } from '../../../utils/routes';
 import { Auth } from '../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus, WbsNumber, TeamPreview } from 'shared';
 
 interface TaskListProps {
   tasks: Task[];
@@ -25,7 +27,17 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
-  const [value, setValue] = useState<number>(1);
+  // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
+  const tabUrlValues = ['in-backlog', 'in-progress', 'done'];
+
+  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>('/projects/:wbsNum/:tabValueString');
+  const tabValueString = match?.params?.tabValueString;
+  const wbsNum = wbsPipe(currentWbsNumber);
+
+  // Default to the "in-progress" tab
+  const initialValue: number = tabUrlValues.indexOf(tabValueString ?? 'in-progress');
+  const [value, setValue] = useState<number>(initialValue);
+
   const [addTask, setAddTask] = useState(false);
 
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
@@ -57,9 +69,21 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
     <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
-          <Tab label="In Backlog" aria-label="in-backlog" />
-          <Tab label="In Progress" aria-label="in-progress" />
-          <Tab label="Done" aria-label="done" />
+          <Tab
+            label="In Backlog"
+            aria-label="in-backlog"
+            value={0}
+            component={Link}
+            to={`${routes.PROJECTS}/${wbsNum}/in-backlog`}
+          />
+          <Tab
+            label="In Progress"
+            aria-label="in-progress"
+            value={1}
+            component={Link}
+            to={`${routes.PROJECTS}/${wbsNum}/in-progress`}
+          />
+          <Tab label="Done" aria-label="done" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/done`} />
         </Tabs>
       </Box>
       <TaskListTabPanel
