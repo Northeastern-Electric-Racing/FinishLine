@@ -25,7 +25,15 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   if (editMode) {
-    return <ProjectEditContainer project={data} exitEditMode={() => setEditMode(false)} />;
+    return (
+      <ProjectEditContainer
+        project={data}
+        exitEditMode={() => {
+          setEditMode(false);
+          query.set('edit', 'false');
+        }}
+      />
+    );
   }
   return <ProjectViewContainer proj={data} enterEditMode={() => setEditMode(true)} />;
 };
