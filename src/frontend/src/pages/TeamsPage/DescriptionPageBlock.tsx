@@ -97,7 +97,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           inputProps={{
-            maxlength: isUnderWordCount(description, 300) ? null : 0
+            maxLength: isUnderWordCount(description, 300) ? null : 0
           }}
           helperText={`${countWords(description)}/300 words`}
           error={!isUnderWordCount(description, 300)}
