@@ -23,6 +23,15 @@ const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
+const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
+
+/**************** Tasks Endpoints ********************/
+const tasks = () => `${API_URL}/tasks`;
+const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
+const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
+const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
+const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
+const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 
 /**************** Risks Endpoints ********************/
 const risks = () => `${API_URL}/risks`;
@@ -42,11 +51,13 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
+const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
+const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
@@ -79,6 +90,14 @@ export const apiUrls = {
   projectsCreate,
   projectsEdit,
   projectsSetTeam,
+  projectsDelete,
+
+  tasksCreate,
+  tasks,
+  editTaskById,
+  taskEditStatus,
+  editTaskAssignees,
+  deleteTask,
 
   risks,
   risksByProjectId,
@@ -90,10 +109,12 @@ export const apiUrls = {
   workPackagesByWbsNum,
   workPackagesCreate,
   workPackagesEdit,
+  workPackagesDelete,
 
   changeRequests,
   changeRequestsById,
   changeRequestsReview,
+  changeRequestDelete,
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,

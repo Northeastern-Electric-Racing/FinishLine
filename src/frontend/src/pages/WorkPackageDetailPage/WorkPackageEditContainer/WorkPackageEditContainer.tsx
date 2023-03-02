@@ -25,6 +25,7 @@ import WorkPackageEditDetails from './WorkPackageEditDetails';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -38,10 +39,11 @@ interface WorkPackageEditContainerProps {
 }
 
 const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
+  const toast = useToast();
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
-  const { name, startDate, duration, status } = workPackage;
+  const { name, startDate, duration } = workPackage;
   const {
     register,
     handleSubmit,
@@ -55,6 +57,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
+      stage: workPackage.stage || 'NONE',
       startDate,
       duration,
       dependencies: workPackage.dependencies.map((dep) => {
@@ -62,8 +65,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         return { wbsNum };
       }),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
-      deliverables: bulletsToObject(workPackage.deliverables),
-      wbsElementStatus: status
+      deliverables: bulletsToObject(workPackage.deliverables)
     }
   });
   // lists of stuff
@@ -94,13 +96,13 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const transformDate = (date: Date) => {
-    const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
-    const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
-    return `${date.getUTCFullYear().toString()}-${month}-${day}`;
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
+    return `${date.getFullYear().toString()}-${month}-${day}`;
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies } = data;
+    const { name, projectLead, projectManager, startDate, duration, crId, dependencies, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
@@ -119,13 +121,13 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         }),
         expectedActivities,
         deliverables,
-        wbsElementStatus
+        stage
       };
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
         return;
       }
     }

@@ -3,7 +3,7 @@ import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
-import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
+import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
@@ -323,7 +323,7 @@ export default class ChangeRequestsService {
     projectManagerId: number,
     startDate: Date,
     confirmDetails: boolean
-  ): Promise<Number> {
+  ): Promise<number> {
     // verify user is allowed to create activation change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -386,7 +386,6 @@ export default class ChangeRequestsService {
    * @param projectNumber  the project number for the wbs element
    * @param workPackageNumber  the work package number for the wbs element
    * @param type  the type of cr
-   * @param leftoverBudget  the leftover budget
    * @param confirmDone  whether or not to confirm
    * @returns the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not stage gate
@@ -397,7 +396,6 @@ export default class ChangeRequestsService {
     projectNumber: number,
     workPackageNumber: number,
     type: CR_Type,
-    leftoverBudget: number,
     confirmDone: boolean
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
@@ -424,7 +422,7 @@ export default class ChangeRequestsService {
         type,
         stageGateChangeRequest: {
           create: {
-            leftoverBudget,
+            leftoverBudget: 0,
             confirmDone
           }
         }
@@ -473,7 +471,7 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: Scope_CR_Why[]
+    why: { type: Scope_CR_Why_Type; explain: string }[]
   ): Promise<number> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
@@ -551,7 +549,7 @@ export default class ChangeRequestsService {
     description: string,
     timelineImpact: number,
     scopeImpact: string
-  ): Promise<String> {
+  ): Promise<string> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -589,15 +587,16 @@ export default class ChangeRequestsService {
    * @param crId the change request to be deleted
    */
   static async deleteChangeRequest(submitter: User, crId: number): Promise<void> {
-    // verify user is allowed to delete change requests
-    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN')) throw new AccessDeniedException();
-
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId }
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    // verify user is allowed to delete change requests
+    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
+      throw new AccessDeniedException();
 
     if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
 

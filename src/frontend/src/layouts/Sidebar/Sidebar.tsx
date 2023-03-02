@@ -12,8 +12,6 @@ import { Home, Description, Folder, SwapHoriz, Group, Timeline } from '@mui/icon
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
-  const auth = useAuth();
-
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -42,6 +40,7 @@ const Sidebar: React.FC = () => {
     }
   ];
 
+
   if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
     linkItems.push({
       name: 'Admin Tools',
@@ -49,7 +48,7 @@ const Sidebar: React.FC = () => {
       route: routes.ADMIN_TOOLS
     });
   }
-
+  
   linkItems.push({
     name: 'Info',
     icon: <Description />,
@@ -59,7 +58,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.6.0</Typography>
+      <Typography className={styles.versionNumber}>3.7.0</Typography>
     </div>
   );
 };
