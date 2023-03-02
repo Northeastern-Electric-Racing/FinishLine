@@ -49,8 +49,8 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
-    console.log(JSON.stringify(error));
     res.status(500).json({ message: JSON.stringify(error) });
+    throw error;
   }
 };
 
