@@ -30,7 +30,15 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
 
   if (editMode) {
-    return <WorkPackageEditContainer workPackage={data!} exitEditMode={() => setEditMode(false)} />;
+    return (
+      <WorkPackageEditContainer
+        workPackage={data!}
+        exitEditMode={() => {
+          setEditMode(false);
+          query.set('edit', 'false');
+        }}
+      />
+    );
   }
 
   return (
