@@ -4,7 +4,8 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { isProject, validateWBS } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
+import { isProject, validateWBS, WorkPackageStage } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
@@ -16,6 +17,7 @@ export interface CreateWorkPackageFormInputs {
   startDate: Date;
   duration: number;
   crId: string;
+  stage: WorkPackageStage | null;
   wbsNum: string;
   dependencies: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
@@ -25,13 +27,14 @@ export interface CreateWorkPackageFormInputs {
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
+  const toast = useToast();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, dependencies, wbsNum } = data;
+    const { name, startDate, duration, crId, dependencies, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
@@ -40,7 +43,7 @@ const CreateWorkPackageForm: React.FC = () => {
       const wbsNumValidated = validateWBS(wbsNum);
 
       if (!isProject(wbsNumValidated)) {
-        alert('Please enter a valid Project WBS Number.');
+        toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
       const depWbsNums = dependencies.map((dependency: any) => {
@@ -63,13 +66,14 @@ const CreateWorkPackageForm: React.FC = () => {
         duration,
         dependencies: depWbsNums,
         expectedActivities,
-        deliverables
+        deliverables,
+        stage
       });
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {
       console.log(e);
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message, 3000);
       }
     }
   };

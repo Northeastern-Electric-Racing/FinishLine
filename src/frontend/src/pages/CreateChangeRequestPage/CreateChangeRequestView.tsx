@@ -25,6 +25,8 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -105,7 +107,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: any } | null
+    value: { label: string; id: string } | null
   ) => {
     if (value) {
       setWbsNum(value.id);
@@ -174,7 +176,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               />
             </FormControl>
           </Grid>
-
           <Grid item xs={12} md={6}>
             <FormControl>
               <FormLabel>Why</FormLabel>
@@ -203,28 +204,31 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 ))}
               </Box>
             </FormControl>
+            <FormHelperText>{errors.why?.message}</FormHelperText>
+          </Grid>
+          <Grid xs={12}>
             <Button
               variant="outlined"
               color="secondary"
               sx={{ mt: 1 }}
               onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
+              style={{ marginLeft: '15px' }}
             >
               Add Reason
             </Button>
-            <FormHelperText>{errors.why?.message}</FormHelperText>
           </Grid>
         </Grid>
       </PageBlock>
       <PageBlock title="Proposed Solutions">
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
-      <Box textAlign="center">
-        <Button variant="contained" color="error" onClick={handleCancel} sx={{ mx: 2 }}>
+      <Box textAlign="right">
+        <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
           Cancel
-        </Button>
-        <Button variant="contained" color="success" type="submit" sx={{ mx: 2 }}>
+        </NERFailButton>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
           Submit
-        </Button>
+        </NERSuccessButton>
       </Box>
     </form>
   );

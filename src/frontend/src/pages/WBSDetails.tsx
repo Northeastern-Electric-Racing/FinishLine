@@ -17,8 +17,8 @@ const WBSDetails: React.FC = () => {
   let wbsNumber;
   try {
     wbsNumber = validateWBS(wbsNum); // ensure the provided wbsNum is correctly formatted
-  } catch (error: any) {
-    return <ErrorPage message={error.message} />;
+  } catch (error: unknown) {
+    return <ErrorPage message={error instanceof Error ? error.message : ''} />;
   }
 
   if (isProject(wbsNumber)) {

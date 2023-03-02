@@ -36,6 +36,7 @@ export interface AuthenticatedUser {
   emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
+  teamAsLeadId?: string;
 }
 
 export interface UserSettings {

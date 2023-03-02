@@ -50,3 +50,23 @@ export const editSingleProject = (payload: any) => {
     ...payload
   });
 };
+
+/**
+ * Sets the project's team.
+ * @param wbsNum the wbsNum of the project
+ * @param teamId the id of the team the project is being assigned to
+ */
+export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
+  return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
+    teamId
+  });
+};
+
+/*
+ * Delete a project.
+ *
+ * @param wbsNum The WBS Number of the Project being deleted.
+ */
+export const deleteProject = (wbsNumber: WbsNumber) => {
+  return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
+};

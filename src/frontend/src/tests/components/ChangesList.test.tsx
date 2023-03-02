@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
-import { exampleWorkPackage2 } from '../test-support/test-data/work-packages.stub';
+import { exampleDesignWorkPackage } from '../test-support/test-data/work-packages.stub';
 import ChangesList from '../../components/ChangesList';
 
 /**
@@ -14,7 +14,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ChangesList changes={exampleWorkPackage2.changes} />
+      <ChangesList changes={exampleDesignWorkPackage.changes} />
     </RouterWrapper>
   );
 };
