@@ -9,7 +9,6 @@ const tasksRouter = express.Router();
 tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
-  nonEmptyString(body('notes')),
   body('deadline').isDate(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -37,6 +36,6 @@ tasksRouter.post(
   TasksController.editTaskAssignees
 );
 
-tasksRouter.delete('/:taskId/delete', TasksController.deleteTask);
+tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
 
 export default tasksRouter;

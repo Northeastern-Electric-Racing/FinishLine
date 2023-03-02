@@ -51,7 +51,6 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/standard',
-  intMinZero(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),

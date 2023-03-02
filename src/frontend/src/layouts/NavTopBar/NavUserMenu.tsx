@@ -29,11 +29,12 @@ const NavUserMenu: React.FC = () => {
   const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
-    auth!.signout();
+    if (!auth) return;
+    auth.signout();
     history.push(routes.HOME);
   };
 
-  const googleLogout = (
+  const ProdLogout = () => (
     <GoogleLogout
       clientId={googleAuthClientId!}
       //jsSrc={'accounts.google.com/gsi/client'}
@@ -49,8 +50,8 @@ const NavUserMenu: React.FC = () => {
     />
   );
 
-  const devLogout = (
-    <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+  const DevLogout = () => (
+    <MenuItem onClick={logout} sx={{ py: 0 }}>
       <ListItemIcon>
         <LogoutIcon fontSize="small" />
       </ListItemIcon>
@@ -114,7 +115,7 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
-        {googleAuthClientId ? googleLogout : devLogout}
+        {process.env.NODE_ENV === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
     </>
   );

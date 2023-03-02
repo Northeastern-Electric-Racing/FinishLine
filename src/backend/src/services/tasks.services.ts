@@ -1,10 +1,13 @@
 import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
 import { isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import taskQueryArgs from '../prisma-query-args/tasks.query-args';
+import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
+import { allUsersOnTeam, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 
 export default class TasksService {
@@ -31,20 +34,33 @@ export default class TasksService {
     status: Task_Status,
     assignees: number[]
   ): Promise<Task> {
-    if (createdBy.role === Role.GUEST) throw new AccessDeniedException();
+    const requestedWbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsNumber: wbsNum },
+      include: { project: { include: { team: { ...teamQueryArgs }, wbsElement: true } } }
+    });
+    if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (requestedWbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
+    const { project } = requestedWbsElement;
+    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
+
+    const { team } = project;
+    if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+
+    const isLeadershipOrAbove =
+      createdBy.role === Role.ADMIN || createdBy.role === Role.APP_ADMIN || createdBy.role === Role.LEADERSHIP;
+
+    const isProjectLeadOrManager =
+      createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
+
+    if (!isLeadershipOrAbove && !isProjectLeadOrManager && !isUserOnTeam(team, createdBy)) {
+      throw new AccessDeniedException();
+    }
+
+    const users = await getUsers(assignees); // this throws if any of the users aren't found
+    if (!allUsersOnTeam(team, users)) throw new HttpException(400, `All assignees must be part of the project's team!`);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
-
-    if (!isUnderWordCount(notes, 150)) throw new HttpException(400, 'Notes must be less than 250 words');
-
-    const requestedWbsElement = await prisma.wBS_Element.findUnique({ where: { wbsNumber: wbsNum } });
-
-    if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-
-    if (requestedWbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
-
-    // this throws if any of the users aren't found
-    const users = await getUsers(assignees);
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     const createdTask = await prisma.task.create({
       data: {
@@ -127,7 +143,12 @@ export default class TasksService {
    */
   static async editTaskAssignees(user: User, taskId: string, assignees: number[]): Promise<Task> {
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    const originalTask = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        wbsElement: { include: { project: { ...projectQueryArgs } } }
+      }
+    });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
 
@@ -139,6 +160,12 @@ export default class TasksService {
 
     // this throws if any of the users aren't found
     const assigneeUsers = await getUsers(assignees);
+
+    const team = originalTask.wbsElement?.project?.team;
+    if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (!allUsersOnTeam(team, assigneeUsers)) {
+      throw new HttpException(400, `All assignees must be part of the project's team!`);
+    }
 
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {
