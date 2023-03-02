@@ -12,6 +12,7 @@ import { Home, Description, Folder, SwapHoriz, Group, Timeline } from '@mui/icon
 import { Typography } from '@mui/material';
 
 const Sidebar: React.FC = () => {
+  const auth = useAuth();
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -40,7 +41,6 @@ const Sidebar: React.FC = () => {
     }
   ];
 
-
   if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
     linkItems.push({
       name: 'Admin Tools',
@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
       route: routes.ADMIN_TOOLS
     });
   }
-  
+
   linkItems.push({
     name: 'Info',
     icon: <Description />,
