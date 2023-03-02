@@ -43,6 +43,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'in-progress');
     setValue(newTabValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const [addTask, setAddTask] = useState(false);
