@@ -57,12 +57,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
       summary: '',
-      teamId: '',
-      links: '',
-      goals: '',
-      features: '',
-      constraints: '',
-      rules: ''
+      teamId: ''
     }
   });
 
