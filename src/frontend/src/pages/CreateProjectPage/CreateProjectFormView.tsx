@@ -107,6 +107,20 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
+        </Grid>
+        <Grid container>
+          <Grid item xs={12} md={3}>
+            <FormControl sx={{ width: '98%' }}>
+              <FormLabel>Change Request ID</FormLabel>
+              <ReactHookTextField
+                name="crId"
+                control={control}
+                placeholder="Enter change request ID..."
+                errorMessage={errors.crId}
+                type="number"
+              />
+            </FormControl>
+          </Grid>
           <Grid item xs={12} md={3}>
             <FormControl sx={{ width: '98%' }}>
               <FormLabel>Team</FormLabel>
@@ -126,18 +140,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl sx={{ width: '100%' }}>
-              <FormLabel>Change Request ID</FormLabel>
-              <ReactHookTextField
-                name="crId"
-                control={control}
-                placeholder="Enter change request ID..."
-                errorMessage={errors.crId}
-                type="number"
-              />
-            </FormControl>
-          </Grid>
         </Grid>
         <Grid item xs={12} md={3}>
           <FormControl sx={{ width: '100%' }}>
@@ -151,48 +153,6 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               rows={5}
             />
           </FormControl>
-        </Grid>
-        <Grid container>
-          <Grid item xs={12} md={3}>
-            <FormControl sx={{ width: '95%' }}>
-              <FormLabel>Links</FormLabel>
-              <ReactHookTextField name="Links" control={control} placeholder="Enter links..." errorMessage={errors.links} />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl sx={{ width: '95%' }}>
-              <FormLabel>Goals</FormLabel>
-              <ReactHookTextField name="Goals" control={control} placeholder="Enter goals..." errorMessage={errors.goals} />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl sx={{ width: '95%' }}>
-              <FormLabel>Features</FormLabel>
-              <ReactHookTextField
-                name="Features"
-                control={control}
-                placeholder="Enter features..."
-                errorMessage={errors.features}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl sx={{ width: '95%' }}>
-              <FormLabel>Constraints</FormLabel>
-              <ReactHookTextField
-                name="Constraints"
-                control={control}
-                placeholder="Enter constraints..."
-                errorMessage={errors.constraints}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl sx={{ width: '100%' }}>
-              <FormLabel>Rules</FormLabel>
-              <ReactHookTextField name="Rules" control={control} placeholder="Enter rules..." errorMessage={errors.rules} />
-            </FormControl>
-          </Grid>
         </Grid>
         <Box display="flex" gap={2} sx={{ mt: 2, justifyContent: 'flex-end' }}>
           <Button variant="outlined" color="secondary" onClick={onCancel}>
