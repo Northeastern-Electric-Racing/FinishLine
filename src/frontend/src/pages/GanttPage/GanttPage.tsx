@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Typography } from '@mui/material';
+import { calculateEndDate } from 'shared';
 import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
 
@@ -21,17 +23,17 @@ const GanttPage: React.FC<GanttPageProps> = ({ ganttDisplayObjects, updateGanttD
     <Gantt
       tasks={ganttDisplayObjects}
       viewMode={ViewMode.Week}
-      viewDate={new Date()}
+      viewDate={calculateEndDate(new Date(), -3)}
       preStepsCount={1}
       locale={'US'}
       onExpanderClick={handleExpanderClick}
-      columnWidth={67}
+      columnWidth={45}
       onClick={(task) => {
         if (task.onClick) task.onClick();
       }}
     />
   ) : (
-    <b>No Tasks To Display</b>
+    <Typography sx={{ mx: 1 }}>No items to display</Typography>
   );
 };
 

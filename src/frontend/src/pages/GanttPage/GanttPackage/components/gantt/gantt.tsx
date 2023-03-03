@@ -25,7 +25,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   listCellWidth = '320px',
   rowHeight = 25,
   ganttHeight = 0,
-  viewMode = ViewMode.Day,
+  viewMode = ViewMode.Week,
   preStepsCount = 1,
   locale = 'en-GB',
   barFill = 60,
@@ -66,7 +66,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   });
-  const [currentViewDate, setCurrentViewDate] = useState<Date | undefined>(undefined);
 
   const [taskListWidth, setTaskListWidth] = useState(0);
   const [svgContainerWidth, setSvgContainerWidth] = useState(0);
@@ -83,27 +82,25 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const svgWidth = dateSetup.dates.length * columnWidth;
   const ganttFullHeight = barTasks.length * rowHeight;
 
+  let defaultScrollX = -1;
+  if (viewDate) {
+    const { dates } = dateSetup;
+    const index = dates.findIndex(
+      (d, i) => viewDate.valueOf() >= d.valueOf() && i + 1 !== dates.length && viewDate.valueOf() < dates[i + 1].valueOf()
+    );
+    if (index !== -1) defaultScrollX = columnWidth * index;
+  }
+
   const [scrollY, setScrollY] = useState(0);
-  const [scrollX, setScrollX] = useState(-1);
+  const [scrollX, setScrollX] = useState(defaultScrollX);
   const [ignoreScrollEvent, setIgnoreScrollEvent] = useState(false);
 
   // task change events
   useEffect(() => {
-    let filteredTasks: Task[];
-    if (onExpanderClick) {
-      filteredTasks = removeHiddenTasks(tasks);
-    } else {
-      filteredTasks = tasks;
-    }
-    filteredTasks = filteredTasks.sort(sortTasks);
+    const filteredTasks: Task[] = removeHiddenTasks(tasks).sort(sortTasks);
     const [startDate, endDate] = ganttDateRange(filteredTasks, viewMode, preStepsCount);
     let newDates = seedDates(startDate, endDate, viewMode);
-    if (rtl) {
-      newDates = newDates.reverse();
-      if (scrollX === -1) {
-        setScrollX(newDates.length * columnWidth);
-      }
-    }
+
     setDateSetup({ dates: newDates, viewMode });
     setBarTasks(
       convertToBarTasks(
@@ -147,26 +144,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     milestoneBackgroundColor,
     milestoneBackgroundSelectedColor,
     rtl,
-    scrollX,
-    onExpanderClick
+    scrollX
   ]);
-
-  useEffect(() => {
-    if (
-      viewMode === dateSetup.viewMode &&
-      ((viewDate && !currentViewDate) || (viewDate && currentViewDate?.valueOf() !== viewDate.valueOf()))
-    ) {
-      const { dates } = dateSetup;
-      const index = dates.findIndex(
-        (d, i) => viewDate.valueOf() >= d.valueOf() && i + 1 !== dates.length && viewDate.valueOf() < dates[i + 1].valueOf()
-      );
-      if (index === -1) {
-        return;
-      }
-      setCurrentViewDate(viewDate);
-      setScrollX(columnWidth * index);
-    }
-  }, [dateSetup, viewDate, columnWidth, dateSetup.dates, dateSetup.viewMode, viewMode, currentViewDate, setCurrentViewDate]);
 
   useEffect(() => {
     const { changedTask, action } = ganttEvent;
@@ -198,13 +177,10 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   }, [failedTask, barTasks]);
 
   useEffect(() => {
-    if (!listCellWidth) {
-      setTaskListWidth(0);
-    }
     if (taskListRef.current) {
       setTaskListWidth(taskListRef.current.offsetWidth);
     }
-  }, [taskListRef, listCellWidth]);
+  }, [taskListRef]);
 
   useEffect(() => {
     if (wrapperRef.current) {
@@ -360,8 +336,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     headerHeight,
     columnWidth,
     fontFamily,
-    fontSize,
-    rtl
+    fontSize
   };
   const barProps: TaskGanttContentProps = {
     tasks: barTasks,
@@ -442,7 +417,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
           headerHeight={headerHeight}
           scroll={scrollY}
           onScroll={handleScrollY}
-          rtl={rtl}
         />
       </div>
       <HorizontalScroll

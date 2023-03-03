@@ -19,6 +19,8 @@ import { useHistory } from 'react-router-dom';
 import { filterGanttProjects, buildGanttSearchParams, GanttFilters, sortWbs } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
+import { createTheme, Paper, ThemeProvider } from '@mui/material';
+import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
 
 interface GanttDisplayProject extends Project {
   displayOrder: number;
@@ -69,7 +71,7 @@ const GanttPageWrapper: FC = () => {
   useEffect(() => {
     const transformWPToGanttObject = (wp: GanttDisplayWorkPackage, projects: GanttDisplayProject[]): Task => {
       return {
-        id: wbsPipe(wp.wbsNum), // Avoid conflict with project ids
+        id: wbsPipe(wp.wbsNum),
         name: wbsPipe(wp.wbsNum) + ' ' + wp.name,
         start: wp.startDate,
         end: wp.endDate,
@@ -83,6 +85,7 @@ const GanttPageWrapper: FC = () => {
         }
       };
     };
+
     const transformProjectToGanttObject = (project: GanttDisplayProject): Task => {
       const progress =
         (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
@@ -110,40 +113,41 @@ const GanttPageWrapper: FC = () => {
         }
       };
     };
-    if (projects) {
-      const ganttFilters: GanttFilters = {
-        showCar0,
-        showCar1,
-        showCar2,
-        status,
-        selectedTeam,
-        expanded,
-        start,
-        end
-      };
-      const filteredProjects = filterGanttProjects(projects, ganttFilters);
-      const sortedProjects = filteredProjects.sort(sortWbs).map((p) => {
-        // GanttDisplayProject = Project + displayOrder property
-        const displayProject = p as GanttDisplayProject;
-        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
-        // 1-indexed
-        displayProject.displayOrder = filteredProjects.indexOf(displayProject) + 1;
-        return displayProject;
-      });
-      const projectTasks = sortedProjects.map(transformProjectToGanttObject);
-      const workPackages = sortedProjects.flatMap((p) => p.workPackages);
-      const sortedWorkPackages = workPackages.sort(sortWbs).map((wp) => {
-        // GanttDisplayWorkPackage = WorkPackage + displayOrder property
-        const displayWP = wp as GanttDisplayWorkPackage;
-        // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
-        // 1-indexed
-        displayWP.displayOrder = workPackages.indexOf(displayWP) + 1;
-        return displayWP;
-      });
-      const wpTasks = sortedWorkPackages.map((wp) => transformWPToGanttObject(wp, sortedProjects));
-      setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
-      setGanttDisplayObjects([...projectTasks, ...wpTasks]);
-    }
+
+    if (!projects) return;
+
+    const ganttFilters: GanttFilters = {
+      showCar0,
+      showCar1,
+      showCar2,
+      status,
+      selectedTeam,
+      expanded,
+      start,
+      end
+    };
+    const filteredProjects = filterGanttProjects(projects, ganttFilters);
+    const sortedProjects = filteredProjects.sort(sortWbs).map((p) => {
+      // GanttDisplayProject = Project + displayOrder property
+      const displayProject = p as GanttDisplayProject;
+      // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+      // 1-indexed
+      displayProject.displayOrder = filteredProjects.indexOf(displayProject) + 1;
+      return displayProject;
+    });
+    const projectTasks = sortedProjects.map(transformProjectToGanttObject);
+    const workPackages = sortedProjects.flatMap((p) => p.workPackages);
+    const sortedWorkPackages = workPackages.sort(sortWbs).map((wp) => {
+      // GanttDisplayWorkPackage = WorkPackage + displayOrder property
+      const displayWP = wp as GanttDisplayWorkPackage;
+      // setting the displayOrder just tells the underlying gantt package how to sort the tasks,
+      // 1-indexed
+      displayWP.displayOrder = workPackages.indexOf(displayWP) + 1;
+      return displayWP;
+    });
+    const wpTasks = sortedWorkPackages.map((wp) => transformWPToGanttObject(wp, sortedProjects));
+    setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
+    setGanttDisplayObjects([...projectTasks, ...wpTasks]);
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
@@ -239,7 +243,11 @@ const GanttPageWrapper: FC = () => {
         currentEnd={end}
         resetHandler={resetHandler}
       />
-      <GanttPage ganttDisplayObjects={ganttDisplayObjects} updateGanttDisplayObjects={setGanttDisplayObjects} />
+      <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>
+        <Paper>
+          <GanttPage ganttDisplayObjects={ganttDisplayObjects} updateGanttDisplayObjects={setGanttDisplayObjects} />
+        </Paper>
+      </ThemeProvider>
     </>
   );
 };
