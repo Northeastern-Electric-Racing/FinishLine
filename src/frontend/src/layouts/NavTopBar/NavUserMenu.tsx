@@ -121,7 +121,7 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
-        {process.env.NODE_ENV === 'development' ? <DevLogout /> : <ProdLogout />}
+        {googleAuthClientId ? <ProdLogout /> : <DevLogout />}
       </Menu>
     </>
   );
