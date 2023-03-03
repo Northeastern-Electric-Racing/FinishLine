@@ -25,6 +25,14 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 
+/**************** Tasks Endpoints ********************/
+const tasks = () => `${API_URL}/tasks`;
+const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
+const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
+const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
+const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
+const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
+
 /**************** Risks Endpoints ********************/
 const risks = () => `${API_URL}/risks`;
 const risksByProjectId = (projectId: number) => `${risks()}/${projectId}`;
@@ -83,6 +91,13 @@ export const apiUrls = {
   projectsEdit,
   projectsSetTeam,
   projectsDelete,
+
+  tasksCreate,
+  tasks,
+  editTaskById,
+  taskEditStatus,
+  editTaskAssignees,
+  deleteTask,
 
   risks,
   risksByProjectId,
