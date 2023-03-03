@@ -58,7 +58,7 @@ const NavUserMenu: React.FC = () => {
       <ListItemIcon>
         <LogoutIcon fontSize="small" />
       </ListItemIcon>
-      <ListItemText>Logout</ListItemText>
+      <ListItemText>Logout Dev</ListItemText>
     </MenuItem>
   );
 
