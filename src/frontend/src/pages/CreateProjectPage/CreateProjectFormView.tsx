@@ -79,7 +79,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={6}>
             <FormControl sx={{ width: '98%' }}>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
@@ -90,8 +90,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl sx={{ width: '98%' }}>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Car Number</FormLabel>
               <ReactHookTextField
                 name="carNumber"
@@ -104,7 +104,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
           </Grid>
         </Grid>
         <Grid container>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={6}>
             <FormControl sx={{ width: '98%' }}>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -116,8 +116,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl sx={{ width: '98%' }}>
+          <Grid item xs={12} md={6}>
+            <FormControl sx={{ width: '100%' }}>
               <FormLabel>Team</FormLabel>
               <Controller
                 name="teamId"
