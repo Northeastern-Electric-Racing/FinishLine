@@ -42,6 +42,9 @@ const NavUserMenu: React.FC = () => {
       clientId={googleAuthClientId!}
       //jsSrc={'accounts.google.com/gsi/client'}
       onLogoutSuccess={logout}
+      onFailure={() => {
+        console.log("FAILURE");
+      }}
       render={(renderProps) => (
         <MenuItem component="div" sx={{ py: 0 }}>
           <ListItemIcon>
