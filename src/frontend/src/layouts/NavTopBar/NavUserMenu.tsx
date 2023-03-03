@@ -29,9 +29,12 @@ const NavUserMenu: React.FC = () => {
   const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
+    console.log('logout')
     if (!auth) return;
     auth.signout();
     history.push(routes.HOME);
+    console.log(auth)
+    console.log('logout done')
   };
 
   const ProdLogout = () => (
@@ -44,7 +47,7 @@ const NavUserMenu: React.FC = () => {
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Logout</ListItemText>
+          <ListItemText>Logout Prod</ListItemText>
         </MenuItem>
       )}
     />
