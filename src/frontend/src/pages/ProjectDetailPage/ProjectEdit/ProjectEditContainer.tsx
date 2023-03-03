@@ -125,6 +125,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
 
     try {
+      console.log('test');
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
