@@ -38,33 +38,33 @@ const NavUserMenu: React.FC = () => {
     console.log('logout done')
   };
 
-  const ProdLogout = () => (
-    <GoogleLogout
-      clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-      //jsSrc={'accounts.google.com/gsi/client'}
-      onLogoutSuccess={logout}
-      onFailure={() => {
-        console.log("FAILURE");
-      }}
-      render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Logout Prod1</ListItemText>
-        </MenuItem>
-      )}
-    />
-  );
+  // const ProdLogout = () => (
+  //   <GoogleLogout
+  //     clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+  //     //jsSrc={'accounts.google.com/gsi/client'}
+  //     onLogoutSuccess={logout}
+  //     onFailure={() => {
+  //       console.log("FAILURE");
+  //     }}
+  //     render={(renderProps) => (
+  //       <MenuItem component="div" sx={{ py: 0 }}>
+  //         <ListItemIcon>
+  //           <LogoutIcon fontSize="small" />
+  //         </ListItemIcon>
+  //         <ListItemText>Logout Prod1</ListItemText>
+  //       </MenuItem>
+  //     )}
+  //   />
+  // );
 
-  const DevLogout = () => (
-    <MenuItem onClick={logout} sx={{ py: 0 }}>
-      <ListItemIcon>
-        <LogoutIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText>Logout Dev</ListItemText>
-    </MenuItem>
-  );
+  // const DevLogout = () => (
+  //   <MenuItem onClick={logout} sx={{ py: 0 }}>
+  //     <ListItemIcon>
+  //       <LogoutIcon fontSize="small" />
+  //     </ListItemIcon>
+  //     <ListItemText>Logout Dev</ListItemText>
+  //   </MenuItem>
+  // );
 
   const AdminTools = () => (
     <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
