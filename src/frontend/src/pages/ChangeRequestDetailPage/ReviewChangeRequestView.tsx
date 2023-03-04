@@ -191,6 +191,18 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const renderModal: () => JSX.Element = () => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
+        <IconButton
+          aria-label="close"
+          onClick={onHide}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500]
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
         <DialogContent>
           <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
