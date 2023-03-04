@@ -15,7 +15,7 @@ import { convertToBarTasks } from '../../helpers/bar-helper';
 import { GanttEvent } from '../../types/gantt-task-actions';
 import { DateSetup } from '../../types/date-setup';
 import { HorizontalScroll } from '../other/horizontal-scroll';
-import { removeHiddenTasks, sortTasks } from '../../helpers/other-helper';
+import { removeHiddenTasks } from '../../helpers/other-helper';
 import styles from './gantt.module.css';
 
 export const Gantt: React.FunctionComponent<GanttProps> = ({
@@ -97,7 +97,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
   // task change events
   useEffect(() => {
-    const filteredTasks: Task[] = removeHiddenTasks(tasks).sort(sortTasks);
+    const filteredTasks: Task[] = removeHiddenTasks(tasks);
     const [startDate, endDate] = ganttDateRange(filteredTasks, viewMode, preStepsCount);
     let newDates = seedDates(startDate, endDate, viewMode);
 

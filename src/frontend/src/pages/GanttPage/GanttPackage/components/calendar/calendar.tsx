@@ -40,7 +40,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       const bottomValue = `${getMonday(date).getDate()}`;
 
       bottomValues.push(
-        <text key={date.getTime()} y={headerHeight * 0.83} x={columnWidth * i + 23} className={styles.calendarBottomText}>
+        <text key={date.getTime()} y={headerHeight * 0.83} x={columnWidth * i + 18} className={styles.calendarBottomText}>
           {bottomValue}
         </text>
       );
