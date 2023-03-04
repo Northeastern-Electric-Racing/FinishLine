@@ -9,7 +9,7 @@ import ErrorPage from '../ErrorPage';
 import { Task } from './GanttPackage/types/public-types';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { Project, WbsElementStatus, WorkPackage } from 'shared';
-import GanttChart from './GanttPage';
+import GanttChart from './GanttChart';
 import { projectWbsPipe, wbsPipe } from '../../utils/pipes';
 import GanttPageFilter from './GanttPageFilter';
 import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
@@ -19,8 +19,10 @@ import { useHistory } from 'react-router-dom';
 import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { createTheme, Paper, ThemeProvider } from '@mui/material';
+import { Box, createTheme, Paper, ThemeProvider, Typography } from '@mui/material';
 import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
+
+const NO_TEAM = 'No Team';
 
 const transformWorkPackageToGanttTask = (workPackage: WorkPackage): Task => {
   return {
@@ -72,7 +74,8 @@ const GanttPageWrapper: FC = () => {
   const history = useHistory();
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
-  const [ganttDisplayObjects, setGanttDisplayObjects] = useState<Task[]>([]);
+  const [ganttTasks, setGanttTasks] = useState<Task[]>([]);
+  const [teamNameToGanttTasks, setTeamNameToGanttTasks] = useState<Map<string, Task[]>>(new Map<string, Task[]>());
   const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
@@ -103,9 +106,7 @@ const GanttPageWrapper: FC = () => {
 
   useEffect(() => {
     if (!projects) return;
-    console.log('rerendering');
-
-    setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || 'No Team'))));
+    setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || NO_TEAM))));
 
     const ganttFilters: GanttFilters = {
       showCar0,
@@ -123,9 +124,21 @@ const GanttPageWrapper: FC = () => {
       (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
     );
 
+    const teamToProjectsMap = new Map<string, Task[]>();
+
+    sortedProjects.forEach((project) => {
+      const teamName = project.team?.teamName || NO_TEAM;
+      let tasks: Task[] = teamToProjectsMap.get(teamName) || [];
+      tasks = tasks.concat(transformProjectToGanttTask(project, expanded));
+      teamToProjectsMap.set(teamName, tasks);
+    });
+
+    console.log(teamToProjectsMap);
+    setTeamNameToGanttTasks(teamToProjectsMap);
+
     const tasks: Task[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
-    setGanttDisplayObjects(tasks);
+    setGanttTasks(tasks);
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
@@ -159,14 +172,14 @@ const GanttPageWrapper: FC = () => {
   const expandedHandler = (value: boolean) => {
     // No more forced reloads
     if (value === expanded) {
-      const newGanttDisplayObjects = ganttDisplayObjects.map((object) => {
+      const newGanttDisplayObjects = ganttTasks.map((object) => {
         if (object.type === 'project') {
           return { ...object, hideChildren: !value };
         } else {
           return object;
         }
       });
-      setGanttDisplayObjects(newGanttDisplayObjects);
+      setGanttTasks(newGanttDisplayObjects);
     } else {
       const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
@@ -188,18 +201,44 @@ const GanttPageWrapper: FC = () => {
   const resetHandler = () => {
     // No more forced reloads
     if (query.get('expanded') === null) {
-      const newGanttDisplayObjects = ganttDisplayObjects.map((object) => {
+      const newGanttDisplayObjects = ganttTasks.map((object) => {
         if (object.type === 'project') {
           return { ...object, hideChildren: true };
         } else {
           return object;
         }
       });
-      setGanttDisplayObjects(newGanttDisplayObjects);
+      setGanttTasks(newGanttDisplayObjects);
     } else {
       history.push(routes.GANTT);
     }
   };
+
+  const ganttCharts: JSX.Element[] = [];
+
+  teamNameToGanttTasks.forEach((tasks: Task[], teamName: string) => {
+    ganttCharts.push(
+      <Box key={teamName} sx={{ my: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
+          <Typography variant="h5" sx={{ flexGrow: 1 }}>
+            {teamName}
+          </Typography>
+        </Box>
+        <Paper>
+          <GanttChart
+            ganttTasks={tasks}
+            setGanttTasks={(newTasks) => {
+              const newNewTasks = [...newTasks];
+              const newMap = Object.assign({}, teamNameToGanttTasks);
+              newMap.set(teamName, newNewTasks);
+
+              setTeamNameToGanttTasks(newMap);
+            }}
+          />
+        </Paper>
+      </Box>
+    );
+  });
 
   return (
     <>
@@ -220,11 +259,7 @@ const GanttPageWrapper: FC = () => {
         currentEnd={end}
         resetHandler={resetHandler}
       />
-      <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>
-        <Paper>
-          <GanttChart ganttDisplayObjects={ganttDisplayObjects} setGanttDisplayObjects={setGanttDisplayObjects} />
-        </Paper>
-      </ThemeProvider>
+      <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>{ganttCharts}</ThemeProvider>
     </>
   );
 };

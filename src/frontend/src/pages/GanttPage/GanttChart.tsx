@@ -9,21 +9,21 @@ import { Gantt } from './GanttPackage/components/gantt/gantt';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
 
 interface GanttPageProps {
-  ganttDisplayObjects: Task[];
-  setGanttDisplayObjects: (ganttDisplayObjects: Task[]) => void;
+  ganttTasks: Task[];
+  setGanttTasks: (ganttTasks: Task[]) => void;
 }
 
-const GanttChart: React.FC<GanttPageProps> = ({ ganttDisplayObjects, setGanttDisplayObjects }) => {
+const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, setGanttTasks }) => {
   // This is separate from the expand/collapse button
   const handleExpanderClick = (task: Task) => {
-    setGanttDisplayObjects(ganttDisplayObjects.map((t) => (t.id === task.id ? task : t)));
+    setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 
-  return ganttDisplayObjects.length > 0 ? (
+  return ganttTasks.length > 0 ? (
     <Gantt
-      tasks={ganttDisplayObjects}
+      tasks={ganttTasks}
       viewMode={ViewMode.Week}
-      viewDate={calculateEndDate(new Date(), -5)}
+      viewDate={calculateEndDate(new Date(), -3)}
       preStepsCount={1}
       locale={'US'}
       onExpanderClick={handleExpanderClick}
