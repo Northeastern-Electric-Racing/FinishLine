@@ -17,6 +17,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { Button } from '@mui/material';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -121,7 +122,22 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
-        {googleAuthClientId ? <ProdLogout /> : <DevLogout />}
+        {googleAuthClientId ? (
+          <GoogleLogout
+            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+            //jsSrc={'accounts.google.com/gsi/client'}
+            onLogoutSuccess={logout}
+            render={(renderProps) => (
+              <MenuItem component="div" sx={{ py: 0 }}>
+                Logout
+              </MenuItem>
+            )}
+          />
+        ) : (
+          <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+            <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
