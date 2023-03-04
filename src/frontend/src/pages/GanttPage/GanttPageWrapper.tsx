@@ -24,7 +24,11 @@ import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
 
 const NO_TEAM = 'No Team';
 
-const transformWorkPackageToGanttTask = (workPackage: WorkPackage): Task => {
+interface GanttTask extends Task {
+  teamName: string;
+}
+
+const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
   return {
     id: wbsPipe(workPackage.wbsNum),
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
@@ -34,18 +38,21 @@ const transformWorkPackageToGanttTask = (workPackage: WorkPackage): Task => {
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
+    teamName,
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     }
   };
 };
 
-const transformProjectToGanttTask = (project: Project, expanded: boolean): Task[] => {
+const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
   const progress =
     (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
     100;
 
-  const projectTask: Task = {
+  const teamName = project.team?.teamName || NO_TEAM;
+
+  const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),
     name: wbsPipe(project.wbsNum) + ' ' + project.name,
     start: project.startDate || new Date(),
@@ -53,6 +60,7 @@ const transformProjectToGanttTask = (project: Project, expanded: boolean): Task[
     progress,
     type: 'project',
     hideChildren: !expanded,
+    teamName,
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
@@ -60,7 +68,7 @@ const transformProjectToGanttTask = (project: Project, expanded: boolean): Task[
 
   const workPackageTasks = project.workPackages
     .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-    .map((workPackage) => transformWorkPackageToGanttTask(workPackage));
+    .map((workPackage) => transformWorkPackageToGanttTask(workPackage, teamName));
 
   return [projectTask, ...workPackageTasks];
 };
@@ -74,8 +82,7 @@ const GanttPageWrapper: FC = () => {
   const history = useHistory();
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
-  const [ganttTasks, setGanttTasks] = useState<Task[]>([]);
-  const [teamNameToGanttTasks, setTeamNameToGanttTasks] = useState<Map<string, Task[]>>(new Map<string, Task[]>());
+  const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
   const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
@@ -106,6 +113,7 @@ const GanttPageWrapper: FC = () => {
 
   useEffect(() => {
     if (!projects) return;
+
     setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || NO_TEAM))));
 
     const ganttFilters: GanttFilters = {
@@ -123,20 +131,7 @@ const GanttPageWrapper: FC = () => {
     const sortedProjects = filteredProjects.sort(
       (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
     );
-
-    const teamToProjectsMap = new Map<string, Task[]>();
-
-    sortedProjects.forEach((project) => {
-      const teamName = project.team?.teamName || NO_TEAM;
-      let tasks: Task[] = teamToProjectsMap.get(teamName) || [];
-      tasks = tasks.concat(transformProjectToGanttTask(project, expanded));
-      teamToProjectsMap.set(teamName, tasks);
-    });
-
-    console.log(teamToProjectsMap);
-    setTeamNameToGanttTasks(teamToProjectsMap);
-
-    const tasks: Task[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
+    const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
     setGanttTasks(tasks);
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
@@ -172,14 +167,14 @@ const GanttPageWrapper: FC = () => {
   const expandedHandler = (value: boolean) => {
     // No more forced reloads
     if (value === expanded) {
-      const newGanttDisplayObjects = ganttTasks.map((object) => {
-        if (object.type === 'project') {
-          return { ...object, hideChildren: !value };
+      const newGanttTasks = ganttTasks.map((task) => {
+        if (task.type === 'project') {
+          return { ...task, hideChildren: !value };
         } else {
-          return object;
+          return task;
         }
       });
-      setGanttTasks(newGanttDisplayObjects);
+      setGanttTasks(newGanttTasks);
     } else {
       const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
@@ -214,9 +209,17 @@ const GanttPageWrapper: FC = () => {
     }
   };
 
+  const teamToProjectsMap = new Map<string, GanttTask[]>();
+
+  ganttTasks.forEach((ganttTask) => {
+    const tasks: GanttTask[] = teamToProjectsMap.get(ganttTask.teamName) || [];
+    tasks.push(ganttTask);
+    teamToProjectsMap.set(ganttTask.teamName, tasks);
+  });
+
   const ganttCharts: JSX.Element[] = [];
 
-  teamNameToGanttTasks.forEach((tasks: Task[], teamName: string) => {
+  teamToProjectsMap.forEach((tasks: Task[], teamName: string) => {
     ganttCharts.push(
       <Box key={teamName} sx={{ my: 3 }}>
         <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
@@ -227,12 +230,9 @@ const GanttPageWrapper: FC = () => {
         <Paper>
           <GanttChart
             ganttTasks={tasks}
-            setGanttTasks={(newTasks) => {
-              const newNewTasks = [...newTasks];
-              const newMap = Object.assign({}, teamNameToGanttTasks);
-              newMap.set(teamName, newNewTasks);
-
-              setTeamNameToGanttTasks(newMap);
+            onExpanderClick={(newTask) => {
+              const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
+              setGanttTasks(newTasks);
             }}
           />
         </Paper>
