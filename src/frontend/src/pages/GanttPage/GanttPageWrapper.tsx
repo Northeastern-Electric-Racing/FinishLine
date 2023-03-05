@@ -6,72 +6,27 @@
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import { Task } from './GanttPackage/types/public-types';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { Project, WbsElementStatus, WorkPackage } from 'shared';
+import { WbsElementStatus } from 'shared';
 import GanttChart from './GanttChart';
-import { projectWbsPipe, wbsPipe } from '../../utils/pipes';
 import GanttPageFilter from './GanttPageFilter';
 import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-import { filterGanttProjects, buildGanttSearchParams, GanttFilters } from '../../utils/gantt.utils';
+import {
+  filterGanttProjects,
+  buildGanttSearchParams,
+  GanttFilters,
+  NO_TEAM,
+  sortTeamNames,
+  GanttTask,
+  transformProjectToGanttTask
+} from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Box, createTheme, Paper, ThemeProvider, Typography } from '@mui/material';
 import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
-
-const NO_TEAM = 'No Team';
-
-interface GanttTask extends Task {
-  teamName: string;
-}
-
-const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
-  return {
-    id: wbsPipe(workPackage.wbsNum),
-    name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
-    start: workPackage.startDate,
-    end: workPackage.endDate,
-    progress: workPackage.progress,
-    project: projectWbsPipe(workPackage.wbsNum),
-    type: 'task',
-    styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
-    teamName,
-    onClick: () => {
-      window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
-    }
-  };
-};
-
-const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
-  const progress =
-    (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
-    100;
-
-  const teamName = project.team?.teamName || NO_TEAM;
-
-  const projectTask: GanttTask = {
-    id: wbsPipe(project.wbsNum),
-    name: wbsPipe(project.wbsNum) + ' ' + project.name,
-    start: project.startDate || new Date(),
-    end: project.endDate || new Date(),
-    progress,
-    type: 'project',
-    hideChildren: !expanded,
-    teamName,
-    onClick: () => {
-      window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
-    }
-  };
-
-  const workPackageTasks = project.workPackages
-    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-    .map((workPackage) => transformWorkPackageToGanttTask(workPackage, teamName));
-
-  return [projectTask, ...workPackageTasks];
-};
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -209,18 +164,21 @@ const GanttPageWrapper: FC = () => {
     }
   };
 
-  const teamToProjectsMap = new Map<string, GanttTask[]>();
+  const teamNameToGanttTasksMap = new Map<string, GanttTask[]>();
 
   ganttTasks.forEach((ganttTask) => {
-    const tasks: GanttTask[] = teamToProjectsMap.get(ganttTask.teamName) || [];
+    const tasks: GanttTask[] = teamNameToGanttTasksMap.get(ganttTask.teamName) || [];
     tasks.push(ganttTask);
-    teamToProjectsMap.set(ganttTask.teamName, tasks);
+    teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
-  const ganttCharts: JSX.Element[] = [];
+  const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  teamToProjectsMap.forEach((tasks: Task[], teamName: string) => {
-    ganttCharts.push(
+  const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
+    const tasks = teamNameToGanttTasksMap.get(teamName);
+    if (!tasks) return <></>;
+
+    return (
       <Box key={teamName} sx={{ my: 3 }}>
         <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>

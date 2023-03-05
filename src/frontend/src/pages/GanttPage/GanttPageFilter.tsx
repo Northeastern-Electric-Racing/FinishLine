@@ -13,7 +13,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
-const carButtonMaker = (number: string, onChange: (event: ChangeEvent<HTMLInputElement>) => void) => (
+const CarButton = ({ number, onChange }: { number: string; onChange: (event: ChangeEvent<HTMLInputElement>) => void }) => (
   <Grid item>
     <Checkbox
       defaultChecked
@@ -106,9 +106,9 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       <Grid item xs={12}>
         <FormLabel>Cars</FormLabel>
       </Grid>
-      {carButtonMaker('0', car0Handler)}
-      {carButtonMaker('1', car1Handler)}
-      {carButtonMaker('2', car2Handler)}
+      <CarButton number="0" onChange={car0Handler} />
+      <CarButton number="1" onChange={car1Handler} />
+      <CarButton number="2" onChange={car2Handler} />
     </Grid>
   );
 
@@ -152,7 +152,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
       <Grid container rowSpacing={1} columnSpacing={1} sx={{ justifyContent: 'start', alignItems: 'start' }}>
         {carFilters}
         <Grid item xs={12} md={2}>
-          <FormControl sx={{ width: '100%' }}>
+          <FormControl fullWidth>
             <FormLabel>Status</FormLabel>
             <Select value={status} onChange={statusHandler}>
               <MenuItem value="All Statuses">All Statuses</MenuItem>

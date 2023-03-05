@@ -3,7 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsNumber } from 'shared';
+import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
+import { projectWbsPipe } from './pipes';
+
+export const NO_TEAM = 'No Team';
 
 export interface GanttFilters {
   showCar0: boolean;
@@ -14,6 +18,10 @@ export interface GanttFilters {
   start: Date | null;
   end: Date | null;
   expanded: boolean;
+}
+
+export interface GanttTask extends Task {
+  teamName: string;
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
@@ -76,6 +84,51 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
   );
 };
 
+export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
+  return {
+    id: wbsPipe(workPackage.wbsNum),
+    name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
+    start: workPackage.startDate,
+    end: workPackage.endDate,
+    progress: workPackage.progress,
+    project: projectWbsPipe(workPackage.wbsNum),
+    type: 'task',
+    styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
+    teamName,
+    onClick: () => {
+      window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
+    }
+  };
+};
+
+export const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
+  const progress =
+    (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
+    100;
+
+  const teamName = project.team?.teamName || NO_TEAM;
+
+  const projectTask: GanttTask = {
+    id: wbsPipe(project.wbsNum),
+    name: wbsPipe(project.wbsNum) + ' ' + project.name,
+    start: project.startDate || new Date(),
+    end: project.endDate || new Date(),
+    progress,
+    type: 'project',
+    hideChildren: !expanded,
+    teamName,
+    onClick: () => {
+      window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
+    }
+  };
+
+  const workPackageTasks = project.workPackages
+    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+    .map((workPackage) => transformWorkPackageToGanttTask(workPackage, teamName));
+
+  return [projectTask, ...workPackageTasks];
+};
+
 /**
  * Comparator to sort WBS Numbers in ascending order.
  * @param a WBS Number 1
@@ -91,4 +144,43 @@ export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
     return aWbsNum.projectNumber - bWbsNum.projectNumber;
   }
   return aWbsNum.workPackageNumber - bWbsNum.workPackageNumber;
+};
+
+/**
+ * Sort function for the teams on the Gantt chart.
+ * Hardcoding the team names so that we can get the teams in the exact order we want.
+ * However, everything else is not hard coded and allows for more or less teams.
+ * @param a name of team
+ * @param b name of other team
+ * @returns a number for sorting
+ */
+export const sortTeamNames = (a: string, b: string): number => {
+  if (a === NO_TEAM) return 10001;
+  if (b === NO_TEAM) return -10001;
+
+  if (a.includes('Software')) return 10000;
+  if (b.includes('Software')) return -10000;
+
+  if (a.includes('Handling')) return 9999;
+  if (b.includes('Handling')) return -9999;
+
+  if (a.includes('Drivetrain')) return 9998;
+  if (b.includes('Drivetrain')) return -9998;
+
+  if (a.includes('Structural')) return 9997;
+  if (b.includes('Structural')) return -9997;
+
+  if (a.includes('Ergonomics')) return 9996;
+  if (b.includes('Ergonomics')) return -9996;
+
+  if (a.includes('Tractive')) return 9995;
+  if (b.includes('Tractive')) return -9995;
+
+  if (a.includes('Low Voltage')) return 9994;
+  if (b.includes('Low Voltage')) return -9994;
+
+  if (a.includes('Data & Controls')) return 9993;
+  if (b.includes('Data & Controls')) return -9993;
+
+  return a.localeCompare(b);
 };
