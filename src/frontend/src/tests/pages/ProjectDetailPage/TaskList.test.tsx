@@ -13,7 +13,7 @@ import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/types';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { UseQueryResult } from 'react-query';
-import { User } from 'shared';
+import { TeamPreview, User } from 'shared';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { useCreateTask, useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../hooks/tasks.hooks';
 import { UseMutationResult } from 'react-query';
@@ -59,7 +59,7 @@ const users = [exampleAdminUser, exampleLeadershipUser];
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (team = exampleTeam) => {
+const renderComponent = (team?: TeamPreview) => {
   const RouterWrapper = routerWrapperBuilder({});
   const queryClient = new QueryClient();
   return render(
@@ -80,17 +80,17 @@ describe('TaskList component', () => {
     mockUserHook(false, false, users);
     mockCreateTaskHook(false, false);
     mockEditTaskHook(false, false);
-    mockDeleteTaskHook(false, false);
     mockEditTaskHookAssignees(false, false);
+    mockDeleteTaskHook(false, false);
   });
 
   it('renders "Task List" on top', () => {
-    renderComponent();
+    renderComponent(exampleTeam);
     expect(screen.getByText('Task List')).toBeInTheDocument();
   });
 
   it('renders all 3 labels', () => {
-    renderComponent();
+    renderComponent(exampleTeam);
     expect(screen.getByText('In Progress')).toBeInTheDocument();
     expect(screen.getByText('In Backlog')).toBeInTheDocument();
     expect(screen.getByText('Done')).toBeInTheDocument();
@@ -98,20 +98,37 @@ describe('TaskList component', () => {
 
   describe('New Task button', () => {
     it('renders New Task button', () => {
-      renderComponent();
+      renderComponent(exampleTeam);
       expect(screen.getByText('New Task')).toBeInTheDocument();
+    });
+
+    it('disables New Task button if there is no associated team', () => {
+      renderComponent();
+      expect(screen.getByText('New Task')).toBeDisabled();
     });
 
     it('enables New Task button for leadership', () => {
       spyUseAuthHook.mockReturnValue(mockAuth(false, exampleLeadershipUser));
-      renderComponent();
+      renderComponent(exampleTeam);
       expect(screen.getByText('New Task')).toBeEnabled();
     });
 
     it('disables New Task button for guests', () => {
       spyUseAuthHook.mockReturnValue(mockAuth(false, exampleGuestUser));
-      renderComponent();
+      renderComponent(exampleTeam);
       expect(screen.getByText('New Task')).toBeDisabled();
+    });
+  });
+
+  describe('Tab Contents', () => {
+    it('renders message if there is no associated team', () => {
+      renderComponent();
+      expect(screen.getByText('No team assigned to this project!')).toBeInTheDocument();
+    });
+
+    it('does not render no-team message if there is an associated team', () => {
+      renderComponent(exampleTeam);
+      expect(screen.queryByText('No team assigned to this project!')).toBeNull();
     });
   });
 });
