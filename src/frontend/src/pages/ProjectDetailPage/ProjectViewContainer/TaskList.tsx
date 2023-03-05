@@ -6,9 +6,7 @@
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
-import { useAuth } from '../../../hooks/auth.hooks';
 import { AddTask } from '@mui/icons-material';
-import { Auth } from '../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
 import { Task, TaskStatus, WbsNumber, TeamPreview } from 'shared';
 
@@ -22,7 +20,6 @@ interface TaskListProps {
 
 // Page block containing task list view
 const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
-  const auth: Auth = useAuth();
   const taskListTitle: string = 'Task List';
 
   const [value, setValue] = useState<number>(1);
@@ -36,12 +33,10 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
     setValue(newValue);
   };
 
-  const disableAddTask: boolean = auth.user?.role === 'GUEST' || !team;
-
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={disableAddTask}
+      disabled={!hasTaskPermissions}
       startIcon={<AddTask />}
       sx={{
         height: 32,
