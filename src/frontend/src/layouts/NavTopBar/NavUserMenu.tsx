@@ -16,7 +16,7 @@ import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
+// import LogoutIcon from '@mui/icons-material/Logout';
 import { Button } from '@mui/material';
 
 const NavUserMenu: React.FC = () => {
@@ -122,7 +122,7 @@ const NavUserMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
-        {/* {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null} */}
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
         {googleAuthClientId ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
