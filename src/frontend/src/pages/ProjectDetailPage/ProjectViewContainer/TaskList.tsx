@@ -36,7 +36,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={!hasTaskPermissions}
+      disabled={!hasTaskPermissions || !team}
       startIcon={<AddTask />}
       sx={{
         height: 32,

@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleGuestUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
+import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { Auth } from '../../../utils/types';
@@ -59,13 +59,13 @@ const users = [exampleAdminUser, exampleLeadershipUser];
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (team?: TeamPreview) => {
+const renderComponent = (team?: TeamPreview, hasTaskPermissions: boolean = true) => {
   const RouterWrapper = routerWrapperBuilder({});
   const queryClient = new QueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
       <RouterWrapper>
-        <TaskList tasks={[]} team={team} hasTaskPermissions={true} currentWbsNumber={exampleWbs1} />
+        <TaskList tasks={[]} team={team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={exampleWbs1} />
       </RouterWrapper>
     </QueryClientProvider>
   );
@@ -96,26 +96,24 @@ describe('TaskList component', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
   });
 
-  describe('New Task button', () => {
+  describe('New Task Button', () => {
     it('renders New Task button', () => {
       renderComponent(exampleTeam);
       expect(screen.getByText('New Task')).toBeInTheDocument();
     });
 
-    it('disables New Task button if there is no associated team', () => {
-      renderComponent();
-      expect(screen.getByText('New Task')).toBeDisabled();
-    });
-
-    it('enables New Task button for leadership', () => {
-      spyUseAuthHook.mockReturnValue(mockAuth(false, exampleLeadershipUser));
+    it('enables New Task button if user has permission', () => {
       renderComponent(exampleTeam);
       expect(screen.getByText('New Task')).toBeEnabled();
     });
 
-    it('disables New Task button for guests', () => {
-      spyUseAuthHook.mockReturnValue(mockAuth(false, exampleGuestUser));
-      renderComponent(exampleTeam);
+    it('disables New Task button if user does not have permission', () => {
+      renderComponent(exampleTeam, false);
+      expect(screen.getByText('New Task')).toBeDisabled();
+    });
+
+    it('disables New Task button if there is no associated team', () => {
+      renderComponent();
       expect(screen.getByText('New Task')).toBeDisabled();
     });
   });
