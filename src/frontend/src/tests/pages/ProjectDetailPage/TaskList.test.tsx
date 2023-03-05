@@ -121,12 +121,12 @@ describe('TaskList component', () => {
   describe('Tab Contents', () => {
     it('renders message if there is no associated team', () => {
       renderComponent();
-      expect(screen.getByText('No team assigned to this project!')).toBeInTheDocument();
+      expect(screen.getByText('A project can only have tasks if it is assigned to a team!')).toBeInTheDocument();
     });
 
     it('does not render no-team message if there is an associated team', () => {
       renderComponent(exampleTeam);
-      expect(screen.queryByText('No team assigned to this project!')).toBeNull();
+      expect(screen.queryByText('A project can only have tasks if it is assigned to a team!')).toBeNull();
     });
   });
 });

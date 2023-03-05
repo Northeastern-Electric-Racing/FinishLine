@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Box, Link, SxProps, TextField, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Link, TextField, Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -144,11 +144,17 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [assignees]
   );
 
-  const failMessageStyle: SxProps = { py: '25px', textAlign: 'center' };
-
   if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
   if (!team)
-    return <>{value === index && <Typography sx={failMessageStyle}>No team assigned to this project!</Typography>}</>;
+    return (
+      <>
+        {value === index && (
+          <Typography sx={{ py: '25px', textAlign: 'center' }}>
+            A project can only have tasks if it is assigned to a team!
+          </Typography>
+        )}
+      </>
+    );
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
 
