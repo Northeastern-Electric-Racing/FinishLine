@@ -16,7 +16,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { datePipe, wbsPipe, fullNamePipe, percentPipe, timelinePipe} from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
@@ -76,7 +76,7 @@ const UpcomingDeadlines: React.FC = () => {
               <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
               <DetailDisplay
                 label="Progress"
-                content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
+                content={percentPipe(wp.progress) + ', ' + timelinePipe(wp.timelineStatus)}
                 paddingRight={2}
               />
 
