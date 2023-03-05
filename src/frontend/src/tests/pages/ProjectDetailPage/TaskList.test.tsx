@@ -20,6 +20,7 @@ import { UseMutationResult } from 'react-query';
 import { mockUseMutationResult } from '../../test-support/test-data/test-utils.stub';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { exampleWbs1 } from '../../test-support/test-data/wbs-numbers.stub';
+import { exampleTeam } from '../../test-support/test-data/teams.stub';
 
 jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/toasts.hooks');
@@ -58,13 +59,13 @@ const users = [exampleAdminUser, exampleLeadershipUser];
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = () => {
+const renderComponent = (team = exampleTeam) => {
   const RouterWrapper = routerWrapperBuilder({});
   const queryClient = new QueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
       <RouterWrapper>
-        <TaskList tasks={[]} team={undefined} hasTaskPermissions={true} currentWbsNumber={exampleWbs1} />
+        <TaskList tasks={[]} team={team} hasTaskPermissions={true} currentWbsNumber={exampleWbs1} />
       </RouterWrapper>
     </QueryClientProvider>
   );
