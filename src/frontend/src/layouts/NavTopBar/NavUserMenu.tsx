@@ -122,7 +122,7 @@ const NavUserMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
-        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
+        {/* {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null} */}
         {googleAuthClientId ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
