@@ -36,10 +36,12 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
     setValue(newValue);
   };
 
+  const disableAddTask: boolean = auth.user?.role === 'GUEST' || !team;
+
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={auth.user?.role === 'GUEST'}
+      disabled={disableAddTask}
       startIcon={<AddTask />}
       sx={{
         height: 32,
