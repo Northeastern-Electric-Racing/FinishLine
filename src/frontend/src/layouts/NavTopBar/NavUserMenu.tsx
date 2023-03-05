@@ -30,12 +30,12 @@ const NavUserMenu: React.FC = () => {
   const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
-    console.log('logout')
+    console.log('logout');
     if (!auth) return;
     auth.signout();
     history.push(routes.HOME);
-    console.log(auth)
-    console.log('logout done')
+    console.log(auth);
+    console.log('logout done');
   };
 
   // const ProdLogout = () => (
@@ -75,7 +75,6 @@ const NavUserMenu: React.FC = () => {
     </MenuItem>
   );
 
-  console.log('TESTTTTT')
   return (
     <>
       <IconButton
@@ -123,22 +122,20 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
-        {googleAuthClientId ? (
-          <GoogleLogout
-            clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
-            //jsSrc={'accounts.google.com/gsi/client'}
-            onLogoutSuccess={logout}
-            render={(renderProps) => (
-              <MenuItem component="div" sx={{ py: 0 }}>
-                Logout
-              </MenuItem>
-            )}
-          />
-        ) : (
-          <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
-            <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
-          </MenuItem>
-        )}
+        <MenuItem>
+          {googleAuthClientId ? (
+            <GoogleLogout
+              clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+              //jsSrc={'accounts.google.com/gsi/client'}
+              onLogoutSuccess={logout}
+              buttonText="Logout"
+            />
+          ) : (
+            <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
+              <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+            </MenuItem>
+          )}
+        </MenuItem>
       </Menu>
     </>
   );
