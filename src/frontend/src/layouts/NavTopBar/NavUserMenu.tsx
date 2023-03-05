@@ -75,6 +75,7 @@ const NavUserMenu: React.FC = () => {
     </MenuItem>
   );
 
+  console.log('test')
   return (
     <>
       <IconButton
