@@ -36,7 +36,7 @@ const NavUserMenu: React.FC = () => {
 
   const ProdLogout = () => (
     <GoogleLogout
-      clientId={process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID!}
+      clientId={googleAuthClientId!}
       //jsSrc={'accounts.google.com/gsi/client'}
       onLogoutSuccess={logout}
       render={(renderProps) => (
@@ -115,7 +115,7 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
-        {googleAuthClientId ? <ProdLogout /> : <DevLogout />}
+        {process.env.NODE_ENV === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
     </>
   );
