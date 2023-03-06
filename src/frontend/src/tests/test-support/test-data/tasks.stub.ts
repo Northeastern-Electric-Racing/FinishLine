@@ -19,3 +19,16 @@ export const exampleTask1: Task = {
   priority: TaskPriority.Medium,
   status: TaskStatus.IN_PROGRESS
 };
+
+export const exampleTask1DueSoon: Task = {
+  taskId: 'i8f-rotwyv',
+  wbsNum: exampleWbsProject1,
+  title: 'Sketches',
+  notes: 'drafting the sketches with very straight lines',
+  dateCreated: new Date('2023-03-04T00:00:00-05:00'),
+  createdBy: exampleLeadershipUser,
+  assignees: [exampleMemberUser],
+  deadline: new Date('2023-11-01T00:00:00-05:00'),
+  priority: TaskPriority.Medium,
+  status: TaskStatus.IN_PROGRESS
+};
