@@ -67,6 +67,13 @@ const Settings: React.FC = () => {
 
   if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
+  const logout = () => {
+    setShowAlert(true);
+    setTimeout(() => {
+      auth.signout();
+    }, 2000);
+  };
+
   return (
     <>
       <PageTitle title={'Settings'} previousPages={[]} />
@@ -81,16 +88,15 @@ const Settings: React.FC = () => {
               <FormControlLabel
                 label="Trickster Mode"
                 control={
-                  <GoogleLogout
-                    clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-                    onLogoutSuccess={() => {
-                      setShowAlert(true);
-                      setTimeout(() => {
-                        auth.signout();
-                      }, 2000);
-                    }}
-                    render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                  />
+                  process.env.NODE_ENV === 'development' ? (
+                    <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
+                  ) : (
+                    <GoogleLogout
+                      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+                      onLogoutSuccess={logout}
+                      render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
+                    />
+                  )
                 }
               />
             </FormGroup>
