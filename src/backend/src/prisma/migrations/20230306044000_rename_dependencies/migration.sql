@@ -11,13 +11,7 @@ ALTER TABLE "_dependencies" DROP CONSTRAINT "_dependencies_A_fkey";
 ALTER TABLE "_dependencies" DROP CONSTRAINT "_dependencies_B_fkey";
 
 -- DropTable
-DROP TABLE "_dependencies";
-
--- CreateTable
-CREATE TABLE "_blockedBy" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
-);
+ALTER TABLE "_dependencies" RENAME TO "_blockedBy";
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_blockedBy_AB_unique" ON "_blockedBy"("A", "B");
