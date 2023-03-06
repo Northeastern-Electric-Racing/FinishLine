@@ -4,56 +4,27 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { routerWrapperBuilder } from '../../test-support/test-utils';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { TeamPreview } from 'shared';
 import * as authHooks from '../../../hooks/auth.hooks';
+import * as taskHooks from '../../../hooks/tasks.hooks';
+import * as userHooks from '../../../hooks/users.hooks';
+import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
+import {
+  mockCreateTaskReturnValue,
+  mockDeleteTaskReturnValue,
+  mockEditTaskAssigneesReturnValue,
+  mockEditTaskReturnValue,
+  mockUseAllUsersReturnValue
+} from '../../test-support/mock-hooks';
+import { exampleTeam } from '../../test-support/test-data/teams.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
-import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
-import { useAuth } from '../../../hooks/auth.hooks';
-import { Auth } from '../../../utils/types';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import { UseQueryResult } from 'react-query';
-import { TeamPreview, User } from 'shared';
-import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { useCreateTask, useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../hooks/tasks.hooks';
-import { UseMutationResult } from 'react-query';
-import { mockUseMutationResult } from '../../test-support/test-data/test-utils.stub';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { exampleWbs1 } from '../../test-support/test-data/wbs-numbers.stub';
-import { exampleTeam } from '../../test-support/test-data/teams.stub';
+import { routerWrapperBuilder } from '../../test-support/test-utils';
 
-jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/toasts.hooks');
 
-jest.mock('../../../hooks/auth.hooks');
-const mockedUseAuth = useAuth as jest.Mock<Auth>;
-const mockAuthHook = (user = exampleAdminUser) => {
-  mockedUseAuth.mockReturnValue(mockAuth(false, user));
-};
-
-jest.mock('../../../hooks/tasks.hooks');
-const mockedCreateTask = useCreateTask as jest.Mock<UseMutationResult>;
-const mockCreateTaskHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedCreateTask.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
-};
-const mockedEditTask = useEditTask as jest.Mock<UseMutationResult>;
-const mockEditTaskHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedEditTask.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
-};
-const mockedEditTaskAssignees = useEditTaskAssignees as jest.Mock<UseMutationResult>;
-const mockEditTaskHookAssignees = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedEditTaskAssignees.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
-};
-const mockedDeleteTask = useDeleteTask as jest.Mock<UseMutationResult>;
-const mockDeleteTaskHook = (isLoading: boolean, isError: boolean, error?: Error) => {
-  mockedDeleteTask.mockReturnValue(mockUseMutationResult<{ in: string }>(isLoading, isError, { in: 'hi' }, error));
-};
-
-jest.mock('../../../hooks/users.hooks');
-const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
-const mockUserHook = (isLoading: boolean, isError: boolean, data?: User[], error?: Error) => {
-  mockedUseAllUsers.mockReturnValue(mockUseQueryResult<User[]>(isLoading, isError, data, error));
-};
 const users = [exampleAdminUser, exampleLeadershipUser];
 
 /**
@@ -72,16 +43,16 @@ const renderComponent = (team?: TeamPreview, hasTaskPermissions: boolean = true)
 };
 
 describe('TaskList component', () => {
+  // declaring in this scope allows you to mockReturnValue to a different user in each test
   const spyUseAuthHook = jest.spyOn(authHooks, 'useAuth');
 
   beforeEach(() => {
     spyUseAuthHook.mockReturnValue(mockAuth(false, exampleAdminUser));
-    mockAuthHook();
-    mockUserHook(false, false, users);
-    mockCreateTaskHook(false, false);
-    mockEditTaskHook(false, false);
-    mockEditTaskHookAssignees(false, false);
-    mockDeleteTaskHook(false, false);
+    jest.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(users));
+    jest.spyOn(taskHooks, 'useCreateTask').mockReturnValue(mockCreateTaskReturnValue);
+    jest.spyOn(taskHooks, 'useEditTask').mockReturnValue(mockEditTaskReturnValue);
+    jest.spyOn(taskHooks, 'useEditTaskAssignees').mockReturnValue(mockEditTaskAssigneesReturnValue);
+    jest.spyOn(taskHooks, 'useDeleteTask').mockReturnValue(mockDeleteTaskReturnValue);
   });
 
   it('renders "Task List" on top', () => {
