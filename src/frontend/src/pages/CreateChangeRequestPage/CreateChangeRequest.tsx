@@ -13,11 +13,11 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface CreateChangeRequestProps {}
 
 export interface FormInput {
-  wbsNum: string;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   what: string;
   why: { type: ChangeRequestReason; explain: string }[];
@@ -35,6 +35,8 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     mutateAsync: cpsMutateAsync
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  const toast = useToast();
 
   if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -43,22 +45,27 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const { userId } = auth.user;
 
   const handleConfirm = async (data: FormInput) => {
-    const crId = await mutateAsync({
+    const cr = await mutateAsync({
       ...data,
-      wbsNum: validateWBS(data.wbsNum),
-      submitterId: auth.user?.userId
+      wbsNum: validateWBS(wbsNum)
     });
-
+    const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-      await cpsMutateAsync({
-        crId,
-        submitterId: userId,
-        description,
-        timelineImpact,
-        scopeImpact,
-        budgetImpact
-      });
+      try {
+        await cpsMutateAsync({
+          crId,
+          submitterId: userId,
+          description,
+          timelineImpact,
+          scopeImpact,
+          budgetImpact
+        });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
+      }
     });
 
     history.push(routes.CHANGE_REQUESTS);
@@ -70,7 +77,8 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
 
   return (
     <CreateChangeRequestsView
-      wbsNum={query.get('wbsNum') || ''}
+      wbsNum={wbsNum}
+      setWbsNum={setWbsNum}
       crDesc={query.get('riskDetails') || ''}
       onSubmit={handleConfirm}
       proposedSolutions={proposedSolutions}

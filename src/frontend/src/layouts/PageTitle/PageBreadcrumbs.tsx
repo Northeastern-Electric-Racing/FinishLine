@@ -19,7 +19,9 @@ interface PageTitleProps {
 const PageBreadcrumbs: React.FC<PageTitleProps> = ({ currentPageTitle, previousPages }) => {
   return (
     <Breadcrumbs sx={{ my: 1 }}>
-      <Link component={RouterLink} to={routes.HOME}>Home</Link>
+      <Link component={RouterLink} to={routes.HOME}>
+        Home
+      </Link>
       {previousPages.map((page, i) => (
         <Link component={RouterLink} key={i} to={page.route}>
           {page.name}

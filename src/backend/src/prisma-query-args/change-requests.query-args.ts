@@ -19,7 +19,8 @@ const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
     },
     scopeChangeRequest: scopeCRArgs,
     stageGateChangeRequest: true,
-    activationChangeRequest: { include: { projectLead: true, projectManager: true } }
+    activationChangeRequest: { include: { projectLead: true, projectManager: true } },
+    deletedBy: true
   }
 });
 

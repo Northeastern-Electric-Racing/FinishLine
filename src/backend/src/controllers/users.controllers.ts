@@ -1,181 +1,95 @@
-import prisma from '../prisma/prisma';
-import { OAuth2Client } from 'google-auth-library';
-import { authenticatedUserTransformer, authUserQueryArgs, rankUserRole, userTransformer } from '../utils/users.utils';
-import { validationResult } from 'express-validator';
-import { Request, Response } from 'express';
-import { generateAccessToken, getCurrentUser } from '../utils/utils';
+import { NextFunction, Request, Response } from 'express';
+import { getCurrentUser } from '../utils/auth.utils';
+import UsersService from '../services/users.services';
+import { AccessDeniedException } from '../utils/errors.utils';
 
-export const getAllUsers = async (_req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
-  users.sort((a, b) => a.firstName.localeCompare(b.firstName));
-  res.status(200).json(users.map(userTransformer));
-};
+export default class UsersController {
+  static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const users = await UsersService.getAllUsers();
 
-export const getSingleUser = async (req: Request, res: Response) => {
-  const userId: number = parseInt(req.params.userId);
-  const requestedUser = await prisma.user.findUnique({ where: { userId } });
-  if (!requestedUser) return res.status(404).json({ message: `user #${userId} not found!` });
-
-  res.status(200).json(userTransformer(requestedUser));
-};
-
-export const getUserSettings = async (req: Request, res: Response) => {
-  const userId: number = parseInt(req.params.userId);
-
-  const requestedUser = await prisma.user.findUnique({ where: { userId } });
-
-  if (!requestedUser) return res.status(404).json({ message: `user #${userId} not found!` });
-
-  const settings = await prisma.user_Settings.upsert({
-    where: { userId },
-    update: {},
-    create: { userId }
-  });
-
-  if (!settings) return res.status(404).json({ message: `could not find settings for user #${userId}` });
-
-  return res.status(200).json(settings);
-};
-
-export const updateUserSettings = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const userId = parseInt(req.params.userId);
-  if (!userId) return res.status(404).json({ message: `could not find valid userId` });
-
-  const user = await prisma.user.findUnique({ where: { userId } });
-  if (!user) return res.status(404).json({ message: `could not find user ${userId}` });
-
-  await prisma.user_Settings.upsert({
-    where: { userId },
-    update: { defaultTheme: req.body.defaultTheme, slackId: req.body.slackId },
-    create: { userId, defaultTheme: req.body.defaultTheme, slackId: req.body.slackId }
-  });
-
-  return res.status(200).json({ message: `Successfully updated settings for user ${userId}.` });
-};
-
-export const logUserIn = async (req: Request, res: Response) => {
-  if (!req.body || !req.body.id_token) return res.status(400).json({ message: 'Invalid Body' });
-
-  // eslint-disable-next-line prefer-destructuring
-  const idToken = req.body.id_token;
-
-  const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID);
-  const ticket = await client.verifyIdToken({
-    idToken,
-    audience: process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID
-  });
-
-  const payload = ticket.getPayload();
-  if (!payload) throw new Error('Auth server response payload invalid');
-  const { sub: userId } = payload; // google user id
-  // check if user is already in the database via Google ID
-  let user = await prisma.user.findUnique({
-    where: { googleAuthId: userId },
-    ...authUserQueryArgs
-  });
-
-  // if not in database, create user in database
-  if (!user) {
-    const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
-    const createdUser = await prisma.user.create({
-      data: {
-        firstName: payload['given_name']!,
-        lastName: payload['family_name']!,
-        googleAuthId: userId,
-        email: payload['email']!,
-        emailId,
-        userSettings: { create: {} }
-      },
-      ...authUserQueryArgs
-    });
-    user = createdUser;
-  }
-
-  // register a login
-  await prisma.session.create({
-    data: {
-      userId: user.userId,
-      deviceInfo: req.headers['user-agent']
+      res.status(200).json(users);
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-
-  const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
-  res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
-
-  return res.status(200).json(authenticatedUserTransformer(user));
-};
-
-// for dev login only!
-export const logUserInDev = async (req: any, res: any) => {
-  if (process.env.NODE_ENV === 'production') return res.status(400).json({ message: 'Cant dev login on production!' });
-  if (!req.body || !req.body.userId) return res.status(400).json({ message: 'Invalid Body' });
-
-  const { body } = req;
-  const { userId } = body;
-
-  const user = await prisma.user.findUnique({
-    where: { userId },
-    ...authUserQueryArgs
-  });
-
-  if (!user) {
-    return res.status(400).json({ message: 'That user does not exist' });
   }
 
-  // register a login
-  await prisma.session.create({
-    data: {
-      userId: user.userId,
-      deviceInfo: req.headers['user-agent']
+  static async getSingleUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+      const requestedUser = await UsersService.getSingleUser(userId);
+
+      res.status(200).json(requestedUser);
+    } catch (error: unknown) {
+      next(error);
     }
-  });
-
-  return res.status(200).json(authenticatedUserTransformer(user));
-};
-
-export const updateUserRole = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
   }
 
-  const targetUserId: number = parseInt(req.params.userId);
+  static async getUserSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+      const settings = await UsersService.getUserSettings(userId);
 
-  const { body } = req;
-
-  const { role } = body;
-  const user = await getCurrentUser(res);
-
-  let targetUser = await prisma.user.findUnique({ where: { userId: targetUserId } });
-
-  if (!user) {
-    return res.status(404).json({ message: `user not found!` });
+      res.status(200).json(settings);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  if (!targetUser) {
-    return res.status(404).json({ message: `user #${targetUserId} not found!` });
+  static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { defaultTheme, slackId } = req.body;
+      const user = await getCurrentUser(res);
+
+      await UsersService.updateUserSettings(user, defaultTheme, slackId);
+
+      res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  const userRole = rankUserRole(user.role);
-  const targetUserRole = rankUserRole(targetUser.role);
+  static async logUserIn(req: Request, res: Response, next: NextFunction) {
+    try {
+      const idToken = req.body.id_token;
+      const header = req.headers['user-agent'];
 
-  if (rankUserRole(role) > userRole) {
-    return res.status(400).json({ message: 'Cannot promote user to a higher role than yourself' });
+      const { user, token } = await UsersService.logUserIn(idToken, header!);
+
+      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
+      res.status(200).json(user);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  if (targetUserRole >= userRole) {
-    return res.status(400).json({ message: 'Cannot change the role of a user with an equal or higher role than you' });
+  // for dev login only!
+  static async logUserInDev(req: any, res: any, next: NextFunction) {
+    try {
+      if (process.env.NODE_ENV === 'production') throw new AccessDeniedException('Cant dev login on production!');
+
+      const { userId } = req.body;
+      const header = req.headers['user-agent'];
+
+      const user = await UsersService.logUserInDev(userId, header);
+
+      res.status(200).json(user);
+    } catch (error: unknown) {
+      next(error);
+    }
   }
 
-  targetUser = await prisma.user.update({
-    where: { userId: targetUserId },
-    data: { role }
-  });
+  static async updateUserRole(req: Request, res: Response, next: NextFunction) {
+    try {
+      const targetUserId: number = parseInt(req.params.userId);
+      const { role } = req.body;
+      const user = await getCurrentUser(res);
 
-  return res.status(200).json(userTransformer(targetUser));
-};
+      const targetUser = await UsersService.updateUserRole(targetUserId, user, role);
+
+      res.status(200).json(targetUser);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+}

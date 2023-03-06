@@ -3,12 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from '@mui/material';
+import { Stack } from '@mui/material';
+import Link from '@mui/material/Link';
+import { ReactNode } from 'react';
 
 interface ExternalLinkProps {
-  icon?: IconProp;
+  icon?: ReactNode;
   link: string;
   description: string;
 }
@@ -16,12 +16,12 @@ interface ExternalLinkProps {
 // Common component for all external links to open in new tab
 const ExternalLink: React.FC<ExternalLinkProps> = ({ icon, link, description }) => {
   return (
-    <div key={description} className="d-flex flex-row align-items-center px-3">
-      {icon !== undefined ? <FontAwesomeIcon icon={icon} size="lg" className="pr-1" data-testid={'icon'} /> : ' '}
+    <Stack direction="row" alignItems="center">
+      {icon}
       <Link href={link} sx={{ pl: 1 }} target="_blank" rel="noopener noreferrer">
         {description}
       </Link>
-    </div>
+    </Stack>
   );
 };
 

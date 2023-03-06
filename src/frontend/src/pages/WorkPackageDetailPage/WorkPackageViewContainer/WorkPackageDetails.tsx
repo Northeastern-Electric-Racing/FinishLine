@@ -7,7 +7,9 @@ import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid, Typography } from '@mui/material';
+import { Grid } from '@mui/material';
+import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -15,62 +17,46 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
-    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
+    <PageBlock
+      title={'Work Package Details'}
+      headerRight={
+        <>
+          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+          <WbsStatus status={workPackage.status} />
+        </>
+      }
+    >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Lead:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(workPackage.projectLead)}</Typography>
+          <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Start Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(workPackage.startDate)}</Typography>
+          <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Progress:{' '}
-          </Typography>
-          <Typography display="inline">{percentPipe(workPackage.progress)}</Typography>
+          <DetailDisplay label="Progress" content={percentPipe(workPackage.progress)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Project Manager:{' '}
-          </Typography>
-          <Typography display="inline">{fullNamePipe(workPackage.projectManager)}</Typography>
+          <DetailDisplay label="Project Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            End Date:{' '}
-          </Typography>
-          <Typography display="inline">{datePipe(workPackage.endDate)}</Typography>
+          <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Expected Progress:{' '}
-          </Typography>
-          <Typography display="inline">{percentPipe(workPackage.expectedProgress)}</Typography>
+          <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Duration:{' '}
-          </Typography>
-          <Typography display="inline">{weeksPipe(workPackage.duration)}</Typography>
+          <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2 }} display="inline">
-            Timeline Status:{' '}
-          </Typography>
-          <Typography display="inline">{workPackage.timelineStatus}</Typography>
+          <DetailDisplay label="Timeline Status" content={workPackage.timelineStatus} paddingRight={2} />
         </Grid>
       </Grid>
     </PageBlock>

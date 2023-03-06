@@ -16,6 +16,8 @@ import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
+import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
 interface WorkPackageSummaryProps {
   workPackage: WorkPackage;
@@ -25,7 +27,9 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const expectedActivitiesList = (
     <ul>
       {workPackage.expectedActivities.slice(0, 3).map((item, idx) => (
-        <li key={idx}>{item.detail}</li>
+        <li key={idx}>
+          <Typography>{item.detail}</Typography>
+        </li>
       ))}
     </ul>
   );
@@ -33,7 +37,9 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const deliverablesList = (
     <ul>
       {workPackage.deliverables.slice(0, 3).map((item, idx) => (
-        <li key={idx}>{item.detail}</li>
+        <li key={idx}>
+          <Typography>{item.detail}</Typography>
+        </li>
       ))}
     </ul>
   );
@@ -53,6 +59,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             {workPackage.name}
           </Link>
         </Box>
+        {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
         <WbsStatus status={workPackage.status} />
         <Typography paddingLeft={2}>{weeksPipe(workPackage.duration)}</Typography>
       </AccordionSummary>
@@ -63,28 +70,25 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row" flexGrow={0.5}>
                 <Box display="flex" flexDirection="row" paddingRight={2}>
-                  <Typography fontWeight="bold" paddingRight={1}>
-                    Start date:
-                  </Typography>
-                  <Typography>{datePipe(workPackage.startDate)}</Typography>
+                  <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={1} />
                 </Box>
                 <Box display="flex" flexDirection="row">
-                  <Typography fontWeight="bold" paddingRight={1}>
-                    End date:
-                  </Typography>
-                  <Typography>{datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}</Typography>
+                  <DetailDisplay
+                    label="End Date"
+                    content={datePipe(calculateEndDate(workPackage.startDate, workPackage.duration))}
+                    paddingRight={1}
+                  />
                 </Box>
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row">
-                <Typography fontWeight="bold">Dependencies:</Typography>
-                <Typography>{listPipe(workPackage.dependencies, wbsPipe)}</Typography>
+                <DetailDisplay label="Dependencies" content={listPipe(workPackage.dependencies, wbsPipe)} paddingRight={1} />
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
-              <Typography>{expectedActivitiesList}</Typography>
+              {expectedActivitiesList}
               {numMoreExpectedActivities > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreExpectedActivities} more...
@@ -95,7 +99,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Deliverables:</Typography>
-              <Typography>{deliverablesList}</Typography>
+              {deliverablesList}
               {numMoreDeliverables > 0 ? (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
                   Show {numMoreDeliverables} more...

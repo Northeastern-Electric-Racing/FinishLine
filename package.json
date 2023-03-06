@@ -9,10 +9,10 @@
     "src/shared"
   ],
   "scripts": {
-    "prettier-all": "prettier --write \"**/*{ts,js,css,html,jsx,tsx}\"",
+    "prettier-check": "yarn prettier --check .",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
-    "start": "concurrently --kill-others-on-fail \"yarn workspace backend dev\"  \"yarn frontend\"",
+    "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn workspace backend dev\"  \"yarn frontend\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
     "prisma:reset": "cd src/backend; npx prisma migrate reset",
     "prisma:migrate": "yarn prisma:migrate:dev",

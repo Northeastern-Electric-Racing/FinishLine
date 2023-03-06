@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder } from '../../../test-support/test-utils';
-import { exampleWorkPackage2 } from '../../../test-support/test-data/work-packages.stub';
+import { exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import { wbsPipe } from '../../../../utils/pipes';
 // import DependenciesList from './dependencies-list';
 // import { FormContext } from '../../work-package-container';
@@ -20,10 +20,10 @@ const renderComponent = (editMode?: boolean, path?: string, route?: string) => {
     // <RouterWrapper>
     //   {editMode ? (
     //     <FormContext.Provider value={{ editMode, setField }}>
-    //       <DependenciesList dependencies={exampleWorkPackage2.dependencies} />
+    //       <DependenciesList dependencies={exampleDesignWorkPackage.dependencies} />
     //     </FormContext.Provider>
     //   ) : (
-    //     <DependenciesList dependencies={exampleWorkPackage2.dependencies} />
+    //     <DependenciesList dependencies={exampleDesignWorkPackage.dependencies} />
     //   )}
     // </RouterWrapper>
   );
@@ -34,7 +34,7 @@ describe.skip('Rendering Work Package Dependencies Component', () => {
     renderComponent();
     expect(screen.getByText(`Dependencies`)).toBeInTheDocument();
 
-    exampleWorkPackage2.dependencies.forEach((wbs) => {
+    exampleDesignWorkPackage.dependencies.forEach((wbs) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
   });
@@ -42,7 +42,7 @@ describe.skip('Rendering Work Package Dependencies Component', () => {
     renderComponent(true);
     expect(screen.getByText(`Dependencies`)).toBeInTheDocument();
 
-    exampleWorkPackage2.dependencies.forEach((wbs) => {
+    exampleDesignWorkPackage.dependencies.forEach((wbs) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
     expect(screen.getByPlaceholderText('New WBS #')).toBeInTheDocument();

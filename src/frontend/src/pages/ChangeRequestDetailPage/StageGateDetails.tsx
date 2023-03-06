@@ -5,7 +5,7 @@
 
 import { Grid, Typography } from '@mui/material';
 import { StageGateChangeRequest } from 'shared';
-import { booleanPipe, dollarsPipe } from '../../utils/pipes';
+import { booleanPipe } from '../../utils/pipes';
 import PageBlock from '../../layouts/PageBlock';
 
 interface StageGateDetailsProps {
@@ -16,21 +16,11 @@ const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
   return (
     <PageBlock title={'Stage Gate Change Request Details'}>
       <Grid container spacing={1}>
-        <Grid item xs={2}>
-          <Typography sx={{ maxWidth: '140px' }}>
-            <b>Leftover Budget</b>
-          </Typography>
+        <Grid item xs={3}>
+          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Completed</Typography>
         </Grid>
-        <Grid item xs={10}>
-          <Typography sx={{ maxWidth: '140px' }}>{dollarsPipe(cr.leftoverBudget)}</Typography>
-        </Grid>
-        <Grid item xs={2}>
-          <Typography sx={{ maxWidth: '140px' }}>
-            <b>Confirm WP Completed</b>
-          </Typography>
-        </Grid>
-        <Grid item xs={10}>
-          <Typography sx={{ maxWidth: '140px' }}>{booleanPipe(cr.confirmDone)}</Typography>
+        <Grid item xs={9}>
+          <Typography>{booleanPipe(cr.confirmDone)}</Typography>
         </Grid>
       </Grid>
     </PageBlock>

@@ -13,18 +13,22 @@ import ErrorPage from '../ErrorPage';
 import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Link } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequestType } from 'shared';
+import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { GridColDefStyle } from '../../utils/tables';
+import { NERButton } from '../../components/NERButton';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(50);
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
 
-  const baseColDef: any = {
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
+
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
@@ -43,7 +47,7 @@ const ChangeRequestsTable: React.FC = () => {
       field: 'crId',
       type: 'number',
       headerName: 'ID',
-      maxWidth: 100
+      maxWidth: 75
     },
     {
       ...baseColDef,
@@ -56,18 +60,22 @@ const ChangeRequestsTable: React.FC = () => {
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
     {
       ...baseColDef,
-      field: 'wbsNum',
-      headerName: 'WBS #',
-      filterable: false,
-      maxWidth: 100,
-      valueFormatter: (params) => wbsPipe(params.value),
-      sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.carNumber !== param2.value.carNumber) {
-          return param1.value.carNumber - param2.value.carNumber;
-        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
-          return param1.value.projectNumber - param2.value.projectNumber;
-        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
-          return param1.value.workPackageNumber - param2.value.workPackageNumber;
+      field: 'wbs',
+      headerName: 'WBS',
+      filterable: true,
+      sortable: true,
+      maxWidth: 300,
+      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+      sortComparator: (_v1, _v2, param1, param2) => {
+        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
+        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+
+        if (wbs1.carNumber !== wbs2.carNumber) {
+          return wbs1.carNumber - wbs2.carNumber;
+        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
+          return wbs1.projectNumber - wbs2.projectNumber;
+        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+          return wbs1.workPackageNumber - wbs2.workPackageNumber;
         } else {
           return 0;
         }
@@ -133,22 +141,14 @@ const ChangeRequestsTable: React.FC = () => {
           title={'Change Requests'}
           previousPages={[]}
           actionButton={
-            <Button
-              style={{
-                textTransform: 'none',
-                fontSize: 16,
-                backgroundColor: '#ff0000',
-                borderColor: '#0062cc',
-                boxShadow: 'none'
-              }}
-              component={Link}
-              to={routes.CHANGE_REQUESTS_NEW}
+            <NERButton
               variant="contained"
               disabled={auth.user?.role === 'GUEST'}
               startIcon={<Add />}
+              onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
             >
               New Change Request
-            </Button>
+            </NERButton>
           }
         />
       </div>
@@ -158,7 +158,10 @@ const ChangeRequestsTable: React.FC = () => {
         density="compact"
         pageSize={pageSize}
         rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('cr-table-row-count', String(newPageSize));
+          setPageSize(newPageSize);
+        }}
         loading={isLoading}
         error={error}
         rows={
@@ -166,6 +169,7 @@ const ChangeRequestsTable: React.FC = () => {
           data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
+            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
             submitter: fullNamePipe(v.submitter),
             reviewer: fullNamePipe(v.reviewer)
           })) || []

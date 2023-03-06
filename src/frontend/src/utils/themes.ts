@@ -73,12 +73,13 @@ export const nerThemeOptions: ThemeOptions = {
   components: {
     MuiButtonBase: {
       defaultProps: {
-        disableRipple: true
+        disableRipple: true,
+        color: 'primary'
       }
     },
     MuiChip: {
       styleOverrides: {
-        colorSecondary: {
+        filledSecondary: {
           backgroundColor: 'gray'
         }
       }

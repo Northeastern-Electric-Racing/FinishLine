@@ -11,6 +11,16 @@ export const batman: PrismaUser = {
   googleAuthId: 'b'
 };
 
+export const theVisitor: PrismaUser = {
+  userId: 7,
+  firstName: 'The',
+  lastName: 'Visitor',
+  email: 'oooscary@gmail.com',
+  emailId: 'oooscary',
+  role: PrismaRole.GUEST,
+  googleAuthId: 't'
+};
+
 export const superman: PrismaUser = {
   userId: 2,
   firstName: 'Clark',
@@ -38,7 +48,7 @@ export const flash: PrismaUser = {
   email: 'b.allen@fast.com',
   emailId: 'barry.allen',
   role: PrismaRole.ADMIN,
-  googleAuthId: 'b'
+  googleAuthId: 'f'
 };
 
 export const greenlantern: PrismaUser = {

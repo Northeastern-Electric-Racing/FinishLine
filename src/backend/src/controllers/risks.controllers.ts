@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/utils';
+import { getCurrentUser } from '../utils/auth.utils';
 import RisksService from '../services/risks.services';
 
 export default class RisksController {
-  
   static async getRisksForProject(req: Request, res: Response, next: NextFunction) {
     try {
       const projectId = parseInt(req.params.projectId);

@@ -19,8 +19,16 @@ import { routes } from '../../../utils/routes';
 import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import EditIcon from '@mui/icons-material/Edit';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import TaskList from './TaskList';
+import DeleteProject from '../DeleteProject';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -28,11 +36,21 @@ interface ProjectViewContainerProps {
 }
 
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
+  const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const handleDeleteClose = () => setDeleteModalShow(false);
+  const handleClickDelete = () => {
+    setDeleteModalShow(true);
+  };
   const auth = useAuth();
-  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-
+  const toast = useToast();
+  const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  if (!auth.user) return <LoadingIndicator />;
+
   const dropdownOpen = Boolean(anchorEl);
+  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  const { teamAsLeadId } = auth.user;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -47,12 +65,30 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
-  const isGuest = auth.user?.role === 'GUEST';
+  const handleAssignToMyTeam = async () => {
+    try {
+      await mutateAsync(teamAsLeadId);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+    handleDropdownClose();
+  };
+
+  const isGuest = auth.user.role === 'GUEST';
+
+  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
+
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest}>
+      <ListItemIcon>
+        <EditIcon fontSize="small" />
+      </ListItemIcon>
       Edit
     </MenuItem>
   );
+
   const createCRBtn = (
     <MenuItem
       component={Link}
@@ -60,9 +96,25 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       disabled={isGuest}
       onClick={handleDropdownClose}
     >
+      <ListItemIcon>
+        <SyncAltIcon fontSize="small" />
+      </ListItemIcon>
       Request Change
     </MenuItem>
   );
+
+  const assignToMyTeamButton = (
+    <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+      Assign to My Team
+    </MenuItem>
+  );
+
+  const deleteButton = (
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      Delete
+    </MenuItem>
+  );
+
   const projectActionsDropdown = (
     <div>
       <NERButton
@@ -76,9 +128,19 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
+        {teamAsLeadId && assignToMyTeamButton}
+        {deleteButton}
       </Menu>
     </div>
   );
+
+  const hasTaskPermissions =
+    !(auth.user.role === 'GUEST' && !proj.team?.members.map((user) => user.userId).includes(auth.user.userId)) &&
+    !(
+      auth.user.role === 'MEMBER' &&
+      (proj.projectLead?.userId !== auth.user.userId || proj.projectManager?.userId !== auth.user.userId) &&
+      !(proj.team?.leader.userId === auth.user.userId)
+    );
 
   return (
     <>
@@ -88,6 +150,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
+      <TaskList tasks={proj.tasks} team={proj.team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={proj.wbsNum} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
@@ -106,6 +169,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         ))}
       </PageBlock>
       <ChangesList changes={proj.changes} />
+      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
 };

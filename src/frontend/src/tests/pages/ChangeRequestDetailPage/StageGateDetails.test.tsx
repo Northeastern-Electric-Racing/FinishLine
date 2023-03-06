@@ -21,7 +21,5 @@ describe('Change request details stage gate cr display element tests', () => {
     renderComponent(cr);
     expect(screen.getByText(`Confirm WP Completed`)).toBeInTheDocument();
     expect(screen.getByText(`${cr.confirmDone ? 'YES' : 'NO'}`)).toBeInTheDocument();
-    expect(screen.getByText(`Leftover Budget`)).toBeInTheDocument();
-    expect(screen.getByText(`$${cr.leftoverBudget}`)).toBeInTheDocument();
   });
 });

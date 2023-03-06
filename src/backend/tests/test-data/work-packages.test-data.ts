@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
-import { wbsElement1, project1 } from './projects.test-data';
 import { batman } from './users.test-data';
+import { WorkPackage, WbsElementStatus, TimelineStatus } from 'shared';
+import { prismaWbsElement1 } from './wbs-element.test-data';
+import { prismaProject1 } from './projects.test-data';
 
 export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs> = {
   workPackageId: 1,
@@ -11,13 +13,41 @@ export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackag
   startDate: new Date('10/10/2022'),
   duration: 10,
   wbsElement: {
-    ...wbsElement1,
+    ...prismaWbsElement1,
     projectLead: batman,
     projectManager: batman,
-    changes: []
+    changes: [],
+    tasks: []
   },
-  project: project1,
+  project: prismaProject1,
   dependencies: [],
   deliverables: [],
-  expectedActivities: []
+  expectedActivities: [],
+  stage: null
+};
+
+export const sharedWorkPackage: WorkPackage = {
+  id: 1,
+  dateCreated: new Date('10/18/2022'),
+  name: 'Work Package 1',
+  orderInProject: 1,
+  progress: 0,
+  startDate: new Date('10/10/2022'),
+  duration: 10,
+  expectedActivities: [],
+  deliverables: [],
+  dependencies: [],
+  projectManager: undefined,
+  projectLead: undefined,
+  status: WbsElementStatus.Active,
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 1,
+    workPackageNumber: 1
+  },
+  changes: [],
+  expectedProgress: 0,
+  projectName: 'Project 1',
+  timelineStatus: TimelineStatus.OnTrack,
+  endDate: new Date('10/20/2022')
 };

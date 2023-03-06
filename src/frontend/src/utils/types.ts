@@ -21,3 +21,7 @@ export interface LinkItem {
   icon?: IconProp;
   route: string;
 }
+
+export interface VersionObject {
+  tag_name: string;
+}

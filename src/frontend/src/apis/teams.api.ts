@@ -18,3 +18,15 @@ export const getSingleTeam = (id: string) => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const setTeamMembers = (id: string, userIds: number[]) => {
+  return axios.post<{ message: string }>(apiUrls.teamsSetMembers(id), {
+    userIds
+  });
+};
+
+export const setTeamDescription = (id: string, description: string) => {
+  return axios.post<{ message: string }>(apiUrls.teamsSetDescription(id), {
+    newDescription: description
+  });
+};
