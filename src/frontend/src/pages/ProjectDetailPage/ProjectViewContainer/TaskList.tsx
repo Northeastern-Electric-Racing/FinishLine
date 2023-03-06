@@ -14,12 +14,12 @@ interface TaskListProps {
   tasks: Task[];
   team?: TeamPreview;
   defaultClosed?: boolean;
-  hasTaskPermissions: boolean;
+  createTaskPermissions: boolean;
   currentWbsNumber: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
+const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, createTaskPermissions }: TaskListProps) => {
   const taskListTitle: string = 'Task List';
 
   const [value, setValue] = useState<number>(1);
@@ -36,7 +36,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={!hasTaskPermissions || !team}
+      disabled={!createTaskPermissions || !team}
       startIcon={<AddTask />}
       sx={{
         height: 32,
@@ -68,7 +68,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}
         team={team}
-        hasTaskPermissions={hasTaskPermissions}
+        hasTaskPermissions={createTaskPermissions}
       />
       <TaskListTabPanel
         tasks={inProgressTasks}
@@ -79,7 +79,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}
         team={team}
-        hasTaskPermissions={hasTaskPermissions}
+        hasTaskPermissions={createTaskPermissions}
       />
 
       <TaskListTabPanel
@@ -88,7 +88,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
         index={2}
         status={TaskStatus.DONE}
         team={team}
-        hasTaskPermissions={hasTaskPermissions}
+        hasTaskPermissions={createTaskPermissions}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
         currentWbsNumber={currentWbsNumber}

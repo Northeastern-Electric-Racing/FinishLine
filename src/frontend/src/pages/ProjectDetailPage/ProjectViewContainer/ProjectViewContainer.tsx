@@ -153,7 +153,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <TaskList
         tasks={proj.tasks}
         team={proj.team}
-        hasTaskPermissions={createTaskPermissions}
+        createTaskPermissions={createTaskPermissions}
         currentWbsNumber={proj.wbsNum}
       />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>

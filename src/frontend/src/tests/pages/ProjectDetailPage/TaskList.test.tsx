@@ -30,13 +30,13 @@ const users = [exampleAdminUser, exampleLeadershipUser];
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (team?: TeamPreview, hasTaskPermissions: boolean = true) => {
+const renderComponent = (team?: TeamPreview, createTaskPermissions: boolean = true) => {
   const RouterWrapper = routerWrapperBuilder({});
   const queryClient = new QueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
       <RouterWrapper>
-        <TaskList tasks={[]} team={team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={exampleWbs1} />
+        <TaskList tasks={[]} team={team} createTaskPermissions={createTaskPermissions} currentWbsNumber={exampleWbs1} />
       </RouterWrapper>
     </QueryClientProvider>
   );
