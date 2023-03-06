@@ -108,7 +108,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         onClick={() => appendDependency({ wbsNum: '' })}
         sx={{ my: 2, width: 'max-content' }}
       >
-        + ADD NEW DEPENDENCY
+        + ADD NEW BLOCKER
       </Button>
     </FormControl>
   );

@@ -170,7 +170,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           );
         })}
         <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ mt: 2 }}>
-          + ADD NEW DEPENDENCY
+          + ADD NEW BLOCKER
         </Button>
       </PageBlock>
 
