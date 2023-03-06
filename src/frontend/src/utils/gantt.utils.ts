@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
 import { projectWbsPipe } from './pipes';
 
@@ -90,10 +90,9 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
     start: workPackage.startDate,
     end: workPackage.endDate,
-    progress: workPackage.progress,
+    progress: 100,
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
-    styles: { progressColor: '#9c9c9c', backgroundColor: '#c4c4c4' },
     teamName,
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
@@ -102,10 +101,6 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
 };
 
 export const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
-  const progress =
-    (project.workPackages.filter((wp) => wp.status === WbsElementStatus.Complete).length / project.workPackages.length) *
-    100;
-
   const teamName = project.team?.teamName || NO_TEAM;
 
   const projectTask: GanttTask = {
@@ -113,7 +108,7 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     name: wbsPipe(project.wbsNum) + ' ' + project.name,
     start: project.startDate || new Date(),
     end: project.endDate || new Date(),
-    progress,
+    progress: 100,
     type: 'project',
     hideChildren: !expanded,
     teamName,
