@@ -24,7 +24,7 @@ describe('Work Packages', () => {
   const crId = 1;
   const startDate = '2022-09-18';
   const duration = 5;
-  const dependencies: WbsNumber[] = [
+  const blockedBy: WbsNumber[] = [
     {
       carNumber: 1,
       projectNumber: 1,
@@ -45,7 +45,7 @@ describe('Work Packages', () => {
     WbsNumber[],
     string[],
     string[]
-  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, dependencies, expectedActivities, deliverables];
+  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, blockedBy, expectedActivities, deliverables];
   /*********************************************************/
 
   afterEach(() => {
@@ -81,7 +81,7 @@ describe('Work Packages', () => {
           stage,
           startDate,
           duration,
-          dependencies,
+          blockedBy,
           expectedActivities,
           deliverables
         );
@@ -118,7 +118,7 @@ describe('Work Packages', () => {
           stage,
           startDate,
           duration,
-          dependencies,
+          blockedBy,
           expectedActivities,
           deliverables
         );
@@ -208,7 +208,7 @@ describe('Work Packages', () => {
       // are called exactly as many times as needed
       expect(prisma.work_Package.create).toHaveBeenCalledTimes(1);
       expect(changeRequestUtils.validateChangeRequestAccepted).toHaveBeenCalledTimes(1);
-      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + dependencies.length);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + blockedBy.length);
     });
   });
 

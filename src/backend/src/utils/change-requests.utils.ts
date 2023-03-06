@@ -73,7 +73,9 @@ export const updateDependencies = async (
   const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
 
   // dependency ids that still need to be updated
-  const dependencyUpdateQueue: number[] = initialWorkPackage.dependencies.map((dependency) => dependency.wbsElementId);
+  const dependencyUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map(
+    (dependency) => dependency.wbsElementId
+  );
 
   while (dependencyUpdateQueue.length > 0) {
     const currWbsId = dependencyUpdateQueue.pop(); // get the next dependency and remove it from the queue
@@ -87,16 +89,13 @@ export const updateDependencies = async (
     const currWbs = await prisma.wBS_Element.findUnique({
       where: { wbsElementId: currWbsId },
       include: {
-        workPackage: {
-          include: {
-            dependencies: true
-          }
-        }
+        blocking: true,
+        workPackage: true
       }
     });
 
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
-    if (!currWbs.workPackage) continue; // this is a project which means we cant update startDate
+    if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     const newStartDate: Date = addWeeksToDate(currWbs.workPackage.startDate, timelineImpact);
 
@@ -125,7 +124,7 @@ export const updateDependencies = async (
     });
 
     // get all the dependencies of the current wbs and add them to the queue to update
-    const newDependencies: number[] = currWbs.workPackage.dependencies.map((dependency) => dependency.wbsElementId);
+    const newDependencies: number[] = currWbs.blocking.map((dependency) => dependency.wbsElementId);
     dependencyUpdateQueue.push(...newDependencies);
   }
 };

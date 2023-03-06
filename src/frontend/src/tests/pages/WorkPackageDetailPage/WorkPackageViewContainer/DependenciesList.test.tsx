@@ -32,17 +32,17 @@ const renderComponent = (editMode?: boolean, path?: string, route?: string) => {
 describe.skip('Rendering Work Package Dependencies Component', () => {
   test('Rendering example 2', () => {
     renderComponent();
-    expect(screen.getByText(`Dependencies`)).toBeInTheDocument();
+    expect(screen.getByText(`Blocked By`)).toBeInTheDocument();
 
-    exampleDesignWorkPackage.dependencies.forEach((wbs) => {
+    exampleDesignWorkPackage.blockedBy.forEach((wbs) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
   });
   test('Rendering example 2, in edit mode', () => {
     renderComponent(true);
-    expect(screen.getByText(`Dependencies`)).toBeInTheDocument();
+    expect(screen.getByText(`Blocked By`)).toBeInTheDocument();
 
-    exampleDesignWorkPackage.dependencies.forEach((wbs) => {
+    exampleDesignWorkPackage.blockedBy.forEach((wbs) => {
       expect(screen.getByText(`${wbsPipe(wbs)}`)).toBeInTheDocument();
     });
     expect(screen.getByPlaceholderText('New WBS #')).toBeInTheDocument();

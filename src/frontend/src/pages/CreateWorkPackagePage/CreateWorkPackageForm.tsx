@@ -19,7 +19,7 @@ export interface CreateWorkPackageFormInputs {
   crId: string;
   stage: WorkPackageStage | null;
   wbsNum: string;
-  dependencies: { wbsNum: string }[];
+  blockedBy: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
 }
@@ -34,7 +34,7 @@ const CreateWorkPackageForm: React.FC = () => {
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, dependencies, wbsNum, stage } = data;
+    const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
@@ -46,7 +46,7 @@ const CreateWorkPackageForm: React.FC = () => {
         toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
-      const depWbsNums = dependencies.map((dependency: any) => {
+      const depWbsNums = blockedBy.map((dependency: any) => {
         const depWbsNum = validateWBS(dependency.wbsNum);
         return {
           carNumber: depWbsNum.carNumber,
@@ -64,7 +64,7 @@ const CreateWorkPackageForm: React.FC = () => {
         },
         startDate: startDate.toLocaleDateString(),
         duration,
-        dependencies: depWbsNums,
+        blockedBy: depWbsNums,
         expectedActivities,
         deliverables,
         stage
