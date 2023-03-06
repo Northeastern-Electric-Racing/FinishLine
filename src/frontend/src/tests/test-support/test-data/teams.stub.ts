@@ -4,7 +4,7 @@
  */
 
 import { Team } from 'shared';
-import { exampleProject1, exampleProject2 } from './projects.stub';
+import { exampleProject1, exampleProject2, exampleProject3 } from './projects.stub';
 import { exampleAllUsers, exampleAppAdminUser } from './users.stub';
 
 export const exampleTeam: Team = {
@@ -14,5 +14,5 @@ export const exampleTeam: Team = {
   slackId: 'winners-slackid',
   description: 'Are you winning, team?',
   members: exampleAllUsers,
-  projects: [exampleProject1, exampleProject2]
+  projects: [exampleProject1, exampleProject2, exampleProject3]
 };
