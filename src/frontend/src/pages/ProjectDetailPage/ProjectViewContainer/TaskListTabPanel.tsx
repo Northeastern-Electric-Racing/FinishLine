@@ -162,13 +162,14 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const editTaskPermissions = (user: User | undefined, task: Task, proj: Project): boolean => {
     if (!user) return false;
     return (
-      user.role === 'APP_ADMIN' ||
-      user.role === 'ADMIN' ||
-      user.role === 'LEADERSHIP' ||
-      proj.projectLead?.userId === user.userId ||
-      proj.projectManager?.userId === user.userId ||
-      task.assignees.map((u) => u.userId).includes(user.userId) ||
-      task.createdBy.userId === user.userId
+      (user.role === 'APP_ADMIN' ||
+        user.role === 'ADMIN' ||
+        user.role === 'LEADERSHIP' ||
+        proj.projectLead?.userId === user.userId ||
+        proj.projectManager?.userId === user.userId ||
+        task.assignees.map((u) => u.userId).includes(user.userId) ||
+        task.createdBy.userId === user.userId) ??
+      false
     );
   };
 
