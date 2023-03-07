@@ -147,14 +147,16 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
-            Create
-          </NERSuccessButton>
-        </Box>
+        <Grid container justifyContent="flex-end">
+          <Box display="flex" sx={{ mt: 2 }}>
+            <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+              Create
+            </NERSuccessButton>
+          </Box>
+        </Grid>
       </PageBlock>
     </form>
   );
