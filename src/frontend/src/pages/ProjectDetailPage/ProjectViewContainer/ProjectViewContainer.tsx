@@ -134,14 +134,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </div>
   );
 
-  const createTaskPermissions =
-    !(auth.user.role === 'GUEST' && !proj.team?.members.map((user) => user.userId).includes(auth.user.userId)) &&
-    !(
-      auth.user.role === 'MEMBER' &&
-      (proj.projectLead?.userId !== auth.user.userId || proj.projectManager?.userId !== auth.user.userId) &&
-      !(proj.team?.leader.userId === auth.user.userId)
-    );
-
   return (
     <>
       <PageTitle
@@ -150,12 +142,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
-      <TaskList
-        tasks={proj.tasks}
-        team={proj.team}
-        createTaskPermissions={createTaskPermissions}
-        currentWbsNumber={proj.wbsNum}
-      />
+      <TaskList project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />

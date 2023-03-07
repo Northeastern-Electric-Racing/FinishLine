@@ -5,7 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { TeamPreview } from 'shared';
+import { Project } from 'shared';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as taskHooks from '../../../hooks/tasks.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
@@ -17,10 +17,9 @@ import {
   mockEditTaskReturnValue,
   mockUseAllUsersReturnValue
 } from '../../test-support/mock-hooks';
-import { exampleTeam } from '../../test-support/test-data/teams.stub';
+import { exampleProject3 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
-import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
-import { exampleWbs1 } from '../../test-support/test-data/wbs-numbers.stub';
+import { exampleAdminUser, exampleGuestUser2, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 
 jest.mock('../../../hooks/toasts.hooks');
@@ -30,13 +29,13 @@ const users = [exampleAdminUser, exampleLeadershipUser];
 /**
  * Sets up the component under test with the desired values and renders it.
  */
-const renderComponent = (team?: TeamPreview, createTaskPermissions: boolean = true) => {
+const renderComponent = (proj: Project = exampleProject3) => {
   const RouterWrapper = routerWrapperBuilder({});
   const queryClient = new QueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
       <RouterWrapper>
-        <TaskList tasks={[]} team={team} createTaskPermissions={createTaskPermissions} currentWbsNumber={exampleWbs1} />
+        <TaskList project={proj} />
       </RouterWrapper>
     </QueryClientProvider>
   );
@@ -56,12 +55,12 @@ describe('TaskList component', () => {
   });
 
   it('renders "Task List" on top', () => {
-    renderComponent(exampleTeam);
+    renderComponent();
     expect(screen.getByText('Task List')).toBeInTheDocument();
   });
 
   it('renders all 3 labels', () => {
-    renderComponent(exampleTeam);
+    renderComponent();
     expect(screen.getByText('In Progress')).toBeInTheDocument();
     expect(screen.getByText('In Backlog')).toBeInTheDocument();
     expect(screen.getByText('Done')).toBeInTheDocument();
@@ -69,34 +68,35 @@ describe('TaskList component', () => {
 
   describe('New Task Button', () => {
     it('renders New Task button', () => {
-      renderComponent(exampleTeam);
+      renderComponent();
       expect(screen.getByText('New Task')).toBeInTheDocument();
     });
 
     it('enables New Task button if user has permission', () => {
-      renderComponent(exampleTeam);
+      renderComponent();
       expect(screen.getByText('New Task')).toBeEnabled();
     });
 
     it('disables New Task button if user does not have permission', () => {
-      renderComponent(exampleTeam, false);
+      spyUseAuthHook.mockReturnValue(mockAuth(false, exampleGuestUser2));
+      renderComponent();
       expect(screen.getByText('New Task')).toBeDisabled();
     });
 
     it('disables New Task button if there is no associated team', () => {
-      renderComponent();
+      renderComponent({ ...exampleProject3, team: undefined });
       expect(screen.getByText('New Task')).toBeDisabled();
     });
   });
 
   describe('Tab Contents', () => {
     it('renders message if there is no associated team', () => {
-      renderComponent();
+      renderComponent({ ...exampleProject3, team: undefined });
       expect(screen.getByText('A project can only have tasks if it is assigned to a team!')).toBeInTheDocument();
     });
 
     it('does not render no-team message if there is an associated team', () => {
-      renderComponent(exampleTeam);
+      renderComponent();
       expect(screen.queryByText('A project can only have tasks if it is assigned to a team!')).toBeNull();
     });
   });
