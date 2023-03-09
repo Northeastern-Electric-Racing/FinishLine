@@ -16,8 +16,9 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
+import { Chip, FormControl, InputLabel, MenuItem, Select, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
+import { Construction, Work } from '@mui/icons-material';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -72,10 +73,19 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                 >
                   {wbsPipe(wp.wbsNum)} - {wp.name}
                 </Link>
+                <Chip label={wp.timelineStatus} sx={{ marginBottom: 2 }} />
+
                 <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
                 <DetailDisplay label="Progress" content={percentPipe(wp.progress)} paddingRight={2} />
-                <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
-                <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
+                {/* <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
+                <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} /> */}
+                {/* <Chip icon={<Construction />} label={fullNamePipe(wp.projectLead)} /> */}
+                <Typography>
+                  {datePipe(wp.startDate) + ' |-----' + wp.duration + 'wks' + '------| ' + datePipe(wp.endDate)}
+                </Typography>
+                <Chip icon={<Construction />} label={fullNamePipe(wp.projectLead)} />
+                <Chip sx={{ marginLeft: 2 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} />
+
                 <Typography>
                   {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
                 </Typography>
