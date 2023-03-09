@@ -25,7 +25,10 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link, ListItemIcon } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -115,6 +118,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
         >
+          <ListItemIcon>
+            <CreateNewFolderIcon fontSize="small" />
+          </ListItemIcon>
           Create New Project
         </MenuItem>
         <MenuItem
@@ -123,6 +129,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
+          <ListItemIcon>
+            <PostAddIcon fontSize="small" />
+          </ListItemIcon>
           Create New Work Package
         </MenuItem>
         <MenuItem
@@ -131,6 +140,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
           Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
         </MenuItem>
       </Menu>
