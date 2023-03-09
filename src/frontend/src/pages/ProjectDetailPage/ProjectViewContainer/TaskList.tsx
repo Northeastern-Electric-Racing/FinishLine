@@ -5,7 +5,7 @@
 
 import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { Task, TaskStatus, TeamPreview, WbsNumber, wbsPipe } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -28,7 +28,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   const taskListTitle: string = 'Task List';
 
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
-  const tabUrlValues = ['in-backlog', 'in-progress', 'done'];
+  const tabUrlValues = useMemo(() => ['in-backlog', 'in-progress', 'done'], []);
 
   const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
@@ -43,8 +43,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'in-progress');
     setValue(newTabValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, setValue, tabUrlValues, tabValueString]);
 
   const [addTask, setAddTask] = useState(false);
 
