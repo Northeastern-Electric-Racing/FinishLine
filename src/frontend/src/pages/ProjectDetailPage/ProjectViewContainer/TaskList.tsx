@@ -30,7 +30,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
   const tabUrlValues = ['in-backlog', 'in-progress', 'done'];
 
-  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>('/projects/:wbsNum/:tabValueString');
+  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
   const wbsNum = wbsPipe(currentWbsNumber);
 
