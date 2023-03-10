@@ -111,7 +111,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       >
         Implement Change Request
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+      >
         <MenuItem
           to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           component={RouterLink}
