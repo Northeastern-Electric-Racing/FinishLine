@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role } from 'shared';
 
 export const rankUserRole = (role: Role) => {
   switch (role) {

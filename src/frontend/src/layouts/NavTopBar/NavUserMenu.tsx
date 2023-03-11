@@ -12,7 +12,11 @@ import MenuItem from '@mui/material/MenuItem';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
-import Button from '@mui/material/Button';
+import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -25,26 +29,42 @@ const NavUserMenu: React.FC = () => {
   const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
-    auth!.signout();
+    if (!auth) return;
+    auth.signout();
     history.push(routes.HOME);
   };
 
-  const googleLogout = (
+  const ProdLogout = () => (
     <GoogleLogout
       clientId={googleAuthClientId!}
       //jsSrc={'accounts.google.com/gsi/client'}
       onLogoutSuccess={logout}
       render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }}>
-          Logout
+        <MenuItem component="div" sx={{ py: 0 }} onClick={renderProps.onClick} disabled={renderProps.disabled}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Logout</ListItemText>
         </MenuItem>
       )}
     />
   );
 
-  const devLogout = (
-    <MenuItem onClick={logout} component="div" sx={{ py: 0 }}>
-      <Button sx={{ padding: 0, minHeight: 0, minWidth: 0 }}>Logout</Button>
+  const DevLogout = () => (
+    <MenuItem onClick={logout} sx={{ py: 0 }}>
+      <ListItemIcon>
+        <LogoutIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
+  );
+
+  const AdminTools = () => (
+    <MenuItem component={RouterLink} to={routes.ADMIN_TOOLS} onClick={handleClose} sx={{ py: 0 }}>
+      <ListItemIcon>
+        <HomeRepairServiceIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText>Admin Tools</ListItemText>
     </MenuItem>
   );
 
@@ -89,9 +109,13 @@ const NavUserMenu: React.FC = () => {
           {auth.user?.email}
         </MenuItem>
         <MenuItem component={RouterLink} to={routes.SETTINGS} onClick={handleClose} sx={{ py: 0 }}>
-          Settings
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Settings</ListItemText>
         </MenuItem>
-        {googleAuthClientId ? googleLogout : devLogout}
+        {auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN' ? <AdminTools /> : null}
+        {process.env.NODE_ENV === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
     </>
   );

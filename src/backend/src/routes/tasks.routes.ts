@@ -9,7 +9,6 @@ const tasksRouter = express.Router();
 tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
-  nonEmptyString(body('notes')),
   body('deadline').isDate(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -18,5 +17,25 @@ tasksRouter.post(
   validateInputs,
   TasksController.createTask
 );
+
+tasksRouter.post(
+  '/:taskId/edit',
+  nonEmptyString(body('title')),
+  nonEmptyString(body('notes')),
+  body('deadline').isDate(),
+  isTaskPriority(body('priority')),
+  TasksController.editTask
+);
+
+tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksController.editTaskStatus);
+
+tasksRouter.post(
+  '/:taskId/edit-assignees',
+  body('assignees').isArray(),
+  intMinZero(body('assignees.*')),
+  TasksController.editTaskAssignees
+);
+
+tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
 
 export default tasksRouter;

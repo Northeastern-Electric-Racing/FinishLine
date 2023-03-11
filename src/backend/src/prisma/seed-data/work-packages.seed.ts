@@ -5,6 +5,7 @@
 
 import { Prisma, User } from '@prisma/client';
 import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
+import { WorkPackageStage } from 'shared';
 import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
 import WorkPackagesService from '../../services/work-packages.services';
 import { descBulletConverter } from '../../utils/utils';
@@ -20,6 +21,7 @@ export const seedWorkPackage = async (
   projectWbsNumber: WbsNumber,
   name: string,
   changeRequestId: number,
+  stage: WorkPackageStage | null,
   startDate: string,
   duration: number,
   dependencies: WbsNumber[],
@@ -38,6 +40,7 @@ export const seedWorkPackage = async (
     projectWbsNumber,
     name,
     changeRequestId,
+    stage,
     startDate,
     duration,
     dependencies,
@@ -63,12 +66,12 @@ export const seedWorkPackage = async (
     workPackage.workPackageId,
     workPackage.wbsElement.name,
     changeRequestId,
+    stage,
     workPackage.startDate.toString(),
     workPackage.duration,
     workPackage.dependencies,
     workPackage.expectedActivities.map(descBulletConverter),
     workPackage.deliverables.map(descBulletConverter),
-    status,
     projectLead,
     projectManager
   );

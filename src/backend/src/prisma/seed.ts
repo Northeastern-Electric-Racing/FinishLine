@@ -16,15 +16,12 @@ import {
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
-import ProjectsService from '../services/projects.services';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import RisksService from '../services/risks.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { validateWBS, WbsElementStatus } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { descBulletConverter } from '../utils/utils';
+import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -259,6 +256,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Bodywork Concept of Design',
     changeRequest1Id,
+    WorkPackageStage.Design,
     '01/01/2023',
     3,
     [],
@@ -273,6 +271,20 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId
   );
 
+  const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    thomasEmrax,
+    workPackage1.wbsElement.carNumber,
+    workPackage1.wbsElement.projectNumber,
+    workPackage1.wbsElement.workPackageNumber,
+    'ACTIVATION',
+    workPackage1.project.wbsElement.projectLeadId!,
+    workPackage1.project.wbsElement.projectManagerId!,
+    new Date(),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, null);
+
   await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
 
   /** Work Package 2 */
@@ -281,6 +293,7 @@ const performSeed: () => Promise<void> = async () => {
     project1WbsNumber,
     'Adhesive Shear Strength Test',
     changeRequest1Id,
+    WorkPackageStage.Research,
     '01/22/2023',
     5,
     [],
@@ -304,6 +317,7 @@ const performSeed: () => Promise<void> = async () => {
     project5WbsNumber,
     'Manufacture Wiring Harness',
     changeRequest1Id,
+    WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
     [],
@@ -326,7 +340,6 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1WbsNumber.projectNumber,
     workPackage1WbsNumber.workPackageNumber,
     CR_Type.STAGE_GATE,
-    0,
     true
   );
 
@@ -374,6 +387,224 @@ const performSeed: () => Promise<void> = async () => {
     'Research attenuation',
     "I don't know what attenuation is yet",
     new Date('01/01/2024'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Design Attenuator',
+    'Autocad?',
+    new Date('01/01/2024'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    joeBlow,
+    project1WbsNumber,
+    'Research Impact',
+    'Autocad?',
+    new Date('01/01/2024'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId, joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Impact Test',
+    'Use our conveniently available jumbo watermelon and slingshot to test how well our impact attenuator can ' +
+      'attenuate impact.',
+    new Date('2024-02-17T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    joeBlow,
+    project1WbsNumber,
+    'Review Compliance',
+    'I think there are some rules we may or may not have overlooked...',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project1WbsNumber,
+    'Decorate Impact Attenuator',
+    'You know you want to.',
+    new Date('2024-01-20T00:00:00-05:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    lamarJackson,
+    project1WbsNumber,
+    'Meet with the Department of Transportation',
+    'Discuss design decisions',
+    new Date('2023-05-19T00:00:00-04:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project1WbsNumber,
+    'Build Attenuator',
+    'WOOOO',
+    new Date('01/01/2024'),
+    Task_Priority.LOW,
+    Task_Status.DONE,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project1WbsNumber,
+    "Drive Northeastern Electric Racing's Hand-Built Car That Tops Out at 100 mph",
+    "It was a chilly November night and Matthew McCauley's breath was billowing out in front of him when he took hold " +
+      "of the wheel and put pedal to the metal. Accelerating down straightaways and taking corners with finesse, it's " +
+      'easy to forget McCauley, in his blue racing jacket and jet black helmet, is racing laps around the roof of ' +
+      "Columbus Parking Garage on Northeastern's Boston campus. But that's the reality of Northeastern Electric " +
+      'Racing, a student club that has made due and found massive success in the world of electric racing despite its ' +
+      "relative rookie status. McCauley, NER's chief electrical engineer, has seen the club's car, Cinnamon, go from " +
+      'a 5-foot drive test to hitting 60 miles per hour in competitions. "It\'s a go-kart that has 110 kilowatts of ' +
+      'power, 109 kilowatts of power," says McCauley, a fourth-year electrical and computer engineering student. ' +
+      '"That\'s over 100 horsepower."',
+    new Date('2022-11-16T00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    brandonHyde,
+    project1WbsNumber,
+    'Safety Training',
+    'how to use (or not use) the impact attenuator',
+    new Date('2023-03-15T00:00:00-04:00'),
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Double-Check Inventory',
+    'Nobody really wants to do this...',
+    new Date('2023-04-01T00:00:00-04:00'),
+    Task_Priority.LOW,
+    Task_Status.IN_BACKLOG,
+    []
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Aerodynamics Test',
+    'Wind go wooooosh',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    johnHarbaugh,
+    project2WbsNumber,
+    'Ask Sponsors About Logo Sticker Placement',
+    'the more sponsors the cooler we look',
+    new Date('2024-01-01T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [thomasEmrax.userId, joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project2WbsNumber,
+    'Discuss Design With Powertrain Team',
+    '',
+    new Date('2023-10-31T00:00:00-04:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.DONE,
+    [thomasEmrax.userId]
+  );
+
+  await TasksService.createTask(
+    batman,
+    project3WbsNumber,
+    'Power the Battery Box',
+    'With all our powers combined, we can win any Electric Racing competition!',
+    new Date('2024-05-01T00:00:00-04:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project3WbsNumber,
+    'Wire Up Battery Box',
+    'Too many wires... how to even keep track?',
+    new Date('2024-02-29T00:00:00-05:00'),
+    Task_Priority.HIGH,
+    Task_Status.IN_PROGRESS,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project3WbsNumber,
+    'Vibration Tests',
+    "Battery box shouldn't blow up in the middle of racing...",
+    new Date('2024-03-17T00:00:00-05:00'),
+    Task_Priority.MEDIUM,
+    Task_Status.IN_BACKLOG,
+    [joeShmoe.userId]
+  );
+
+  await TasksService.createTask(
+    joeShmoe,
+    project3WbsNumber,
+    'Buy some Battery Juice',
+    'mmm battery juice',
+    new Date('2024-04-15T00:00:00-04:00'),
+    Task_Priority.LOW,
+    Task_Status.DONE,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    thomasEmrax,
+    project4WbsNumber,
+    'Schematics',
+    'schematics go brrrrr',
+    new Date('2024-04-15T00:00:00-04:00'),
+    Task_Priority.HIGH,
+    Task_Status.DONE,
+    [joeBlow.userId]
+  );
+
+  await TasksService.createTask(
+    batman,
+    project5WbsNumber,
+    'Cost Assessment',
+    'So this is where our funding goes',
+    new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId]

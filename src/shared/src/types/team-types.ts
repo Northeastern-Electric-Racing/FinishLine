@@ -16,4 +16,4 @@ export interface Team {
   projects: ProjectPreview[];
 }
 
-export type TeamPreview = Pick<Team, 'teamId' | 'teamName'>;
+export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'leader'>;
