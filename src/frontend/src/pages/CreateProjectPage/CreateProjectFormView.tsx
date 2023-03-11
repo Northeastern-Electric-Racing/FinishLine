@@ -4,7 +4,6 @@
  */
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -16,9 +15,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
-import { SubmitButton } from '../../components/SubmitButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -149,13 +149,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             />
           </FormControl>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
+        <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
+          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
-          </Button>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
             Create
-          </SubmitButton>
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>
