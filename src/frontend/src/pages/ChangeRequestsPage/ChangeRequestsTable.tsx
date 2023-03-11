@@ -16,6 +16,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
 import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
 
 const ChangeRequestsTable: React.FC = () => {
@@ -27,7 +28,7 @@ const ChangeRequestsTable: React.FC = () => {
 
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
 
-  const baseColDef: any = {
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'

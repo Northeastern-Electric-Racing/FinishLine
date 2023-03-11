@@ -7,6 +7,7 @@ import axios from '../utils/axios';
 import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { changeRequestTransformer } from './transformers/change-requests.transformers';
+import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
 
 /**
  * Fetches all change requests.
@@ -53,11 +54,20 @@ export const reviewChangeRequest = (
 };
 
 /**
+ * Delete a change request.
+ *
+ * @param crId The ID of the change request being deleted.
+ */
+export const deleteChangeRequest = (crId: number) => {
+  return axios.delete<{ message: string }>(apiUrls.changeRequestDelete(`${crId}`));
+};
+
+/**
  * Create a standard change request.
  *
  * @param payload The standard change request payload.
  */
-export const createStandardChangeRequest = (payload: any) => {
+export const createStandardChangeRequest = (payload: CreateStandardChangeRequestPayload) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStandard(), payload);
 };
 
@@ -93,20 +103,13 @@ export const createActivationChangeRequest = (
  * Create a stage gate change request.
  * @param submitterId The ID of the user creating the change request.
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
- * @param leftoverBudget the amount of leftover budget in the WBS element being stage gated.
  * @param confirmDone are all details of the WBS element being stage gated fully completed?
  */
-export const createStageGateChangeRequest = (
-  submitterId: number,
-  wbsNum: WbsNumber,
-  leftoverBudget: number,
-  confirmDone: boolean
-) => {
+export const createStageGateChangeRequest = (submitterId: number, wbsNum: WbsNumber, confirmDone: boolean) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStageGate(), {
     submitterId,
     wbsNum,
     type: ChangeRequestType.StageGate,
-    leftoverBudget,
     confirmDone
   });
 };

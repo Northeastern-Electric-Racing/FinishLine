@@ -49,7 +49,8 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
-    res.status(500).json({ message: 'Something went very wrong...' });
+    res.status(500).json({ message: JSON.stringify(error) });
+    throw error;
   }
 };
 
@@ -64,4 +65,5 @@ type NotFoundObjectNames =
   | 'WBS Element'
   | 'Proposed Solution'
   | 'Team'
-  | 'User Settings';
+  | 'User Settings'
+  | 'Task';

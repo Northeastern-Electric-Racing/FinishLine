@@ -62,6 +62,13 @@ enum Scope_CR_Why_Type {
   OTHER
 }
 
+enum Work_Package_Stage {
+  RESEARCH
+  DESIGN
+  MANUFACTURING
+  INTEGRATION
+}
+
 model User {
   userId       Int            @id @default(autoincrement())
   firstName    String
@@ -230,7 +237,7 @@ model WBS_Element {
   project               Project?
   workPackage           Work_Package?
   dependentWorkPackages Work_Package[]     @relation("dependencies")
-  Task                  Task[]
+  tasks                 Task[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -267,6 +274,7 @@ model Work_Package {
   dependencies       WBS_Element[]        @relation(name: "dependencies")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
+  stage              Work_Package_Stage?
 }
 
 model Description_Bullet {

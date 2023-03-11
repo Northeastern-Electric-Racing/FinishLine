@@ -7,10 +7,12 @@ import {
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
   calculateDuration,
-  calculateProjectStartDate
+  calculateProjectStartDate,
+  WorkPackageStage
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import riskTransformer from '../transformers/risks.transformer';
+import taskTransformer from './tasks.transformer';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from '../transformers/user.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
@@ -53,6 +55,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
     risks: project.risks.map(riskTransformer),
+    tasks: wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
@@ -90,7 +93,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         dependencies: workPackage.dependencies.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter),
-        projectName: wbsElement.name
+        projectName: wbsElement.name,
+        stage: (workPackage.stage || undefined) as WorkPackageStage
       };
     })
   };

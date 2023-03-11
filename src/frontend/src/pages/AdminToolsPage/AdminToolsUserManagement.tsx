@@ -44,10 +44,10 @@ const AdminToolsUserMangaement: React.FC = () => {
 
   const usersSearchOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: number } | null
+    value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const user = users.find((user: User) => user.userId === value.id);
+      const user = users.find((user: User) => user.userId.toString() === value.id);
       if (user) {
         setUser(user);
         setRole(user.role);
@@ -81,8 +81,8 @@ const AdminToolsUserMangaement: React.FC = () => {
     }
   };
 
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId };
+  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
   return (

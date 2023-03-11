@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
 import { getCurrentUser } from '../utils/auth.utils';
+import { User } from '@prisma/client';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
@@ -56,7 +57,7 @@ export default class ChangeRequestsController {
 
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, leftoverBudget, confirmDone } = req.body;
+      const { wbsNum, type, confirmDone } = req.body;
       const submitter = await getCurrentUser(res);
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         submitter,
@@ -64,7 +65,6 @@ export default class ChangeRequestsController {
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
-        leftoverBudget,
         confirmDone
       );
       return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
@@ -105,6 +105,17 @@ export default class ChangeRequestsController {
         scopeImpact
       );
       return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const crId: number = parseInt(req.params.crId);
+      const user: User = await getCurrentUser(res);
+      await ChangeRequestsService.deleteChangeRequest(user, crId);
+      return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
       next(error);
     }

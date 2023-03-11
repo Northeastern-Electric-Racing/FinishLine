@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElement } from './project-types';
+import { WbsNumber } from './project-types';
 import { UserPreview } from './user-types';
 
 export enum TaskPriority {
@@ -13,14 +13,14 @@ export enum TaskPriority {
 }
 
 export enum TaskStatus {
-  IN_BACKLOG = 'IN BACKLOG',
-  IN_PROGRESS = 'IN PROGRESS',
+  IN_BACKLOG = 'IN_BACKLOG',
+  IN_PROGRESS = 'IN_PROGRESS',
   DONE = 'DONE'
 }
 
 export interface Task {
   taskId: string;
-  wbsElement: WbsElement;
+  wbsNum: WbsNumber;
   title: string;
   notes: string;
   dateDeleted?: Date;
