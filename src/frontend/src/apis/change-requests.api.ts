@@ -7,6 +7,7 @@ import axios from '../utils/axios';
 import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { changeRequestTransformer } from './transformers/change-requests.transformers';
+import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
 
 /**
  * Fetches all change requests.
@@ -66,7 +67,7 @@ export const deleteChangeRequest = (crId: number) => {
  *
  * @param payload The standard change request payload.
  */
-export const createStandardChangeRequest = (payload: any) => {
+export const createStandardChangeRequest = (payload: CreateStandardChangeRequestPayload) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStandard(), payload);
 };
 

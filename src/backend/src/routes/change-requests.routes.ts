@@ -51,7 +51,6 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/standard',
-  intMinZero(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
@@ -74,8 +73,8 @@ changeRequestsRouter.post(
   intMinZero(body('crId')),
   nonEmptyString(body('description')),
   nonEmptyString(body('scopeImpact')),
-  intMinZero(body('timelineImpact')),
-  intMinZero(body('budgetImpact')),
+  body('timelineImpact').isInt(),
+  body('budgetImpact').isInt(),
   validateInputs,
   ChangeRequestsController.addProposedSolution
 );
