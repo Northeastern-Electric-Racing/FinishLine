@@ -12,9 +12,27 @@ export const exampleWbsWorkPackage1: WbsNumber = {
 };
 
 export const exampleWbsWorkPackage2: WbsNumber = {
+  carNumber: 1,
+  projectNumber: 1,
+  workPackageNumber: 2
+};
+
+export const exampleWbsWorkPackage3: WbsNumber = {
   carNumber: 2,
   projectNumber: 7,
   workPackageNumber: 3
+};
+
+export const exampleWbsWorkPackage4: WbsNumber = {
+  carNumber: 2,
+  projectNumber: 7,
+  workPackageNumber: 4
+};
+
+export const exampleWbsWorkPackage5: WbsNumber = {
+  carNumber: 2,
+  projectNumber: 7,
+  workPackageNumber: 5
 };
 
 export const exampleWbsProject1: WbsNumber = {
@@ -49,7 +67,7 @@ export const exampleWbs3: WbsNumber = {
 
 export const exampleAllWbsNums: WbsNumber[] = [
   exampleWbsWorkPackage1,
-  exampleWbsWorkPackage2,
+  exampleWbsWorkPackage3,
   exampleWbsProject1,
   exampleWbsProject2,
   exampleWbs1,

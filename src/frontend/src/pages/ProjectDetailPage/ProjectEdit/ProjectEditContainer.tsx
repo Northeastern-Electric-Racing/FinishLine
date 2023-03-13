@@ -24,6 +24,7 @@ import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -43,6 +44,7 @@ interface ProjectEditContainerProps {
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const query = useQuery();
   const allUsers = useAllUsers();
+  const toast = useToast();
   const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
   const {
     register,
@@ -127,7 +129,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
       }
     }
   };

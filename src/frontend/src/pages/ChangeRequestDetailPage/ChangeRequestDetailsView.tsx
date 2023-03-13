@@ -25,7 +25,8 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link, ListItemIcon } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link, Divider, ListItemIcon } from '@mui/material';
+import DeleteChangeRequest from './DeleteChangeRequest';
 import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import PostAddIcon from '@mui/icons-material/PostAdd';
@@ -73,25 +74,24 @@ const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   isUserAllowedToImplement: boolean;
+  isUserAllowedToDelete: boolean;
   changeRequest: ChangeRequest;
 }
 
 const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToReview,
   isUserAllowedToImplement,
+  isUserAllowedToDelete,
   changeRequest
 }: ChangeRequestDetailsProps) => {
-  const [modalShow, setModalShow] = useState<boolean>(false);
-  const handleClose = () => setModalShow(false);
-  const handleOpen = () => setModalShow(true);
+  const [reviewModalShow, setReviewModalShow] = useState<boolean>(false);
+  const handleReviewClose = () => setReviewModalShow(false);
+  const handleReviewOpen = () => setReviewModalShow(true);
+  const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
+  const handleDeleteClose = () => setDeleteModalShow(false);
+  const handleDeleteOpen = () => setDeleteModalShow(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
-
-  const reviewBtn = (
-    <NERButton variant="contained" onClick={handleOpen} disabled={!isUserAllowedToReview}>
-      Review
-    </NERButton>
-  );
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -100,6 +100,28 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
+
+  const unreviewedActionsDropdown = (
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="unreviewed-cr-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          Review
+        </MenuItem>
+        <Divider />
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
+        </MenuItem>
+      </Menu>
+    </div>
+  );
 
   const implementCrDropdown = (
     <div>
@@ -162,7 +184,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   );
 
   let actionDropdown = <></>;
-  if (changeRequest.accepted === undefined) actionDropdown = reviewBtn;
+  if (changeRequest.accepted === undefined) actionDropdown = unreviewedActionsDropdown;
   if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
 
   return (
@@ -210,7 +232,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-      {modalShow && <ReviewChangeRequest modalShow={modalShow} handleClose={handleClose} cr={changeRequest} />}
+      {reviewModalShow && (
+        <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
+      )}
+      {deleteModalShow && (
+        <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
+      )}
     </>
   );
 };
