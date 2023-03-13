@@ -4,7 +4,11 @@ import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-a
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
-import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
+import {
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification,
+  throwIfUncheckedDescriptionBullets
+} from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 
@@ -170,21 +174,7 @@ export default class ChangeRequestsService {
 
     // stage gate cr
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      // if it's a work package, all deliverables and expected activities must be checked
-      if (foundCR.wbsElement.workPackage) {
-        const wpExpectedActivities = foundCR.wbsElement.workPackage.expectedActivities;
-        const wpDeliverables = foundCR.wbsElement.workPackage.deliverables;
-
-        // checks for any unchecked expected activities, if there are any it will return an error
-        if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted === null))
-          throw new HttpException(400, `Work Package has unchecked expected activities`);
-
-        // checks for any unchecked deliverables, if there are any it will return an error
-        const uncheckedDeliverables = wpDeliverables.some(
-          (element) => element.dateTimeChecked === null && element.dateDeleted === null
-        );
-        if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
-      }
+      throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
 
       // update the status of the associated wp to be complete if needed
       const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
@@ -416,21 +406,7 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
 
-    // if it's a work package, all deliverables and expected activities must be checked
-    if (wbsElement.workPackage) {
-      const wpExpectedActivities = wbsElement.workPackage.expectedActivities;
-      const wpDeliverables = wbsElement.workPackage.deliverables;
-
-      // checks for any unchecked expected activities, if there are any it will return an error
-      if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted === null))
-        throw new HttpException(400, `Work Package has unchecked expected activities`);
-
-      // checks for any unchecked deliverables, if there are any it will return an error
-      const uncheckedDeliverables = wpDeliverables.some(
-        (element) => element.dateTimeChecked === null && element.dateDeleted === null
-      );
-      if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
-    }
+    throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {

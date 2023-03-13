@@ -1,4 +1,4 @@
-import { Scope_CR_Why_Type, Team, User } from '@prisma/client';
+import { Description_Bullet, Scope_CR_Why_Type, Team, User, Work_Package } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { ChangeRequestReason } from 'shared';
 import { sendMessage } from '../integrations/slack.utils';
@@ -67,4 +67,29 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
 
   return changeRequest;
+};
+
+/**
+ * Validates that there are no unchecked expected activities or delivrerables
+ * @param workPackage Work package to check bullets for
+ * @throws if there are any unchecked expected activities or deliverables
+ */
+export const throwIfUncheckedDescriptionBullets = (
+  workPackage: (Work_Package & { expectedActivities: Description_Bullet[]; deliverables: Description_Bullet[] }) | null
+) => {
+  // if it's a work package, all deliverables and expected activities must be checked
+  if (workPackage) {
+    const wpExpectedActivities = workPackage.expectedActivities;
+    const wpDeliverables = workPackage.deliverables;
+
+    // checks for any unchecked expected activities, if there are any it will return an error
+    if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted === null))
+      throw new HttpException(400, `Work Package has unchecked expected activities`);
+
+    // checks for any unchecked deliverables, if there are any it will return an error
+    const uncheckedDeliverables = wpDeliverables.some(
+      (element) => element.dateTimeChecked === null && element.dateDeleted === null
+    );
+    if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
+  }
 };
