@@ -4,13 +4,10 @@ import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-a
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
-import {
-  sendSlackChangeRequestNotification,
-  sendSlackCRReviewedNotification,
-  throwIfUncheckedDescriptionBullets
-} from '../utils/change-requests.utils';
+import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -174,6 +171,10 @@ export default class ChangeRequestsService {
 
     // stage gate cr
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
+      if (!foundCR.wbsElement.workPackage) {
+        throw new HttpException(400, 'Stage gate can only be made on work packages!');
+      }
+
       throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
 
       // update the status of the associated wp to be complete if needed
@@ -405,8 +406,9 @@ export default class ChangeRequestsService {
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
-
-    throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    if (wbsElement.workPackage) {
+      throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    }
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
