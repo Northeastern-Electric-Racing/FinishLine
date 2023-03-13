@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
 import { TimelineStatus, WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
+import { datePipe, wbsPipe, fullNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
@@ -30,7 +30,7 @@ import {
 import { Construction, Work } from '@mui/icons-material';
 import { CircularProgressProps } from '@mui/material/CircularProgress';
 
-function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
+const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => {
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
       <CircularProgress variant="determinate" {...props} />
@@ -50,7 +50,7 @@ function CircularProgressWithLabel(props: CircularProgressProps & { value: numbe
       </Box>
     </Box>
   );
-}
+};
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -94,41 +94,49 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
             <Card
               variant="outlined"
               key={wbsPipe(wp.wbsNum)}
-              sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default, borderRadius: '16px' }}
+              sx={{ width: '450px', mr: 3, background: theme.palette.background.default, borderRadius: '16px' }}
             >
               <CardContent sx={{ padding: 2 }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={9}>
-                    <Typography variant="h6" sx={{ textDecoration: 'underline', align: 'right' }}>
-                      {wp.wbsNum.projectNumber} - {wp.projectName}
-                    </Typography>
-                    <Link
-                      variant="h5"
-                      component={RouterLink}
-                      to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
-                      sx={{ marginBottom: 2 }}
-                      noWrap={true}
-                    >
-                      {wbsPipe(wp.wbsNum)} - {wp.name}
-                    </Link>
-                    <Typography sx={{ marginTop: 1 }}>
-                      {datePipe(wp.startDate) + ' |-----' + wp.duration + 'wks------| ' + datePipe(wp.endDate)}
-                    </Typography>
-                    <Chip sx={{ marginTop: 1 }} icon={<Construction />} label={fullNamePipe(wp.projectLead)} />
-                    <Chip sx={{ marginTop: 2, marginLeft: 2 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} />
+                  <Grid container item xs={9} spacing={1} zeroMinWidth>
+                    <Grid item xs={12} zeroMinWidth>
+                      <Typography justifyContent={'flex-end'} sx={{ textDecoration: 'underline', align: 'right' }}>
+                        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
+                          <Typography variant="h6">
+                            {projectWbsPipe(wp.wbsNum)} - {wp.projectName}{' '}
+                          </Typography>
+                        </Link>
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} zeroMinWidth>
+                      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`} noWrap={true}>
+                        <Typography variant="h5">
+                          {wbsPipe(wp.wbsNum)} - {wp.name}
+                        </Typography>
+                      </Link>
+                    </Grid>
+                    <Grid item xs={12} zeroMinWidth>
+                      <Typography fontWeight={'normal'}>
+                        {datePipe(wp.startDate) + ' |-----' + wp.duration + 'wks-----| ' + datePipe(wp.endDate)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} zeroMinWidth>
+                      <Chip sx={{ marginTop: 1 }} icon={<Construction />} label={fullNamePipe(wp.projectLead)} />
+                    </Grid>
+                    <Grid item xs={6} zeroMinWidth>
+                      <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} />
+                    </Grid>
                   </Grid>
 
-                  <Grid item xs={3}>
-                    <Typography variant="subtitle1" sx={{ align: 'right' }}>
-                      {wp.timelineStatus}
-                    </Typography>
-                    <CircularProgressWithLabel variant="determinate" value={wp.progress} />
+                  <Grid container item xs={3} justifyContent={'flex-end'} zeroMinWidth>
+                    <Grid item xs={12} zeroMinWidth>
+                      <Typography variant="subtitle1">{wp.timelineStatus}</Typography>
+                    </Grid>
+                    <Grid item xs={12} justifyContent={'flex-end'} zeroMinWidth>
+                      <CircularProgressWithLabel variant="determinate" value={50} />
+                    </Grid>
                   </Grid>
                 </Grid>
-
-                {/* <Typography>
-                  {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-                </Typography> */}
               </CardContent>
             </Card>
           ))}
