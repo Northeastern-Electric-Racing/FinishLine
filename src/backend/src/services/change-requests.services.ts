@@ -409,11 +409,28 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
-      }
+      },
+      include: { workPackage: { include: { expectedActivities: true, deliverables: true } } }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+
+    // if it's a work package, all deliverables and expected activities must be checked
+    if (wbsElement.workPackage) {
+      const wpExpectedActivities = wbsElement.workPackage.expectedActivities;
+      const wpDeliverables = wbsElement.workPackage.deliverables;
+
+      // checks for any unchecked expected activities, if there are any it will return an error
+      if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted === null))
+        throw new HttpException(400, `Work Package has unchecked expected activities`);
+
+      // checks for any unchecked deliverables, if there are any it will return an error
+      const uncheckedDeliverables = wpDeliverables.some(
+        (element) => element.dateTimeChecked === null && element.dateDeleted === null
+      );
+      if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
+    }
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
