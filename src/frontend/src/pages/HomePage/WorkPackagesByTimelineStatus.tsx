@@ -104,11 +104,15 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
                   <Grid container item xs={9} spacing={1} zeroMinWidth>
                     <Grid container item>
                       <Grid item xs={12} zeroMinWidth>
-                        <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
-                          <Typography color={'white'} fontWeight={'regular'} variant="h6" noWrap>
+                        <Typography fontWeight={'regular'} variant="h6" noWrap>
+                          <Link
+                            color={'text.primary'}
+                            component={RouterLink}
+                            to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}
+                          >
                             {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
-                          </Typography>
-                        </Link>
+                          </Link>
+                        </Typography>
                       </Grid>
                       <Grid item xs={12} zeroMinWidth>
                         <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
