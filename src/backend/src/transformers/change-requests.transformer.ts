@@ -6,6 +6,7 @@ import { convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import userTransformer from './user.transformer';
 
+
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
@@ -34,6 +35,7 @@ const changeRequestTransformer = (
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
+    status: calculateStatus(/* TODO */),
     // scope cr fields
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({

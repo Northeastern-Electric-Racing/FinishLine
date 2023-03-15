@@ -19,6 +19,7 @@ export interface ChangeRequest {
   reviewNotes?: string;
   dateImplemented?: Date;
   implementedChanges?: ImplementedChange[];
+  status: ChangeRequestStatus;
 }
 
 export const ChangeRequestType = {
@@ -79,6 +80,13 @@ export enum ChangeRequestReason {
   Maintenance = 'MAINTENANCE',
   OtherProject = 'OTHER_PROJECT',
   Other = 'OTHER'
+}
+
+export enum ChangeRequestStatus {
+  Implemented = 'IMPLEMENTED',
+  Accepted = 'ACCEPTED',
+  Denied = 'DENIED',
+  Open = 'OPEN'
 }
 
 export interface ImplementedChange {
