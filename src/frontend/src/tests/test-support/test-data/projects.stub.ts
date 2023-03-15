@@ -4,6 +4,8 @@
  */
 
 import { Project, WbsElementStatus } from 'shared';
+import { exampleTask1 } from './tasks.stub';
+import { exampleTeam } from './teams.stub';
 import { exampleAdminUser, exampleLeadershipUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufacturingWorkPackage } from './work-packages.stub';
@@ -142,8 +144,9 @@ export const exampleProject3: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
+  team: exampleTeam,
   risks: [],
-  tasks: []
+  tasks: [exampleTask1]
 };
 
 export const exampleProject4: Project = {
