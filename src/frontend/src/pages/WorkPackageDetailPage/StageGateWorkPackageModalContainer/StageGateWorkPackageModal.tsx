@@ -17,7 +17,6 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  TextField,
   Typography
 } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -31,7 +30,6 @@ interface StageGateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  leftoverBudget: yup.number().required().min(0),
   confirmDone: yup.boolean().required()
 });
 
@@ -45,7 +43,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
    */
   const onSubmitWrapper = async (data: FormInput) => {
     await onSubmit(data);
-    reset({ leftoverBudget: 0, confirmDone: false });
+    reset({ confirmDone: false });
   };
 
   return (
@@ -54,28 +52,6 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
       <DialogContent>
         <form id={'stage-gate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
-            <Controller
-              name="leftoverBudget"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Leftover Budget'}</Typography>
-                  <TextField
-                    required
-                    variant="outlined"
-                    autoComplete="off"
-                    onChange={onChange}
-                    value={value}
-                    fullWidth
-                    InputProps={{
-                      startAdornment: <Typography sx={{ paddingRight: 1 }}>$</Typography>
-                    }}
-                  />
-                </>
-              )}
-            />
-
             <Controller
               name="confirmDone"
               control={control}
@@ -124,5 +100,4 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
     </Dialog>
   );
 };
-
 export default StageGateWorkPackageModal;
