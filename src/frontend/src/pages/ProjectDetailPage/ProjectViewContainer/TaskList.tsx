@@ -7,9 +7,12 @@ import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
 import { Project, Task, TaskStatus } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAuth } from '../../../hooks/auth.hooks';
 import PageBlock from '../../../layouts/PageBlock';
 import TaskListTabPanel from './TaskListTabPanel';
+
+const TASK_LIST_TITLE: string = 'Task List';
 
 interface TaskListProps {
   project: Project;
@@ -18,8 +21,6 @@ interface TaskListProps {
 
 // Page block containing task list view
 const TaskList = ({ project, defaultClosed }: TaskListProps) => {
-  const taskListTitle: string = 'Task List';
-
   const auth = useAuth();
   const [value, setValue] = useState<number>(1);
   const [addTask, setAddTask] = useState(false);
@@ -29,11 +30,13 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
   const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
   };
 
-  const user = auth.user!;
+  const { user } = auth;
+  if (!user) return <LoadingIndicator />;
+
   const createTaskPermissions =
     !(user.role === 'GUEST' && !project.team?.members.map((user) => user.userId).includes(user.userId)) &&
     !(
@@ -60,7 +63,7 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   );
 
   return (
-    <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
+    <PageBlock title={TASK_LIST_TITLE} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
           <Tab label="In Backlog" aria-label="in-backlog" />
