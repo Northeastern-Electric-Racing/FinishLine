@@ -30,27 +30,25 @@ import {
 import { Construction, Work } from '@mui/icons-material';
 import { CircularProgressProps } from '@mui/material/CircularProgress';
 
-const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => {
-  return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-      <CircularProgress variant="determinate" {...props} />
-      <Box
-        sx={{
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Typography variant="caption" component="div" color="text.secondary">{`${Math.round(props.value)}%`}</Typography>
-      </Box>
+const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => (
+  <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+    <CircularProgress variant="determinate" {...props} />
+    <Box
+      sx={{
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        position: 'absolute',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Typography variant="caption" component="div" color="text.secondary">{`${Math.round(props.value)}%`}</Typography>
     </Box>
-  );
-};
+  </Box>
+);
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
@@ -102,48 +100,50 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
               }}
             >
               <CardContent sx={{ padding: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid container item xs={9} zeroMinWidth>
-                    <Grid item xs={12} zeroMinWidth>
-                      <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
-                        <Typography variant="h6" noWrap>
-                          {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
-                        </Typography>
-                      </Link>
+                <Grid container>
+                  <Grid container item xs={9} spacing={1} zeroMinWidth>
+                    <Grid container item>
+                      <Grid item xs={12} zeroMinWidth>
+                        <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
+                          <Typography color={'white'} fontWeight={'regular'} variant="h6" noWrap>
+                            {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
+                          </Typography>
+                        </Link>
+                      </Grid>
+                      <Grid item xs={12} zeroMinWidth>
+                        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
+                          <Typography fontWeight={'regular'} variant="h5" noWrap>
+                            {wbsPipe(wp.wbsNum)} - {wp.name}
+                          </Typography>
+                        </Link>
+                      </Grid>
                     </Grid>
                     <Grid item xs={12} zeroMinWidth>
-                      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
-                        <Typography variant="h5" noWrap>
-                          {wbsPipe(wp.wbsNum)} - {wp.name}
-                        </Typography>
-                      </Link>
+                      <Typography>
+                        {datePipe(wp.startDate) + ' |--' + wp.duration + 'wks--| ' + datePipe(wp.endDate)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} zeroMinWidth>
+                      <Chip
+                        sx={{ maxWidth: '150px', marginTop: 1, marginRight: 2 }}
+                        icon={<Construction />}
+                        label={fullNamePipe(wp.projectLead)}
+                      />
+                      <Chip
+                        sx={{ maxWidth: '150px', marginTop: 1 }}
+                        icon={<Work />}
+                        label={fullNamePipe(wp.projectManager)}
+                      />
                     </Grid>
                   </Grid>
 
-                  <Grid container item xs={3} justifyContent={'flex-end'} spacing={1} zeroMinWidth>
-                    <Grid item xs={12} zeroMinWidth>
+                  <Grid container item xs={3} textAlign={'end'} direction={'column'} spacing={0} zeroMinWidth>
+                    <Grid item xs={1} zeroMinWidth>
                       <Typography variant="subtitle1">{wp.timelineStatus}</Typography>
                     </Grid>
-                    <Grid item xs={12} textAlign={'end'} zeroMinWidth>
+                    <Grid item xs={3} zeroMinWidth>
                       <CircularProgressWithLabel variant="determinate" value={wp.progress} />
                     </Grid>
-                  </Grid>
-                </Grid>
-                <Grid container textAlign={'left'} spacing={1}>
-                  <Grid item xs={12} zeroMinWidth>
-                    <Typography fontWeight={'normal'}>
-                      {datePipe(wp.startDate) + ' |--' + wp.duration + 'wks--| ' + datePipe(wp.endDate)}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} zeroMinWidth>
-                    <Chip
-                      sx={{ width: '150px', marginTop: 1 }}
-                      icon={<Construction />}
-                      label={fullNamePipe(wp.projectLead)}
-                    />
-                  </Grid>
-                  <Grid item xs={6} zeroMinWidth>
-                    <Chip sx={{ width: '150px', marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} />
                   </Grid>
                 </Grid>
               </CardContent>
