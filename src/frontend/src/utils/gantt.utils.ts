@@ -150,32 +150,32 @@ export const sortWbs = (a: { wbsNum: WbsNumber }, b: { wbsNum: WbsNumber }) => {
  * @returns a number for sorting
  */
 export const sortTeamNames = (a: string, b: string): number => {
-  if (a === NO_TEAM) return 10001;
-  if (b === NO_TEAM) return -10001;
+  if (a === NO_TEAM) return Number.MAX_SAFE_INTEGER;
+  if (b === NO_TEAM) return Number.MIN_SAFE_INTEGER;
 
-  if (a.includes('Software')) return 10000;
-  if (b.includes('Software')) return -10000;
+  if (a.includes('Software')) return Number.MAX_SAFE_INTEGER - 1;
+  if (b.includes('Software')) return Number.MIN_SAFE_INTEGER + 1;
 
-  if (a.includes('Handling')) return 9999;
-  if (b.includes('Handling')) return -9999;
+  if (a.includes('Handling')) return Number.MAX_SAFE_INTEGER - 2;
+  if (b.includes('Handling')) return Number.MIN_SAFE_INTEGER + 2;
 
-  if (a.includes('Drivetrain')) return 9998;
-  if (b.includes('Drivetrain')) return -9998;
+  if (a.includes('Drivetrain')) return Number.MAX_SAFE_INTEGER - 3;
+  if (b.includes('Drivetrain')) return Number.MIN_SAFE_INTEGER + 3;
 
-  if (a.includes('Structural')) return 9997;
-  if (b.includes('Structural')) return -9997;
+  if (a.includes('Structural')) return Number.MAX_SAFE_INTEGER - 4;
+  if (b.includes('Structural')) return Number.MIN_SAFE_INTEGER + 4;
 
-  if (a.includes('Ergonomics')) return 9996;
-  if (b.includes('Ergonomics')) return -9996;
+  if (a.includes('Ergonomics')) return Number.MAX_SAFE_INTEGER - 5;
+  if (b.includes('Ergonomics')) return Number.MIN_SAFE_INTEGER + 5;
 
-  if (a.includes('Tractive')) return 9995;
-  if (b.includes('Tractive')) return -9995;
+  if (a.includes('Tractive')) return Number.MAX_SAFE_INTEGER - 6;
+  if (b.includes('Tractive')) return Number.MIN_SAFE_INTEGER + 6;
 
-  if (a.includes('Low Voltage')) return 9994;
-  if (b.includes('Low Voltage')) return -9994;
+  if (a.includes('Low Voltage')) return Number.MAX_SAFE_INTEGER - 7;
+  if (b.includes('Low Voltage')) return Number.MIN_SAFE_INTEGER + 7;
 
-  if (a.includes('Data & Controls')) return 9993;
-  if (b.includes('Data & Controls')) return -9993;
+  if (a.includes('Data & Controls')) return Number.MAX_SAFE_INTEGER - 8;
+  if (b.includes('Data & Controls')) return Number.MIN_SAFE_INTEGER + 8;
 
   return a.localeCompare(b);
 };
