@@ -92,13 +92,7 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = createChange(
-          'Budget',
-          String(foundCR.wbsElement.project.budget),
-          String(newBudget),
-          crId,
-          reviewer.userId
-        );
+        const change = createChange('Budget', foundCR.wbsElement.project.budget, newBudget, crId, reviewer.userId);
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -122,14 +116,8 @@ export default class ChangeRequestsService {
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
         const changes = [
-          createChange('Budget', String(wpProj.budget), String(newBudget), crId, reviewer.userId),
-          createChange(
-            'Duration',
-            String(foundCR.wbsElement.workPackage.duration),
-            String(updatedDuration),
-            crId,
-            reviewer.userId
-          )
+          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
+          createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
         ];
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
