@@ -2,6 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
@@ -20,6 +21,7 @@ import {
 } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
   modalShow: boolean;
@@ -35,6 +37,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
   const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
+
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
