@@ -100,4 +100,5 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
     </Dialog>
   );
 };
+
 export default StageGateWorkPackageModal;
