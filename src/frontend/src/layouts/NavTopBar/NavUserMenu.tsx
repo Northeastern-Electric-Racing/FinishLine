@@ -40,7 +40,7 @@ const NavUserMenu: React.FC = () => {
       //jsSrc={'accounts.google.com/gsi/client'}
       onLogoutSuccess={logout}
       render={(renderProps) => (
-        <MenuItem component="div" sx={{ py: 0 }} onClick={renderProps.onClick} disabled={renderProps.disabled}>
+        <MenuItem component="div" sx={{ py: 0 }}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>

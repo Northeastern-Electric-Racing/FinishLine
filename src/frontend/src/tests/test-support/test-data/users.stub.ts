@@ -77,15 +77,6 @@ export const exampleGuestUser: User = {
   role: RoleEnum.GUEST
 };
 
-export const exampleGuestUser2: User = {
-  userId: 8,
-  firstName: 'James',
-  lastName: 'Jackson',
-  email: 'jackson.j@husky.neu.edu',
-  emailId: 'jackson.j',
-  role: RoleEnum.GUEST
-};
-
 export const exampleAllUsers: User[] = [
   exampleAppAdminUser,
   exampleAdminUser,

@@ -73,8 +73,8 @@ changeRequestsRouter.post(
   intMinZero(body('crId')),
   nonEmptyString(body('description')),
   nonEmptyString(body('scopeImpact')),
-  body('timelineImpact').isInt(),
-  body('budgetImpact').isInt(),
+  intMinZero(body('timelineImpact')),
+  intMinZero(body('budgetImpact')),
   validateInputs,
   ChangeRequestsController.addProposedSolution
 );

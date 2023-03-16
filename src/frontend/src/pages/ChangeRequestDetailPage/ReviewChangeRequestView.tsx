@@ -10,21 +10,10 @@ import { FormInput } from './ReviewChangeRequest';
 import { ChangeRequest, ProposedSolution, StandardChangeRequest } from 'shared';
 import { useState } from 'react';
 import ProposedSolutionSelectItem from './ProposedSolutionSelectItem';
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  TextField,
-  Typography,
-  Breakpoint,
-  IconButton
-} from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Box, TextField, Typography, Breakpoint } from '@mui/material';
 import { useToast } from '../../hooks/toasts.hooks';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
-import CloseIcon from '@mui/icons-material/Close';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -88,18 +77,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide} style={{ color: 'black' }}>
-        <IconButton
-          aria-label="close"
-          onClick={onHide}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
         <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
         <DialogContent
           sx={{
@@ -191,18 +168,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const renderModal: () => JSX.Element = () => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
-        <IconButton
-          aria-label="close"
-          onClick={onHide}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
         <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
         <DialogContent>
           <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>

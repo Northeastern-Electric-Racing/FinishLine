@@ -13,7 +13,6 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
-import { useToast } from '../../hooks/toasts.hooks';
 
 interface CreateChangeRequestProps {}
 
@@ -36,7 +35,6 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
-  const toast = useToast();
 
   if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -52,20 +50,14 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
     const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-      try {
-        await cpsMutateAsync({
-          crId,
-          submitterId: userId,
-          description,
-          timelineImpact,
-          scopeImpact,
-          budgetImpact
-        });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
-      }
+      await cpsMutateAsync({
+        crId,
+        submitterId: userId,
+        description,
+        timelineImpact,
+        scopeImpact,
+        budgetImpact
+      });
     });
 
     history.push(routes.CHANGE_REQUESTS);

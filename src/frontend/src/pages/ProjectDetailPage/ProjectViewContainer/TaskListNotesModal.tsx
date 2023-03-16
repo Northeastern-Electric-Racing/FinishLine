@@ -40,7 +40,7 @@ interface TaskListNotesModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
-  hasEditPermissions: boolean;
+  hasTaskPermissions: boolean;
 }
 
 export interface FormInput {
@@ -53,10 +53,10 @@ export interface FormInput {
 }
 
 const schema = yup.object().shape({
-  notes: yup.string(),
+  notes: yup.string().required(),
   deadline: yup.date().required(),
   priority: yup.string().required(),
-  assignees: yup.array(),
+  assignees: yup.array().required(),
   title: yup.string().required()
 });
 
@@ -66,7 +66,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   modalShow,
   onHide,
   onSubmit,
-  hasEditPermissions
+  hasTaskPermissions
 }: TaskListNotesModalProps) => {
   const auth = useAuth();
   const theme = useTheme();
@@ -121,7 +121,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
           <IconButton
             onClick={() => setIsEditMode(true)}
             aria-label="edit"
-            disabled={!hasEditPermissions}
+            disabled={!hasTaskPermissions}
             sx={{
               position: 'absolute',
               right: 40,
@@ -260,6 +260,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                   <Controller
                     name="assignees"
                     control={control}
+                    rules={{ required: true }}
                     render={({ field: { onChange, value } }) => (
                       <Autocomplete
                         isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -303,8 +304,10 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                   <Controller
                     name={'notes'}
                     control={control}
+                    rules={{ required: true }}
                     render={({ field: { onChange, value } }) => (
                       <TextField
+                        required
                         onChange={onChange}
                         value={value}
                         multiline

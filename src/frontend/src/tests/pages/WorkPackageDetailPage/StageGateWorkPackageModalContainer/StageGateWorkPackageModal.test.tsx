@@ -39,7 +39,9 @@ describe('stage gate work package modal test suite', () => {
     renderComponent(true);
 
     expect(screen.queryByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
+    expect(screen.getByText(/Leftover Budget/)).toBeInTheDocument();
     expect(screen.getByText(/done/)).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getAllByRole('radio').length).toBe(2);
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByText('Submit')).toBeInTheDocument();

@@ -53,17 +53,6 @@ describe('Change Requests', () => {
     });
   });
 
-  describe('getAllChangeRequests', () => {
-    test('it works when there are change requests', async () => {
-      jest.spyOn(prisma.change_Request, 'findMany').mockResolvedValue([]);
-
-      const res = await ChangeRequestsService.getAllChangeRequests();
-
-      expect(prisma.change_Request.findMany).toHaveBeenCalledTimes(1);
-      expect(res).toStrictEqual([]);
-    });
-  });
-
   describe('reviewChangeRequest', () => {
     const crId = 2;
     const reviewNotes = 'reviewNotes';

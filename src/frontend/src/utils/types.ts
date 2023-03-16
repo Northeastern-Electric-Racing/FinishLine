@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser } from 'shared';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { AuthenticatedUser } from 'shared';
+import SvgIcon from '@mui/material/SvgIcon';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -22,31 +23,12 @@ export interface LinkItem {
   route: string;
 }
 
+export interface MUILinkItem {
+  name: string;
+  icon?: typeof SvgIcon;
+  route: string;
+}
+
 export interface VersionObject {
   tag_name: string;
-}
-
-export interface EditSingleProjectPayload {
-  projectId: number;
-  crId: number;
-  name: string;
-  budget: number;
-  summary: string;
-  rules: string[];
-  goals: { id: number; detail: string }[];
-  features: { id: number; detail: string }[];
-  otherConstraints: { id: number; detail: string }[];
-  googleDriveFolderLink: string;
-  slideDeckLink: string;
-  bomLink: string;
-  taskListLink: string;
-  projectLeadId?: number;
-  projectManagerId?: number;
-}
-
-export interface CreateSingleProjectPayload {
-  crId: number;
-  name: string;
-  carNumber: number;
-  summary: string;
 }

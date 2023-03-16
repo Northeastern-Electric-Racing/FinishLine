@@ -11,7 +11,6 @@ import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { GoogleLogout } from 'react-google-login';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -67,13 +66,6 @@ const Settings: React.FC = () => {
 
   if (auth.isLoading || !auth.user) return <LoadingIndicator />;
 
-  const logout = () => {
-    setShowAlert(true);
-    setTimeout(() => {
-      auth.signout();
-    }, 2000);
-  };
-
   return (
     <>
       <PageTitle title={'Settings'} previousPages={[]} />
@@ -88,15 +80,16 @@ const Settings: React.FC = () => {
               <FormControlLabel
                 label="Trickster Mode"
                 control={
-                  process.env.NODE_ENV === 'development' ? (
-                    <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
-                  ) : (
-                    <GoogleLogout
-                      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
-                      onLogoutSuccess={logout}
-                      render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                    />
-                  )
+                  <NERSwitch
+                    id="trick-switch"
+                    sx={{ m: 1 }}
+                    onClick={() => {
+                      setShowAlert(true);
+                      setTimeout(() => {
+                        auth.signout();
+                      }, 2000);
+                    }}
+                  />
                 }
               />
             </FormGroup>
