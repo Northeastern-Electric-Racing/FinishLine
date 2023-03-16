@@ -10,17 +10,13 @@ import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography } from '@mui/material';
 // Material UI Icons
 import HomeIcon from '@mui/icons-material/Home';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
-import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import { useAuth } from '../../hooks/auth.hooks';
 
 const Sidebar: React.FC = () => {
-  const auth = useAuth();
-
   const linkItems: MUILinkItem[] = [
     {
       name: 'Home',
@@ -29,7 +25,7 @@ const Sidebar: React.FC = () => {
     },
     {
       name: 'Gantt',
-      icon: BarChartIcon,
+      icon: AlignHorizontalLeftIcon,
       route: routes.GANTT
     },
     {
@@ -48,14 +44,6 @@ const Sidebar: React.FC = () => {
       route: routes.TEAMS
     }
   ];
-
-  if (auth.user?.role === 'ADMIN' || auth.user?.role === 'APP_ADMIN') {
-    linkItems.push({
-      name: 'Admin Tools',
-      icon: HomeRepairServiceIcon,
-      route: routes.ADMIN_TOOLS
-    });
-  }
 
   linkItems.push({
     name: 'Info',
