@@ -181,45 +181,42 @@ describe('Risks', () => {
   describe('deleteRisk', () => {
     test('deleteRisk not found', async () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(null);
-      jest.spyOn(prisma.risk, 'delete').mockResolvedValue(prismaRisk1);
+      jest.spyOn(prisma.risk, 'update').mockResolvedValue(prismaRisk1);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
       const riskId = 'riskId';
       await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(new NotFoundException('Risk', riskId));
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.risk.delete).toHaveBeenCalledTimes(0);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
 
     test('deleteRisk, risk has already been deleted', async () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1Deleted);
-      jest.spyOn(prisma.risk, 'delete').mockResolvedValue(prismaRisk1Deleted);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
       const riskId = 'riskId';
       await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(
         new HttpException(400, 'This risk has already been deleted!')
       );
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.risk.delete).toHaveBeenCalledTimes(0);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
 
     test('deleteRisk, user does not have permissions', async () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1NoPerms);
-      jest.spyOn(prisma.risk, 'delete').mockResolvedValue(prismaRisk1NoPerms);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(false);
       const riskId = 'riskId';
       await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(new AccessDeniedException());
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.risk.delete).toHaveBeenCalledTimes(0);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });
 
     test('deleteRisk, risk works as intended', async () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1);
-      jest.spyOn(prisma.risk, 'delete').mockResolvedValue(prismaRisk1);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
-      const riskId = prismaRisk1.id;
+      const riskId = 'riskId';
       const res = await RisksService.deleteRisk(batman, riskId);
-      expect(res).toStrictEqual(prismaRisk1.id);
+      expect(res.id).toStrictEqual('riskId');
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.risk.delete).toHaveBeenCalledTimes(1);
+      expect(prisma.risk.update).toHaveBeenCalledTimes(1);
     });
   });
 });
