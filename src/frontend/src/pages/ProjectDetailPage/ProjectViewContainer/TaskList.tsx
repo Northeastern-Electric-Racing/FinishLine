@@ -3,43 +3,52 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
-import PageBlock from '../../../layouts/PageBlock';
+import { Project, Task, TaskStatus } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { AddTask } from '@mui/icons-material';
-import { Auth } from '../../../utils/types';
+import PageBlock from '../../../layouts/PageBlock';
 import TaskListTabPanel from './TaskListTabPanel';
-import { Task, TaskStatus, WbsNumber, TeamPreview } from 'shared';
+
+const TASK_LIST_TITLE: string = 'Task List';
 
 interface TaskListProps {
-  tasks: Task[];
-  team?: TeamPreview;
+  project: Project;
   defaultClosed?: boolean;
-  hasTaskPermissions: boolean;
-  currentWbsNumber: WbsNumber;
 }
 
 // Page block containing task list view
-const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermissions }: TaskListProps) => {
-  const auth: Auth = useAuth();
-  const taskListTitle: string = 'Task List';
-
+const TaskList = ({ project, defaultClosed }: TaskListProps) => {
+  const auth = useAuth();
   const [value, setValue] = useState<number>(1);
   const [addTask, setAddTask] = useState(false);
 
+  const tasks = project.tasks;
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
   const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
   };
+
+  const { user } = auth;
+  if (!user) return <LoadingIndicator />;
+
+  const createTaskPermissions =
+    !(user.role === 'GUEST' && !project.team?.members.map((user) => user.userId).includes(user.userId)) &&
+    !(
+      user.role === 'MEMBER' &&
+      (project.projectLead?.userId !== user.userId || project.projectManager?.userId !== user.userId) &&
+      !(project.team?.leader.userId === user.userId)
+    );
 
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={auth.user?.role === 'GUEST'}
+      disabled={!createTaskPermissions || !project.team}
       startIcon={<AddTask />}
       sx={{
         height: 32,
@@ -54,7 +63,7 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
   );
 
   return (
-    <PageBlock title={taskListTitle} headerRight={addTaskButton} defaultClosed={defaultClosed}>
+    <PageBlock title={TASK_LIST_TITLE} headerRight={addTaskButton} defaultClosed={defaultClosed}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
           <Tab label="In Backlog" aria-label="in-backlog" />
@@ -66,35 +75,29 @@ const TaskList = ({ tasks, currentWbsNumber, defaultClosed, team, hasTaskPermiss
         tasks={backLogTasks}
         value={value}
         index={0}
+        project={project}
         status={TaskStatus.IN_BACKLOG}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentWbsNumber={currentWbsNumber}
-        team={team}
-        hasTaskPermissions={hasTaskPermissions}
       />
       <TaskListTabPanel
         tasks={inProgressTasks}
         value={value}
         index={1}
+        project={project}
         status={TaskStatus.IN_PROGRESS}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentWbsNumber={currentWbsNumber}
-        team={team}
-        hasTaskPermissions={hasTaskPermissions}
       />
 
       <TaskListTabPanel
         tasks={doneTasks}
         value={value}
         index={2}
+        project={project}
         status={TaskStatus.DONE}
-        team={team}
-        hasTaskPermissions={hasTaskPermissions}
         addTask={addTask}
         onAddCancel={() => setAddTask(false)}
-        currentWbsNumber={currentWbsNumber}
       />
     </PageBlock>
   );

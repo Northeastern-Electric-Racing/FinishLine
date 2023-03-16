@@ -19,7 +19,6 @@ interface StageGateWorkPackageModalContainerProps {
 }
 
 export interface FormInput {
-  leftoverBudget: number;
   confirmDone: boolean;
 }
 
@@ -32,14 +31,13 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   const history = useHistory();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();
 
-  const handleConfirm = async ({ leftoverBudget, confirmDone }: FormInput) => {
+  const handleConfirm = async ({ confirmDone }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
     await mutateAsync({
       submitterId: auth.user?.userId,
       wbsNum,
       type: ChangeRequestType.StageGate,
-      leftoverBudget,
       confirmDone
     });
     history.push(routes.CHANGE_REQUESTS);
