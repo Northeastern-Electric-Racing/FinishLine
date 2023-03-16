@@ -1,4 +1,4 @@
-import { ChangeRequest, StandardChangeRequest } from "../types/change-request-types";
+import { ChangeRequest } from "../types/change-request-types";
 
 /**
  * This function calculates the status of a change request.
@@ -6,20 +6,18 @@ import { ChangeRequest, StandardChangeRequest } from "../types/change-request-ty
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 const calculateStatus = (cr: ChangeRequest) => {
-    if (cr.accepted == true && /* check if an implementation date exists */) {
+    if (cr.implementedChanges) {
         return 'IMPLEMENTED';
     }
-    else if (cr.accepted == true) {
+    else if (cr.accepted && cr.dateReviewed) {
         return 'ACCEPTED';
     }
-    else if (cr.accepted == false) {
+    else if (!cr.accepted && cr.dateReviewed) {
         return 'DENIED';
     }
-    else {
-        return 'OPEN';
-    }
+    
+    return 'OPEN';
   };
 
-  export {
-    calculateStatus
-  }
+  export default calculateStatus
+  
