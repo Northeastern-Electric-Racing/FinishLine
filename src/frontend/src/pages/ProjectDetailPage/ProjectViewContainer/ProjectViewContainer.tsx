@@ -134,7 +134,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </div>
   );
 
-  const teamName = proj.team ? proj.team.teamName : "No team assigned";
+  const teamName = proj.team ? proj.team.teamName : 'No team assigned';
 
   return (
     <>
