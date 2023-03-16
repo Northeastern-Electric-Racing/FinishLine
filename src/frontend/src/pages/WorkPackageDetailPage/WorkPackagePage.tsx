@@ -12,12 +12,14 @@ import ErrorPage from '../ErrorPage';
 import WorkPackageEditContainer from './WorkPackageEditContainer/WorkPackageEditContainer';
 import WorkPackageViewContainer from './WorkPackageViewContainer/WorkPackageViewContainer';
 import { useQuery } from '../../hooks/utils.hooks';
+import { useHistory } from 'react-router-dom';
 
 interface WorkPackagePageProps {
   wbsNum: WbsNumber;
 }
 
 const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
+  const history = useHistory();
   const query = useQuery();
   const { isLoading, isError, data, error } = useSingleWorkPackage(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
@@ -35,7 +37,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
         workPackage={data!}
         exitEditMode={() => {
           setEditMode(false);
-          query.set('edit', 'false');
+          history.push(`${history.location.pathname}`);
         }}
       />
     );
