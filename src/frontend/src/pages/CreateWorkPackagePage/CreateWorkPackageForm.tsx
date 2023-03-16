@@ -5,24 +5,13 @@
 
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
-import { isGuest, isProject, validateWBS, WorkPackageStage } from 'shared';
+import { isGuest, isProject, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
-
-export interface CreateWorkPackageFormInputs {
-  name: string;
-  startDate: Date;
-  duration: number | null;
-  crId: string | number;
-  stage: WorkPackageStage | string;
-  wbsNum: string;
-  blockedBy: { wbsNum: string }[];
-  expectedActivities: { bulletId: number; detail: string }[];
-  deliverables: { bulletId: number; detail: string }[];
-}
+import { CreateWorkPackageFormInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
