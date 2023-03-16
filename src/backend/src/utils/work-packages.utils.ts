@@ -14,8 +14,8 @@ export const calculateWorkPackageProgress = (
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChangeJsonNonList = (
   nameOfField: string,
-  oldValue: any,
-  newValue: any,
+  oldValue: string | number | null,
+  newValue: string | number | null,
   crId: number,
   implementerId: number,
   wbsElementId: number
