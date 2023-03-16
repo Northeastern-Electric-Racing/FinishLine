@@ -1,20 +1,12 @@
 import { Grid, Button, IconButton, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  FieldArrayWithId,
-  UseFieldArrayRemove,
-  UseFormRegister,
-  UseFieldArrayAppend,
-  FieldArray,
-  FieldArrayMethodProps
-} from 'react-hook-form';
+import { FieldArrayWithId, UseFieldArrayRemove, UseFormRegister, UseFieldArrayAppend } from 'react-hook-form';
 
 interface ReactHookEditableListProps {
   name: string;
   ls: FieldArrayWithId[];
   register: UseFormRegister<any>;
-  // append: (value: FieldArray<any> | FieldArray<any>[], options?: FieldArrayMethodProps) => void;
-  append: any;
+  append: UseFieldArrayAppend<any>;
   remove: UseFieldArrayRemove;
 }
 
