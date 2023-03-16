@@ -143,6 +143,10 @@ export default class WorkPackagesService {
       throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
     }
 
+    if (new Date(startDate).getDay() !== 1) {
+      throw new HttpException(400, 'A Work Package cannot start on any day other than a Monday.');
+    }
+
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
@@ -301,6 +305,10 @@ export default class WorkPackagesService {
       ) != null
     ) {
       throw new HttpException(400, 'A Work Package cannot have own project as a dependency');
+    }
+
+    if (new Date(startDate).getDay() !== 1) {
+      throw new HttpException(400, 'A Work Package cannot start on any day other than a Monday.');
     }
 
     if (
