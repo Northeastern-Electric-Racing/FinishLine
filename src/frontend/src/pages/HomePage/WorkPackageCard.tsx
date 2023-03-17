@@ -47,8 +47,8 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
       }}
     >
       <CardContent sx={{ padding: 2 }}>
-        <Stack direction="row">
-          <Stack>
+        <Stack direction="row" justifyContent="space-between">
+          <Box>
             <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
               <Link color={'text.primary'} component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
                 {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
@@ -62,24 +62,24 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
             <Typography fontWeight={'regular'} fontSize={20} variant="h6" noWrap>
               {datePipe(wp.startDate) + ' |一 ' + wp.duration + ' wks 一| ' + datePipe(wp.endDate)}
             </Typography>
-            <Stack direction="row" sx={{ marginTop: 1 }}>
-              <Chip
-                sx={{ marginTop: 1, marginRight: 2 }}
-                icon={<Construction />}
-                label={fullNamePipe(wp.projectLead)}
-                size="medium"
-              />
-              <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} size="medium" />
-            </Stack>
-          </Stack>
-          <Stack sx={{ marginLeft: 2 }}>
+          </Box>
+          <Box sx={{ marginLeft: 2 }}>
             <Typography variant="subtitle1" noWrap>
               {wp.timelineStatus}
             </Typography>
             <Box textAlign={'right'} sx={{ marginTop: 1 }}>
               <CircularProgressWithLabel variant="determinate" value={wp.progress} />
             </Box>
-          </Stack>
+          </Box>
+        </Stack>
+        <Stack direction="row" sx={{ marginTop: 1 }}>
+          <Chip
+            sx={{ marginTop: 1, marginRight: 2 }}
+            icon={<Construction />}
+            label={fullNamePipe(wp.projectLead)}
+            size="medium"
+          />
+          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} size="medium" />
         </Stack>
       </CardContent>
     </Card>
