@@ -103,11 +103,7 @@ const UpcomingDeadlines: React.FC = () => {
             labelId="dateRange"
             value={daysUntilDeadline}
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
-            endAdornment={
-              <InputAdornment position="end" sx={{ marginLeft: -3, marginRight: 2 }}>
-                Days
-              </InputAdornment>
-            }
+            renderValue={(val) => 'Next  ' + val + (val === '1' ? '  Day' : '  Days')}
           >
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
               <MenuItem key={days} value={days}>
