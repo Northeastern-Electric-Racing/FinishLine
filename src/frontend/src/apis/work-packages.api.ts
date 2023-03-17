@@ -4,12 +4,11 @@
  */
 
 import axios from '../utils/axios';
-import { WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
+import { WbsNumber, WorkPackage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { CreateWorkPackageFormInputs } from '../pages/CreateWorkPackagePage/CreateWorkPackageForm';
-
+import { CreateWorkPackageFormInputs} from '../pages/CreateWorkPackagePage/CreateWorkPackageForm';
 
 /**
  * Fetch all work packages.
