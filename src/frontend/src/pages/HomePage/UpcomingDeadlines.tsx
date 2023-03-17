@@ -12,7 +12,6 @@ import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import CardContent from '@mui/material/CardContent';
 import FormControl from '@mui/material/FormControl';
-import InputAdornment from '@mui/material/InputAdornment';
 import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -103,11 +102,7 @@ const UpcomingDeadlines: React.FC = () => {
             labelId="dateRange"
             value={daysUntilDeadline}
             onChange={(e) => setDaysUntilDeadline(e.target.value)}
-            endAdornment={
-              <InputAdornment position="end" sx={{ marginLeft: -3, marginRight: 2 }}>
-                Days
-              </InputAdornment>
-            }
+            renderValue={(val) => 'Next  ' + val + (val === '1' ? '  Day' : '  Days')}
           >
             {['1', '2', '5', '7', '14', '21', '30'].map((days) => (
               <MenuItem key={days} value={days}>
