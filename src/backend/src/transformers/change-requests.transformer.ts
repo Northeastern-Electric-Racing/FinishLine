@@ -4,8 +4,7 @@ import {
   StandardChangeRequest,
   ActivationChangeRequest,
   StageGateChangeRequest,
-  calculateStatus,
-  ChangeRequestStatus
+  calculateStatus
 } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
@@ -16,7 +15,7 @@ import userTransformer from './user.transformer';
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
-  return {
+  const cr = {
     // all cr fields
     crId: changeRequest.crId,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
@@ -41,7 +40,6 @@ const changeRequestTransformer = (
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    status: calculateStatus(changeRequest.implementedChanges, changeRequest.accepted, changeRequest.dateReviewed),
     // scope cr fields
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
@@ -67,6 +65,9 @@ const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
+
+  const crStatus = calculateStatus(cr.implementedChanges, cr.accepted, cr.dateReviewed);
+  return { ...cr, status: crStatus };
 };
 
 export default changeRequestTransformer;
