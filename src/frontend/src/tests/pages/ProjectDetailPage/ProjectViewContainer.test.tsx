@@ -37,7 +37,7 @@ describe('Rendering Project View Container', () => {
     mockAuthHook();
     renderComponent();
 
-    expect(screen.getAllByText('1.1.0 - Impact Attenuator - No team assigned').length).toEqual(2);
+    expect(screen.getAllByText('1.1.0 - Impact Attenuator - No Team Assigned').length).toEqual(2);
     expect(screen.getByText('Project Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();
     expect(screen.getByText('Bodywork Concept of Design')).toBeInTheDocument();
