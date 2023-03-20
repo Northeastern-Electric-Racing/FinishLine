@@ -8,7 +8,9 @@ import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { exampleAdminUser } from './users.stub';
 import { Auth, LinkItem } from '../../../utils/types';
-import { faExchangeAlt, faFolder, faHome } from '@fortawesome/free-solid-svg-icons';
+import HomeIcon from '@mui/icons-material/Home';
+import FolderIcon from '@mui/icons-material/Folder';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { routes } from '../../../utils/routes';
 
 export const mockContext = {
@@ -101,17 +103,17 @@ export const mockUtils = {
 export const testLinkItems: LinkItem[] = [
   {
     name: 'Home',
-    icon: faHome,
+    icon: HomeIcon,
     route: routes.HOME
   },
   {
     name: 'Projects',
-    icon: faFolder,
+    icon: FolderIcon,
     route: routes.PROJECTS
   },
   {
     name: 'Change Requests',
-    icon: faExchangeAlt,
+    icon: CompareArrowsIcon,
     route: routes.CHANGE_REQUESTS
   }
 ];
