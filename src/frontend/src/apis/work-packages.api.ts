@@ -8,7 +8,7 @@ import { WbsNumber, WorkPackage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { CreateWorkPackageFormInputs} from '../pages/CreateWorkPackagePage/CreateWorkPackageForm';
+import { CreateWorkPackageFormInputs } from '../pages/CreateWorkPackagePage/CreateWorkPackageForm';
 
 /**
  * Fetch all work packages.
@@ -35,8 +35,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: CreateWorkPackageFormInputs
-  ) => {
+export const createSingleWorkPackage = (payload: CreateWorkPackageFormInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });
