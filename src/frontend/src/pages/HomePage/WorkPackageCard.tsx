@@ -42,8 +42,7 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
       sx={{
         minWidth: 'fit-content',
         mr: 3,
-        background: theme.palette.background.default,
-        borderRadius: '2px'
+        background: theme.palette.background.default
       }}
     >
       <CardContent sx={{ padding: 2 }}>
@@ -60,7 +59,7 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
               </Typography>
             </Link>
             <Typography fontWeight={'regular'} fontSize={20} variant="h6" noWrap>
-              {datePipe(wp.startDate) + ' |一 ' + wp.duration + ' wks 一| ' + datePipe(wp.endDate)}
+              {datePipe(wp.startDate) + ' ⟝ ' + wp.duration + ' wks ⟞ ' + datePipe(wp.endDate)}
             </Typography>
           </Box>
           <Box sx={{ marginLeft: 2 }}>
