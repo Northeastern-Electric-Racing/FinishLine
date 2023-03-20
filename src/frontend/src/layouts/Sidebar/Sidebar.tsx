@@ -3,7 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faExchangeAlt, faFolder, faHome, faQuestionCircle, faUsers, faChartGantt } from '@fortawesome/free-solid-svg-icons';
+// Import MUI icons
+import HomeIcon from '@mui/icons-material/Home';
+import GanttIcon from '@mui/icons-material/BarChart';
+import ProjectsIcon from '@mui/icons-material/Folder';
+import ChangeRequestsIcon from '@mui/icons-material/SyncAlt';
+import TeamsIcon from '@mui/icons-material/Group';
+import InfoIcon from '@mui/icons-material/Info';
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
@@ -14,34 +20,34 @@ const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
-      icon: faHome,
+      icon: HomeIcon,
       route: routes.HOME
     },
     {
       name: 'Gantt',
-      icon: faChartGantt,
+      icon: GanttIcon,
       route: routes.GANTT
     },
     {
       name: 'Projects',
-      icon: faFolder,
+      icon: ProjectsIcon,
       route: routes.PROJECTS
     },
     {
       name: 'Change Requests',
-      icon: faExchangeAlt,
+      icon: ChangeRequestsIcon,
       route: routes.CHANGE_REQUESTS
     },
     {
       name: 'Teams',
-      icon: faUsers,
+      icon: TeamsIcon,
       route: routes.TEAMS
     }
   ];
 
   linkItems.push({
     name: 'Info',
-    icon: faQuestionCircle,
+    icon: InfoIcon,
     route: routes.INFO
   });
 

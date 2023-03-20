@@ -4,7 +4,6 @@
  */
 
 import { AuthenticatedUser } from 'shared';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -18,7 +17,7 @@ export const themeChoices = ['DARK', 'LIGHT'];
 
 export interface LinkItem {
   name: string;
-  icon?: IconProp;
+  icon?: React.ElementType;
   route: string;
 }
 

@@ -4,7 +4,7 @@
  */
 
 import { NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconButton } from '@mui/material';
 import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import styles from '../../stylesheets/layouts/sidebar/nav-page-links.module.css';
@@ -16,6 +16,7 @@ interface NavPageLinkProps {
 const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProps) => {
   const genNavItems = (linkItems: LinkItem[]) => {
     return linkItems.map((item) => {
+      const IconComponent = item.icon;
       return (
         <NavLink
           key={item.name}
@@ -24,8 +25,10 @@ const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProp
           activeClassName={styles.activeLink}
           exact={item.route === routes.HOME}
         >
-          {item.icon ? (
-            <FontAwesomeIcon icon={item.icon!} size="2x" className={styles.iconsAndText + ' ' + styles.icon} />
+          {IconComponent ? (
+            <IconButton className={styles.iconsAndText + ' ' + styles.icon}>
+              <IconComponent fontSize="large" />
+            </IconButton>
           ) : (
             ''
           )}
