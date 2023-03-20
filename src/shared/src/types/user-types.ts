@@ -12,7 +12,6 @@ export interface User {
   email: string;
   emailId: string | null;
   role: Role;
-  favoriteProjects: Project[];
 }
 
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'role'>;

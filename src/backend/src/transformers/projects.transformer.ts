@@ -97,7 +97,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         stage: (workPackage.stage || undefined) as WorkPackageStage
       };
     }),
-    favoritedBy: project.
+    favoritedBy: project.favoritedBy
   };
 };
 
