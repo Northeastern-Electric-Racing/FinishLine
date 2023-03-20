@@ -51,6 +51,7 @@ export interface Project extends WbsElement {
   team?: TeamPreview;
   risks: Risk[];
   tasks: Task[];
+  favoritedBy: User[];
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;

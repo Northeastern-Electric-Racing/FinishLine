@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Project } from './project-types';
+
 export interface User {
   userId: number;
   firstName: string;
@@ -10,6 +12,7 @@ export interface User {
   email: string;
   emailId: string | null;
   role: Role;
+  favoriteProjects: Project[];
 }
 
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'role'>;
@@ -37,6 +40,7 @@ export interface AuthenticatedUser {
   role: Role;
   defaultTheme?: ThemeName;
   teamAsLeadId?: string;
+  favoriteProjects: Project[];
 }
 
 export interface UserSettings {

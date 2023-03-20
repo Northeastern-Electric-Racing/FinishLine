@@ -8,7 +8,8 @@ const userTransformer = (user: Prisma.UserGetPayload<null>): User => {
     lastName: user.lastName,
     email: user.email,
     emailId: user.emailId,
-    role: user.role
+    role: user.role,
+    favoriteProjects: user.
   };
 };
 

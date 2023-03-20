@@ -96,7 +96,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         projectName: wbsElement.name,
         stage: (workPackage.stage || undefined) as WorkPackageStage
       };
-    })
+    }),
+    favoritedBy: project.
   };
 };
 
