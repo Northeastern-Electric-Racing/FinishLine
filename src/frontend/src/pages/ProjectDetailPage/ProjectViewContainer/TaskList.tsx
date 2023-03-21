@@ -38,13 +38,12 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   if (!user) return <LoadingIndicator />;
 
   const createTaskPermissions =
-    user &&
-    (user.role === 'APP_ADMIN' ||
-      user.role === 'ADMIN' ||
-      user.role === 'LEADERSHIP' ||
-      project.projectLead?.userId === user.userId ||
-      project.projectManager?.userId === user.userId ||
-      project.team?.leader.userId === user.userId);
+    user.role === 'APP_ADMIN' ||
+    user.role === 'ADMIN' ||
+    user.role === 'LEADERSHIP' ||
+    project.projectLead?.userId === user.userId ||
+    project.projectManager?.userId === user.userId ||
+    project.team?.leader.userId === user.userId;
 
   const addTaskButton: JSX.Element = (
     <Button
