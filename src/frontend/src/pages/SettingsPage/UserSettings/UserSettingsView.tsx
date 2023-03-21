@@ -29,10 +29,10 @@ const renderSlackId = (settings: UserSettings) => {
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <>
-      <Grid item md={4} lg={2}>
+      <Grid item xs={6}>
         <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
       </Grid>
-      <Grid item md={6} lg={4}>
+      <Grid item xs={6}>
         {renderSlackId(settings)}
       </Grid>
     </>

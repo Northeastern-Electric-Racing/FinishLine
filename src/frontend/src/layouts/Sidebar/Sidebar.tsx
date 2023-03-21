@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.6.0</Typography>
+      <Typography className={styles.versionNumber}>3.7.1</Typography>
     </div>
   );
 };
