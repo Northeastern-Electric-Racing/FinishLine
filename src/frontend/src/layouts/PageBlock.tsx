@@ -52,6 +52,9 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
               onClick={() => {
                 setCollapsed(!collapsed);
               }}
+              sx={{
+                cursor: 'pointer'
+              }}
             >
               {collapsed ? (
                 <ExpandMoreIcon sx={{ ml: -1, paddingRight: 0.5 }} />
