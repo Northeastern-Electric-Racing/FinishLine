@@ -22,13 +22,15 @@ const DynamicTooltip: React.FC<DynamicTooltipProps> = ({ title, children }) => {
             {
               name: 'flip',
               options: {
-                fallbackPlacements: ['top', 'bottom']
+                fallbackPlacements: ['top', 'bottom'],
+                padding: -1,
+                rootBoundary: 'document'
               }
             },
             {
               name: 'offset',
               options: {
-                offset: [0, -10] // distance: 10px
+                offset: [0, -1]
               }
             }
           ]
