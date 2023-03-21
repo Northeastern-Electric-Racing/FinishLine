@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
 import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
 
-interface CreateTaskPayload {
+export interface CreateTaskPayload {
   title: string;
   deadline: string;
   priority: TaskPriority;
@@ -38,7 +38,7 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
   );
 };
 
-interface TaskPayload {
+export interface TaskPayload {
   taskId: string;
   notes: string;
   title: string;
@@ -113,7 +113,7 @@ export const useSetTaskStatus = () => {
   );
 };
 
-interface DeleteTaskPayload {
+export interface DeleteTaskPayload {
   taskId: string;
 }
 
