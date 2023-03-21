@@ -10,7 +10,6 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-import InputAdornment from '@mui/material/InputAdornment';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
