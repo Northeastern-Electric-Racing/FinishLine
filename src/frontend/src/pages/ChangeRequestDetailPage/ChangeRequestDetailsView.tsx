@@ -170,7 +170,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
-      <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
+      <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
         <Grid container spacing={1}>
           <Grid item xs={2}>
             <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
