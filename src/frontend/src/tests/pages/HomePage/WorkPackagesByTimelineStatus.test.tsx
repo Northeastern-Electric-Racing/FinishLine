@@ -6,7 +6,7 @@
 import { UseQueryResult } from 'react-query';
 import { WorkPackage } from 'shared';
 import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
+import { datePipe, fullNamePipe, timelinePipe } from '../../../utils/pipes';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
@@ -52,6 +52,6 @@ describe('upcoming deadlines component', () => {
   it('renders when no work packages', () => {
     mockHook(false, false, []);
     renderComponent();
-    expect(screen.getByText('No VERY_BEHIND work packages')).toBeInTheDocument();
+    expect(screen.getByText('No Very Behind work packages')).toBeInTheDocument();
   });
 });
