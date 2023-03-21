@@ -5,7 +5,7 @@
 
 // Import MUI icons
 import HomeIcon from '@mui/icons-material/Home';
-import GanttIcon from '@mui/icons-material/BarChart';
+import GanttIcon from '@mui/icons-material/AlignHorizontalLeft';
 import ProjectsIcon from '@mui/icons-material/Folder';
 import ChangeRequestsIcon from '@mui/icons-material/SyncAlt';
 import TeamsIcon from '@mui/icons-material/Group';
