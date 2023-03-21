@@ -20,7 +20,7 @@ const Sidebar: React.FC = () => {
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
-      icon: HomeIcon,  
+      icon: HomeIcon,
       route: routes.HOME
     },
     {
