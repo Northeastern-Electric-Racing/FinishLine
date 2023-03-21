@@ -109,6 +109,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('tl-table-row-count')));
   const { mutateAsync: createTaskMutate } = useCreateTask(project.wbsNum);
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
   const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
@@ -157,6 +158,9 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     );
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
+  if (localStorage.getItem('tl-table-row-count') === null) {
+    localStorage.setItem('tl-table-row-count', '5');
+  }
 
   // can the user edit this task?
   const editTaskPermissions = (user: User | undefined, task: Task, proj: Project): boolean => {
@@ -522,11 +526,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           <DataGrid
             columns={columns}
             rows={rows}
-            pageSize={5}
             isCellEditable={isCellEditable}
             experimentalFeatures={{ newEditingApi: true }}
             processRowUpdate={processRowUpdate}
-            rowsPerPageOptions={[5]}
+            pageSize={pageSize}
+            rowsPerPageOptions={[5, 10, 15, 100]}
+            onPageSizeChange={(newPageSize) => {
+              localStorage.setItem('tl-table-row-count', String(newPageSize));
+              setPageSize(newPageSize);
+            }}
             sx={{
               '&.MuiDataGrid-root .MuiDataGrid-cell:focus': {
                 outline: 'none'
