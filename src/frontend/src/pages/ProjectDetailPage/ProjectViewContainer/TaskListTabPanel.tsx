@@ -533,7 +533,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             pageSize={pageSize}
             rowsPerPageOptions={[5, 10, 15, 100]}
             onPageSizeChange={(newPageSize) => {
-              localStorage.setItem('tl-table-row-count', String(newPageSize));
+              localStorage.setItem(TABLE_ROW_COUNT, String(newPageSize));
               setPageSize(newPageSize);
             }}
             sx={{
