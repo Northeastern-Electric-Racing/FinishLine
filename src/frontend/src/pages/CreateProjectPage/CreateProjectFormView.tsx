@@ -19,6 +19,7 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import { MouseEventHandler } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -40,7 +41,7 @@ const schema = yup.object().shape({
 
 interface CreateProjectFormViewProps {
   allowSubmit: boolean;
-  onCancel: (e: any) => void;
+  onCancel: MouseEventHandler;
   onSubmit: (project: CreateProjectFormInputs) => void;
 }
 

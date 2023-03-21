@@ -52,7 +52,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
             <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.slideDeckLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+            <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               Slide Deck
             </Link>
           </Stack>
@@ -60,7 +60,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
             <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.taskListLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+            <Link href={project.taskListLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               Task List
             </Link>
           </Stack>
@@ -68,7 +68,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
             <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.bomLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+            <Link href={project.bomLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               BOM
             </Link>
           </Stack>
@@ -76,7 +76,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
             <Folder sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.gDriveLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
+            <Link href={project.gDriveLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               Google Drive
             </Link>
           </Stack>
