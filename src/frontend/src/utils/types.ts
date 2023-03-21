@@ -25,3 +25,28 @@ export interface LinkItem {
 export interface VersionObject {
   tag_name: string;
 }
+
+export interface EditSingleProjectPayload {
+  projectId: number;
+  crId: number;
+  name: string;
+  budget: number;
+  summary: string;
+  rules: string[];
+  goals: { id: number; detail: string }[];
+  features: { id: number; detail: string }[];
+  otherConstraints: { id: number; detail: string }[];
+  googleDriveFolderLink: string;
+  slideDeckLink: string;
+  bomLink: string;
+  taskListLink: string;
+  projectLeadId?: number;
+  projectManagerId?: number;
+}
+
+export interface CreateSingleProjectPayload {
+  crId: number;
+  name: string;
+  carNumber: number;
+  summary: string;
+}
