@@ -109,7 +109,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
-  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('tl-table-row-count')));
+  const TABLE_ROW_COUNT = 'tl-table-row-count';
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem(TABLE_ROW_COUNT)));
   const { mutateAsync: createTaskMutate } = useCreateTask(project.wbsNum);
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
   const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
@@ -158,8 +159,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     );
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
-  if (localStorage.getItem('tl-table-row-count') === null) {
-    localStorage.setItem('tl-table-row-count', '5');
+  if (!localStorage.getItem(TABLE_ROW_COUNT)) {
+    localStorage.setItem(TABLE_ROW_COUNT, '5');
   }
 
   // can the user edit this task?
