@@ -179,17 +179,13 @@ const ChangeRequestsTable: React.FC = () => {
         columns={columns}
         getRowId={(row) => row.crId}
         sx={{ background: theme.palette.background.paper }}
-        onRowClick={(params) => {
-          history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
-        }}
         components={{
           Toolbar: GridToolbar,
           Row: (props: GridRowProps & { row: ChangeRequest }) => {
-            const wbsNum = props.row.wbsNum;
             return (
               <Link
                 component={RouterLink}
-                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}
+                to={`${routes.CHANGE_REQUESTS}/${props.row.crId}`}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 <GridRow {...props} />
