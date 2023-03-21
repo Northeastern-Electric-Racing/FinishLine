@@ -21,6 +21,7 @@ const Sidebar: React.FC = () => {
     {
       name: 'Home',
       icon: HomeIcon,
+      
       route: routes.HOME
     },
     {
