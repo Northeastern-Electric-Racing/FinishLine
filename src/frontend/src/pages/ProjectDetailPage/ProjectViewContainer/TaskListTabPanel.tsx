@@ -316,18 +316,22 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   };
 
   const createTask = async () => {
-    await createTaskMutate({
-      title: title,
-      deadline: transformDate(deadline),
-      priority: priority,
-      status: status,
-      assignees: assignees.map((user) => user.userId)
-    })
-      .finally(() => {
-        toast.success('Task Successfully Created!');
-        deleteCreateTask();
-      })
-      .catch((e) => toast.error(e.message, 6000));
+    try {
+      await createTaskMutate({
+        title: title,
+        deadline: transformDate(deadline),
+        priority: priority,
+        status: status,
+        assignees: assignees.map((user) => user.userId)
+      });
+      toast.success('Task Successfully Created!');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
+      }
+    } finally {
+      deleteCreateTask();
+    }
   };
 
   const deleteCreateTask = () => {
