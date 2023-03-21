@@ -4,25 +4,19 @@
  */
 
 import { useState } from 'react';
+import { CardContentInfo } from '../../pages/HomePage/AbstractCardContent';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Link from '@mui/material/Link';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
-import CardContent from '@mui/material/CardContent';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { datePipe, wbsPipe, fullNamePipe, percentPipe } from '../../utils/pipes';
-import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
 import { Grid, Typography, useTheme } from '@mui/material';
-import DetailDisplay from '../../components/DetailDisplay';
 
 const UpcomingDeadlines: React.FC = () => {
   const [daysUntilDeadline, setDaysUntilDeadline] = useState<string>('14');
@@ -32,6 +26,7 @@ const UpcomingDeadlines: React.FC = () => {
   if (workPackages.isError) {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
+  let contentCreater = new CardContentInfo();
 
   const fullDisplay = (
     <Box
@@ -58,36 +53,7 @@ const UpcomingDeadlines: React.FC = () => {
       {workPackages.data?.length === 0 ? (
         <Typography>No upcoming deadlines</Typography>
       ) : (
-        workPackages.data?.map((wp) => (
-          <Card
-            variant="outlined"
-            key={wbsPipe(wp.wbsNum)}
-            sx={{ minWidth: 'fit-content', mr: 3, background: theme.palette.background.default }}
-          >
-            <CardContent sx={{ padding: 3 }}>
-              <Link
-                variant="h6"
-                component={RouterLink}
-                to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}
-                sx={{ marginBottom: 2 }}
-              >
-                {wbsPipe(wp.wbsNum)} - {wp.name}
-              </Link>
-              <DetailDisplay label="End Date" content={datePipe(wp.endDate)} paddingRight={2} />
-              <DetailDisplay
-                label="Progress"
-                content={percentPipe(wp.progress) + ', ' + wp.timelineStatus}
-                paddingRight={2}
-              />
-
-              <DetailDisplay label="Engineering Lead" content={fullNamePipe(wp.projectLead)} paddingRight={2} />
-              <DetailDisplay label="Project Manager" content={fullNamePipe(wp.projectManager)} paddingRight={2} />
-              <Typography>
-                {wp.expectedActivities.length} Expected Activities, {wp.deliverables.length} Deliverables
-              </Typography>
-            </CardContent>
-          </Card>
-        ))
+        workPackages.data?.map((wp) => contentCreater.createUpcomingDeadlineCard(wp, theme))
       )}
     </Box>
   );
