@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-
 export interface User {
   userId: number;
   firstName: string;
