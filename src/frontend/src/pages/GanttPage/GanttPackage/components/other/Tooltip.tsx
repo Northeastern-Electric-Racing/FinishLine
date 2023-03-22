@@ -112,23 +112,18 @@ export const StandardTooltipContent: React.FC<{
     fontSize,
     fontFamily
   };
-  const duration = (task.end.getTime() - task.start.getTime()) / (1000 * 60 * 60 * 24);
+  const startDate = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric'
+  }).format(task.start);
+  const endDate = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric'
+  }).format(task.end);
   return (
     <div className={styles.tooltipDefaultContainer} style={style}>
-      <b style={{ fontSize: fontSize + 6 }}>{`${task.name} - ${new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        day: 'numeric'
-      }).format(task.start)}`}</b>
-      {task.end.getTime() - task.start.getTime() !== 0 && (
-        <p className={styles.tooltipDefaultContainerParagraph}>{`Duration: ${~~duration} ${
-          duration > 1 ? 'days' : 'day'
-        }`}</p>
-      )}
-      <p className={styles.tooltipDefaultContainerParagraph}>{`Percentage done: ${task.progress.toFixed(2)}%`}</p>
-      <p className={styles.tooltipDefaultContainerParagraph}>{`End date: ${new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        day: 'numeric'
-      }).format(task.end)}`}</p>
+      <b style={{ fontSize: fontSize + 6 }}>{`${task.name}`}</b>
+      <p className={styles.tooltipDefaultContainerParagraph}>{`${startDate} to ${endDate}`}</p>
     </div>
   );
 };

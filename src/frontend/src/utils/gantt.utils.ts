@@ -105,7 +105,7 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
 
   const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),
-    name: wbsPipe(project.wbsNum) + ' ' + project.name,
+    name: wbsPipe(project.wbsNum) + ' - ' + project.name,
     start: project.startDate || new Date(),
     end: project.endDate || new Date(),
     progress: 100,
