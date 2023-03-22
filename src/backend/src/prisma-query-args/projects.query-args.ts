@@ -35,8 +35,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         expectedActivities: { where: { dateDeleted: null } },
         deliverables: { where: { dateDeleted: null } }
       }
-    },
-    favoritedBy: true
+    }
   }
 });
 

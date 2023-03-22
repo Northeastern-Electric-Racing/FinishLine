@@ -17,7 +17,8 @@ const thomasEmrax: Prisma.UserCreateInput = {
       defaultTheme: Theme.DARK,
       slackId: 'emrax'
     }
-  }
+  },
+  favoriteProjects: {}
 };
 
 const joeShmoe: Prisma.UserCreateInput = {
