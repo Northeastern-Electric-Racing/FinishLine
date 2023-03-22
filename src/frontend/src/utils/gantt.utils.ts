@@ -39,7 +39,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return project.team?.teamName === decodedTeam;
+    return project.team === undefined ? decodedTeam === NO_TEAM : project.team?.teamName === decodedTeam;
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
