@@ -96,7 +96,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     type: 'task',
     teamName,
     styles: {
-      backgroundColor: WorkPackageStageColorPipe[workPackage.stage ?? ""]
+      backgroundColor: WorkPackageStageColorPipe[workPackage.stage ?? '']
     },
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
@@ -117,7 +117,7 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     hideChildren: !expanded,
     teamName,
     styles: {
-      backgroundColor: "#e50000"
+      backgroundColor: '#e50000'
     },
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
