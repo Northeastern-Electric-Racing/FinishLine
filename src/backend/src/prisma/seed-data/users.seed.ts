@@ -18,7 +18,11 @@ const thomasEmrax: Prisma.UserCreateInput = {
       slackId: 'emrax'
     }
   },
-  favoriteProjects: {}
+  favoriteProjects: {
+    connect: {
+      projectId: 1
+    }
+  }
 };
 
 const joeShmoe: Prisma.UserCreateInput = {
@@ -32,6 +36,11 @@ const joeShmoe: Prisma.UserCreateInput = {
     create: {
       defaultTheme: Theme.LIGHT,
       slackId: 'asdf'
+    }
+  },
+  favoriteProjects: {
+    connect: {
+      projectId: 1
     }
   }
 };
@@ -48,7 +57,8 @@ const joeBlow: Prisma.UserCreateInput = {
       defaultTheme: Theme.DARK,
       slackId: 'blow'
     }
-  }
+  },
+  favoriteProjects: {}
 };
 
 const wonderwoman: Prisma.UserCreateInput = {
