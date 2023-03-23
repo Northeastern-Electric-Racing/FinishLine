@@ -5,7 +5,7 @@
 
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
-import { isProject, validateWBS, WorkPackageStage } from 'shared';
+import { isProject, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
