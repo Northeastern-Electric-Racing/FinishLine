@@ -194,7 +194,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
           icon={<SaveIcon fontSize="small" />}
           label="Save"
           onClick={() => {
-            createTask(title, deadline, priority, assignees)
+            createTask(title, deadline, priority, assignees);
             deleteCreateTask();
           }}
         />
