@@ -83,7 +83,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Box display="flex" flexDirection="row">
-                <DetailDisplay label="BlockedBy" content={listPipe(workPackage.blockedBy, wbsPipe)} paddingRight={1} />
+                <DetailDisplay label="Blocked By" content={listPipe(workPackage.blockedBy, wbsPipe)} paddingRight={1} />
               </Box>
             </Grid>
             <Grid item xs={6}>
