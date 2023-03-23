@@ -13,8 +13,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 import { CreateWorkPackageFormInputs } from '../../apis/work-packages.api';
 
-
-
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
