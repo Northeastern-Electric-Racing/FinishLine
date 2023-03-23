@@ -11,18 +11,9 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
+import { CreateWorkPackageFormInputs } from '../../apis/work-packages.api';
 
-export interface CreateWorkPackageFormInputs {
-  name: string;
-  startDate: Date;
-  duration: number;
-  crId: string;
-  stage: WorkPackageStage | null;
-  wbsNum: string;
-  dependencies: { wbsNum: string }[];
-  expectedActivities: { bulletId: number; detail: string }[];
-  deliverables: { bulletId: number; detail: string }[];
-}
+
 
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
