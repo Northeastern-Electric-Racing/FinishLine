@@ -149,7 +149,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
           { name: 'Projects', route: routes.PROJECTS },
-          { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
+          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
         ]}
         actionButton={
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
@@ -157,21 +157,24 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       />
       <WorkPackageEditDetails control={control} errors={errors} users={users} />
       <PageBlock title="Dependencies">
-        {dependencies.map((_element, i) => {
-          return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
-              <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          );
-        })}
-        <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ mt: 2 }}>
-          + ADD NEW DEPENDENCY
-        </Button>
+        <Grid container direction="row" alignItems="center" spacing={2}>
+          {dependencies.map((_element, i) => {
+            return (
+              <Grid item key={i}>
+                <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} />
+                <IconButton type="button" onClick={() => removeDependency(i)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            );
+          })}
+          <Grid item>
+            <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })}>
+              + ADD NEW DEPENDENCY
+            </Button>
+          </Grid>
+        </Grid>
       </PageBlock>
-
       <PageBlock title="Expected Activities">
         <ReactHookEditableList
           name="expectedActivities"

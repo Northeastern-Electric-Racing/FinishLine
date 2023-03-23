@@ -26,7 +26,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       control={control}
       rules={{ required: true }}
       render={({ field: { onChange, value } }) => (
-        <TextField select onChange={onChange} value={value} label="Status">
+        <TextField select onChange={onChange} value={value} label="Status" fullWidth>
           {statuses.map((t) => (
             <MenuItem key={t} value={t}>
               {t}
@@ -68,16 +68,32 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             )}
           />
         </Grid>
-        <Grid item xs={12} md={4} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
+          <ReactHookTextField
+            fullWidth
+            name="duration"
+            control={control}
+            type="number"
+            label="Duration"
+            errorMessage={errors.budget}
+          />
+        </Grid>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           {statusSelect}
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={3} sx={{ mt: 2, mb: 1 }}>
           <Controller
             name="projectLead"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Lead" fullWidth>
+              <TextField
+                select
+                onChange={onChange}
+                value={value}
+                label="Project Lead"
+                sx={{ mr: 4, my: 1, minWidth: '45%' }}
+              >
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
@@ -86,14 +102,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               </TextField>
             )}
           />
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
           <Controller
             name="projectManager"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField select onChange={onChange} value={value} label="Project Manager" fullWidth>
+              <TextField select onChange={onChange} value={value} label="Project Manager" sx={{ my: 1, minWidth: '45%' }}>
                 {users.map((t) => (
                   <MenuItem key={t.userId} value={t.userId}>
                     {fullNamePipe(t)}
@@ -101,16 +115,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
                 ))}
               </TextField>
             )}
-          />
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <ReactHookTextField
-            name="duration"
-            control={control}
-            type="number"
-            label="Duration"
-            sx={{ width: 3 / 10 }}
-            errorMessage={errors.budget}
           />
         </Grid>
       </Grid>
