@@ -4,12 +4,22 @@
  */
 
 import axios from '../utils/axios';
-import { WbsNumber, WorkPackage } from 'shared';
+import { WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { CreateWorkPackageFormInputs} from '../pages/CreateWorkPackagePage/CreateWorkPackageForm';
 
+export interface CreateWorkPackageFormInputs {
+  name: string;
+  startDate: Date;
+  duration: number;
+  crId: string;
+  stage: WorkPackageStage | null;
+  wbsNum: string;
+  dependencies: { wbsNum: string }[];
+  expectedActivities: { bulletId: number; detail: string }[];
+  deliverables: { bulletId: number; detail: string }[];
+}
 /**
  * Fetch all work packages.
  */
