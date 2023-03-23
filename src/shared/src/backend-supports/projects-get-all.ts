@@ -12,12 +12,12 @@ const calculateEndDate = (start: Date, weeks: number) => {
   return end;
 };
 
-interface WP {
-  startDate: any;
+interface WorkPackageDurationProps {
+  startDate: Date;
   duration: number;
 }
 
-const projectDurationBuilder = (wps: WP[]) => {
+const projectDurationBuilder = (wps: WorkPackageDurationProps[]) => {
   if (wps.length === 0) return 0;
   if (wps.length === 1) return wps[0].duration;
 
