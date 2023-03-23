@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { yellow, green, blue, purple, grey } from '@mui/material/colors';
 import { WorkPackageStage } from 'shared';
 
@@ -11,9 +16,10 @@ export const WorkPackageStageColorPipe: Record<WorkPackageStage | '', string> = 
 };
 
 // maps stage to the desired badge display text
-export const WorkPackageStageTextPipe: Record<WorkPackageStage, string> = {
+export const WorkPackageStageTextPipe: Record<WorkPackageStage | '', string> = {
   [WorkPackageStage.Research]: 'Research',
   [WorkPackageStage.Design]: 'Design',
   [WorkPackageStage.Manufacturing]: 'Manufacturing',
-  [WorkPackageStage.Integration]: 'Integration'
+  [WorkPackageStage.Integration]: 'Integration',
+  '': 'No Stage'
 };
