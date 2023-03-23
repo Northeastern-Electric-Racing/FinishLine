@@ -119,10 +119,10 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const createTask = async (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => {
     try {
       await createTaskMutate({
-        title: title,
+        title,
         deadline: transformDate(deadline),
-        priority: priority,
-        status: status,
+        priority,
+        status,
         assignees: assignees.map((user) => user.userId)
       });
       toast.success('Task Successfully Created!');
