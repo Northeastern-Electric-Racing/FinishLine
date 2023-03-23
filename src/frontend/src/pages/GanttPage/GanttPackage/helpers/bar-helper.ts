@@ -11,12 +11,8 @@ export const convertToBarTasks = (
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
-  barProgressColor: string,
-  barProgressSelectedColor: string,
   barBackgroundColor: string,
   barBackgroundSelectedColor: string,
-  projectProgressColor: string,
-  projectProgressSelectedColor: string,
   projectBackgroundColor: string,
   projectBackgroundSelectedColor: string,
   milestoneBackgroundColor: string,
@@ -33,12 +29,12 @@ export const convertToBarTasks = (
       barCornerRadius,
       handleWidth,
       rtl,
-      barProgressColor,
-      barProgressSelectedColor,
+      t.styles.backgroundColor,
+      t.styles.backgroundColor,
       barBackgroundColor,
       barBackgroundSelectedColor,
-      projectProgressColor,
-      projectProgressSelectedColor,
+      t.styles.backgroundColor,
+      t.styles.backgroundColor,
       projectBackgroundColor,
       projectBackgroundSelectedColor,
       milestoneBackgroundColor,
@@ -169,7 +165,6 @@ const convertToBar = (
   const hideChildren = task.type === 'project' ? task.hideChildren : undefined;
 
   const styles = {
-    backgroundColor: barBackgroundColor,
     backgroundSelectedColor: barBackgroundSelectedColor,
     progressColor: barProgressColor,
     progressSelectedColor: barProgressSelectedColor,
@@ -213,7 +208,6 @@ const convertToMilestone = (
 
   const rotatedHeight = taskHeight / 1.414;
   const styles = {
-    backgroundColor: milestoneBackgroundColor,
     backgroundSelectedColor: milestoneBackgroundSelectedColor,
     progressColor: '',
     progressSelectedColor: '',
