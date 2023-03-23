@@ -78,9 +78,9 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
     >
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
-        <Grid container sx={{ marginBottom: '24px' }}>
-          <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '95%' }}>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{}}>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
                 name="name"
@@ -90,8 +90,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{}}>
               <FormLabel>Car Number</FormLabel>
               <ReactHookTextField
                 name="carNumber"
@@ -102,10 +102,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-        </Grid>
-        <Grid container sx={{ marginBottom: '24px' }}>
-          <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '95%' }}>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{}}>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
@@ -116,8 +114,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl sx={{ width: '100%' }}>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{}}>
               <FormLabel>Team</FormLabel>
               <Controller
                 name="teamId"
@@ -135,19 +133,19 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <FormControl sx={{ width: '100%' }}>
-            <FormLabel>Project Summary</FormLabel>
-            <ReactHookTextField
-              name="summary"
-              control={control}
-              placeholder="Enter summary..."
-              errorMessage={errors.summary}
-              multiline
-              rows={5}
-            />
-          </FormControl>
+          <Grid item xs={12}>
+            <FormControl fullWidth sx={{}}>
+              <FormLabel>Project Summary</FormLabel>
+              <ReactHookTextField
+                name="summary"
+                control={control}
+                placeholder="Enter summary..."
+                errorMessage={errors.summary}
+                multiline
+                rows={5}
+              />
+            </FormControl>
+          </Grid>
         </Grid>
         <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
           <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>

@@ -16,7 +16,8 @@ const renderComponent = (
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
-  allowRequestChange = true
+  allowRequestChange = true,
+  allowDelete = true
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -28,6 +29,7 @@ const renderComponent = (
         allowActivate={allowActivate}
         allowStageGate={allowStageGate}
         allowRequestChange={allowRequestChange}
+        allowDelete={allowDelete}
       />
     </RouterWrapper>
   );
