@@ -29,7 +29,7 @@ export interface TaskListDataGridProps {
   tableRowCount: string;
   setSelectedTask: Dispatch<SetStateAction<Task | undefined>>;
   setModalShow: Dispatch<SetStateAction<boolean>>;
-  createTask: (task: Task) => MouseEventHandler<HTMLLIElement>;
+  createTask: (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => Promise<void>;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;

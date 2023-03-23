@@ -193,8 +193,10 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         <GridActionsCellItem
           icon={<SaveIcon fontSize="small" />}
           label="Save"
-          onClick={createTask(params.row.task)}
-          showInMenu
+          onClick={() => {
+            createTask(title, deadline, priority, assignees)
+            deleteCreateTask();
+          }}
         />
       );
       actions.push(<GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask} />);

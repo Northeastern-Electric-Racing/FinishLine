@@ -6,7 +6,7 @@
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
-import { Task, TaskStatus } from 'shared';
+import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAuth } from '../../../hooks/auth.hooks';
 import {
@@ -116,22 +116,20 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     }
   };
 
-  const createTask = (task: Task) => async () => {
+  const createTask = async (title: string, deadline: Date, priority: TaskPriority, assignees: UserPreview[]) => {
     try {
       await createTaskMutate({
-        title: task.title,
-        deadline: transformDate(task.deadline),
-        priority: task.priority,
+        title: title,
+        deadline: transformDate(deadline),
+        priority: priority,
         status: status,
-        assignees: task.assignees.map((user) => user.userId)
+        assignees: assignees.map((user) => user.userId)
       });
       toast.success('Task Successfully Created!');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
-    } finally {
-      onAddCancel();
     }
   };
 
