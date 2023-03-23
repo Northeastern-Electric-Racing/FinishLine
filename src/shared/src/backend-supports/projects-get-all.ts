@@ -12,7 +12,12 @@ const calculateEndDate = (start: Date, weeks: number) => {
   return end;
 };
 
-const projectDurationBuilder = (wps: any) => {
+interface WP {
+  startDate: any;
+  duration: number;
+}
+
+const projectDurationBuilder = (wps: WP[]) => {
   if (wps.length === 0) return 0;
   if (wps.length === 1) return wps[0].duration;
 
