@@ -89,12 +89,9 @@ export const numberParamPipe = (param: string | null) => {
  *  E.G. VERY_BEHIND -> Very Behind
  */
 export const timelinePipe = (status: string) => {
-  var res = status.replaceAll('_', ' ');
-  res = res.toLowerCase();
-  res = res
+  return status
     .toLowerCase()
-    .split(' ')
+    .split('_')
     .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
     .join(' ');
-  return res;
 };
