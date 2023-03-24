@@ -6,16 +6,16 @@
 import { WbsElementStatus } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
+interface WorkPackageDurationProps {
+  startDate: Date;
+  duration: number;
+}
+
 const calculateEndDate = (start: Date, weeks: number) => {
   const end = new Date(start);
   end.setDate(start.getDate() + weeks * 7);
   return end;
 };
-
-interface WorkPackageDurationProps {
-  startDate: Date;
-  duration: number;
-}
 
 const projectDurationBuilder = (wps: WorkPackageDurationProps[]) => {
   if (wps.length === 0) return 0;
