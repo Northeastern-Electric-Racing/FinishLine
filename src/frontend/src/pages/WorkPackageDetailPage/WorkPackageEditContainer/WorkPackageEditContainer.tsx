@@ -161,7 +161,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       <PageBlock title="Dependencies">
         {dependencies.map((_element, i) => {
           return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+            <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
               <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
