@@ -4,7 +4,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
   createChangeJsonNonList,
@@ -50,7 +50,7 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
     return projectTransformer(project);
   }
@@ -165,7 +165,7 @@ export default class ProjectsService {
 
     // if it doesn't exist we error
     if (!originalProject) throw new NotFoundException('Project', projectId);
-    if (originalProject.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
     const { wbsElementId } = originalProject;
 
@@ -421,7 +421,7 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
     const { projectId, wbsElementId } = project;
 
