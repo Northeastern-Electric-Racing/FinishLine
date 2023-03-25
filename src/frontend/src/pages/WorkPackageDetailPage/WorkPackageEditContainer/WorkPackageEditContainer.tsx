@@ -151,7 +151,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
           { name: 'Projects', route: routes.PROJECTS },
-          { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
+          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
         ]}
         actionButton={
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />

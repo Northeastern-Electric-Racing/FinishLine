@@ -19,7 +19,7 @@ interface Props {
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
   const StageSelect = () => (
-    <FormControl>
+    <FormControl sx={{ width: '95%' }}>
       <FormLabel>Stage Select</FormLabel>
       <Controller
         name="stage"
@@ -40,8 +40,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
+        <Grid item xs={12} md={4} sx={{ mt: 1 }}>
+          <FormControl sx={{ width: '95%' }}>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
               name="name"
@@ -51,8 +51,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={'auto'} sx={{ mt: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
+        <Grid item xs={12} md={3} sx={{ mt: 1 }}>
+          <FormControl sx={{ width: '95%' }}>
             <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
               name="startDate"
@@ -72,7 +72,23 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={3} sx={{ mt: 1, mb: 1 }}>
+          <StageSelect />
+        </Grid>
+        <Grid item xs={12} md={1} sx={{ my: 1 }}>
+          <FormControl>
+            <FormLabel>Duration</FormLabel>
+            <ReactHookTextField
+              name="duration"
+              control={control}
+              type="number"
+              placeholder="Enter duration..."
+              sx={{ width: '140%' }}
+              errorMessage={errors.budget}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           <FormControl sx={{ width: '90%' }}>
             <FormLabel>Project Lead</FormLabel>
             <Controller
@@ -91,7 +107,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mb: 1 }}>
           <FormControl sx={{ width: '90%' }}>
             <FormLabel>Project Manager</FormLabel>
             <Controller
@@ -109,22 +125,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               )}
             />
           </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ my: 1 }}>
-          <FormControl>
-            <FormLabel>Duration</FormLabel>
-            <ReactHookTextField
-              name="duration"
-              control={control}
-              type="number"
-              placeholder="Enter duration..."
-              sx={{ width: '140%' }}
-              errorMessage={errors.budget}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <StageSelect />
         </Grid>
       </Grid>
     </PageBlock>
