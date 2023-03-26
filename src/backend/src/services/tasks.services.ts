@@ -5,7 +5,7 @@ import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
 import { allUsersOnTeam, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
@@ -39,7 +39,7 @@ export default class TasksService {
       include: { project: { include: { team: { ...teamQueryArgs }, wbsElement: true } } }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (requestedWbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
+    if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
     const { project } = requestedWbsElement;
     if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
@@ -95,7 +95,7 @@ export default class TasksService {
 
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
-    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
 
@@ -121,7 +121,7 @@ export default class TasksService {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
-    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -150,7 +150,7 @@ export default class TasksService {
       }
     });
     if (!originalTask) throw new NotFoundException('Task', taskId);
-    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -197,11 +197,11 @@ export default class TasksService {
   static async deleteTask(currentUser: User, taskId: string): Promise<string> {
     const task = await prisma.task.findUnique({ where: { taskId }, ...taskQueryArgs });
     if (!task) throw new NotFoundException('Task', taskId);
-    if (task.dateDeleted) throw new HttpException(400, 'Cant delete a deleted Task!');
+    if (task.dateDeleted) throw new DeletedException('Task', taskId);
 
     const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
     if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
-    if (wbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsElement.wbsElementId);
 
     // this checks the current users permissions
     const isAdmin = currentUser.role === Role.APP_ADMIN || currentUser.role === Role.ADMIN;
