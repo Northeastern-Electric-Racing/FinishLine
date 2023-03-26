@@ -92,7 +92,7 @@ describe('Work Packages', () => {
       );
     });
 
-    test('createWorkPackage fails if any elements in the dependencies are null', async () => {
+    test('createWorkPackage fails if any elements in the blocked by are null', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest
         .spyOn(prisma.wBS_Element, 'findUnique')
@@ -103,7 +103,7 @@ describe('Work Packages', () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
       };
 
-      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the dependencies was not found.'));
+      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the blockers was not found.'));
     });
 
     test('createWorkPackage fails if user does not have access', async () => {
@@ -162,7 +162,7 @@ describe('Work Packages', () => {
       await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
     });
 
-    test("fails if the dependencies include the work package's own project", async () => {
+    test("fails if the blocked by include the work package's own project", async () => {
       const argsToTest: [
         User,
         WbsNumber,
@@ -181,7 +181,7 @@ describe('Work Packages', () => {
       };
 
       await expect(callCreateWP()).rejects.toThrow(
-        new HttpException(400, 'A Work Package cannot have its own project as a dependency')
+        new HttpException(400, 'A Work Package cannot have its own project as a blocker')
       );
     });
 

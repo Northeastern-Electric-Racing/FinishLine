@@ -83,11 +83,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const {
-    fields: blockedBy,
-    append: appendDependency,
-    remove: removeDependency
-  } = useFieldArray({ control, name: 'blockedBy' });
+  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const blockedByFormControl = (
     <FormControl fullWidth>
@@ -96,7 +92,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+            <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />
             </IconButton>
           </Grid>
@@ -105,7 +101,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <Button
         variant="contained"
         color="success"
-        onClick={() => appendDependency({ wbsNum: '' })}
+        onClick={() => appendBlocker({ wbsNum: '' })}
         sx={{ my: 2, width: 'max-content' }}
       >
         + ADD NEW BLOCKER

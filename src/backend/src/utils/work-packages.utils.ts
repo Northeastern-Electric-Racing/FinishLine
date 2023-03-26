@@ -61,8 +61,8 @@ export const createChangeJsonDates = (
   return undefined;
 };
 
-// create a change json list for a given list (dependencies). Only works if the elements themselves should be compared (numbers)
-export const createDependenciesChangesJson = async (
+// create a change json list for a given list (blocked by). Only works if the elements themselves should be compared (numbers)
+export const createBlockedByChangesJson = async (
   oldArray: number[],
   newArray: number[],
   crId: number,
@@ -87,13 +87,13 @@ export const createDependenciesChangesJson = async (
     }
   });
 
-  // get the wbs number of each changing dependency for the change string
-  const changedDependencies = await prisma.wBS_Element.findMany({
+  // get the wbs number of each changing blocker for the change string
+  const changedBlocker = await prisma.wBS_Element.findMany({
     where: { wbsElementId: { in: changes.map((element) => element.element) } }
   });
 
   const wbsNumbers = new Map(
-    changedDependencies.map((element) => [
+    changedBlocker.map((element) => [
       element.wbsElementId,
       `${element.carNumber}.${element.projectNumber}.${element.workPackageNumber}`
     ])

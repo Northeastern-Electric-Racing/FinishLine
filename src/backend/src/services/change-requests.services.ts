@@ -4,7 +4,7 @@ import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-a
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
-  updateDependencies,
+  updateBlocking,
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
@@ -140,9 +140,9 @@ export default class ChangeRequestsService {
           }
         ];
 
-        // update all the dependencies (and nested dependencies) of this work package so that their start dates reflect the new duration
+        // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
         if (foundPs.timelineImpact > 0) {
-          await updateDependencies(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+          await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
         }
 
         // update the project and work package

@@ -55,7 +55,7 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
 };
 
 /**
- * This function updates the start date of all the dependencies (and nested dependencies) of the initial given work package.
+ * This function updates the start date of all the blockings (and nested blockings) of the initial given work package.
  * It uses a depth first search algorithm for efficiency and to avoid cycles.
  *
  * @param initialWorkPackage the initial work package
@@ -63,7 +63,7 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
  * @param crId the change request id
  * @param reviewer the reviewer of the change request
  */
-export const updateDependencies = async (
+export const updateBlocking = async (
   initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>,
   timelineImpact: number,
   crId: number,
@@ -72,13 +72,11 @@ export const updateDependencies = async (
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
   const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
 
-  // dependency ids that still need to be updated
-  const dependencyUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map(
-    (dependency) => dependency.wbsElementId
-  );
+  // blocking ids that still need to be updated
+  const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
 
-  while (dependencyUpdateQueue.length > 0) {
-    const currWbsId = dependencyUpdateQueue.pop(); // get the next dependency and remove it from the queue
+  while (blockingUpdateQueue.length > 0) {
+    const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
 
     if (!currWbsId) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
     if (seenWbsElementIds.has(currWbsId)) continue; // if we've already seen it we skip it
@@ -123,9 +121,9 @@ export const updateDependencies = async (
       }
     });
 
-    // get all the dependencies of the current wbs and add them to the queue to update
-    const newDependencies: number[] = currWbs.blocking.map((dependency) => dependency.wbsElementId);
-    dependencyUpdateQueue.push(...newDependencies);
+    // get all the blockings of the current wbs and add them to the queue to update
+    const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
+    blockingUpdateQueue.push(...newBlocking);
   }
 };
 

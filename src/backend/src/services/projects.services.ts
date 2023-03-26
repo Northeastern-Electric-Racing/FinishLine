@@ -287,7 +287,7 @@ export default class ProjectsService {
       wbsElementId,
       'other constraints'
     );
-    // add the changes for each of dependencies, expected activities, and deliverables
+    // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
       .concat(rulesChangeJson)
       .concat(goalsChangeJson.changes)

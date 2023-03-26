@@ -29,7 +29,7 @@ const renderComponent = (editMode?: boolean, path?: string, route?: string) => {
   );
 };
 
-describe.skip('Rendering Work Package Dependencies Component', () => {
+describe.skip('Rendering Work Package Blocked By Component', () => {
   test('Rendering example 2', () => {
     renderComponent();
     expect(screen.getByText(`Blocked By`)).toBeInTheDocument();

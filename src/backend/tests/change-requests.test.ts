@@ -26,7 +26,7 @@ describe('Change Requests', () => {
     jest.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return undefined;
     });
-    jest.spyOn(changeRequestUtils, 'updateDependencies').mockImplementation(async () => {});
+    jest.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
     jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
   });
 
