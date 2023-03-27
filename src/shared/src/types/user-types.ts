@@ -37,7 +37,7 @@ export interface AuthenticatedUser {
   role: Role;
   defaultTheme?: ThemeName;
   teamAsLeadId?: string;
-  favoritedProjectsId?: number[]; 
+  favoritedProjectsId?: number[];
 }
 
 export interface UserSettings {
