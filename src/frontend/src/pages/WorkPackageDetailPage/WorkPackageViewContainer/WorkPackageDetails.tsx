@@ -28,7 +28,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
     >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
+          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
@@ -40,7 +40,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
+          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
