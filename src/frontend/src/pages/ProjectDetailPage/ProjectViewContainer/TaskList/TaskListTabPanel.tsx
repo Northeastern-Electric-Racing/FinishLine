@@ -22,19 +22,6 @@ import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
-//this is needed to fix some weird bug with getActions()
-//see comment by michaldudak commented on Dec 5, 2022
-//https://github.com/mui/material-ui/issues/35287
-declare global {
-  namespace React {
-    interface DOMAttributes<T> {
-      onResize?: ReactEventHandler<T> | undefined;
-      onResizeCapture?: ReactEventHandler<T> | undefined;
-      nonce?: string | undefined;
-    }
-  }
-}
-
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { value, index, tasks, status, addTask, onAddCancel, project } = props;
   const [modalShow, setModalShow] = useState(false);

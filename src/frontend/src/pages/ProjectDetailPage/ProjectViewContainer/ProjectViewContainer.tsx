@@ -27,7 +27,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import TaskList from './TasksList/TaskList';
+import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
 
 interface ProjectViewContainerProps {
