@@ -15,8 +15,6 @@ interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
-// {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage}  /> : null}
-
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
     <PageBlock
