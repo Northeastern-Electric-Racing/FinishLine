@@ -1,4 +1,4 @@
-import { Autocomplete, Link, TextField, Typography, useTheme } from '@mui/material';
+import { Link, Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -7,8 +7,7 @@ import {
   GridRenderCellParams,
   GridRenderEditCellParams,
   GridRowModel,
-  GridRowParams,
-  useGridApiContext
+  GridRowParams
 } from '@mui/x-data-grid';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -16,12 +15,38 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
-import { Task, TaskPriority, TaskStatus, User, UserPreview } from 'shared';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { fullNamePipe } from '../../../utils/pipes';
-import { GridColDefStyle } from '../../../utils/tables';
-import { Row, TaskListDataGridProps } from '../../../utils/task.utils';
+import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
+import { fullNamePipe } from '../../../../utils/pipes';
+import { GridColDefStyle } from '../../../../utils/tables';
+import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
+import { AssigneeEdit, TitleEdit } from './TaskListComponents';
+
+const styles = {
+  datagrid: {
+    '&.MuiDataGrid-root .MuiDataGrid-cell:focus': {
+      outline: 'none'
+    },
+    '.MuiDataGrid-columnSeparator': {
+      display: 'none'
+    },
+    '.MuiDataGrid-cell': {
+      borderBottom: 'none'
+    },
+    '&.MuiDataGrid-root': {
+      border: 'none'
+    },
+    '.MuiDataGrid-cell:focus-within': {
+      outline: 'none'
+    },
+    '.MuiDataGrid-columnHeader': {
+      borderBottom: 1
+    },
+    '.MuiDataGrid-columnHeader:focus-within': {
+      outline: 'none'
+    }
+  }
+};
 
 const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   team,
@@ -45,35 +70,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
   const theme = useTheme();
-
-  const TitleEdit = (params: GridRenderEditCellParams) => {
-    const { id, value, field, setTitle } = params;
-    const apiRef = useGridApiContext();
-
-    const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = event.target.value; // The new value entered by the user
-      apiRef.current.setEditCellValue({ id, field, value: newValue });
-      setTitle(newValue);
-    };
-
-    const handleRef = (element: HTMLDivElement) => {
-      if (element) {
-        const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
-        input?.focus();
-      }
-    };
-
-    return (
-      <TextField
-        fullWidth
-        variant="outlined"
-        placeholder="Enter a title"
-        value={value}
-        onChange={handleValueChange}
-        ref={handleRef}
-      />
-    );
-  };
 
   const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
     setTitle(newRow.title);
@@ -114,10 +110,18 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     );
 
   const renderAssignees = (params: GridRenderCellParams) => {
-    const assigneeString = params.row.assignees.reduce(
-      (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
-      ''
-    );
+    let assigneeString = '';
+    if (assignees.length > 0 && params.row.id === -1) {
+      assigneeString = assignees.reduce(
+        (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
+        ''
+      );
+    } else {
+      assigneeString = params.row.assignees.reduce(
+        (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
+        ''
+      );
+    }
     return <Typography>{assigneeString.substring(0, assigneeString.length - 2)}</Typography>;
   };
 
@@ -131,59 +135,8 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     return <TitleEdit {...params} setTitle={setTitle} />;
   };
 
-  function AssigneeEdit(params: GridRenderEditCellParams) {
-    if (!team) return <LoadingIndicator />;
-
-    const { value } = params;
-
-    const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-      return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-    };
-
-    const options = team.members
-      .concat(team.leader)
-      .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-      .map(userToAutocompleteOption);
-
-    const handleValueChange = (
-      _: any,
-      newValue: {
-        label: string;
-        id: number;
-      }[]
-    ) => {
-      const teamMembers = team.members.concat(team.leader);
-      const users = newValue.map((user) => teamMembers.find((o) => o.userId === user.id)!);
-      setAssignees(users);
-    };
-
-    const handleRef = (element: HTMLDivElement) => {
-      if (element) {
-        const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
-        input?.focus();
-      }
-    };
-
-    return (
-      <Autocomplete
-        fullWidth
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        filterSelectedOptions
-        multiple
-        id="tags-standard"
-        options={options}
-        getOptionLabel={(option) => option.label}
-        onChange={handleValueChange}
-        value={assignees.map((u: UserPreview) => options.find((o) => o.id === u.userId)!)}
-        // TODO: make assignees an array with a custom method
-        renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
-        ref={handleRef}
-      />
-    );
-  }
-
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
-    return <AssigneeEdit {...params} />;
+    return <AssigneeEdit {...params} team={team} assignees={assignees} setAssignees={setAssignees} />;
   };
 
   const getActions = (params: GridRowParams) => {
@@ -361,29 +314,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         localStorage.setItem(tableRowCount, String(newPageSize));
         setPageSize(newPageSize);
       }}
-      sx={{
-        '&.MuiDataGrid-root .MuiDataGrid-cell:focus': {
-          outline: 'none'
-        },
-        '.MuiDataGrid-columnSeparator': {
-          display: 'none'
-        },
-        '.MuiDataGrid-cell': {
-          borderBottom: 'none'
-        },
-        '&.MuiDataGrid-root': {
-          border: 'none'
-        },
-        '.MuiDataGrid-cell:focus-within': {
-          outline: 'none'
-        },
-        '.MuiDataGrid-columnHeader': {
-          borderBottom: 1
-        },
-        '.MuiDataGrid-columnHeader:focus-within': {
-          outline: 'none'
-        }
-      }}
+      sx={styles.datagrid}
     />
   );
 };

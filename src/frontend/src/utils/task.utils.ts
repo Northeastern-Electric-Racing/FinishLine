@@ -1,6 +1,19 @@
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
 import { Project, Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
 
+//this is needed to fix some weird bug with getActions()
+//see comment by michaldudak commented on Dec 5, 2022
+//https://github.com/mui/material-ui/issues/35287
+declare global {
+  namespace React {
+    interface DOMAttributes<T> {
+      onResize?: ReactEventHandler<T> | undefined;
+      onResizeCapture?: ReactEventHandler<T> | undefined;
+      nonce?: string | undefined;
+    }
+  }
+}
+
 export type Row = {
   id: number;
   title: string;
