@@ -165,8 +165,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       />
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList
-        title={'Dependencies'}
-        items={workPackage.dependencies.map((dep) => (
+        title={'Blocked By'}
+        items={workPackage.blockedBy.map((dep) => (
           <strong>{wbsPipe(dep)}</strong>
         ))}
       />
