@@ -18,12 +18,13 @@ const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
           include: { implementer: true },
           orderBy: { dateImplemented: 'asc' }
         },
+        blocking: true,
         tasks: { where: { dateDeleted: null }, ...taskQueryArgs }
       }
     },
     expectedActivities: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
     deliverables: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
-    dependencies: { where: { dateDeleted: null } }
+    blockedBy: { where: { dateDeleted: null } }
   }
 });
 

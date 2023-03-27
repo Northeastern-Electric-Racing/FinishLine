@@ -63,7 +63,7 @@ export interface WorkPackage extends WbsElement {
   duration: number;
   expectedProgress: number;
   timelineStatus: TimelineStatus;
-  dependencies: WbsNumber[];
+  blockedBy: WbsNumber[];
   expectedActivities: DescriptionBullet[];
   deliverables: DescriptionBullet[];
   projectName: string;

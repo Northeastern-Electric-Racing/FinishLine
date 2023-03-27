@@ -15,7 +15,7 @@ import { NotFoundException, AccessDeniedException, HttpException } from '../util
 import {
   createChangeJsonDates,
   createChangeJsonNonList,
-  createDependenciesChangesJson,
+  createBlockedByChangesJson,
   createDescriptionBulletChangesJson
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
@@ -106,7 +106,7 @@ export default class WorkPackagesService {
    * @param stage the stage of the work package
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
-   * @param dependencies the WBS elements that need to be completed before this WP
+   * @param blockedBy the WBS elements that need to be completed before this WP
    * @param expectedActivities the expected activities descriptions for this WP
    * @param deliverables the expected deliverables descriptions for this WP
    * @returns the WBS number of the successfully created work package
@@ -120,7 +120,7 @@ export default class WorkPackagesService {
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WbsNumber[],
+    blockedBy: WbsNumber[],
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
@@ -139,8 +139,8 @@ export default class WorkPackagesService {
       );
     }
 
-    if (dependencies.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
-      throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
+    if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
+      throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
     }
 
     const wbsElem = await prisma.wBS_Element.findUnique({
@@ -154,7 +154,7 @@ export default class WorkPackagesService {
       include: {
         project: {
           include: {
-            workPackages: { include: { wbsElement: true, dependencies: true } }
+            workPackages: { include: { wbsElement: true, blockedBy: true } }
           }
         }
       }
@@ -174,8 +174,8 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    const dependenciesWBSElems: (WBS_Element | null)[] = await Promise.all(
-      dependencies.map(async (ele: WbsNumber) => {
+    const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
+      blockedBy.map(async (ele: WbsNumber) => {
         return await prisma.wBS_Element.findUnique({
           where: {
             wbsNumber: {
@@ -188,21 +188,21 @@ export default class WorkPackagesService {
       })
     );
 
-    const dependenciesIds: number[] = [];
-    // populate dependenciesIds with the element ID's
+    const blockedByIds: number[] = [];
+    // populate blockedByIds with the element ID's
     // and return error 400 if any elems are null
 
-    let dependenciesHasNulls = false;
-    dependenciesWBSElems.forEach((elem) => {
+    let blockedByHasNulls = false;
+    blockedByWBSElems.forEach((elem) => {
       if (elem === null) {
-        dependenciesHasNulls = true;
+        blockedByHasNulls = true;
         return;
       }
-      dependenciesIds.push(elem.wbsElementId);
+      blockedByIds.push(elem.wbsElementId);
     });
 
-    if (dependenciesHasNulls) {
-      throw new HttpException(400, 'One of the dependencies was not found.');
+    if (blockedByHasNulls) {
+      throw new HttpException(400, 'One of the blockers was not found.');
     }
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
@@ -232,7 +232,7 @@ export default class WorkPackagesService {
         startDate: date,
         duration,
         orderInProject: project.workPackages.length + 1,
-        dependencies: { connect: dependenciesIds.map((ele) => ({ wbsElementId: ele })) },
+        blockedBy: { connect: blockedByIds.map((ele) => ({ wbsElementId: ele })) },
         expectedActivities: { create: expectedActivities.map((ele: string) => ({ detail: ele })) },
         deliverables: { create: deliverables.map((ele: string) => ({ detail: ele })) }
       },
@@ -252,7 +252,7 @@ export default class WorkPackagesService {
    * @param crId the id of the change request implementing this edit
    * @param startDate the date string representing the new start date
    * @param duration the new duration of this work package, in weeks
-   * @param dependencies the new WBS elements to be completed before this WP
+   * @param blockedBy the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
    * @param projectLead the new lead for this work package
@@ -266,7 +266,7 @@ export default class WorkPackagesService {
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WbsNumber[],
+    blockedBy: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
     projectLead: number,
@@ -282,7 +282,7 @@ export default class WorkPackagesService {
       where: { workPackageId },
       include: {
         wbsElement: true,
-        dependencies: true,
+        blockedBy: true,
         expectedActivities: true,
         deliverables: true
       }
@@ -292,7 +292,7 @@ export default class WorkPackagesService {
     if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
 
     if (
-      dependencies.find((dep: WbsNumber) =>
+      blockedBy.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -300,11 +300,11 @@ export default class WorkPackagesService {
         })
       ) != null
     ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a dependency');
+      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
     }
 
     if (
-      dependencies.find((dep: WbsNumber) =>
+      blockedBy.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -312,14 +312,14 @@ export default class WorkPackagesService {
         })
       ) != null
     ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a dependency');
+      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
     }
 
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
 
     const depsIds = await Promise.all(
-      dependencies.map(async (wbsNum: WbsNumber) => {
+      blockedBy.map(async (wbsNum: WbsNumber) => {
         const { carNumber, projectNumber, workPackageNumber } = wbsNum;
         const wbsElem = await prisma.wBS_Element.findUnique({
           where: {
@@ -369,13 +369,13 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
-    const dependenciesChangeJson = await createDependenciesChangesJson(
-      originalWorkPackage.dependencies.map((element) => element.wbsElementId),
+    const blockedByChangeJson = await createBlockedByChangesJson(
+      originalWorkPackage.blockedBy.map((element) => element.wbsElementId),
       depsIds.map((elem) => elem as number),
       crId,
       userId,
       wbsElementId!,
-      'dependency'
+      'blocked by'
     );
     const expectedActivitiesChangeJson = createDescriptionBulletChangesJson(
       originalWorkPackage.expectedActivities
@@ -426,9 +426,9 @@ export default class WorkPackagesService {
       changes.push(projectLeadChangeJson);
     }
 
-    // add the changes for each of dependencies, expected activities, and deliverables
+    // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
-      .concat(dependenciesChangeJson)
+      .concat(blockedByChangeJson)
       .concat(expectedActivitiesChangeJson.changes)
       .concat(deliverablesChangeJson.changes);
 
@@ -450,7 +450,7 @@ export default class WorkPackagesService {
           }
         },
         stage,
-        dependencies: {
+        blockedBy: {
           set: [], // remove all the connections then add all the given ones
           connect: depsIds.map((ele) => ({ wbsElementId: ele }))
         }

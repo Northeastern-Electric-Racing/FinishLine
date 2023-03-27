@@ -20,7 +20,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof wo
     duration: wpInput.duration,
     expectedActivities: wpInput.expectedActivities.map(descriptionBulletTransformer),
     deliverables: wpInput.deliverables.map(descriptionBulletTransformer),
-    dependencies: wpInput.dependencies.map(wbsNumOf),
+    blockedBy: wpInput.blockedBy.map(wbsNumOf),
     projectManager: wpInput.wbsElement.projectManager ? userTransformer(wpInput.wbsElement.projectManager) : undefined,
     projectLead: wpInput.wbsElement.projectLead ? userTransformer(wpInput.wbsElement.projectLead) : undefined,
     status: convertStatus(wpInput.wbsElement.status),
