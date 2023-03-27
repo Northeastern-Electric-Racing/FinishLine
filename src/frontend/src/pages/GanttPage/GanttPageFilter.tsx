@@ -12,7 +12,6 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
-import { faCalendarXmark } from '@fortawesome/free-solid-svg-icons';
 
 const CarButton = ({ number, onChange }: { number: string; onChange: (event: ChangeEvent<HTMLInputElement>) => void }) => (
   <Grid item>
