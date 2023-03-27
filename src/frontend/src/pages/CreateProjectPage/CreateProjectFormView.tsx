@@ -79,30 +79,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <FormControl fullWidth sx={{}}>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter project name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth sx={{}}>
-              <FormLabel>Car Number</FormLabel>
-              <ReactHookTextField
-                name="carNumber"
-                control={control}
-                placeholder="Enter car number..."
-                errorMessage={errors.carNumber}
-                type="number"
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={3}>
             <FormControl fullWidth sx={{}}>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -133,7 +110,30 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={3}>
+            <FormControl fullWidth sx={{}}>
+              <FormLabel>Car Number</FormLabel>
+              <ReactHookTextField
+                name="carNumber"
+                control={control}
+                placeholder="Enter car number..."
+                errorMessage={errors.carNumber}
+                type="number"
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{}}>
+              <FormLabel>Project Name</FormLabel>
+              <ReactHookTextField
+                name="name"
+                control={control}
+                placeholder="Enter project name..."
+                errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={6}>
             <FormControl fullWidth sx={{}}>
               <FormLabel>Project Summary</FormLabel>
               <ReactHookTextField
