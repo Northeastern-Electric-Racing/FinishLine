@@ -52,8 +52,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
           </FormControl>
         </Grid>
         <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
-          <FormControl fullWidth>
-            <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+          <FormControl fullWidth sx={{ overflow: 'hidden' }}>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
               name="startDate"
               control={control}
