@@ -59,14 +59,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </Grid>
         <Grid item xs={2} md={2}>
           <Stack direction="row" alignItems="center">
-            <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.taskListLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Task List
-            </Link>
-          </Stack>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Stack direction="row" alignItems="center">
             <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
             <Link href={project.bomLink!} underline="always" fontSize={19} sx={{ pl: 1 }}>
               BOM
