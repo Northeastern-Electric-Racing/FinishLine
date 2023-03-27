@@ -79,7 +79,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={3}>
+          <Grid item xs={6} md={3}>
             <FormControl fullWidth sx={{}}>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -91,8 +91,20 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth sx={{}}>
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth>
+              <FormLabel>Car Number</FormLabel>
+              <ReactHookTextField
+                name="carNumber"
+                control={control}
+                placeholder="Enter car number..."
+                errorMessage={errors.carNumber}
+                type="number"
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
               <FormLabel>Team</FormLabel>
               <Controller
                 name="teamId"
@@ -110,20 +122,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
-            <FormControl fullWidth sx={{}}>
-              <FormLabel>Car Number</FormLabel>
-              <ReactHookTextField
-                name="carNumber"
-                control={control}
-                placeholder="Enter car number..."
-                errorMessage={errors.carNumber}
-                type="number"
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth sx={{}}>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
                 name="name"
@@ -133,8 +133,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth sx={{}}>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
               <FormLabel>Project Summary</FormLabel>
               <ReactHookTextField
                 name="summary"
