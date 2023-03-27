@@ -83,7 +83,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               control={control}
               type="number"
               placeholder="Enter duration..."
-              errorMessage={errors.budget}
+              errorMessage={errors.duration}
             />
           </FormControl>
         </Grid>
