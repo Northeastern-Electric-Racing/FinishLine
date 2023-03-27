@@ -56,8 +56,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       } = req.body;
 
       const editedProject: Project = await ProjectsService.editProject(
@@ -75,8 +75,8 @@ export default class ProjectsController {
         slideDeckLink,
         bomLink,
         taskListLink,
-        projectLead || null,
-        projectManager || null
+        projectLeadId || null,
+        projectManagerId || null
       );
 
       return res.status(200).json(editedProject);
@@ -94,6 +94,17 @@ export default class ProjectsController {
       await ProjectsService.setProjectTeam(user, wbsNumber, teamId);
 
       return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)} successfully assigned to team ${teamId}.` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber);
+      res.status(200).json(deletedProject);
     } catch (error: unknown) {
       next(error);
     }

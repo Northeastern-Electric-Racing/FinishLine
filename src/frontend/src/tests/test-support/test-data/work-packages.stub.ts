@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsElementStatus, WorkPackage, TimelineStatus } from 'shared';
+import { WbsElementStatus, WorkPackage, TimelineStatus, WorkPackageStage } from 'shared';
 import {
   exampleAdminUser,
   exampleAppAdminUser,
@@ -12,9 +12,17 @@ import {
   exampleProjectLeadUser,
   exampleProjectManagerUser
 } from './users.stub';
-import { exampleWbsProject1, exampleWbsProject2, exampleWbsWorkPackage1, exampleWbsWorkPackage2 } from './wbs-numbers.stub';
+import {
+  exampleWbsProject1,
+  exampleWbsProject2,
+  exampleWbsWorkPackage1,
+  exampleWbsWorkPackage2,
+  exampleWbsWorkPackage3,
+  exampleWbsWorkPackage4,
+  exampleWbsWorkPackage5
+} from './wbs-numbers.stub';
 
-export const exampleWorkPackage1: WorkPackage = {
+export const exampleResearchWorkPackage: WorkPackage = {
   id: 1,
   wbsNum: exampleWbsWorkPackage1,
   dateCreated: new Date('11/15/20'),
@@ -29,7 +37,7 @@ export const exampleWorkPackage1: WorkPackage = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   duration: 3,
-  dependencies: [],
+  blockedBy: [],
   expectedActivities: [
     {
       id: 1,
@@ -54,22 +62,19 @@ export const exampleWorkPackage1: WorkPackage = {
     {
       changeId: 1,
       changeRequestId: 33,
-      wbsNum: exampleWbsWorkPackage2,
+      wbsNum: exampleWbsWorkPackage3,
       implementer: exampleGuestUser,
       detail: 'Increased funding by $500.',
       dateImplemented: new Date('11/15/2003')
     }
   ],
-  projectName: 'project1'
+  projectName: 'project1',
+  stage: WorkPackageStage.Research
 };
 
-export const exampleWorkPackage2: WorkPackage = {
+export const exampleDesignWorkPackage: WorkPackage = {
   id: 2,
-  wbsNum: {
-    carNumber: 1,
-    projectNumber: 1,
-    workPackageNumber: 2
-  },
+  wbsNum: exampleWbsWorkPackage2,
   dateCreated: new Date('10/02/20'),
   name: 'Adhesive Shear Strength Test',
   status: WbsElementStatus.Inactive,
@@ -82,7 +87,7 @@ export const exampleWorkPackage2: WorkPackage = {
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
   duration: 5,
-  dependencies: [exampleWbsWorkPackage1],
+  blockedBy: [exampleWbsWorkPackage1],
   expectedActivities: [
     {
       id: 3,
@@ -113,7 +118,7 @@ export const exampleWorkPackage2: WorkPackage = {
     {
       changeId: 2,
       changeRequestId: 1,
-      wbsNum: exampleWbsWorkPackage2,
+      wbsNum: exampleWbsWorkPackage3,
       implementer: exampleAppAdminUser,
       detail: 'Decreased duration from 10 weeks to 7 weeks.',
       dateImplemented: new Date('03/24/21')
@@ -128,12 +133,13 @@ export const exampleWorkPackage2: WorkPackage = {
       dateImplemented: new Date('03/24/21')
     }
   ],
-  projectName: 'project2'
+  projectName: 'project2',
+  stage: WorkPackageStage.Design
 };
 
-export const exampleWorkPackage3: WorkPackage = {
+export const exampleManufacturingWorkPackage: WorkPackage = {
   id: 3,
-  wbsNum: exampleWbsWorkPackage2,
+  wbsNum: exampleWbsWorkPackage3,
   dateCreated: new Date('09/27/20'),
   name: 'Manufacture Wiring Harness',
   status: WbsElementStatus.Complete,
@@ -146,7 +152,7 @@ export const exampleWorkPackage3: WorkPackage = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
   duration: 2,
-  dependencies: [exampleWbsProject1, exampleWbsProject2],
+  blockedBy: [exampleWbsProject1, exampleWbsProject2],
   expectedActivities: [
     {
       id: 6,
@@ -187,7 +193,109 @@ export const exampleWorkPackage3: WorkPackage = {
       dateImplemented: new Date('03/24/21')
     }
   ],
+  projectName: 'project3',
+  stage: WorkPackageStage.Manufacturing
+};
+
+export const exampleIntegrationWorkPackage: WorkPackage = {
+  id: 4,
+  wbsNum: exampleWbsWorkPackage4,
+  dateCreated: new Date('2022-02-20'),
+  name: 'Install Wiring Harness',
+  status: WbsElementStatus.Complete,
+  projectLead: exampleLeadershipUser,
+  projectManager: exampleProjectManagerUser,
+  orderInProject: 4,
+  progress: 0,
+  expectedProgress: 100,
+  timelineStatus: TimelineStatus.VeryBehind,
+  startDate: new Date('2022-02-20'),
+  endDate: new Date('2022-02-27'),
+  duration: 1,
+  blockedBy: [exampleWbsWorkPackage3],
+  expectedActivities: [
+    {
+      id: 10,
+      detail: 'Purchase attachment hardware',
+      dateAdded: new Date('2022-02-20')
+    },
+    {
+      id: 11,
+      detail: 'Complete installation',
+      dateAdded: new Date('2022-02-20')
+    },
+    {
+      id: 12,
+      detail: 'Check for safety and rules compliance',
+      dateAdded: new Date('2022-02-20')
+    }
+  ],
+  deliverables: [
+    {
+      id: 28,
+      detail: 'Harness is attached strongly and in compliance with the rules',
+      dateAdded: new Date('2022-02-20')
+    }
+  ],
+  changes: [
+    {
+      changeId: 8,
+      changeRequestId: 15,
+      wbsNum: exampleWbsWorkPackage1,
+      implementer: exampleAdminUser,
+      detail: 'New Work Package Created',
+      dateImplemented: new Date('2022-02-20')
+    }
+  ],
+  projectName: 'project3',
+  stage: WorkPackageStage.Integration
+};
+
+export const exampleWorkPackage5: WorkPackage = {
+  id: 5,
+  wbsNum: exampleWbsWorkPackage5,
+  dateCreated: new Date('2022-02-20'),
+  name: 'Party In Celebration',
+  status: WbsElementStatus.Complete,
+  projectLead: exampleLeadershipUser,
+  projectManager: exampleProjectManagerUser,
+  orderInProject: 5,
+  progress: 100,
+  expectedProgress: 100,
+  timelineStatus: TimelineStatus.OnTrack,
+  startDate: new Date('2022-02-21'),
+  endDate: new Date('2022-02-28'),
+  duration: 1,
+  blockedBy: [],
+  expectedActivities: [
+    {
+      id: 13,
+      detail: 'YAYYYYYYY',
+      dateAdded: new Date('2022-02-21')
+    }
+  ],
+  deliverables: [
+    {
+      id: 29,
+      detail: 'Stomachs full with CAKE',
+      dateAdded: new Date('2022-02-21')
+    }
+  ],
+  changes: [
+    {
+      changeId: 9,
+      changeRequestId: 16,
+      wbsNum: exampleWbsWorkPackage1,
+      implementer: exampleAdminUser,
+      detail: 'New Work Package Created',
+      dateImplemented: new Date('2022-02-21')
+    }
+  ],
   projectName: 'project3'
 };
 
-export const exampleAllWorkPackages: WorkPackage[] = [exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3];
+export const exampleAllWorkPackages: WorkPackage[] = [
+  exampleResearchWorkPackage,
+  exampleDesignWorkPackage,
+  exampleManufacturingWorkPackage
+];

@@ -3,11 +3,19 @@ import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
-import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why } from '@prisma/client';
-import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
+import {
+  updateBlocking,
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
+} from '../utils/change-requests.utils';
+import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+<<<<<<< HEAD:src/backend/src/services/change-request.services.ts
 import { createChange } from '../utils/work-packages.utils';
+=======
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+>>>>>>> develop:src/backend/src/services/change-requests.services.ts
 
 export default class ChangeRequestsService {
   /**
@@ -64,7 +72,7 @@ export default class ChangeRequestsService {
         activationChangeRequest: true,
         scopeChangeRequest: true,
         wbsElement: {
-          include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, project: true }
+          include: { workPackage: workPackageQueryArgs, project: true }
         }
       }
     });
@@ -107,18 +115,29 @@ export default class ChangeRequestsService {
           }
         });
       } else if (foundCR.wbsElement.workPackage) {
+        // get the project for the work package
         const wpProj = await prisma.project.findUnique({
-          where: { projectId: foundCR.wbsElement.workPackage.projectId }
+          where: { projectId: foundCR.wbsElement.workPackage.projectId },
+          include: { workPackages: workPackageQueryArgs }
         });
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
+        // calculate the new budget and new duration
         const newBudget = wpProj.budget + foundPs.budgetImpact;
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
+        // create changes that reflect the new budget and duration
         const changes = [
           createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
           createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
         ];
+
+        // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
+        if (foundPs.timelineImpact > 0) {
+          await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+        }
+
+        // update the project and work package
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {
@@ -148,6 +167,7 @@ export default class ChangeRequestsService {
           }
         });
       }
+
       // finally update the proposed solution
       await prisma.proposed_Solution.update({
         where: { proposedSolutionId: psId },
@@ -312,7 +332,7 @@ export default class ChangeRequestsService {
     projectManagerId: number,
     startDate: Date,
     confirmDetails: boolean
-  ): Promise<Number> {
+  ): Promise<number> {
     // verify user is allowed to create activation change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -375,7 +395,6 @@ export default class ChangeRequestsService {
    * @param projectNumber  the project number for the wbs element
    * @param workPackageNumber  the work package number for the wbs element
    * @param type  the type of cr
-   * @param leftoverBudget  the leftover budget
    * @param confirmDone  whether or not to confirm
    * @returns the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not stage gate
@@ -386,7 +405,6 @@ export default class ChangeRequestsService {
     projectNumber: number,
     workPackageNumber: number,
     type: CR_Type,
-    leftoverBudget: number,
     confirmDone: boolean
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
@@ -413,7 +431,7 @@ export default class ChangeRequestsService {
         type,
         stageGateChangeRequest: {
           create: {
-            leftoverBudget,
+            leftoverBudget: 0,
             confirmDone
           }
         }
@@ -462,9 +480,8 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: Scope_CR_Why[],
-    budgetImpact: number
-  ): Promise<Number> {
+    why: { type: Scope_CR_Why_Type; explain: string }[]
+  ): Promise<number> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -516,7 +533,7 @@ export default class ChangeRequestsService {
       const slackMsg =
         `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
         `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId, budgetImpact);
+      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
     }
 
     return createdCR.crId;
@@ -541,7 +558,7 @@ export default class ChangeRequestsService {
     description: string,
     timelineImpact: number,
     scopeImpact: string
-  ): Promise<String> {
+  ): Promise<string> {
     // verify user is allowed to create stage gate change requests
     if (submitter.role === Role.GUEST) throw new AccessDeniedException();
 
@@ -571,5 +588,32 @@ export default class ChangeRequestsService {
     });
 
     return createProposedSolution.proposedSolutionId;
+  }
+
+  /**
+   * Deletes the Change Request
+   * @param submitter The user who deleted the change request
+   * @param crId the change request to be deleted
+   */
+  static async deleteChangeRequest(submitter: User, crId: number): Promise<void> {
+    // ensure existence of change request
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId }
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    // verify user is allowed to delete change requests
+    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
+      throw new AccessDeniedException();
+
+    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
+
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot delete a reviewed change request!`);
+
+    await prisma.change_Request.update({
+      where: { crId },
+      data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
+    });
   }
 }

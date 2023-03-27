@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
+import taskQueryArgs from './tasks.query-args';
 
 const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
   include: {
@@ -12,12 +13,18 @@ const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
       include: {
         projectLead: true,
         projectManager: true,
-        changes: { include: { implementer: true }, orderBy: { dateImplemented: 'asc' } }
+        changes: {
+          where: { changeRequest: { dateDeleted: null } },
+          include: { implementer: true },
+          orderBy: { dateImplemented: 'asc' }
+        },
+        blocking: true,
+        tasks: { where: { dateDeleted: null }, ...taskQueryArgs }
       }
     },
     expectedActivities: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
     deliverables: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
-    dependencies: { where: { dateDeleted: null } }
+    blockedBy: { where: { dateDeleted: null } }
   }
 });
 

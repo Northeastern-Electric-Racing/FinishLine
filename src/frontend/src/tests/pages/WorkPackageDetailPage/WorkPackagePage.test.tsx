@@ -10,7 +10,7 @@ import { Auth } from '../../../utils/types';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { exampleWorkPackage1 } from '../../test-support/test-data/work-packages.stub';
+import { exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
@@ -51,13 +51,13 @@ describe('work package container', () => {
   });
 
   it('renders the loaded project', () => {
-    mockSingleWPHook(false, false, exampleWorkPackage1);
+    mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook();
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     expect(screen.getAllByText('1.1.1 - Bodywork Concept of Design').length).toEqual(2);
-    expect(screen.getByText('Dependencies')).toBeInTheDocument();
+    expect(screen.getByText('Blocked By')).toBeInTheDocument();
     expect(screen.getByText('Expected Activities')).toBeInTheDocument();
     expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('work package container', () => {
   });
 
   it('enables the edit button for non-guest user', () => {
-    mockSingleWPHook(false, false, exampleWorkPackage1);
+    mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook(exampleAdminUser);
     renderComponent();
 
@@ -95,7 +95,7 @@ describe('work package container', () => {
   });
 
   it('disables the edit button for guest user', () => {
-    mockSingleWPHook(false, false, exampleWorkPackage1);
+    mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook(exampleGuestUser);
     renderComponent();
 

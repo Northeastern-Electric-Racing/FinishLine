@@ -39,11 +39,12 @@ projectRouter.post(
   nonEmptyString(body('slideDeckLink')),
   nonEmptyString(body('bomLink')),
   nonEmptyString(body('taskListLink')),
-  intMinZero(body('projectLead').optional()),
-  intMinZero(body('projectManager').optional()),
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional()),
   validateInputs,
   ProjectsController.editProject
 );
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
+projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 
 export default projectRouter;

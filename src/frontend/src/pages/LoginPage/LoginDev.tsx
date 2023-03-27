@@ -12,6 +12,7 @@ import FormControl from '@mui/material/FormControl';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { fullNamePipe } from '../../utils/pipes';
+import { rankUserRole } from 'shared';
 interface LoginDevProps {
   devSetUser: (userId: number) => void;
   devFormSubmit: (e: any) => any;
@@ -43,7 +44,9 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           }
         >
           {usersList
-            .sort((a, b) => a.userId - b.userId)
+            .sort((a, b) => a.firstName.localeCompare(b.firstName))
+            .sort((a, b) => a.lastName.localeCompare(b.lastName))
+            .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role))
             .map((user) => (
               <MenuItem key={user.userId} value={user.userId}>
                 {fullNamePipe(user)} ({user.role.toLowerCase()})

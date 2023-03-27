@@ -18,6 +18,18 @@ enum CR_Type {
   ACTIVATION
 }
 
+enum Task_Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Task_Status {
+  IN_BACKLOG
+  IN_PROGRESS
+  DONE
+}
+
 enum WBS_Element_Status {
   INACTIVE
   ACTIVE
@@ -50,6 +62,13 @@ enum Scope_CR_Why_Type {
   OTHER
 }
 
+enum Work_Package_Stage {
+  RESEARCH
+  DESIGN
+  MANUFACTURING
+  INTEGRATION
+}
+
 model User {
   userId       Int            @id @default(autoincrement())
   firstName    String
@@ -78,6 +97,9 @@ model User {
   resolvedRisks             Risk[]               @relation(name: "resolvedBy")
   deletedRisks              Risk[]               @relation(name: "deletedBy")
   createdProposedSolutions  Proposed_Solution[]
+  createdTasks              Task[]               @relation(name: "createdBy")
+  deletedTasks              Task[]               @relation(name: "deletedBy")
+  assignedTasks             Task[]               @relation(name: "assignedTo")
 }
 
 model Team {
@@ -196,25 +218,26 @@ model Change {
 }
 
 model WBS_Element {
-  wbsElementId          Int                @id @default(autoincrement())
-  dateCreated           DateTime           @default(now())
-  dateDeleted           DateTime?
-  carNumber             Int
-  projectNumber         Int
-  workPackageNumber     Int
-  name                  String
-  status                WBS_Element_Status @default(INACTIVE)
-  projectLeadId         Int?
-  projectLead           User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId      Int?
-  projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
-  changeRequests        Change_Request[]
-  changes               Change[]
-  deletedByUserId       Int?
-  deletedBy             User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
-  project               Project?
-  workPackage           Work_Package?
-  dependentWorkPackages Work_Package[]     @relation("dependencies")
+  wbsElementId      Int                @id @default(autoincrement())
+  dateCreated       DateTime           @default(now())
+  dateDeleted       DateTime?
+  carNumber         Int
+  projectNumber     Int
+  workPackageNumber Int
+  name              String
+  status            WBS_Element_Status @default(INACTIVE)
+  projectLeadId     Int?
+  projectLead       User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId  Int?
+  projectManager    User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  changeRequests    Change_Request[]
+  changes           Change[]
+  deletedByUserId   Int?
+  deletedBy         User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
+  project           Project?
+  workPackage       Work_Package?
+  blocking          Work_Package[]     @relation("blockedBy")
+  tasks             Task[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -248,9 +271,10 @@ model Work_Package {
   orderInProject     Int
   startDate          DateTime
   duration           Int
-  dependencies       WBS_Element[]        @relation(name: "dependencies")
+  blockedBy          WBS_Element[]        @relation(name: "blockedBy")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
+  stage              Work_Package_Stage?
 }
 
 model Description_Bullet {
@@ -289,4 +313,22 @@ model Risk {
   resolvedAt       DateTime?
   deletedByUserId  Int?
   deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+}
+
+model Task {
+  taskId          String        @id @default(uuid())
+  title           String
+  notes           String
+  deadline        DateTime
+  assignees       User[]        @relation(name: "assignedTo")
+  priority        Task_Priority
+  status          Task_Status
+  deletedBy       User?         @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+  deletedByUserId Int?
+  dateDeleted     DateTime?
+  createdBy       User          @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
+  createdByUserId Int
+  dateCreated     DateTime      @default(now())
+  wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId    Int
 }

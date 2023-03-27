@@ -15,6 +15,7 @@ import {
 } from '../utils/projects.utils';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
+import WorkPackagesService from './work-packages.services';
 
 export default class ProjectsService {
   /**
@@ -122,8 +123,8 @@ export default class ProjectsService {
    * @param slideDeckLink the new slideDeckLink of the project
    * @param bomLink the new bomLink of the project
    * @param taskListLink the new taskListLink of the project
-   * @param projectLead the new projectLead of the project
-   * @param projectManager the new projectManager of the project
+   * @param projectLeadId the new projectLead of the project
+   * @param projectManagerId the new projectManager of the project
    * @returns the edited project
    */
   static async editProject(
@@ -141,8 +142,8 @@ export default class ProjectsService {
     slideDeckLink: string | null,
     bomLink: string | null,
     taskListLink: string | null,
-    projectLead: number | null,
-    projectManager: number | null
+    projectLeadId: number | null,
+    projectManagerId: number | null
   ): Promise<Project> {
     if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot edit projects');
     const { userId } = user;
@@ -215,7 +216,7 @@ export default class ProjectsService {
     const projectManagerChangeJson = createChangeJsonNonList(
       'project manager',
       await getUserFullName(originalProject.wbsElement.projectManagerId),
-      await getUserFullName(projectManager),
+      await getUserFullName(projectManagerId),
       crId,
       userId,
       wbsElementId
@@ -223,7 +224,7 @@ export default class ProjectsService {
     const projectLeadChangeJson = createChangeJsonNonList(
       'project lead',
       await getUserFullName(originalProject.wbsElement.projectLeadId),
-      await getUserFullName(projectLead),
+      await getUserFullName(projectLeadId),
       crId,
       userId,
       wbsElementId
@@ -286,7 +287,7 @@ export default class ProjectsService {
       wbsElementId,
       'other constraints'
     );
-    // add the changes for each of dependencies, expected activities, and deliverables
+    // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
       .concat(rulesChangeJson)
       .concat(goalsChangeJson.changes)
@@ -309,8 +310,8 @@ export default class ProjectsService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager
+            projectLeadId,
+            projectManagerId
           }
         }
       },
@@ -390,5 +391,119 @@ export default class ProjectsService {
     });
 
     return;
+  }
+
+  /**
+   * Delete the the project in the database along with all its dependencies.
+   * @param user the user who is trying to delete the project
+   * @param wbsNumber the wbsNumber of the project
+   * @throws if the wbs number does not correspond to a project, the user trying to
+   * delete the project is not admin/app-admin, or the project is not found.
+   * @returns the project that is deleted.
+   */
+  static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN) {
+      throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
+    }
+
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+
+    const { projectId, wbsElementId } = project;
+
+    const dateDeleted: Date = new Date();
+    const deletedByUserId = user.userId;
+
+    const deletedProject = await prisma.project.update({
+      where: {
+        projectId
+      },
+      data: {
+        wbsElement: {
+          update: {
+            dateDeleted,
+            deletedByUserId,
+            changeRequests: {
+              updateMany: {
+                where: { wbsElementId },
+                data: { dateDeleted, deletedByUserId }
+              }
+            }
+          }
+        },
+        goals: {
+          updateMany: {
+            where: {
+              projectIdGoals: projectId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        features: {
+          updateMany: {
+            where: {
+              projectIdFeatures: projectId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        otherConstraints: {
+          updateMany: {
+            where: {
+              projectIdOtherConstraints: projectId
+            },
+            data: {
+              dateDeleted
+            }
+          }
+        },
+        risks: {
+          updateMany: {
+            where: {
+              projectId
+            },
+            data: {
+              deletedByUserId,
+              dateDeleted
+            }
+          }
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    // need to delete each of the project's work packages as well
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        projectId
+      },
+      include: { wbsElement: true }
+    });
+
+    await Promise.all(
+      workPackages.map(
+        async (workPackage) => await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement))
+      )
+    );
+
+    return projectTransformer(deletedProject);
   }
 }

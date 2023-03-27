@@ -13,6 +13,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface CreateChangeRequestProps {}
 
@@ -35,6 +36,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  const toast = useToast();
 
   if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -45,20 +47,25 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const handleConfirm = async (data: FormInput) => {
     const cr = await mutateAsync({
       ...data,
-      wbsNum: validateWBS(wbsNum),
-      submitterId: userId
+      wbsNum: validateWBS(wbsNum)
     });
     const crId = parseInt(cr.message);
     proposedSolutions.forEach(async (ps) => {
       const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-      await cpsMutateAsync({
-        crId,
-        submitterId: userId,
-        description,
-        timelineImpact,
-        scopeImpact,
-        budgetImpact
-      });
+      try {
+        await cpsMutateAsync({
+          crId,
+          submitterId: userId,
+          description,
+          timelineImpact,
+          scopeImpact,
+          budgetImpact
+        });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        }
+      }
     });
 
     history.push(routes.CHANGE_REQUESTS);

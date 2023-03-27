@@ -16,7 +16,7 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   leaderId: flash.userId,
   leader: flash,
   projects: [],
-  members: []
+  members: [batman, wonderwoman]
 };
 
 export const sharedTeam1: SharedTeam = {
