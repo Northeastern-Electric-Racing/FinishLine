@@ -15,15 +15,19 @@ interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
 }
 
+// {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage}  /> : null}
+
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
     <PageBlock
       title={'Work Package Details'}
       headerRight={
-        <>
-          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div style={{ margin: '4px' }}>
+            {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+          </div>
           <WbsStatus status={workPackage.status} />
-        </>
+        </div>
       }
     >
       <Grid container spacing={1}>
