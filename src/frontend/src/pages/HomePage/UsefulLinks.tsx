@@ -67,18 +67,6 @@ const UsefulLinks: React.FC = () => {
       </Link>
     </>,
     <>
-      <Description sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Project Update Log
-      </Link>
-    </>,
-    <>
       <Settings sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
         href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines"
