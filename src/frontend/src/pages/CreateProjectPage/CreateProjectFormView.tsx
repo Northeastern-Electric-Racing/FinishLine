@@ -80,7 +80,7 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageBlock title={''}>
         <Grid container spacing={2}>
           <Grid item xs={6} md={3}>
-            <FormControl fullWidth sx={{}}>
+            <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
