@@ -6,7 +6,7 @@ interface ReactHookEditableListProps {
   name: string;
   ls: FieldArrayWithId[];
   register: UseFormRegister<any>;
-  append: UseFieldArrayAppend<any> | UseFieldArrayAppend<any, string>;
+  append: UseFieldArrayAppend<any, any>;
   remove: UseFieldArrayRemove;
 }
 
