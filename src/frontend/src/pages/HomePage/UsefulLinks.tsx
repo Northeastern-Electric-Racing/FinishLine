@@ -6,16 +6,7 @@
 
 import { useTheme } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import {
-  ShoppingCart,
-  Settings,
-  Receipt,
-  Description,
-  CurrencyExchange,
-  AttachMoney,
-  CalendarMonth,
-  Info
-} from '@mui/icons-material';
+import { ShoppingCart, Settings, Receipt, CurrencyExchange, AttachMoney, CalendarMonth, Info } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
