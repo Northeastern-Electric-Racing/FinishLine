@@ -84,7 +84,15 @@ const CreditsPage: React.FC = () => {
     { name: 'Yechan Na', color: '#C2B078' },
     { name: 'Liam Kosar', color: '#eb66ff' },
     { name: 'Daniel Yu', color: '#bdc0c7' },
-    { name: 'William Seward', color: '#e53774' }
+    { name: 'William Seward', color: '#e53774' },
+    {
+      name: 'Zach Norman',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
