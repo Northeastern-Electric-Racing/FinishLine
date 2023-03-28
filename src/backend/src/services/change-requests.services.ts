@@ -11,11 +11,8 @@ import {
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
-<<<<<<< HEAD:src/backend/src/services/change-request.services.ts
 import { createChange } from '../utils/work-packages.utils';
-=======
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
->>>>>>> develop:src/backend/src/services/change-requests.services.ts
 
 export default class ChangeRequestsService {
   /**
