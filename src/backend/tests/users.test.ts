@@ -1,8 +1,9 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman, wonderwoman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
+import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
 
 describe('Users', () => {
   afterEach(() => {
@@ -89,6 +90,53 @@ describe('Users', () => {
       expect(res.userId).toStrictEqual(1);
       expect(res.defaultTheme).toStrictEqual('DARK');
       expect(res.slackId).toStrictEqual('slack');
+    });
+  });
+
+  describe('favoriteProjects', () => {
+    test('fails when project does not exist', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      const fakeProjectId = 100000;
+      await expect(() => UsersService.updateUserFavorites(fakeProjectId, batman, true)).rejects.toThrow(
+        new NotFoundException('Project', fakeProjectId)
+      );
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+    });
+    test('fails when user does not exist', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
+      jest.spyOn(prisma.user, 'findFirst').mockResolvedValue(null);
+
+      const fakeUserId = 100000;
+      await expect(() =>
+        UsersService.updateUserFavorites(prismaProject1.projectId, { ...batman, userId: fakeUserId }, true)
+      ).rejects.toThrow(new NotFoundException('User', fakeUserId));
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+      expect(prisma.user.findFirst).toBeCalledTimes(1);
+    });
+    test('completes succesfully when adding', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
+      jest.spyOn(prisma.user, 'findFirst').mockResolvedValue(batman);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const res = await UsersService.updateUserFavorites(prismaProject1.projectId, batman, true);
+
+      expect(res).toBe(prismaProject1);
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+      expect(prisma.user.findFirst).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(1);
+    });
+
+    test('completes succesfully when deleting', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
+      jest.spyOn(prisma.user, 'findFirst').mockResolvedValue(batman);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const res = await UsersService.updateUserFavorites(prismaProject1.projectId, batman, false);
+
+      expect(res).toBe(prismaProject1);
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+      expect(prisma.user.findFirst).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
 });

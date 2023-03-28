@@ -204,15 +204,11 @@ export default class UsersService {
 
     if (!targetProject) throw new NotFoundException('Project', projectId);
 
-    const userFavorites = await prisma.user.findFirst({
-      where: { userId: user.userId },
-      select: { favoriteProjects: true }
+    const userWithFavorites = await prisma.user.findFirst({
+      where: { userId: user.userId }
     });
 
-    if (!userFavorites) throw new NotFoundException('User', user.userId);
-
-    const { favoriteProjects } = userFavorites;
-    favoriteProjects.push(targetProject);
+    if (!userWithFavorites) throw new NotFoundException('User', user.userId);
 
     favorite
       ? await prisma.user.update({
