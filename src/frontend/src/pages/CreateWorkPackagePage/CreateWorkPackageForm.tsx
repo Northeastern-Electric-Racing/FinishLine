@@ -16,7 +16,7 @@ export interface CreateWorkPackageFormInputs {
   name: string;
   startDate: Date;
   duration: number;
-  crId: string;
+  crId: number;
   stage: WorkPackageStage | null;
   wbsNum: string;
   dependencies: { wbsNum: string }[];
@@ -56,7 +56,7 @@ const CreateWorkPackageForm: React.FC = () => {
       });
       const createdWbsNum = await mutateAsync({
         name: name.trim(),
-        crId: parseInt(crId),
+        crId,
         projectWbsNum: {
           carNumber: wbsNumValidated.carNumber,
           projectNumber: wbsNumValidated.projectNumber,
@@ -71,7 +71,6 @@ const CreateWorkPackageForm: React.FC = () => {
       });
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 3000);
       }
