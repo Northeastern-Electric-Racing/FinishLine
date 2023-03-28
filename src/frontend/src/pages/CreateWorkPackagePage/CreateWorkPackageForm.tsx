@@ -46,7 +46,7 @@ const CreateWorkPackageForm: React.FC = () => {
         toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
-      const depWbsNums = dependencies.map((dependency: any) => {
+      const depWbsNums = dependencies.map((dependency: { wbsNum: string }) => {
         const depWbsNum = validateWBS(dependency.wbsNum);
         return {
           carNumber: depWbsNum.carNumber,
