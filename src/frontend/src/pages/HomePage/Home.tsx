@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Snackbar, Alert, Link } from '@mui/material';
+import { Typography, Alert, Link } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { routes } from '../../utils/routes';
 import { useAuth } from '../../hooks/auth.hooks';
