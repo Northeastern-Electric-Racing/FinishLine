@@ -1,9 +1,9 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
-import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaProject1 } from './test-data/projects.test-data';
 
 describe('Users', () => {
   afterEach(() => {
