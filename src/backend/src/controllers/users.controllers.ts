@@ -92,4 +92,18 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async updateUserFavorites(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectId: number = parseInt(req.params.projectId);
+      const { favorite } = req.body;
+      const user = await getCurrentUser(res);
+
+      const targetProject = await UsersService.updateUserFavorites(projectId, user, favorite);
+
+      res.status(200).json(targetProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
