@@ -202,6 +202,38 @@ const lamarJackson: Prisma.UserCreateInput = {
   role: Role.LEADERSHIP
 };
 
+const nezamJazayeri: Prisma.UserCreateInput = {
+  firstName: 'Nezam',
+  lastName: 'Jazayeri',
+  email: 'nezam.jazayeri@steakman.com',
+  googleAuthId: 'strip',
+  role: Role.HEAD
+};
+
+const ryanHowe: Prisma.UserCreateInput = {
+  firstName: 'Ryan',
+  lastName: 'Howe',
+  email: 'howeryan@smoothie.com',
+  googleAuthId: 'ribeye',
+  role: Role.HEAD
+};
+
+const anthonyBernardi: Prisma.UserCreateInput = {
+  firstName: 'Anthony',
+  lastName: 'Bernadi',
+  email: 'bernardi.twan@leavingus.com',
+  googleAuthId: 'wagyu',
+  role: Role.HEAD
+};
+
+const reidChandler: Prisma.UserCreateInput = {
+  firstName: 'Lamar',
+  lastName: 'Jackson',
+  email: 'rchandler@frontend.com',
+  googleAuthId: 'flank',
+  role: Role.HEAD
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -222,5 +254,9 @@ export const dbSeedAllUsers = {
   calRipken,
   adleyRutschman,
   johnHarbaugh,
-  lamarJackson
+  lamarJackson,
+  nezamJazayeri,
+  ryanHowe,
+  anthonyBernardi,
+  reidChandler
 };

@@ -38,6 +38,36 @@ export class AccessDeniedException extends HttpException {
   }
 }
 
+export class AccessDeniedAdminException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that non-admins may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`admin and app-admin only have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedMemberException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests and members may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`members and guests do not have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedGuestException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`guests do not have the ability to ${message}`);
+  }
+}
+
 /*
  * Error handling middleware. Takes the error and sends back the status of it and the message
  */

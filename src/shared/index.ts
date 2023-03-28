@@ -17,4 +17,4 @@ export * from './src/date-utils';
 export * from './src/backend-supports/project-supports';
 export * from './src/word-count';
 
-export * from './src/rank-user-role';
+export * from './src/user-utils';

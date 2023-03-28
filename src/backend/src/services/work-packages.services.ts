@@ -1,7 +1,9 @@
-import { Role, User, WBS_Element } from '@prisma/client';
+import { User, WBS_Element } from '@prisma/client';
 import {
   DescriptionBullet,
   equalsWbsNumber,
+  isAdmin,
+  isGuest,
   isProject,
   TimelineStatus,
   WbsElementStatus,
@@ -11,7 +13,12 @@ import {
   WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  HttpException,
+  AccessDeniedGuestException,
+  AccessDeniedAdminException
+} from '../utils/errors.utils';
 import {
   createChangeJsonDates,
   createChangeJsonNonList,
@@ -124,7 +131,7 @@ export default class WorkPackagesService {
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
     await validateChangeRequestAccepted(crId);
 
@@ -273,7 +280,7 @@ export default class WorkPackagesService {
     projectManager: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
 
     const { userId } = user;
 
@@ -491,7 +498,7 @@ export default class WorkPackagesService {
    */
   static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminException('delete work packages');
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 

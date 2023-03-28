@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/auth.hooks';
 import ChangeRequestDetailsView from './ChangeRequestDetailsView';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { RoleEnum } from 'shared';
+import { isAdmin, isGuest, isNotLeadership } from 'shared';
 
 const ChangeRequestDetails: React.FC = () => {
   interface ParamTypes {
@@ -26,14 +26,11 @@ const ChangeRequestDetails: React.FC = () => {
   return (
     <ChangeRequestDetailsView
       isUserAllowedToReview={
-        auth.user?.role !== 'GUEST' && auth.user?.role !== 'MEMBER' && auth.user?.userId !== data?.submitter.userId
+        auth.user ? !isNotLeadership(auth.user.role) && auth.user?.userId !== data?.submitter.userId : false
       }
-      isUserAllowedToImplement={auth.user?.role !== 'GUEST'}
+      isUserAllowedToImplement={auth.user ? !isGuest(auth.user.role) : false}
       isUserAllowedToDelete={
-        (auth.user?.role === RoleEnum.ADMIN ||
-          auth.user?.role === RoleEnum.APP_ADMIN ||
-          auth.user?.userId === data?.submitter.userId) &&
-        !data?.dateReviewed // Can't delete a CR that has been reviewed
+        (auth.user && isAdmin(auth.user.role)) || (auth.user?.userId === data?.submitter.userId && !data?.dateReviewed)
       }
       changeRequest={data!}
     />

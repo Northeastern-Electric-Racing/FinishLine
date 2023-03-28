@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { WorkPackage, Project } from 'shared';
+import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
@@ -76,12 +76,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
-  const isGuest = auth.user.role === 'GUEST';
-
-  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
-
   const editBtn = (
-    <MenuItem onClick={handleClickEdit} disabled={isGuest}>
+    <MenuItem onClick={handleClickEdit} disabled={isGuest(auth.user.role)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
@@ -93,7 +89,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     <MenuItem
       component={Link}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(proj.wbsNum)}
-      disabled={isGuest}
+      disabled={isGuest(auth.user.role)}
       onClick={handleDropdownClose}
     >
       <ListItemIcon>
@@ -110,7 +106,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const deleteButton = (
-    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(auth.user.role)}>
       Delete
     </MenuItem>
   );

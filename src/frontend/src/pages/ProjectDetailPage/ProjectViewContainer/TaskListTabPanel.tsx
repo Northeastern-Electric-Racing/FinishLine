@@ -21,7 +21,7 @@ import {
   useGridApiContext
 } from '@mui/x-data-grid';
 import React, { useState } from 'react';
-import { Project, Task, TaskPriority, TaskStatus, User, UserPreview } from 'shared';
+import { isLeadership, Project, Task, TaskPriority, TaskStatus, User, UserPreview } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useAuth } from '../../../hooks/auth.hooks';
 import {
@@ -167,9 +167,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const editTaskPermissions = (user: User | undefined, task: Task, proj: Project): boolean => {
     if (!user) return false;
     return (
-      (user.role === 'APP_ADMIN' ||
-        user.role === 'ADMIN' ||
-        user.role === 'LEADERSHIP' ||
+      (isLeadership(user.role) ||
         proj.projectLead?.userId === user.userId ||
         proj.projectManager?.userId === user.userId ||
         task.assignees.map((u) => u.userId).includes(user.userId) ||

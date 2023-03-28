@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamPreview, User } from 'shared';
+import { isGuest, TeamPreview, User } from 'shared';
 import { fullNamePipe, datePipe } from '../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -330,7 +330,12 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
               >
                 Cancel
               </NERFailButton>
-              <NERSuccessButton variant="contained" disabled={auth.user!.role === 'GUEST'} type="submit" sx={{ mx: 1 }}>
+              <NERSuccessButton
+                variant="contained"
+                disabled={auth.user ? isGuest(auth.user.role) : true}
+                type="submit"
+                sx={{ mx: 1 }}
+              >
                 Confirm
               </NERSuccessButton>
             </Box>

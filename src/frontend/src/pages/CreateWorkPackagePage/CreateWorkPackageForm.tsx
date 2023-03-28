@@ -5,7 +5,7 @@
 
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
-import { isProject, validateWBS, WorkPackageStage } from 'shared';
+import { isGuest, isProject, validateWBS, WorkPackageStage } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
@@ -82,7 +82,7 @@ const CreateWorkPackageForm: React.FC = () => {
     <CreateWorkPackageFormView
       onSubmit={handleSubmit}
       onCancel={() => history.goBack()}
-      allowSubmit={auth.user.role !== 'GUEST'}
+      allowSubmit={!isGuest(auth.user.role)}
     />
   );
 };

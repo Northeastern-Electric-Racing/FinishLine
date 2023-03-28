@@ -1,5 +1,5 @@
-import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
-import { isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
+import { Task_Priority, Task_Status, User } from '@prisma/client';
+import { isAdmin, isLeadership, isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
@@ -46,14 +46,13 @@ export default class TasksService {
     const { team } = project;
     if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
-    const isLeadershipOrAbove =
-      createdBy.role === Role.ADMIN || createdBy.role === Role.APP_ADMIN || createdBy.role === Role.LEADERSHIP;
-
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (!isLeadershipOrAbove && !isProjectLeadOrManager && !isUserOnTeam(team, createdBy)) {
-      throw new AccessDeniedException();
+    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !isUserOnTeam(team, createdBy)) {
+      throw new AccessDeniedException(
+        'Only admins, app-admins, and project leads, project managers, or current team users can create tasks'
+      );
     }
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
@@ -204,10 +203,9 @@ export default class TasksService {
     if (wbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
 
     // this checks the current users permissions
-    const isAdmin = currentUser.role === Role.APP_ADMIN || currentUser.role === Role.ADMIN;
     const isLead = wbsElement.projectLeadId === currentUser.userId || wbsElement.projectManagerId === currentUser.userId;
-    if (!isAdmin && !isLead) {
-      throw new AccessDeniedException();
+    if (!isAdmin(currentUser.role) && !isLead) {
+      throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
     }
 
     const deletedTask = await prisma.task.update({

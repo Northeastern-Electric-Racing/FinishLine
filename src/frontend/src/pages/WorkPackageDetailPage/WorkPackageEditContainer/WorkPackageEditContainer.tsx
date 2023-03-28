@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { validateWBS, WorkPackage } from 'shared';
+import { isGuest, validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -89,7 +89,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   }
   const { userId } = auth.user;
 
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+  const users = allUsers.data.filter((u) => !isGuest(u.role));
 
   const transformDate = (date: Date) => {
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
