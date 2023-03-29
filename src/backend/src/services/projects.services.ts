@@ -6,7 +6,6 @@ import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminException,
-  AccessDeniedException,
   AccessDeniedGuestException,
   HttpException,
   NotFoundException

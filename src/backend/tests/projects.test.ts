@@ -7,12 +7,7 @@ import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
-import {
-  AccessDeniedException,
-  AccessDeniedAdminException,
-  HttpException,
-  NotFoundException
-} from '../src/utils/errors.utils';
+import { AccessDeniedAdminException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
