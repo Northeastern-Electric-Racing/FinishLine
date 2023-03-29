@@ -579,7 +579,15 @@ export default class WorkPackagesService {
     });
   }
 
+  /**
+   * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * @param user - the user doing the sending
+   * @param daysUntilDeadline - days forwards (or backwards!) to check
+   * @returns
+   */
   static async slackMessageUpcomingDeadlines(user: User, daysUntilDeadline: number): Promise<void> {
+    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) throw new AccessDeniedException();
+
     const workPackages = await prisma.work_Package.findMany({
       where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
       ...workPackageQueryArgs

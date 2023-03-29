@@ -13,6 +13,7 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   const { SLACK_BOT_TOKEN } = process.env;
   if (!SLACK_BOT_TOKEN) return;
 
+  // if link and link button are provided, add the button to the message, otherwise just send the markdown block
   const block =
     link && linkButtonText
       ? {
