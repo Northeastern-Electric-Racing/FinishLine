@@ -17,20 +17,28 @@ export const rankUserRole = (role: Role) => {
   }
 };
 
+const isAtLeastRank = (role: Role, rank: number) => {
+  return rankUserRole(role) >= rank;
+};
+
+const isAtMostRank = (role: Role, rank: number) => {
+  return rankUserRole(role) <= rank;
+};
+
 export const isAdmin = (role: Role) => {
-  return role === 'APP_ADMIN' || role === 'ADMIN';
+  return isAtLeastRank(role, 5);
 };
 
 export const isHead = (role: Role) => {
-  return isAdmin(role) || role === 'HEAD';
+  return isAtLeastRank(role, 4);
 };
 
 export const isLeadership = (role: Role) => {
-  return isHead(role) || role === 'LEADERSHIP';
+  return isAtLeastRank(role, 3);
 };
 
 export const isNotLeadership = (role: Role) => {
-  return role === 'MEMBER' || role === 'GUEST';
+  return isAtMostRank(role, 2);
 };
 
 export const isGuest = (role: Role) => {
