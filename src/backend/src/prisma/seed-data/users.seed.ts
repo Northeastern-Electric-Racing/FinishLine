@@ -227,8 +227,8 @@ const anthonyBernardi: Prisma.UserCreateInput = {
 };
 
 const reidChandler: Prisma.UserCreateInput = {
-  firstName: 'Lamar',
-  lastName: 'Jackson',
+  firstName: 'Reid',
+  lastName: 'Chandler',
   email: 'rchandler@frontend.com',
   googleAuthId: 'flank',
   role: Role.HEAD
