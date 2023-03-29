@@ -9,6 +9,12 @@ export const getUserFullName = async (userId: number | null) => {
   return `${user.firstName} ${user.lastName}`;
 };
 
+export const getUserSlackId = async (userId?: number): Promise<string | undefined> => {
+  if (!userId) return undefined;
+  const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
+  return user?.userSettings?.slackId;
+};
+
 /**
  * Produce a array of User with given userIds
  * @param userIds array of userIds as an array of integers

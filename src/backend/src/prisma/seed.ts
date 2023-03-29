@@ -611,7 +611,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 };
 
-performSeed()
+const hit = async () => {
+  await WorkPackagesService.slackMessageUpcomingDeadlines({} as any, -30);
+};
+
+hit()
   .catch((e) => {
     console.error(e);
     process.exit(1);
