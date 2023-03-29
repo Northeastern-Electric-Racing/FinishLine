@@ -6,7 +6,12 @@ import { prismaRisk1, prismaRisk1Deleted, prismaRisk1NoPerms, prismaRisk2, share
 import { batman, wonderwoman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 
 describe('Risks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -156,7 +161,7 @@ describe('Risks', () => {
       const projectId = 1;
       const detail = 'detail';
       await expect(() => RisksService.createRisk(wonderwoman, projectId, detail)).rejects.toThrow(
-        new AccessDeniedException('Guests cannot create risks!')
+        new AccessDeniedGuestException('create risks')
       );
 
       expect(prisma.project.findUnique).toHaveBeenCalledTimes(0);

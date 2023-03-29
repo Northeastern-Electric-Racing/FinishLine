@@ -52,7 +52,11 @@ describe('Tasks', () => {
 
       await expect(() =>
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app-admins, and project leads, project managers, or current team users can create tasks'
+        )
+      );
 
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -347,7 +351,9 @@ describe('Tasks', () => {
       jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
 
-      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(new AccessDeniedException());
+      await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(
+        new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks')
+      );
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);

@@ -52,9 +52,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
           <ProposedSolutionView key={i} proposedSolution={proposedSolution} crReviewed={crReviewed} />
         ))}
       </div>
-      {crReviewed === undefined && auth.user ? (
-        !isGuest(auth.user.role)
-      ) : false ? (
+      {crReviewed === undefined && (auth.user ? !isGuest(auth.user.role) : false) ? (
         <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
           + Add Proposed Solution
         </Button>

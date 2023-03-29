@@ -3,7 +3,12 @@ import { batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminException,
+  AccessDeniedException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User } from '@prisma/client';
@@ -217,7 +222,7 @@ describe('Work Packages', () => {
 
     test('User does not have submit permission', async () => {
       await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
-        new AccessDeniedException()
+        new AccessDeniedAdminException('delete work packages')
       );
     });
 

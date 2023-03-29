@@ -32,7 +32,7 @@ export default class RisksService {
    * @throws if the user does not have access to create a risk
    */
   static async createRisk(user: User, projectId: number, detail: string): Promise<string> {
-    if (isGuest(user.role)) throw new AccessDeniedGuestException('create risks!');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create risks');
 
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
 

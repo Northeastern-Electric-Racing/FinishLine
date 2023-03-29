@@ -387,7 +387,7 @@ export default class ProjectsService {
 
     // check for user and user permission (admin, app admin, or leader of the team)
     if (!isAdmin(user.role) && user.userId !== team.leaderId) {
-      throw new AccessDeniedException('Only admin and app-admin can set project teams');
+      throw new AccessDeniedAdminException('set project teams');
     }
 
     // if everything is fine, then update the given project to assign to provided team ID

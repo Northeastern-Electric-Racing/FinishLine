@@ -7,7 +7,12 @@ import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedException,
+  AccessDeniedAdminException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
@@ -110,7 +115,7 @@ describe('Projects', () => {
             { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
             'teamId'
           )
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedAdminException('set project teams'));
     });
 
     test('setProjectTeam fails with no permission from submitter (leadership)', async () => {
@@ -121,7 +126,7 @@ describe('Projects', () => {
       await expect(
         async () =>
           await ProjectsService.setProjectTeam(aquaman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 }, 'teamId')
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedAdminException('set project teams'));
     });
 
     test('setProjectTeam works if the submitter is not an admin but is the lead of the team', async () => {
@@ -153,7 +158,7 @@ describe('Projects', () => {
       await expect(
         async () =>
           await ProjectsService.deleteProject(wonderwoman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
-      ).rejects.toThrow(new AccessDeniedException('Guests, Members, and Leadership cannot delete projects'));
+      ).rejects.toThrow(new AccessDeniedAdminException('delete projects'));
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
