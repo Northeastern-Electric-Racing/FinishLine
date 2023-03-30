@@ -71,7 +71,7 @@ export default class ChangeRequestsService {
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.accepted) throw new HttpException(400, `This change request is already approved!`);
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
-    if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', foundCR.wbsElementId);
+    if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
 
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId) throw new AccessDeniedException();

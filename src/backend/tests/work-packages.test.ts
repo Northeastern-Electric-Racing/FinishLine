@@ -3,7 +3,7 @@ import { batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User } from '@prisma/client';
@@ -242,7 +242,7 @@ describe('Work Packages', () => {
       } as any);
 
       await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
-        new HttpException(400, 'This work package has already been deleted!')
+        new DeletedException('Work Package', '1.2.3')
       );
 
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
