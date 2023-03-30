@@ -3,7 +3,6 @@ import { batman, batmanSettings, flash, superman } from './test-data/users.test-
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
-import { prismaProject1 } from './test-data/projects.test-data';
 
 describe('Users', () => {
   afterEach(() => {
