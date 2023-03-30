@@ -15,9 +15,9 @@ import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 export interface CreateWorkPackageFormInputs {
   name: string;
   startDate: Date;
-  duration: number;
-  crId: number;
-  stage: WorkPackageStage | null;
+  duration: number | null;
+  crId: string | number;
+  stage: WorkPackageStage | string;
   wbsNum: string;
   dependencies: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
