@@ -19,8 +19,8 @@ export interface Task {
    * From 0 to 100
    */
   progress: number;
-  styles: {
-    backgroundColor: string;
+  styles?: {
+    backgroundColor?: string;
     backgroundSelectedColor?: string;
     progressColor?: string;
     progressSelectedColor?: string;

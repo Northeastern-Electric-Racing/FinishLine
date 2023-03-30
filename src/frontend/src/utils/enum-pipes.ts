@@ -7,19 +7,33 @@ import { yellow, green, blue, purple, grey } from '@mui/material/colors';
 import { WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
-export const WorkPackageStageColorPipe: Record<WorkPackageStage | '', string> = {
-  [WorkPackageStage.Research]: yellow[900],
-  [WorkPackageStage.Design]: green[600],
-  [WorkPackageStage.Manufacturing]: blue[600],
-  [WorkPackageStage.Integration]: purple[400],
-  '': grey[500]
-};
+export function WorkPackageStageColorPipe(stage: WorkPackageStage | undefined): string {
+  switch (stage) {
+    case WorkPackageStage.Research:
+      return yellow[900];
+    case WorkPackageStage.Design:
+      return green[600];
+    case WorkPackageStage.Manufacturing:
+      return blue[600];
+    case WorkPackageStage.Integration:
+      return purple[400];
+    case undefined:
+      return grey[500];
+  }
+}
 
 // maps stage to the desired badge display text
-export const WorkPackageStageTextPipe: Record<WorkPackageStage | '', string> = {
-  [WorkPackageStage.Research]: 'Research',
-  [WorkPackageStage.Design]: 'Design',
-  [WorkPackageStage.Manufacturing]: 'Manufacturing',
-  [WorkPackageStage.Integration]: 'Integration',
-  '': 'No Stage'
-};
+export function WorkPackageStageTextPipe(stage: WorkPackageStage | undefined): string {
+  switch (stage) {
+    case WorkPackageStage.Research:
+      return 'Research';
+    case WorkPackageStage.Design:
+      return 'Design';
+    case WorkPackageStage.Manufacturing:
+      return 'Manufacturing';
+    case WorkPackageStage.Integration:
+      return 'Integration';
+    case undefined:
+      return 'No Stage';
+  }
+}

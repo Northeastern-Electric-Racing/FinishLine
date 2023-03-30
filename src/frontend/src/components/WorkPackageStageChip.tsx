@@ -8,12 +8,12 @@ import { WorkPackageStageTextPipe, WorkPackageStageColorPipe } from '../utils/en
 import { WorkPackageStage } from 'shared';
 
 interface WorkPackageStageChipProps {
-  stage?: WorkPackageStage;
+  stage?: WorkPackageStage | undefined;
 }
 
 const WorkPackageStageChip: React.FC<WorkPackageStageChipProps> = ({ stage }) => {
-  const color: string = WorkPackageStageColorPipe[stage ?? ''];
-  const text: string = WorkPackageStageTextPipe[stage ?? ''];
+  const color: string = WorkPackageStageColorPipe(stage);
+  const text: string = WorkPackageStageTextPipe(stage);
 
   return (
     <b>

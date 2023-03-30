@@ -1,5 +1,6 @@
 import { Task } from '../types/public-types';
 import { BarTask, TaskTypeInternal } from '../types/bar-task';
+import { grey } from '@mui/material/colors';
 import { BarMoveAction } from '../types/gantt-task-actions';
 
 export const convertToBarTasks = (
@@ -29,12 +30,12 @@ export const convertToBarTasks = (
       barCornerRadius,
       handleWidth,
       rtl,
-      t.styles.backgroundColor,
-      t.styles.backgroundColor,
+      t.styles?.backgroundColor ?? grey[500],
+      t.styles?.backgroundColor ?? grey[500],
       barBackgroundColor,
       barBackgroundSelectedColor,
-      t.styles.backgroundColor,
-      t.styles.backgroundColor,
+      t.styles?.backgroundColor ?? grey[500],
+      t.styles?.backgroundColor ?? grey[500],
       projectBackgroundColor,
       projectBackgroundSelectedColor,
       milestoneBackgroundColor,
