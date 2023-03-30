@@ -112,7 +112,7 @@ export default class ProjectsController {
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNum: WbsNumber = validateWBS(req.params.projectId);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const user = await getCurrentUser(res);
 
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, user);
