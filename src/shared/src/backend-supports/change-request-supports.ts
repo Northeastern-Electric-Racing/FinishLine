@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { ChangeRequestStatus } from '../types/change-request-types';
 import { WbsNumber } from '../types/project-types';
 import { User } from '../types/user-types';
@@ -8,7 +13,7 @@ import { User } from '../types/user-types';
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 const calculateStatus = (
-  implementedChanges: {
+  implementedChange: {
     wbsNum: WbsNumber;
     changeId: number;
     changeRequestId: number;
@@ -19,7 +24,7 @@ const calculateStatus = (
   accepted?: boolean,
   dateReviewed?: Date
 ): ChangeRequestStatus => {
-  if (implementedChanges.length) {
+  if (implementedChange.length) {
     return ChangeRequestStatus.Implemented;
   } else if (accepted && dateReviewed) {
     return ChangeRequestStatus.Accepted;
