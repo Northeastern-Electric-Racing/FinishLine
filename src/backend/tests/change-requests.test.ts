@@ -14,7 +14,7 @@ import { prismaProject1 } from './test-data/projects.test-data';
 import { CR_Type } from '@prisma/client';
 import ChangeRequestsService from '../src/services/change-requests.services';
 import {
-  AccessDeniedAdminException,
+  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   AccessDeniedGuestException,
   AccessDeniedMemberException,
@@ -372,7 +372,7 @@ describe('Change Requests', () => {
   describe('Delete Change Request', () => {
     test('User does not have permissions', async () => {
       await expect(() => ChangeRequestsService.deleteChangeRequest(wonderwoman, 1)).rejects.toThrow(
-        new AccessDeniedAdminException('delete change requests')
+        new AccessDeniedAdminOnlyException('delete change requests')
       );
     });
 

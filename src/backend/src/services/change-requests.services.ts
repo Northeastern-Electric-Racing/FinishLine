@@ -2,7 +2,7 @@ import { ChangeRequest, isAdmin, isGuest, isNotLeadership, wbsPipe } from 'share
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
-  AccessDeniedAdminException,
+  AccessDeniedAdminOnlyException,
   AccessDeniedException,
   AccessDeniedGuestException,
   AccessDeniedMemberException,
@@ -620,7 +620,7 @@ export default class ChangeRequestsService {
 
     // verify user is allowed to delete change requests
     if (!(isAdmin(submitter.role) || submitter.userId === foundCR.submitterId))
-      throw new AccessDeniedAdminException('delete change requests');
+      throw new AccessDeniedAdminOnlyException('delete change requests');
 
     if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
 

@@ -330,12 +330,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
               >
                 Cancel
               </NERFailButton>
-              <NERSuccessButton
-                variant="contained"
-                disabled={auth.user ? isGuest(auth.user.role) : true}
-                type="submit"
-                sx={{ mx: 1 }}
-              >
+              <NERSuccessButton variant="contained" disabled={isGuest(auth.user?.role)} type="submit" sx={{ mx: 1 }}>
                 Confirm
               </NERSuccessButton>
             </Box>

@@ -189,7 +189,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
           </div>
         ))}
-        {isGuest(role) && (
+        {!isGuest(role) && (
           <NERButton variant="contained" onClick={handleShow} data-testid="createButton" sx={{ mt: 1 }}>
             Add New Risk
           </NERButton>

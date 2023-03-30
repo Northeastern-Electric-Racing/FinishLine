@@ -38,7 +38,7 @@ export class AccessDeniedException extends HttpException {
   }
 }
 
-export class AccessDeniedAdminException extends AccessDeniedException {
+export class AccessDeniedAdminOnlyException extends AccessDeniedException {
   /**
    * Constructs an access denied error that non-admins may receive.
    * @param message the action that is disallowed.

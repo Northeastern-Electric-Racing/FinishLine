@@ -17,7 +17,7 @@ import {
   NotFoundException,
   HttpException,
   AccessDeniedGuestException,
-  AccessDeniedAdminException
+  AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
 import {
   createChangeJsonDates,
@@ -498,7 +498,7 @@ export default class WorkPackagesService {
    */
   static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminException('delete work packages');
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 

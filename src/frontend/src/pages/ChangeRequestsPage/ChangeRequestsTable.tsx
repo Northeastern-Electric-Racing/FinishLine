@@ -145,7 +145,7 @@ const ChangeRequestsTable: React.FC = () => {
           actionButton={
             <NERButton
               variant="contained"
-              disabled={auth.user ? isGuest(auth.user.role) : true}
+              disabled={isGuest(auth.user?.role)}
               startIcon={<Add />}
               onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
             >

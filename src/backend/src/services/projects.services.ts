@@ -5,7 +5,7 @@ import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
-  AccessDeniedAdminException,
+  AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
   HttpException,
   NotFoundException
@@ -386,7 +386,7 @@ export default class ProjectsService {
 
     // check for user and user permission (admin, app admin, or leader of the team)
     if (!isAdmin(user.role) && user.userId !== team.leaderId) {
-      throw new AccessDeniedAdminException('set project teams');
+      throw new AccessDeniedAdminOnlyException('set project teams');
     }
 
     // if everything is fine, then update the given project to assign to provided team ID
@@ -409,7 +409,7 @@ export default class ProjectsService {
   static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     if (!isAdmin(user.role)) {
-      throw new AccessDeniedAdminException('delete projects');
+      throw new AccessDeniedAdminOnlyException('delete projects');
     }
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
