@@ -10,12 +10,12 @@ import { NERButton } from '../../../components/NERButton';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 
-interface DependencyProps {
+interface BlockedByProps {
   wbsNumber: WbsNumber;
   handleDelete: any;
 }
 
-const Dependency: React.FC<DependencyProps> = ({ wbsNumber, handleDelete }) => {
+const BlockedBy: React.FC<BlockedByProps> = ({ wbsNumber, handleDelete }) => {
   const history = useHistory();
 
   function handleLinkClick() {
@@ -34,4 +34,4 @@ const Dependency: React.FC<DependencyProps> = ({ wbsNumber, handleDelete }) => {
   );
 };
 
-export default Dependency;
+export default BlockedBy;

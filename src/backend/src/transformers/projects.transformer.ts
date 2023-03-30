@@ -90,7 +90,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         duration: workPackage.duration,
         expectedProgress,
         timelineStatus: calculateTimelineStatus(progress, expectedProgress),
-        dependencies: workPackage.dependencies.map(wbsNumOf),
+        blockedBy: workPackage.blockedBy.map(wbsNumOf),
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter),
         projectName: wbsElement.name,
