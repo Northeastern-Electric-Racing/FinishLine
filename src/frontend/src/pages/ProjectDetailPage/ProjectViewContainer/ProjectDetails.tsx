@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Folder, FormatListBulleted, FormatListNumbered, CoPresent } from '@mui/icons-material';
+import { Folder, FormatListNumbered, CoPresent } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Project } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
