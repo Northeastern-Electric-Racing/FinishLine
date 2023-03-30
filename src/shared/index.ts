@@ -13,7 +13,7 @@ export * from './src/types/task-types';
 
 export * from './src/validate-wbs';
 
-export * from './src/backend-supports/change-request-supports'
+export * from './src/backend-supports/change-request-supports';
 export * from './src/backend-supports/project-supports';
 export * from './src/word-count';
 
