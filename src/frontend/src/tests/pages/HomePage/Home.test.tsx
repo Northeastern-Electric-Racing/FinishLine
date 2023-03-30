@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
+import { render, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/routes';
 import Home from '../../../pages/HomePage/Home';
 import * as authHooks from '../../../hooks/auth.hooks';
