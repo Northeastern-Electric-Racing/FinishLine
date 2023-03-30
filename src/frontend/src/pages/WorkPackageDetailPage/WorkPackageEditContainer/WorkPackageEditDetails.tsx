@@ -8,13 +8,14 @@ import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
+import { dataPayload } from './WorkPackageEditContainer';
 
 interface Props {
   users: User[];
-  control: any;
-  errors: any;
+  control: Control<dataPayload>;
+  errors: Partial<FieldErrorsImpl<dataPayload>>;
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
@@ -119,7 +120,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
               type="number"
               placeholder="Enter duration..."
               sx={{ width: '140%' }}
-              errorMessage={errors.budget}
+              errorMessage={errors.duration}
             />
           </FormControl>
         </Grid>
