@@ -50,6 +50,10 @@ const performSeed: () => Promise<void> = async () => {
   const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
   const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
   const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
+  const nezamJazayeri = await prisma.user.create({ data: dbSeedAllUsers.nezamJazayeri });
+  const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
+  const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
+  const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
 
   /**
    * Make initial project so that we can start to create other stuff
