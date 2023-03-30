@@ -182,4 +182,24 @@ describe('Projects', () => {
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
   });
+  describe('favoriteProjects', () => {
+    test('fails when project does not exist', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      const fakeProjectId = 100000;
+      await expect(() => ProjectsService.toggleFavorite(fakeProjectId, batman)).rejects.toThrow(
+        new NotFoundException('Project', fakeProjectId)
+      );
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+    });
+    test('toggles successfully', async () => {
+      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue({ favoritedBy: [] } as any);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const res = await ProjectsService.toggleFavorite(prismaProject1.projectId, batman);
+
+      expect(res).toBe(prismaProject1.projectId);
+      expect(prisma.project.findUnique).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { Role, User_Settings, User as PrismaUser, Project } from '@prisma/client';
+import { Role, User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { AuthenticatedUser, ThemeName, User } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
@@ -189,45 +189,5 @@ export default class UsersService {
     });
 
     return userTransformer(targetUser);
-  }
-
-  /**
-   * Edits a user's favorite projects
-   * @param projectId the project id to be favorited/unfavorited
-   * @param user the user who is changing the role
-   * @param favorite boolean representing favoriting/unfavoriting
-   * @returns the project that the user has favorited/unfavorited
-   * @throws if the project id doesn't exist
-   */
-  static async updateUserFavorites(projectId: number, user: PrismaUser, favorite: boolean): Promise<Project> {
-    const targetProject = await prisma.project.findUnique({ where: { projectId } });
-
-    if (!targetProject) throw new NotFoundException('Project', projectId);
-
-    const userWithFavorites = await prisma.user.findFirst({
-      where: { userId: user.userId }
-    });
-
-    if (!userWithFavorites) throw new NotFoundException('User', user.userId);
-
-    favorite
-      ? await prisma.user.update({
-          where: { userId: user.userId },
-          data: {
-            favoriteProjects: {
-              create: targetProject
-            }
-          }
-        })
-      : await prisma.user.update({
-          where: { userId: user.userId },
-          data: {
-            favoriteProjects: {
-              delete: targetProject
-            }
-          }
-        });
-
-    return targetProject;
   }
 }

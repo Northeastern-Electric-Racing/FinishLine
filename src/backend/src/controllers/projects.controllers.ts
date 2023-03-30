@@ -109,4 +109,17 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectId: number = parseInt(req.params.projectId);
+      const user = await getCurrentUser(res);
+
+      const targetProject = await ProjectsService.toggleFavorite(projectId, user);
+
+      res.status(200).json(targetProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

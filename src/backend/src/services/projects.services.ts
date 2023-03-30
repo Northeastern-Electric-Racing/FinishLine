@@ -16,6 +16,7 @@ import {
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
 import WorkPackagesService from './work-packages.services';
+import { User as PrismaUser } from '@prisma/client';
 
 export default class ProjectsService {
   /**
@@ -505,5 +506,54 @@ export default class ProjectsService {
     );
 
     return projectTransformer(deletedProject);
+  }
+
+  /**
+   * Toggles a user's favorite status on a projects
+   * @param projectId the project id to be favorited/unfavorited
+   * @param user the user who is changing the role
+   * @param favorite boolean representing favoriting/unfavoriting
+   * @returns the project that the user has favorited/unfavorited
+   * @throws if the project id doesn't exist
+   */
+  static async toggleFavorite(projectId: number, user: PrismaUser): Promise<number> {
+    const favorited = await prisma.project.findUnique({
+      where: {
+        projectId
+      },
+      select: {
+        favoritedBy: {
+          where: {
+            userId: user.userId
+          }
+        }
+      }
+    });
+
+    if (!favorited) throw new NotFoundException('Project', projectId);
+    console.log(favorited);
+    favorited.favoritedBy.length
+      ? await prisma.user.update({
+          where: { userId: user.userId },
+          data: {
+            favoriteProjects: {
+              disconnect: {
+                projectId
+              }
+            }
+          }
+        })
+      : await prisma.user.update({
+          where: { userId: user.userId },
+          data: {
+            favoriteProjects: {
+              connect: {
+                projectId
+              }
+            }
+          }
+        });
+
+    return projectId;
   }
 }

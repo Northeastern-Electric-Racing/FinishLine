@@ -20,6 +20,5 @@ userRouter.post(
 userRouter.post('/:userId/change-role', isRole(body('role')), validateInputs, UsersController.updateUserRole);
 userRouter.post('/auth/login', UsersController.logUserIn);
 userRouter.post('/auth/login/dev', UsersController.logUserInDev);
-userRouter.post('/:projectId/favorite', body('favorite').isBoolean(), validateInputs, UsersController.updateUserFavorites);
 
 export default userRouter;
