@@ -56,7 +56,7 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
         projectManager: null,
         changes: []
       },
-      dependencies: [],
+      blockedBy: [],
       expectedActivities: [],
       deliverables: [],
       stage: null

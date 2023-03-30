@@ -68,7 +68,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       stage: 'NONE',
       startDate: new Date(),
       duration: null,
-      dependencies: [] as { wbsNum: string }[],
+      blockedBy: [] as { wbsNum: string }[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
       deliverables: [] as { bulletId: number; detail: string }[]
     }
@@ -84,20 +84,16 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const {
-    fields: dependencies,
-    append: appendDependency,
-    remove: removeDependency
-  } = useFieldArray({ control, name: 'dependencies' });
+  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
-  const dependenciesFormControl = (
+  const blockedByFormControl = (
     <FormControl fullWidth>
-      <FormLabel>Dependencies</FormLabel>
-      {dependencies.map((_element, i) => {
+      <FormLabel>Blocked By</FormLabel>
+      {blockedBy.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+            <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
+            <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />
             </IconButton>
           </Grid>
@@ -106,10 +102,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <Button
         variant="contained"
         color="success"
-        onClick={() => appendDependency({ wbsNum: '' })}
+        onClick={() => appendBlocker({ wbsNum: '' })}
         sx={{ my: 2, width: 'max-content' }}
       >
-        + ADD NEW DEPENDENCY
+        + ADD NEW BLOCKER
       </Button>
     </FormControl>
   );
@@ -219,7 +215,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         </Grid>
         <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
           <Grid item xs={12} md={2}>
-            {dependenciesFormControl}
+            {blockedByFormControl}
           </Grid>
           <Grid item xs={12} md={2}>
             <FormControl fullWidth>
