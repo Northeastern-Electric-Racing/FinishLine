@@ -516,10 +516,26 @@ export default class ProjectsService {
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project id doesn't exist
    */
-  static async toggleFavorite(projectId: number, user: PrismaUser): Promise<number> {
-    const favorited = await prisma.project.findUnique({
+  static async toggleFavorite(wbsNumber: WbsNumber, user: PrismaUser): Promise<Project> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
       where: {
-        projectId
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('WBS Element', wbsPipe(wbsNumber));
+
+    const favorited = await prisma.project.findFirst({
+      where: {
+        projectId: project?.projectId
       },
       select: {
         favoritedBy: {
@@ -530,15 +546,13 @@ export default class ProjectsService {
       }
     });
 
-    if (!favorited) throw new NotFoundException('Project', projectId);
-    console.log(favorited);
-    favorited.favoritedBy.length
+    favorited?.favoritedBy.length
       ? await prisma.user.update({
           where: { userId: user.userId },
           data: {
             favoriteProjects: {
               disconnect: {
-                projectId
+                projectId: project.projectId
               }
             }
           }
@@ -548,12 +562,12 @@ export default class ProjectsService {
           data: {
             favoriteProjects: {
               connect: {
-                projectId
+                projectId: project.projectId
               }
             }
           }
         });
 
-    return projectId;
+    return projectTransformer(project);
   }
 }

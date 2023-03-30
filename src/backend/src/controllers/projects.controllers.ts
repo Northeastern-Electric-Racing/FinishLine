@@ -112,10 +112,10 @@ export default class ProjectsController {
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
-      const projectId: number = parseInt(req.params.projectId);
+      const wbsNum: WbsNumber = validateWBS(req.params.projectId);
       const user = await getCurrentUser(res);
 
-      const targetProject = await ProjectsService.toggleFavorite(projectId, user);
+      const targetProject = await ProjectsService.toggleFavorite(wbsNum, user);
 
       res.status(200).json(targetProject);
     } catch (error: unknown) {

@@ -10,7 +10,7 @@ import ProjectsService from '../src/services/projects.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
-import { WbsNumber } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { User } from '@prisma/client';
 
 jest.mock('../src/utils/projects.utils');
@@ -184,21 +184,34 @@ describe('Projects', () => {
   });
   describe('favoriteProjects', () => {
     test('fails when project does not exist', async () => {
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
-      const fakeProjectId = 100000;
-      await expect(() => ProjectsService.toggleFavorite(fakeProjectId, batman)).rejects.toThrow(
-        new NotFoundException('Project', fakeProjectId)
-      );
-      expect(prisma.project.findUnique).toBeCalledTimes(1);
-    });
-    test('toggles successfully', async () => {
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue({ favoritedBy: [] } as any);
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
       jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
 
-      const res = await ProjectsService.toggleFavorite(prismaProject1.projectId, batman);
+      const fakeProjectWBS = '100.100.0';
+      await expect(() => ProjectsService.toggleFavorite(validateWBS(fakeProjectWBS), batman)).rejects.toThrow(
+        new NotFoundException('WBS Element', fakeProjectWBS)
+      );
+      expect(prisma.project.findFirst).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(0);
+    });
+    test('fails when wbs num is not a project', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
 
-      expect(res).toBe(prismaProject1.projectId);
-      expect(prisma.project.findUnique).toBeCalledTimes(1);
+      const fakeProjectWBS = '100.100.100';
+      await expect(() => ProjectsService.toggleFavorite(validateWBS(fakeProjectWBS), batman)).rejects.toThrow(
+        new HttpException(400, `${fakeProjectWBS} is not a valid project WBS #!`)
+      );
+      expect(prisma.project.findFirst).toBeCalledTimes(0);
+    });
+    test('toggles successfully', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValueOnce(prismaProject1);
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ favoritedBy: [] } as any);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const res = await ProjectsService.toggleFavorite(validateWBS('1.1.0'), batman);
+
+      expect(res).toBe(sharedProject1);
+      expect(prisma.project.findFirst).toBeCalledTimes(2);
       expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
