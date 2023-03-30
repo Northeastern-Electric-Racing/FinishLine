@@ -120,7 +120,7 @@ export default class RisksService {
     const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
     if (!targetRisk) throw new NotFoundException('Risk', riskId);
 
-    if (targetRisk.dateDeleted || targetRisk.deletedBy) throw new HttpException(400, 'This risk has already been deleted!');
+    if (targetRisk.dateDeleted || targetRisk.deletedBy) throw new DeletedException('Risk', riskId);
 
     const selfDelete = targetRisk.createdByUserId === user.userId;
     const hasPerms = await hasRiskPermissions(user.userId, targetRisk.projectId);

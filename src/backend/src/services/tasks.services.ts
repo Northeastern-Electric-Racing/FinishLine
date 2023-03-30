@@ -201,7 +201,7 @@ export default class TasksService {
 
     const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
     if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsElement));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', task.wbsElementId);
 
     // this checks the current users permissions
     const isAdmin = currentUser.role === Role.APP_ADMIN || currentUser.role === Role.ADMIN;

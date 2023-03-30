@@ -511,7 +511,7 @@ export default class WorkPackagesService {
     });
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.workPackageId);
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', wbsPipe(wbsNum));
 
     const { wbsElementId, workPackageId } = workPackage;
 
