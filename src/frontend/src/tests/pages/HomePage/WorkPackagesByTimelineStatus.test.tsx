@@ -52,6 +52,6 @@ describe('upcoming deadlines component', () => {
   it('renders when no work packages', () => {
     mockHook(false, false, []);
     renderComponent();
-    expect(screen.getByText('No VERY_BEHIND work packages')).toBeInTheDocument();
+    expect(screen.getByText('No Very Behind work packages')).toBeInTheDocument();
   });
 });

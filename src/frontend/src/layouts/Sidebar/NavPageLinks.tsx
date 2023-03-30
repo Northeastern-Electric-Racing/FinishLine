@@ -4,17 +4,16 @@
  */
 
 import { NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { LinkItem } from '../../utils/types';
+import { MUILinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import styles from '../../stylesheets/layouts/sidebar/nav-page-links.module.css';
 
 interface NavPageLinkProps {
-  linkItems: LinkItem[];
+  linkItems: MUILinkItem[];
 }
 
 const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProps) => {
-  const genNavItems = (linkItems: LinkItem[]) => {
+  const genNavItems = (linkItems: MUILinkItem[]) => {
     return linkItems.map((item) => {
       return (
         <NavLink
@@ -24,11 +23,7 @@ const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProp
           activeClassName={styles.activeLink}
           exact={item.route === routes.HOME}
         >
-          {item.icon ? (
-            <FontAwesomeIcon icon={item.icon!} size="2x" className={styles.iconsAndText + ' ' + styles.icon} />
-          ) : (
-            ''
-          )}
+          {item.icon ? <item.icon fontSize="large" className={styles.iconsAndText + ' ' + styles.icon} /> : ''}
           <p className={styles.iconsAndText + ' ' + styles.text}>{item.name}</p>
         </NavLink>
       );

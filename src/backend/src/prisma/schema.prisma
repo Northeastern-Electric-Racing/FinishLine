@@ -101,6 +101,7 @@ model User {
   createdTasks              Task[]               @relation(name: "createdBy")
   deletedTasks              Task[]               @relation(name: "deletedBy")
   assignedTasks             Task[]               @relation(name: "assignedTo")
+  favoriteProjects          Project[]            @relation(name: "favoritedBy")
 }
 
 model Team {
@@ -261,6 +262,7 @@ model Project {
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
   risks                 Risk[]
+  favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 
 model Work_Package {

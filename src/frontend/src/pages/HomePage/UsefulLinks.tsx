@@ -6,16 +6,7 @@
 
 import { useTheme } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import {
-  ShoppingCart,
-  Settings,
-  Receipt,
-  Description,
-  CurrencyExchange,
-  AttachMoney,
-  CalendarMonth,
-  Info
-} from '@mui/icons-material';
+import { ShoppingCart, Settings, Receipt, CurrencyExchange, AttachMoney, CalendarMonth, Info } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
@@ -64,18 +55,6 @@ const UsefulLinks: React.FC = () => {
         sx={{ pl: 1 }}
       >
         McMaster Order Sheet
-      </Link>
-    </>,
-    <>
-      <Description sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/document/d/1w0B6upZRY28MlbVA4hyU3X_NRNP0cagmLWqjHn6B8OA/edit"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Project Update Log
       </Link>
     </>,
     <>
