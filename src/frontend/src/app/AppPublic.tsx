@@ -33,7 +33,7 @@ const AppPublic: React.FC = () => {
       return auth.isLoading ? <LoadingIndicator /> : <AppAuthenticated />;
     }
 
-    // otherwise, the user needs to login tmanually
+    // otherwise, the user needs to login manually
     // prepare query args to store path after login
     const redirectPathParts: string[] = history.location.pathname.split('/').slice(1);
 

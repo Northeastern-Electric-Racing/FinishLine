@@ -6,25 +6,16 @@
 import { Typography, Alert, Link } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { routes } from '../../utils/routes';
-import { useAuth } from '../../hooks/auth.hooks';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';
-import { useSingleUserSettings } from '../../hooks/users.hooks';
+import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { User } from 'shared';
 
 const Home = () => {
-  const { user } = useAuth();
-
-  if (!user) return <LoadingIndicator />;
-
-  return <HomeInner user={user} />;
-};
-
-const HomeInner = ({ user }: { user: User }) => {
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId!);
+  const user = useCurrentUser();
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
   const { slackId: userSlackId } = userSettingsData || {};
   const [showAlert, setShowAlert] = useState(userSlackId === '');
 
@@ -40,7 +31,7 @@ const HomeInner = ({ user }: { user: User }) => {
       <Typography variant="h3" sx={{ my: 2, textAlign: 'center', pt: 3 }}>
         Welcome, {user.firstName}!
       </Typography>
-      {showAlert && (
+      {showAlert ? (
         <Alert
           variant="filled"
           severity="warning"
@@ -48,13 +39,13 @@ const HomeInner = ({ user }: { user: User }) => {
             setShowAlert(false);
           }}
         >
-          You don't have a slack id set! You must set it{' '}
+          You don't have a slack id set! Without it, you won't be able to get important updates from us. You can set it{' '}
           <Link href={routes.SETTINGS} sx={{ color: 'blue' }}>
             here
           </Link>
           .
         </Alert>
-      )}
+      ) : null}
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />

@@ -3,12 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render, routerWrapperBuilder } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import { routes } from '../../../utils/routes';
 import Home from '../../../pages/HomePage/Home';
 import * as authHooks from '../../../hooks/auth.hooks';
+import * as userHooks from '../../../hooks/users.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
 
 jest.mock('../../../pages/HomePage/UsefulLinks', () => {
   return {
@@ -52,11 +54,17 @@ const renderComponent = () => {
 describe('home component', () => {
   beforeEach(() => {
     jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    jest.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 
   afterAll(() => jest.clearAllMocks());
 
   it('renders welcome', () => {
     renderComponent();
+    expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
+    expect(screen.getByText('useful-links')).toBeInTheDocument();
+    expect(screen.getByText('upcoming-deadlines')).toBeInTheDocument();
+    expect(screen.getByText('work-packages-by-timeline-status')).toBeInTheDocument();
   });
 });

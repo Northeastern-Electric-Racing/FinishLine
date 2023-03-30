@@ -5,7 +5,7 @@
 
 import { AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { User } from 'shared';
+import { AuthenticatedUser, User } from 'shared';
 import { exampleAdminUser } from './users.stub';
 import { Auth, LinkItem } from '../../../utils/types';
 import { faExchangeAlt, faFolder, faHome } from '@fortawesome/free-solid-svg-icons';
