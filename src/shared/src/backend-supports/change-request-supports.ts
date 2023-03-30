@@ -3,9 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequestStatus } from '../types/change-request-types';
-import { WbsNumber } from '../types/project-types';
-import { User } from '../types/user-types';
+import { ChangeRequestStatus, ImplementedChange } from '../types/change-request-types';
 
 /**
  * This function calculates the status of a change request.
@@ -13,18 +11,11 @@ import { User } from '../types/user-types';
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 const calculateStatus = (
-  implementedChange: {
-    wbsNum: WbsNumber;
-    changeId: number;
-    changeRequestId: number;
-    implementer: User;
-    detail: string;
-    dateImplemented: Date;
-  }[],
+  implementedChanges: ImplementedChange[],
   accepted?: boolean,
   dateReviewed?: Date
 ): ChangeRequestStatus => {
-  if (implementedChange.length) {
+  if (implementedChanges.length) {
     return ChangeRequestStatus.Implemented;
   } else if (accepted && dateReviewed) {
     return ChangeRequestStatus.Accepted;
