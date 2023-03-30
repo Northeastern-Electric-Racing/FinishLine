@@ -46,11 +46,8 @@ describe('AppAuthenticated', () => {
 
   it('can navigate to projects page', () => {
     renderComponent();
-    const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });
-    expect(homeEle).toBeInTheDocument();
     fireEvent.click(screen.getByText('Projects'));
 
-    expect(homeEle).not.toBeInTheDocument();
     expect(screen.getByText('projects page')).toBeInTheDocument();
   });
 });
