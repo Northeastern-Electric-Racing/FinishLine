@@ -19,7 +19,7 @@ const calculateStatus = (
   accepted?: boolean,
   dateReviewed?: Date
 ): ChangeRequestStatus => {
-  if (implementedChanges) {
+  if (implementedChanges.length) {
     return ChangeRequestStatus.Implemented;
   } else if (accepted && dateReviewed) {
     return ChangeRequestStatus.Accepted;

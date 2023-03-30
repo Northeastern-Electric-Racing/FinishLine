@@ -28,19 +28,6 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Grid, Menu, MenuItem, Typography, Link, Divider } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
 
-const convertStatus = (cr: ChangeRequest): string => {
-  if (cr.dateImplemented) {
-    return 'Implemented';
-  }
-  if (cr.dateReviewed && cr.accepted) {
-    return 'Accepted';
-  }
-  if (cr.dateReviewed && !cr.accepted) {
-    return 'Denied';
-  }
-  return 'Open';
-};
-
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
     case ChangeRequestType.Activation:
