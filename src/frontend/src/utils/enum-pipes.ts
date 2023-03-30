@@ -7,7 +7,7 @@ import { yellow, green, blue, purple, grey } from '@mui/material/colors';
 import { WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
-export function WorkPackageStageColorPipe(stage: WorkPackageStage | undefined): string {
+export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
   switch (stage) {
     case WorkPackageStage.Research:
       return yellow[900];
@@ -20,10 +20,10 @@ export function WorkPackageStageColorPipe(stage: WorkPackageStage | undefined): 
     case undefined:
       return grey[500];
   }
-}
+};
 
 // maps stage to the desired badge display text
-export function WorkPackageStageTextPipe(stage: WorkPackageStage | undefined): string {
+export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
   switch (stage) {
     case WorkPackageStage.Research:
       return 'Research';
@@ -36,4 +36,4 @@ export function WorkPackageStageTextPipe(stage: WorkPackageStage | undefined): s
     case undefined:
       return 'No Stage';
   }
-}
+};
