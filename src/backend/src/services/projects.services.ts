@@ -480,17 +480,6 @@ export default class ProjectsService {
               dateDeleted
             }
           }
-        },
-        risks: {
-          updateMany: {
-            where: {
-              projectId
-            },
-            data: {
-              deletedByUserId,
-              dateDeleted
-            }
-          }
         }
       },
       ...projectQueryArgs

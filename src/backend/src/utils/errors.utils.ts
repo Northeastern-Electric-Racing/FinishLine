@@ -98,7 +98,6 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
 // type so that the not found error messages are consistent
 type ExceptionObjectNames =
   | 'User'
-  | 'Risk'
   | 'Work Package'
   | 'Project'
   | 'Description Bullet'
