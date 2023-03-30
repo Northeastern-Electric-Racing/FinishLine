@@ -191,12 +191,12 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           {readOnly ? (
             ''
           ) : (
-            <Box textAlign="right" sx={{ my: 2 }}>
+            <Box display="flex" flexDirection="row-reverse">
               <NERFailButton
                 variant="contained"
                 onClick={onClose}
                 form="individual-proposed-solution-form"
-                sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
+                sx={{ textTransform: 'none', fontSize: 16, marginTop: 3, marginRight: 2}}
               >
                 Cancel
               </NERFailButton>
@@ -209,6 +209,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               >
                 Submit
               </NERSuccessButton>
+              
             </Box>
           )}
         </form>
