@@ -535,7 +535,7 @@ export default class ProjectsService {
 
     const favorited = await prisma.project.findFirst({
       where: {
-        projectId: project?.projectId
+        projectId: project.projectId
       },
       select: {
         favoritedBy: {
