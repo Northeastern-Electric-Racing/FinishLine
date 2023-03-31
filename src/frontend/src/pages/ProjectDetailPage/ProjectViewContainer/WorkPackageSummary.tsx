@@ -59,7 +59,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             {workPackage.name}
           </Link>
         </Box>
-        {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+        <WorkPackageStageChip stage={workPackage.stage} />
         <WbsStatus status={workPackage.status} />
         <Typography paddingLeft={2}>{weeksPipe(workPackage.duration)}</Typography>
       </AccordionSummary>
