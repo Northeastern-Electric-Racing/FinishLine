@@ -9,6 +9,7 @@ import { NotFoundException, AccessDeniedException, HttpException, DeletedExcepti
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
 import { allUsersOnTeam, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
+import { wbsNumOf } from '../utils/utils';
 
 export default class TasksService {
   /**
@@ -201,7 +202,10 @@ export default class TasksService {
 
     const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
     if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', task.wbsElementId);
+    if (wbsElement.dateDeleted) {
+      const wbsNum = wbsNumOf(wbsElement);
+      throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    }
 
     // this checks the current users permissions
     const isAdmin = currentUser.role === Role.APP_ADMIN || currentUser.role === Role.ADMIN;

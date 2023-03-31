@@ -336,7 +336,7 @@ describe('Tasks', () => {
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
-        new DeletedException('WBS Element', '1.1.2')
+        new DeletedException('WBS Element', '1.2.0')
       );
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
