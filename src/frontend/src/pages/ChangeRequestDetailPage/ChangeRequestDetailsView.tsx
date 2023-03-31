@@ -215,8 +215,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </Grid>
           <Grid item xs={10}>
             <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-              {wbsPipe(changeRequest.wbsNum)} - {!isProject(changeRequest.wbsNum) ? projectName + ' - ' : ''}
-              {changeRequest.wbsName}
+              {wbsPipe(changeRequest.wbsNum)} - {projectName ? projectName : ''}
+              {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
             </Link>
           </Grid>
           <Grid item xs={3} md={2}>
