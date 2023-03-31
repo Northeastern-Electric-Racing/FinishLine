@@ -1,6 +1,5 @@
 import { Task } from '../types/public-types';
 import { BarTask, TaskTypeInternal } from '../types/bar-task';
-import { grey } from '@mui/material/colors';
 import { BarMoveAction } from '../types/gantt-task-actions';
 
 export const convertToBarTasks = (
@@ -30,12 +29,12 @@ export const convertToBarTasks = (
       barCornerRadius,
       handleWidth,
       rtl,
-      t.styles?.backgroundColor ?? grey[500],
-      t.styles?.backgroundColor ?? grey[500],
+      t.styles?.backgroundColor ?? "#9d9d9d",
+      t.styles?.backgroundColor ?? "#9d9d9d",
       barBackgroundColor,
       barBackgroundSelectedColor,
-      t.styles?.backgroundColor ?? grey[500],
-      t.styles?.backgroundColor ?? grey[500],
+      t.styles?.backgroundColor ?? "#e50000",
+      t.styles?.backgroundColor ?? "#e50000",
       projectBackgroundColor,
       projectBackgroundSelectedColor,
       milestoneBackgroundColor,
@@ -166,6 +165,7 @@ const convertToBar = (
   const hideChildren = task.type === 'project' ? task.hideChildren : undefined;
 
   const styles = {
+    backgroundColor: barBackgroundColor,
     backgroundSelectedColor: barBackgroundSelectedColor,
     progressColor: barProgressColor,
     progressSelectedColor: barProgressSelectedColor,
@@ -209,6 +209,7 @@ const convertToMilestone = (
 
   const rotatedHeight = taskHeight / 1.414;
   const styles = {
+    backgroundColor: milestoneBackgroundColor,
     backgroundSelectedColor: milestoneBackgroundSelectedColor,
     progressColor: '',
     progressSelectedColor: '',
