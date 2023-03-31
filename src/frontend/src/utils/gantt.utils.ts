@@ -116,9 +116,6 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     type: 'project',
     hideChildren: !expanded,
     teamName,
-    styles: {
-      backgroundColor: '#e50000'
-    },
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
