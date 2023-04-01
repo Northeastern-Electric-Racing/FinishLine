@@ -13,7 +13,7 @@ export interface BarTask extends Task {
   handleWidth: number;
   barChildren: BarTask[];
   styles: {
-    backgroundColor?: string;
+    backgroundColor: string;
     backgroundSelectedColor: string;
     progressColor: string;
     progressSelectedColor: string;
