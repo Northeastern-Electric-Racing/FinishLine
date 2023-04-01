@@ -280,7 +280,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
       ;
       {showWarning && (
         <ChangeRequestBlockerWarning
-          changeRequest={cr}
           onHide={() => setShowWarning(false)}
           modalShow={showWarning}
           data={formData}

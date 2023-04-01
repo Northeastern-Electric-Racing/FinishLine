@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, WorkPackage } from 'shared';
+import { ProposedSolution, WorkPackage } from 'shared';
 import { Dialog, DialogContent, DialogTitle, Grid, Breakpoint, IconButton, useTheme, DialogActions } from '@mui/material';
 import NERSuccessButton from '../components/NERSuccessButton';
 import NERFailButton from '../components/NERFailButton';
@@ -14,16 +14,14 @@ import BulletList from './BulletList';
 import { FormInput } from '../pages/ChangeRequestDetailPage/ReviewChangeRequest';
 
 interface BlockerWarningModalProps {
-  changeRequest: ChangeRequest;
   workPackages: WorkPackage[];
   modalShow: boolean;
-  data: FormInput;
+  data: any;
   onHide: () => void;
-  handleContinue: (data: FormInput) => void;
+  handleContinue: ((data: FormInput) => void) | ((ps: ProposedSolution) => void);
 }
 
 const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
-  changeRequest,
   workPackages,
   modalShow,
   onHide,
