@@ -46,7 +46,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   };
 
   const showWarningWrapper = (data: ProposedSolution) => {
-    if (data.timelineImpact > 0 && (wps && wps.length > 0)) {
+    if (data.timelineImpact > 0 && wps && wps.length > 0) {
       setSelectedPs(data);
       setShowWarning(true);
     } else {

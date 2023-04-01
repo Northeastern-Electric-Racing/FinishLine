@@ -96,4 +96,4 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
     const { data } = await getAllBlockingWorkPackages(wbsNum);
     return data;
   });
-}
+};

@@ -596,10 +596,10 @@ export default class WorkPackagesService {
     });
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    
+
     const blockingWbsElementIds = await getBlockingWbsElementIds(workPackage);
 
-    const blockingWps = await getWorkPackages(blockingWbsElementIds)
+    const blockingWps = await getWorkPackages(blockingWbsElementIds);
 
     return blockingWps.map((wp) => workPackageTransformer(wp!));
   }

@@ -69,4 +69,4 @@ export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
   return axios.get<WorkPackage[]>(apiUrls.workPackageBlocking(wbsPipe(wbsNum)), {
     transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
-}
+};
