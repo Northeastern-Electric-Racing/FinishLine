@@ -52,6 +52,7 @@ const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
+const workPackageBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -110,6 +111,7 @@ export const apiUrls = {
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,
+  workPackageBlocking,
 
   changeRequests,
   changeRequestsById,

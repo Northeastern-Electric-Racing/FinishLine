@@ -50,5 +50,6 @@ workPackagesRouter.post(
   WorkPackagesController.editWorkPackage
 );
 workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
+workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
 
 export default workPackagesRouter;

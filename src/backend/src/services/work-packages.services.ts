@@ -16,7 +16,9 @@ import {
   createChangeJsonDates,
   createChangeJsonNonList,
   createBlockedByChangesJson,
-  createDescriptionBulletChangesJson
+  createDescriptionBulletChangesJson,
+  getBlockingWbsElementIds,
+  getWorkPackages
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -575,5 +577,30 @@ export default class WorkPackagesService {
         }
       }
     });
+  }
+
+  static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
+
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+    
+    const blockingWbsElementIds = await getBlockingWbsElementIds(workPackage);
+
+    const blockingWps = await getWorkPackages(blockingWbsElementIds)
+
+    return blockingWps.map((wp) => workPackageTransformer(wp!));
   }
 }

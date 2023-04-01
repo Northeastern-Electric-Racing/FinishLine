@@ -11,6 +11,8 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ReviewChangeRequestsView from './ReviewChangeRequestView';
 import { ChangeRequest } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
+import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
+import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 
 interface ReviewChangeRequestProps {
   modalShow: boolean;
@@ -37,10 +39,15 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
   const toast = useToast();
+  const { isLoading: blockingLoading, isError: blockingIsError, error: blockingError, data } = useGetBlockingWorkPackages(cr.wbsNum);
 
   const handleConfirm = async ({ reviewNotes, accepted, psId }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot review change request without being logged in');
+
+    if (accepted) {
+
+    }
     await mutateAsync({
       reviewerId: auth.user?.userId,
       crId,
@@ -54,11 +61,13 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     });
   };
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || blockingLoading || !data) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <ReviewChangeRequestsView cr={cr} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  if (blockingIsError) return <ErrorPage message={blockingError?.message} />;
+
+  return <ChangeRequestBlockerWarning changeRequest={cr} workPackages={data} modalShow={modalShow} onHide={handleClose} />;
 };
 
 export default ReviewChangeRequest;
