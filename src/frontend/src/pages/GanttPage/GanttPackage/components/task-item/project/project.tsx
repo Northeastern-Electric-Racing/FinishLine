@@ -18,16 +18,17 @@ export const Project: React.FC<TaskItemProps> = ({ task, isSelected }) => {
         ry={task.barCornerRadius}
         className={styles.projectBackground}
       />
-      {task.barChildren.map((child) => {
+      {task.workPackageBars.map((workPackage) => {
+        console.log(workPackage)
         return (
           <rect
-            x={child.x1}
-            width={child.x2 - child.x1}
+            x={workPackage.x1}
+            width={(workPackage.x2 - workPackage.x1)}
             y={task.y}
             height={task.height}
             ry={task.barCornerRadius}
             rx={task.barCornerRadius}
-            fill={child.styles.backgroundColor}
+            fill={workPackage.styles.backgroundColor}
           />
         );
       })}

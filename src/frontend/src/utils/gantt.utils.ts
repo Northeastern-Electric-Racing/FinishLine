@@ -95,6 +95,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     teamName,
+    children: [],
     styles: {
       backgroundColor: WorkPackageStageColorPipe(workPackage.stage)
     },
@@ -116,6 +117,7 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     type: 'project',
     hideChildren: !expanded,
     teamName,
+    children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
