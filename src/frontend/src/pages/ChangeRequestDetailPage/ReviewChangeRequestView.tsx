@@ -25,6 +25,10 @@ import { useToast } from '../../hooks/toasts.hooks';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -46,10 +50,16 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
   const toast = useToast();
-
+  const { isLoading, isError, error, data } = useGetBlockingWorkPackages(cr.wbsNum);
+  const [showWarning, setShowWarning] = useState(false);
+  const [formData, setFormData] = useState<FormInput>({ reviewNotes: '', accepted: false, psId: '' });
   const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
+
+  if (isLoading || !data) return <LoadingIndicator />;
+
+  if (isError) return <ErrorPage error={error} />;
 
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
@@ -68,6 +78,16 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const onSubmitWrapper = async (data: FormInput) => {
     await onSubmit(data);
     reset({ reviewNotes: '' });
+  };
+
+  const handleShowWarning = (data: FormInput) => {
+    const scr = cr as StandardChangeRequest;
+    if (scr.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0) {
+      setFormData(data);
+      setShowWarning(true);
+    } else {
+      onSubmitWrapper(data);
+    }
   };
 
   const overflowStyle: object = {
@@ -130,7 +150,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               );
             })}
           </Box>
-          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+          <form id={'review-notes-form'} onSubmit={handleSubmit(handleShowWarning)}>
             <Controller
               name="reviewNotes"
               control={control}
@@ -252,9 +272,24 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     );
   };
 
-  return cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
-    ? renderProposedSolutionModal(cr as StandardChangeRequest)
-    : renderModal();
+  return (
+    <>
+      {cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
+        ? renderProposedSolutionModal(cr as StandardChangeRequest)
+        : renderModal()}
+      ;
+      {showWarning && (
+        <ChangeRequestBlockerWarning
+          changeRequest={cr}
+          onHide={() => setShowWarning(false)}
+          modalShow={showWarning}
+          data={formData}
+          handleContinue={onSubmitWrapper}
+          workPackages={data}
+        />
+      )}
+    </>
+  );
 };
 
 export default ReviewChangeRequestsView;

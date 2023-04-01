@@ -3,27 +3,32 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, TeamPreview, User, WorkPackage } from 'shared';
-import { Dialog, DialogContent, DialogTitle, Grid, Breakpoint, Typography, IconButton, useTheme } from '@mui/material';
+import { ChangeRequest, WorkPackage } from 'shared';
+import { Dialog, DialogContent, DialogTitle, Grid, Breakpoint, IconButton, useTheme, DialogActions } from '@mui/material';
 import NERSuccessButton from '../components/NERSuccessButton';
 import NERFailButton from '../components/NERFailButton';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { useAuth } from '../hooks/auth.hooks';
 import { Close } from '@mui/icons-material';
 import BulletList from './BulletList';
+import { FormInput } from '../pages/ChangeRequestDetailPage/ReviewChangeRequest';
 
 interface BlockerWarningModalProps {
   changeRequest: ChangeRequest;
   workPackages: WorkPackage[];
   modalShow: boolean;
+  data: FormInput;
   onHide: () => void;
+  handleContinue: (data: FormInput) => void;
 }
 
 const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
   changeRequest,
   workPackages,
   modalShow,
-  onHide
+  onHide,
+  data,
+  handleContinue
 }: BlockerWarningModalProps) => {
   const auth = useAuth();
   const theme = useTheme();
@@ -77,6 +82,14 @@ const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
             </Grid>
           </Grid>
         </DialogContent>
+        <DialogActions>
+          <NERFailButton type="submit" variant="contained" sx={{ mx: 1 }} onClick={onHide}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={() => handleContinue(data)}>
+            Continue
+          </NERSuccessButton>
+        </DialogActions>
       </Dialog>
     );
   };
