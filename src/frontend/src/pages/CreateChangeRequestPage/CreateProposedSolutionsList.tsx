@@ -42,6 +42,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   if (!auth.user) return <LoadingIndicator />;
 
   const addProposedSolution = async (data: ProposedSolution) => {
+    setShowWarning(false);
     setProposedSolutions([...proposedSolutions, data]);
     setShowEditableForm(false);
   };
