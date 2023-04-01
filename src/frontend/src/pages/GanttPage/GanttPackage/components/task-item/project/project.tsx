@@ -19,11 +19,10 @@ export const Project: React.FC<TaskItemProps> = ({ task, isSelected }) => {
         className={styles.projectBackground}
       />
       {task.workPackageBars.map((workPackage) => {
-        console.log(workPackage)
         return (
           <rect
             x={workPackage.x1}
-            width={(workPackage.x2 - workPackage.x1)}
+            width={workPackage.x2 - workPackage.x1}
             y={task.y}
             height={task.height}
             ry={task.barCornerRadius}

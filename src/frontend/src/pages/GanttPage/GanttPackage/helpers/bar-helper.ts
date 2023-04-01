@@ -165,7 +165,7 @@ const convertToBar = (
   const hideChildren = task.type === 'project' ? task.hideChildren : undefined;
   const workPackageBars =
     task.children?.map((task, index) => {
-      return convertToMilestone(
+      return convertToBar(
         task,
         index,
         dates,
@@ -174,9 +174,12 @@ const convertToBar = (
         taskHeight,
         barCornerRadius,
         handleWidth,
-        task.styles?.backgroundColor ?? "#e9d9d9d",
-        task.styles?.backgroundColor ?? "#e9d9d9d"
-      )
+        rtl,
+        task.styles?.backgroundColor ?? "#9d9d9d",
+        task.styles?.backgroundColor ?? "#9d9d9d",
+        barBackgroundColor,
+        barBackgroundSelectedColor
+      );
     }
     ) ?? [];
 
