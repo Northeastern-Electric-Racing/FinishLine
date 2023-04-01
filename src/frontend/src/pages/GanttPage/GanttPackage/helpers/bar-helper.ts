@@ -29,12 +29,12 @@ export const convertToBarTasks = (
       barCornerRadius,
       handleWidth,
       rtl,
-      t.styles?.backgroundColor ?? "#9d9d9d",
-      t.styles?.backgroundColor ?? "#9d9d9d",
+      t.styles?.backgroundColor ?? '#9d9d9d',
+      t.styles?.backgroundColor ?? '#9d9d9d',
       barBackgroundColor,
       barBackgroundSelectedColor,
-      t.styles?.backgroundColor ?? "#e50000",
-      t.styles?.backgroundColor ?? "#e50000",
+      t.styles?.backgroundColor ?? '#e50000',
+      t.styles?.backgroundColor ?? '#e50000',
       projectBackgroundColor,
       projectBackgroundSelectedColor,
       milestoneBackgroundColor,
@@ -175,13 +175,12 @@ const convertToBar = (
         barCornerRadius,
         handleWidth,
         rtl,
-        task.styles?.backgroundColor ?? "#9d9d9d",
-        task.styles?.backgroundColor ?? "#9d9d9d",
+        task.styles?.backgroundColor ?? '#9d9d9d',
+        task.styles?.backgroundColor ?? '#9d9d9d',
         barBackgroundColor,
         barBackgroundSelectedColor
       );
-    }
-    ) ?? [];
+    }) ?? [];
 
   const styles = {
     backgroundColor: barBackgroundColor,
