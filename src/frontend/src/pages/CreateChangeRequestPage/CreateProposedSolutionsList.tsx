@@ -33,11 +33,9 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   try {
     wbs = validateWBS(wbsNum);
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
 
-  const { data } = useGetBlockingWorkPackages(wbs);
+  const { data: wps } = useGetBlockingWorkPackages(wbs);
 
   if (!auth.user) return <LoadingIndicator />;
 
@@ -48,7 +46,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   };
 
   const showWarningWrapper = (data: ProposedSolution) => {
-    if (data.timelineImpact > 0) {
+    if (data.timelineImpact > 0 && (wps && wps.length > 0)) {
       setSelectedPs(data);
       setShowWarning(true);
     } else {
@@ -88,7 +86,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
       ) : null}
       {showWarning ? (
         <ChangeRequestBlockerWarning
-          workPackages={data ?? []}
+          workPackages={wps ?? []}
           modalShow={showWarning}
           onHide={() => setShowWarning(false)}
           data={selectedPs}
