@@ -163,6 +163,24 @@ const convertToBar = (
   const [progressWidth, progressX] = progressWithByParams(x1, x2, task.progress, rtl);
   const y = taskYCoordinate(index, rowHeight, taskHeight);
   const hideChildren = task.type === 'project' ? task.hideChildren : undefined;
+  console.log(task)
+  const barChildren =
+    task.children?.map((task, index) => {
+      console.log(task);
+      return convertToMilestone(
+        task,
+        index,
+        dates,
+        columnWidth,
+        rowHeight,
+        taskHeight,
+        barCornerRadius,
+        handleWidth,
+        task.styles?.backgroundColor ?? "#e9d9d9d",
+        task.styles?.backgroundColor ?? "#e9d9d9d"
+      )
+    }
+    ) ?? [];
 
   const styles = {
     backgroundColor: barBackgroundColor,
@@ -184,7 +202,7 @@ const convertToBar = (
     handleWidth,
     hideChildren,
     height: taskHeight,
-    barChildren: [],
+    barChildren,
     styles
   };
 };
