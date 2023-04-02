@@ -45,30 +45,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
     }
   };
 
-  // const userToAutocompleteOption = (user: User): { label: string; id: string } => {
-  //   return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-  // };
-
-  // const projectManagerOptions = users1.map((manager) => {
-  //   return {
-  //     label: `${fullNamePipe(manager)} (${manager.email}) - ${manager.role}`,
-  //     id: manager.userId.toString()
-  //   };
-  // });
-
-  // const projectLeadOptions = users2.map((lead) => {
-  //   return {
-  //     label: `${fullNamePipe(lead)} (${lead.email}) - ${lead.role}`,
-  //     id: lead.userId.toString()
-  //   };
-  // });
-
-  const projectLeadOptions = (user: User): { label: string; id: string } => {
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+  const projectLeadOptions = (lead: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(lead)} (${lead.email}) - ${lead.role}`, id: lead.userId.toString() };
   };
 
-  const projectManagerOptions = (user: User): { label: string; id: string } => {
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+  const projectManagerOptions = (manager: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(manager)} (${manager.email}) - ${manager.role}`, id: manager.userId.toString() };
   };
 
   const StageSelect = () => (
