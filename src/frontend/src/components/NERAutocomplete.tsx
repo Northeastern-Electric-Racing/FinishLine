@@ -28,7 +28,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options
   const theme = useTheme();
 
   const autocompleteStyle = {
-    height: '40px',
+    height: size === 'small' ? '40px' : '55px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
     borderRadius: '25px',
