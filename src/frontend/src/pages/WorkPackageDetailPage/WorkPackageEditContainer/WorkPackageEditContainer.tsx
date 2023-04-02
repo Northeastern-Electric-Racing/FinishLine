@@ -89,7 +89,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   }
   const { userId } = auth.user;
 
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+  const usersFor1 = allUsers.data.filter((u) => u.role !== 'GUEST');
+  //const usersFor2 = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const transformDate = (date: Date) => {
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
@@ -153,12 +154,12 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <WorkPackageEditDetails control={control} errors={errors} users={users} />
+      <WorkPackageEditDetails control={control} errors={errors} users1={usersFor1} users2={usersFor1} />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
           return (
             <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              <TextField required autoComplete="on" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
               <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>
