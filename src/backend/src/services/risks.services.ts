@@ -1,7 +1,7 @@
 import { Role, User } from '@prisma/client';
 import { Risk } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasRiskPermissions } from '../utils/risks.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
@@ -16,7 +16,7 @@ export default class RisksService {
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
 
     if (!requestedProject) throw new NotFoundException('Project', projectId);
-    if (requestedProject.wbsElement.dateDeleted) throw new HttpException(400, 'This risks project has been deleted!');
+    if (requestedProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
     const risks = await prisma.risk.findMany({ where: { projectId, dateDeleted: null }, ...riskQueryArgs });
 
@@ -37,7 +37,7 @@ export default class RisksService {
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
 
     if (!requestedProject) throw new NotFoundException('Project', projectId);
-    if (requestedProject.wbsElement.dateDeleted) throw new HttpException(400, 'This risks project has been deleted!');
+    if (requestedProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
     const createdRisk = await prisma.risk.create({
       data: {
@@ -120,7 +120,7 @@ export default class RisksService {
     const targetRisk = await prisma.risk.findUnique({ where: { id: riskId }, ...riskQueryArgs });
     if (!targetRisk) throw new NotFoundException('Risk', riskId);
 
-    if (targetRisk.dateDeleted || targetRisk.deletedBy) throw new HttpException(400, 'This risk has already been deleted!');
+    if (targetRisk.dateDeleted || targetRisk.deletedBy) throw new DeletedException('Risk', riskId);
 
     const selfDelete = targetRisk.createdByUserId === user.userId;
     const hasPerms = await hasRiskPermissions(user.userId, targetRisk.projectId);
