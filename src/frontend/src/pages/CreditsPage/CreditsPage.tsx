@@ -92,7 +92,8 @@ const CreditsPage: React.FC = () => {
         background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
         '-webkit-background-clip': 'text'
       }
-    }
+    },
+    { name: 'Ethan Mouri', color: '#00bbff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
