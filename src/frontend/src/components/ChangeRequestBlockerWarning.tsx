@@ -71,9 +71,7 @@ const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <BulletList
-                title={
-                  'The following work packages will be automatically delayed:'
-                }
+                title={'The following work packages will be automatically delayed:'}
                 list={workPackages.map((wp) => wp.name)}
                 readOnly
               />
