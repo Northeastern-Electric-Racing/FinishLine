@@ -7,7 +7,7 @@ import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 
@@ -20,14 +20,12 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
     <PageBlock
       title={'Work Package Details'}
       headerRight={
-        <Grid container alignItems="center" justifyContent="flex-end">
-          <Grid item sx={{ margin: '4px' }}>
+        <Box display="flex" justifyContent="flex-end">
+          <Box margin="4px">
             {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
-          </Grid>
-          <Grid item>
             <WbsStatus status={workPackage.status} />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       }
     >
       <Grid container spacing={1}>
