@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { HttpException } from './errors.utils';
+import { HttpException, NotFoundException } from './errors.utils';
 
 export const getUserFullName = async (userId: number | null) => {
   if (!userId) return 'no one';
@@ -12,7 +12,8 @@ export const getUserFullName = async (userId: number | null) => {
 export const getUserSlackId = async (userId?: number): Promise<string | undefined> => {
   if (!userId) return undefined;
   const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
-  return user?.userSettings?.slackId;
+  if (!user) throw new NotFoundException('User', userId);
+  return user.userSettings?.slackId;
 };
 
 /**
