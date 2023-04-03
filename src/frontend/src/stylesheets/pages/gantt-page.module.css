@@ -46,6 +46,7 @@
 }
 .taskListNameWrapper {
   display: flex;
+  cursor: pointer;
 }
 
 .taskListNameText {
@@ -59,7 +60,6 @@
   font-size: 0.6rem;
   padding: 0.15rem 0.2rem 0 0.2rem;
   user-select: none;
-  cursor: pointer;
 }
 .taskListEmptyExpander {
   font-size: 0.6rem;

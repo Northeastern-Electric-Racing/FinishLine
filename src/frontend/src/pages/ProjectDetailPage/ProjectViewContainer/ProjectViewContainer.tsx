@@ -29,6 +29,8 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList';
 import DeleteProject from '../DeleteProject';
+import GroupIcon from '@mui/icons-material/Group';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -105,12 +107,18 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const assignToMyTeamButton = (
     <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+      <ListItemIcon>
+        <GroupIcon fontSize="small" />
+      </ListItemIcon>
       Assign to My Team
     </MenuItem>
   );
 
   const deleteButton = (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      <ListItemIcon>
+        <DeleteIcon fontSize="small" />
+      </ListItemIcon>
       Delete
     </MenuItem>
   );
@@ -134,14 +142,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </div>
   );
 
-  const hasTaskPermissions =
-    !(auth.user.role === 'GUEST' && !proj.team?.members.map((user) => user.userId).includes(auth.user.userId)) &&
-    !(
-      auth.user.role === 'MEMBER' &&
-      (proj.projectLead?.userId !== auth.user.userId || proj.projectManager?.userId !== auth.user.userId) &&
-      !(proj.team?.leader.userId === auth.user.userId)
-    );
-
   return (
     <>
       <PageTitle
@@ -150,7 +150,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetails project={proj} />
-      <TaskList tasks={proj.tasks} team={proj.team} hasTaskPermissions={hasTaskPermissions} currentWbsNumber={proj.wbsNum} />
+      <TaskList project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
       <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
