@@ -38,7 +38,7 @@ const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
         <DialogTitle sx={{ fontWeight: 'bold', fontSize: '30' }}>
-          WARNING: THIS CHANGE REQUEST BLOCKS OTHERS
+          WARNING: THIS WORK PACKAGE BLOCKS OTHERS
           <IconButton
             aria-label="close"
             onClick={onHide}
@@ -72,7 +72,7 @@ const ChangeRequestBlockerWarning: React.FC<BlockerWarningModalProps> = ({
             <Grid item xs={12}>
               <BulletList
                 title={
-                  'By changing the timeline impact of this work package you will be delaying the start of the following work packages:'
+                  'The following work packages will be automatically delayed:'
                 }
                 list={workPackages.map((wp) => wp.name)}
                 readOnly
