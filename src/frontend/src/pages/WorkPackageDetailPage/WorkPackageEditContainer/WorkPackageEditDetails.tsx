@@ -24,23 +24,27 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
   const [lead, setLead] = useState<User | null>(null);
   const [manager, setManager] = useState<User | null>(null);
 
-  const usersSearchOnChange = (
+  const leadSearchOnChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => {
+    if (value) {
+      const lead = users1.find((lead: User) => lead.userId.toString() === value.id);
+      if (lead) {
+        setLead(lead);
+      }
+    } else {
+      setLead(null);
+    }
+  };
+
+  const managerSearchOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
     value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const lead = users1.find((lead: User) => lead.userId.toString() === value.id);
       const manager = users2.find((manager: User) => manager.userId.toString() === value.id);
-
-      if (lead) {
-        setLead(lead);
-      }
-
       if (manager) {
         setManager(manager);
       }
     } else {
-      setLead(null);
       setManager(null);
     }
   };
@@ -127,8 +131,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
             <FormLabel> Project Lead</FormLabel>
             <NERAutocomplete
               sx={{ mt: 1, width: '280%' }}
-              id="users-autocomplete"
-              onChange={usersSearchOnChange}
+              id="project-lead-autocomplete"
+              onChange={leadSearchOnChange}
               options={users1.map(projectLeadOptions)}
               size="small"
               placeholder="Select a Project Lead"
@@ -141,8 +145,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
             <FormLabel> Project Manager</FormLabel>
             <NERAutocomplete
               sx={{ mt: 1, width: '280%' }}
-              id="users-autocomplete"
-              onChange={usersSearchOnChange}
+              id="project-manager-autocomplete"
+              onChange={managerSearchOnChange}
               options={users2.map(projectManagerOptions)}
               size="small"
               placeholder="Select a Project Manager"
