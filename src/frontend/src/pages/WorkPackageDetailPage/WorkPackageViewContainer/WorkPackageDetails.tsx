@@ -20,12 +20,14 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
     <PageBlock
       title={'Work Package Details'}
       headerRight={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          <div style={{ margin: '4px' }}>
+        <Grid container alignItems="center" justifyContent="flex-end">
+          <Grid item sx={{ margin: '4px' }}>
             {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
-          </div>
-          <WbsStatus status={workPackage.status} />
-        </div>
+          </Grid>
+          <Grid item>
+            <WbsStatus status={workPackage.status} />
+          </Grid>
+        </Grid>
       }
     >
       <Grid container spacing={1}>
