@@ -19,7 +19,6 @@ import { NERSuccessButton } from '../../components/NERSuccessButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
-import NERSuccessButton from '../../components/NERSuccessButton';
 import { MouseEventHandler } from 'react';
 
 const schema = yup.object().shape({
