@@ -4,7 +4,6 @@
  */
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
@@ -19,6 +18,9 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { NERSuccessButton } from '../../components/NERSuccessButton';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import { MouseEventHandler } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -40,7 +42,7 @@ const schema = yup.object().shape({
 
 interface CreateProjectFormViewProps {
   allowSubmit: boolean;
-  onCancel: (e: any) => void;
+  onCancel: MouseEventHandler;
   onSubmit: (project: CreateProjectFormInputs) => void;
 }
 
@@ -79,8 +81,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
-            <FormControl>
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
@@ -91,8 +93,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl>
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth>
               <FormLabel>Car Number</FormLabel>
               <ReactHookTextField
                 name="carNumber"
@@ -103,19 +105,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter project name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl sx={{ width: 197 }}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
               <FormLabel>Team</FormLabel>
               <Controller
                 name="teamId"
@@ -133,8 +124,19 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl sx={{ minWidth: 325, width: '37%' }}>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
+              <FormLabel>Project Name</FormLabel>
+              <ReactHookTextField
+                name="name"
+                control={control}
+                placeholder="Enter project name..."
+                errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
               <FormLabel>Project Summary</FormLabel>
               <ReactHookTextField
                 name="summary"
@@ -147,9 +149,12 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
         </Grid>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
+        <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
+          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+            Create
           </NERSuccessButton>
         </Box>
       </PageBlock>

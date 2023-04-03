@@ -3,6 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SaveIcon from '@mui/icons-material/Save';
 import { Autocomplete, Box, Link, TextField, Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
@@ -15,18 +20,10 @@ import {
   GridRowParams,
   useGridApiContext
 } from '@mui/x-data-grid';
-import { Task, TaskPriority, TaskStatus, UserPreview, WbsNumber, TeamPreview, User } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
-import { GridColDefStyle } from '../../../utils/tables';
-import PauseIcon from '@mui/icons-material/Pause';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import CheckIcon from '@mui/icons-material/Check';
-import SaveIcon from '@mui/icons-material/Save';
-import { useAuth } from '../../../hooks/auth.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import React, { useState } from 'react';
-import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
+import { Project, Task, TaskPriority, TaskStatus, User, UserPreview } from 'shared';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useAuth } from '../../../hooks/auth.hooks';
 import {
   useCreateTask,
   useDeleteTask,
@@ -34,8 +31,11 @@ import {
   useEditTaskAssignees,
   useSetTaskStatus
 } from '../../../hooks/tasks.hooks';
-import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { fullNamePipe } from '../../../utils/pipes';
+import { GridColDefStyle } from '../../../utils/tables';
+import ErrorPage from '../../ErrorPage';
+import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -53,13 +53,11 @@ declare global {
 interface TaskListTabPanelProps {
   index: number;
   value: number;
+  project: Project;
   tasks: Task[];
-  team?: TeamPreview;
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
-  currentWbsNumber: WbsNumber;
-  hasTaskPermissions: boolean;
 }
 
 type Row = {
@@ -103,7 +101,7 @@ function TitleEdit(params: GridRenderEditCellParams) {
 }
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, addTask, onAddCancel, currentWbsNumber, team, hasTaskPermissions } = props;
+  const { value, index, tasks, status, addTask, onAddCancel, project } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const editTaskStatus = useSetTaskStatus();
@@ -111,7 +109,9 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
-  const { mutateAsync: createTaskMutate } = useCreateTask(currentWbsNumber);
+  const TABLE_ROW_COUNT = 'tl-table-row-count';
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem(TABLE_ROW_COUNT)));
+  const { mutateAsync: createTaskMutate } = useCreateTask(project.wbsNum);
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
   const { isLoading, isError, mutateAsync: editTaskMutateAsync, error } = useEditTask();
   const {
@@ -124,6 +124,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const toast = useToast();
   const auth = useAuth();
   const theme = useTheme();
+
+  const team = project.team;
 
   const processRowUpdate = React.useCallback(
     async (newRow: GridRowModel) => {
@@ -144,11 +146,37 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     [assignees]
   );
 
-  if (isLoading || assigneeIsLoading || !auth.user || !team) return <LoadingIndicator />;
+  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
+  if (!team)
+    return (
+      <>
+        {value === index && (
+          <Typography sx={{ py: '25px', textAlign: 'center' }}>
+            A project can only have tasks if it is assigned to a team!
+          </Typography>
+        )}
+      </>
+    );
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
+  if (!localStorage.getItem(TABLE_ROW_COUNT)) {
+    localStorage.setItem(TABLE_ROW_COUNT, '5');
+  }
 
-  const disabled = !hasTaskPermissions;
+  // can the user edit this task?
+  const editTaskPermissions = (user: User | undefined, task: Task, proj: Project): boolean => {
+    if (!user) return false;
+    return (
+      (user.role === 'APP_ADMIN' ||
+        user.role === 'ADMIN' ||
+        user.role === 'LEADERSHIP' ||
+        proj.projectLead?.userId === user.userId ||
+        proj.projectManager?.userId === user.userId ||
+        task.assignees.map((u) => u.userId).includes(user.userId) ||
+        task.createdBy.userId === user.userId) ??
+      false
+    );
+  };
 
   const renderNotes = (params: GridRenderCellParams<Task>) =>
     params.id === -1 ? (
@@ -293,18 +321,22 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   };
 
   const createTask = async () => {
-    await createTaskMutate({
-      title: title,
-      deadline: transformDate(deadline),
-      priority: priority,
-      status: status,
-      assignees: assignees.map((user) => user.userId)
-    })
-      .finally(() => {
-        toast.success('Task Successfully Created!');
-        deleteCreateTask();
-      })
-      .catch((e) => toast.error(e.message, 6000));
+    try {
+      await createTaskMutate({
+        title: title,
+        deadline: transformDate(deadline),
+        priority: priority,
+        status: status,
+        assignees: assignees.map((user) => user.userId)
+      });
+      toast.success('Task Successfully Created!');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
+      }
+    } finally {
+      deleteCreateTask();
+    }
   };
 
   const deleteCreateTask = () => {
@@ -328,7 +360,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             label="Move to In Progress"
             onClick={moveToInProgress(params.row.taskId)}
             showInMenu
-            disabled={disabled}
+            disabled={!editTaskPermissions(auth.user, params.row.task, project)}
           />
         );
       } else if (status === TaskStatus.IN_PROGRESS) {
@@ -338,7 +370,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             label="Move to Backlog"
             onClick={moveToBacklog(params.row.taskId)}
             showInMenu
-            disabled={disabled}
+            disabled={!editTaskPermissions(auth.user, params.row.task, project)}
           />
         );
         actions.push(
@@ -347,7 +379,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             label="Move to Done"
             onClick={moveToDone(params.row.taskId)}
             showInMenu
-            disabled={disabled}
+            disabled={!editTaskPermissions(auth.user, params.row.task, project)}
           />
         );
       }
@@ -360,7 +392,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           label="Delete"
           onClick={deleteRow(params.row.taskId)}
           showInMenu
-          disabled={disabled}
+          disabled={!editTaskPermissions(auth.user, params.row.task, project)}
         />
       );
     }
@@ -499,11 +531,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           <DataGrid
             columns={columns}
             rows={rows}
-            pageSize={5}
             isCellEditable={isCellEditable}
             experimentalFeatures={{ newEditingApi: true }}
             processRowUpdate={processRowUpdate}
-            rowsPerPageOptions={[5]}
+            pageSize={pageSize}
+            rowsPerPageOptions={[5, 10, 15, 100]}
+            onPageSizeChange={(newPageSize) => {
+              localStorage.setItem(TABLE_ROW_COUNT, String(newPageSize));
+              setPageSize(newPageSize);
+            }}
             sx={{
               '&.MuiDataGrid-root .MuiDataGrid-cell:focus': {
                 outline: 'none'
@@ -537,7 +573,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           onSubmit={handleEditTask}
           task={selectedTask!}
           team={team}
-          hasTaskPermissions={hasTaskPermissions}
+          hasEditPermissions={editTaskPermissions(auth.user, selectedTask!, project)}
         />
       )}
     </div>

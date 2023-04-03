@@ -1,12 +1,17 @@
 import { ChangeRequest, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
+import {
+  updateBlocking,
+  sendSlackChangeRequestNotification,
+  sendSlackCRReviewedNotification
+} from '../utils/change-requests.utils';
 import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
-import { sendSlackChangeRequestNotification, sendSlackCRReviewedNotification } from '../utils/change-requests.utils';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 
 export default class ChangeRequestsService {
   /**
@@ -22,7 +27,7 @@ export default class ChangeRequestsService {
     });
 
     if (!changeRequest) throw new NotFoundException('Change Request', crId);
-    if (changeRequest.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
+    if (changeRequest.dateDeleted) throw new DeletedException('Change Request', crId);
 
     return changeRequestTransformer(changeRequest);
   }
@@ -63,15 +68,15 @@ export default class ChangeRequestsService {
         activationChangeRequest: true,
         scopeChangeRequest: true,
         wbsElement: {
-          include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, project: true }
+          include: { workPackage: workPackageQueryArgs, project: true }
         }
       }
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.accepted) throw new HttpException(400, `This change request is already approved!`);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
-    if (foundCR.wbsElement.dateDeleted) throw new HttpException(400, 'This change requests wbs element has been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
+    if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
 
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId) throw new AccessDeniedException();
@@ -110,14 +115,18 @@ export default class ChangeRequestsService {
           }
         });
       } else if (foundCR.wbsElement.workPackage) {
+        // get the project for the work package
         const wpProj = await prisma.project.findUnique({
-          where: { projectId: foundCR.wbsElement.workPackage.projectId }
+          where: { projectId: foundCR.wbsElement.workPackage.projectId },
+          include: { workPackages: workPackageQueryArgs }
         });
         if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
+        // calculate the new budget and new duration
         const newBudget = wpProj.budget + foundPs.budgetImpact;
         const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
 
+        // create changes that reflect the new budget and duration
         const changes = [
           {
             changeRequestId: crId,
@@ -130,6 +139,13 @@ export default class ChangeRequestsService {
             detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
           }
         ];
+
+        // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
+        if (foundPs.timelineImpact > 0) {
+          await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+        }
+
+        // update the project and work package
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.workPackage.projectId },
           data: {
@@ -159,6 +175,7 @@ export default class ChangeRequestsService {
           }
         });
       }
+
       // finally update the proposed solution
       await prisma.proposed_Solution.update({
         where: { proposedSolutionId: psId },
@@ -339,7 +356,8 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -413,7 +431,8 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
@@ -488,7 +507,8 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -559,7 +579,7 @@ export default class ChangeRequestsService {
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
     if (foundCR.accepted !== null)
       throw new HttpException(400, `Cannot create proposed solutions on a reviewed change request!`);
 
@@ -598,7 +618,7 @@ export default class ChangeRequestsService {
     if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
       throw new AccessDeniedException();
 
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
 
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot delete a reviewed change request!`);
 

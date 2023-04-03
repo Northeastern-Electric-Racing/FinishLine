@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
@@ -15,9 +15,11 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared';
 import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
+import { Link } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -177,10 +179,20 @@ const ChangeRequestsTable: React.FC = () => {
         columns={columns}
         getRowId={(row) => row.crId}
         sx={{ background: theme.palette.background.paper }}
-        onRowClick={(params) => {
-          history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
+        components={{
+          Toolbar: GridToolbar,
+          Row: (props: GridRowProps & { row: ChangeRequest }) => {
+            return (
+              <Link
+                component={RouterLink}
+                to={`${routes.CHANGE_REQUESTS}/${props.row.crId}`}
+                sx={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GridRow {...props} />
+              </Link>
+            );
+          }
         }}
-        components={{ Toolbar: GridToolbar }}
         componentsProps={{
           toolbar: {
             showQuickFilter: true,
