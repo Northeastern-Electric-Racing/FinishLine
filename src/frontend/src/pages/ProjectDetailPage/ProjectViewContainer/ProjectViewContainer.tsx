@@ -29,6 +29,8 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList';
 import DeleteProject from '../DeleteProject';
+import GroupIcon from '@mui/icons-material/Group';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -105,12 +107,18 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const assignToMyTeamButton = (
     <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+      <ListItemIcon>
+        <GroupIcon fontSize="small" />
+      </ListItemIcon>
       Assign to My Team
     </MenuItem>
   );
 
   const deleteButton = (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+      <ListItemIcon>
+        <DeleteIcon fontSize="small" />
+      </ListItemIcon>
       Delete
     </MenuItem>
   );
