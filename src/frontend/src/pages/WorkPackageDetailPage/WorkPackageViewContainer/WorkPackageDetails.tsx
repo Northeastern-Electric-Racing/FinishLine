@@ -20,7 +20,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
     <PageBlock
       title={'Work Package Details'}
       headerRight={
-        <Box display="flex" justifyContent="flex-end">
+        <Box>
           {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
           <WbsStatus status={workPackage.status} />
         </Box>
