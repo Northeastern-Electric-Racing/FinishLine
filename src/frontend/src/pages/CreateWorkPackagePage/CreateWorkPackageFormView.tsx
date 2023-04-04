@@ -89,7 +89,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const disableStartDate = (startDate: Date) => {
-    return startDate.getDay() === 1;
+    return startDate.getDay() !== 1;
   };
 
   const blockedByFormControl = (

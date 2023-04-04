@@ -19,7 +19,7 @@ interface Props {
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
   const disableStartDate = (startDate: Date) => {
-    return startDate.getDay() === 1;
+    return startDate.getDay() !== 1;
   };
 
   const StageSelect = () => (

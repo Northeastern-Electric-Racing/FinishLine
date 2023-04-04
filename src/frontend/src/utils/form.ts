@@ -42,7 +42,7 @@ export const wbsTester = (wbsNum: string | undefined) => {
  * @param startDate
  */
 export const startDateTester = (startDate: Date | undefined) => {
-  if (startDate === undefined || startDate.getDay() === 1) {
+  if (startDate === undefined || startDate.getDay() !== 1) {
     return false;
   }
   return true;
