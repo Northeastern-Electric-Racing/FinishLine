@@ -21,7 +21,7 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { wbsTester } from '../../utils/form';
+import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { WorkPackageStage } from 'shared';
@@ -36,7 +36,10 @@ const schema = yup.object().shape({
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
   stage: yup.string(),
-  startDate: yup.date().required('Start Date is required'),
+  startDate: yup
+    .date()
+    .required('Start Date is required')
+    .test('start-date-valid', 'start date is not valid', startDateTester),
   duration: yup
     .number()
     .typeError('Duration must be a number')
@@ -85,7 +88,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   } = useFieldArray({ control, name: 'deliverables' });
   const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
-  const validateStartDate = (startDate: Date) => {
+  const disableStartDate = (startDate: Date) => {
     return startDate.getDay() === 1;
   };
 
@@ -196,7 +199,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
-                    //error={validateStartDate(value)}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 )}

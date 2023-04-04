@@ -18,6 +18,10 @@ interface Props {
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() === 1;
+  };
+
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Stage Select</FormLabel>
@@ -37,6 +41,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       />
     </FormControl>
   );
+
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
@@ -65,6 +70,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 </>
