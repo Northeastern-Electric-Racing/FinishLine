@@ -85,6 +85,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   } = useFieldArray({ control, name: 'deliverables' });
   const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
+  const validateStartDate = (startDate: Date) => {
+    return startDate.getDay() === 1;
+  };
+
   const blockedByFormControl = (
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
@@ -192,6 +196,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    //error={validateStartDate(value)}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 )}
