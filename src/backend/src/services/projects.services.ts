@@ -531,7 +531,7 @@ export default class ProjectsService {
       ...projectQueryArgs
     });
 
-    if (!project) throw new NotFoundException('WBS Element', wbsPipe(wbsNumber));
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     const favorited = project.favoritedBy.map((eachUser) => eachUser.userId).includes(user.userId);
 
     favorited
