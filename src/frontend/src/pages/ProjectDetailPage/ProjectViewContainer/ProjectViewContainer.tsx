@@ -27,7 +27,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import TaskList from './TaskList';
+import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
