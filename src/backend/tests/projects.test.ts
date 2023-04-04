@@ -189,7 +189,7 @@ describe('Projects', () => {
 
       const fakeProjectWBS = '100.100.0';
       await expect(() => ProjectsService.toggleFavorite(validateWBS(fakeProjectWBS), batman)).rejects.toThrow(
-        new NotFoundException('WBS Element', fakeProjectWBS)
+        new NotFoundException('Project', fakeProjectWBS)
       );
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(0);
