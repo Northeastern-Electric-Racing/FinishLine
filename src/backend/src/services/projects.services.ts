@@ -520,7 +520,7 @@ export default class ProjectsService {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
-    const project = await prisma.project.findFirst({
+    const projectInfo = await prisma.project.findFirst({
       where: {
         wbsElement: {
           carNumber,
@@ -528,31 +528,22 @@ export default class ProjectsService {
           workPackageNumber
         }
       },
-      ...projectQueryArgs
-    });
-
-    if (!project) throw new NotFoundException('WBS Element', wbsPipe(wbsNumber));
-
-    const favorited = await prisma.project.findFirst({
-      where: {
-        projectId: project.projectId
-      },
-      select: {
-        favoritedBy: {
-          where: {
-            userId: user.userId
-          }
-        }
+      include: {
+        ...projectQueryArgs.include,
+        favoritedBy: true
       }
     });
 
-    favorited?.favoritedBy.length
+    if (!projectInfo) throw new NotFoundException('WBS Element', wbsPipe(wbsNumber));
+    const favorited = projectInfo.favoritedBy.filter((allUsers) => allUsers.userId === user.userId).length;
+
+    favorited
       ? await prisma.user.update({
           where: { userId: user.userId },
           data: {
             favoriteProjects: {
               disconnect: {
-                projectId: project.projectId
+                projectId: projectInfo.projectId
               }
             }
           }
@@ -562,12 +553,13 @@ export default class ProjectsService {
           data: {
             favoriteProjects: {
               connect: {
-                projectId: project.projectId
+                projectId: projectInfo.projectId
               }
             }
           }
         });
 
+    const { favoritedBy: _, ...project } = projectInfo;
     return projectTransformer(project);
   }
 }

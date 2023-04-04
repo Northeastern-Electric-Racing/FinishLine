@@ -204,14 +204,13 @@ describe('Projects', () => {
       expect(prisma.project.findFirst).toBeCalledTimes(0);
     });
     test('toggles successfully', async () => {
-      jest.spyOn(prisma.project, 'findFirst').mockResolvedValueOnce(prismaProject1);
-      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ favoritedBy: [] } as any);
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ prismaProject1, favoritedBy: [] } as any);
       jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
 
       const res = await ProjectsService.toggleFavorite(validateWBS('1.1.0'), batman);
 
       expect(res).toBe(sharedProject1);
-      expect(prisma.project.findFirst).toBeCalledTimes(2);
+      expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
