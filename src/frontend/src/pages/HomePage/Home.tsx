@@ -4,7 +4,6 @@
  */
 
 import { Typography, Alert, Link } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { routes } from '../../utils/routes';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -12,16 +11,12 @@ import UpcomingDeadlines from './UpcomingDeadlines';
 import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { useHistory } from 'react-router-dom';
 
 const Home = () => {
   const user = useCurrentUser();
+  const history = useHistory();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-  const { slackId: userSlackId } = userSettingsData || {};
-  const [showAlert, setShowAlert] = useState(userSlackId === '');
-
-  useEffect(() => {
-    setShowAlert(userSlackId === '');
-  }, [userSlackId]);
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -31,21 +26,15 @@ const Home = () => {
       <Typography variant="h3" sx={{ my: 2, textAlign: 'center', pt: 3 }}>
         Welcome, {user.firstName}!
       </Typography>
-      {showAlert ? (
-        <Alert
-          variant="filled"
-          severity="warning"
-          onClose={() => {
-            setShowAlert(false);
-          }}
-        >
+      {!userSettingsData?.slackId && (
+        <Alert variant="filled" severity="warning" onClose={() => history.push(routes.SETTINGS)}>
           You don't have a slack id set! Without it, you won't be able to get important updates from us. You can set it{' '}
           <Link href={routes.SETTINGS} sx={{ color: 'blue' }}>
             here
           </Link>
           .
         </Alert>
-      ) : null}
+      )}
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
