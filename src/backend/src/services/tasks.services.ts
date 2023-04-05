@@ -1,11 +1,15 @@
 import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
 import { isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import taskQueryArgs from '../prisma-query-args/tasks.query-args';
+import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
+import { allUsersOnTeam, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
+import { wbsNumOf } from '../utils/utils';
 
 export default class TasksService {
   /**
@@ -31,20 +35,33 @@ export default class TasksService {
     status: Task_Status,
     assignees: number[]
   ): Promise<Task> {
-    if (createdBy.role === Role.GUEST) throw new AccessDeniedException();
+    const requestedWbsElement = await prisma.wBS_Element.findUnique({
+      where: { wbsNumber: wbsNum },
+      include: { project: { include: { team: { ...teamQueryArgs }, wbsElement: true } } }
+    });
+    if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    const { project } = requestedWbsElement;
+    if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
+
+    const { team } = project;
+    if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+
+    const isLeadershipOrAbove =
+      createdBy.role === Role.ADMIN || createdBy.role === Role.APP_ADMIN || createdBy.role === Role.LEADERSHIP;
+
+    const isProjectLeadOrManager =
+      createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
+
+    if (!isLeadershipOrAbove && !isProjectLeadOrManager && !isUserOnTeam(team, createdBy)) {
+      throw new AccessDeniedException();
+    }
+
+    const users = await getUsers(assignees); // this throws if any of the users aren't found
+    if (!allUsersOnTeam(team, users)) throw new HttpException(400, `All assignees must be part of the project's team!`);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
-
-    if (!isUnderWordCount(notes, 150)) throw new HttpException(400, 'Notes must be less than 250 words');
-
-    const requestedWbsElement = await prisma.wBS_Element.findUnique({ where: { wbsNumber: wbsNum } });
-
-    if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-
-    if (requestedWbsElement.dateDeleted) throw new HttpException(400, "This task's wbs element has been deleted!");
-
-    // this throws if any of the users aren't found
-    const users = await getUsers(assignees);
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     const createdTask = await prisma.task.create({
       data: {
@@ -64,6 +81,36 @@ export default class TasksService {
   }
 
   /**
+   * Edits a Task in the database
+   * @param user the user editing the task
+   * @param taskId the task that is being edited
+   * @param title the new title for the task
+   * @param notes the new notes for the task
+   * @param priority the new priority for the task
+   * @param deadline the new deadline for the task
+   * @returns the sucessfully edited task
+   */
+  static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission) throw new AccessDeniedException();
+
+    const originalTask = await prisma.task.findUnique({ where: { taskId } });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+
+    if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
+
+    if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: { title, notes, priority, deadline },
+      ...taskQueryArgs
+    });
+    return taskTransformer(updatedTask);
+  }
+
+  /**
    * Edits the status of a task in the database
    * @param user the user editing the task
    * @param taskId the id of the task
@@ -75,7 +122,7 @@ export default class TasksService {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
-    if (originalTask.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Task!');
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -85,5 +132,93 @@ export default class TasksService {
 
     const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
     return taskTransformer(updatedTask);
+  }
+
+  /**
+   * Edits the assignees of a task in the database
+   * @param user the user editing the task
+   * @param taskId the id of the task
+   * @param assignees the new assignees
+   * @returns the updated task
+   * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
+   */
+  static async editTaskAssignees(user: User, taskId: string, assignees: number[]): Promise<Task> {
+    // Get the original task and check if it exists
+    const originalTask = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        wbsElement: { include: { project: { ...projectQueryArgs } } }
+      }
+    });
+    if (!originalTask) throw new NotFoundException('Task', taskId);
+    if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+
+    const hasPermission = await hasPermissionToEditTask(user, taskId);
+    if (!hasPermission)
+      throw new AccessDeniedException(
+        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+      );
+
+    // this throws if any of the users aren't found
+    const assigneeUsers = await getUsers(assignees);
+
+    const team = originalTask.wbsElement?.project?.team;
+    if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (!allUsersOnTeam(team, assigneeUsers)) {
+      throw new HttpException(400, `All assignees must be part of the project's team!`);
+    }
+
+    // retrieve userId for every assignee to update task's assignees in the database
+    const transformedAssigneeUsers = assigneeUsers.map((user) => {
+      return {
+        userId: user.userId
+      };
+    });
+
+    const updatedTask = await prisma.task.update({
+      where: { taskId },
+      data: {
+        assignees: {
+          set: transformedAssigneeUsers
+        }
+      },
+      ...taskQueryArgs
+    });
+
+    return taskTransformer(updatedTask);
+  }
+
+  /**
+   * Delete task in the database
+   * @param taskId the id number of the given task
+   * @param currentUser the current user currently accessing the task
+   * @returns the deleted task
+   * @throws if the user does not have permission
+   */
+  static async deleteTask(currentUser: User, taskId: string): Promise<string> {
+    const task = await prisma.task.findUnique({ where: { taskId }, ...taskQueryArgs });
+    if (!task) throw new NotFoundException('Task', taskId);
+    if (task.dateDeleted) throw new DeletedException('Task', taskId);
+
+    const wbsElement = await prisma.wBS_Element.findUnique({ where: { wbsElementId: task.wbsElementId } });
+    if (!wbsElement) throw new NotFoundException('WBS Element', task.wbsElementId);
+    if (wbsElement.dateDeleted) {
+      const wbsNum = wbsNumOf(wbsElement);
+      throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    }
+
+    // this checks the current users permissions
+    const isAdmin = currentUser.role === Role.APP_ADMIN || currentUser.role === Role.ADMIN;
+    const isLead = wbsElement.projectLeadId === currentUser.userId || wbsElement.projectManagerId === currentUser.userId;
+    if (!isAdmin && !isLead) {
+      throw new AccessDeniedException();
+    }
+
+    const deletedTask = await prisma.task.update({
+      where: { taskId },
+      data: { dateDeleted: new Date(), deletedByUserId: currentUser.userId }
+    });
+
+    return deletedTask.taskId;
   }
 }

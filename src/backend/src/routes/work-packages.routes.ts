@@ -1,6 +1,5 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { WbsElementStatus } from 'shared';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
@@ -18,9 +17,9 @@ workPackagesRouter.post(
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
-  intMinZero(body('dependencies.*.carNumber')),
-  intMinZero(body('dependencies.*.projectNumber')),
-  intMinZero(body('dependencies.*.workPackageNumber')),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber')),
   body('expectedActivities').isArray(),
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
@@ -36,16 +35,15 @@ workPackagesRouter.post(
   body('startDate').isDate(),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
-  intMinZero(body('dependencies.*.carNumber')),
-  intMinZero(body('dependencies.*.projectNumber')),
-  intMinZero(body('dependencies.*.workPackageNumber')),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber')),
   body('expectedActivities').isArray(),
   body('expectedActivities.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('expectedActivities.*.detail')),
   body('deliverables').isArray(),
   body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('deliverables.*.detail')),
-  body('wbsElementStatus').custom((value) => Object.values(WbsElementStatus).includes(value)),
   intMinZero(body('projectLead').optional()),
   intMinZero(body('projectManager').optional()),
   validateInputs,

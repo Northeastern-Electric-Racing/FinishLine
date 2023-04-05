@@ -10,8 +10,10 @@ import {
   createSingleProject,
   getAllProjects,
   getSingleProject,
-  setProjectTeam
+  setProjectTeam,
+  deleteProject
 } from '../apis/projects.api';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
  * Custom React Hook to supply all projects.
@@ -40,10 +42,13 @@ export const useSingleProject = (wbsNum: WbsNumber) => {
  *
  */
 export const useCreateSingleProject = () => {
-  return useMutation<{ message: string }, Error, any>(['projects', 'create'], async (projectPayload: any) => {
-    const { data } = await createSingleProject(projectPayload);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, CreateSingleProjectPayload>(
+    ['projects', 'create'],
+    async (projectPayload: CreateSingleProjectPayload) => {
+      const { data } = await createSingleProject(projectPayload);
+      return data;
+    }
+  );
 };
 
 /**
@@ -51,9 +56,9 @@ export const useCreateSingleProject = () => {
  */
 export const useEditSingleProject = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, EditSingleProjectPayload>(
     ['projects', 'edit'],
-    async (projectPayload: any) => {
+    async (projectPayload: EditSingleProjectPayload) => {
       const { data } = await editSingleProject(projectPayload);
       return data;
     },
@@ -82,6 +87,25 @@ export const useSetProjectTeam = (wbsNum: WbsNumber) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['teams']);
         queryClient.invalidateQueries(['projects', wbsNum]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to delete a work package.
+ */
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['projects', 'delete'],
+    async (wbsNumber: WbsNumber) => {
+      const { data } = await deleteProject(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );

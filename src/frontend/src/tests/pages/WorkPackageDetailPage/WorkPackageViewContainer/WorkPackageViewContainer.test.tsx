@@ -16,7 +16,8 @@ const renderComponent = (
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
-  allowRequestChange = true
+  allowRequestChange = true,
+  allowDelete = true
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -28,6 +29,7 @@ const renderComponent = (
         allowActivate={allowActivate}
         allowStageGate={allowStageGate}
         allowRequestChange={allowRequestChange}
+        allowDelete={allowDelete}
       />
     </RouterWrapper>
   );
@@ -42,7 +44,7 @@ describe('work package container view', () => {
     renderComponent();
 
     expect(screen.getAllByText('1.1.2 - Adhesive Shear Strength Test').length).toEqual(2);
-    expect(screen.getByText('Dependencies')).toBeInTheDocument();
+    expect(screen.getByText('Blocked By')).toBeInTheDocument();
     expect(screen.getByText('Expected Activities')).toBeInTheDocument();
     expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeEnabled();

@@ -7,15 +7,40 @@ import { User } from '@prisma/client';
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, notes, deadline, priority, status, assignees } = req.body;
+      const { title, deadline, priority, status, assignees } = req.body;
 
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
 
       const createdBy: User = await getCurrentUser(res);
 
-      const task = await TasksService.createTask(createdBy, wbsNum, title, notes, deadline, priority, status, assignees);
+      const task = await TasksService.createTask(
+        createdBy,
+        wbsNum,
+        title,
+        '',
+        new Date(deadline),
+        priority,
+        status,
+        assignees
+      );
 
       res.status(200).json(task);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { title, notes, priority, deadline } = req.body;
+
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updateTask = await TasksService.editTask(user, taskId, title, notes, priority, deadline);
+
+      res.status(200).json(updateTask);
     } catch (error: unknown) {
       next(error);
     }
@@ -30,6 +55,36 @@ export default class TasksController {
       const user: User = await getCurrentUser(res);
 
       const updatedTask = await TasksService.editTaskStatus(user, taskId, status);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editTaskAssignees(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assignees } = req.body;
+
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.editTaskAssignees(user, taskId, assignees);
+
+      res.status(200).json(updatedTask);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { taskId } = req.params;
+
+      const user: User = await getCurrentUser(res);
+
+      const updatedTask = await TasksService.deleteTask(user, taskId);
 
       res.status(200).json(updatedTask);
     } catch (error: unknown) {

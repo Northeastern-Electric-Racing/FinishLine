@@ -46,13 +46,12 @@ describe('upcoming deadlines component', () => {
     expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })).toBeInTheDocument();
     expect(screen.getByText(exampleAllWorkPackages[1].name, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })).toBeInTheDocument();
-    expect(screen.getAllByText(/Expected Activities/).length).toEqual(3);
     expect(screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })).toBeInTheDocument();
   });
 
   it('renders when no work packages', () => {
     mockHook(false, false, []);
     renderComponent();
-    expect(screen.getByText('No VERY_BEHIND work packages')).toBeInTheDocument();
+    expect(screen.getByText('No Very Behind work packages')).toBeInTheDocument();
   });
 });

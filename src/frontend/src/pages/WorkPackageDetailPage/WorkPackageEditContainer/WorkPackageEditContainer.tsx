@@ -25,6 +25,7 @@ import WorkPackageEditDetails from './WorkPackageEditDetails';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -38,10 +39,11 @@ interface WorkPackageEditContainerProps {
 }
 
 const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
+  const toast = useToast();
   const auth = useAuth();
   const query = useQuery();
   const allUsers = useAllUsers();
-  const { name, startDate, duration, status } = workPackage;
+  const { name, startDate, duration } = workPackage;
   const {
     register,
     handleSubmit,
@@ -58,13 +60,12 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       stage: workPackage.stage || 'NONE',
       startDate,
       duration,
-      dependencies: workPackage.dependencies.map((dep) => {
+      blockedBy: workPackage.blockedBy.map((dep) => {
         const wbsNum = wbsPipe(dep);
         return { wbsNum };
       }),
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
-      deliverables: bulletsToObject(workPackage.deliverables),
-      wbsElementStatus: status
+      deliverables: bulletsToObject(workPackage.deliverables)
     }
   });
   // lists of stuff
@@ -78,11 +79,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const {
-    fields: dependencies,
-    append: appendDependency,
-    remove: removeDependency
-  } = useFieldArray({ control, name: 'dependencies' });
+  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
 
@@ -95,13 +92,13 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const transformDate = (date: Date) => {
-    const month = date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : (date.getUTCMonth() + 1).toString();
-    const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate().toString();
-    return `${date.getUTCFullYear().toString()}-${month}-${day}`;
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
+    return `${date.getFullYear().toString()}-${month}-${day}`;
   };
 
   const onSubmit = async (data: any) => {
-    const { name, projectLead, projectManager, startDate, duration, wbsElementStatus, crId, dependencies, stage } = data;
+    const { name, projectLead, projectManager, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
@@ -115,19 +112,18 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         crId: parseInt(crId),
         startDate: transformDate(startDate),
         duration,
-        dependencies: dependencies.map((dep: any) => {
+        blockedBy: blockedBy.map((dep: any) => {
           return validateWBS(dep.wbsNum);
         }),
         expectedActivities,
         deliverables,
-        wbsElementStatus,
         stage
       };
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message);
         return;
       }
     }
@@ -151,26 +147,26 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
         previousPages={[
           { name: 'Projects', route: routes.PROJECTS },
-          { name: projectWbsString, route: `${routes.PROJECTS}/${projectWbsString}` }
+          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
         ]}
         actionButton={
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
       <WorkPackageEditDetails control={control} errors={errors} users={users} />
-      <PageBlock title="Dependencies">
-        {dependencies.map((_element, i) => {
+      <PageBlock title="Blocked By">
+        {blockedBy.map((_element, i) => {
           return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
-              <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+            <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>
             </Grid>
           );
         })}
-        <Button variant="contained" color="success" onClick={() => appendDependency({ wbsNum: '' })} sx={{ mt: 2 }}>
-          + ADD NEW DEPENDENCY
+        <Button variant="contained" color="success" onClick={() => appendBlocker({ wbsNum: '' })} sx={{ mt: 2 }}>
+          + ADD NEW BLOCKER
         </Button>
       </PageBlock>
 

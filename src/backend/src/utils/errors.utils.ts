@@ -23,8 +23,19 @@ export class NotFoundException extends HttpException {
    * @param name the name of the thing that can't be found
    * @param id the id of the thing that can't be found
    */
-  constructor(name: NotFoundObjectNames, id: number | string) {
+  constructor(name: ExceptionObjectNames, id: number | string) {
     super(404, `${name} with id: ${id} not found!`);
+  }
+}
+
+export class DeletedException extends HttpException {
+  /**
+   * Constructs a deleted error
+   * @param name the name of the thing that was deleted
+   * @param id the id of the thing that was deleted
+   */
+  constructor(name: ExceptionObjectNames, id: number | string) {
+    super(400, `${name} with id: ${id} has already been deleted!`);
   }
 }
 
@@ -49,12 +60,13 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
-    res.status(500).json({ message: 'Something went very wrong...' });
+    res.status(500).json({ message: JSON.stringify(error) });
+    throw error;
   }
 };
 
 // type so that the not found error messages are consistent
-type NotFoundObjectNames =
+type ExceptionObjectNames =
   | 'User'
   | 'Risk'
   | 'Work Package'
