@@ -8,6 +8,7 @@ import { Project, WbsNumber } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { projectTransformer } from './transformers/projects.transformers';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
  * Fetches all projects.
@@ -34,7 +35,7 @@ export const getSingleProject = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all information needed to create a project.
  */
-export const createSingleProject = (payload: any) => {
+export const createSingleProject = (payload: CreateSingleProjectPayload) => {
   return axios.post<{ message: string }>(apiUrls.projectsCreate(), {
     ...payload
   });
@@ -45,7 +46,7 @@ export const createSingleProject = (payload: any) => {
  *
  * @param payload Payload containing all information needed to edit a project.
  */
-export const editSingleProject = (payload: any) => {
+export const editSingleProject = (payload: EditSingleProjectPayload) => {
   return axios.post<{ message: string }>(apiUrls.projectsEdit(), {
     ...payload
   });
@@ -60,4 +61,13 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
   return axios.post<{ message: string }>(apiUrls.projectsSetTeam(wbsPipe(wbsNum)), {
     teamId
   });
+};
+
+/*
+ * Delete a project.
+ *
+ * @param wbsNum The WBS Number of the Project being deleted.
+ */
+export const deleteProject = (wbsNumber: WbsNumber) => {
+  return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
 };

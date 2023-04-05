@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Button, Typography } from '@mui/material'; // some imports from libraries
+import { Grid, Typography } from '@mui/material'; // some imports from libraries
+import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
 import PageBlock from '../../layouts/PageBlock';
@@ -82,7 +83,17 @@ const CreditsPage: React.FC = () => {
     { name: 'Jameson Ho', color: '#A020F0' },
     { name: 'Yechan Na', color: '#C2B078' },
     { name: 'Liam Kosar', color: '#eb66ff' },
-    { name: 'Daniel Yu', color: '#bdc0c7' }
+    { name: 'Daniel Yu', color: '#bdc0c7' },
+    { name: 'William Seward', color: '#e53774' },
+    {
+      name: 'Zach Norman',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Ethan Mouri', color: '#00bbff' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
@@ -109,9 +120,9 @@ const CreditsPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <div style={{ justifyContent: 'center', display: 'flex' }}>
-        <Button onClick={() => setDisplaySnark(displaySnark + 1)} variant="contained">
+        <NERButton variant="contained" onClick={() => setDisplaySnark(displaySnark + 1)}>
           {displaySnark < snark.length ? snark[displaySnark] : '>:('}
-        </Button>
+        </NERButton>
       </div>
     </div>
   );

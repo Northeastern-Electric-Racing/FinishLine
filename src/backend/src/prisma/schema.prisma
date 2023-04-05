@@ -100,6 +100,7 @@ model User {
   createdTasks              Task[]               @relation(name: "createdBy")
   deletedTasks              Task[]               @relation(name: "deletedBy")
   assignedTasks             Task[]               @relation(name: "assignedTo")
+  favoriteProjects          Project[]            @relation(name: "favoritedBy")
 }
 
 model Team {
@@ -218,26 +219,26 @@ model Change {
 }
 
 model WBS_Element {
-  wbsElementId          Int                @id @default(autoincrement())
-  dateCreated           DateTime           @default(now())
-  dateDeleted           DateTime?
-  carNumber             Int
-  projectNumber         Int
-  workPackageNumber     Int
-  name                  String
-  status                WBS_Element_Status @default(INACTIVE)
-  projectLeadId         Int?
-  projectLead           User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId      Int?
-  projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
-  changeRequests        Change_Request[]
-  changes               Change[]
-  deletedByUserId       Int?
-  deletedBy             User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
-  project               Project?
-  workPackage           Work_Package?
-  dependentWorkPackages Work_Package[]     @relation("dependencies")
-  tasks                 Task[]
+  wbsElementId      Int                @id @default(autoincrement())
+  dateCreated       DateTime           @default(now())
+  dateDeleted       DateTime?
+  carNumber         Int
+  projectNumber     Int
+  workPackageNumber Int
+  name              String
+  status            WBS_Element_Status @default(INACTIVE)
+  projectLeadId     Int?
+  projectLead       User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId  Int?
+  projectManager    User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  changeRequests    Change_Request[]
+  changes           Change[]
+  deletedByUserId   Int?
+  deletedBy         User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
+  project           Project?
+  workPackage       Work_Package?
+  blocking          Work_Package[]     @relation("blockedBy")
+  tasks             Task[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -260,6 +261,7 @@ model Project {
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
   risks                 Risk[]
+  favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 
 model Work_Package {
@@ -271,7 +273,7 @@ model Work_Package {
   orderInProject     Int
   startDate          DateTime
   duration           Int
-  dependencies       WBS_Element[]        @relation(name: "dependencies")
+  blockedBy          WBS_Element[]        @relation(name: "blockedBy")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage              Work_Package_Stage?

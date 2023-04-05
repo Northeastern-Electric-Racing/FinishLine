@@ -1,5 +1,5 @@
 import { Task as SharedTask } from 'shared';
-import { batman, greenlantern, wonderwoman } from './users.test-data';
+import { batman, greenlantern, superman, wonderwoman } from './users.test-data';
 import { TaskPriority, TaskStatus } from 'shared';
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from '../../src/prisma-query-args/tasks.query-args';
@@ -51,7 +51,7 @@ export const taskSaveTheDayDeletedPrisma: Prisma.TaskGetPayload<typeof taskQuery
   deadline: new Date('12-25-2000'),
   priority: 'HIGH',
   status: 'DONE',
-  deletedByUserId: null,
+  deletedByUserId: 1,
   dateDeleted: new Date(),
   createdByUserId: 1,
   assignees: [greenlantern, wonderwoman],
@@ -93,6 +93,25 @@ export const taskSaveTheDayInProgressShared: SharedTask = {
   priority: TaskPriority.High,
   status: TaskStatus.IN_PROGRESS,
   assignees: [greenlantern, wonderwoman],
+  createdBy: userTransformer(batman),
+  dateDeleted: undefined,
+  deletedBy: undefined
+};
+
+export const taskSaveTheDayInProgressAssigneesEditedShared: SharedTask = {
+  taskId: '1',
+  wbsNum: {
+    carNumber: 1,
+    projectNumber: 2,
+    workPackageNumber: 0
+  },
+  dateCreated: new Date('12-24-2000'),
+  title: 'Save the day',
+  notes: 'Save people from burning building',
+  deadline: new Date('12-25-2000'),
+  priority: TaskPriority.High,
+  status: TaskStatus.IN_PROGRESS,
+  assignees: [superman, wonderwoman],
   createdBy: userTransformer(batman),
   dateDeleted: undefined,
   deletedBy: undefined

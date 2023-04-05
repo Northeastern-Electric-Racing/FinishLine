@@ -57,7 +57,79 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
 };
 
 /**
- * Makes sure that a change request has been accepted already (and not deleted)
+ * This function updates the start date of all the blockings (and nested blockings) of the initial given work package.
+ * It uses a depth first search algorithm for efficiency and to avoid cycles.
+ *
+ * @param initialWorkPackage the initial work package
+ * @param timelineImpact the timeline impact of the proposed solution
+ * @param crId the change request id
+ * @param reviewer the reviewer of the change request
+ */
+export const updateBlocking = async (
+  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>,
+  timelineImpact: number,
+  crId: number,
+  reviewer: User
+) => {
+  // track the wbs element ids we've seen so far so we don't update the same one multiple times
+  const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
+
+  // blocking ids that still need to be updated
+  const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
+
+  while (blockingUpdateQueue.length > 0) {
+    const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
+
+    if (!currWbsId) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
+    if (seenWbsElementIds.has(currWbsId)) continue; // if we've already seen it we skip it
+
+    seenWbsElementIds.add(currWbsId);
+
+    // get the current wbs object from prisma
+    const currWbs = await prisma.wBS_Element.findUnique({
+      where: { wbsElementId: currWbsId },
+      include: {
+        blocking: true,
+        workPackage: true
+      }
+    });
+
+    if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
+    if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
+
+    const newStartDate: Date = addWeeksToDate(currWbs.workPackage.startDate, timelineImpact);
+
+    const change = {
+      changeRequestId: crId,
+      implementerId: reviewer.userId,
+      detail: buildChangeDetail(
+        'Start Date',
+        currWbs.workPackage.startDate.toLocaleDateString(),
+        newStartDate.toLocaleDateString()
+      )
+    };
+
+    await prisma.work_Package.update({
+      where: { workPackageId: currWbs.workPackage.workPackageId },
+      data: {
+        startDate: newStartDate,
+        wbsElement: {
+          update: {
+            changes: {
+              create: change
+            }
+          }
+        }
+      }
+    });
+
+    // get all the blockings of the current wbs and add them to the queue to update
+    const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
+    blockingUpdateQueue.push(...newBlocking);
+  }
+};
+
+/** Makes sure that a change request has been accepted already (and not deleted)
  * @param crId - the id of the change request to check
  * @returns the change request
  * @throws if the change request is unreviewed, denied, or deleted

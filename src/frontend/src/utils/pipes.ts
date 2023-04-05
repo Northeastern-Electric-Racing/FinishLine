@@ -32,7 +32,7 @@ export const projectWbsPipe = (wbsNum: WbsNumber) => {
 };
 
 /** Display user by their name "Joe Shmoe" */
-export const fullNamePipe = (user?: User) => {
+export const fullNamePipe = (user?: Pick<User, 'firstName' | 'lastName'>) => {
   return user ? `${user.firstName} ${user.lastName}` : emDashPipe('');
 };
 
@@ -83,4 +83,15 @@ export const numberParamPipe = (param: string | null) => {
   } catch (err) {
     return null;
   }
+};
+
+/** Display timeline status in readable form
+ *  E.G. VERY_BEHIND -> Very Behind
+ */
+export const timelinePipe = (status: string) => {
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+    .join(' ');
 };

@@ -24,7 +24,7 @@ export const seedWorkPackage = async (
   stage: WorkPackageStage | null,
   startDate: string,
   duration: number,
-  dependencies: WbsNumber[],
+  blockedBy: WbsNumber[],
   expectedActivities: string[],
   deliverables: string[],
   editor: User,
@@ -43,7 +43,7 @@ export const seedWorkPackage = async (
     stage,
     startDate,
     duration,
-    dependencies,
+    blockedBy,
     expectedActivities,
     deliverables
   );
@@ -69,10 +69,9 @@ export const seedWorkPackage = async (
     stage,
     workPackage.startDate.toString(),
     workPackage.duration,
-    workPackage.dependencies,
+    workPackage.blockedBy,
     workPackage.expectedActivities.map(descBulletConverter),
     workPackage.deliverables.map(descBulletConverter),
-    status,
     projectLead,
     projectManager
   );

@@ -12,6 +12,7 @@ export * from './src/types/team-types';
 export * from './src/types/task-types';
 
 export * from './src/validate-wbs';
+export * from './src/date-utils';
 
 export * from './src/backend-supports/project-supports';
 export * from './src/word-count';

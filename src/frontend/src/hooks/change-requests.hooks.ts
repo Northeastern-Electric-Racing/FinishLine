@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ChangeRequest } from 'shared';
+import { ChangeRequest, ChangeRequestReason, ChangeRequestType, WbsNumber } from 'shared';
 import {
   createActivationChangeRequest,
   createStandardChangeRequest,
@@ -82,14 +82,23 @@ export const useDeleteChangeRequest = () => {
   );
 };
 
+export type CreateStandardChangeRequestPayload = {
+  wbsNum: WbsNumber;
+  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+  why: { explain: string; type: ChangeRequestReason }[];
+};
+
 /**
  * Custom React Hook to create a standard change request.
  */
 export const useCreateStandardChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'standard'], async (payload: any) => {
-    const { data } = await createStandardChangeRequest(payload);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, CreateStandardChangeRequestPayload>(
+    ['change requests', 'create', 'standard'],
+    async (payload: CreateStandardChangeRequestPayload) => {
+      const { data } = await createStandardChangeRequest(payload);
+      return data;
+    }
+  );
 };
 
 /**
@@ -114,12 +123,7 @@ export const useCreateActivationChangeRequest = () => {
  */
 export const useCreateStageGateChangeRequest = () => {
   return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'stage gate'], async (payload: any) => {
-    const { data } = await createStageGateChangeRequest(
-      payload.submitterId,
-      payload.wbsNum,
-      payload.leftoverBudget,
-      payload.confirmDone
-    );
+    const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
     return data;
   });
 };

@@ -25,8 +25,11 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link, Divider } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link, Divider, ListItemIcon } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
+import EditIcon from '@mui/icons-material/Edit';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -117,13 +120,28 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       >
         Implement Change Request
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+      >
         <MenuItem
           to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
           component={RouterLink}
           onClick={handleDropdownClose}
           disabled={!isUserAllowedToImplement}
         >
+          <ListItemIcon>
+            <CreateNewFolderIcon fontSize="small" />
+          </ListItemIcon>
           Create New Project
         </MenuItem>
         <MenuItem
@@ -132,6 +150,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
+          <ListItemIcon>
+            <PostAddIcon fontSize="small" />
+          </ListItemIcon>
           Create New Work Package
         </MenuItem>
         <MenuItem
@@ -140,6 +161,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           disabled={!isUserAllowedToImplement}
           onClick={handleDropdownClose}
         >
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
           Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
         </MenuItem>
       </Menu>
