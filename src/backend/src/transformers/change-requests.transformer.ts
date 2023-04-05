@@ -1,10 +1,5 @@
 import { Prisma } from '@prisma/client';
-import {
-  ChangeRequest,
-  StandardChangeRequest,
-  ActivationChangeRequest,
-  StageGateChangeRequest
-} from 'shared';
+import { ChangeRequest, StandardChangeRequest, ActivationChangeRequest, StageGateChangeRequest } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
