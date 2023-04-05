@@ -1,8 +1,9 @@
-import { Scope_CR_Why_Type, Team, User } from '@prisma/client';
+import { Prisma, Scope_CR_Why_Type, Team, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { ChangeRequestReason } from 'shared';
+import { ChangeRequestReason, ChangeRequestStatus } from 'shared';
 import { sendMessage } from '../integrations/slack.utils';
 import { HttpException, NotFoundException } from './errors.utils';
+import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -67,4 +68,22 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
 
   return changeRequest;
+};
+
+/**
+ * Calculates the status of a change request.
+ * @param changeRequest: is the change request payload
+ * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
+ */
+export const calculateChangeRequestStatus = (
+  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
+): ChangeRequestStatus => {
+  if (changeRequest.changes.length) {
+    return ChangeRequestStatus.Implemented;
+  } else if (changeRequest.accepted && changeRequest.dateReviewed) {
+    return ChangeRequestStatus.Accepted;
+  } else if (changeRequest.dateReviewed) {
+    return ChangeRequestStatus.Denied;
+  }
+  return ChangeRequestStatus.Open;
 };

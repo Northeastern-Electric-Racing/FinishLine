@@ -83,10 +83,10 @@ export enum ChangeRequestReason {
 }
 
 export enum ChangeRequestStatus {
-  Implemented = 'IMPLEMENTED',
-  Accepted = 'ACCEPTED',
-  Denied = 'DENIED',
-  Open = 'OPEN'
+  Implemented = 'Implemented',
+  Accepted = 'Accepted',
+  Denied = 'Denied',
+  Open = 'Open'
 }
 
 export interface ImplementedChange {

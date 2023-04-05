@@ -3,12 +3,11 @@ import {
   ChangeRequest,
   StandardChangeRequest,
   ActivationChangeRequest,
-  StageGateChangeRequest,
-  calculateStatus
+  StageGateChangeRequest
 } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
-import { convertCRScopeWhyType } from '../utils/change-requests.utils';
+import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import userTransformer from './user.transformer';
 
@@ -66,7 +65,7 @@ const changeRequestTransformer = (
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
 
-  const crStatus = calculateStatus(cr.implementedChanges, cr.accepted, cr.dateReviewed);
+  const crStatus = calculateChangeRequestStatus(changeRequest);
   return { ...cr, status: crStatus };
 };
 
