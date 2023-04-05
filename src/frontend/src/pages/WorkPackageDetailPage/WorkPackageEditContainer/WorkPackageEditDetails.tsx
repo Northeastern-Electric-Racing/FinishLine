@@ -14,19 +14,19 @@ import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface Props {
-  users1: User[];
-  users2: User[];
+  usersForPL: User[];
+  usersForPM: User[];
   control: any;
   errors: any;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, errors }) => {
+const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, control, errors }) => {
   const [lead, setLead] = useState<User | null>(null);
   const [manager, setManager] = useState<User | null>(null);
 
   const leadSearchOnChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => {
     if (value) {
-      const lead = users1.find((lead: User) => lead.userId.toString() === value.id);
+      const lead = usersForPL.find((lead: User) => lead.userId.toString() === value.id);
       if (lead) {
         setLead(lead);
       }
@@ -40,7 +40,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
     value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const manager = users2.find((manager: User) => manager.userId.toString() === value.id);
+      const manager = usersForPM.find((manager: User) => manager.userId.toString() === value.id);
       if (manager) {
         setManager(manager);
       }
@@ -78,7 +78,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
   );
   return (
     <PageBlock title="Work Package Details">
-      <Grid container spacing={2}>
+      <Grid container xs={12}>
         <Grid item xs={12} md={5} sx={{ mt: 2, mr: 2 }}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
@@ -126,33 +126,29 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users1, users2, control, erro
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 29 }}>
-          <Grid item xs={12} md={8}>
-            <FormLabel> Project Lead</FormLabel>
-            <NERAutocomplete
-              sx={{ mt: 1, width: '280%' }}
-              id="project-lead-autocomplete"
-              onChange={leadSearchOnChange}
-              options={users1.map(projectLeadOptions)}
-              size="small"
-              placeholder="Select a Project Lead"
-              value={lead ? projectLeadOptions(lead) : null}
-            />
-          </Grid>
+        <Grid item md={6} sx={{ mt: 1 }}>
+          <FormLabel> Project Lead</FormLabel>
+          <NERAutocomplete
+            sx={{ mt: 1, width: '90%' }}
+            id="project-lead-autocomplete"
+            onChange={leadSearchOnChange}
+            options={usersForPL.map(projectLeadOptions)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={lead ? projectLeadOptions(lead) : null}
+          />
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
-          <Grid item xs={12} md={8}>
-            <FormLabel> Project Manager</FormLabel>
-            <NERAutocomplete
-              sx={{ mt: 1, width: '280%' }}
-              id="project-manager-autocomplete"
-              onChange={managerSearchOnChange}
-              options={users2.map(projectManagerOptions)}
-              size="small"
-              placeholder="Select a Project Manager"
-              value={manager ? projectManagerOptions(manager) : null}
-            />
-          </Grid>
+        <Grid item md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
+            sx={{ mt: 1, width: '90%' }}
+            id="project-manager-autocomplete"
+            onChange={managerSearchOnChange}
+            options={usersForPM.map(projectManagerOptions)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={manager ? projectManagerOptions(manager) : null}
+          />
         </Grid>
       </Grid>
     </PageBlock>

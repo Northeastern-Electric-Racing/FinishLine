@@ -89,7 +89,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   }
   const { userId } = auth.user;
 
-  const usersFor1 = allUsers.data.filter((u) => u.role !== 'GUEST');
+  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const transformDate = (date: Date) => {
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
@@ -153,7 +153,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <WorkPackageEditDetails control={control} errors={errors} users1={usersFor1} users2={usersFor1} />
+      <WorkPackageEditDetails control={control} errors={errors} usersForPL={users} usersForPM={users} />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
           return (
