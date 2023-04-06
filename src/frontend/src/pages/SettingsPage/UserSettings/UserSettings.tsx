@@ -51,7 +51,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
         ) : (
           <div className="d-flex flex-row">
             <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-            <NERSuccessButton type="submit" form="update-user-settings">
+            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
               Save
             </NERSuccessButton>
           </div>
