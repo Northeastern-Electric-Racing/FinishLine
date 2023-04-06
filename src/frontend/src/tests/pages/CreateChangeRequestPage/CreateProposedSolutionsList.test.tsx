@@ -47,6 +47,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByText('Add')).toBeInTheDocument();
+    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 });

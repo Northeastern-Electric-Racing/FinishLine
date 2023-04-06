@@ -48,7 +48,8 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
-    expect(screen.getByText('Add')).toBeInTheDocument();
+    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
   it('Renders prefill elements when readOnly', () => {
