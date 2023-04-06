@@ -46,7 +46,7 @@ export interface dataPayload {
   startDate: Date;
   duration: number;
   crId: string;
-  dependencies: {
+  blockedBy: {
     wbsNum: string;
   }[];
   stage: string;
