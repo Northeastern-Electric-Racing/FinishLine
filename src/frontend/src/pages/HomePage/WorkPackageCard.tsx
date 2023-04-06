@@ -12,7 +12,7 @@ import {
   useTheme
 } from '@mui/material';
 import { wbsPipe, WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, projectWbsPipe, timelinePipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -64,7 +64,7 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
           </Box>
           <Box sx={{ marginLeft: 2 }}>
             <Typography variant="subtitle1" noWrap>
-              {wp.timelineStatus}
+              {timelinePipe(wp.timelineStatus)}
             </Typography>
             <Box textAlign={'right'} sx={{ marginTop: 1 }}>
               <CircularProgressWithLabel variant="determinate" value={wp.progress} />

@@ -6,7 +6,7 @@ import { prismaRisk1, prismaRisk1Deleted, prismaRisk1NoPerms, prismaRisk2, share
 import { batman, wonderwoman } from './test-data/users.test-data';
 import * as riskUtils from '../src/utils/risks.utils';
 import * as riskTransformer from '../src/transformers/risks.transformer';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import { AccessDeniedException, NotFoundException, DeletedException } from '../src/utils/errors.utils';
 
 describe('Risks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -193,9 +193,7 @@ describe('Risks', () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1Deleted);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
       const riskId = 'riskId';
-      await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(
-        new HttpException(400, 'This risk has already been deleted!')
-      );
+      await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(new DeletedException('Risk', riskId));
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });

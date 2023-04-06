@@ -18,6 +18,7 @@ import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
+import AppContextUser from './AppContextUser';
 
 const styles = {
   content: {
@@ -28,7 +29,7 @@ const styles = {
 
 const AppAuthenticated: React.FC = () => {
   return (
-    <>
+    <AppContextUser>
       <NavTopBar />
       <div>
         <Sidebar />
@@ -50,7 +51,7 @@ const AppAuthenticated: React.FC = () => {
           </Container>
         </div>
       </div>
-    </>
+    </AppContextUser>
   );
 };
 

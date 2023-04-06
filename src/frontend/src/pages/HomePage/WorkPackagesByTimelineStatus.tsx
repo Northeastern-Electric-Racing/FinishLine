@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { TimelineStatus, WbsElementStatus, wbsPipe } from 'shared';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { timelinePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
@@ -50,7 +51,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
       }}
     >
       {workPackages.data?.length === 0
-        ? `No ${timelineStatus} work packages`
+        ? `No ${timelinePipe(timelineStatus)} work packages`
         : workPackages.data?.map((wp) => <WorkPackageCard key={wbsPipe(wp.wbsNum)} wp={wp} />)}
     </Box>
   );
@@ -69,7 +70,7 @@ const WorkPackagesByTimelineStatus: React.FC = () => {
           >
             {Object.values(TimelineStatus).map((status) => (
               <MenuItem key={status} value={status}>
-                {status}
+                {timelinePipe(status)}
               </MenuItem>
             ))}
           </Select>
