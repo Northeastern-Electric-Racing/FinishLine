@@ -126,22 +126,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ my: 1 }}>
-          <FormControl>
-            <FormLabel>Duration</FormLabel>
-            <ReactHookTextField
-              name="duration"
-              control={control}
-              type="number"
-              placeholder="Enter duration..."
-              sx={{ width: '140%' }}
-              errorMessage={errors.duration}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <StageSelect />
-        </Grid>
       </Grid>
     </PageBlock>
   );
