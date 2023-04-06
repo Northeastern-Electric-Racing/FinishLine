@@ -11,15 +11,12 @@ import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
 import { Box, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Grid } from '@mui/material';
-import { Select } from '@mui/material';
-import { MenuItem } from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { width } from '@mui/system';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
