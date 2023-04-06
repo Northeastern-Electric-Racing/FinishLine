@@ -58,13 +58,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   const startDate = new Date();
   const day = startDate.getDay();
   if (day !== 1) {
-    //if(day == 0) {
-    //startDate.setDate(startDate.getDate() + 1);
-    //}
-    //else {
     const daysUntilNextMon = (7 - day + 1) % 7;
     startDate.setDate(startDate.getDate() + daysUntilNextMon);
-    //}
   }
   const query = useQuery();
   const {
