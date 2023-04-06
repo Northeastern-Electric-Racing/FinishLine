@@ -40,26 +40,26 @@ export const createChangeJsonNonList = (
 
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChange = (nameOfField: string, oldValue: any, newValue: any, crId: number, implementerId: number) => {
-  if (oldValue == null) {
+  if (oldValue === newValue) {
+    return undefined;
+  } else if (oldValue === null) {
     return {
       changeRequestId: crId,
       implementerId,
       detail: `Added ${nameOfField} "${newValue}"`
     };
-  } else if (oldValue !== null && newValue === null) {
+  } else if (newValue === null) {
     return {
       changeRequestId: crId,
       implementerId,
       detail: `Removed ${nameOfField} "${oldValue}"`
     };
-  } else if (oldValue !== newValue && newValue !== null) {
-    return {
-      changeRequestId: crId,
-      implementerId,
-      detail: buildChangeDetail(nameOfField, oldValue, newValue)
-    };
   }
-  return undefined;
+  return {
+    changeRequestId: crId,
+    implementerId,
+    detail: buildChangeDetail(nameOfField, oldValue, newValue)
+  };
 };
 
 // create a change json if the old and new dates are different, otherwise return undefined
