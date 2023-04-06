@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-
 import { Box, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import * as yup from 'yup';
@@ -13,7 +12,6 @@ import { ProposedSolution } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -25,7 +23,6 @@ interface ProposedSolutionFormProps {
   open: boolean;
   onClose: () => void;
 }
-
 
 const schema = yup.object().shape({
   description: yup.string().required('Description is required'),
@@ -42,7 +39,6 @@ const schema = yup.object().shape({
     .integer('Timeline Impact must be an integer')
 });
 
-
 const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   description,
   budgetImpact,
@@ -57,7 +53,6 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
   });
-
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -221,6 +216,5 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
     </Dialog>
   );
 };
-
 
 export default ProposedSolutionForm;
