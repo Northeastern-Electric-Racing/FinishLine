@@ -5,13 +5,13 @@ interface ErrorBoundaryProps {}
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  error: any;
+  error: undefined | Error;
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: undefined };
   }
 
   static getDerivedStateFromError(error: Error) {
