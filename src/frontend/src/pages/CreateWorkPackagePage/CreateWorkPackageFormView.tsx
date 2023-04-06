@@ -55,6 +55,17 @@ interface CreateWorkPackageFormViewProps {
 }
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+  const startDate = new Date();
+  const day = startDate.getDay();
+  if (day !== 1) {
+    //if(day == 0) {
+    //startDate.setDate(startDate.getDate() + 1);
+    //}
+    //else {
+    const daysUntilNextMon = (7 - day + 1) % 7;
+    startDate.setDate(startDate.getDate() + daysUntilNextMon);
+    //}
+  }
   const query = useQuery();
   const {
     handleSubmit,
@@ -68,7 +79,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
       stage: 'NONE',
-      startDate: new Date(),
+      startDate: startDate,
       duration: null,
       blockedBy: [] as { wbsNum: string }[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
