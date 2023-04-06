@@ -17,6 +17,17 @@ export class HttpException extends Error {
   }
 }
 
+export class DeletedException extends HttpException {
+  /**
+   * Constructs a deleted error
+   * @param name the name of the thing that is deleted
+   * @param id the id of the thing that is deleted
+   */
+  constructor(name: NotFoundObjectNames, id: number | string) {
+    super(404, `${name} with id: ${id} has been deleted!`);
+  }
+}
+
 export class NotFoundException extends HttpException {
   /**
    * Constructs a not found error

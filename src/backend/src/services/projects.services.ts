@@ -4,7 +4,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
   createChangeJsonNonList,
@@ -510,11 +510,10 @@ export default class ProjectsService {
 
   /**
    * Toggles a user's favorite status on a projects
-   * @param projectId the project id to be favorited/unfavorited
+   * @param wbsNumber the project wbs number to be favorited/unfavorited
    * @param user the user who is changing the role
-   * @param favorite boolean representing favoriting/unfavoriting
    * @returns the project that the user has favorited/unfavorited
-   * @throws if the project id doesn't exist
+   * @throws if the project wbs doesn't exist or is not corresponding to a project
    */
   static async toggleFavorite(wbsNumber: WbsNumber, user: PrismaUser): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
@@ -532,7 +531,9 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    const favorited = project.favoritedBy.map((eachUser) => eachUser.userId).includes(user.userId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const favorited = project.favoritedBy.some((currUser) => currUser.userId === user.userId);
 
     favorited
       ? await prisma.user.update({
