@@ -19,7 +19,8 @@ import {
   AccessDeniedGuestException,
   AccessDeniedMemberException,
   HttpException,
-  NotFoundException
+  NotFoundException,
+  DeletedException
 } from '../src/utils/errors.utils';
 import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
@@ -335,7 +336,7 @@ describe('Change Requests', () => {
         .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date('1/1/2023') });
       await expect(() =>
         ChangeRequestsService.addProposedSolution(greenlantern, crId, budgetImpact, description, timelineImpact, scopeImpact)
-      ).rejects.toThrow(new HttpException(400, 'This change request has been deleted!'));
+      ).rejects.toThrow(new DeletedException('Change Request', crId));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
@@ -389,7 +390,7 @@ describe('Change Requests', () => {
         .spyOn(prisma.change_Request, 'findUnique')
         .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
       await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
-        new HttpException(400, 'This change request has already been deleted!')
+        new DeletedException('Change Request', 1)
       );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });

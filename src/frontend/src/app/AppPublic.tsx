@@ -9,6 +9,7 @@ import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
@@ -29,7 +30,7 @@ const AppPublic: React.FC = () => {
     // then dev login right away (no login page redirect needed!)
     if (process.env.NODE_ENV === 'development' && devUserId) {
       auth.devSignin(parseInt(devUserId));
-      return <AppAuthenticated />;
+      return auth.isLoading ? <LoadingIndicator /> : <AppAuthenticated />;
     }
 
     // otherwise, the user needs to login manually

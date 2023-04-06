@@ -15,6 +15,17 @@ import {
 } from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings } from 'shared';
 import { useAuth } from './auth.hooks';
+import { useContext } from 'react';
+import { UserContext } from '../app/AppContextUser';
+
+/**
+ * Custom React Hook to supply the current user
+ */
+export const useCurrentUser = (): AuthenticatedUser => {
+  const user = useContext(UserContext);
+  if (!user) throw Error('useCurrentUser must be used inside of context.');
+  return user;
+};
 
 /**
  * Custom React Hook to supply all users.

@@ -17,7 +17,8 @@ import {
   NotFoundException,
   HttpException,
   AccessDeniedGuestException,
-  AccessDeniedAdminOnlyException
+  AccessDeniedAdminOnlyException,
+  DeletedException
 } from '../utils/errors.utils';
 import {
   createChangeJsonDates,
@@ -168,7 +169,8 @@ export default class WorkPackagesService {
     });
 
     if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElem.dateDeleted) throw new HttpException(400, 'Cannot create a work package for a deleted project!');
+    if (wbsElem.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { project } = wbsElem;
 
@@ -296,7 +298,7 @@ export default class WorkPackagesService {
     });
 
     if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
-    if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
+    if (originalWorkPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackageId);
 
     if (
       blockedBy.find((dep: WbsNumber) =>
@@ -335,7 +337,7 @@ export default class WorkPackagesService {
         });
 
         if (!wbsElem) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-        if (wbsElem.dateDeleted) throw new HttpException(400, `WBS ${wbsPipe(wbsNum)} has been deleted!`);
+        if (wbsElem.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
         return wbsElem.wbsElementId;
       })
@@ -517,7 +519,7 @@ export default class WorkPackagesService {
     });
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', wbsPipe(wbsNum));
 
     const { wbsElementId, workPackageId } = workPackage;
 

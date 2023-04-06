@@ -9,8 +9,8 @@ import * as riskTransformer from '../src/transformers/risks.transformer';
 import {
   AccessDeniedException,
   AccessDeniedGuestException,
-  HttpException,
-  NotFoundException
+  NotFoundException,
+  DeletedException
 } from '../src/utils/errors.utils';
 
 describe('Risks', () => {
@@ -198,9 +198,7 @@ describe('Risks', () => {
       jest.spyOn(prisma.risk, 'findUnique').mockResolvedValue(prismaRisk1Deleted);
       jest.spyOn(riskUtils, 'hasRiskPermissions').mockResolvedValue(true);
       const riskId = 'riskId';
-      await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(
-        new HttpException(400, 'This risk has already been deleted!')
-      );
+      await expect(() => RisksService.deleteRisk(batman, riskId)).rejects.toThrow(new DeletedException('Risk', riskId));
       expect(prisma.risk.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.risk.update).toHaveBeenCalledTimes(0);
     });

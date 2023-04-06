@@ -191,6 +191,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                     </NativeSelect>
                     <ReactHookTextField
                       required
+                      multiline
                       control={control}
                       label="Explain"
                       sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}

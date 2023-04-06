@@ -6,6 +6,7 @@ import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
+  DeletedException,
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
@@ -247,7 +248,7 @@ describe('Work Packages', () => {
       } as any);
 
       await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
-        new HttpException(400, 'This work package has already been deleted!')
+        new DeletedException('Work Package', '1.2.3')
       );
 
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);

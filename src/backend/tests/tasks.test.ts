@@ -4,7 +4,7 @@ import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
 import prisma from '../src/prisma/prisma';
 import TasksService from '../src/services/tasks.services';
 import * as taskTransformer from '../src/transformers/tasks.transformer';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../src/utils/errors.utils';
 import * as userUtils from '../src/utils/users.utils';
 import * as taskUtils from '../src/utils/tasks.utils';
 import * as teamUtils from '../src/utils/teams.utils';
@@ -106,7 +106,7 @@ describe('Tasks', () => {
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
-      ).rejects.toThrow(new HttpException(400, "This task's wbs element has been deleted!"));
+      ).rejects.toThrow(new DeletedException('WBS Element', '1.2.0'));
 
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -226,7 +226,7 @@ describe('Tasks', () => {
       const taskId = '1';
       // Try updating from IN_PROGRESS to IN_BACKLOG
       await expect(() => TasksService.editTaskStatus(batman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
-        new HttpException(400, 'Cant edit a deleted Task!')
+        new DeletedException('Task', taskId)
       );
     });
   });
@@ -296,7 +296,7 @@ describe('Tasks', () => {
       const taskId = '1';
       await expect(() =>
         TasksService.editTaskAssignees(batman, taskId, [superman.userId, wonderwoman.userId])
-      ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
+      ).rejects.toThrow(new DeletedException('Task', taskId));
     });
   });
 
@@ -317,7 +317,7 @@ describe('Tasks', () => {
       jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
-        new HttpException(400, 'Cant delete a deleted Task!')
+        new DeletedException('Task', mockTaskId)
       );
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
@@ -340,7 +340,7 @@ describe('Tasks', () => {
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
-        new HttpException(400, "This task's wbs element has been deleted!")
+        new DeletedException('WBS Element', '1.2.0')
       );
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
@@ -405,7 +405,7 @@ describe('Tasks', () => {
         .mockResolvedValue({ ...taskSaveTheDayPrisma, dateDeleted: new Date('1/1/2023') });
       await expect(() =>
         TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-      ).rejects.toThrow(new HttpException(400, 'Cant edit a deleted Task!'));
+      ).rejects.toThrow(new DeletedException('Task', taskId));
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);
     });
 
