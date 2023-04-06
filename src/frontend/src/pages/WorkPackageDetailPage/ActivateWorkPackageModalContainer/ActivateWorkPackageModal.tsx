@@ -18,6 +18,8 @@ import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { width } from '@mui/system';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -75,13 +77,17 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 render={({ field: { onChange, value } }) => (
                   <>
                     <Typography>Project Lead</Typography>
-                    <Select onChange={onChange} value={value} variant="outlined" size="small" fullWidth>
-                      {allUsers.map((p) => (
-                        <MenuItem key={p.userId} value={p.userId}>
-                          {fullNamePipe(p)}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <NERAutocomplete
+                      id="project-lead-autocomplete"
+                      onChange={onChange}
+                      options={allUsers.map((p) => ({
+                        label: fullNamePipe(p),
+                        id: p.userId.toString()
+                      }))}
+                      size="small"
+                      placeholder="Project Lead"
+                      sx={{ width: 2 / 2 }}
+                    />
                   </>
                 )}
               />
@@ -94,13 +100,17 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 render={({ field: { onChange, value } }) => (
                   <>
                     <Typography>Project Manager</Typography>
-                    <Select onChange={onChange} value={value} variant="outlined" size="small" fullWidth>
-                      {allUsers.map((p) => (
-                        <MenuItem key={p.userId} value={p.userId}>
-                          {fullNamePipe(p)}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <NERAutocomplete
+                      id="project-manager-autocomplete"
+                      onChange={onChange}
+                      options={allUsers.map((p) => ({
+                        label: fullNamePipe(p),
+                        id: p.userId.toString()
+                      }))}
+                      size="small"
+                      placeholder="Project Manager"
+                      sx={{ width: 2 / 2 }}
+                    />
                   </>
                 )}
               />
