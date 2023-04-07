@@ -19,37 +19,25 @@ interface TaskListProps {
   defaultClosed?: boolean;
 }
 
+//used two sort two Tasks based on ascending times
+const sortAscDate = (task1: Task, task2: Task) => {
+  const deadLine1 = task1.deadline.getTime();
+  const deadLine2 = task2.deadline.getTime();
+
+  if (deadLine1 !== deadLine2) return deadLine1 - deadLine2;
+  return task1.dateCreated.getTime() - task2.dateCreated.getTime();
+};
+
 // Page block containing task list view
 const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   const auth = useAuth();
   const [value, setValue] = useState<number>(1);
   const [addTask, setAddTask] = useState(false);
-  const tasks = project.tasks;
+  const tasks = project.tasks.sort(sortAscDate);
 
-  //used two sort two Tasks based on ascending times
-  const sortAscDate = (task1: Task, task2: Task) => {
-    const deadLine1 = task1.deadline.getTime();
-    const deadLine2 = task2.deadline.getTime();
-
-    if (deadLine1 < deadLine2) {
-      return -1;
-    } else if (deadLine1 > deadLine2) {
-      return 1;
-    } else {
-      const dateCreated1 = task1.dateCreated.getTime();
-      const dateCreated2 = task2.dateCreated.getTime();
-
-      if (dateCreated1 < dateCreated2) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
-  };
-
-  const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG).sort(sortAscDate);
-  const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS).sort(sortAscDate);
-  const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE).sort(sortAscDate);
+  const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
+  const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
+  const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);
