@@ -11,6 +11,7 @@ import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import StageGateWorkPackageModal from './StageGateWorkPackageModal';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface StageGateWorkPackageModalContainerProps {
   wbsNum: WbsNumber;
@@ -29,18 +30,25 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
 }) => {
   const auth = useAuth();
   const history = useHistory();
+  const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateStageGateChangeRequest();
 
   const handleConfirm = async ({ confirmDone }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
-    await mutateAsync({
-      submitterId: auth.user?.userId,
-      wbsNum,
-      type: ChangeRequestType.StageGate,
-      confirmDone
-    });
-    history.push(routes.CHANGE_REQUESTS);
+    try {
+      await mutateAsync({
+        submitterId: auth.user?.userId,
+        wbsNum,
+        type: ChangeRequestType.StageGate,
+        confirmDone
+      });
+      history.push(routes.CHANGE_REQUESTS);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   if (isLoading) return <LoadingIndicator />;

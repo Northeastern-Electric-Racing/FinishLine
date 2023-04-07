@@ -9,7 +9,7 @@ import { Project } from 'shared';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as taskHooks from '../../../hooks/tasks.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
-import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
+import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskList';
 import {
   mockCreateTaskReturnValue,
   mockDeleteTaskReturnValue,

@@ -6,9 +6,10 @@
 import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { Link, ListItem, List, Tooltip, Typography } from '@mui/material';
+import { Link, ListItem, List, Typography } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
+import DynamicTooltip from '../../components/DynamicTooltip';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -24,25 +25,19 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
-            <Tooltip
-              id="tooltip"
-              title={
+            <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
+              {
                 <Typography>
-                  {fullNamePipe(ic.implementer)} - {datePipe(ic.dateImplemented)}
+                  [
+                  {
+                    <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
+                      {wbsPipe(ic.wbsNum)}
+                    </Link>
+                  }
+                  ] {ic.detail}
                 </Typography>
               }
-              placement="right"
-            >
-              <Typography>
-                [
-                {
-                  <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
-                    {wbsPipe(ic.wbsNum)}
-                  </Link>
-                }
-                ] {ic.detail}
-              </Typography>
-            </Tooltip>
+            </DynamicTooltip>
           </ListItem>
         ))}
       </List>

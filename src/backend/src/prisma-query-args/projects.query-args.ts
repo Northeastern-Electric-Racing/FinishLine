@@ -31,7 +31,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
             changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
           }
         },
-        dependencies: { where: { dateDeleted: null } },
+        blockedBy: { where: { dateDeleted: null } },
         expectedActivities: { where: { dateDeleted: null } },
         deliverables: { where: { dateDeleted: null } }
       }
