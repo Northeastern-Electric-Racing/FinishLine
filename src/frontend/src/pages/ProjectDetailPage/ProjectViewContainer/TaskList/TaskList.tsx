@@ -22,7 +22,7 @@ interface TaskListProps {
 }
 
 //used two sort two Tasks based on ascending times
-const sortAscDate = (task1: Task, task2: Task) => {
+const sortAscendingDate = (task1: Task, task2: Task) => {
   const deadLine1 = task1.deadline.getTime();
   const deadLine2 = task2.deadline.getTime();
 
@@ -53,7 +53,7 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   }, [pathname, setValue, tabUrlValues, tabValueString]);
 
   const [addTask, setAddTask] = useState(false);
-  const tasks = project.tasks.sort(sortAscDate);
+  const tasks = project.tasks.sort(sortAscendingDate);
 
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
