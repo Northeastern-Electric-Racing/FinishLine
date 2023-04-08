@@ -32,6 +32,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import { useSingleProject } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -94,12 +95,13 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteOpen = () => setDeleteModalShow(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
-  const { data: project } = useSingleProject({
+  const { data: project, isLoading } = useSingleProject({
     carNumber: changeRequest.wbsNum.carNumber,
     projectNumber: changeRequest.wbsNum.projectNumber,
     workPackageNumber: 0
   });
-  const { name: projectName } = project || {};
+  if (isLoading || !project) return <LoadingIndicator />;
+  const { name: projectName } = project;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
