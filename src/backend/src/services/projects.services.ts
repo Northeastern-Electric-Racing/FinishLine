@@ -16,7 +16,6 @@ import {
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
 import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
 import WorkPackagesService from './work-packages.services';
-import { User as PrismaUser } from '@prisma/client';
 
 export default class ProjectsService {
   /**
@@ -511,11 +510,11 @@ export default class ProjectsService {
   /**
    * Toggles a user's favorite status on a projects
    * @param wbsNumber the project wbs number to be favorited/unfavorited
-   * @param user the user who is changing the role
+   * @param user the user who is favoriting/unfavoriting the project
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
    */
-  static async toggleFavorite(wbsNumber: WbsNumber, user: PrismaUser): Promise<Project> {
+  static async toggleFavorite(wbsNumber: WbsNumber, user: User): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
