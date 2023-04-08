@@ -596,7 +596,7 @@ export default class WorkPackagesService {
    */
   static async slackMessageUpcomingDeadlines(user: User, daysUntilDeadline: number): Promise<void> {
     if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
-      throw new AccessDeniedAdminOnlyException('send upcoming deadlines slack message');
+      throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
     const workPackages = await prisma.work_Package.findMany({
       where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
