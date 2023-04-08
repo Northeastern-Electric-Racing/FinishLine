@@ -22,14 +22,17 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
-  startDate: yup.date().required('Start Date is required!'),
+  startDate: yup
+    .date()
+    .required('Start Date is required!')
+    .test('start-date-valid', 'start date is not valid', startDateTester),
   duration: yup.number().required()
 });
 

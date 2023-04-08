@@ -1,5 +1,6 @@
-import { User, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
+  daysBetween,
   DescriptionBullet,
   equalsWbsNumber,
   isAdmin,
@@ -32,6 +33,7 @@ import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -584,5 +586,38 @@ export default class WorkPackagesService {
         }
       }
     });
+  }
+
+  /**
+   * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * @param user - the user doing the sending
+   * @param daysUntilDeadline - days forwards (or backwards!) to check
+   * @returns
+   */
+  static async slackMessageUpcomingDeadlines(user: User, daysUntilDeadline: number): Promise<void> {
+    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
+      throw new AccessDeniedAdminOnlyException('send upcoming deadlines slack message');
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
+      ...workPackageQueryArgs
+    });
+
+    const upcomingWorkPackages = workPackages
+      .map(workPackageTransformer)
+      .filter((wp) => daysBetween(wp.endDate, new Date()) <= daysUntilDeadline)
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+
+    // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
+    await upcomingWorkPackages.reduce(
+      (previousCall, workPackage) =>
+        previousCall.then(async () => {
+          await sendSlackUpcomingDeadlineNotification(workPackage); // send the slack message for this work package
+          await new Promise((callBack) => setTimeout(callBack, 2000)); // sleep for 2 seconds
+        }),
+      Promise.resolve()
+    );
+
+    return;
   }
 }

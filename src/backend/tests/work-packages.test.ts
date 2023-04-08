@@ -15,6 +15,7 @@ import { WbsNumber } from 'shared';
 import { User } from '@prisma/client';
 import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import * as slackUtils from '../src/utils/slack.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
 import { prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
@@ -286,6 +287,18 @@ describe('Work Packages', () => {
       const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
       expect(result).toStrictEqual(sharedWorkPackage);
+    });
+  });
+
+  describe('slackMessageUpcomingDeadlines', () => {
+    beforeEach(() => {
+      jest.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});
+    });
+
+    it('fails when the user is not an admin', async () => {
+      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, 3)).rejects.toThrow(
+        new AccessDeniedException()
+      );
     });
   });
 });

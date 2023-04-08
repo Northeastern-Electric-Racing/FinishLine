@@ -17,6 +17,17 @@ export class HttpException extends Error {
   }
 }
 
+export class DeletedException extends HttpException {
+  /**
+   * Constructs a deleted error
+   * @param name the name of the thing that is deleted
+   * @param id the id of the thing that is deleted
+   */
+  constructor(name: ExceptionObjectNames, id: number | string) {
+    super(404, `${name} with id: ${id} has been deleted!`);
+  }
+}
+
 export class NotFoundException extends HttpException {
   /**
    * Constructs a not found error
@@ -25,17 +36,6 @@ export class NotFoundException extends HttpException {
    */
   constructor(name: ExceptionObjectNames, id: number | string) {
     super(404, `${name} with id: ${id} not found!`);
-  }
-}
-
-export class DeletedException extends HttpException {
-  /**
-   * Constructs a deleted error
-   * @param name the name of the thing that was deleted
-   * @param id the id of the thing that was deleted
-   */
-  constructor(name: ExceptionObjectNames, id: number | string) {
-    super(400, `${name} with id: ${id} has already been deleted!`);
   }
 }
 
