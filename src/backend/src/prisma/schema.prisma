@@ -39,6 +39,7 @@ enum WBS_Element_Status {
 enum Role {
   APP_ADMIN
   ADMIN
+  HEAD
   LEADERSHIP
   MEMBER
   GUEST

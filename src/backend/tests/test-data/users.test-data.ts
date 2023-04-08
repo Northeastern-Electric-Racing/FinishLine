@@ -57,7 +57,7 @@ export const greenlantern: PrismaUser = {
   lastName: 'Jordan',
   email: 'h.jordam@pilot.com',
   emailId: 'hal.jordan',
-  role: PrismaRole.LEADERSHIP,
+  role: PrismaRole.HEAD,
   googleAuthId: 'g'
 };
 

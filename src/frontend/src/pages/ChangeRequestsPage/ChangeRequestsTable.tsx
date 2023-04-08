@@ -15,7 +15,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestType, isGuest, validateWBS, WbsNumber } from 'shared';
 import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
 import { Link } from '@mui/material';
@@ -145,7 +145,7 @@ const ChangeRequestsTable: React.FC = () => {
           actionButton={
             <NERButton
               variant="contained"
-              disabled={auth.user?.role === 'GUEST'}
+              disabled={isGuest(auth.user?.role)}
               startIcon={<Add />}
               onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
             >

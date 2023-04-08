@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Risk } from 'shared';
+import { isGuest, isLeadership, Risk } from 'shared';
 import { FormEvent, useState } from 'react';
 import PageBlock from '../../../layouts/PageBlock';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -62,13 +62,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
   if (risksQuery.isLoading || !auth.user) return <LoadingIndicator />;
 
   const { userId, role } = auth.user;
-
-  const hasPermissions =
-    role === 'ADMIN' ||
-    role === 'APP_ADMIN' ||
-    role === 'LEADERSHIP' ||
-    projLead?.userId === userId ||
-    projManager?.userId === userId;
+  const hasPermissions = isLeadership(role) || projLead?.userId === userId || projManager?.userId === userId;
 
   const risks = [
     ...risksQuery.data!.filter((r) => !r.dateDeleted && !r.isResolved).sort(sortRisksByDate),
@@ -131,7 +125,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
 
   const ConvertToCRButton = (risk: Risk) => {
     return (
-      role !== 'GUEST' && (
+      !isGuest(role) && (
         <Tooltip title="Convert to CR" placement="top">
           <Button
             variant="contained"
@@ -195,7 +189,7 @@ const RiskLog: React.FC<RiskLogProps> = ({ projectId, wbsNum, projLead, projMana
             {risk.isResolved ? DeleteRiskButton(risk) : ConvertToCRButton(risk)}
           </div>
         ))}
-        {role !== 'GUEST' && (
+        {!isGuest(role) && (
           <NERButton variant="contained" onClick={handleShow} data-testid="createButton" sx={{ mt: 1 }}>
             Add New Risk
           </NERButton>

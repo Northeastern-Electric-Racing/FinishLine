@@ -1,10 +1,16 @@
-import { Role, User } from '@prisma/client';
-import { isProject, Project, WbsNumber, wbsPipe } from 'shared';
+import { User } from '@prisma/client';
+import { isAdmin, isGuest, isProject, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
+  HttpException,
+  NotFoundException,
+  DeletedException
+} from '../utils/errors.utils';
 import {
   addDescriptionBullets,
   createChangeJsonNonList,
@@ -74,7 +80,7 @@ export default class ProjectsService {
     summary: string,
     teamId: string | undefined
   ): Promise<WbsNumber> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create projects');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
     await validateChangeRequestAccepted(crId);
 
@@ -145,7 +151,7 @@ export default class ProjectsService {
     projectLeadId: number | null,
     projectManagerId: number | null
   ): Promise<Project> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot edit projects');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit projects');
     const { userId } = user;
 
     await validateChangeRequestAccepted(crId);
@@ -380,8 +386,8 @@ export default class ProjectsService {
     if (!team) throw new NotFoundException('Team', teamId);
 
     // check for user and user permission (admin, app admin, or leader of the team)
-    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN && user.userId !== team.leaderId) {
-      throw new AccessDeniedException();
+    if (!isAdmin(user.role) && user.userId !== team.leaderId) {
+      throw new AccessDeniedAdminOnlyException('set project teams');
     }
 
     // if everything is fine, then update the given project to assign to provided team ID
@@ -403,8 +409,8 @@ export default class ProjectsService {
    */
   static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
-    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN) {
-      throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
+    if (!isAdmin(user.role)) {
+      throw new AccessDeniedAdminOnlyException('delete projects');
     }
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;

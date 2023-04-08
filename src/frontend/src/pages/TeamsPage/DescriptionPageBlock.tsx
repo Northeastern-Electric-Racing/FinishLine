@@ -7,7 +7,7 @@ import { Button, IconButton, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useEditTeamDescription } from '../../hooks/teams.hooks';
-import { Team, isUnderWordCount, countWords } from 'shared';
+import { Team, isUnderWordCount, countWords, isAdmin } from 'shared';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -42,9 +42,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     setIsEditingDescription(false);
     setIsPreview(false);
   };
-
-  const hasPerms =
-    auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId);
+  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.leader.userId);
 
   const editButtons = (
     <div style={{ display: 'flex' }}>

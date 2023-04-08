@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 
 export const hasRiskPermissions = async (userId: number, projectId: number) => {
@@ -6,7 +6,7 @@ export const hasRiskPermissions = async (userId: number, projectId: number) => {
 
   if (!user) return false;
 
-  if (user.role === Role.APP_ADMIN || user.role === Role.ADMIN || user.role === Role.LEADERSHIP) {
+  if (!isGuest(user.role)) {
     return true;
   }
 

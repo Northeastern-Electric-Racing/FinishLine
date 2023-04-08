@@ -1,7 +1,13 @@
-import { Role, User } from '@prisma/client';
-import { Risk } from 'shared';
+import { User } from '@prisma/client';
+import { isGuest, Risk } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  AccessDeniedException,
+  HttpException,
+  AccessDeniedGuestException,
+  DeletedException
+} from '../utils/errors.utils';
 import { hasRiskPermissions } from '../utils/risks.utils';
 import riskQueryArgs from '../prisma-query-args/risks.query-args';
 import riskTransformer from '../transformers/risks.transformer';
@@ -32,7 +38,7 @@ export default class RisksService {
    * @throws if the user does not have access to create a risk
    */
   static async createRisk(user: User, projectId: number, detail: string): Promise<string> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create risks!');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create risks');
 
     const requestedProject = await prisma.project.findUnique({ where: { projectId }, include: { wbsElement: true } });
 
