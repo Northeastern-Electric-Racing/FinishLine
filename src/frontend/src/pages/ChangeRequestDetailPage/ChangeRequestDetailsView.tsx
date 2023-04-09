@@ -32,7 +32,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import { useSingleProject } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -100,8 +99,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     projectNumber: changeRequest.wbsNum.projectNumber,
     workPackageNumber: 0
   });
-  if (isLoading || !project) return <LoadingIndicator />;
-  const { name: projectName } = project;
+  const { name: projectName } = project || {};
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
