@@ -12,7 +12,8 @@ import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import UserSettingsEdit from './UserSettingsEdit';
 import UserSettingsView from './UserSettingsView';
-import { NERButton } from '../../../components/NERButton';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 import { Grid, IconButton } from '@mui/material';
 
 interface UserSettingsProps {
@@ -48,10 +49,10 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
           </IconButton>
         ) : (
           <div className="d-flex flex-row">
-            <NERButton onClick={() => setEdit(false)}>Cancel</NERButton>
-            <NERButton type="submit" form="update-user-settings">
+            <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
               Save
-            </NERButton>
+            </NERSuccessButton>
           </div>
         )
       }
