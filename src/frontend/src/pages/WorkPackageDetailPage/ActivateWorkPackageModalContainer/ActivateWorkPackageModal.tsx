@@ -17,6 +17,7 @@ import { Radio } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import { string } from 'yup/lib/locale';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -34,8 +35,8 @@ const schema = yup.object().shape({
 });
 
 const defaultValues: FormInput = {
-  projectLeadId: '',
-  projectManagerId: '',
+  projectLeadId: {label: "", id: ""},
+  projectManagerId: {label: "", id: ""},
   startDate: new Date().toLocaleDateString(),
   confirmDetails: false
 };
@@ -81,9 +82,9 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                         label: fullNamePipe(p),
                         id: p.userId.toString()
                       }))}
+                      value={value}
                       size="small"
                       placeholder="Project Lead"
-                      sx={{ width: 2 / 2 }}
                     />
                   </>
                 )}
@@ -100,13 +101,13 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                     <NERAutocomplete
                       id="project-manager-autocomplete"
                       onChange={onChange}
+                      value={value}
                       options={allUsers.map((p) => ({
                         label: fullNamePipe(p),
                         id: p.userId.toString()
                       }))}
                       size="small"
                       placeholder="Project Manager"
-                      sx={{ width: 2 / 2 }}
                     />
                   </>
                 )}
