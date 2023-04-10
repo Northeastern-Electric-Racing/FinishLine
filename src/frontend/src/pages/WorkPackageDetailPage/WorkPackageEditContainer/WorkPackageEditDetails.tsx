@@ -10,12 +10,12 @@ import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import { dataPayload } from './WorkPackageEditContainer';
+import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
 
 interface Props {
   users: User[];
-  control: Control<dataPayload>;
-  errors: Partial<FieldErrorsImpl<dataPayload>>;
+  control: Control<WorkPackageEditFormPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {

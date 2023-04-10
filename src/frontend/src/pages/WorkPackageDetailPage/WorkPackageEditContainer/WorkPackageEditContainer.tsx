@@ -38,7 +38,7 @@ interface WorkPackageEditContainerProps {
   exitEditMode: () => void;
 }
 
-export interface dataPayload {
+export interface WorkPackageEditFormPayload {
   name: string;
   projectLead: number | undefined;
   projectManager: number | undefined;
@@ -118,7 +118,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
-  const onSubmit = async (data: dataPayload) => {
+  const onSubmit = async (data: WorkPackageEditFormPayload) => {
     const { name, projectLead, projectManager, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
