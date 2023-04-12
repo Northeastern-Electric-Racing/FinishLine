@@ -19,7 +19,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
-import RisksService from '../services/risks.services';
 import WorkPackagesService from '../services/work-packages.services';
 import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
@@ -168,12 +167,6 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     joeBlow.userId
   );
-
-  await RisksService.createRisk(thomasEmrax, project1Id, 'This one could get too expensive');
-  await RisksService.createRisk(joeShmoe, project1Id, 'This Imact could Attenuate too much!');
-  const risk3Id = await RisksService.createRisk(thomasEmrax, project1Id, 'At risk of nuclear explosion');
-  const risk3 = await prisma.risk.findUniqueOrThrow({ where: { id: risk3Id } });
-  await RisksService.editRisk(thomasEmrax, risk3Id, risk3.detail, true);
 
   /** Project 2 */
   const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(

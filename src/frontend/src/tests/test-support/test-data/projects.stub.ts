@@ -60,7 +60,6 @@ export const exampleProject1: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleResearchWorkPackage, exampleDesignWorkPackage],
-  risks: [],
   tasks: []
 };
 
@@ -99,7 +98,6 @@ export const exampleProject2: Project = {
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  risks: [],
   tasks: []
 };
 
@@ -145,7 +143,6 @@ export const exampleProject3: Project = {
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
   team: exampleTeam,
-  risks: [],
   tasks: [exampleTask1]
 };
 
@@ -184,7 +181,6 @@ export const exampleProject4: Project = {
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
   workPackages: [exampleDesignWorkPackage],
-  risks: [],
   tasks: []
 };
 
@@ -223,7 +219,6 @@ export const exampleProject5: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
   workPackages: [exampleManufacturingWorkPackage],
-  risks: [],
   tasks: []
 };
 
