@@ -71,20 +71,5 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
     }
   };
 
-  return (
-    <Autocomplete
-      fullWidth
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      filterSelectedOptions
-      multiple
-      id="tags-standard"
-      options={options}
-      getOptionLabel={(option) => option.label}
-      onChange={handleValueChange}
-      value={assignees.map((u: UserPreview) => options.find((o: any) => o.id === u.userId)!)}
-      // TODO: make assignees an array with a custom method
-      renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
-      ref={handleRef}
-    />
-  );
+  return <></>;
 };

@@ -9,14 +9,9 @@ import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
-import WorkPackageSummary from './WorkPackageSummary';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
-import ProjectDetails from './ProjectDetails';
-import RulesList from './RulesList';
-import RiskLog from './RiskLog';
 import { routes } from '../../../utils/routes';
-import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
@@ -149,26 +144,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
-      <ProjectDetails project={proj} />
       <TaskList project={proj} />
-      <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
-      <ProjectGantt workPackages={proj.workPackages} />
-      <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
-      <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />
-      <DescriptionList
-        title={'Other Constraints'}
-        items={proj.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
-      />
-      <RulesList rules={proj.rules} />
-      <PageBlock title={'Work Packages'}>
-        {proj.workPackages.map((ele: WorkPackage) => (
-          <div key={wbsPipe(ele.wbsNum)} className="mt-3">
-            <WorkPackageSummary workPackage={ele} />
-          </div>
-        ))}
-      </PageBlock>
-      <ChangesList changes={proj.changes} />
+
       {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
