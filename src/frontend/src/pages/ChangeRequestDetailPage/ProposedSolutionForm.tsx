@@ -10,7 +10,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
-import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 
 interface ProposedSolutionFormProps {
@@ -192,18 +191,10 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             ''
           ) : (
             <Box display="flex" flexDirection="row-reverse">
-              <NERFailButton
-                variant="contained"
-                onClick={onClose}
-                form="individual-proposed-solution-form"
-                sx={{ textTransform: 'none', fontSize: 16, marginTop: 3, marginRight: 2 }}
-              >
-                Cancel
-              </NERFailButton>
               <NERSuccessButton
                 color="success"
                 variant="contained"
-                type="submit"
+                type="add"
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
