@@ -38,7 +38,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
           }}
           sx={{ position: 'absolute', right: 75 }}
         >
-          <DeleteIcon data-testid="DeleteIcon" />
+          <DeleteIcon />
         </Button>
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
