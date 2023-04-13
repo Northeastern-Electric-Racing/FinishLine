@@ -16,7 +16,7 @@ interface ProjectDetailPageTabProps {
 // Page block containing task list view
 const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
-  const tabUrlValues = useMemo(() => ['Overview', 'Tasks', 'Scope', 'Grantt', 'Changes'], []);
+  const tabUrlValues = useMemo(() => ['Overview', 'Tasks', 'Scope', 'Gantt', 'Changes'], []);
 
   const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
@@ -42,7 +42,7 @@ const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
       <Tab label="Overview" aria-label="Overview" value={0} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Overview`} />
       <Tab label="Tasks" aria-label="Tasks" value={1} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Tasks`} />
       <Tab label="Scope" aria-label="Scope" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Scope`} />
-      <Tab label="Grantt" aria-label="Grantt" value={3} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Grantt`} />
+      <Tab label="Gantt" aria-label="Gantt" value={3} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Gantt`} />
       <Tab label="Changes" aria-label="Changes" value={4} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Changes`} />
     </Tabs>
   );
