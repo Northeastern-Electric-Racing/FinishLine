@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Tab, Tabs } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { Project, wbsPipe } from 'shared';

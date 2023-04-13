@@ -19,7 +19,7 @@ import {
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
-import ProjectDetailTabsDataGrid from '../Project/ProjectDetailTabsDataGrid';
+import TaskListDataGrid from '../TaskList/TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
@@ -168,7 +168,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`}>
       {value === index && (
         <Box sx={{ height: 400, width: '100%' }}>
-          <ProjectDetailTabsDataGrid
+          <TaskListDataGrid
             team={team}
             status={status}
             tasks={tasks}
