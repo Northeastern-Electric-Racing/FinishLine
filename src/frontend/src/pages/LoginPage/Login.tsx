@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useHistory } from 'react-router';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
@@ -11,6 +11,7 @@ import { routes } from '../../utils/routes';
 import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
+import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 
 /**
  * Page for unauthenticated users to do login.
@@ -52,7 +53,7 @@ const Login = () => {
     }
   };
 
-  const devFormSubmit = async (e: Event) => {
+  const devFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
@@ -61,8 +62,11 @@ const Login = () => {
     redirectAfterLogin();
   };
 
-  const verifyLogin = async (response: any) => {
-    const { id_token } = response.getAuthResponse();
+  const verifyLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+    if (response.code) {
+      throw new Error('Invalid login object');
+    }
+    const { id_token } = (response as GoogleLoginResponse).getAuthResponse();
     if (!id_token) throw new Error('Invalid login object');
     const authedUser = await auth.signin(id_token);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
