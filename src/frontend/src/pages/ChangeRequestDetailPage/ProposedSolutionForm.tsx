@@ -194,11 +194,11 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
               <NERSuccessButton
                 color="success"
                 variant="contained"
-                type="add"
+                type="submit"
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Submit
+                Add
               </NERSuccessButton>
             </Box>
           )}
