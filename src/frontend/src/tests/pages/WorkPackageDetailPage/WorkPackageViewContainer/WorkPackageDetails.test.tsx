@@ -49,9 +49,7 @@ describe('Work Package Details Component', () => {
     it('does not render a stage label when work package has no stage', () => {
       mockHook(false, false, users);
       const { container } = renderComponent();
-      const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
-      expect(chips.length).toBe(2);
-      expect(chips[0]).toHaveTextContent('No Stage');
+      expect(container.getElementsByClassName('MuiChip-label').length).toBe(1);
     });
 
     it('renders work package research stage label', () => {
