@@ -2,7 +2,7 @@ import prisma from '../prisma/prisma';
 import { Scope_CR_Why_Type, Team, User, Prisma } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { buildChangeDetail } from './utils';
-import { sendMessage } from '../integrations/slack.utils';
+import { sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 

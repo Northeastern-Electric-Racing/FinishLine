@@ -1,5 +1,6 @@
 import prisma from '../prisma/prisma';
-import { Role, Work_Package, Description_Bullet } from '@prisma/client';
+import { isLeadership } from 'shared';
+import { Work_Package, Description_Bullet } from '@prisma/client';
 import { HttpException } from './errors.utils';
 
 export const hasBulletCheckingPermissions = async (userId: number, descriptionId: number) => {
@@ -24,13 +25,7 @@ export const hasBulletCheckingPermissions = async (userId: number, descriptionId
     descriptionBullet.workPackageDeliverables?.wbsElement.projectManager ||
     descriptionBullet.workPackageExpectedActivities?.wbsElement.projectManager;
 
-  if (
-    user.role === Role.APP_ADMIN ||
-    user.role === Role.ADMIN ||
-    user.role === Role.LEADERSHIP ||
-    (leader && leader.userId === user.userId) ||
-    (manager && manager.userId === user.userId)
-  ) {
+  if (isLeadership(user.role) || (leader && leader.userId === user.userId) || (manager && manager.userId === user.userId)) {
     return true;
   }
   return false;

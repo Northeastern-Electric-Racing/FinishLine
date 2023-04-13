@@ -14,10 +14,11 @@ export interface User {
 
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'role'>;
 
-export type Role = 'APP_ADMIN' | 'ADMIN' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
+export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
   APP_ADMIN = 'APP_ADMIN',
   ADMIN = 'ADMIN',
+  HEAD = 'HEAD',
   LEADERSHIP = 'LEADERSHIP',
   MEMBER = 'MEMBER',
   GUEST = 'GUEST'

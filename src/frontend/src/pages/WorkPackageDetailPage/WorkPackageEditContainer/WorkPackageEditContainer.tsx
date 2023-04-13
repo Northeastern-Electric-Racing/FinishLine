@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { validateWBS, WorkPackage } from 'shared';
+import { isGuest, validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -22,14 +22,17 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
-  startDate: yup.date().required('Start Date is required!'),
+  startDate: yup
+    .date()
+    .required('Start Date is required!')
+    .test('start-date-valid', 'start date is not valid', startDateTester),
   duration: yup.number().required()
 });
 
@@ -89,7 +92,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   }
   const { userId } = auth.user;
 
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+  const users = allUsers.data.filter((u) => !isGuest(u.role));
 
   const transformDate = (date: Date) => {
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();

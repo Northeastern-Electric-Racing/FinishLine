@@ -4,7 +4,7 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { ChangeRequestType, WbsNumber } from 'shared';
+import { ChangeRequestType, isGuest, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -61,7 +61,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
       modalShow={modalShow}
       onHide={handleClose}
       onSubmit={handleConfirm}
-      allUsers={users.data!.filter((u) => u.role !== 'GUEST')}
+      allUsers={users.data!.filter((u) => !isGuest(u.role))}
     />
   );
 };

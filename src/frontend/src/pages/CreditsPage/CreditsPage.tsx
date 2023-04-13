@@ -93,7 +93,8 @@ const CreditsPage: React.FC = () => {
         '-webkit-background-clip': 'text'
       }
     },
-    { name: 'Ethan Mouri', color: '#00bbff' }
+    { name: 'Ethan Mouri', color: '#00bbff' },
+    { name: 'Laith Taher', color: '#000080' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

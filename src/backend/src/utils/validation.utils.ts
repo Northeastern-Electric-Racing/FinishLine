@@ -10,7 +10,7 @@ export const nonEmptyString = (validationObject: ValidationChain): ValidationCha
 };
 
 export const isRole = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['APP_ADMIN', 'ADMIN', 'LEADERSHIP', 'MEMBER', 'GUEST']);
+  return validationObject.isString().isIn(['APP_ADMIN', 'ADMIN', 'HEAD', 'LEADERSHIP', 'MEMBER', 'GUEST']);
 };
 
 export const isDate = (validationObject: ValidationChain): ValidationChain => {

@@ -9,6 +9,7 @@ import { useCreateSingleProject } from '../../hooks/projects.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateProjectFormView from './CreateProjectFormView';
+import { isGuest } from 'shared';
 
 export interface CreateProjectFormInputs {
   name: string;
@@ -47,7 +48,7 @@ const CreateProjectForm: React.FC = () => {
     }
   };
 
-  return <CreateProjectFormView onCancel={handleCancel} onSubmit={handleSubmit} allowSubmit={auth.user.role !== 'GUEST'} />;
+  return <CreateProjectFormView onCancel={handleCancel} onSubmit={handleSubmit} allowSubmit={!isGuest(auth.user.role)} />;
 };
 
 export default CreateProjectForm;

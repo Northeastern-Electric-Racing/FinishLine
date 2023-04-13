@@ -1,5 +1,5 @@
-import { Team } from 'shared';
-import { Role, User } from '@prisma/client';
+import { isAdmin, Team } from 'shared';
+import { User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -52,7 +52,7 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN && submitter.userId !== team.leaderId)
+    if (!isAdmin(submitter.role) && submitter.userId !== team.leaderId)
       throw new AccessDeniedException('you must be an admin or the team lead to update the members!');
 
     // this throws if any of the users aren't found
@@ -99,8 +99,8 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (!(user.role === Role.APP_ADMIN || user.role === Role.ADMIN || user.userId === team.leaderId))
-      throw new AccessDeniedException();
+    if (!(isAdmin(user.role) || user.userId === team.leaderId))
+      throw new AccessDeniedException('you must be an admin or the team lead to update the members!');
 
     const updateTeam = await prisma.team.update({
       where: { teamId },

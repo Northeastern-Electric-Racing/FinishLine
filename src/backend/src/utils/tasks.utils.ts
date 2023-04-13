@@ -1,5 +1,5 @@
-import { Role, Task_Priority, Task_Status, User } from '@prisma/client';
-import { TaskPriority, TaskStatus } from 'shared';
+import { Task_Priority, Task_Status, User } from '@prisma/client';
+import { isHead, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
@@ -17,7 +17,7 @@ export const convertTaskStatus = (status: Task_Status): TaskStatus =>
   }[status]);
 
 export const hasPermissionToEditTask = async (user: User, taskId: string): Promise<boolean> => {
-  if (user.role === Role.ADMIN || user.role === Role.APP_ADMIN) return true;
+  if (isHead(user.role)) return true;
 
   const task = await prisma.task.findUnique({
     where: { taskId },
