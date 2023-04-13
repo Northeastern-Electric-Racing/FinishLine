@@ -52,7 +52,7 @@ const Login = () => {
     }
   };
 
-  const devFormSubmit = async (e: any) => {
+  const devFormSubmit = async (e: Event) => {
     e.preventDefault();
     const authedUser = await auth.devSignin(devUserId);
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
