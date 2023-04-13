@@ -8,14 +8,15 @@ import AdminToolsUserManagement from './AdminToolsUserManagement';
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
 import { Box, TextField } from '@mui/material';
+import { useState } from 'react';
 
 const AdminToolsPage: React.FC = () => {
-  const [days, setDays] = React.useState<string | null>(null);
+  const [days, setDays] = useState<string | null>(null);
 
-  const [hideButton, setHideButton] = React.useState(true);
+  const [disableButton, setDisableButton] = useState(false);
 
-  const toggleButton = () => {
-    setHideButton(!hideButton);
+  const disable = () => {
+    setDisableButton(true);
   };
 
   return (
@@ -23,16 +24,16 @@ const AdminToolsPage: React.FC = () => {
       <PageTitle title={'Admin Tools'} previousPages={[]} />
       <AdminToolsUserManagement />
       <PageBlock title={'Slack Upcoming Deadlines'}>
-        <Box sx={{ display: 'flex' }}>
+        <Box gap={2} sx={{ display: 'flex' }}>
           <TextField
-            title={'Days Until Deadline'}
+            label="Days Until Deadline"
             type="number"
             value={days}
             onChange={(event) => {
               setDays(event.target.value);
             }}
           ></TextField>
-          <NERButton sx={{ mt: '20px', float: 'right' }} variant="contained" disabled={!days} onClick={toggleButton}>
+          <NERButton variant="contained" disabled={!days || parseInt(days, 10) <= 0 || disableButton} onClick={disable}>
             Send
           </NERButton>
         </Box>
