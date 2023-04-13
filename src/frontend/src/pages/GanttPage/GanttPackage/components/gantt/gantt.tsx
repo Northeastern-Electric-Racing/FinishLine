@@ -117,7 +117,11 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         barBackgroundColor,
         barBackgroundSelectedColor,
         projectProgressColor,
-        projectProgressSelectedColor
+        projectProgressSelectedColor,
+        projectBackgroundColor,
+        projectBackgroundSelectedColor,
+        milestoneBackgroundColor,
+        milestoneBackgroundSelectedColor
       )
     );
   }, [

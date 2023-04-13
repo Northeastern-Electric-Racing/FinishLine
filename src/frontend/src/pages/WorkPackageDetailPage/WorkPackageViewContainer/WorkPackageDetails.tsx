@@ -21,7 +21,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
       title={'Work Package Details'}
       headerRight={
         <>
-          <WorkPackageStageChip stage={workPackage.stage} />
+          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
           <WbsStatus status={workPackage.status} />
         </>
       }
