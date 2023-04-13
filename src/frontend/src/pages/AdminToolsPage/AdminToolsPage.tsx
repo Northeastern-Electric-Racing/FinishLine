@@ -7,7 +7,7 @@ import PageTitle from '../../layouts/PageTitle/PageTitle';
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
-import { Box, TextField } from '@mui/material';
+import { Box, TextField, Tooltip } from '@mui/material';
 import { useState } from 'react';
 
 const AdminToolsPage: React.FC = () => {
@@ -25,15 +25,22 @@ const AdminToolsPage: React.FC = () => {
       <AdminToolsUserManagement />
       <PageBlock title={'Slack Upcoming Deadlines'}>
         <Box gap={2} sx={{ display: 'flex' }}>
-          <TextField
-            label="Days Until Deadline"
-            type="number"
-            value={days}
-            onChange={(event) => {
-              setDays(event.target.value);
-            }}
-          ></TextField>
-          <NERButton variant="contained" disabled={!days || parseInt(days, 10) <= 0 || disableButton} onClick={disable}>
+          <Tooltip title="Enter in a positive number of days until a deadline, where all projects with this deadline will be slacked">
+            <TextField
+              label="Days Until Deadline"
+              type="number"
+              value={days}
+              onChange={(event) => {
+                setDays(event.target.value);
+              }}
+            ></TextField>
+          </Tooltip>
+          <NERButton
+            variant="contained"
+            sx={{ mt: 1 }}
+            disabled={!days || parseInt(days, 10) <= 0 || disableButton}
+            onClick={disable}
+          >
             Send
           </NERButton>
         </Box>
