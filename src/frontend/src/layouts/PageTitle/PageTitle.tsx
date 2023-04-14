@@ -4,7 +4,7 @@
  */
 
 import { Typography, Grid } from '@mui/material';
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
 
@@ -12,6 +12,7 @@ interface PageTitleProps {
   title: string;
   previousPages: LinkItem[];
   actionButton?: ReactNode;
+  tabs?: ReactElement;
 }
 
 /**
@@ -20,20 +21,21 @@ interface PageTitleProps {
  * @param previousPages The pages in the breadcrumb between home and the current page
  * @param actionButton The button to display on the right side of the page title
  */
-const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton, tabs }) => {
   return (
     <>
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-      <Grid container sx={{ mt: 1, mb: 2 }}>
+      <Grid container sx={{ mt: 1, mb: 2 }} alignItems="center" justifyContent="space-around">
         <Grid item>
           <Typography variant="h4" fontSize={30} sx={{ verticalAlign: 'middle', display: 'inline-flex' }}>
             {title}
           </Typography>
         </Grid>
-        <Grid item sx={{ mx: 0 }} xs>
-          <Grid container direction="row-reverse">
-            <Grid item>{actionButton}</Grid>
-          </Grid>
+        <Grid item sx={{ borderBottom: 1, borderColor: 'divider', margin: 'auto' }}>
+          {tabs}
+        </Grid>
+        <Grid item sx={{ mx: 0 }}>
+          {actionButton}
         </Grid>
       </Grid>
     </>

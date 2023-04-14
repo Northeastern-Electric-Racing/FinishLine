@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
@@ -14,11 +14,11 @@ import { Add } from '@mui/icons-material';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useTheme } from '@mui/system';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ChangeRequest, ChangeRequestType, isGuest, validateWBS, WbsNumber } from 'shared';
 import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
-import { Link } from '@mui/material';
+import { Link, Tab, Tabs } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 const ChangeRequestsTable: React.FC = () => {
@@ -38,6 +38,27 @@ const ChangeRequestsTable: React.FC = () => {
 
   const auth = useAuth();
   const theme = useTheme();
+
+  // Values that go in the URL depending on the tab value
+  const viewUrlValues = useMemo(() => ['overview', 'all-change-requests'], []);
+
+  const match = useRouteMatch<{ tabValueString: string }>(`${routes.CHANGE_REQUESTS}/:tabValueString`);
+  const tabValueString = match?.params?.tabValueString;
+
+  // Default to the "overview" tab
+  const initialValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
+  const [value, setValue] = useState<number>(initialValue);
+
+  // Change tab when the browser forward/back button is pressed
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const newTabValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
+    setValue(newTabValue);
+  }, [pathname, setValue, viewUrlValues, tabValueString]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
+    setValue(newValue);
+  };
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -142,6 +163,24 @@ const ChangeRequestsTable: React.FC = () => {
         <PageTitle
           title={'Change Requests'}
           previousPages={[]}
+          tabs={
+            <Tabs value={value} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
+              <Tab
+                label="Overview"
+                aria-label="overview"
+                value={0}
+                component={RouterLink}
+                to={`${routes.CHANGE_REQUESTS}/overview`}
+              />
+              <Tab
+                label="All Change Requests"
+                aria-label="all-change-requests"
+                value={1}
+                component={RouterLink}
+                to={`${routes.CHANGE_REQUESTS}/all-change-requests`}
+              />
+            </Tabs>
+          }
           actionButton={
             <NERButton
               variant="contained"
