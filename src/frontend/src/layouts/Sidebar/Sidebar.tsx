@@ -3,21 +3,20 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-// Import MUI icons
-import HomeIcon from '@mui/icons-material/Home';
-import GanttIcon from '@mui/icons-material/AlignHorizontalLeft';
-import ProjectsIcon from '@mui/icons-material/Folder';
-import ChangeRequestsIcon from '@mui/icons-material/SyncAlt';
-import TeamsIcon from '@mui/icons-material/Group';
-import InfoIcon from '@mui/icons-material/Info';
 import { routes } from '../../utils/routes';
-import { LinkItem } from '../../utils/types';
+import { MUILinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
 import { Typography } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
+import FolderIcon from '@mui/icons-material/Folder';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import GroupIcon from '@mui/icons-material/Group';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 const Sidebar: React.FC = () => {
-  const linkItems: LinkItem[] = [
+  const linkItems: MUILinkItem[] = [
     {
       name: 'Home',
       icon: HomeIcon,
@@ -25,36 +24,36 @@ const Sidebar: React.FC = () => {
     },
     {
       name: 'Gantt',
-      icon: GanttIcon,
+      icon: AlignHorizontalLeftIcon,
       route: routes.GANTT
     },
     {
       name: 'Projects',
-      icon: ProjectsIcon,
+      icon: FolderIcon,
       route: routes.PROJECTS
     },
     {
       name: 'Change Requests',
-      icon: ChangeRequestsIcon,
+      icon: SyncAltIcon,
       route: routes.CHANGE_REQUESTS
     },
     {
       name: 'Teams',
-      icon: TeamsIcon,
+      icon: GroupIcon,
       route: routes.TEAMS
     }
   ];
 
   linkItems.push({
     name: 'Info',
-    icon: InfoIcon,
+    icon: QuestionMarkIcon,
     route: routes.INFO
   });
 
   return (
     <div className={styles.sidebar}>
       <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.7.1</Typography>
+      <Typography className={styles.versionNumber}>3.7.2</Typography>
     </div>
   );
 };

@@ -13,7 +13,15 @@ import { prismaWorkPackage1 } from './test-data/work-packages.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { CR_Type } from '@prisma/client';
 import ChangeRequestsService from '../src/services/change-requests.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  AccessDeniedMemberException,
+  HttpException,
+  NotFoundException,
+  DeletedException
+} from '../src/utils/errors.utils';
 import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 
@@ -26,6 +34,7 @@ describe('Change Requests', () => {
     jest.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return undefined;
     });
+    jest.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
     jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
   });
 
@@ -78,7 +87,7 @@ describe('Change Requests', () => {
     test('reviewer doesnt have access errors', async () => {
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(wonderwoman, crId, reviewNotes, accepted, '1')
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedMemberException('review change requests'));
     });
 
     test('change request not found errors', async () => {
@@ -318,7 +327,7 @@ describe('Change Requests', () => {
     test('user access denied', async () => {
       await expect(() =>
         ChangeRequestsService.addProposedSolution(wonderwoman, crId, budgetImpact, description, timelineImpact, scopeImpact)
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedGuestException('add proposed solutions'));
     });
 
     test('change request deleted', async () => {
@@ -327,7 +336,7 @@ describe('Change Requests', () => {
         .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date('1/1/2023') });
       await expect(() =>
         ChangeRequestsService.addProposedSolution(greenlantern, crId, budgetImpact, description, timelineImpact, scopeImpact)
-      ).rejects.toThrow(new HttpException(400, 'This change request has been deleted!'));
+      ).rejects.toThrow(new DeletedException('Change Request', crId));
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
@@ -364,7 +373,7 @@ describe('Change Requests', () => {
   describe('Delete Change Request', () => {
     test('User does not have permissions', async () => {
       await expect(() => ChangeRequestsService.deleteChangeRequest(wonderwoman, 1)).rejects.toThrow(
-        new AccessDeniedException()
+        new AccessDeniedAdminOnlyException('delete change requests')
       );
     });
 
@@ -381,7 +390,7 @@ describe('Change Requests', () => {
         .spyOn(prisma.change_Request, 'findUnique')
         .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
       await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
-        new HttpException(400, 'This change request has already been deleted!')
+        new DeletedException('Change Request', 1)
       );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });

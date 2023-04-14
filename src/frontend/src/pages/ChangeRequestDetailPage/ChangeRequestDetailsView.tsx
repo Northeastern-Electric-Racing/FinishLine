@@ -30,6 +30,8 @@ import DeleteChangeRequest from './DeleteChangeRequest';
 import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import PostAddIcon from '@mui/icons-material/PostAdd';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -113,10 +115,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          <ListItemIcon>
+            <ContentPasteIcon fontSize="small" />
+          </ListItemIcon>
           Review
         </MenuItem>
         <Divider />
         <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
           Delete
         </MenuItem>
       </Menu>

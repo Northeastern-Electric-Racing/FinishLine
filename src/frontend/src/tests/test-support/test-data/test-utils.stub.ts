@@ -7,10 +7,10 @@ import { AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
 import { exampleAdminUser } from './users.stub';
-import { Auth, LinkItem } from '../../../utils/types';
+import { Auth, MUILinkItem } from '../../../utils/types';
 import HomeIcon from '@mui/icons-material/Home';
 import FolderIcon from '@mui/icons-material/Folder';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { routes } from '../../../utils/routes';
 
 export const mockContext = {
@@ -100,7 +100,7 @@ export const mockUtils = {
   update: () => null
 };
 
-export const testLinkItems: LinkItem[] = [
+export const testLinkItems: MUILinkItem[] = [
   {
     name: 'Home',
     icon: HomeIcon,
@@ -113,7 +113,7 @@ export const testLinkItems: LinkItem[] = [
   },
   {
     name: 'Change Requests',
-    icon: CompareArrowsIcon,
+    icon: SyncAltIcon,
     route: routes.CHANGE_REQUESTS
   }
 ];

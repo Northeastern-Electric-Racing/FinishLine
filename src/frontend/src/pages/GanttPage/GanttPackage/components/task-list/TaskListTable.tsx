@@ -28,7 +28,12 @@ export const TaskListTableDefault: React.FC<{
         }
 
         return (
-          <div className={styles.taskListTableRow} style={{ height: rowHeight }} key={`${t.id}row`}>
+          <div
+            className={styles.taskListTableRow}
+            style={{ height: rowHeight }}
+            key={`${t.id}row`}
+            onClick={() => onExpanderClick(t)}
+          >
             <div
               className={styles.taskListCell}
               style={{
@@ -38,10 +43,7 @@ export const TaskListTableDefault: React.FC<{
               title={t.name}
             >
               <div className={styles.taskListNameWrapper}>
-                <div
-                  className={expanderSymbol ? styles.taskListExpander : styles.taskListEmptyExpander}
-                  onClick={() => onExpanderClick(t)}
-                >
+                <div className={expanderSymbol ? styles.taskListExpander : styles.taskListEmptyExpander}>
                   {expanderSymbol}
                 </div>
                 <div className={styles.taskListNameText}>{t.name}</div>

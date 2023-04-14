@@ -46,19 +46,29 @@ const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, sty
         }
       >
         {title && (
-          <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
-            <Typography variant="h5" sx={{ flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              onClick={() => {
+                setCollapsed(!collapsed);
+              }}
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              {collapsed ? (
+                <ExpandMoreIcon sx={{ ml: -1, paddingRight: 0.5 }} />
+              ) : (
+                <ExpandLessIcon sx={{ ml: -1, paddingRight: 0.5 }} />
+              )}
               {title}
             </Typography>
             {headerRight}
-            {collapsed ? (
-              <ExpandMoreIcon sx={{ ml: 2 }} onClick={() => setCollapsed(false)} />
-            ) : (
-              <ExpandLessIcon sx={{ ml: 2 }} onClick={() => setCollapsed(true)} />
-            )}
           </Box>
         )}
-        <Collapse in={!collapsed}>{children}</Collapse>
+        <Collapse in={!collapsed} sx={{ ml: 2 }}>
+          {children}
+        </Collapse>
       </CardContent>
     </Card>
   );

@@ -13,6 +13,8 @@ import { useCreateStageGateChangeRequest } from '../../../../hooks/change-reques
 
 jest.mock('../../../../hooks/change-requests.hooks');
 
+jest.mock('../../../../hooks/toasts.hooks');
+
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;
 

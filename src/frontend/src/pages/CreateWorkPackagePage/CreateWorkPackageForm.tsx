@@ -5,7 +5,7 @@
 
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
-import { isProject, validateWBS, WorkPackageStage } from 'shared';
+import { isGuest, isProject, validateWBS, WorkPackageStage } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
@@ -15,11 +15,11 @@ import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 export interface CreateWorkPackageFormInputs {
   name: string;
   startDate: Date;
-  duration: number;
-  crId: string;
-  stage: WorkPackageStage | null;
+  duration: number | null;
+  crId: string | number;
+  stage: WorkPackageStage | string;
   wbsNum: string;
-  dependencies: { wbsNum: string }[];
+  blockedBy: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
 }
@@ -34,7 +34,7 @@ const CreateWorkPackageForm: React.FC = () => {
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, dependencies, wbsNum, stage } = data;
+    const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
@@ -46,8 +46,8 @@ const CreateWorkPackageForm: React.FC = () => {
         toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
-      const depWbsNums = dependencies.map((dependency: any) => {
-        const depWbsNum = validateWBS(dependency.wbsNum);
+      const depWbsNums = blockedBy.map((blocker: { wbsNum: string }) => {
+        const depWbsNum = validateWBS(blocker.wbsNum);
         return {
           carNumber: depWbsNum.carNumber,
           projectNumber: depWbsNum.projectNumber,
@@ -56,7 +56,7 @@ const CreateWorkPackageForm: React.FC = () => {
       });
       const createdWbsNum = await mutateAsync({
         name: name.trim(),
-        crId: parseInt(crId),
+        crId,
         projectWbsNum: {
           carNumber: wbsNumValidated.carNumber,
           projectNumber: wbsNumValidated.projectNumber,
@@ -64,14 +64,13 @@ const CreateWorkPackageForm: React.FC = () => {
         },
         startDate: startDate.toLocaleDateString(),
         duration,
-        dependencies: depWbsNums,
+        blockedBy: depWbsNums,
         expectedActivities,
         deliverables,
         stage
       });
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 3000);
       }
@@ -82,7 +81,7 @@ const CreateWorkPackageForm: React.FC = () => {
     <CreateWorkPackageFormView
       onSubmit={handleSubmit}
       onCancel={() => history.goBack()}
-      allowSubmit={auth.user.role !== 'GUEST'}
+      allowSubmit={!isGuest(auth.user.role)}
     />
   );
 };
