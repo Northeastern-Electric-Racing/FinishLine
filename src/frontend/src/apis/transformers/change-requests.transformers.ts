@@ -12,7 +12,10 @@ import { ChangeRequest, ChangeRequestType, ImplementedChange } from 'shared';
  * @returns Properly transformed change request object.
  */
 export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
-  const data: any = {
+  interface MaybeActiveChangeRequest extends ChangeRequest {
+    startDate?: Date;
+  }
+  const data: MaybeActiveChangeRequest = {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
     dateSubmitted: new Date(changeRequest.dateSubmitted),
@@ -20,7 +23,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
     dateImplemented: changeRequest.dateImplemented ? new Date(changeRequest.dateImplemented) : changeRequest.dateImplemented
   };
   if (changeRequest.type === ChangeRequestType.Activation) {
-    data.startDate = new Date(data.startDate);
+    if (data.startDate) data.startDate = new Date(data.startDate);
   }
   const output: ChangeRequest = data;
   return output;
