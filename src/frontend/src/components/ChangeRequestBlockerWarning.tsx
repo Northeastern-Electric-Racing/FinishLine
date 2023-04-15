@@ -7,8 +7,6 @@ import { wbsPipe, WorkPackage } from 'shared';
 import { Dialog, DialogContent, DialogTitle, Grid, Breakpoint, IconButton, useTheme, DialogActions } from '@mui/material';
 import NERSuccessButton from '../components/NERSuccessButton';
 import NERFailButton from '../components/NERFailButton';
-import LoadingIndicator from '../components/LoadingIndicator';
-import { useAuth } from '../hooks/auth.hooks';
 import { Close } from '@mui/icons-material';
 import BulletList from './BulletList';
 import { FormInput } from '../pages/ChangeRequestDetailPage/ReviewChangeRequest';
@@ -17,7 +15,7 @@ interface BlockerWarningModalProps {
   blockingWorkPackages: WorkPackage[];
   open: boolean;
   onHide: () => void;
-  handleContinue: ((data: FormInput) => void);
+  handleContinue: (data: FormInput) => void;
 }
 
 const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
@@ -26,10 +24,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
   onHide,
   handleContinue
 }: BlockerWarningModalProps) => {
-  const auth = useAuth();
   const theme = useTheme();
-
-  if (!auth.user) return <LoadingIndicator />;
 
   const dialogWidth: Breakpoint = 'md';
   return (

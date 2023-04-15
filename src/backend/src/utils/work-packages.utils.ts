@@ -209,5 +209,5 @@ export const getBlockingWorkPackages = async (
     blockingWorkPackages.push(currWbs.workPackage);
   }
 
-  return (blockingWorkPackages);
+  return blockingWorkPackages;
 };

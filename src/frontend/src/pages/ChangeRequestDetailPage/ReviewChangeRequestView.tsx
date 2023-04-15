@@ -75,7 +75,11 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 
   const handleShowWarning = (data: FormInput) => {
     const standardChangeRequest = cr as StandardChangeRequest;
-    if (standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
+    if (
+      standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0 &&
+      blockingWorkPackages &&
+      blockingWorkPackages.length > 0
+    ) {
       setShowWarning(true);
     } else {
       onSubmitWrapper(data);
@@ -97,7 +101,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const dialogWidth: Breakpoint = 'md';
   const dialogContentWidthRatio: number = 1; // dialog contents fit 100% width
 
-  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (standardChangeRequest: StandardChangeRequest) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (
+    standardChangeRequest: StandardChangeRequest
+  ) => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide} style={{ color: 'black' }}>
         <IconButton
