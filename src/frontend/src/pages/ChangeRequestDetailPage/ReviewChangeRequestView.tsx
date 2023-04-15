@@ -69,7 +69,6 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
    * Wrapper function for onSubmit so that form data is reset after submit
    */
   const onSubmitWrapper = async (data: FormInput) => {
-    console.log("test")
     await onSubmit(data);
     reset({ reviewNotes: '' });
   };
