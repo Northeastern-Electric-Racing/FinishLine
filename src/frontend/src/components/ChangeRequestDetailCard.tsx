@@ -21,61 +21,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import { datePipe, fullNamePipe } from '../utils/pipes';
 import { Cancel, Construction, DateRange, Description, DoneAll, Person, Start, Work } from '@mui/icons-material';
 
-interface ChangeRequestDetailCardProps {
-  changeRequest: ChangeRequest;
-}
-
-// Convert work package stage into badge for display
-const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
-  const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
-  const pillColor = determineChangeRequestPillColor(changeRequest.type);
-  return (
-    <Card sx={{ maxWidth: 300 }}>
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between">
-          <Box>
-            <Typography fontWeight={'regular'} variant="h6" fontSize={15}>
-              <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
-                {'#'}
-                {changeRequest.crId}
-              </Link>
-            </Typography>
-          </Box>
-          <Box sx={{ marginLeft: 2 }} minWidth={'fit-content'}>
-            <Chip
-              size="small"
-              label={changeRequest.type}
-              variant="outlined"
-              sx={{
-                fontSize: 10,
-                mr: '5px',
-                color: pillColor,
-                borderColor: pillColor
-              }}
-            />
-          </Box>
-        </Stack>
-        <Stack direction="row">
-          <Chip
-            icon={<Person />}
-            label={fullNamePipe(changeRequest.submitter)}
-            sx={{ mr: 2, ml: -1, backgroundColor: 'transparent', maxWidth: '150' }}
-          />
-          <Chip icon={<DateRange />} label={datePipe(changeRequest.dateSubmitted)} sx={{ backgroundColor: 'transparent' }} />
-        </Stack>
-        <Typography fontWeight={'regular'} variant="h6" fontSize={15} noWrap>
-          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-            {wbsPipe(changeRequest.wbsNum)} - {changeRequest.wbsName}
-          </Link>
-        </Typography>
-        <ChangeRequestTypeView />
-      </CardContent>
-    </Card>
-  );
-};
-
-export default ChangeRequestDetailCard;
-
 const determineChangeRequestTypeView = (cr: ChangeRequest) => {
   switch (cr.type) {
     case 'STAGE_GATE':
@@ -147,3 +92,57 @@ const ActivationCardDetails = ({ cr }: { cr: ActivationChangeRequest }) => {
     </Box>
   );
 };
+
+interface ChangeRequestDetailCardProps {
+  changeRequest: ChangeRequest;
+}
+
+// Convert work package stage into badge for display
+const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
+  const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
+  const pillColor = determineChangeRequestPillColor(changeRequest.type);
+  return (
+    <Card sx={{ maxWidth: 300 }}>
+      <CardContent>
+        <Stack direction="row" justifyContent="space-between">
+          <Box>
+            <Typography fontWeight={'regular'} variant="h6" fontSize={15}>
+              <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
+                {'CR ID: #' + changeRequest.crId}
+              </Link>
+            </Typography>
+          </Box>
+          <Box sx={{ marginLeft: 2 }} minWidth={'fit-content'}>
+            <Chip
+              size="small"
+              label={changeRequest.type}
+              variant="outlined"
+              sx={{
+                fontSize: 10,
+                mr: '5px',
+                color: pillColor,
+                borderColor: pillColor
+              }}
+            />
+          </Box>
+        </Stack>
+        <Stack direction="row">
+          <Chip
+            icon={<Person />}
+            label={fullNamePipe(changeRequest.submitter)}
+            sx={{ mr: 2, ml: -1, backgroundColor: 'transparent', maxWidth: '150' }}
+          />
+          <Chip icon={<DateRange />} label={datePipe(changeRequest.dateSubmitted)} sx={{ backgroundColor: 'transparent' }} />
+        </Stack>
+        <Typography fontWeight={'regular'} variant="h6" fontSize={15} noWrap>
+          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+            {wbsPipe(changeRequest.wbsNum)} - {changeRequest.wbsName}
+          </Link>
+        </Typography>
+        <ChangeRequestTypeView />
+      </CardContent>
+    </Card>
+  );
+};
+
+export default ChangeRequestDetailCard;
