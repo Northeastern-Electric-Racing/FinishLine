@@ -55,13 +55,13 @@ const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
           display: '-webkit-box',
           overflow: 'hidden',
           WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2,
+          WebkitLineClamp: 2
         }}
       >
-        <Description sx={{ml: '-4px', position: 'absolute'}} display={'inline'}/>
+        <Description sx={{ ml: '-4px', position: 'absolute' }} display={'inline'} />
         <Typography ml={'27px'} display={'inline'}>
-         {cr.what}
-         </Typography>
+          {cr.what}
+        </Typography>
       </Typography>
     </Box>
   );
