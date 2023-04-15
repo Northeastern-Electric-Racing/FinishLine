@@ -49,15 +49,19 @@ const determineChangeRequestPillColor = (type: ChangeRequestType) => {
 
 const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'top', mt: 1 }}>
-      <Typography fontWeight={'bold'} display={'inline'}>
-        <Description />{' '}
-      </Typography>
+    <Box mt={1} ml={'2px'}>
       <Typography
-        fontWeight={'regular'}
-        sx={{ display: '-webkit-box', overflow: 'hidden', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }}
+        sx={{
+          display: '-webkit-box',
+          overflow: 'hidden',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+        }}
       >
-        {cr.what}
+        <Description sx={{ml: '-4px', position: 'absolute'}} display={'inline'}/>
+        <Typography ml={'27px'} display={'inline'}>
+         {cr.what}
+         </Typography>
       </Typography>
     </Box>
   );
@@ -108,7 +112,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
           <Box>
             <Typography fontWeight={'regular'} variant="h6" fontSize={15}>
               <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
-                {'CR ID: #' + changeRequest.crId}
+                {'CR #' + changeRequest.crId}
               </Link>
             </Typography>
           </Box>

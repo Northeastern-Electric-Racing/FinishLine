@@ -20,6 +20,7 @@ import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
 import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
@@ -136,82 +137,85 @@ const ChangeRequestsTable: React.FC = () => {
     }
   ];
   return (
-    <div>
-      <div style={{ marginBottom: 15 }}>
-        <PageTitle
-          title={'Change Requests'}
-          previousPages={[]}
-          actionButton={
-            <NERButton
-              variant="contained"
-              disabled={isGuest(auth.user?.role)}
-              startIcon={<Add />}
-              onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
-            >
-              New Change Request
-            </NERButton>
-          }
-        />
-      </div>
-      <DataGrid
-        autoHeight
-        disableSelectionOnClick
-        density="compact"
-        pageSize={pageSize}
-        rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => {
-          localStorage.setItem('cr-table-row-count', String(newPageSize));
-          setPageSize(newPageSize);
-        }}
-        loading={isLoading}
-        error={error}
-        rows={
-          // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data.map((v) => ({
-            ...v,
-            carNumber: v.wbsNum.carNumber,
-            wbs: { wbsNum: v.wbsNum, name: v.wbsName },
-            submitter: fullNamePipe(v.submitter),
-            reviewer: fullNamePipe(v.reviewer)
-          })) || []
-        }
-        columns={columns}
-        getRowId={(row) => row.crId}
-        sx={{ background: theme.palette.background.paper }}
-        components={{
-          Toolbar: GridToolbar,
-          Row: (props: GridRowProps & { row: ChangeRequest }) => {
-            return (
-              <Link
-                component={RouterLink}
-                to={`${routes.CHANGE_REQUESTS}/${props.row.crId}`}
-                sx={{ color: 'inherit', textDecoration: 'none' }}
-              >
-                <GridRow {...props} />
-              </Link>
-            );
-          }
-        }}
-        componentsProps={{
-          toolbar: {
-            showQuickFilter: true,
-            quickFilterProps: { debounceMs: 500 }
-          }
-        }}
-        initialState={{
-          sorting: {
-            sortModel: [{ field: 'crId', sort: 'desc' }]
-          },
-          columns: {
-            columnVisibilityModel: {
-              carNumber: false,
-              implementedChanges: false
-            }
-          }
-        }}
-      />
-    </div>
+      <ChangeRequestDetailCard changeRequest={data[0]} />
   );
+  //   return (
+  //     <div>
+  //       <div style={{ marginBottom: 15 }}>
+  //         <PageTitle
+  //           title={'Change Requests'}
+  //           previousPages={[]}
+  //           actionButton={
+  //             <NERButton
+  //               variant="contained"
+  //               disabled={isGuest(auth.user?.role)}
+  //               startIcon={<Add />}
+  //               onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
+  //             >
+  //               New Change Request
+  //             </NERButton>
+  //           }
+  //         />
+  //       </div>
+  //       <DataGrid
+  //         autoHeight
+  //         disableSelectionOnClick
+  //         density="compact"
+  //         pageSize={pageSize}
+  //         rowsPerPageOptions={[25, 50, 75, 100]}
+  //         onPageSizeChange={(newPageSize) => {
+  //           localStorage.setItem('cr-table-row-count', String(newPageSize));
+  //           setPageSize(newPageSize);
+  //         }}
+  //         loading={isLoading}
+  //         error={error}
+  //         rows={
+  //           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
+  //           data.map((v) => ({
+  //             ...v,
+  //             carNumber: v.wbsNum.carNumber,
+  //             wbs: { wbsNum: v.wbsNum, name: v.wbsName },
+  //             submitter: fullNamePipe(v.submitter),
+  //             reviewer: fullNamePipe(v.reviewer)
+  //           })) || []
+  //         }
+  //         columns={columns}
+  //         getRowId={(row) => row.crId}
+  //         sx={{ background: theme.palette.background.paper }}
+  //         components={{
+  //           Toolbar: GridToolbar,
+  //           Row: (props: GridRowProps & { row: ChangeRequest }) => {
+  //             return (
+  //               <Link
+  //                 component={RouterLink}
+  //                 to={`${routes.CHANGE_REQUESTS}/${props.row.crId}`}
+  //                 sx={{ color: 'inherit', textDecoration: 'none' }}
+  //               >
+  //                 <GridRow {...props} />
+  //               </Link>
+  //             );
+  //           }
+  //         }}
+  //         componentsProps={{
+  //           toolbar: {
+  //             showQuickFilter: true,
+  //             quickFilterProps: { debounceMs: 500 }
+  //           }
+  //         }}
+  //         initialState={{
+  //           sorting: {
+  //             sortModel: [{ field: 'crId', sort: 'desc' }]
+  //           },
+  //           columns: {
+  //             columnVisibilityModel: {
+  //               carNumber: false,
+  //               implementedChanges: false
+  //             }
+  //           }
+  //         }}
+  //       />
+  //     </div>
+  //   );
 };
 
 export default ChangeRequestsTable;
