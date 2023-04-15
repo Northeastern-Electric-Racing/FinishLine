@@ -4,18 +4,11 @@
  */
 
 import { Link } from 'react-router-dom';
-import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
+import { Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
-import ChangesList from '../../../components/ChangesList';
-import DescriptionList from '../../../components/DescriptionList';
-import WorkPackageSummary from './WorkPackageSummary';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
-import PageBlock from '../../../layouts/PageBlock';
-import ProjectDetails from './ProjectDetails';
-import RulesList from './RulesList';
 import { routes } from '../../../utils/routes';
-import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,7 +19,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import TaskList from './TaskList/TaskList';
+import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -144,25 +137,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
-      <ProjectDetails project={proj} />
-      <TaskList project={proj} />
-      <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <ProjectGantt workPackages={proj.workPackages} />
-      <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
-      <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />
-      <DescriptionList
-        title={'Other Constraints'}
-        items={proj.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
-      />
-      <RulesList rules={proj.rules} />
-      <PageBlock title={'Work Packages'}>
-        {proj.workPackages.map((ele: WorkPackage) => (
-          <div key={wbsPipe(ele.wbsNum)} className="mt-3">
-            <WorkPackageSummary workPackage={ele} />
-          </div>
-        ))}
-      </PageBlock>
-      <ChangesList changes={proj.changes} />
+      <ProjectDetailTabs project={proj} />
+
       {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
