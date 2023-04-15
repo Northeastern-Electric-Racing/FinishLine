@@ -9,13 +9,12 @@ import NERSuccessButton from '../components/NERSuccessButton';
 import NERFailButton from '../components/NERFailButton';
 import { Close } from '@mui/icons-material';
 import BulletList from './BulletList';
-import { FormInput } from '../pages/ChangeRequestDetailPage/ReviewChangeRequest';
 
 interface BlockerWarningModalProps {
   blockingWorkPackages: WorkPackage[];
   open: boolean;
   onHide: () => void;
-  handleContinue: (data: FormInput) => void;
+  handleContinue: () => Promise<void>;
 }
 
 const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
@@ -76,7 +75,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
         <NERFailButton type="submit" variant="contained" sx={{ mx: 1 }} onClick={onHide}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={() => handleContinue}>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={handleContinue}>
           Continue
         </NERSuccessButton>
       </DialogActions>
