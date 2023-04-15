@@ -20,7 +20,6 @@ import { GridColDefStyle } from '../../utils/tables';
 import { NERButton } from '../../components/NERButton';
 import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 
 const ChangeRequestsTable: React.FC = () => {
   const history = useHistory();
