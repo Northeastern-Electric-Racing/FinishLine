@@ -23,22 +23,22 @@ const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
   const wbsNum = wbsPipe(project.wbsNum);
 
   // Default to the "overview" tab
-  const initialValue: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
-  const [value, setValue] = useState<number>(initialValue);
+  const initialTab: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
+  const [tabValue, setTabValue] = useState<number>(initialTab);
 
   // Change tab when the browser forward/back button is pressed
   const { pathname } = useLocation();
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
-    setValue(newTabValue);
-  }, [pathname, setValue, tabUrlValues, tabValueString]);
+    setTabValue(newTabValue);
+  }, [pathname, setTabValue, tabUrlValues, tabValueString]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    setValue(newValue);
+    setTabValue(newValue);
   };
 
   return (
-    <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
+    <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
       <Tab
         label="Overview"
         aria-label="Overview"

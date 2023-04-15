@@ -19,7 +19,7 @@ import {
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
-import TaskListDataGrid from '../TaskList/TaskListDataGrid';
+import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
