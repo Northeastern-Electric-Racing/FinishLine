@@ -5,17 +5,17 @@
 
 import { Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useRouteMatch } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useRouteMatch } from 'react-router-dom';
 import { Project, wbsPipe } from 'shared';
-import { routes } from '../../../../utils/routes';
+import { routes } from '../../../utils/routes';
 
 interface ProjectDetailPageTabProps {
   project: Project;
 }
 
-// Page block containing task list view
+// Page block containing project detail tabs
 const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
-  // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
+  // Values that go in the URL depending on the tab value, example /projects/0.0.0/Scope
   const tabUrlValues = useMemo(() => ['Overview', 'Tasks', 'Scope', 'Gantt', 'Changes'], []);
 
   const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
@@ -39,11 +39,23 @@ const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
 
   return (
     <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
-      <Tab label="Overview" aria-label="Overview" value={0} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Overview`} />
-      <Tab label="Tasks" aria-label="Tasks" value={1} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Tasks`} />
-      <Tab label="Scope" aria-label="Scope" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Scope`} />
-      <Tab label="Gantt" aria-label="Gantt" value={3} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Gantt`} />
-      <Tab label="Changes" aria-label="Changes" value={4} component={Link} to={`${routes.PROJECTS}/${wbsNum}/Changes`} />
+      <Tab
+        label="Overview"
+        aria-label="Overview"
+        value={0}
+        component={RouterLink}
+        to={`${routes.PROJECTS}/${wbsNum}/Overview`}
+      />
+      <Tab label="Tasks" aria-label="Tasks" value={1} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Tasks`} />
+      <Tab label="Scope" aria-label="Scope" value={2} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Scope`} />
+      <Tab label="Gantt" aria-label="Gantt" value={3} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Gantt`} />
+      <Tab
+        label="Changes"
+        aria-label="Changes"
+        value={4}
+        component={RouterLink}
+        to={`${routes.PROJECTS}/${wbsNum}/Changes`}
+      />
     </Tabs>
   );
 };

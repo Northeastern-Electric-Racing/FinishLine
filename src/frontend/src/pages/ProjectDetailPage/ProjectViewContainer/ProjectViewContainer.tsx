@@ -4,13 +4,10 @@
  */
 
 import { Link } from 'react-router-dom';
-import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
+import { Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
-import ChangesList from '../../../components/ChangesList';
-import DescriptionList from '../../../components/DescriptionList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
-import PageBlock from '../../../layouts/PageBlock';
 import { routes } from '../../../utils/routes';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -22,7 +19,7 @@ import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import ProjectDetailTabs from './Project/ProjectDetailTabs';
+import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';

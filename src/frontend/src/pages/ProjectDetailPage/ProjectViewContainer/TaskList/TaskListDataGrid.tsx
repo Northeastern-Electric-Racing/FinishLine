@@ -306,7 +306,22 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     return params.id === -1;
   };
 
-  return <></>;
+  return (
+    <DataGrid
+      columns={columns}
+      rows={rows}
+      isCellEditable={isCellEditable}
+      experimentalFeatures={{ newEditingApi: true }}
+      processRowUpdate={processRowUpdate}
+      pageSize={pageSize}
+      rowsPerPageOptions={[5, 10, 15, 100]}
+      onPageSizeChange={(newPageSize) => {
+        localStorage.setItem(tableRowCount, String(newPageSize));
+        setPageSize(newPageSize);
+      }}
+      sx={styles.datagrid}
+    />
+  );
 };
 
 export default TaskListDataGrid;
