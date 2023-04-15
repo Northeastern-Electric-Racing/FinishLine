@@ -26,8 +26,6 @@ import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
 
 interface ReviewChangeRequestViewProps {
@@ -50,16 +48,11 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
   const toast = useToast();
-  const { isLoading, isError, error, data } = useGetBlockingWorkPackages(cr.wbsNum);
+  const { data: blockingWorkPackages } = useGetBlockingWorkPackages(cr.wbsNum);
   const [showWarning, setShowWarning] = useState(false);
-  const [formData, setFormData] = useState<FormInput>({ reviewNotes: '', accepted: false, psId: '' });
-  const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
+  const { register, setValue, getFieldState, reset, handleSubmit, control, getValues } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
-
-  if (isLoading || !data) return <LoadingIndicator />;
-
-  if (isError) return <ErrorPage error={error} />;
 
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
@@ -81,9 +74,8 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   };
 
   const handleShowWarning = (data: FormInput) => {
-    const scr = cr as StandardChangeRequest;
-    if (scr.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0) {
-      setFormData(data);
+    const standardChangeRequest = cr as StandardChangeRequest;
+    if (standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
       setShowWarning(true);
     } else {
       onSubmitWrapper(data);
@@ -105,7 +97,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const dialogWidth: Breakpoint = 'md';
   const dialogContentWidthRatio: number = 1; // dialog contents fit 100% width
 
-  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (standardChangeRequest: StandardChangeRequest) => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide} style={{ color: 'black' }}>
         <IconButton
@@ -138,7 +130,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               ...overflowStyle
             }}
           >
-            {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
+            {standardChangeRequest.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
                 <div style={proposedSolutionStyle}>
                   <ProposedSolutionSelectItem
@@ -281,10 +273,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
       {showWarning && (
         <ChangeRequestBlockerWarning
           onHide={() => setShowWarning(false)}
-          modalShow={showWarning}
-          data={formData}
-          handleContinue={onSubmitWrapper}
-          workPackages={data}
+          open={showWarning}
+          handleContinue={() => onSubmitWrapper(getValues())}
+          blockingWorkPackages={blockingWorkPackages ?? []}
         />
       )}
     </>

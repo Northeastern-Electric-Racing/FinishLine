@@ -2,7 +2,7 @@ import { Description_Bullet, Prisma } from '@prisma/client';
 import { DescriptionBullet } from 'shared';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import prisma from '../prisma/prisma';
-import { HttpException, NotFoundException } from './errors.utils';
+import { NotFoundException } from './errors.utils';
 import { buildChangeDetail } from './utils';
 
 export const calculateWorkPackageProgress = (
@@ -170,11 +170,11 @@ export const createDescriptionBulletChangesJson = (
 };
 
 /**
- * Gets all the blocking wbs element ids of a given work package
- * @param initialWorkPackage the work package that to get the blocking wbs elements for
- * @returns an array of the blocking wbs element ids
+ * Gets all the blocking workpackages for a given work package
+ * @param initialWorkPackage the work package that to get the blocking work packages for
+ * @returns an array of the blocking work packages
  */
-export const getBlockingWbsElementIds = async (
+export const getBlockingWorkPackages = async (
   initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>
 ) => {
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
@@ -182,7 +182,7 @@ export const getBlockingWbsElementIds = async (
 
   // blocking ids that still need to be updated
   const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
-
+  const blockingWorkPackages: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>[] = [];
   while (blockingUpdateQueue.length > 0) {
     const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
 
@@ -196,7 +196,7 @@ export const getBlockingWbsElementIds = async (
       where: { wbsElementId: currWbsId },
       include: {
         blocking: true,
-        workPackage: true
+        workPackage: { ...workPackageQueryArgs }
       }
     });
 
@@ -206,34 +206,8 @@ export const getBlockingWbsElementIds = async (
     // get all the blockings of the current wbs and add them to the queue to update
     const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
     blockingUpdateQueue.push(...newBlocking);
+    blockingWorkPackages.push(currWbs.workPackage);
   }
 
-  return Array.from(seenWbsElementIds).filter((id) => id !== initialWorkPackage.wbsElement.wbsElementId);
-};
-
-/**
- * Produce a array of workpackages with given wbsElementIds
- * @param wbsElementIds array of wbsElementIds as an array of integers
- * @returns array of WorkPackages
- * @throws if any work package does not exist
- */
-export const getWorkPackages = async (wbsElementIds: number[]) => {
-  const wbsElements = await prisma.wBS_Element.findMany({
-    where: { wbsElementId: { in: wbsElementIds } },
-    include: {
-      workPackage: {
-        ...workPackageQueryArgs
-      }
-    }
-  });
-
-  const workPackages = wbsElements.map((wbs) => wbs.workPackage);
-
-  if (workPackages.length !== wbsElementIds.length || workPackages.some((wp) => !wp)) {
-    const foundWorkPackagesWbsElementIds = workPackages.map((wp) => wp?.wbsElementId);
-    const missingWorkPackageIds = wbsElementIds.filter((wbsId) => !foundWorkPackagesWbsElementIds.includes(wbsId));
-    throw new HttpException(404, `Work Packages(s) with the following ids not found: ${missingWorkPackageIds.join(', ')}`);
-  }
-
-  return workPackages;
+  return (blockingWorkPackages);
 };

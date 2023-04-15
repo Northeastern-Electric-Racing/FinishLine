@@ -66,7 +66,7 @@ export const deleteWorkPackage = (wbsNum: WbsNumber) => {
  * @param wbsNum The WBS Number of the work package being changed.
  */
 export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
-  return axios.get<WorkPackage[]>(apiUrls.workPackageBlocking(wbsPipe(wbsNum)), {
+  return axios.get<WorkPackage[]>(apiUrls.workPackagesBlocking(wbsPipe(wbsNum)), {
     transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
 };

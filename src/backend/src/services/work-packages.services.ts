@@ -17,8 +17,7 @@ import {
   createChangeJsonNonList,
   createBlockedByChangesJson,
   createDescriptionBulletChangesJson,
-  getBlockingWbsElementIds,
-  getWorkPackages
+  getBlockingWorkPackages
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -578,11 +577,17 @@ export default class WorkPackagesService {
       }
     });
   }
-
+  
+  /**
+   * Gets the blocking work packages for the given work package
+   * @param wbsNum the wbs number of the work package to get the blocking work packages for
+   * @returns the blocking work packages for the given work package
+   */
   static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
-    if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
+    // is a project so just return empty array until we implement blocking projects
+    if (workPackageNumber === 0) return [];
 
     const workPackage = await prisma.work_Package.findFirst({
       where: {
@@ -597,10 +602,10 @@ export default class WorkPackagesService {
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
 
-    const blockingWbsElementIds = await getBlockingWbsElementIds(workPackage);
+    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
 
-    const blockingWps = await getWorkPackages(blockingWbsElementIds);
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 
-    return blockingWps.map((wp) => workPackageTransformer(wp!));
+    return blockingWorkPackages.map(workPackageTransformer);
   }
 }
