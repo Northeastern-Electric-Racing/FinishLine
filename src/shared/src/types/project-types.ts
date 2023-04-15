@@ -7,7 +7,6 @@ import { User } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Risk } from './risk-types';
 import { Task } from 'shared';
 
 export interface WbsNumber {
@@ -49,7 +48,6 @@ export interface Project extends WbsElement {
   otherConstraints: DescriptionBullet[];
   workPackages: WorkPackage[];
   team?: TeamPreview;
-  risks: Risk[];
   tasks: Task[];
 }
 

@@ -7,13 +7,13 @@ import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
-import { Project, Task, TaskStatus, wbsPipe } from 'shared';
-import { useAuth } from '../../../hooks/auth.hooks';
-import PageBlock from '../../../layouts/PageBlock';
-import { routes } from '../../../utils/routes';
-import { Auth } from '../../../utils/types';
+import { isLeadership, Project, Task, TaskStatus, wbsPipe } from 'shared';
+import { useAuth } from '../../../../hooks/auth.hooks';
+import PageBlock from '../../../../layouts/PageBlock';
+import { routes } from '../../../../utils/routes';
+import { Auth } from '../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 
 const TASK_LIST_TITLE: string = 'Task List';
 interface TaskListProps {
@@ -58,9 +58,7 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   if (!user) return <LoadingIndicator />;
 
   const createTaskPermissions =
-    user.role === 'APP_ADMIN' ||
-    user.role === 'ADMIN' ||
-    user.role === 'LEADERSHIP' ||
+    isLeadership(user.role) ||
     project.projectLead?.userId === user.userId ||
     project.projectManager?.userId === user.userId ||
     project.team?.leader.userId === user.userId;

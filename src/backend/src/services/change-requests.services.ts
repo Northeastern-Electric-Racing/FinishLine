@@ -1,16 +1,25 @@
-import { ChangeRequest, wbsPipe } from 'shared';
+import { ChangeRequest, isAdmin, isGuest, isNotLeadership, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  AccessDeniedMemberException,
+  HttpException,
+  NotFoundException,
+  DeletedException
+} from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
   updateBlocking,
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
-import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 
 export default class ChangeRequestsService {
@@ -27,7 +36,7 @@ export default class ChangeRequestsService {
     });
 
     if (!changeRequest) throw new NotFoundException('Change Request', crId);
-    if (changeRequest.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
+    if (changeRequest.dateDeleted) throw new DeletedException('Change Request', crId);
 
     return changeRequestTransformer(changeRequest);
   }
@@ -59,7 +68,7 @@ export default class ChangeRequestsService {
     psId: string | null
   ): Promise<Number> {
     // verify that the user is allowed review change requests
-    if (reviewer.role === Role.GUEST || reviewer.role === Role.MEMBER) throw new AccessDeniedException();
+    if (isNotLeadership(reviewer.role)) throw new AccessDeniedMemberException('review change requests');
 
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
@@ -75,8 +84,8 @@ export default class ChangeRequestsService {
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.accepted) throw new HttpException(400, `This change request is already approved!`);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
-    if (foundCR.wbsElement.dateDeleted) throw new HttpException(400, 'This change requests wbs element has been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
+    if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
 
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId) throw new AccessDeniedException();
@@ -187,21 +196,11 @@ export default class ChangeRequestsService {
 
     // stage gate cr
     if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      // if it's a work package, all deliverables and expected activities must be checked
-      if (foundCR.wbsElement.workPackage) {
-        const wpExpectedActivities = foundCR.wbsElement.workPackage.expectedActivities;
-        const wpDeliverables = foundCR.wbsElement.workPackage.deliverables;
-
-        // checks for any unchecked expected activities, if there are any it will return an error
-        if (wpExpectedActivities.some((element) => element.dateTimeChecked === null && element.dateDeleted === null))
-          throw new HttpException(400, `Work Package has unchecked expected activities`);
-
-        // checks for any unchecked deliverables, if there are any it will return an error
-        const uncheckedDeliverables = wpDeliverables.some(
-          (element) => element.dateTimeChecked === null && element.dateDeleted === null
-        );
-        if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
+      if (!foundCR.wbsElement.workPackage) {
+        throw new HttpException(400, 'Stage gate can only be made on work packages!');
       }
+
+      throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
 
       // update the status of the associated wp to be complete if needed
       const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
@@ -342,7 +341,7 @@ export default class ChangeRequestsService {
     confirmDetails: boolean
   ): Promise<number> {
     // verify user is allowed to create activation change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create activation change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -356,7 +355,8 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -416,7 +416,7 @@ export default class ChangeRequestsService {
     confirmDone: boolean
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create stage gate change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -426,11 +426,18 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
-      }
+      },
+      include: { workPackage: { include: { expectedActivities: true, deliverables: true } } }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+
+    if (wbsElement.workPackage) {
+      throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    }
 
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
@@ -490,8 +497,8 @@ export default class ChangeRequestsService {
     what: string,
     why: { type: Scope_CR_Why_Type; explain: string }[]
   ): Promise<number> {
-    // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    // verify user is allowed to create standard change requests
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -505,7 +512,8 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted) throw new HttpException(400, 'This WBS Element has been deleted!');
+    if (wbsElement.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -567,8 +575,8 @@ export default class ChangeRequestsService {
     timelineImpact: number,
     scopeImpact: string
   ): Promise<string> {
-    // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    // verify user is allowed to add proposed solutions
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('add proposed solutions');
 
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
@@ -576,7 +584,7 @@ export default class ChangeRequestsService {
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
     if (foundCR.accepted !== null)
       throw new HttpException(400, `Cannot create proposed solutions on a reviewed change request!`);
 
@@ -612,10 +620,10 @@ export default class ChangeRequestsService {
     if (!foundCR) throw new NotFoundException('Change Request', crId);
 
     // verify user is allowed to delete change requests
-    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
-      throw new AccessDeniedException();
+    if (!(isAdmin(submitter.role) || submitter.userId === foundCR.submitterId))
+      throw new AccessDeniedAdminOnlyException('delete change requests');
 
-    if (foundCR.dateDeleted) throw new HttpException(400, 'This change request has already been deleted!');
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
 
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot delete a reviewed change request!`);
 

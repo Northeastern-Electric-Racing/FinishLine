@@ -36,3 +36,14 @@ export const wbsTester = (wbsNum: string | undefined) => {
   }
   return true;
 };
+
+/**
+ * Tests if a start date is valid
+ * @param startDate
+ */
+export const startDateTester = (startDate: Date | undefined) => {
+  if (startDate === undefined || startDate.getDay() !== 1) {
+    return false;
+  }
+  return true;
+};
