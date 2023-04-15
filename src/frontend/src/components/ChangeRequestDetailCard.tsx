@@ -88,7 +88,11 @@ const ActivationCardDetails = ({ cr }: { cr: ActivationChangeRequest }) => {
           label={fullNamePipe(cr.projectLead)}
           sx={{ backgroundColor: 'transparent', mr: 2, ml: -1, maxWidth: '150' }}
         />
-        <Chip icon={<Work />} label={fullNamePipe(cr.projectManager)} sx={{ backgroundColor: 'transparent', maxWidth: '150' }} />
+        <Chip
+          icon={<Work />}
+          label={fullNamePipe(cr.projectManager)}
+          sx={{ backgroundColor: 'transparent', maxWidth: '150' }}
+        />
       </Stack>
       <Stack direction="row" justifyContent={'space-between'}>
         <Chip icon={<Start />} label={datePipe(cr.startDate)} sx={{ backgroundColor: 'transparent', ml: -1 }} />
