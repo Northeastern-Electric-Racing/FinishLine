@@ -11,7 +11,7 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
-import { CreateWorkPackageFormInputs } from '../../apis/work-packages.api';
+import { WorkPackageFormInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
@@ -22,7 +22,7 @@ const CreateWorkPackageForm: React.FC = () => {
 
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
-  const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
+  const handleSubmit = async (data: WorkPackageFormInputs) => {
     const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
