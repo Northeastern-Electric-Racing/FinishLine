@@ -9,16 +9,23 @@ import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
 
-export interface WorkPackageFormInputs {
+interface WorkPackageApiInputs {
   name: string;
   startDate: Date;
   duration: number;
-  crId: string;
+  crId: number;
   stage: WorkPackageStage | null;
-  wbsNum: string;
-  blockedBy: { wbsNum: string }[];
-  expectedActivities: { bulletId: number; detail: string }[];
-  deliverables: { bulletId: number; detail: string }[];
+  blockedBy: WbsNumber[];
+}
+
+export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
+  projectWbsNum: {
+    carNumber: number;
+    projectNumber: number;
+    workPackageNumber: number;
+  };
+  deliverables: string[];
+  expectedActivities: string[];
 }
 
 /**
@@ -46,7 +53,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: WorkPackageFormInputs) => {
+export const createSingleWorkPackage = (payload: CreateWorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });
@@ -58,7 +65,7 @@ export const createSingleWorkPackage = (payload: WorkPackageFormInputs) => {
  * @param payload Object containing required key-value pairs for backend function to edit work package
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
-export const editWorkPackage = (payload: WorkPackageFormInputs) => {
+export const editWorkPackage = (payload: WorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
     ...payload
   });

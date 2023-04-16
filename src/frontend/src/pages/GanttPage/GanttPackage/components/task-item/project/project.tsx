@@ -25,8 +25,8 @@ export const Project: React.FC<TaskItemProps> = ({ task, isSelected }) => {
             width={workPackage.x2 - workPackage.x1}
             y={task.y}
             height={task.height}
-            ry={task.barCornerRadius}
-            rx={task.barCornerRadius}
+            ry={0}
+            rx={0}
             fill={workPackage.styles.backgroundColor}
           />
         );
