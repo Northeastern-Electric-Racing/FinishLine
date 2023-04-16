@@ -10,7 +10,8 @@ import {
   deleteWorkPackage,
   editWorkPackage,
   getAllWorkPackages,
-  getSingleWorkPackage
+  getSingleWorkPackage,
+  slackUpcomingDeadlines
 } from '../apis/work-packages.api';
 
 /**
@@ -82,6 +83,25 @@ export const useDeleteWorkPackage = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to slack upcoming deadlines.
+ */
+export const useSlackUpcomingDeadlines = (daysUntilDeadline: number) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['work packages', 'slack upcoming deadlines'],
+    async () => {
+      const { data } = await slackUpcomingDeadlines(daysUntilDeadline);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work packages', daysUntilDeadline]);
       }
     }
   );
