@@ -19,7 +19,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
-import RisksService from '../services/risks.services';
 import WorkPackagesService from '../services/work-packages.services';
 import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
@@ -50,6 +49,10 @@ const performSeed: () => Promise<void> = async () => {
   const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
   const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
   const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
+  const nezamJazayeri = await prisma.user.create({ data: dbSeedAllUsers.nezamJazayeri });
+  const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
+  const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
+  const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -123,9 +126,21 @@ const performSeed: () => Promise<void> = async () => {
       (user) => user.userId
     )
   );
-  await TeamsService.setTeamMembers(johnHarbaugh, ravens.teamId, [lamarJackson.userId]);
-  await TeamsService.setTeamMembers(brandonHyde, orioles.teamId, [adleyRutschman.userId, calRipken.userId]);
-  await TeamsService.setTeamMembers(thomasEmrax, huskies.teamId, [joeShmoe.userId, joeBlow.userId]);
+  await TeamsService.setTeamMembers(
+    johnHarbaugh,
+    ravens.teamId,
+    [lamarJackson, nezamJazayeri, ryanHowe].map((user) => user.userId)
+  );
+  await TeamsService.setTeamMembers(
+    brandonHyde,
+    orioles.teamId,
+    [adleyRutschman, calRipken, anthonyBernardi].map((user) => user.userId)
+  );
+  await TeamsService.setTeamMembers(
+    thomasEmrax,
+    huskies.teamId,
+    [joeShmoe, joeBlow, reidChandler, nightwing].map((user) => user.userId)
+  );
 
   /**
    * Projects
@@ -152,12 +167,6 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     joeBlow.userId
   );
-
-  await RisksService.createRisk(thomasEmrax, project1Id, 'This one could get too expensive');
-  await RisksService.createRisk(joeShmoe, project1Id, 'This Imact could Attenuate too much!');
-  const risk3Id = await RisksService.createRisk(thomasEmrax, project1Id, 'At risk of nuclear explosion');
-  const risk3 = await prisma.risk.findUniqueOrThrow({ where: { id: risk3Id } });
-  await RisksService.editRisk(thomasEmrax, risk3Id, risk3.detail, true);
 
   /** Project 2 */
   const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
@@ -286,6 +295,10 @@ const performSeed: () => Promise<void> = async () => {
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, null);
 
   await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
+
+  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[1].descriptionId);
+
+  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
 
   /** Work Package 2 */
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(

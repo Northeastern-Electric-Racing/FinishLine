@@ -23,4 +23,11 @@ const addDaysToDate = (start: Date, days: number) => {
   return end;
 };
 
-export { addWeeksToDate, addDaysToDate };
+/**
+ * Calculate the days between two dates
+ */
+const daysBetween = (date1: Date, date2: Date): number => {
+  return Math.round((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+export { addWeeksToDate, addDaysToDate, daysBetween };

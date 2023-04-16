@@ -111,7 +111,7 @@ describe('Teams', () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
       await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
-        new AccessDeniedException()
+        new AccessDeniedException('you must be an admin or the team lead to update the members!')
       );
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);

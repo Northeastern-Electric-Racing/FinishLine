@@ -17,7 +17,7 @@ export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) =>
       return blue[600];
     case WorkPackageStage.Integration:
       return purple[400];
-    case undefined:
+    default:
       return grey[500];
   }
 };
@@ -33,7 +33,7 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Manufacturing';
     case WorkPackageStage.Integration:
       return 'Integration';
-    case undefined:
+    default:
       return 'No Stage';
   }
 };
