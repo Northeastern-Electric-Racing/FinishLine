@@ -65,5 +65,7 @@ export const deleteWorkPackage = (wbsNum: WbsNumber) => {
  * Slack upcoming deadlines.
  */
 export const slackUpcomingDeadlines = (daysUntilDeadline: number) => {
-  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(daysUntilDeadline));
+  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+    daysUntilDeadline
+  });
 };

@@ -92,17 +92,8 @@ export const useDeleteWorkPackage = () => {
  * Custom React Hook to slack upcoming deadlines.
  */
 export const useSlackUpcomingDeadlines = (daysUntilDeadline: number) => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['work packages', 'slack upcoming deadlines'],
-    async () => {
-      const { data } = await slackUpcomingDeadlines(daysUntilDeadline);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['work packages', daysUntilDeadline]);
-      }
-    }
-  );
+  return useMutation<{ message: string }, Error, any>(['slack upcoming deadlines'], async () => {
+    const { data } = await slackUpcomingDeadlines(daysUntilDeadline);
+    return data;
+  });
 };

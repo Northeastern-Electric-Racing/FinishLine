@@ -25,7 +25,7 @@ const AdminToolsPage: React.FC = () => {
       <AdminToolsUserManagement />
       <PageBlock title={'Slack Upcoming Deadlines'}>
         <Box gap={2} sx={{ display: 'flex' }}>
-          <Tooltip title="Enter in a positive number of days until a deadline, where all projects with this deadline will be slacked">
+          <Tooltip title="Enter in a number of days until a deadline that is greater than or equal to zero, where all work packages that are due on this day or earlier will be slacked (ex. if the day is 5, all work packages due 5 days from now or before (even into the past from today) will be slacked)">
             <TextField
               label="Days Until Deadline"
               type="number"
@@ -33,14 +33,9 @@ const AdminToolsPage: React.FC = () => {
               onChange={(event) => {
                 setDays(event.target.value);
               }}
-            ></TextField>
+            />
           </Tooltip>
-          <NERButton
-            variant="contained"
-            sx={{ mt: 1 }}
-            disabled={!days || parseInt(days, 10) <= 0 || disableButton}
-            onClick={disable}
-          >
+          <NERButton variant="contained" disabled={!days || parseInt(days, 10) < 0 || disableButton} onClick={disable}>
             Send
           </NERButton>
         </Box>
