@@ -15,9 +15,9 @@ const ChangeRequests: React.FC = () => {
     <Switch>
       <Route path={routes.CHANGE_REQUESTS_OVERVIEW} component={ChangeRequestsOverview} />\
       <Route path={routes.ALL_CHANGE_REQUESTS} component={ChangeRequestsTable} />
-      <Route path={routes.CHANGE_REQUESTS} component={ChangeRequestsTable} />
       <Route path={routes.CHANGE_REQUESTS_NEW} component={CreateChangeRequest} />
       <Route path={routes.CHANGE_REQUESTS_BY_ID} component={ChangeRequestDetails} />
+      <Route path={routes.CHANGE_REQUESTS} component={ChangeRequestsOverview} />
     </Switch>
   );
 };

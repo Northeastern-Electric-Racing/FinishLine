@@ -40,19 +40,19 @@ const ChangeRequestsTable: React.FC = () => {
   const theme = useTheme();
 
   // Values that go in the URL depending on the tab value
-  const viewUrlValues = useMemo(() => ['overview', 'all-change-requests'], []);
+  const viewUrlValues = useMemo(() => ['overview', 'all'], []);
 
   const match = useRouteMatch<{ tabValueString: string }>(`${routes.CHANGE_REQUESTS}/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
 
   // Default to the "all change requests" tab
-  const initialValue: number = viewUrlValues.indexOf(tabValueString ?? 'all-change-requests');
+  const initialValue: number = viewUrlValues.indexOf(tabValueString ?? 'all');
   const [value, setValue] = useState<number>(initialValue);
 
   // Change tab when the browser forward/back button is pressed
   const { pathname } = useLocation();
   useEffect(() => {
-    const newTabValue: number = viewUrlValues.indexOf(tabValueString ?? 'all-change-requests');
+    const newTabValue: number = viewUrlValues.indexOf(tabValueString ?? 'all');
     setValue(newTabValue);
   }, [pathname, setValue, viewUrlValues, tabValueString]);
 
