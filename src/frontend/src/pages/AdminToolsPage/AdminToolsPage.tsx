@@ -15,7 +15,7 @@ const AdminToolsPage: React.FC = () => {
 
   const [disableButton, setDisableButton] = useState(false);
 
-  const disableAndTriggerEndpoint = () => {
+  const disable = () => {
     setDisableButton(true);
   };
 
@@ -39,7 +39,7 @@ const AdminToolsPage: React.FC = () => {
             variant="contained"
             sx={{ mt: 1 }}
             disabled={!days || parseInt(days, 10) <= 0 || disableButton}
-            onClick={disableAndTriggerEndpoint}
+            onClick={disable}
           >
             Send
           </NERButton>
