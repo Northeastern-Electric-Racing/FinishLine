@@ -9,14 +9,18 @@ import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
 import { Box, TextField, Tooltip } from '@mui/material';
 import { useState } from 'react';
+import { useSlackUpcomingDeadlines } from '../../hooks/work-packages.hooks';
 
 const AdminToolsPage: React.FC = () => {
   const [days, setDays] = useState<string | null>(null);
 
   const [disableButton, setDisableButton] = useState(false);
 
-  const disable = () => {
+  const slack = useSlackUpcomingDeadlines();
+
+  const disableAndTriggerEndpoint = async (daysUntilDeadline: number) => {
     setDisableButton(true);
+    await slack.mutateAsync(daysUntilDeadline);
   };
 
   return (
@@ -35,7 +39,11 @@ const AdminToolsPage: React.FC = () => {
               }}
             />
           </Tooltip>
-          <NERButton variant="contained" disabled={!days || parseInt(days, 10) < 0 || disableButton} onClick={disable}>
+          <NERButton
+            variant="contained"
+            disabled={!days || parseInt(days, 10) < 0 || disableButton}
+            onClick={disableAndTriggerEndpoint}
+          >
             Send
           </NERButton>
         </Box>
