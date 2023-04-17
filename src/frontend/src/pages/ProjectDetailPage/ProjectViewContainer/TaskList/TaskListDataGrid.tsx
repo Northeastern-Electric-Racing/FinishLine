@@ -18,6 +18,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
@@ -26,6 +27,7 @@ import { GridColDefStyle } from '../../../../utils/tables';
 import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
 import { AssigneeEdit, TitleEdit } from './TaskListComponents';
+import { editTask } from '../../../../apis/tasks.api';
 
 const styles = {
   datagrid: {
@@ -75,6 +77,8 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
   const theme = useTheme();
+
+  let [currentlyEditingId, setCurrentlyEditingId] = useState(); //might have to change this
 
   const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
     setTitle(newRow.title);
@@ -159,50 +163,70 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       );
       actions.push(<GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask} />);
     } else {
-      if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
+      if (params.id === currentlyEditingId) {
         actions.push(
           <GridActionsCellItem
-            icon={<PlayArrowIcon fontSize="small" />}
-            label="Move to In Progress"
-            onClick={moveToInProgress(params.row.taskId)}
-            showInMenu
-            disabled={!editTaskPermissions(params.row.task)}
+            icon={<SaveIcon fontSize="small" />}
+            label="Save"
+            onClick={() => {
+              editTask(); //this is giving us an error so far because we havent made the editTask or handleEditTask
+            }}
           />
         );
-      } else if (status === TaskStatus.IN_PROGRESS) {
+      } else {
+        if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
+          actions.push(
+            <GridActionsCellItem
+              icon={<PlayArrowIcon fontSize="small" />}
+              label="Move to In Progress"
+              onClick={moveToInProgress(params.row.taskId)}
+              showInMenu
+              disabled={!editTaskPermissions(params.row.task)}
+            />
+          );
+        } else if (status === TaskStatus.IN_PROGRESS) {
+          actions.push(
+            <GridActionsCellItem
+              icon={<PauseIcon fontSize="small" />}
+              label="Move to Backlog"
+              onClick={moveToBacklog(params.row.taskId)}
+              showInMenu
+              disabled={!editTaskPermissions(params.row.task)}
+            />
+          );
+          actions.push(
+            <GridActionsCellItem
+              icon={<CheckIcon fontSize="small" />}
+              label="Move to Done"
+              onClick={moveToDone(params.row.taskId)}
+              showInMenu
+              disabled={!editTaskPermissions(params.row.task)}
+            />
+          );
+          actions.push(
+            <GridActionsCellItem
+              icon={<EditIcon fontSize="small" />}
+              label="Edit"
+              showInMenu
+              disabled={!editTaskPermissions(params.row.task)}
+            />
+          );
+        }
         actions.push(
           <GridActionsCellItem
-            icon={<PauseIcon fontSize="small" />}
-            label="Move to Backlog"
-            onClick={moveToBacklog(params.row.taskId)}
-            showInMenu
-            disabled={!editTaskPermissions(params.row.task)}
-          />
-        );
-        actions.push(
-          <GridActionsCellItem
-            icon={<CheckIcon fontSize="small" />}
-            label="Move to Done"
-            onClick={moveToDone(params.row.taskId)}
+            sx={{
+              borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
+            }}
+            icon={<DeleteIcon fontSize="small" />}
+            label="Delete"
+            onClick={deleteRow(params.row.taskId)}
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
           />
         );
       }
-      actions.push(
-        <GridActionsCellItem
-          sx={{
-            borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
-          }}
-          icon={<DeleteIcon fontSize="small" />}
-          label="Delete"
-          onClick={deleteRow(params.row.taskId)}
-          showInMenu
-          disabled={!editTaskPermissions(params.row.task)}
-        />
-      );
+      return actions;
     }
-    return actions;
   };
 
   const baseColDef: GridColDefStyle = {
@@ -311,6 +335,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       columns={columns}
       rows={rows}
       isCellEditable={isCellEditable}
+      onRowEditStart={(params) => setCurrentlyEditingId(params.row.id)}
       experimentalFeatures={{ newEditingApi: true }}
       processRowUpdate={processRowUpdate}
       pageSize={pageSize}

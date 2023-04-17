@@ -162,6 +162,26 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     handleClose();
   };
 
+  const editTask = async ({ taskId, title, deadline, assignees, priority }: FormInput) => {
+    try {
+      await editTaskMutateAsync({
+        taskId,
+        title,
+        deadline,
+        priority
+      });
+      await editTaskAssigneesMutateAsync({
+        taskId,
+        assignees
+      });
+      toast.success('Task edited successfully!');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+    handleClose();
+  };
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
   return (
