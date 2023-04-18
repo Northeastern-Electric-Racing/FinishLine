@@ -1,4 +1,4 @@
-import { Card, CardContent, Icon, Link, Typography } from '@mui/material';
+import { Card, CardContent, Link, Typography } from '@mui/material';
 import { Project, wbsPipe } from 'shared';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';

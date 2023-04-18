@@ -24,12 +24,13 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useSetProjectTeam } from '../../../hooks/projects.hooks';
+import { useSetProjectTeam, useToggleProjectFavorite } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
+import StarIcon from '@mui/icons-material/Star';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -45,6 +46,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const auth = useAuth();
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
+  const { mutate } = useToggleProjectFavorite();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   if (!auth.user) return <LoadingIndicator />;
@@ -52,6 +54,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const dropdownOpen = Boolean(anchorEl);
   proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsLeadId } = auth.user;
+  const user = auth.user;
+  const userFavProjects = user.favoritedProjectsId;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -77,12 +81,40 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
+  const handleClickFavorite = async () => {
+    try {
+      mutate(proj.wbsNum);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
   const editBtn = (
     <MenuItem onClick={handleClickEdit} disabled={isGuest(auth.user.role)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
       Edit
+    </MenuItem>
+  );
+
+  const favoriteFilledBtn = (
+    <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
+      <ListItemIcon>
+        <StarIcon fontSize="small" stroke={'black'} stroke-width={1} sx={{ color: 'Gold' }} />
+      </ListItemIcon>
+      Unfavorite
+    </MenuItem>
+  );
+
+  const favoriteNotFilledBtn = (
+    <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
+      <ListItemIcon>
+        <StarIcon fontSize="small" stroke={'black'} stroke-width={1} />
+      </ListItemIcon>
+      Favorite
     </MenuItem>
   );
 
@@ -131,6 +163,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
+        {userFavProjects?.includes(proj.id) ? favoriteFilledBtn : favoriteNotFilledBtn}
         {teamAsLeadId && assignToMyTeamButton}
         {deleteButton}
       </Menu>
