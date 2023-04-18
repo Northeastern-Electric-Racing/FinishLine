@@ -103,7 +103,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const favoriteFilledBtn = (
     <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
       <ListItemIcon>
-        <StarIcon fontSize="small" stroke={'black'} stroke-width={1} sx={{ color: 'Gold' }} />
+        <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} sx={{ color: 'Gold' }} />
       </ListItemIcon>
       Unfavorite
     </MenuItem>
@@ -112,7 +112,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const favoriteNotFilledBtn = (
     <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
       <ListItemIcon>
-        <StarIcon fontSize="small" stroke={'black'} stroke-width={1} />
+        <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} />
       </ListItemIcon>
       Favorite
     </MenuItem>
