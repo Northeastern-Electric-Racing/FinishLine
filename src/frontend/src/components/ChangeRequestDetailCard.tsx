@@ -50,19 +50,7 @@ const determineChangeRequestPillColor = (type: ChangeRequestType) => {
 const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
   return (
     <Box mt={1} ml={'2px'}>
-      <Typography
-        sx={{
-          display: '-webkit-box',
-          overflow: 'hidden',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2
-        }}
-      >
-        <Description sx={{ ml: '-4px', position: 'absolute' }} display={'inline'} />
-        <Typography ml={'27px'} display={'inline'}>
-          {cr.what}
-        </Typography>
-      </Typography>
+      <Chip icon={<Description />} label={cr.what} sx={{ mr: 2, ml: -1, backgroundColor: 'transparent', maxWidth: '150' }} />
     </Box>
   );
 };
@@ -110,7 +98,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
   const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
   const pillColor = determineChangeRequestPillColor(changeRequest.type);
   return (
-    <Card sx={{ maxWidth: 300 }}>
+    <Card sx={{ maxWidth: 300, minWidth: 300, mr: 1, mb: 1 }}>
       <CardContent>
         <Stack direction="row" justifyContent="space-between">
           <Box>

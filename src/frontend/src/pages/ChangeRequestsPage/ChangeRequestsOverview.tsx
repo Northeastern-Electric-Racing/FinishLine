@@ -7,7 +7,7 @@ import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { Add } from '@mui/icons-material';
 import { routes } from '../../utils/routes';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { Tab, Tabs } from '@mui/material';
+import { Box, Grid, Tab, Tabs, useTheme } from '@mui/material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -19,10 +19,11 @@ import { isGuest, isLeadership, isHead, ChangeRequest, Project, WorkPackage } fr
 import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 
 const ChangeRequestsOverview: React.FC = () => {
   const history = useHistory();
-
+  const theme = useTheme();
   const auth = useAuth();
   const { user } = auth;
 
@@ -85,12 +86,73 @@ const ChangeRequestsOverview: React.FC = () => {
       (myProjects.map((project: Project) => project.wbsNum).includes(cr.wbsNum) ||
         myWorkPackages.map((wp: WorkPackage) => wp.wbsNum).includes(cr.wbsNum))
   );
+  crToReview.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
   const crUnapproved = data.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
+  crUnapproved.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
   const crApproved = data.filter(
     (cr: ChangeRequest) =>
       cr.dateImplemented &&
       cr.submitter.userId === user.userId &&
       currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
+  );
+  crApproved.sort((a, b) =>
+    a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
+  );
+
+  const displayWrap = (crList: ChangeRequest[]) => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
+      }}
+    >
+      {crList.map((cr: ChangeRequest) => (
+        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+      ))}
+    </Box>
+  );
+
+  const displayScroll = (crList: ChangeRequest[]) => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
+      }}
+    >
+      {crList.map((cr: ChangeRequest) => (
+        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+      ))}
+    </Box>
   );
 
   return (
@@ -131,13 +193,17 @@ const ChangeRequestsOverview: React.FC = () => {
           />
         </div>
         <div>
-          {showToReview ? <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}></PageBlock> : null}
-          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnapproved.length} Left`}></PageBlock>
-          <PageBlock
-            title={'My Approved Change Requests'}
-            headerRight={`${crApproved.length} Left`}
-            defaultClosed
-          ></PageBlock>
+          {showToReview ? (
+            <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
+              <Grid container>{displayScroll(crToReview)}</Grid>
+            </PageBlock>
+          ) : null}
+          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnapproved.length} Left`}>
+            <Grid container>{displayScroll(crUnapproved)}</Grid>
+          </PageBlock>
+          <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
+            <Grid container>{displayWrap(crApproved)}</Grid>
+          </PageBlock>
         </div>
       </div>
     </>
