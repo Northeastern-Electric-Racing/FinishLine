@@ -15,8 +15,10 @@ import ErrorPage from '../ErrorPage';
 import { useState, useMemo, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
-import { isGuest, isLeadership, isHead, ChangeRequest } from 'shared';
+import { isGuest, isLeadership, isHead, ChangeRequest, Project, WorkPackage } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 
 const ChangeRequestsOverview: React.FC = () => {
   const history = useHistory();
@@ -25,9 +27,6 @@ const ChangeRequestsOverview: React.FC = () => {
   const { user } = auth;
 
   const { isLoading, isError, error, data } = useAllChangeRequests();
-  const crToReview = data?.filter((cr: ChangeRequest) => !cr.dateReviewed);
-  const crUnapproved = data?.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter === user);
-  const crApproved = data?.filter((cr: ChangeRequest) => cr.accepted === true && cr.submitter === user);
 
   // Values that go in the URL depending on the tab value
   const viewUrlValues = useMemo(() => ['overview', 'all-change-requests'], []);
@@ -52,8 +51,47 @@ const ChangeRequestsOverview: React.FC = () => {
 
   const showToReview = isHead(auth.user?.role) || isLeadership(auth.user?.role);
 
-  if (isLoading) return <LoadingIndicator />;
+  const { data: projects, isError: projectIsError, isLoading: projectLoading, error: projectError } = useAllProjects();
+  const { data: workPackages, isError: wpIsError, isLoading: wpLoading, error: wpError } = useAllWorkPackages();
+
+  if (isLoading || projectLoading || wpLoading || !data || !projects || !workPackages || !user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (projectIsError) return <ErrorPage message={projectError?.message} />;
+  if (wpIsError) return <ErrorPage message={wpError?.message} />;
+
+  const myProjects = projects.filter((project: Project) =>
+    project.team
+      ? project.team.teamId === user.teamAsLeadId
+      : false || project.projectLead
+      ? project.projectLead.userId === user.userId
+      : false || project.projectManager
+      ? project.projectManager.userId === user.userId
+      : false
+  );
+
+  const myWorkPackages = workPackages.filter((wp: WorkPackage) =>
+    wp.projectLead
+      ? wp.projectLead.userId === user.userId
+      : false || wp.projectManager
+      ? wp.projectManager.userId === user.userId
+      : false
+  );
+
+  const currentDate = new Date();
+
+  const crToReview = data.filter(
+    (cr: ChangeRequest) =>
+      !cr.dateReviewed &&
+      (myProjects.map((project: Project) => project.wbsNum).includes(cr.wbsNum) ||
+        myWorkPackages.map((wp: WorkPackage) => wp.wbsNum).includes(cr.wbsNum))
+  );
+  const crUnapproved = data.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
+  const crApproved = data.filter(
+    (cr: ChangeRequest) =>
+      cr.dateImplemented &&
+      cr.submitter.userId === user.userId &&
+      currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
+  );
 
   return (
     <>
@@ -93,9 +131,13 @@ const ChangeRequestsOverview: React.FC = () => {
           />
         </div>
         <div>
-          {showToReview ? <PageBlock title={'To Review'} headerRight={'0 Left'}></PageBlock> : null}
-          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={'0 Left'}></PageBlock>
-          <PageBlock title={'My Approved Change Requests'} headerRight={'0 Left'} defaultClosed></PageBlock>
+          {showToReview ? <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}></PageBlock> : null}
+          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnapproved.length} Left`}></PageBlock>
+          <PageBlock
+            title={'My Approved Change Requests'}
+            headerRight={`${crApproved.length} Left`}
+            defaultClosed
+          ></PageBlock>
         </div>
       </div>
     </>
