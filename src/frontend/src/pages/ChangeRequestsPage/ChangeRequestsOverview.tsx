@@ -15,14 +15,19 @@ import ErrorPage from '../ErrorPage';
 import { useState, useMemo, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
-import { isGuest, isLeadership, isHead } from 'shared';
+import { isGuest, isLeadership, isHead, ChangeRequest } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 
 const ChangeRequestsOverview: React.FC = () => {
   const history = useHistory();
-  const { isLoading, isError, error } = useAllChangeRequests();
 
   const auth = useAuth();
+  const { user } = auth;
+
+  const { isLoading, isError, error, data } = useAllChangeRequests();
+  const crToReview = data?.filter((cr: ChangeRequest) => !cr.dateReviewed);
+  const crUnapproved = data?.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter === user);
+  const crApproved = data?.filter((cr: ChangeRequest) => cr.accepted === true && cr.submitter === user);
 
   // Values that go in the URL depending on the tab value
   const viewUrlValues = useMemo(() => ['overview', 'all-change-requests'], []);
@@ -32,17 +37,17 @@ const ChangeRequestsOverview: React.FC = () => {
 
   // Default to the "overview" tab
   const initialValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
-  const [value, setValue] = useState<number>(initialValue);
+  const [tabIndex, setTabIndex] = useState<number>(initialValue);
 
   // Change tab when the browser forward/back button is pressed
   const { pathname } = useLocation();
   useEffect(() => {
     const newTabValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
-    setValue(newTabValue);
-  }, [pathname, setValue, viewUrlValues, tabValueString]);
+    setTabIndex(newTabValue);
+  }, [pathname, setTabIndex, viewUrlValues, tabValueString]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    setValue(newValue);
+    setTabIndex(newValue);
   };
 
   const showToReview = isHead(auth.user?.role) || isLeadership(auth.user?.role);
@@ -58,7 +63,7 @@ const ChangeRequestsOverview: React.FC = () => {
             title={'Change Requests'}
             previousPages={[]}
             tabs={
-              <Tabs value={value} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
+              <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
                 <Tab
                   label="Overview"
                   aria-label="overview"
