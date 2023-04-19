@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { useTheme } from '@mui/material';
+import Chip from '@mui/material/Chip';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -21,8 +22,18 @@ interface ProjectDetailsProps {
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   const theme = useTheme();
+  const teamName = project.team ? project.team.teamName : 'No Team Assigned';
   return (
-    <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
+    // {<WbsStatus status={project.status} />} {<Chip size="small" label={teamName} color={color} sx={{ fontSize: 14 }} />}
+    <PageBlock
+      title={'Project Details'}
+      headerRight={
+        <b>
+          <WbsStatus status={project.status} />{' '}
+          <Chip size="small" label={teamName} color={'primary'} sx={{ fontSize: 14 }} />
+        </b>
+      }
+    >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
           <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={2} />

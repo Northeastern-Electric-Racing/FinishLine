@@ -134,12 +134,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     </div>
   );
 
-  const teamName = proj.team ? proj.team.teamName : 'No Team Assigned';
-
   return (
     <>
       <PageTitle
-        title={`${wbsPipe(proj.wbsNum)} - ${proj.name} - ${teamName}`}
+        title={`${wbsPipe(proj.wbsNum)} - ${proj.name}`}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
