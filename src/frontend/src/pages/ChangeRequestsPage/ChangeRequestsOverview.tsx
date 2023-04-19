@@ -15,7 +15,7 @@ import ErrorPage from '../ErrorPage';
 import { useState, useMemo, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
-import { isGuest, isLeadership, isHead, ChangeRequest, Project, WorkPackage } from 'shared';
+import { isGuest, isLeadership, isHead, ChangeRequest, Project, WorkPackage, wbsPipe } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -50,6 +50,7 @@ const ChangeRequestsOverview: React.FC = () => {
     setTabIndex(newValue);
   };
 
+  // whether to show To Review section
   const showToReview = isHead(auth.user?.role) || isLeadership(auth.user?.role);
 
   const { data: projects, isError: projectIsError, isLoading: projectLoading, error: projectError } = useAllProjects();
@@ -60,35 +61,35 @@ const ChangeRequestsOverview: React.FC = () => {
   if (projectIsError) return <ErrorPage message={projectError?.message} />;
   if (wpIsError) return <ErrorPage message={wpError?.message} />;
 
-  const myProjects = projects.filter((project: Project) =>
-    project.team
-      ? project.team.teamId === user.teamAsLeadId
-      : false || project.projectLead
-      ? project.projectLead.userId === user.userId
-      : false || project.projectManager
-      ? project.projectManager.userId === user.userId
-      : false
+  // projects whose change requests the user would have to review
+  const myProjects = projects.filter(
+    (project: Project) =>
+      (project.team ? project.team.teamId === user.teamAsLeadId : false) ||
+      (project.projectLead ? project.projectLead.userId === user.userId : false) ||
+      (project.projectManager ? project.projectManager.userId === user.userId : false)
   );
 
-  const myWorkPackages = workPackages.filter((wp: WorkPackage) =>
-    wp.projectLead
-      ? wp.projectLead.userId === user.userId
-      : false || wp.projectManager
-      ? wp.projectManager.userId === user.userId
-      : false
+  // work packages whose change requests the user would have to review
+  const myWorkPackages = workPackages.filter(
+    (wp: WorkPackage) =>
+      (wp.projectLead ? wp.projectLead.userId === user.userId : false) ||
+      (wp.projectManager ? wp.projectManager.userId === user.userId : false)
   );
+
+  const myWbs = myProjects
+    .map((project: Project) => project.wbsNum)
+    .concat(myWorkPackages.map((wp: WorkPackage) => wp.wbsNum))
+    .map((val) => wbsPipe(val));
 
   const currentDate = new Date();
 
   const crToReview = data.filter(
-    (cr: ChangeRequest) =>
-      !cr.dateReviewed &&
-      (myProjects.map((project: Project) => project.wbsNum).includes(cr.wbsNum) ||
-        myWorkPackages.map((wp: WorkPackage) => wp.wbsNum).includes(cr.wbsNum))
+    (cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId !== user.userId && myWbs.includes(wbsPipe(cr.wbsNum))
   );
   crToReview.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
-  const crUnapproved = data.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
-  crUnapproved.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
+
+  const crUnreviewed = data.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
+  crUnreviewed.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
   const crApproved = data.filter(
     (cr: ChangeRequest) =>
       cr.dateImplemented &&
@@ -198,8 +199,8 @@ const ChangeRequestsOverview: React.FC = () => {
               <Grid container>{displayScroll(crToReview)}</Grid>
             </PageBlock>
           ) : null}
-          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnapproved.length} Left`}>
-            <Grid container>{displayScroll(crUnapproved)}</Grid>
+          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
+            <Grid container>{displayScroll(crUnreviewed)}</Grid>
           </PageBlock>
           <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
             <Grid container>{displayWrap(crApproved)}</Grid>
