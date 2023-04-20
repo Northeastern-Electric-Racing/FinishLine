@@ -14,19 +14,19 @@ import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface Props {
-  usersForPL: User[];
-  usersForPM: User[];
+  usersForProjectLead: User[];
+  usersForProjectManager: User[];
   control: any;
   errors: any;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, control, errors }) => {
+const WorkPackageEditDetails: React.FC<Props> = ({ usersForProjectLead, usersForProjectManager, control, errors }) => {
   const [lead, setLead] = useState<User | null>(null);
   const [manager, setManager] = useState<User | null>(null);
 
   const leadSearchOnChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => {
     if (value) {
-      const lead = usersForPL.find((lead: User) => lead.userId.toString() === value.id);
+      const lead = usersForProjectLead.find((lead: User) => lead.userId.toString() === value.id);
       if (lead) {
         setLead(lead);
       }
@@ -40,7 +40,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
     value: { label: string; id: string } | null
   ) => {
     if (value) {
-      const manager = usersForPM.find((manager: User) => manager.userId.toString() === value.id);
+      const manager = usersForProjectManager.find((manager: User) => manager.userId.toString() === value.id);
       if (manager) {
         setManager(manager);
       }
@@ -49,12 +49,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
     }
   };
 
-  const projectLeadOptions = (lead: User): { label: string; id: string } => {
-    return { label: `${fullNamePipe(lead)} (${lead.email}) - ${lead.role}`, id: lead.userId.toString() };
-  };
-
-  const projectManagerOptions = (manager: User): { label: string; id: string } => {
-    return { label: `${fullNamePipe(manager)} (${manager.email}) - ${manager.role}`, id: manager.userId.toString() };
+  const userToOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
   const StageSelect = () => (
@@ -126,28 +122,28 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
             />
           </FormControl>
         </Grid>
-        <Grid item md={6} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
           <FormLabel> Project Lead</FormLabel>
           <NERAutocomplete
             sx={{ mt: 1, width: '90%' }}
             id="project-lead-autocomplete"
             onChange={leadSearchOnChange}
-            options={usersForPL.map(projectLeadOptions)}
+            options={usersForProjectLead.map(userToOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={lead ? projectLeadOptions(lead) : null}
+            value={lead ? userToOption(lead) : null}
           />
         </Grid>
-        <Grid item md={6} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
           <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
             sx={{ mt: 1, width: '90%' }}
             id="project-manager-autocomplete"
             onChange={managerSearchOnChange}
-            options={usersForPM.map(projectManagerOptions)}
+            options={usersForProjectManager.map(userToOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={manager ? projectManagerOptions(manager) : null}
+            value={manager ? userToOption(manager) : null}
           />
         </Grid>
       </Grid>

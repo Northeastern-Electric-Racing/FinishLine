@@ -39,6 +39,10 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
           setEditMode(false);
           history.push(`${history.location.pathname}`);
         }}
+        // projectManager={auth.user.firstName}
+        // projectLead={auth.user.firstName}
+        // setPM={}
+        // setPL={}
       />
     );
   }

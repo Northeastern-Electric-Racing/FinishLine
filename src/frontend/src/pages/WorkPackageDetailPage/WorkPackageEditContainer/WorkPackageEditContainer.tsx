@@ -34,6 +34,10 @@ const schema = yup.object().shape({
 });
 
 interface WorkPackageEditContainerProps {
+  // projectManager: string;
+  // projectLead: string;
+  // setPM: (val: string) => void;
+  // setPL: (val: string) => void;
   workPackage: WorkPackage;
   exitEditMode: () => void;
 }
@@ -153,7 +157,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <WorkPackageEditDetails control={control} errors={errors} usersForPL={users} usersForPM={users} />
+      <WorkPackageEditDetails control={control} errors={errors} usersForProjectLead={users} usersForProjectManager={users} />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
           return (
