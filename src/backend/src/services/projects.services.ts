@@ -1,10 +1,16 @@
-import { Role, User } from '@prisma/client';
-import { isProject, Project, WbsNumber, wbsPipe } from 'shared';
+import { User } from '@prisma/client';
+import { isAdmin, isGuest, isProject, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
+  HttpException,
+  NotFoundException,
+  DeletedException
+} from '../utils/errors.utils';
 import {
   addDescriptionBullets,
   createChangeJsonNonList,
@@ -50,7 +56,7 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
     return projectTransformer(project);
   }
@@ -74,7 +80,7 @@ export default class ProjectsService {
     summary: string,
     teamId: string | undefined
   ): Promise<WbsNumber> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot create projects');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
     await validateChangeRequestAccepted(crId);
 
@@ -145,7 +151,7 @@ export default class ProjectsService {
     projectLeadId: number | null,
     projectManagerId: number | null
   ): Promise<Project> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException('Guests cannot edit projects');
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit projects');
     const { userId } = user;
 
     await validateChangeRequestAccepted(crId);
@@ -165,7 +171,7 @@ export default class ProjectsService {
 
     // if it doesn't exist we error
     if (!originalProject) throw new NotFoundException('Project', projectId);
-    if (originalProject.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
     const { wbsElementId } = originalProject;
 
@@ -380,8 +386,8 @@ export default class ProjectsService {
     if (!team) throw new NotFoundException('Team', teamId);
 
     // check for user and user permission (admin, app admin, or leader of the team)
-    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN && user.userId !== team.leaderId) {
-      throw new AccessDeniedException();
+    if (!isAdmin(user.role) && user.userId !== team.leaderId) {
+      throw new AccessDeniedAdminOnlyException('set project teams');
     }
 
     // if everything is fine, then update the given project to assign to provided team ID
@@ -403,8 +409,8 @@ export default class ProjectsService {
    */
   static async deleteProject(user: User, wbsNumber: WbsNumber): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
-    if (user.role !== Role.ADMIN && user.role !== Role.APP_ADMIN) {
-      throw new AccessDeniedException('Guests, Members, and Leadership cannot delete projects');
+    if (!isAdmin(user.role)) {
+      throw new AccessDeniedAdminOnlyException('delete projects');
     }
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
@@ -421,7 +427,7 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
-    if (project.wbsElement.dateDeleted) throw new HttpException(400, 'This project has been deleted!');
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
     const { projectId, wbsElementId } = project;
 
@@ -474,17 +480,6 @@ export default class ProjectsService {
               dateDeleted
             }
           }
-        },
-        risks: {
-          updateMany: {
-            where: {
-              projectId
-            },
-            data: {
-              deletedByUserId,
-              dateDeleted
-            }
-          }
         }
       },
       ...projectQueryArgs
@@ -505,5 +500,57 @@ export default class ProjectsService {
     );
 
     return projectTransformer(deletedProject);
+  }
+
+  /**
+   * Toggles a user's favorite status on a projects
+   * @param wbsNumber the project wbs number to be favorited/unfavorited
+   * @param user the user who is favoriting/unfavoriting the project
+   * @returns the project that the user has favorited/unfavorited
+   * @throws if the project wbs doesn't exist or is not corresponding to a project
+   */
+  static async toggleFavorite(wbsNumber: WbsNumber, user: User): Promise<Project> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const favorited = project.favoritedBy.some((currUser) => currUser.userId === user.userId);
+
+    favorited
+      ? await prisma.user.update({
+          where: { userId: user.userId },
+          data: {
+            favoriteProjects: {
+              disconnect: {
+                projectId: project.projectId
+              }
+            }
+          }
+        })
+      : await prisma.user.update({
+          where: { userId: user.userId },
+          data: {
+            favoriteProjects: {
+              connect: {
+                projectId: project.projectId
+              }
+            }
+          }
+        });
+
+    return projectTransformer(project);
   }
 }

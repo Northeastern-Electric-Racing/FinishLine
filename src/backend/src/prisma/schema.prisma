@@ -39,6 +39,7 @@ enum WBS_Element_Status {
 enum Role {
   APP_ADMIN
   ADMIN
+  HEAD
   LEADERSHIP
   MEMBER
   GUEST
@@ -93,9 +94,6 @@ model User {
   teamAsLead                Team?                @relation(name: "teamAsLead")
   deletedWBSElements        WBS_Element[]        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets Description_Bullet[] @relation(name: "checkDescriptionBullets")
-  createdRisks              Risk[]               @relation(name: "createdBy")
-  resolvedRisks             Risk[]               @relation(name: "resolvedBy")
-  deletedRisks              Risk[]               @relation(name: "deletedBy")
   createdProposedSolutions  Proposed_Solution[]
   createdTasks              Task[]               @relation(name: "createdBy")
   deletedTasks              Task[]               @relation(name: "deletedBy")
@@ -260,7 +258,6 @@ model Project {
   workPackages          Work_Package[]
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
-  risks                 Risk[]
   favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 
@@ -298,23 +295,6 @@ model Description_Bullet {
   workPackageExpectedActivities   Work_Package? @relation(name: "workPackageExpectedActivities", fields: [workPackageIdExpectedActivities], references: [workPackageId])
   workPackageIdDeliverables       Int?
   workPackageDeliverables         Work_Package? @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
-}
-
-model Risk {
-  id               String    @id @default(uuid())
-  projectId        Int
-  project          Project   @relation(fields: [projectId], references: [projectId])
-  detail           String
-  isResolved       Boolean   @default(false)
-  dateDeleted      DateTime?
-  dateCreated      DateTime  @default(now())
-  createdByUserId  Int
-  createdBy        User      @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
-  resolvedByUserId Int?
-  resolvedBy       User?     @relation(name: "resolvedBy", fields: [resolvedByUserId], references: [userId])
-  resolvedAt       DateTime?
-  deletedByUserId  Int?
-  deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
 }
 
 model Task {
