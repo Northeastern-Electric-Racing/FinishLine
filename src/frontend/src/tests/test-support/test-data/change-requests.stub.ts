@@ -7,6 +7,7 @@ import {
   ActivationChangeRequest,
   ChangeRequest,
   ChangeRequestReason,
+  ChangeRequestStatus,
   ChangeRequestType,
   RoleEnum,
   StageGateChangeRequest,
@@ -27,6 +28,7 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   accepted: true,
   reviewNotes: 'Adjust description, increase budget to 200, and add 3 weeks',
   dateImplemented: new Date('03/04/21'),
+  status: ChangeRequestStatus.Implemented,
   what: 'Spacers are needed to prevent the jet fuel from melting the I beams',
   why: [
     {
@@ -70,7 +72,8 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
   projectLead: exampleProjectLeadUser,
   projectManager: exampleProjectManagerUser,
   startDate: new Date('03/01/21'),
-  confirmDetails: true
+  confirmDetails: true,
+  status: ChangeRequestStatus.Accepted
 };
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
@@ -81,7 +84,8 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.StageGate,
   leftoverBudget: 26,
-  confirmDone: true
+  confirmDone: true,
+  status: ChangeRequestStatus.Implemented
 };
 
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
@@ -95,6 +99,7 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   accepted: true,
   reviewNotes: 'Adjust description, increase budget to 200, and add 3 weeks',
   dateImplemented: new Date('03/04/21'),
+  status: ChangeRequestStatus.Implemented,
   what: 'Spacers are needed to prevent the jet fuel from melting the I beams',
   why: [
     {

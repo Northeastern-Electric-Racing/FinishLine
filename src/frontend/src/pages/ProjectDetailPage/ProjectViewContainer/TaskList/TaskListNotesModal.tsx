@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamPreview, User } from 'shared';
-import { fullNamePipe, datePipe } from '../../../utils/pipes';
+import { isGuest, TeamPreview, User } from 'shared';
+import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -26,11 +26,11 @@ import {
   useTheme
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERSuccessButton from '../../../../components/NERSuccessButton';
+import NERFailButton from '../../../../components/NERFailButton';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { isUnderWordCount, countWords } from 'shared';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
 
@@ -330,7 +330,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
               >
                 Cancel
               </NERFailButton>
-              <NERSuccessButton variant="contained" disabled={auth.user!.role === 'GUEST'} type="submit" sx={{ mx: 1 }}>
+              <NERSuccessButton variant="contained" disabled={isGuest(auth.user?.role)} type="submit" sx={{ mx: 1 }}>
                 Confirm
               </NERSuccessButton>
             </Box>

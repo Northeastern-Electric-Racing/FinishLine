@@ -11,7 +11,6 @@ import {
   WorkPackageStage
 } from 'shared';
 import { descBulletConverter, wbsNumOf } from '../utils/utils';
-import riskTransformer from '../transformers/risks.transformer';
 import taskTransformer from './tasks.transformer';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from '../transformers/user.transformer';
@@ -54,7 +53,6 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     goals: project.goals.map(descBulletConverter),
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
-    risks: project.risks.map(riskTransformer),
     tasks: wbsElement.tasks.map(taskTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);

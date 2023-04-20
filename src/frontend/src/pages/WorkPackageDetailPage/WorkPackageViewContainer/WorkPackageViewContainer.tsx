@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
+import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
@@ -56,7 +56,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 
   if (!auth.user) return <LoadingIndicator />;
 
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || auth.user.role === RoleEnum.GUEST;
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

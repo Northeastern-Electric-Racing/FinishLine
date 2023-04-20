@@ -57,6 +57,10 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
     return { label: `${fullNamePipe(manager)} (${manager.email}) - ${manager.role}`, id: manager.userId.toString() };
   };
 
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
+  };
+
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Stage Select</FormLabel>
@@ -76,6 +80,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
       />
     </FormControl>
   );
+
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
@@ -104,6 +109,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForPL, usersForPM, contr
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 </>
