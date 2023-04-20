@@ -9,7 +9,9 @@ import userTransformer from './user.transformer';
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
-  const cr = {
+  const status = calculateChangeRequestStatus(changeRequest);
+
+  return {
     // all cr fields
     crId: changeRequest.crId,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
@@ -34,6 +36,7 @@ const changeRequestTransformer = (
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
+    status,
     // scope cr fields
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
@@ -59,9 +62,6 @@ const changeRequestTransformer = (
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
   };
-
-  const crStatus = calculateChangeRequestStatus(changeRequest);
-  return { ...cr, status: crStatus };
 };
 
 export default changeRequestTransformer;
