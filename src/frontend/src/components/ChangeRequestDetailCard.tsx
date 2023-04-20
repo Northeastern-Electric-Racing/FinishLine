@@ -50,7 +50,19 @@ const determineChangeRequestPillColor = (type: ChangeRequestType) => {
 const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
   return (
     <Box mt={1} ml={'2px'}>
-      <Chip icon={<Description />} label={cr.what} sx={{ mr: 2, ml: -1, backgroundColor: 'transparent', maxWidth: '150' }} />
+      <Typography
+        sx={{
+          display: '-webkit-box',
+          overflow: 'hidden',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2
+        }}
+      >
+        <Description sx={{ ml: '-4px', position: 'absolute' }} display={'inline'} />
+        <Typography ml={'27px'} display={'inline'}>
+          {cr.what}
+        </Typography>
+      </Typography>
     </Box>
   );
 };
