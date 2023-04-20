@@ -41,6 +41,28 @@ interface WorkPackageEditContainerProps {
   exitEditMode: () => void;
 }
 
+export interface WorkPackageEditFormPayload {
+  name: string;
+  projectLead: number | undefined;
+  projectManager: number | undefined;
+  workPackageId: number;
+  startDate: Date;
+  duration: number;
+  crId: string;
+  blockedBy: {
+    wbsNum: string;
+  }[];
+  stage: string;
+  expectedActivities: {
+    bulletId: number;
+    detail: string;
+  }[];
+  deliverables: {
+    bulletId: number;
+    detail: string;
+  }[];
+}
+
 const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
   const toast = useToast();
   const auth = useAuth();
@@ -99,8 +121,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
-
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: WorkPackageEditFormPayload) => {
     const { name, projectLead, projectManager, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
@@ -115,7 +136,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         crId: parseInt(crId),
         startDate: transformDate(startDate),
         duration,
-        blockedBy: blockedBy.map((dep: any) => {
+        blockedBy: blockedBy.map((dep) => {
           return validateWBS(dep.wbsNum);
         }),
         expectedActivities,
