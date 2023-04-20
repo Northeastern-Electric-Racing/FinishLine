@@ -74,7 +74,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       name: '',
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
-      stage: 'NONE',
+      stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
       duration: null,
       blockedBy: [] as { wbsNum: string }[],
