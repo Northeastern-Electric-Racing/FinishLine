@@ -3,12 +3,19 @@ import { batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User } from '@prisma/client';
 import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import * as slackUtils from '../src/utils/slack.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
 import { prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
@@ -24,7 +31,7 @@ describe('Work Packages', () => {
   const crId = 1;
   const startDate = '2022-09-18';
   const duration = 5;
-  const dependencies: WbsNumber[] = [
+  const blockedBy: WbsNumber[] = [
     {
       carNumber: 1,
       projectNumber: 1,
@@ -45,7 +52,7 @@ describe('Work Packages', () => {
     WbsNumber[],
     string[],
     string[]
-  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, dependencies, expectedActivities, deliverables];
+  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, blockedBy, expectedActivities, deliverables];
   /*********************************************************/
 
   afterEach(() => {
@@ -81,7 +88,7 @@ describe('Work Packages', () => {
           stage,
           startDate,
           duration,
-          dependencies,
+          blockedBy,
           expectedActivities,
           deliverables
         );
@@ -92,7 +99,7 @@ describe('Work Packages', () => {
       );
     });
 
-    test('createWorkPackage fails if any elements in the dependencies are null', async () => {
+    test('createWorkPackage fails if any elements in the blocked by are null', async () => {
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       jest
         .spyOn(prisma.wBS_Element, 'findUnique')
@@ -103,7 +110,7 @@ describe('Work Packages', () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
       };
 
-      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the dependencies was not found.'));
+      await expect(callCreateWP).rejects.toThrowError(new HttpException(400, 'One of the blockers was not found.'));
     });
 
     test('createWorkPackage fails if user does not have access', async () => {
@@ -118,7 +125,7 @@ describe('Work Packages', () => {
           stage,
           startDate,
           duration,
-          dependencies,
+          blockedBy,
           expectedActivities,
           deliverables
         );
@@ -162,7 +169,7 @@ describe('Work Packages', () => {
       await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
     });
 
-    test("fails if the dependencies include the work package's own project", async () => {
+    test("fails if the blocked by include the work package's own project", async () => {
       const argsToTest: [
         User,
         WbsNumber,
@@ -181,7 +188,7 @@ describe('Work Packages', () => {
       };
 
       await expect(callCreateWP()).rejects.toThrow(
-        new HttpException(400, 'A Work Package cannot have its own project as a dependency')
+        new HttpException(400, 'A Work Package cannot have its own project as a blocker')
       );
     });
 
@@ -208,7 +215,7 @@ describe('Work Packages', () => {
       // are called exactly as many times as needed
       expect(prisma.work_Package.create).toHaveBeenCalledTimes(1);
       expect(changeRequestUtils.validateChangeRequestAccepted).toHaveBeenCalledTimes(1);
-      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + dependencies.length);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + blockedBy.length);
     });
   });
 
@@ -217,7 +224,7 @@ describe('Work Packages', () => {
 
     test('User does not have submit permission', async () => {
       await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
-        new AccessDeniedException()
+        new AccessDeniedAdminOnlyException('delete work packages')
       );
     });
 
@@ -242,7 +249,7 @@ describe('Work Packages', () => {
       } as any);
 
       await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
-        new HttpException(400, 'This work package has already been deleted!')
+        new DeletedException('Work Package', '1.2.3')
       );
 
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
@@ -280,6 +287,18 @@ describe('Work Packages', () => {
       const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
       expect(result).toStrictEqual(sharedWorkPackage);
+    });
+  });
+
+  describe('slackMessageUpcomingDeadlines', () => {
+    beforeEach(() => {
+      jest.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});
+    });
+
+    it('fails when the user is not an admin', async () => {
+      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, 3)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages')
+      );
     });
   });
 });

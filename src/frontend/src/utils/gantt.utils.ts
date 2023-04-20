@@ -5,6 +5,7 @@
 
 import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
+import { WorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
 
 export const NO_TEAM = 'No Team';
@@ -39,7 +40,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return project.team?.teamName === decodedTeam;
+    return project.team === undefined ? decodedTeam === NO_TEAM : project.team?.teamName === decodedTeam;
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
@@ -94,6 +95,10 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     teamName,
+    children: [],
+    styles: {
+      backgroundColor: WorkPackageStageColorPipe(workPackage.stage)
+    },
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     }
@@ -105,13 +110,14 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
 
   const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),
-    name: wbsPipe(project.wbsNum) + ' ' + project.name,
+    name: wbsPipe(project.wbsNum) + ' - ' + project.name,
     start: project.startDate || new Date(),
     end: project.endDate || new Date(),
     progress: 100,
     type: 'project',
     hideChildren: !expanded,
     teamName,
+    children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }

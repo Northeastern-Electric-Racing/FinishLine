@@ -39,6 +39,7 @@ enum WBS_Element_Status {
 enum Role {
   APP_ADMIN
   ADMIN
+  HEAD
   LEADERSHIP
   MEMBER
   GUEST
@@ -93,13 +94,11 @@ model User {
   teamAsLead                Team?                @relation(name: "teamAsLead")
   deletedWBSElements        WBS_Element[]        @relation(name: "deletedWbsElements")
   checkedDescriptionBullets Description_Bullet[] @relation(name: "checkDescriptionBullets")
-  createdRisks              Risk[]               @relation(name: "createdBy")
-  resolvedRisks             Risk[]               @relation(name: "resolvedBy")
-  deletedRisks              Risk[]               @relation(name: "deletedBy")
   createdProposedSolutions  Proposed_Solution[]
   createdTasks              Task[]               @relation(name: "createdBy")
   deletedTasks              Task[]               @relation(name: "deletedBy")
   assignedTasks             Task[]               @relation(name: "assignedTo")
+  favoriteProjects          Project[]            @relation(name: "favoritedBy")
 }
 
 model Team {
@@ -218,26 +217,26 @@ model Change {
 }
 
 model WBS_Element {
-  wbsElementId          Int                @id @default(autoincrement())
-  dateCreated           DateTime           @default(now())
-  dateDeleted           DateTime?
-  carNumber             Int
-  projectNumber         Int
-  workPackageNumber     Int
-  name                  String
-  status                WBS_Element_Status @default(INACTIVE)
-  projectLeadId         Int?
-  projectLead           User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId      Int?
-  projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
-  changeRequests        Change_Request[]
-  changes               Change[]
-  deletedByUserId       Int?
-  deletedBy             User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
-  project               Project?
-  workPackage           Work_Package?
-  dependentWorkPackages Work_Package[]     @relation("dependencies")
-  tasks                 Task[]
+  wbsElementId      Int                @id @default(autoincrement())
+  dateCreated       DateTime           @default(now())
+  dateDeleted       DateTime?
+  carNumber         Int
+  projectNumber     Int
+  workPackageNumber Int
+  name              String
+  status            WBS_Element_Status @default(INACTIVE)
+  projectLeadId     Int?
+  projectLead       User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId  Int?
+  projectManager    User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  changeRequests    Change_Request[]
+  changes           Change[]
+  deletedByUserId   Int?
+  deletedBy         User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
+  project           Project?
+  workPackage       Work_Package?
+  blocking          Work_Package[]     @relation("blockedBy")
+  tasks             Task[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -259,7 +258,7 @@ model Project {
   workPackages          Work_Package[]
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
-  risks                 Risk[]
+  favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 
 model Work_Package {
@@ -271,7 +270,7 @@ model Work_Package {
   orderInProject     Int
   startDate          DateTime
   duration           Int
-  dependencies       WBS_Element[]        @relation(name: "dependencies")
+  blockedBy          WBS_Element[]        @relation(name: "blockedBy")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage              Work_Package_Stage?
@@ -296,23 +295,6 @@ model Description_Bullet {
   workPackageExpectedActivities   Work_Package? @relation(name: "workPackageExpectedActivities", fields: [workPackageIdExpectedActivities], references: [workPackageId])
   workPackageIdDeliverables       Int?
   workPackageDeliverables         Work_Package? @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
-}
-
-model Risk {
-  id               String    @id @default(uuid())
-  projectId        Int
-  project          Project   @relation(fields: [projectId], references: [projectId])
-  detail           String
-  isResolved       Boolean   @default(false)
-  dateDeleted      DateTime?
-  dateCreated      DateTime  @default(now())
-  createdByUserId  Int
-  createdBy        User      @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
-  resolvedByUserId Int?
-  resolvedBy       User?     @relation(name: "resolvedBy", fields: [resolvedByUserId], references: [userId])
-  resolvedAt       DateTime?
-  deletedByUserId  Int?
-  deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
 }
 
 model Task {

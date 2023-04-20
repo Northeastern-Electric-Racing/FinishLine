@@ -109,4 +109,17 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const user = await getCurrentUser(res);
+
+      const targetProject = await ProjectsService.toggleFavorite(wbsNum, user);
+
+      res.status(200).json(targetProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

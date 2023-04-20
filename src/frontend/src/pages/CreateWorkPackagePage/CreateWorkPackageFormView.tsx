@@ -21,10 +21,11 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { wbsTester } from '../../utils/form';
+import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { WorkPackageStage } from 'shared';
+import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -36,7 +37,10 @@ const schema = yup.object().shape({
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
   stage: yup.string(),
-  startDate: yup.date().required('Start Date is required'),
+  startDate: yup
+    .date()
+    .required('Start Date is required')
+    .test('start-date-valid', 'start date is not valid', startDateTester),
   duration: yup
     .number()
     .typeError('Duration must be a number')
@@ -47,11 +51,17 @@ const schema = yup.object().shape({
 
 interface CreateWorkPackageFormViewProps {
   allowSubmit: boolean;
-  onSubmit: (data: any) => void;
-  onCancel: (e: any) => void;
+  onSubmit: (data: CreateWorkPackageFormInputs) => void;
+  onCancel: () => void;
 }
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+  const startDate = new Date();
+  const today = startDate.getDay();
+  if (today !== 1) {
+    const daysUntilNextMonday = (7 - today + 1) % 7;
+    startDate.setDate(startDate.getDate() + daysUntilNextMonday);
+  }
   const query = useQuery();
   const {
     handleSubmit,
@@ -64,10 +74,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       name: '',
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
-      stage: 'NONE',
-      startDate: new Date(),
+      stage: 'NONE' as WorkPackageStage | 'None',
+      startDate,
       duration: null,
-      dependencies: [] as { wbsNum: string }[],
+      blockedBy: [] as { wbsNum: string }[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
       deliverables: [] as { bulletId: number; detail: string }[]
     }
@@ -83,20 +93,20 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const {
-    fields: dependencies,
-    append: appendDependency,
-    remove: removeDependency
-  } = useFieldArray({ control, name: 'dependencies' });
+  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
-  const dependenciesFormControl = (
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
+  };
+
+  const blockedByFormControl = (
     <FormControl fullWidth>
-      <FormLabel>Dependencies</FormLabel>
-      {dependencies.map((_element, i) => {
+      <FormLabel>Blocked By</FormLabel>
+      {blockedBy.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" {...register(`dependencies.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => removeDependency(i)} sx={{ mx: 1, my: 0 }}>
+            <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
+            <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />
             </IconButton>
           </Grid>
@@ -105,10 +115,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <Button
         variant="contained"
         color="success"
-        onClick={() => appendDependency({ wbsNum: '' })}
+        onClick={() => appendBlocker({ wbsNum: '' })}
         sx={{ my: 2, width: 'max-content' }}
       >
-        + ADD NEW DEPENDENCY
+        + ADD NEW BLOCKER
       </Button>
     </FormControl>
   );
@@ -196,6 +206,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 )}
@@ -218,7 +229,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         </Grid>
         <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
           <Grid item xs={12} md={2}>
-            {dependenciesFormControl}
+            {blockedByFormControl}
           </Grid>
           <Grid item xs={12} md={2}>
             <FormControl fullWidth>

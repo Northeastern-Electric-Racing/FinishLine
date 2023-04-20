@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { WorkPackage, Project } from 'shared';
+import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
@@ -14,7 +14,6 @@ import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ProjectDetails from './ProjectDetails';
 import RulesList from './RulesList';
-import RiskLog from './RiskLog';
 import { routes } from '../../../utils/routes';
 import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
@@ -29,6 +28,8 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
+import GroupIcon from '@mui/icons-material/Group';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -76,12 +77,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     handleDropdownClose();
   };
 
-  const isGuest = auth.user.role === 'GUEST';
-
-  const isAdmin = auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN';
-
   const editBtn = (
-    <MenuItem onClick={handleClickEdit} disabled={isGuest}>
+    <MenuItem onClick={handleClickEdit} disabled={isGuest(auth.user.role)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
@@ -93,7 +90,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
     <MenuItem
       component={Link}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(proj.wbsNum)}
-      disabled={isGuest}
+      disabled={isGuest(auth.user.role)}
       onClick={handleDropdownClose}
     >
       <ListItemIcon>
@@ -105,12 +102,18 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const assignToMyTeamButton = (
     <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+      <ListItemIcon>
+        <GroupIcon fontSize="small" />
+      </ListItemIcon>
       Assign to My Team
     </MenuItem>
   );
 
   const deleteButton = (
-    <MenuItem onClick={handleClickDelete} disabled={!isAdmin}>
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(auth.user.role)}>
+      <ListItemIcon>
+        <DeleteIcon fontSize="small" />
+      </ListItemIcon>
       Delete
     </MenuItem>
   );
@@ -144,7 +147,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <ProjectDetails project={proj} />
       <TaskList project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />

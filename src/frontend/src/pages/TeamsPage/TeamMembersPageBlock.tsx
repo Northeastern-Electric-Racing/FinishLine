@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSetTeamMembers } from '../../hooks/teams.hooks';
-import { RoleEnum, Team, User } from 'shared';
+import { isAdmin, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -52,9 +52,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     }
   };
 
-  const hasPerms =
-    auth.user &&
-    (auth.user.role === RoleEnum.ADMIN || auth.user.role === RoleEnum.APP_ADMIN || auth.user.userId === team.leader.userId);
+  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.leader.userId);
 
   const options = users
     .filter((user) => user.userId !== team.leader.userId)

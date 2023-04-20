@@ -7,14 +7,15 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import GoogleLogin from 'react-google-login';
+import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 import LoginDev from './LoginDev';
+import { FormEvent } from 'react';
 
 interface LoginPageProps {
   devSetUser: (userId: number) => void;
-  devFormSubmit: (e: any) => any;
-  prodSuccess: (res: any) => any;
-  prodFailure: (res: any) => any;
+  devFormSubmit: (e: FormEvent) => void;
+  prodSuccess: (res: GoogleLoginResponse | GoogleLoginResponseOffline) => void;
+  prodFailure: (res: any) => void;
 }
 
 /**

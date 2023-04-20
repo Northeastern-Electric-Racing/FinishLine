@@ -1,7 +1,7 @@
 import { User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
-import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import descriptionBulletQueryArgs from '../prisma-query-args/description-bullets.query-args';
 import { DescriptionBullet } from 'shared';
@@ -24,7 +24,7 @@ export default class DescriptionBulletsService {
     });
     if (!originalDB) throw new NotFoundException('Description Bullet', descriptionId);
 
-    if (originalDB.dateDeleted) throw new HttpException(400, 'Cant edit a deleted Description Bullet!');
+    if (originalDB.dateDeleted) throw new DeletedException('Description Bullet', descriptionId);
 
     const workPackage = originalDB.workPackageDeliverables || originalDB.workPackageExpectedActivities;
 
