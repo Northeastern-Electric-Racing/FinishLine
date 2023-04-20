@@ -1,5 +1,6 @@
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
 import { Project, Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
+import { FormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskListNotesModal';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -50,6 +51,7 @@ export interface TaskListDataGridProps {
   moveToInProgress: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
+  editTask: (editInfo: FormInput) => Promise<void>;
 }
 
 export const transformDate = (date: Date) => {

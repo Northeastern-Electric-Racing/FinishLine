@@ -8,7 +8,6 @@ import { Box } from '@mui/system';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useAuth } from '../../../../hooks/auth.hooks';
 import {
   useCreateTask,
   useDeleteTask,
@@ -17,6 +16,7 @@ import {
   useSetTaskStatus
 } from '../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
@@ -38,11 +38,11 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
   const editTaskStatus = useSetTaskStatus();
 
-  const auth = useAuth();
+  const user = useCurrentUser();
   const toast = useToast();
   const team = project.team;
 
-  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading || assigneeIsLoading) return <LoadingIndicator />;
   if (!team)
     return (
       <>
@@ -122,15 +122,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   // can the user edit this task?
   const editTaskPermissions = (task: Task): boolean => {
-    if (!auth.user) return false;
+    if (!user) return false;
     return (
-      (auth.user.role === 'APP_ADMIN' ||
-        auth.user.role === 'ADMIN' ||
-        auth.user.role === 'LEADERSHIP' ||
-        project.projectLead?.userId === auth.user.userId ||
-        project.projectManager?.userId === auth.user.userId ||
-        task.assignees.map((u) => u.userId).includes(auth.user.userId) ||
-        task.createdBy.userId === auth.user.userId) ??
+      (user.role === 'APP_ADMIN' ||
+        user.role === 'ADMIN' ||
+        user.role === 'LEADERSHIP' ||
+        project.projectLead?.userId === user.userId ||
+        project.projectManager?.userId === user.userId ||
+        task.assignees.map((u) => u.userId).includes(user.userId) ||
+        task.createdBy.userId === user.userId) ??
       false
     );
   };
@@ -162,26 +162,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     handleClose();
   };
 
-  const editTask = async ({ taskId, title, deadline, assignees, priority }: FormInput) => {
-    try {
-      await editTaskMutateAsync({
-        taskId,
-        title,
-        deadline,
-        priority
-      });
-      await editTaskAssigneesMutateAsync({
-        taskId,
-        assignees
-      });
-      toast.success('Task edited successfully!');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-    handleClose();
-  };
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
   return (
@@ -203,6 +183,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
             moveToDone={moveToDone}
             moveToInProgress={moveToInProgress}
             deleteRow={deleteRow}
+            editTask={handleEditTask}
           />
         </Box>
       )}
