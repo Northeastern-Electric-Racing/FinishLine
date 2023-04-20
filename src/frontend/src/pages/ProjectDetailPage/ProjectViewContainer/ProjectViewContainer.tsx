@@ -46,7 +46,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const auth = useAuth();
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
-  const { mutate } = useToggleProjectFavorite();
+  const { mutate } = useToggleProjectFavorite(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   if (!auth.user) return <LoadingIndicator />;
@@ -83,7 +83,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const handleClickFavorite = async () => {
     try {
-      mutate(proj.wbsNum);
+      mutate({});
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

@@ -115,17 +115,17 @@ export const useDeleteProject = () => {
 /**
  * Custom React Hook to toggle a user's favorite status on a project.
  */
-export const useToggleProjectFavorite = () => {
+export const useToggleProjectFavorite = (wbsNumber: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['projects', 'edit', 'favorite'],
-    async (wbsNumber: WbsNumber) => {
+    async () => {
       const { data } = await toggleProjectFavorite(wbsNumber);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
+        queryClient.invalidateQueries(['projects', wbsNumber]);
       }
     }
   );
