@@ -159,7 +159,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     return <DeadlineEdit {...params} deadline={deadline} setDeadline={setDeadline} />;
   };
 
-
   const getActions = (params: GridRowParams) => {
     const actions: JSX.Element[] = [];
     if (params.id === -1) {

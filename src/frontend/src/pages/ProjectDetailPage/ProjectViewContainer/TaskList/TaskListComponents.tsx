@@ -69,7 +69,7 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setDeadline } = params;
   const apiRef = useGridApiContext();
 
-  const handleValueChange = (value: unknown, keyboardInputValue?: string | undefined) => {
+  const handleValueChange = (value: unknown) => {
     const newValue = value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
     setDeadline(newValue);
