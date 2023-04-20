@@ -127,6 +127,12 @@ const ChangeRequestsTable: React.FC<ChangeRequestsViewProps> = ({ value, index }
       filterable: false,
       valueFormatter: (params) => params.value.length,
       maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'status',
+      headerName: 'Status',
+      maxWidth: 150
     }
   ];
   return (

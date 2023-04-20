@@ -177,7 +177,13 @@ describe('Change Requests', () => {
           budget: 1003,
           wbsElement: {
             update: {
-              changes: { create: { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 2 } }
+              changes: {
+                create: {
+                  changeRequestId: 2,
+                  detail: 'Changed Budget from "3" to "1003"',
+                  implementerId: 2
+                }
+              }
             }
           },
           workPackages: {
@@ -187,7 +193,11 @@ describe('Change Requests', () => {
                 wbsElement: {
                   update: {
                     changes: {
-                      create: { changeRequestId: 2, detail: 'Changed Duration from "10" to "20"', implementerId: 2 }
+                      create: {
+                        changeRequestId: 2,
+                        detail: 'Changed Duration from "10" to "20"',
+                        implementerId: 2
+                      }
                     }
                   }
                 }
@@ -224,7 +234,13 @@ describe('Change Requests', () => {
           budget: 1003,
           wbsElement: {
             update: {
-              changes: { create: { changeRequestId: 2, detail: 'Changed Budget from "3" to "1003"', implementerId: 2 } }
+              changes: {
+                create: {
+                  changeRequestId: 2,
+                  detail: 'Changed Budget from "3" to "1003"',
+                  implementerId: 2
+                }
+              }
             }
           }
         },
