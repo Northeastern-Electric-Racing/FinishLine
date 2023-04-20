@@ -32,7 +32,6 @@ import StarIcon from '@mui/icons-material/Star';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import ProjectDetailCard from '../../../components/ProjectDetailCard';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -177,7 +176,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
-      <ProjectDetailCard project={project} />
       <ProjectDetails project={project} />
       <TaskList project={project} />
       <PageBlock title={'Summary'}>{project.summary}</PageBlock>
