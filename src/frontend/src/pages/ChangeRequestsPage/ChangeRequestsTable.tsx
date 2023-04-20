@@ -15,7 +15,6 @@ import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared
 import { GridColDefStyle } from '../../utils/tables';
 import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import ChangeRequestsTitle from './ChangeRequestsTitle';
 
 const ChangeRequestsTable: React.FC = () => {
   const { isLoading, isError, data, error } = useAllChangeRequests();
@@ -131,7 +130,6 @@ const ChangeRequestsTable: React.FC = () => {
   ];
   return (
     <div>
-      <ChangeRequestsTitle></ChangeRequestsTitle>
       <DataGrid
         autoHeight
         disableSelectionOnClick

@@ -7,6 +7,7 @@ import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import { Add } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
+import { Box } from '@mui/system';
 
 const ChangeRequestsTitle: React.FC = () => {
   const history = useHistory();
@@ -35,7 +36,7 @@ const ChangeRequestsTitle: React.FC = () => {
   };
 
   return (
-    <div style={{ marginBottom: 15 }}>
+    <Box style={{ marginBottom: 15 }}>
       <PageTitle
         title={'Change Requests'}
         previousPages={[]}
@@ -46,7 +47,7 @@ const ChangeRequestsTitle: React.FC = () => {
               aria-label="overview"
               value={0}
               component={RouterLink}
-              to={`${routes.CHANGE_REQUESTS}/overview`}
+              to={`${routes.CHANGE_REQUESTS_OVERVIEW}`}
             />
             <Tab
               label="All Change Requests"
@@ -68,7 +69,7 @@ const ChangeRequestsTitle: React.FC = () => {
           </NERButton>
         }
       />
-    </div>
+    </Box>
   );
 };
 

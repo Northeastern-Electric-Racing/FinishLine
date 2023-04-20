@@ -4,7 +4,6 @@
  */
 
 import { Box, Grid, useTheme } from '@mui/material';
-import { useAuth } from '../../hooks/auth.hooks';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -13,22 +12,20 @@ import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
-import ChangeRequestsTitle from './ChangeRequestsTitle';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const ChangeRequestsOverview: React.FC = () => {
   const theme = useTheme();
-  const auth = useAuth();
-  const { user } = auth;
+  const user = useCurrentUser();
 
   const { isLoading, isError, error, data } = useAllChangeRequests();
-
-  // whether to show To Review section
-  const showToReview = isHead(auth.user?.role) || isLeadership(auth.user?.role);
-
   const { data: projects, isError: projectIsError, isLoading: projectLoading, error: projectError } = useAllProjects();
   const { data: workPackages, isError: wpIsError, isLoading: wpLoading, error: wpError } = useAllWorkPackages();
 
-  if (isLoading || projectLoading || wpLoading || !data || !projects || !workPackages || !user) return <LoadingIndicator />;
+  // whether to show To Review section
+  const showToReview = isHead(user.role) || isLeadership(user.role);
+
+  if (isLoading || projectLoading || wpLoading || !data || !projects || !workPackages) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
   if (projectIsError) return <ErrorPage message={projectError?.message} />;
   if (wpIsError) return <ErrorPage message={wpError?.message} />;
@@ -101,22 +98,19 @@ const ChangeRequestsOverview: React.FC = () => {
   );
 
   return (
-    <div>
-      <ChangeRequestsTitle></ChangeRequestsTitle>
-      <div>
-        {showToReview ? (
-          <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
-            <Grid container>{display(crToReview)}</Grid>
-          </PageBlock>
-        ) : null}
-        <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
-          <Grid container>{display(crUnreviewed)}</Grid>
+    <Box>
+      {showToReview ? (
+        <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
+          <Grid container>{display(crToReview)}</Grid>
         </PageBlock>
-        <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
-          <Grid container>{display(crApproved)}</Grid>
-        </PageBlock>
-      </div>
-    </div>
+      ) : null}
+      <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
+        <Grid container>{display(crUnreviewed)}</Grid>
+      </PageBlock>
+      <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
+        <Grid container>{display(crApproved)}</Grid>
+      </PageBlock>
+    </Box>
   );
 };
 
