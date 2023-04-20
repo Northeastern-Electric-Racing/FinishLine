@@ -58,8 +58,8 @@ const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
           WebkitLineClamp: 2
         }}
       >
-        <Description sx={{ ml: '-4px', position: 'inline' }} display={'inline'} />
-        <Typography ml={'27px'} display={'inline'}>
+        <Description sx={{ ml: '-4px' }} display={'inline'} />
+        <Typography ml={'4px'} display={'inline'}>
           {cr.what}
         </Typography>
       </Typography>
