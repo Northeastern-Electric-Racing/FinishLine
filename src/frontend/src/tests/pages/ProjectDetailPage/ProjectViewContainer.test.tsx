@@ -27,7 +27,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProjectViewContainer proj={exampleProject1} enterEditMode={jest.fn} />
+      <ProjectViewContainer project={exampleProject1} enterEditMode={jest.fn} />
     </RouterWrapper>
   );
 };

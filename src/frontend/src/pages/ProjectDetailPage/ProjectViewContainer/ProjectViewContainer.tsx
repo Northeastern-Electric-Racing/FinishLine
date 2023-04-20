@@ -6,7 +6,6 @@
 import { Link } from 'react-router-dom';
 import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
-import { useAuth } from '../../../hooks/auth.hooks';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
 import WorkPackageSummary from './WorkPackageSummary';
@@ -23,7 +22,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useSetProjectTeam, useToggleProjectFavorite } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList/TaskList';
@@ -31,31 +29,30 @@ import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface ProjectViewContainerProps {
-  proj: Project;
+  project: Project;
   enterEditMode: () => void;
 }
 
-const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enterEditMode }) => {
+const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, enterEditMode }) => {
+  const user = useCurrentUser();
+  const toast = useToast();
+  const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
+  const { mutateAsync: mutateAsyncToggleProjectFavorite } = useToggleProjectFavorite(project.wbsNum);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
     setDeleteModalShow(true);
   };
-  const auth = useAuth();
-  const toast = useToast();
-  const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
-  const { mutate } = useToggleProjectFavorite(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  if (!auth.user) return <LoadingIndicator />;
-
   const dropdownOpen = Boolean(anchorEl);
-  proj.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const { teamAsLeadId } = auth.user;
-  const user = auth.user;
-  const userFavProjects = user.favoritedProjectsId;
+
+  project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  const { teamAsLeadId } = user;
+  const projectIsFavorited = !!user.favoritedProjectsId?.includes(project.id);
+  console.log(projectIsFavorited);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -72,18 +69,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const handleAssignToMyTeam = async () => {
     try {
-      await mutateAsync(teamAsLeadId);
+      await mutateAsyncSetProjectTeam(teamAsLeadId);
+      handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
       }
     }
-    handleDropdownClose();
   };
 
   const handleClickFavorite = async () => {
     try {
-      mutate();
+      await mutateAsyncToggleProjectFavorite();
+      handleDropdownClose();
+      toast.info(`Successfully ${projectIsFavorited ? '' : 'un'}favorited project ${wbsPipe(project.wbsNum)}!`);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -92,7 +91,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   };
 
   const editBtn = (
-    <MenuItem onClick={handleClickEdit} disabled={isGuest(auth.user.role)}>
+    <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
       </ListItemIcon>
@@ -101,7 +100,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const favoriteFilledBtn = (
-    <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
+    <MenuItem onClick={handleClickFavorite} disabled={isGuest(user.role)}>
       <ListItemIcon>
         <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} sx={{ color: 'Gold' }} />
       </ListItemIcon>
@@ -110,7 +109,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const favoriteNotFilledBtn = (
-    <MenuItem onClick={handleClickFavorite} disabled={isGuest(auth.user.role)}>
+    <MenuItem onClick={handleClickFavorite} disabled={isGuest(user.role)}>
       <ListItemIcon>
         <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} />
       </ListItemIcon>
@@ -121,8 +120,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const createCRBtn = (
     <MenuItem
       component={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(proj.wbsNum)}
-      disabled={isGuest(auth.user.role)}
+      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
+      disabled={isGuest(user.role)}
       onClick={handleDropdownClose}
     >
       <ListItemIcon>
@@ -133,7 +132,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const assignToMyTeamButton = (
-    <MenuItem disabled={proj.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem disabled={project.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
       <ListItemIcon>
         <GroupIcon fontSize="small" />
       </ListItemIcon>
@@ -142,7 +141,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   );
 
   const deleteButton = (
-    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(auth.user.role)}>
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
       </ListItemIcon>
@@ -163,7 +162,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
-        {userFavProjects?.includes(proj.id) ? favoriteFilledBtn : favoriteNotFilledBtn}
+        {projectIsFavorited ? favoriteFilledBtn : favoriteNotFilledBtn}
         {teamAsLeadId && assignToMyTeamButton}
         {deleteButton}
       </Menu>
@@ -173,30 +172,32 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   return (
     <>
       <PageTitle
-        title={`${wbsPipe(proj.wbsNum)} - ${proj.name}`}
+        title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
-      <ProjectDetails project={proj} />
-      <TaskList project={proj} />
-      <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <ProjectGantt workPackages={proj.workPackages} />
-      <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
-      <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />
+      <ProjectDetails project={project} />
+      <TaskList project={project} />
+      <PageBlock title={'Summary'}>{project.summary}</PageBlock>
+      <ProjectGantt workPackages={project.workPackages} />
+      <DescriptionList title={'Goals'} items={project.goals.filter((goal) => !goal.dateDeleted)} />
+      <DescriptionList title={'Features'} items={project.features.filter((feature) => !feature.dateDeleted)} />
       <DescriptionList
         title={'Other Constraints'}
-        items={proj.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
+        items={project.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
       />
-      <RulesList rules={proj.rules} />
+      <RulesList rules={project.rules} />
       <PageBlock title={'Work Packages'}>
-        {proj.workPackages.map((ele: WorkPackage) => (
+        {project.workPackages.map((ele: WorkPackage) => (
           <div key={wbsPipe(ele.wbsNum)} className="mt-3">
             <WorkPackageSummary workPackage={ele} />
           </div>
         ))}
       </PageBlock>
-      <ChangesList changes={proj.changes} />
-      {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
+      <ChangesList changes={project.changes} />
+      {deleteModalShow && (
+        <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
+      )}
     </>
   );
 };
