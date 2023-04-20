@@ -16,6 +16,7 @@ const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
+const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -78,6 +79,7 @@ export const apiUrls = {
   usersLoginDev,
   userSettingsByUserId,
   userRoleByUserId,
+  userFavoriteProjects,
 
   projects,
   projectsByWbsNum,

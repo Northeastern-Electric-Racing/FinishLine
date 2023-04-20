@@ -20,7 +20,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Menu, MenuItem } from '@mui/material';
+import { Grid, IconButton, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam, useToggleProjectFavorite } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -29,7 +29,10 @@ import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
-import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import ProjectDetailCard from '../../../components/ProjectDetailCard';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -41,6 +44,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const toast = useToast();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
   const { mutateAsync: mutateAsyncToggleProjectFavorite } = useToggleProjectFavorite(project.wbsNum);
+  const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleClickDelete = () => {
@@ -49,10 +53,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
 
+  if (isLoading || !favoriteProjects) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsLeadId } = user;
-  const projectIsFavorited = !!user.favoritedProjectsId?.includes(project.id);
-  console.log(projectIsFavorited);
+  const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -81,8 +87,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const handleClickFavorite = async () => {
     try {
       await mutateAsyncToggleProjectFavorite();
-      handleDropdownClose();
-      toast.info(`Successfully ${projectIsFavorited ? '' : 'un'}favorited project ${wbsPipe(project.wbsNum)}!`);
+      toast.info(`Successfully ${projectIsFavorited ? 'un' : ''}favorited project ${wbsPipe(project.wbsNum)}!`);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -99,22 +104,14 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const favoriteFilledBtn = (
-    <MenuItem onClick={handleClickFavorite} disabled={isGuest(user.role)}>
-      <ListItemIcon>
-        <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} sx={{ color: 'Gold' }} />
-      </ListItemIcon>
-      Unfavorite
-    </MenuItem>
-  );
-
-  const favoriteNotFilledBtn = (
-    <MenuItem onClick={handleClickFavorite} disabled={isGuest(user.role)}>
-      <ListItemIcon>
-        <StarIcon fontSize="small" stroke={'black'} strokeWidth={1} />
-      </ListItemIcon>
-      Favorite
-    </MenuItem>
+  const FavoriteButton = () => (
+    <IconButton
+      onClick={handleClickFavorite}
+      disabled={isGuest(user.role)}
+      sx={{ color: projectIsFavorited ? 'Gold' : undefined, mx: 1 }}
+    >
+      <StarIcon fontSize="medium" stroke={'black'} strokeWidth={1} />
+    </IconButton>
   );
 
   const createCRBtn = (
@@ -150,23 +147,27 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const projectActionsDropdown = (
-    <div>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="project-actions-dropdown"
-        onClick={handleClick}
-      >
-        Actions
-      </NERButton>
+    <Grid container>
+      <Grid item>
+        <FavoriteButton />
+      </Grid>
+      <Grid item>
+        <NERButton
+          endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+          variant="contained"
+          id="project-actions-dropdown"
+          onClick={handleClick}
+        >
+          Actions
+        </NERButton>
+      </Grid>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {editBtn}
         {createCRBtn}
-        {projectIsFavorited ? favoriteFilledBtn : favoriteNotFilledBtn}
         {teamAsLeadId && assignToMyTeamButton}
         {deleteButton}
       </Menu>
-    </div>
+    </Grid>
   );
 
   return (
@@ -176,6 +177,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
+      <ProjectDetailCard project={project} />
       <ProjectDetails project={project} />
       <TaskList project={project} />
       <PageBlock title={'Summary'}>{project.summary}</PageBlock>
