@@ -16,7 +16,6 @@ export const TitleEdit = (params: GridRenderEditCellParams) => {
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
-    params.row.title = newValue;
     setTitle(newValue);
   };
 
@@ -46,7 +45,6 @@ export const PriorityEdit = (params: GridRenderEditCellParams) => {
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
-    params.row.priority = newValue;
     setPriority(newValue);
   };
 
@@ -89,7 +87,6 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   ) => {
     const teamMembers = team.members.concat(team.leader);
     const users = newValue.map((user) => teamMembers.find((o: any) => o.userId === user.id)!);
-    params.row.assignees = users;
     setAssignees(users);
   };
 

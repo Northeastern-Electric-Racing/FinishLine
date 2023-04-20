@@ -8,6 +8,7 @@ import { Box } from '@mui/system';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import { useAuth } from '../../../../hooks/auth.hooks';
 import {
   useCreateTask,
   useDeleteTask,
@@ -16,7 +17,6 @@ import {
   useSetTaskStatus
 } from '../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useCurrentUser } from '../../../../hooks/users.hooks';
 import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
@@ -38,11 +38,11 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { mutateAsync: deleteTaskMutate } = useDeleteTask();
   const editTaskStatus = useSetTaskStatus();
 
-  const user = useCurrentUser();
+  const auth = useAuth();
   const toast = useToast();
   const team = project.team;
 
-  if (isLoading || assigneeIsLoading) return <LoadingIndicator />;
+  if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
   if (!team)
     return (
       <>
@@ -122,15 +122,15 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   // can the user edit this task?
   const editTaskPermissions = (task: Task): boolean => {
-    if (!user) return false;
+    if (!auth.user) return false;
     return (
-      (user.role === 'APP_ADMIN' ||
-        user.role === 'ADMIN' ||
-        user.role === 'LEADERSHIP' ||
-        project.projectLead?.userId === user.userId ||
-        project.projectManager?.userId === user.userId ||
-        task.assignees.map((u) => u.userId).includes(user.userId) ||
-        task.createdBy.userId === user.userId) ??
+      (auth.user.role === 'APP_ADMIN' ||
+        auth.user.role === 'ADMIN' ||
+        auth.user.role === 'LEADERSHIP' ||
+        project.projectLead?.userId === auth.user.userId ||
+        project.projectManager?.userId === auth.user.userId ||
+        task.assignees.map((u) => u.userId).includes(auth.user.userId) ||
+        task.createdBy.userId === auth.user.userId) ??
       false
     );
   };

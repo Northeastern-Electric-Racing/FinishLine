@@ -89,10 +89,10 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     setAssignees(newRow.assignees);
     return {
       id: newRow.id,
-      title: title,
-      deadline: deadline,
-      priority: priority,
-      assignees: assignees,
+      title: newRow.title,
+      deadline: newRow.deadline,
+      priority: newRow.priority,
+      assignees: newRow.assignees,
       taskId: newRow.taskId,
       notes: newRow.notes,
       task: newRow.task
