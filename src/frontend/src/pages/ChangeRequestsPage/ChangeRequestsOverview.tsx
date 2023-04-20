@@ -3,52 +3,24 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { Add } from '@mui/icons-material';
-import { routes } from '../../utils/routes';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { Box, Grid, Tab, Tabs, useTheme } from '@mui/material';
+import { Box, Grid, useTheme } from '@mui/material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useState, useMemo, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { NERButton } from '../../components/NERButton';
-import { isGuest, isLeadership, isHead, ChangeRequest, Project, WorkPackage, wbsPipe } from 'shared';
+import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, wbsPipe } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
+import ChangeRequestsTitle from './ChangeRequestsTitle';
 
 const ChangeRequestsOverview: React.FC = () => {
-  const history = useHistory();
   const theme = useTheme();
   const auth = useAuth();
   const { user } = auth;
 
   const { isLoading, isError, error, data } = useAllChangeRequests();
-
-  // Values that go in the URL depending on the tab value
-  const viewUrlValues = useMemo(() => ['overview', 'all-change-requests'], []);
-
-  const match = useRouteMatch<{ tabValueString: string }>(`${routes.CHANGE_REQUESTS}/:tabValueString`);
-  const tabValueString = match?.params?.tabValueString;
-
-  // Default to the "overview" tab
-  const initialValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
-  const [tabIndex, setTabIndex] = useState<number>(initialValue);
-
-  // Change tab when the browser forward/back button is pressed
-  const { pathname } = useLocation();
-  useEffect(() => {
-    const newTabValue: number = viewUrlValues.indexOf(tabValueString ?? 'overview');
-    setTabIndex(newTabValue);
-  }, [pathname, setTabIndex, viewUrlValues, tabValueString]);
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    setTabIndex(newValue);
-  };
 
   // whether to show To Review section
   const showToReview = isHead(auth.user?.role) || isLeadership(auth.user?.role);
@@ -100,7 +72,7 @@ const ChangeRequestsOverview: React.FC = () => {
     a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
   );
 
-  const displayWrap = (crList: ChangeRequest[]) => (
+  const display = (crList: ChangeRequest[]) => (
     <Box
       sx={{
         display: 'flex',
@@ -128,86 +100,23 @@ const ChangeRequestsOverview: React.FC = () => {
     </Box>
   );
 
-  const displayScroll = (crList: ChangeRequest[]) => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'nowrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
-      }}
-    >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
-    </Box>
-  );
-
   return (
-    <>
+    <div>
+      <ChangeRequestsTitle></ChangeRequestsTitle>
       <div>
-        <div style={{ marginBottom: 15 }}>
-          <PageTitle
-            title={'Change Requests'}
-            previousPages={[]}
-            tabs={
-              <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
-                <Tab
-                  label="Overview"
-                  aria-label="overview"
-                  value={0}
-                  component={RouterLink}
-                  to={`${routes.CHANGE_REQUESTS}/overview`}
-                />
-                <Tab
-                  label="All Change Requests"
-                  aria-label="all-change-requests"
-                  value={1}
-                  component={RouterLink}
-                  to={`${routes.ALL_CHANGE_REQUESTS}`}
-                />
-              </Tabs>
-            }
-            actionButton={
-              <NERButton
-                variant="contained"
-                disabled={isGuest(auth.user?.role)}
-                startIcon={<Add />}
-                onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
-              >
-                New Change Request
-              </NERButton>
-            }
-          />
-        </div>
-        <div>
-          {showToReview ? (
-            <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
-              <Grid container>{displayScroll(crToReview)}</Grid>
-            </PageBlock>
-          ) : null}
-          <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
-            <Grid container>{displayScroll(crUnreviewed)}</Grid>
+        {showToReview ? (
+          <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
+            <Grid container>{display(crToReview)}</Grid>
           </PageBlock>
-          <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
-            <Grid container>{displayWrap(crApproved)}</Grid>
-          </PageBlock>
-        </div>
+        ) : null}
+        <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
+          <Grid container>{display(crUnreviewed)}</Grid>
+        </PageBlock>
+        <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
+          <Grid container>{display(crApproved)}</Grid>
+        </PageBlock>
       </div>
-    </>
+    </div>
   );
 };
 
