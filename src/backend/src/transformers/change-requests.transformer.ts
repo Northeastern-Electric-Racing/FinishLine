@@ -2,13 +2,15 @@ import { Prisma } from '@prisma/client';
 import { ChangeRequest, StandardChangeRequest, ActivationChangeRequest, StageGateChangeRequest } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
-import { convertCRScopeWhyType } from '../utils/change-requests.utils';
+import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import userTransformer from './user.transformer';
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
+  const status = calculateChangeRequestStatus(changeRequest);
+
   return {
     // all cr fields
     crId: changeRequest.crId,
@@ -34,6 +36,7 @@ const changeRequestTransformer = (
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
+    status,
     // scope cr fields
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
