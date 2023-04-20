@@ -83,7 +83,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
 
   const handleClickFavorite = async () => {
     try {
-      mutate({});
+      mutate();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

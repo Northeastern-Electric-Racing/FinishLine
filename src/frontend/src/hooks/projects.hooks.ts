@@ -117,7 +117,7 @@ export const useDeleteProject = () => {
  */
 export const useToggleProjectFavorite = (wbsNumber: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error>(
     ['projects', 'edit', 'favorite'],
     async () => {
       const { data } = await toggleProjectFavorite(wbsNumber);
