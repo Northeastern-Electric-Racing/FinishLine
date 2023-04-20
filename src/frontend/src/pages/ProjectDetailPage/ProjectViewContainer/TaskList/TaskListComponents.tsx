@@ -5,6 +5,7 @@
 
 import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
+import { DatePicker } from '@mui/x-date-pickers';
 import { User, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { fullNamePipe } from '../../../../utils/pipes';
@@ -61,6 +62,33 @@ export const PriorityEdit = (params: GridRenderEditCellParams) => {
       <MenuItem value={'MEDIUM'}>Medium</MenuItem>
       <MenuItem value={'HIGH'}>High</MenuItem>
     </TextField>
+  );
+};
+
+export const DeadlineEdit = (params: GridRenderEditCellParams) => {
+  const { id, value, field, setDeadline } = params;
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = (value: unknown, keyboardInputValue?: string | undefined) => {
+    const newValue = value; // The new value entered by the user
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+    setDeadline(newValue);
+  };
+
+  const handleRef = (element: HTMLDivElement) => {
+    if (element) {
+      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+      input?.focus();
+    }
+  };
+
+  return (
+    <DatePicker
+      value={value}
+      onChange={handleValueChange}
+      ref={handleRef}
+      renderInput={(params) => <TextField {...params} variant="outlined" />}
+    />
   );
 };
 

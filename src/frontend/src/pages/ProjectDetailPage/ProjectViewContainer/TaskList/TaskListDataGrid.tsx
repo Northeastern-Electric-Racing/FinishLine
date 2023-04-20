@@ -27,7 +27,7 @@ import { fullNamePipe } from '../../../../utils/pipes';
 import { GridColDefStyle } from '../../../../utils/tables';
 import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
-import { AssigneeEdit, PriorityEdit, TitleEdit } from './TaskListComponents';
+import { AssigneeEdit, DeadlineEdit, PriorityEdit, TitleEdit } from './TaskListComponents';
 import { Cancel } from '@mui/icons-material';
 
 const styles = {
@@ -154,6 +154,11 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const renderPriorityEdit = (params: GridRenderEditCellParams) => {
     return <PriorityEdit {...params} priority={priority} setPriority={setPriority} />;
   };
+
+  const renderDeadlineEdit = (params: GridRenderEditCellParams) => {
+    return <DeadlineEdit {...params} deadline={deadline} setDeadline={setDeadline} />;
+  };
+
 
   const getActions = (params: GridRowParams) => {
     const actions: JSX.Element[] = [];
@@ -293,7 +298,8 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       field: 'deadline',
       headerName: 'Deadline',
       type: 'date',
-      editable: true
+      editable: true,
+      renderEditCell: renderDeadlineEdit
     },
     {
       ...baseColDef,
