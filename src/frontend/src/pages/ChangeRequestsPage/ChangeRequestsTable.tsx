@@ -15,8 +15,9 @@ import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared
 import { GridColDefStyle } from '../../utils/tables';
 import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { ChangeRequestsViewProps } from './ChangeRequestsView';
 
-const ChangeRequestsTable: React.FC = () => {
+const ChangeRequestsTable: React.FC<ChangeRequestsViewProps> = ({ value, index }) => {
   const { isLoading, isError, data, error } = useAllChangeRequests();
   if (localStorage.getItem('cr-table-row-count') === null) {
     localStorage.setItem('cr-table-row-count', '50');
@@ -129,7 +130,7 @@ const ChangeRequestsTable: React.FC = () => {
     }
   ];
   return (
-    <div>
+    <div hidden={value !== index}>
       <DataGrid
         autoHeight
         disableSelectionOnClick

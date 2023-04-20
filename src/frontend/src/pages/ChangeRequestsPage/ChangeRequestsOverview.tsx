@@ -13,20 +13,22 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { ChangeRequestsViewProps } from './ChangeRequestsView';
 
-const ChangeRequestsOverview: React.FC = () => {
+const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, index }) => {
   const theme = useTheme();
   const user = useCurrentUser();
 
-  const { isLoading, isError, error, data } = useAllChangeRequests();
+  const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
   const { data: projects, isError: projectIsError, isLoading: projectLoading, error: projectError } = useAllProjects();
   const { data: workPackages, isError: wpIsError, isLoading: wpLoading, error: wpError } = useAllWorkPackages();
 
   // whether to show To Review section
   const showToReview = isHead(user.role) || isLeadership(user.role);
 
-  if (isLoading || projectLoading || wpLoading || !data || !projects || !workPackages) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (crIsLoading || projectLoading || wpLoading || !changeRequests || !projects || !workPackages)
+    return <LoadingIndicator />;
+  if (crIsError) return <ErrorPage message={crError?.message} />;
   if (projectIsError) return <ErrorPage message={projectError?.message} />;
   if (wpIsError) return <ErrorPage message={wpError?.message} />;
 
@@ -45,6 +47,8 @@ const ChangeRequestsOverview: React.FC = () => {
       (wp.projectManager ? wp.projectManager.userId === user.userId : false)
   );
 
+  // all of the wbs numbers (in x.x.x string format) corresponding to projects and work packages
+  // whose change requests the user would have to review
   const myWbs = myProjects
     .map((project: Project) => project.wbsNum)
     .concat(myWorkPackages.map((wp: WorkPackage) => wp.wbsNum))
@@ -52,14 +56,14 @@ const ChangeRequestsOverview: React.FC = () => {
 
   const currentDate = new Date();
 
-  const crToReview = data.filter(
+  const crToReview = changeRequests.filter(
     (cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId !== user.userId && myWbs.includes(wbsPipe(cr.wbsNum))
   );
   crToReview.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
-  const crUnreviewed = data.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
+  const crUnreviewed = changeRequests.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
   crUnreviewed.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
-  const crApproved = data.filter(
+  const crApproved = changeRequests.filter(
     (cr: ChangeRequest) =>
       cr.dateImplemented &&
       cr.submitter.userId === user.userId &&
@@ -98,7 +102,7 @@ const ChangeRequestsOverview: React.FC = () => {
   );
 
   return (
-    <Box>
+    <Box hidden={value !== index}>
       {showToReview ? (
         <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
           <Grid container>{display(crToReview)}</Grid>

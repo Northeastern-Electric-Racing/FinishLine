@@ -6,23 +6,18 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import ChangeRequestDetails from '../ChangeRequestDetailPage/ChangeRequestDetails';
-import ChangeRequestsTable from './ChangeRequestsTable';
 import CreateChangeRequest from '../CreateChangeRequestPage/CreateChangeRequest';
-import ChangeRequestsOverview from './ChangeRequestsOverview';
-import ChangeRequestsTitle from './ChangeRequestsTitle';
+import ChangeRequestsView from './ChangeRequestsView';
 
 const ChangeRequests: React.FC = () => {
   return (
-    <>
-      <ChangeRequestsTitle />
-      <Switch>
-        <Route path={routes.CHANGE_REQUESTS_OVERVIEW} component={ChangeRequestsOverview} />
-        <Route path={routes.ALL_CHANGE_REQUESTS} component={ChangeRequestsTable} />
-        <Route path={routes.CHANGE_REQUESTS_NEW} component={CreateChangeRequest} />
-        <Route path={routes.CHANGE_REQUESTS_BY_ID} component={ChangeRequestDetails} />
-        <Route path={routes.CHANGE_REQUESTS} component={ChangeRequestsOverview} />
-      </Switch>
-    </>
+    <Switch>
+      <Route path={routes.CHANGE_REQUESTS_OVERVIEW} component={ChangeRequestsView} />
+      <Route path={routes.ALL_CHANGE_REQUESTS} component={ChangeRequestsView} />
+      <Route path={routes.CHANGE_REQUESTS_NEW} component={CreateChangeRequest} />
+      <Route path={routes.CHANGE_REQUESTS_BY_ID} component={ChangeRequestDetails} />
+      <Route path={routes.CHANGE_REQUESTS} component={ChangeRequestsView} />
+    </Switch>
   );
 };
 
