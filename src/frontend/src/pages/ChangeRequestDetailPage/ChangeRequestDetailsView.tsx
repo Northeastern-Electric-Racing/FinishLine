@@ -10,7 +10,8 @@ import {
   ChangeRequest,
   ChangeRequestType,
   StageGateChangeRequest,
-  StandardChangeRequest
+  StandardChangeRequest,
+  isProject
 } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
@@ -30,6 +31,9 @@ import DeleteChangeRequest from './DeleteChangeRequest';
 import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import PostAddIcon from '@mui/icons-material/PostAdd';
+import { useSingleProject } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const convertStatus = (cr: ChangeRequest): string => {
   if (cr.dateImplemented) {
@@ -92,6 +96,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteOpen = () => setDeleteModalShow(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error
+  } = useSingleProject({
+    carNumber: changeRequest.wbsNum.carNumber,
+    projectNumber: changeRequest.wbsNum.projectNumber,
+    workPackageNumber: 0
+  });
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (!project || isLoading) return <LoadingIndicator />;
+  const { name: projectName } = project;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -207,7 +224,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </Grid>
           <Grid item xs={10}>
             <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-              {wbsPipe(changeRequest.wbsNum)}
+              {wbsPipe(changeRequest.wbsNum)} - {projectName}
+              {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
             </Link>
           </Grid>
           <Grid item xs={3} md={2}>
