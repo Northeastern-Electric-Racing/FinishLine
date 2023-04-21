@@ -16,21 +16,21 @@ interface ProjectDetailPageTabProps {
 
 // Page block containing project detail tabs
 const ProjectDetailTabs = ({ project, setTab }: ProjectDetailPageTabProps) => {
-  // Values that go in the URL depending on the tab value, example /projects/0.0.0/Scope
-  const tabUrlValues = useMemo(() => ['Overview', 'Tasks', 'Scope', 'Gantt', 'Changes'], []);
+  // Values that go in the URL depending on the tab value, example /projects/0.0.0/scope
+  const tabUrlValues = useMemo(() => ['overview', 'tasks', 'scope', 'gantt', 'changes'], []);
 
   const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
   const wbsNum = wbsPipe(project.wbsNum);
 
   // Default to the "overview" tab
-  const initialTab: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
+  const initialTab: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
   const [tabValue, setTabValue] = useState<number>(initialTab);
 
   // Change tab when the browser forward/back button is pressed
   const { pathname } = useLocation();
   useEffect(() => {
-    const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
+    const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
     setTab(newTabValue);
     setTabValue(newTabValue);
   }, [pathname, setTab, setTabValue, tabUrlValues, tabValueString]);
@@ -43,27 +43,27 @@ const ProjectDetailTabs = ({ project, setTab }: ProjectDetailPageTabProps) => {
   return (
     <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
       <Tab
-        label="Overview"
-        aria-label="Overview"
+        label="overview"
+        aria-label="overview"
         value={0}
         component={RouterLink}
-        to={`${routes.PROJECTS}/${wbsNum}/Overview`}
+        to={`${routes.PROJECTS}/${wbsNum}/overview`}
       />
       <Tab
-        label="Tasks"
-        aria-label="Tasks"
+        label="tasks"
+        aria-label="tasks"
         value={1}
         component={RouterLink}
-        to={`${routes.PROJECTS}/${wbsNum}/Tasks/in-progress`}
+        to={`${routes.PROJECTS}/${wbsNum}/tasks/in-progress`}
       />
-      <Tab label="Scope" aria-label="Scope" value={2} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Scope`} />
-      <Tab label="Gantt" aria-label="Gantt" value={3} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Gantt`} />
+      <Tab label="scope" aria-label="scope" value={2} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/scope`} />
+      <Tab label="gantt" aria-label="gantt" value={3} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/gantt`} />
       <Tab
-        label="Changes"
-        aria-label="Changes"
+        label="changes"
+        aria-label="changes"
         value={4}
         component={RouterLink}
-        to={`${routes.PROJECTS}/${wbsNum}/Changes`}
+        to={`${routes.PROJECTS}/${wbsNum}/changes`}
       />
     </Tabs>
   );

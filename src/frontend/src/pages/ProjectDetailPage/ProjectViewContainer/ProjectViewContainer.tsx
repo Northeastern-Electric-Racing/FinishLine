@@ -144,11 +144,17 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         actionButton={projectActionsDropdown}
       />
       <ProjectDetailTabs project={proj} setTab={setTab} />
-      <ProjectDetails project={proj} index={tab} value={0} />
-      <TaskList project={proj} index={tab} value={1} />
-      <ScopeTab project={proj} index={tab} value={2} />
-      <ProjectGantt workPackages={proj.workPackages} value={3} index={tab} />
-      <ProjectChangesList changes={proj.changes} value={4} index={tab} />
+      {tab === 0 ? (
+        <ProjectDetails project={proj} />
+      ) : tab === 1 ? (
+        <TaskList project={proj} />
+      ) : tab === 2 ? (
+        <ScopeTab project={proj} />
+      ) : tab === 3 ? (
+        <ProjectGantt workPackages={proj.workPackages} />
+      ) : (
+        <ProjectChangesList changes={proj.changes} />
+      )}
       {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );
