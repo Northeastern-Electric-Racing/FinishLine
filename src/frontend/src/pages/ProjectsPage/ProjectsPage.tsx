@@ -49,22 +49,38 @@ const ProjectsPage: React.FC = () => {
       <PageTitle title={'Projects'} previousPages={[]} />
       <Grid container justifyContent={'center'}>
         <Grid item>
-          <Button onClick={() => clickHandler('favorite')} color={selectedButton === 'favorite' ? 'primary' : 'secondary'}>
+          <Button
+            onClick={() => clickHandler('favorite')}
+            color={selectedButton === 'favorite' ? 'primary' : 'secondary'}
+            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+          >
             Favorites
           </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('lead')} color={selectedButton === 'lead' ? 'primary' : 'secondary'}>
+          <Button
+            onClick={() => clickHandler('lead')}
+            color={selectedButton === 'lead' ? 'primary' : 'secondary'}
+            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+          >
             Lead/Manage
           </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('team')} color={selectedButton === 'team' ? 'primary' : 'secondary'}>
+          <Button
+            onClick={() => clickHandler('team')}
+            color={selectedButton === 'team' ? 'primary' : 'secondary'}
+            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+          >
             Your Team
           </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('all')} color={selectedButton === 'all' ? 'primary' : 'secondary'}>
+          <Button
+            onClick={() => clickHandler('all')}
+            color={selectedButton === 'all' ? 'primary' : 'secondary'}
+            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+          >
             All Projects
           </Button>
         </Grid>
