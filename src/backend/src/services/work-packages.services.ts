@@ -1,6 +1,6 @@
 import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
-  daysBetween,
+  getDay,
   DescriptionBullet,
   equalsWbsNumber,
   isAdmin,
@@ -590,11 +590,12 @@ export default class WorkPackagesService {
 
   /**
    * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * Sends a message for every work package that is due before or on the given deadline (even before today)
    * @param user - the user doing the sending
-   * @param daysUntilDeadline - days forwards (or backwards!) to check
+   * @param deadline - the deadline
    * @returns
    */
-  static async slackMessageUpcomingDeadlines(user: User, daysUntilDeadline: number): Promise<void> {
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date): Promise<void> {
     if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
@@ -605,7 +606,7 @@ export default class WorkPackagesService {
 
     const upcomingWorkPackages = workPackages
       .map(workPackageTransformer)
-      .filter((wp) => daysBetween(wp.endDate, new Date()) <= daysUntilDeadline)
+      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
 
     // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
