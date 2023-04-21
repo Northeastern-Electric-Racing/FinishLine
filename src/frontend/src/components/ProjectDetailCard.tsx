@@ -7,7 +7,7 @@ import { Construction, Work } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import { Box, Card, CardContent, Link, Typography, Grid, Chip } from '@mui/material';
+import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
@@ -26,7 +26,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
 
   return (
     <Card sx={{ borderRadius: 5, minWidth: 600, maxWidth: 600, minHeight: 250 }}>
-      <CardContent sx={{ my: 0, mx: 0 }}>
+      <CardContent>
         <Grid container alignItems="center">
           <Grid item>
             <Link component={RouterLink} to={`/projects/${wbsPipe(project.wbsNum)}`}>
@@ -41,20 +41,20 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
         </Grid>
 
         <Grid container sx={{ marginTop: '0.5rem' }}>
-          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={6}>
+          <Grid item display="flex" xs={4}>
+            <Construction sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectLead)}</Typography>
+          </Grid>
+          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
             <ScheduleIcon sx={{ mr: 1 }} />
             <Typography>{project.duration} weeks left</Typography>
           </Grid>
-          <Grid item display="flex" xs={6}>
-            <Construction sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectLead)}</Typography>
+          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
+            <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
           </Grid>
-          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={6}>
-            <AttachMoneyIcon sx={{ mr: 1 }} /> <Typography>{project.budget}</Typography>
-          </Grid>
-          <Grid item display="flex" xs={6}>
+          <Grid item display="flex" xs={4}>
             <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectManager)}</Typography>
           </Grid>
-          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={6}>
+          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
             <DescriptionIcon sx={{ mr: 1 }} />
             {project.gDriveLink ? (
               <Link href={project.gDriveLink} target="_blank" underline="hover">
@@ -64,8 +64,8 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
               'No Link'
             )}
           </Grid>
-          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={6}>
-            <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
+          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
+            <AttachMoneyIcon sx={{ mr: 1 }} /> <Typography>{project.budget}</Typography>
           </Grid>
         </Grid>
 
@@ -86,7 +86,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
                     <Grid item xs={3} display="flex" justifyContent="left">
                       <WorkPackageStageChip stage={workPackage.stage} />
                     </Grid>
-                    <Grid item xs={3} display="flex" justifyContent="flex-end">
+                    <Grid item xs={3} display="flex">
                       <Box display="flex">
                         <ScheduleIcon sx={{ mr: 1 }} /> <Typography>{workPackage.duration} weeks left</Typography>
                       </Box>
