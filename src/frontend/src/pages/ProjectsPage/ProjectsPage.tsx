@@ -21,20 +21,25 @@ import { isLeadership } from 'shared';
 const ProjectsPage: React.FC = () => {
   const auth = useAuth();
   const [render, setRender] = useState(<ProjectsTable />);
+  const [selectedButton, setSelectedButton] = useState<string>('all');
 
   const clickHandler = (page: 'favorite' | 'lead' | 'team' | 'all') => {
     switch (page) {
       case 'favorite':
         setRender(<FavoriteProjects />);
+        setSelectedButton('favorite');
         break;
       case 'lead':
         setRender(<LeadOrManagerProjects />);
+        setSelectedButton('lead');
         break;
       case 'team':
         setRender(<InTeamProjects />);
+        setSelectedButton('team');
         break;
       case 'all':
         setRender(<ProjectsTable />);
+        setSelectedButton('all');
         break;
     }
   };
@@ -44,16 +49,24 @@ const ProjectsPage: React.FC = () => {
       <PageTitle title={'Projects'} previousPages={[]} />
       <Grid container justifyContent={'center'}>
         <Grid item>
-          <Button onClick={() => clickHandler('favorite')}>Favorites</Button>
+          <Button onClick={() => clickHandler('favorite')} color={selectedButton === 'favorite' ? 'primary' : 'secondary'}>
+            Favorites
+          </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('lead')}>Lead/Manage</Button>
+          <Button onClick={() => clickHandler('lead')} color={selectedButton === 'lead' ? 'primary' : 'secondary'}>
+            Lead/Manage
+          </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('team')}>Your Team</Button>
+          <Button onClick={() => clickHandler('team')} color={selectedButton === 'team' ? 'primary' : 'secondary'}>
+            Your Team
+          </Button>
         </Grid>
         <Grid item>
-          <Button onClick={() => clickHandler('all')}>All Project</Button>
+          <Button onClick={() => clickHandler('all')} color={selectedButton === 'all' ? 'primary' : 'secondary'}>
+            All Projects
+          </Button>
         </Grid>
         {render}
       </Grid>
