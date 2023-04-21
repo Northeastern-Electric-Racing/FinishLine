@@ -296,7 +296,7 @@ describe('Work Packages', () => {
     });
 
     it('fails when the user is not an admin', async () => {
-      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, 3)).rejects.toThrow(
+      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, new Date())).rejects.toThrow(
         new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages')
       );
     });
