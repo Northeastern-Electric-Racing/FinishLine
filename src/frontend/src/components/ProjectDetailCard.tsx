@@ -56,13 +56,9 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
           </Grid>
           <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
             <DescriptionIcon sx={{ mr: 1 }} />
-            {project.gDriveLink ? (
-              <Link href={project.gDriveLink} target="_blank" underline="hover">
-                Google Drive
-              </Link>
-            ) : (
-              'No Link'
-            )}
+            <Link href={project.gDriveLink} target="_blank" underline="hover">
+              Google Drive
+            </Link>
           </Grid>
           <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
             <AttachMoneyIcon sx={{ mr: 1 }} /> <Typography>{project.budget}</Typography>
