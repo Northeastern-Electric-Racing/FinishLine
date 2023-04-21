@@ -13,6 +13,8 @@ import {
   GridRenderEditCellParams,
   GridRowId,
   GridRowModel,
+  GridRowModes,
+  GridRowModesModel,
   GridRowParams
 } from '@mui/x-data-grid';
 import CheckIcon from '@mui/icons-material/Check';
@@ -78,15 +80,13 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
+  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+
   const theme = useTheme();
 
   let [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
 
   const processRowUpdate = async (newRow: GridRowModel) => {
-    setTitle(newRow.title);
-    setPriority(newRow.priority);
-    setDeadline(newRow.deadline);
-    setAssignees(newRow.assignees);
     return {
       id: newRow.id,
       title: newRow.title,
@@ -246,6 +246,11 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
             onClick={() => {
+              setRowModesModel({ ...rowModesModel, [params.id]: { mode: GridRowModes.Edit } });
+              setTitle(params.row.title);
+              setDeadline(params.row.deadline);
+              setPriority(params.row.priority);
+              setAssignees(params.row.assignees);
               setCurrentlyEditingId(params.id);
             }}
           />
@@ -265,6 +270,10 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       }
     }
     return actions;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
   };
 
   const baseColDef: GridColDefStyle = {
@@ -367,29 +376,17 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   }
 
   const isCellEditable = (params: GridCellParams) => {
-    return params.id === -1 || params.id === currentlyEditingId || editTaskPermissions(params.row.task);
+    return params.id === -1 || params.id === currentlyEditingId;
   };
 
   return (
     <DataGrid
       columns={columns}
       rows={rows}
+      editMode="row"
       isCellEditable={isCellEditable}
-      onCellEditStart={(params) => {
-        setTitle(params.row.title);
-        setDeadline(params.row.deadline);
-        setPriority(params.row.priority);
-        setAssignees(params.row.assignees);
-        setCurrentlyEditingId(params.row.id);
-      }}
-      onCellEditStop={(params) => {
-        params.row.title = title;
-        params.row.deadline = deadline;
-        params.row.priority = priority;
-        params.row.assignees = assignees;
-      }}
-      experimentalFeatures={{ newEditingApi: true }}
       processRowUpdate={processRowUpdate}
+      onRowModesModelChange={handleRowModesModelChange}
       pageSize={pageSize}
       rowsPerPageOptions={[5, 10, 15, 100]}
       onPageSizeChange={(newPageSize) => {
