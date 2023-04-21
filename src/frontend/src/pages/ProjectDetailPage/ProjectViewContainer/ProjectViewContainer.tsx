@@ -19,19 +19,19 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Grid, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useSetProjectTeam, useToggleProjectFavorite } from '../../../hooks/projects.hooks';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
-import StarIcon from '@mui/icons-material/Star';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
+import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -42,7 +42,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const user = useCurrentUser();
   const toast = useToast();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const { mutateAsync: mutateAsyncToggleProjectFavorite } = useToggleProjectFavorite(project.wbsNum);
   const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
@@ -83,17 +82,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     }
   };
 
-  const handleClickFavorite = async () => {
-    try {
-      await mutateAsyncToggleProjectFavorite();
-      toast.info(`Successfully ${projectIsFavorited ? 'un' : ''}favorited project ${wbsPipe(project.wbsNum)}!`);
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-  };
-
   const EditButton = () => (
     <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
       <ListItemIcon>
@@ -101,22 +89,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       </ListItemIcon>
       Edit
     </MenuItem>
-  );
-
-  const FavoriteButton = () => (
-    <IconButton
-      onClick={handleClickFavorite}
-      disabled={isGuest(user.role)}
-      sx={{
-        color: projectIsFavorited ? 'Gold' : undefined,
-        ml: 2,
-        mt: '3px',
-        maxHeight: '37.05px',
-        maxWidth: '37.05px'
-      }}
-    >
-      <StarIcon fontSize="large" stroke={'black'} strokeWidth={1} />
-    </IconButton>
   );
 
   const CreateChangeRequestButton = () => (
@@ -186,7 +158,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             </Typography>
           </Grid>
           <Grid item>
-            <FavoriteButton />
+            <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
           </Grid>
           <Grid item sx={{ mx: 0 }} xs>
             <Grid container direction="row-reverse">

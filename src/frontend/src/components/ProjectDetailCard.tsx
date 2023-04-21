@@ -1,16 +1,19 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { Construction, Work } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import { Box, Card, CardContent, Link, Typography, Grid, Chip, IconButton } from '@mui/material';
+import { Box, Card, CardContent, Link, Typography, Grid, Chip } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { isGuest, Project, WbsElementStatus, wbsPipe } from 'shared';
-import { useToggleProjectFavorite } from '../hooks/projects.hooks';
-import { useToast } from '../hooks/toasts.hooks';
-import { useCurrentUser } from '../hooks/users.hooks';
+import { Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
-import StarIcon from '@mui/icons-material/Star';
+import FavoriteProjectButton from './FavoriteProjectButton';
+import TaskIcon from '@mui/icons-material/Task';
 
 interface ProjectDetailCardProps {
   project: Project;
@@ -18,42 +21,12 @@ interface ProjectDetailCardProps {
 }
 
 const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectIsFavorited }) => {
-  const user = useCurrentUser();
-  const toast = useToast();
-  const { mutateAsync: mutateAsyncToggleProjectFavorite } = useToggleProjectFavorite(project.wbsNum);
-
   const containsWorkPackages = project.workPackages.length > 0;
-
-  const handleClickFavorite = async () => {
-    try {
-      await mutateAsyncToggleProjectFavorite();
-      toast.info(`Successfully ${projectIsFavorited ? 'un' : ''}favorited project ${wbsPipe(project.wbsNum)}!`);
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-  };
-
-  const FavoriteButton = () => (
-    <IconButton
-      onClick={handleClickFavorite}
-      disabled={isGuest(user.role)}
-      sx={{
-        color: projectIsFavorited ? 'Gold' : undefined,
-        ml: 2,
-        mt: '3px',
-        maxHeight: '37.05px',
-        maxWidth: '37.05px'
-      }}
-    >
-      <StarIcon fontSize="large" stroke={'black'} strokeWidth={0.5} />
-    </IconButton>
-  );
+  const tasksLeft: number = project.tasks.filter((task) => task.status !== TaskStatus.DONE).length;
 
   return (
     <Card sx={{ borderRadius: 5, minWidth: 600, maxWidth: 600, minHeight: 250 }}>
-      <CardContent>
+      <CardContent sx={{ my: 0, mx: 0 }}>
         <Grid container alignItems="center">
           <Grid item>
             <Link component={RouterLink} to={`/projects/${wbsPipe(project.wbsNum)}`}>
@@ -62,41 +35,37 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
               </Typography>
             </Link>
           </Grid>
-          <Grid item xs>
-            <Grid container direction="row-reverse">
-              <FavoriteButton />
-            </Grid>
+          <Grid item xs display="flex" justifyContent="flex-end">
+            <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
           </Grid>
         </Grid>
 
         <Grid container sx={{ marginTop: '0.5rem' }}>
-          <Grid item container xs={6}>
-            <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={12}>
-              <ScheduleIcon sx={{ mr: 1 }} />
-              <Typography>{project.duration} weeks left</Typography>
-            </Grid>
-            <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={12}>
-              <AttachMoneyIcon sx={{ mr: 0.5 }} /> <Typography>{project.budget}</Typography>
-            </Grid>
-            <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={12}>
-              <DescriptionIcon sx={{ mr: 1 }} />
-              {project.gDriveLink ? (
-                <Link href={project.gDriveLink} target="_blank" underline="hover">
-                  Google Drive
-                </Link>
-              ) : (
-                'No Link'
-              )}
-            </Grid>
+          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={6}>
+            <ScheduleIcon sx={{ mr: 1 }} />
+            <Typography>{project.duration} weeks left</Typography>
           </Grid>
-
-          <Grid item container xs={6}>
-            <Grid item xs={12}>
-              <Chip icon={<Construction />} label={fullNamePipe(project.projectLead)} size="medium" />
-            </Grid>
-            <Grid item xs={12}>
-              <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(project.projectManager)} size="medium" />
-            </Grid>
+          <Grid item display="flex" xs={6}>
+            <Construction sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectLead)}</Typography>
+          </Grid>
+          <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={6}>
+            <AttachMoneyIcon sx={{ mr: 1 }} /> <Typography>{project.budget}</Typography>
+          </Grid>
+          <Grid item display="flex" xs={6}>
+            <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectManager)}</Typography>
+          </Grid>
+          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={6}>
+            <DescriptionIcon sx={{ mr: 1 }} />
+            {project.gDriveLink ? (
+              <Link href={project.gDriveLink} target="_blank" underline="hover">
+                Google Drive
+              </Link>
+            ) : (
+              'No Link'
+            )}
+          </Grid>
+          <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={6}>
+            <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
           </Grid>
         </Grid>
 
