@@ -25,6 +25,7 @@ import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { WorkPackageStage } from 'shared';
+import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -50,8 +51,8 @@ const schema = yup.object().shape({
 
 interface CreateWorkPackageFormViewProps {
   allowSubmit: boolean;
-  onSubmit: (data: any) => void;
-  onCancel: (e: any) => void;
+  onSubmit: (data: CreateWorkPackageFormInputs) => void;
+  onCancel: () => void;
 }
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
@@ -73,7 +74,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       name: '',
       wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
-      stage: 'NONE',
+      stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
       duration: null,
       blockedBy: [] as { wbsNum: string }[],

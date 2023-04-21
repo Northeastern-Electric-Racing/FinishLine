@@ -14,7 +14,6 @@ import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ProjectDetails from './ProjectDetails';
 import RulesList from './RulesList';
-import RiskLog from './RiskLog';
 import { routes } from '../../../utils/routes';
 import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
@@ -148,7 +147,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
       <ProjectDetails project={proj} />
       <TaskList project={proj} />
       <PageBlock title={'Summary'}>{proj.summary}</PageBlock>
-      <RiskLog projectId={proj.id} wbsNum={proj.wbsNum} projLead={proj.projectLead} projManager={proj.projectManager} />
       <ProjectGantt workPackages={proj.workPackages} />
       <DescriptionList title={'Goals'} items={proj.goals.filter((goal) => !goal.dateDeleted)} />
       <DescriptionList title={'Features'} items={proj.features.filter((feature) => !feature.dateDeleted)} />

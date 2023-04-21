@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import riskQueryArgs from './risks.query-args';
 import taskQueryArgs from './tasks.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
@@ -16,7 +15,6 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
     goals: { where: { dateDeleted: null } },
     features: { where: { dateDeleted: null } },
     otherConstraints: { where: { dateDeleted: null } },
-    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
     workPackages: {
       where: {
         wbsElement: {
