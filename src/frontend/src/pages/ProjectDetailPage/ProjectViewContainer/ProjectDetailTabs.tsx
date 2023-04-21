@@ -11,10 +11,11 @@ import { routes } from '../../../utils/routes';
 
 interface ProjectDetailPageTabProps {
   project: Project;
+  setTab: (value: number) => void;
 }
 
 // Page block containing project detail tabs
-const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
+const ProjectDetailTabs = ({ project, setTab }: ProjectDetailPageTabProps) => {
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/Scope
   const tabUrlValues = useMemo(() => ['Overview', 'Tasks', 'Scope', 'Gantt', 'Changes'], []);
 
@@ -30,10 +31,12 @@ const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
   const { pathname } = useLocation();
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'Overview');
+    setTab(newTabValue);
     setTabValue(newTabValue);
-  }, [pathname, setTabValue, tabUrlValues, tabValueString]);
+  }, [pathname, setTab, setTabValue, tabUrlValues, tabValueString]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
+    setTab(newValue);
     setTabValue(newValue);
   };
 
@@ -46,7 +49,13 @@ const ProjectDetailTabs = ({ project }: ProjectDetailPageTabProps) => {
         component={RouterLink}
         to={`${routes.PROJECTS}/${wbsNum}/Overview`}
       />
-      <Tab label="Tasks" aria-label="Tasks" value={1} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Tasks`} />
+      <Tab
+        label="Tasks"
+        aria-label="Tasks"
+        value={1}
+        component={RouterLink}
+        to={`${routes.PROJECTS}/${wbsNum}/Tasks/in-progress`}
+      />
       <Tab label="Scope" aria-label="Scope" value={2} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Scope`} />
       <Tab label="Gantt" aria-label="Gantt" value={3} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/Gantt`} />
       <Tab

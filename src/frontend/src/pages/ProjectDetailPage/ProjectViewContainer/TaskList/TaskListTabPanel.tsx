@@ -167,7 +167,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   return (
     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`}>
       {value === index && (
-        <Box sx={{ height: 400, width: '100%' }}>
+        <Box sx={{ height: '100%', width: '100%' }}>
           <TaskListDataGrid
             team={team}
             status={status}

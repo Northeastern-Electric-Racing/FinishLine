@@ -23,6 +23,11 @@ import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { ScopeTab } from './ScopeTab';
+import ProjectGantt from './ProjectGantt';
+import ProjectChangesList from './ProjectChangesList';
+import ProjectDetails from './ProjectDetails';
+import TaskList from './TaskList/TaskList';
 
 interface ProjectViewContainerProps {
   proj: Project;
@@ -39,6 +44,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
   const toast = useToast();
   const { mutateAsync } = useSetProjectTeam(proj.wbsNum);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [tab, setTab] = useState(0);
 
   if (!auth.user) return <LoadingIndicator />;
 
@@ -137,8 +143,12 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ proj, enter
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         actionButton={projectActionsDropdown}
       />
-      <ProjectDetailTabs project={proj} />
-
+      <ProjectDetailTabs project={proj} setTab={setTab} />
+      <ProjectDetails project={proj} index={tab} value={0} />
+      <TaskList project={proj} index={tab} value={1} />
+      <ScopeTab project={proj} index={tab} value={2} />
+      <ProjectGantt workPackages={proj.workPackages} value={3} index={tab} />
+      <ProjectChangesList changes={proj.changes} value={4} index={tab} />
       {deleteModalShow && <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={proj.wbsNum} />}
     </>
   );

@@ -6,13 +6,15 @@
 import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
 import { ganttAllColumns } from '../../../utils/chart-data';
-import PageBlock from '../../../layouts/PageBlock';
+import { Box } from '@mui/material';
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];
+  index: number;
+  value: number;
 }
 
-const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
+const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages, index, value }) => {
   const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, wp.progress, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {
@@ -27,9 +29,17 @@ const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
     }
   };
   return (
-    <PageBlock title={'Gantt Chart'}>
-      {workPackages.length > 0 ? <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} /> : ''}
-    </PageBlock>
+    <div>
+      {index === value && (
+        <Box sx={{ my: 2 }}>
+          {workPackages.length > 0 ? (
+            <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} />
+          ) : (
+            ''
+          )}
+        </Box>
+      )}
+    </div>
   );
 };
 
