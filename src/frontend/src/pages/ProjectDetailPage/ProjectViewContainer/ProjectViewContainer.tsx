@@ -107,7 +107,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     <IconButton
       onClick={handleClickFavorite}
       disabled={isGuest(user.role)}
-      sx={{ color: projectIsFavorited ? 'Gold' : undefined, mx: 1, mt: 0.5, maxHeight: '37.05px' }}
+      sx={{
+        color: projectIsFavorited ? 'Gold' : undefined,
+        ml: 2,
+        mt: '3px',
+        maxHeight: '37.05px',
+        maxWidth: '37.05px'
+      }}
     >
       <StarIcon fontSize="large" stroke={'black'} strokeWidth={1} />
     </IconButton>
