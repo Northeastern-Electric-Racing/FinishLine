@@ -36,14 +36,14 @@ const FavoriteProjectButton = ({ wbsNum, projectIsFavorited }: FavoriteProjectBu
       onClick={onClick}
       disabled={isGuest(user.role)}
       sx={{
-        color: projectIsFavorited ? 'Gold' : undefined,
+        color: projectIsFavorited ? 'Gold' : 'lightgray',
         ml: 2,
         mt: '3px',
         maxHeight: '37.05px',
         maxWidth: '37.05px'
       }}
     >
-      <StarIcon fontSize="large" stroke={'black'} strokeWidth={0.5} />
+      <StarIcon fontSize="large" />
     </IconButton>
   );
 };
