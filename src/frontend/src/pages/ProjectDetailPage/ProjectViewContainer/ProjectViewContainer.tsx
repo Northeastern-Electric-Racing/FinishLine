@@ -9,7 +9,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import ChangesList from '../../../components/ChangesList';
 import DescriptionList from '../../../components/DescriptionList';
 import WorkPackageSummary from './WorkPackageSummary';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ProjectDetails from './ProjectDetails';
 import RulesList from './RulesList';
@@ -20,18 +19,19 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Grid, IconButton, Menu, MenuItem } from '@mui/material';
+import { Grid, Menu, MenuItem, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useSetProjectTeam, useToggleProjectFavorite } from '../../../hooks/projects.hooks';
+import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import TaskList from './TaskList/TaskList';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
-import StarIcon from '@mui/icons-material/Star';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
+import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -42,7 +42,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const user = useCurrentUser();
   const toast = useToast();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
-  const { mutateAsync: mutateAsyncToggleProjectFavorite } = useToggleProjectFavorite(project.wbsNum);
   const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
@@ -83,18 +82,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     }
   };
 
-  const handleClickFavorite = async () => {
-    try {
-      await mutateAsyncToggleProjectFavorite();
-      toast.info(`Successfully ${projectIsFavorited ? 'un' : ''}favorited project ${wbsPipe(project.wbsNum)}!`);
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-  };
-
-  const editBtn = (
+  const EditButton = () => (
     <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
       <ListItemIcon>
         <EditIcon fontSize="small" />
@@ -103,17 +91,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const FavoriteButton = () => (
-    <IconButton
-      onClick={handleClickFavorite}
-      disabled={isGuest(user.role)}
-      sx={{ color: projectIsFavorited ? 'Gold' : undefined, mx: 1 }}
-    >
-      <StarIcon fontSize="medium" stroke={'black'} strokeWidth={1} />
-    </IconButton>
-  );
-
-  const createCRBtn = (
+  const CreateChangeRequestButton = () => (
     <MenuItem
       component={Link}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
@@ -136,7 +114,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const deleteButton = (
+  const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
       <ListItemIcon>
         <DeleteIcon fontSize="small" />
@@ -147,9 +125,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const projectActionsDropdown = (
     <Grid container>
-      <Grid item>
-        <FavoriteButton />
-      </Grid>
+      <Grid item></Grid>
       <Grid item>
         <NERButton
           endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
@@ -161,21 +137,36 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         </NERButton>
       </Grid>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {editBtn}
-        {createCRBtn}
+        <EditButton />
+        <CreateChangeRequestButton />
         {teamAsLeadId && assignToMyTeamButton}
-        {deleteButton}
+        <DeleteButton />
       </Menu>
     </Grid>
   );
 
+  const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
+
   return (
     <>
-      <PageTitle
-        title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
-        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-        actionButton={projectActionsDropdown}
-      />
+      <>
+        <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
+        <Grid container alignItems="center" sx={{ mb: 2 }}>
+          <Grid item>
+            <Typography variant="h4" fontSize={30}>
+              {pageTitle}
+            </Typography>
+          </Grid>
+          <Grid item>
+            <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
+          </Grid>
+          <Grid item sx={{ mx: 0 }} xs>
+            <Grid container direction="row-reverse">
+              <Grid item>{projectActionsDropdown}</Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </>
       <ProjectDetails project={project} />
       <TaskList project={project} />
       <PageBlock title={'Summary'}>{project.summary}</PageBlock>
