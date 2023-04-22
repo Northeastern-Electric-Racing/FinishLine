@@ -29,7 +29,7 @@ describe('Work Packages', () => {
   };
   const name = 'Pack your bags';
   const crId = 1;
-  const startDate = '2022-09-18';
+  const startDate = '2023-04-24';
   const duration = 5;
   const blockedBy: WbsNumber[] = [
     {
@@ -192,6 +192,44 @@ describe('Work Packages', () => {
       );
     });
 
+    test('the endpoint fails when not a monday', async () => {
+      const foundWbsElem = {
+        ...prismaWbsElement1,
+        project: { carNumber: 1, projectNumber: 2, workPackageNumber: 0, projectId: 55, workPackages: [] }
+      };
+      const newPrismaWp = {
+        ...prismaWorkPackage1,
+        wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
+      };
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
+      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      jest.spyOn(prisma.work_Package, 'create').mockResolvedValue(newPrismaWp);
+
+      const createWorkPackageArgsNotMonday: [
+        User,
+        WbsNumber,
+        string,
+        number,
+        WorkPackageStage,
+        string,
+        number,
+        WbsNumber[],
+        string[],
+        string[]
+      ] = [batman, projectWbsNum, name, crId, stage, '2022-09-18', duration, blockedBy, expectedActivities, deliverables];
+
+      const callCreateWP = async () => {
+        return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgsNotMonday);
+      };
+
+      await expect(callCreateWP()).rejects.toThrow(new HttpException(400, 'Start day must be a monday'));
+
+      // check that prisma functions (or functions that call prisma functions)
+      // are called exactly as many times as needed
+      expect(prisma.work_Package.create).toHaveBeenCalledTimes(0);
+      expect(changeRequestUtils.validateChangeRequestAccepted).toHaveBeenCalledTimes(1);
+      expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1 + blockedBy.length);
+    });
     test('the endpoint completes successfully', async () => {
       const foundWbsElem = {
         ...prismaWbsElement1,
@@ -199,6 +237,7 @@ describe('Work Packages', () => {
       };
       const newPrismaWp = {
         ...prismaWorkPackage1,
+        startDate: new Date('04/24/2023'),
         wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
       };
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
