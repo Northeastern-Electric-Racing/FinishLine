@@ -24,7 +24,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButto
   return (
     <>
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-      <Grid container sx={{ mt: 1, mb: 2 }}>
+      <Grid container sx={{ mb: 2 }} alignItems="center">
         <Grid item>
           <Typography variant="h4" fontSize={30} sx={{ verticalAlign: 'middle', display: 'inline-flex' }}>
             {title}

@@ -105,6 +105,15 @@ export const nerThemeOptions: ThemeOptions = {
           overflowWrap: 'anywhere'
         }
       }
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          '&:last-child': {
+            paddingBottom: '16px'
+          }
+        }
+      }
     }
   }
 };
