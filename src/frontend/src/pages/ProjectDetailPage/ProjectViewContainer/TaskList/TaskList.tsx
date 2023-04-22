@@ -4,7 +4,7 @@
  */
 
 import { AddTask } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Tab, Tabs, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Tab, Tabs, useTheme } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { isLeadership, Project, Task, TaskStatus, wbsPipe } from 'shared';
@@ -14,7 +14,6 @@ import { Auth } from '../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 
-const TASK_LIST_TITLE: string = 'Task List';
 interface TaskListProps {
   project: Project;
 }
@@ -85,17 +84,7 @@ const TaskList = ({ project }: TaskListProps) => {
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper }} variant="outlined">
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              cursor: 'pointer'
-            }}
-          >
-            {TASK_LIST_TITLE}
-          </Typography>
-          {addTaskButton}
-        </Box>
+        <Box sx={{ float: 'right', mb: 1 }}>{addTaskButton}</Box>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
             <Tab
