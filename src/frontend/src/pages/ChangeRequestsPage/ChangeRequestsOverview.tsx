@@ -73,7 +73,7 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
     a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
   );
 
-  const display = (crList: ChangeRequest[]) => (
+  const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
       sx={{
         display: 'flex',
@@ -103,16 +103,16 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
 
   return (
     <Box hidden={value !== index}>
-      {showToReview ? (
+      {showToReview && (
         <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
-          <Grid container>{display(crToReview)}</Grid>
+          <Grid container>{displayCRCards(crToReview)}</Grid>
         </PageBlock>
-      ) : null}
+      )}
       <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
-        <Grid container>{display(crUnreviewed)}</Grid>
+        <Grid container>{displayCRCards(crUnreviewed)}</Grid>
       </PageBlock>
       <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
-        <Grid container>{display(crApproved)}</Grid>
+        <Grid container>{displayCRCards(crApproved)}</Grid>
       </PageBlock>
     </Box>
   );
