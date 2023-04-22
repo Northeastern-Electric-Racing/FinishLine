@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { User } from 'shared';
+import { Project, User } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -62,6 +62,15 @@ export const logUserInDev = (userId: number) => {
  */
 export const getSingleUserSettings = (id: number) => {
   return axios.get<UserSettings>(apiUrls.userSettingsByUserId(`${id}`));
+};
+
+/**
+ * Fetch a user's favorite projects
+ *
+ * @param id User ID of the requested user's favorite projects.
+ */
+export const getUsersFavoriteProjects = (id: number) => {
+  return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`));
 };
 
 /**

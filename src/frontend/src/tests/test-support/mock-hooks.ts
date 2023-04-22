@@ -1,5 +1,5 @@
 import { UseMutationResult } from 'react-query';
-import { AuthenticatedUser, DescriptionBullet, User, UserSettings, WorkPackage } from 'shared';
+import { AuthenticatedUser, DescriptionBullet, Project, User, UserSettings, WorkPackage } from 'shared';
 import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/tasks.hooks';
 import { VersionObject } from '../../utils/types';
 import { mockUseMutationResult, mockUseQueryResult } from './test-data/test-utils.stub';
@@ -28,6 +28,9 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
     settings || { id: 'id', defaultTheme: 'DARK', slackId: 'slackId' },
     new Error()
   );
+
+export const mockUseUsersFavoriteProjects = (projects?: Project[]) =>
+  mockUseQueryResult<Project[]>(false, false, projects || [], new Error());
 
 export const mockEditProjectReturnValue = mockUseMutationResult<{ message: string }>(
   false,

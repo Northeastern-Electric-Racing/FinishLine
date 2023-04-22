@@ -52,7 +52,7 @@ workPackagesRouter.post(
 workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
-  body('daysUntilDeadline').isInt(),
+  isDate(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
