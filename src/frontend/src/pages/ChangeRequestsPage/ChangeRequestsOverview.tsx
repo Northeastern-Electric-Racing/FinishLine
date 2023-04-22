@@ -7,15 +7,14 @@ import { Box, Grid, useTheme } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, wbsPipe } from 'shared';
+import { isLeadership, isHead, ChangeRequest, Project, WorkPackage } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { ChangeRequestsViewProps } from './ChangeRequestsView';
 
-const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, index }) => {
+const ChangeRequestsOverview: React.FC = () => {
   const theme = useTheme();
   const user = useCurrentUser();
 
@@ -35,9 +34,9 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
   // projects whose change requests the user would have to review
   const myProjects = projects.filter(
     (project: Project) =>
-      (project.team ? project.team.teamId === user.teamAsLeadId : false) ||
-      (project.projectLead ? project.projectLead.userId === user.userId : false) ||
-      (project.projectManager ? project.projectManager.userId === user.userId : false)
+      (project.team && project.team.teamId === user.teamAsLeadId) ||
+      (project.projectLead && project.projectLead.userId === user.userId) ||
+      (project.projectManager && project.projectManager.userId === user.userId)
   );
 
   // work packages whose change requests the user would have to review
@@ -49,29 +48,30 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
 
   // all of the wbs numbers (in x.x.x string format) corresponding to projects and work packages
   // whose change requests the user would have to review
-  const myWbs = myProjects
+  const myWbsNumbers = myProjects
     .map((project: Project) => project.wbsNum)
-    .concat(myWorkPackages.map((wp: WorkPackage) => wp.wbsNum))
-    .map((val) => wbsPipe(val));
+    .concat(myWorkPackages.map((wp: WorkPackage) => wp.wbsNum));
 
   const currentDate = new Date();
 
-  const crToReview = changeRequests.filter(
-    (cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId !== user.userId && myWbs.includes(wbsPipe(cr.wbsNum))
-  );
-  crToReview.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
+  const crToReview = changeRequests
+    .filter((cr) => !cr.dateReviewed && cr.submitter.userId !== user.userId && myWbsNumbers.includes(cr.wbsNum))
+    .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
-  const crUnreviewed = changeRequests.filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId);
-  crUnreviewed.sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
-  const crApproved = changeRequests.filter(
-    (cr: ChangeRequest) =>
-      cr.dateImplemented &&
-      cr.submitter.userId === user.userId &&
-      currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
-  );
-  crApproved.sort((a, b) =>
-    a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
-  );
+  const crUnreviewed = changeRequests
+    .filter((cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId)
+    .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
+
+  const crApproved = changeRequests
+    .filter(
+      (cr: ChangeRequest) =>
+        cr.dateImplemented &&
+        cr.submitter.userId === user.userId &&
+        currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
+    )
+    .sort((a, b) =>
+      a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
+    );
 
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
@@ -102,7 +102,7 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
   );
 
   return (
-    <Box hidden={value !== index}>
+    <Box>
       {showToReview && (
         <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
           <Grid container>{displayCRCards(crToReview)}</Grid>
@@ -111,7 +111,7 @@ const ChangeRequestsOverview: React.FC<ChangeRequestsViewProps> = ({ value, inde
       <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
         <Grid container>{displayCRCards(crUnreviewed)}</Grid>
       </PageBlock>
-      <PageBlock title={'My Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
+      <PageBlock title={'My Recently Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
         <Grid container>{displayCRCards(crApproved)}</Grid>
       </PageBlock>
     </Box>

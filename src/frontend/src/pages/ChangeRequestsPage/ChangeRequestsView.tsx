@@ -11,14 +11,8 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 
-export interface ChangeRequestsViewProps {
-  value: Number;
-  index: Number;
-}
-
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
-
   const user = useCurrentUser();
 
   // Values that go in the URL depending on the tab value
@@ -78,8 +72,7 @@ const ChangeRequestsView: React.FC = () => {
           }
         />
       </Box>
-      <ChangeRequestsOverview value={tabIndex} index={0} />
-      <ChangeRequestsTable value={tabIndex} index={1} />
+      {tabIndex === 0 ? <ChangeRequestsOverview /> : <ChangeRequestsTable />}
     </>
   );
 };
