@@ -4,7 +4,7 @@
  */
 
 import { AddTask } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Tab, Tabs, useTheme } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { isLeadership, Project, Task, TaskStatus, wbsPipe } from 'shared';
@@ -21,7 +21,6 @@ interface TaskListProps {
 // Page block containing task list view
 const TaskList = ({ project }: TaskListProps) => {
   const auth: Auth = useAuth();
-  const theme = useTheme();
 
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
   const tabUrlValues = useMemo(() => ['in-backlog', 'in-progress', 'done'], []);
@@ -82,58 +81,56 @@ const TaskList = ({ project }: TaskListProps) => {
   );
 
   return (
-    <Card sx={{ my: 2, background: theme.palette.background.paper }} variant="outlined">
-      <CardContent>
-        <Box sx={{ float: 'right', mb: 1 }}>{addTaskButton}</Box>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
-            <Tab
-              label="In Backlog"
-              aria-label="in-backlog"
-              value={0}
-              component={Link}
-              to={`${routes.PROJECTS}/${wbsNum}/tasks/in-backlog`}
-            />
-            <Tab
-              label="In Progress"
-              aria-label="in-progress"
-              value={1}
-              component={Link}
-              to={`${routes.PROJECTS}/${wbsNum}/tasks/in-progress`}
-            />
-            <Tab label="Done" aria-label="done" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/tasks/done`} />
-          </Tabs>
-        </Box>
-        <TaskListTabPanel
-          tasks={backLogTasks}
-          value={value}
-          index={0}
-          project={project}
-          status={TaskStatus.IN_BACKLOG}
-          addTask={addTask}
-          onAddCancel={() => setAddTask(false)}
-        />
-        <TaskListTabPanel
-          tasks={inProgressTasks}
-          value={value}
-          index={1}
-          project={project}
-          status={TaskStatus.IN_PROGRESS}
-          addTask={addTask}
-          onAddCancel={() => setAddTask(false)}
-        />
+    <Box>
+      <Box sx={{ float: 'right', mb: 1 }}>{addTaskButton}</Box>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
+          <Tab
+            label="In Backlog"
+            aria-label="in-backlog"
+            value={0}
+            component={Link}
+            to={`${routes.PROJECTS}/${wbsNum}/tasks/in-backlog`}
+          />
+          <Tab
+            label="In Progress"
+            aria-label="in-progress"
+            value={1}
+            component={Link}
+            to={`${routes.PROJECTS}/${wbsNum}/tasks/in-progress`}
+          />
+          <Tab label="Done" aria-label="done" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/tasks/done`} />
+        </Tabs>
+      </Box>
+      <TaskListTabPanel
+        tasks={backLogTasks}
+        value={value}
+        index={0}
+        project={project}
+        status={TaskStatus.IN_BACKLOG}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+      />
+      <TaskListTabPanel
+        tasks={inProgressTasks}
+        value={value}
+        index={1}
+        project={project}
+        status={TaskStatus.IN_PROGRESS}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+      />
 
-        <TaskListTabPanel
-          tasks={doneTasks}
-          value={value}
-          index={2}
-          project={project}
-          status={TaskStatus.DONE}
-          addTask={addTask}
-          onAddCancel={() => setAddTask(false)}
-        />
-      </CardContent>
-    </Card>
+      <TaskListTabPanel
+        tasks={doneTasks}
+        value={value}
+        index={2}
+        project={project}
+        status={TaskStatus.DONE}
+        addTask={addTask}
+        onAddCancel={() => setAddTask(false)}
+      />
+    </Box>
   );
 };
 
