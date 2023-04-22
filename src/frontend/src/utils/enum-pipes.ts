@@ -4,7 +4,7 @@
  */
 
 import { yellow, green, blue, purple, grey } from '@mui/material/colors';
-import { WorkPackageStage } from 'shared';
+import { ChangeRequestType, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -35,5 +35,20 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Integration';
     default:
       return 'No Stage';
+  }
+};
+
+export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (type) => {
+  switch (type) {
+    case ChangeRequestType.Activation:
+      return 'Activation';
+    case ChangeRequestType.Redefinition:
+      return 'Redefinition';
+    case ChangeRequestType.StageGate:
+      return 'Stage Gate';
+    case ChangeRequestType.Issue:
+      return 'Issue';
+    case ChangeRequestType.Other:
+      return 'Other';
   }
 };
