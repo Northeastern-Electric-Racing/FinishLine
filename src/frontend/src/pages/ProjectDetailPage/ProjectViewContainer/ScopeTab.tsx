@@ -22,47 +22,51 @@ export const ScopeTab = ({ project }: { project: Project }) => {
     .map((b, idx) => <li key={idx}>{b.detail}</li>);
 
   return (
-    <Box>
-      <Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              cursor: 'pointer'
-            }}
-          >
-            Goals
-          </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'row', mt: 2 }}>
+      <Box width="50%">
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              Goals
+            </Typography>
+          </Box>
+          <ul style={styles.bulletList}>{goals}</ul>
         </Box>
-        <ul style={styles.bulletList}>{goals}</ul>
-      </Box>
-      <Box sx={{ marginTop: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              cursor: 'pointer'
-            }}
-          >
-            {'Features'}
-          </Typography>
+        <Box sx={{ marginTop: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              {'Features'}
+            </Typography>
+          </Box>
+          <ul style={styles.bulletList}>{features}</ul>
         </Box>
-        <ul style={styles.bulletList}>{features}</ul>
       </Box>
-      <Box sx={{ marginTop: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              cursor: 'pointer'
-            }}
-          >
-            {'Other Constraints'}
-          </Typography>
+      <Box width="50%">
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              {'Other Constraints'}
+            </Typography>
+          </Box>
+          <ul style={styles.bulletList}>{otherConstraints}</ul>
         </Box>
-        <ul style={styles.bulletList}>{otherConstraints}</ul>
+        <RulesList rules={project.rules} />
       </Box>
-      <RulesList rules={project.rules} />
     </Box>
   );
 };

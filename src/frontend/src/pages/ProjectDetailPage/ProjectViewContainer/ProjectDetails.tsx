@@ -13,7 +13,6 @@ import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/p
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import DetailDisplay from '../../../components/DetailDisplay';
 import { Box, useTheme } from '@mui/material';
 import WorkPackageSummary from './WorkPackageSummary';
 
@@ -26,38 +25,127 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   return (
     <Box>
       <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
+        <Box width="50%" sx={{ paddingRight: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              Details
+            </Typography>
+          </Box>
+
+          <Grid container spacing={2}>
+            <Grid style={{ display: 'flex', alignItems: 'center' }} item display="flex" xs={12} md={6} xl={4}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <Construction />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'right'}>
+                  Project Lead:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
+                  {fullNamePipe(project.projectLead)}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid display="flex" item xs={12} md={6} xl={4} style={{ display: 'flex', alignItems: 'center' }}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <ScheduleIcon />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'right'}>
+                  Start Date:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
+                  {datePipe(project.startDate) || 'n/a'}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid display="flex" item xs={12} md={6} xl={4} style={{ display: 'flex', alignItems: 'center' }}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <ScheduleIcon />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'center'}>
+                  Duration:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{weeksPipe(project.duration)}</Typography>
+              </Box>
+            </Grid>
+
+            <Grid item display="flex" xs={12} md={6} xl={4} style={{ display: 'flex', alignItems: 'center' }}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <Work />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'right'}>
+                  Project Manager:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>
+                  {fullNamePipe(project.projectManager)}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid display="flex" item xs={12} md={6} xl={4} style={{ display: 'flex', alignItems: 'center' }}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <ScheduleIcon />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'center'}>
+                  End Date:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>
+                  {datePipe(project.endDate) || 'n/a'}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid display="flex" item xs={12} md={6} xl={4} style={{ display: 'flex', alignItems: 'center' }}>
+              <Box width="50%" justifyContent="space-between" style={{ display: 'flex', alignItems: 'center' }}>
+                <AttachMoneyIcon />
+                <Typography sx={{ fontWeight: 'bold' }} display="inline" textAlign={'center'}>
+                  Budget:
+                </Typography>
+              </Box>
+              <Box textAlign={'center'} width="50%">
+                <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
+                  {dollarsPipe(project.budget)}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+
         <Box width="50%">
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                cursor: 'pointer'
+              }}
+            >
+              Summary
+            </Typography>
+          </Box>
+          {project.summary}
           <Grid container spacing={1}>
-            <Grid item display="flex" xs={12}>
-              <Construction sx={{ mr: 1 }} />{' '}
-              <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={2} />
-            </Grid>
-
-            <Grid display="flex" item xs={12}>
-              <ScheduleIcon sx={{ mr: 1 }} />
-              <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={2} />
-            </Grid>
-
-            <Grid display="flex" item xs={12}>
-              <ScheduleIcon sx={{ mr: 1 }} />{' '}
-              <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={2} />
-            </Grid>
-
-            <Grid item display="flex" xs={12}>
-              <Work sx={{ mr: 1 }} />{' '}
-              <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={2} />
-            </Grid>
-
-            <Grid display="flex" item xs={12}>
-              <ScheduleIcon sx={{ mr: 1 }} />
-              <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={2} />
-            </Grid>
-            <Grid display="flex" item xs={12}>
-              <AttachMoneyIcon sx={{ mr: 1 }} />
-              <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={2} />
-            </Grid>
             <Grid item xs={12}>
-              <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    cursor: 'pointer'
+                  }}
+                >
+                  Links
+                </Typography>
+              </Box>
             </Grid>
             <Grid item xs={6}>
               <Stack direction="row" alignItems="center">
@@ -92,19 +180,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
               </Stack>
             </Grid>
           </Grid>
-        </Box>
-        <Box width="50%">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                cursor: 'pointer'
-              }}
-            >
-              Summary
-            </Typography>
-          </Box>
-          {project.summary}
         </Box>
       </div>
       <Box sx={{ marginTop: 2 }}>
