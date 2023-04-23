@@ -26,8 +26,6 @@ export type Row = {
 };
 
 export interface TaskListTabPanelProps {
-  index: number;
-  value: number;
   project: Project;
   tasks: Task[];
   status: TaskStatus;
