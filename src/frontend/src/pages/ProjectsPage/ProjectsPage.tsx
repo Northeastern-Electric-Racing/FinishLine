@@ -5,79 +5,79 @@
 
 import { useState } from 'react';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { Button, Grid } from '@mui/material';
-import FavoriteProjects from './ProjectsFavorited';
+import { Button, Grid, Menu, MenuItem } from '@mui/material';
 import ProjectsTable from './ProjectsTable';
-import LeadOrManagerProjects from './ProjectsLeadOrManager';
-import InTeamProjects from './ProjectsInTeam';
-import { useAuth } from '../../hooks/auth.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import { isLeadership } from 'shared';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isGuest, isLeadership } from 'shared';
+import ProjectsFavorited from './ProjectsFavorited';
+import ProjectsLeadOrManager from './ProjectsLeadOrManager';
+import ProjectsInTeam from './ProjectsInTeam';
 
 /**
  * Cards of all projects that this user is in their team.
  */
 
 const ProjectsPage: React.FC = () => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [render, setRender] = useState(<ProjectsTable />);
   const [selectedButton, setSelectedButton] = useState<string>('all');
+  const [overviewSelection, setOverviewSelection] = useState<null | HTMLElement>(null);
+  const open = Boolean(overviewSelection);
 
-  const clickHandler = (page: 'favorite' | 'lead' | 'team' | 'all') => {
-    switch (page) {
+  const handleOverviewClick = (event: React.MouseEvent<HTMLElement>) => {
+    setOverviewSelection(event.currentTarget);
+  };
+
+  const handleViewClick = (view: 'favorite' | 'lead' | 'team' | 'all') => {
+    switch (view) {
       case 'favorite':
-        setRender(<FavoriteProjects />);
+        setRender(<ProjectsFavorited />);
         setSelectedButton('favorite');
+        handleClose();
         break;
       case 'lead':
-        setRender(<LeadOrManagerProjects />);
+        setRender(<ProjectsLeadOrManager />);
         setSelectedButton('lead');
+        handleClose();
         break;
       case 'team':
-        setRender(<InTeamProjects />);
+        setRender(<ProjectsInTeam />);
         setSelectedButton('team');
+        handleClose();
         break;
       case 'all':
         setRender(<ProjectsTable />);
         setSelectedButton('all');
+        handleClose();
         break;
     }
   };
 
-  const permissionView = (
+  const handleClose = () => {
+    setOverviewSelection(null);
+  };
+
+  const memberView = (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
       <Grid container justifyContent={'center'}>
         <Grid item>
           <Button
-            onClick={() => clickHandler('favorite')}
-            color={selectedButton === 'favorite' ? 'primary' : 'secondary'}
+            onClick={handleOverviewClick}
+            color={selectedButton !== 'all' ? 'primary' : 'secondary'}
             sx={{ '&:hover': { backgroundColor: 'transparent' } }}
           >
-            Favorites
+            Overview
           </Button>
+          <Menu anchorEl={overviewSelection} open={open} onClose={handleClose}>
+            <MenuItem onClick={() => handleViewClick('favorite')}>Favorites</MenuItem>
+            {isLeadership(user.role) && <MenuItem onClick={() => handleViewClick('lead')}>Lead Or Mananage</MenuItem>}
+            <MenuItem onClick={() => handleViewClick('team')}>Your Team</MenuItem>
+          </Menu>
         </Grid>
         <Grid item>
           <Button
-            onClick={() => clickHandler('lead')}
-            color={selectedButton === 'lead' ? 'primary' : 'secondary'}
-            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
-          >
-            Lead/Manage
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            onClick={() => clickHandler('team')}
-            color={selectedButton === 'team' ? 'primary' : 'secondary'}
-            sx={{ '&:hover': { backgroundColor: 'transparent' } }}
-          >
-            Your Team
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            onClick={() => clickHandler('all')}
+            onClick={() => handleViewClick('all')}
             color={selectedButton === 'all' ? 'primary' : 'secondary'}
             sx={{ '&:hover': { backgroundColor: 'transparent' } }}
           >
@@ -89,16 +89,14 @@ const ProjectsPage: React.FC = () => {
     </>
   );
 
-  const noPermissionsView = (
+  const guestView = (
     <>
       <PageTitle title={'Projects'} previousPages={[]} />
       <ProjectsTable />
     </>
   );
 
-  if (!auth.user) return <LoadingIndicator />;
-
-  return <>{isLeadership(auth.user.role) ? permissionView : noPermissionsView}</>;
+  return <>{!isGuest(user.role) ? memberView : guestView}</>;
 };
 
 export default ProjectsPage;

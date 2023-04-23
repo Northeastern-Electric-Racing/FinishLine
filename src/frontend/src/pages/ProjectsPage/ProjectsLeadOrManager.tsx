@@ -4,7 +4,7 @@
  */
 
 import { useAllProjects } from '../../hooks/projects.hooks';
-import { useAuth } from '../../hooks/auth.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import ProjectDetailCard from '../../components/ProjectDetailCard';
 import { Grid, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -15,13 +15,13 @@ import ErrorPage from '../ErrorPage';
  */
 const ProjectsLeadOrManager: React.FC = () => {
   const { isLoading, data, isError, error } = useAllProjects();
-  const auth = useAuth();
+  const user = useCurrentUser();
 
   if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const projectLeadOrManagerProjects = data?.filter(
-    (project) => auth.user?.userId === project.projectLead?.userId || auth.user?.userId === project.projectManager?.userId
+    (project) => user.userId === project.projectLead?.userId || user.userId === project.projectManager?.userId
   );
 
   return (
@@ -30,7 +30,10 @@ const ProjectsLeadOrManager: React.FC = () => {
         <Grid container marginTop={1} spacing={1}>
           {projectLeadOrManagerProjects?.map((project) => (
             <Grid item md={6} xs={12}>
-              <ProjectDetailCard project={project} />
+              <ProjectDetailCard
+                project={project}
+                projectIsFavorited={user.favoritedProjectsId ? user.favoritedProjectsId.includes(project.id) : false}
+              />
             </Grid>
           ))}
         </Grid>

@@ -4,23 +4,23 @@
  */
 
 import { useAllProjects } from '../../hooks/projects.hooks';
-import { useAuth } from '../../hooks/auth.hooks';
 import ProjectDetailCard from '../../components/ProjectDetailCard';
 import { Grid, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 /**
  * Cards of all projects this user has favorited
  */
 const ProjectsFavorited: React.FC = () => {
   const { isLoading, data, isError, error } = useAllProjects();
-  const auth = useAuth();
+  const user = useCurrentUser();
 
   if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const favoritedProjects = data?.filter((project) => auth.user?.favoritedProjectsId?.includes(project.id));
+  const favoritedProjects = data?.filter((project) => user.favoritedProjectsId?.includes(project.id));
 
   return (
     <>
@@ -28,7 +28,7 @@ const ProjectsFavorited: React.FC = () => {
         <Grid container marginTop={1} spacing={1}>
           {favoritedProjects?.map((project) => (
             <Grid item md={6} xs={12}>
-              <ProjectDetailCard project={project} />
+              <ProjectDetailCard project={project} projectIsFavorited={true} />
             </Grid>
           ))}
         </Grid>
