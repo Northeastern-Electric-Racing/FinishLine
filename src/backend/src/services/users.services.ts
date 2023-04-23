@@ -1,12 +1,14 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, isAdmin, Role, ThemeName, User, rankUserRole } from 'shared';
+import { AuthenticatedUser, isAdmin, Role, ThemeName, User, rankUserRole, Project } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
+import projectTransformer from '../transformers/projects.transformer';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 export default class UsersService {
   /**
@@ -53,6 +55,29 @@ export default class UsersService {
     if (!settings) throw new NotFoundException('User Settings', userId);
 
     return settings;
+  }
+
+  /**
+   * Get the given user's favorite projects.
+   * @param userId the user to get the projects for
+   * @returns the user's favorite projects
+   */
+  static async getUsersFavoriteProjects(userId: number): Promise<Project[]> {
+    const requestedUser = await prisma.user.findUnique({ where: { userId } });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const projects = await prisma.project.findMany({
+      where: {
+        favoritedBy: {
+          some: {
+            userId
+          }
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    return projects.map(projectTransformer);
   }
 
   /**

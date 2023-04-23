@@ -5,6 +5,7 @@
 
 import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
+import { WorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
 
 export const NO_TEAM = 'No Team';
@@ -94,6 +95,10 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     teamName,
+    children: [],
+    styles: {
+      backgroundColor: WorkPackageStageColorPipe(workPackage.stage)
+    },
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     }
@@ -112,6 +117,7 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     type: 'project',
     hideChildren: !expanded,
     teamName,
+    children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
