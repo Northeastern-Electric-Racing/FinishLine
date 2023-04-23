@@ -81,7 +81,8 @@ const TaskList = ({ project }: TaskListProps) => {
         height: 32,
         px: '12px',
         textTransform: 'none',
-        fontSize: 16
+        fontSize: 16,
+        marginRight: 2
       }}
       onClick={() => setAddTask(true)}
     >
@@ -91,7 +92,7 @@ const TaskList = ({ project }: TaskListProps) => {
 
   return (
     <Box display="flex" flexDirection="row">
-      <Box>
+      <Box sx={{ borderRight: 1, borderColor: 'divider', paddingTop: 2 }}>
         {addTaskButton}
         <Tabs
           value={value}

@@ -41,7 +41,13 @@ const ProjectDetailTabs = ({ project, setTab }: ProjectDetailPageTabProps) => {
   };
 
   return (
-    <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
+    <Tabs
+      sx={{ borderBottom: 1, borderColor: 'divider' }}
+      value={tabValue}
+      onChange={handleTabChange}
+      variant="fullWidth"
+      aria-label="task-list-tabs"
+    >
       <Tab
         label="overview"
         aria-label="overview"
