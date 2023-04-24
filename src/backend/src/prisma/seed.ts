@@ -145,6 +145,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Projects
    */
+
   /** Project 1 */
   const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
@@ -258,6 +259,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Work Packages
    */
+
   /** Work Package 1 */
   const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
@@ -287,7 +289,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     workPackage1.project.wbsElement.projectLeadId!,
     workPackage1.project.wbsElement.projectManagerId!,
-    new Date("04/24/2023"),
+    new Date('04/24/2023'),
     true
   );
 
