@@ -145,7 +145,6 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Projects
    */
-
   /** Project 1 */
   const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
@@ -266,7 +265,7 @@ const performSeed: () => Promise<void> = async () => {
     'Bodywork Concept of Design',
     changeRequest1Id,
     WorkPackageStage.Design,
-    '01/01/2023',
+    '2023-04-24T00:00:00.000Z',
     3,
     [],
     [
@@ -288,7 +287,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     workPackage1.project.wbsElement.projectLeadId!,
     workPackage1.project.wbsElement.projectManagerId!,
-    new Date(),
+    new Date("04/24/2023"),
     true
   );
 
@@ -307,7 +306,7 @@ const performSeed: () => Promise<void> = async () => {
     'Adhesive Shear Strength Test',
     changeRequest1Id,
     WorkPackageStage.Research,
-    '01/22/2023',
+    '2023-04-24T00:00:00.000Z',
     5,
     [],
     [
@@ -331,7 +330,7 @@ const performSeed: () => Promise<void> = async () => {
     'Manufacture Wiring Harness',
     changeRequest1Id,
     WorkPackageStage.Manufacturing,
-    '02/01/2023',
+    '04/24/2023',
     3,
     [],
     [
@@ -387,7 +386,7 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.ACTIVATION,
     thomasEmrax.userId,
     joeShmoe.userId,
-    new Date('02/01/2023'),
+    new Date('04/24/2023'),
     true
   );
 
