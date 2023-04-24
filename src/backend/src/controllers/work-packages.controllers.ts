@@ -129,9 +129,9 @@ export default class WorkPackagesController {
   static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { daysUntilDeadline } = req.body;
+      const { deadline } = req.body;
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(user, daysUntilDeadline);
+      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
     } catch (error: unknown) {
       next(error);
     }

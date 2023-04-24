@@ -16,6 +16,7 @@ const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
+const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -24,6 +25,7 @@ const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
+const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -46,6 +48,7 @@ const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
+const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -78,6 +81,7 @@ export const apiUrls = {
   usersLoginDev,
   userSettingsByUserId,
   userRoleByUserId,
+  userFavoriteProjects,
 
   projects,
   projectsByWbsNum,
@@ -85,6 +89,7 @@ export const apiUrls = {
   projectsEdit,
   projectsSetTeam,
   projectsDelete,
+  projectsToggleFavorite,
 
   tasksCreate,
   tasks,
@@ -99,6 +104,7 @@ export const apiUrls = {
   workPackagesEdit,
   workPackagesDelete,
   workPackagesBlocking,
+  workPackagesSlackUpcomingDeadlines,
 
   changeRequests,
   changeRequestsById,

@@ -89,3 +89,12 @@ export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
     transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
   });
 };
+
+/**
+ * Slack upcoming deadlines.
+ */
+export const slackUpcomingDeadlines = (deadline: Date) => {
+  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+    deadline
+  });
+};

@@ -37,7 +37,7 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
       />
     );
   }
-  return <ProjectViewContainer proj={data} enterEditMode={() => setEditMode(true)} />;
+  return <ProjectViewContainer project={data} enterEditMode={() => setEditMode(true)} />;
 };
 
 export default ProjectPage;

@@ -17,7 +17,7 @@ import { RoleEnum, User } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
-const AdminToolsUserMangaement: React.FC = () => {
+const AdminToolsUserManagement: React.FC = () => {
   const [role, setRole] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [isDisabled, setIsDisabled] = useState(true);
@@ -133,4 +133,4 @@ const AdminToolsUserMangaement: React.FC = () => {
   );
 };
 
-export default AdminToolsUserMangaement;
+export default AdminToolsUserManagement;
