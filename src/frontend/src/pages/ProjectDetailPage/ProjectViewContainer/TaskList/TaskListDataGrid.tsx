@@ -13,9 +13,7 @@ import {
   GridRenderEditCellParams,
   GridRowId,
   GridRowModel,
-  GridRowModes,
-  GridRowModesModel,
-  GridRowParams
+  GridRowParams,
 } from '@mui/x-data-grid';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -29,7 +27,7 @@ import { fullNamePipe } from '../../../../utils/pipes';
 import { GridColDefStyle } from '../../../../utils/tables';
 import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
-import { AssigneeEdit, DeadlineEdit, PriorityEdit, TitleEdit } from './TaskListComponents';
+import { AssigneeEdit, TitleEdit } from './TaskListComponents';
 import { Cancel } from '@mui/icons-material';
 
 const styles = {
@@ -80,13 +78,13 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
-  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
-
   const theme = useTheme();
 
   let [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
 
-  const processRowUpdate = async (newRow: GridRowModel) => {
+  const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
+    setPriority(newRow.priority);
+    setDeadline(newRow.deadline);
     return {
       id: newRow.id,
       title: newRow.title,
@@ -97,7 +95,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       notes: newRow.notes,
       task: newRow.task
     };
-  };
+  }, []);
 
   const deleteCreateTask = () => {
     setTitle('');
@@ -149,14 +147,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
 
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
     return <AssigneeEdit {...params} team={team} assignees={assignees} setAssignees={setAssignees} />;
-  };
-
-  const renderPriorityEdit = (params: GridRenderEditCellParams) => {
-    return <PriorityEdit {...params} priority={priority} setPriority={setPriority} />;
-  };
-
-  const renderDeadlineEdit = (params: GridRenderEditCellParams) => {
-    return <DeadlineEdit {...params} deadline={deadline} setDeadline={setDeadline} />;
   };
 
   const getActions = (params: GridRowParams) => {
@@ -246,7 +236,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
             onClick={() => {
-              setRowModesModel({ ...rowModesModel, [params.id]: { mode: GridRowModes.Edit } });
               setTitle(params.row.title);
               setDeadline(params.row.deadline);
               setPriority(params.row.priority);
@@ -270,10 +259,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       }
     }
     return actions;
-  };
-
-  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
-    setRowModesModel(newRowModesModel);
   };
 
   const baseColDef: GridColDefStyle = {
@@ -307,7 +292,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       headerName: 'Deadline',
       type: 'date',
       editable: true,
-      renderEditCell: renderDeadlineEdit
     },
     {
       ...baseColDef,
@@ -315,7 +299,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       field: 'priority',
       headerName: 'Priority',
       renderCell: renderPriority,
-      renderEditCell: renderPriorityEdit,
       editable: true,
       type: 'singleSelect',
       valueOptions: [TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]
@@ -384,9 +367,9 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       columns={columns}
       rows={rows}
       editMode="row"
+      experimentalFeatures={{ newEditingApi: true }}
       isCellEditable={isCellEditable}
       processRowUpdate={processRowUpdate}
-      onRowModesModelChange={handleRowModesModelChange}
       pageSize={pageSize}
       rowsPerPageOptions={[5, 10, 15, 100]}
       onPageSizeChange={(newPageSize) => {
@@ -399,3 +382,194 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
 };
 
 export default TaskListDataGrid;
+
+// import * as React from 'react';
+// import Box from '@mui/material/Box';
+// import Button from '@mui/material/Button';
+// import AddIcon from '@mui/icons-material/Add';
+// import EditIcon from '@mui/icons-material/Edit';
+// import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+// import SaveIcon from '@mui/icons-material/Save';
+// import CancelIcon from '@mui/icons-material/Close';
+// import {
+//   GridRowsProp,
+//   GridRowModesModel,
+//   GridRowModes,
+//   GridColDef,
+//   GridRowParams,
+//   MuiEvent,
+//   GridToolbarContainer,
+//   GridActionsCellItem,
+//   GridEventListener,
+//   GridRowId,
+//   DataGrid,
+//   GridColumns
+// } from '@mui/x-data-grid';
+// import { Task } from 'shared';
+
+// interface EditToolbarProps {
+//   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
+//   setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
+// }
+
+// function EditToolbar(props: EditToolbarProps) {
+//   const { setRows, setRowModesModel } = props;
+
+//   const handleClick = () => {
+//     const id = 10;
+//     setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
+//     setRowModesModel((oldModel) => ({
+//       ...oldModel,
+//       [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' }
+//     }));
+//   };
+
+//   return (
+//     <GridToolbarContainer>
+//       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+//         Add record
+//       </Button>
+//     </GridToolbarContainer>
+//   );
+// }
+
+// const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({ tasks }) => {
+//   const [rows, setRows] = React.useState<Row[]>(
+//     tasks.map((task: Task, idx: number) => {
+//       return {
+//         id: idx,
+//         title: task.title,
+//         deadline: task.deadline,
+//         priority: task.priority,
+//         assignees: task.assignees,
+//         notes: task.notes,
+//         taskId: task.taskId,
+//         task: task,
+//         isNew: false
+//       };
+//     }));
+//   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+
+//   const handleRowEditStart = (params: GridRowParams, event: MuiEvent<React.SyntheticEvent>) => {
+//     console.log("tests")
+//     event.defaultMuiPrevented = true;
+//   };
+
+//   const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
+//     event.defaultMuiPrevented = true;
+//   };
+
+//   const handleEditClick = (id: GridRowId) => () => {
+//     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+//   };
+
+//   const handleSaveClick = (id: GridRowId) => () => {
+//     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+//   };
+
+//   const handleDeleteClick = (id: GridRowId) => () => {
+//     setRows(rows.filter((row) => row.id !== id));
+//   };
+
+//   const handleCancelClick = (id: GridRowId) => () => {
+//     setRowModesModel({
+//       ...rowModesModel,
+//       [id]: { mode: GridRowModes.View, ignoreModifications: true }
+//     });
+
+//     const editedRow = rows.find((row) => row.id === id);
+//     if (editedRow!.isNew) {
+//       setRows(rows.filter((row) => row.id !== id));
+//     }
+//   };
+
+//   const processRowUpdate = (newRow: Row) => {
+//     const updatedRow = { ...newRow, isNew: false };
+//     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+//     return updatedRow;
+//   };
+
+//   const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+//     setRowModesModel(newRowModesModel);
+//   };
+
+//   const columns: GridColumns<Row> = [
+//     { field: 'title', headerName: 'Name', width: 180, editable: true },
+//     { field: 'age', headerName: 'Age', type: 'number', editable: true },
+//     {
+//       field: 'deadline',
+//       headerName: 'Date Created',
+//       type: 'date',
+//       width: 180,
+//       editable: true
+//     },
+//     {
+//       field: 'priority',
+//       headerName: 'Priority',
+//       type: 'select',
+//       width: 220,
+//       editable: true
+//     },
+//     {
+//       field: 'actions',
+//       type: 'actions',
+//       headerName: 'Actions',
+//       width: 100,
+//       cellClassName: 'actions',
+//       getActions: ({ id }) => {
+//         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+//         if (isInEditMode) {
+//           return [
+//             <GridActionsCellItem icon={<SaveIcon />} label="Save" onClick={handleSaveClick(id)} />,
+//             <GridActionsCellItem
+//               icon={<CancelIcon />}
+//               label="Cancel"
+//               className="textPrimary"
+//               onClick={handleCancelClick(id)}
+//               color="inherit"
+//             />
+//           ];
+//         }
+
+//         return [
+//           <GridActionsCellItem
+//             icon={<EditIcon />}
+//             label="Edit"
+//             className="textPrimary"
+//             onClick={handleEditClick(id)}
+//             color="inherit"
+//           />,
+//           <GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDeleteClick(id)} color="inherit" />
+//         ];
+//       }
+//     }
+//   ];
+
+//   return (
+//     <Box
+//       sx={{
+//         height: 500,
+//         width: '100%',
+//         '& .actions': {
+//           color: 'text.secondary'
+//         },
+//         '& .textPrimary': {
+//           color: 'text.primary'
+//         }
+//       }}
+//     >
+//       <DataGrid
+//         rows={rows}
+//         columns={columns}
+//         editMode="row"
+//         rowModesModel={rowModesModel}
+//         onRowModesModelChange={handleRowModesModelChange}
+//         onRowEditStart={handleRowEditStart}
+//         onRowEditStop={handleRowEditStop}
+//         processRowUpdate={processRowUpdate}
+//       />
+//     </Box>
+//   );
+// };
+
+// export default TaskListDataGrid;

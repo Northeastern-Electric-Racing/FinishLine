@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-export type Row = {
+export interface Row {
   id: number;
   title: string;
   deadline: Date;
@@ -24,6 +24,7 @@ export type Row = {
   taskId: string;
   notes: string;
   task: Task;
+  isNew?: boolean;
 };
 
 export interface TaskListTabPanelProps {
