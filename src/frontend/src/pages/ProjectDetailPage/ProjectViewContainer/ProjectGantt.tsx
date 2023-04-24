@@ -6,7 +6,7 @@
 import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
 import { ganttAllColumns } from '../../../utils/chart-data';
-import PageBlock from '../../../layouts/PageBlock';
+import { Box } from '@mui/material';
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];
@@ -27,9 +27,9 @@ const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
     }
   };
   return (
-    <PageBlock title={'Gantt Chart'}>
+    <Box sx={{ my: 2 }}>
       {workPackages.length > 0 ? <Chart chartType="Gantt" width="100%" height="100%" data={data} options={options} /> : ''}
-    </PageBlock>
+    </Box>
   );
 };
 

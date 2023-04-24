@@ -35,19 +35,6 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 
-const convertStatus = (cr: ChangeRequest): string => {
-  if (cr.dateImplemented) {
-    return 'Implemented';
-  }
-  if (cr.dateReviewed && cr.accepted) {
-    return 'Accepted';
-  }
-  if (cr.dateReviewed && !cr.accepted) {
-    return 'Denied';
-  }
-  return 'Open';
-};
-
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
     case ChangeRequestType.Activation:
@@ -211,7 +198,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         actionButton={actionDropdown}
       />
-      <PageBlock title={'Change Request Details'} headerRight={<b>{convertStatus(changeRequest)}</b>}>
+      <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
         <Grid container spacing={1}>
           <Grid item xs={2}>
             <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>

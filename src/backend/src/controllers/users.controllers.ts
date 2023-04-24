@@ -36,6 +36,18 @@ export default class UsersController {
     }
   }
 
+  static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+
+      const projects = await UsersService.getUsersFavoriteProjects(userId);
+
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { defaultTheme, slackId } = req.body;

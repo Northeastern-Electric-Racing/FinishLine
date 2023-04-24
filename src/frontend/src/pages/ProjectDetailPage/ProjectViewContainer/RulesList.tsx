@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import HorizontalList from '../../../components/HorizontalList';
+import { Box, Typography } from '@mui/material';
+import styles from '../../../stylesheets/components/horizontal-list.module.css';
 
 interface RulesListProps {
   rules: string[];
@@ -11,12 +12,23 @@ interface RulesListProps {
 
 const RulesList: React.FC<RulesListProps> = ({ rules }) => {
   return (
-    <HorizontalList
-      title={'Rules'}
-      items={rules.map((r) => (
-        <>{r}</>
+    <Box sx={{ marginTop: 2, marginBottom: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            cursor: 'pointer'
+          }}
+        >
+          {'Rules'}
+        </Typography>
+      </Box>
+      {rules.map((ele, idx) => (
+        <div key={idx} className={styles.listItem}>
+          {ele}
+        </div>
       ))}
-    />
+    </Box>
   );
 };
 

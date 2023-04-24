@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Card, CardContent, Typography } from '@mui/material';
+import { Card, CardContent, Grid, Typography } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { green, blue, red, grey, orange } from '@mui/material/colors';
 import { Box, Stack } from '@mui/system';
@@ -20,6 +20,7 @@ import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { datePipe, fullNamePipe } from '../utils/pipes';
 import { Cancel, Construction, DateRange, Description, DoneAll, Person, Start, Work } from '@mui/icons-material';
+import { ChangeRequestTypeTextPipe } from '../utils/enum-pipes';
 
 const determineChangeRequestTypeView = (cr: ChangeRequest) => {
   switch (cr.type) {
@@ -49,21 +50,16 @@ const determineChangeRequestPillColor = (type: ChangeRequestType) => {
 
 const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
   return (
-    <Box mt={1} ml={'2px'}>
-      <Typography
-        sx={{
-          display: '-webkit-box',
-          overflow: 'hidden',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2
-        }}
-      >
-        <Description sx={{ ml: '-4px', position: 'absolute' }} display={'inline'} />
-        <Typography ml={'27px'} display={'inline'}>
+    <Grid container mt={1} ml={'2px'}>
+      <Grid item>
+        <Description sx={{ ml: '-4px' }} display={'inline'} />
+      </Grid>
+      <Grid item xs>
+        <Typography ml={'4px'} display={'inline'}>
           {cr.what}
         </Typography>
-      </Typography>
-    </Box>
+      </Grid>
+    </Grid>
   );
 };
 
@@ -110,30 +106,30 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
   const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
   const pillColor = determineChangeRequestPillColor(changeRequest.type);
   return (
-    <Card sx={{ maxWidth: 300 }}>
+    <Card sx={{ width: 300, mr: 1, mb: 1, borderRadius: 5 }}>
       <CardContent>
-        <Stack direction="row" justifyContent="space-between">
-          <Box>
-            <Typography fontWeight={'regular'} variant="h6" fontSize={15}>
-              <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
+        <Grid container justifyContent="space-between" alignItems="center">
+          <Grid item>
+            <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
+              <Typography variant="h6" sx={{ mb: 0.5 }}>
                 {'CR #' + changeRequest.crId}
-              </Link>
-            </Typography>
-          </Box>
-          <Box sx={{ marginLeft: 2 }} minWidth={'fit-content'}>
+              </Typography>
+            </Link>
+          </Grid>
+          <Grid item display="flex" justifyContent="flex-end">
             <Chip
               size="small"
-              label={changeRequest.type}
+              label={ChangeRequestTypeTextPipe(changeRequest.type)}
               variant="outlined"
               sx={{
-                fontSize: 10,
-                mr: '5px',
+                fontSize: 12,
                 color: pillColor,
-                borderColor: pillColor
+                borderColor: pillColor,
+                mb: 0.5
               }}
             />
-          </Box>
-        </Stack>
+          </Grid>
+        </Grid>
         <Stack direction="row">
           <Chip
             icon={<Person />}
@@ -142,7 +138,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
           />
           <Chip icon={<DateRange />} label={datePipe(changeRequest.dateSubmitted)} sx={{ backgroundColor: 'transparent' }} />
         </Stack>
-        <Typography fontWeight={'regular'} variant="h6" fontSize={15} noWrap>
+        <Typography fontWeight={'regular'} variant="h6" fontSize={16} noWrap>
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
             {wbsPipe(changeRequest.wbsNum)} - {changeRequest.wbsName}
           </Link>

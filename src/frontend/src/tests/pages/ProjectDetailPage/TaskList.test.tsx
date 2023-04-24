@@ -54,11 +54,6 @@ describe('TaskList component', () => {
     jest.spyOn(taskHooks, 'useDeleteTask').mockReturnValue(mockDeleteTaskReturnValue);
   });
 
-  it('renders "Task List" on top', () => {
-    renderComponent();
-    expect(screen.getByText('Task List')).toBeInTheDocument();
-  });
-
   it('renders all 3 labels', () => {
     renderComponent();
     expect(screen.getByText('In Progress')).toBeInTheDocument();

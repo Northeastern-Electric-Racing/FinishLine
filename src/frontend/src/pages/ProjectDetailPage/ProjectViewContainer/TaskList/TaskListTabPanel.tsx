@@ -23,7 +23,7 @@ import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { value, index, tasks, status, addTask, onAddCancel, project } = props;
+  const { tasks, status, addTask, onAddCancel, project } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const TABLE_ROW_COUNT = 'tl-table-row-count';
@@ -45,13 +45,9 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
   if (!team)
     return (
-      <>
-        {value === index && (
-          <Typography sx={{ py: '25px', textAlign: 'center' }}>
-            A project can only have tasks if it is assigned to a team!
-          </Typography>
-        )}
-      </>
+      <Typography sx={{ py: '25px', textAlign: 'center' }}>
+        A project can only have tasks if it is assigned to a team!
+      </Typography>
     );
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
@@ -165,28 +161,24 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   // Skeleton copied from https://mui.com/material-ui/react-tabs/.
   // If they release the TabPanel component from @mui/lab to @mui/material then change the div to TabPanel.
   return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`}>
-      {value === index && (
-        <Box sx={{ height: 400, width: '100%' }}>
-          <TaskListDataGrid
-            team={team}
-            status={status}
-            tasks={tasks}
-            editTaskPermissions={editTaskPermissions}
-            tableRowCount={TABLE_ROW_COUNT}
-            setSelectedTask={setSelectedTask}
-            setModalShow={setModalShow}
-            addTask={addTask}
-            onAddCancel={onAddCancel}
-            createTask={createTask}
-            moveToBacklog={moveToBacklog}
-            moveToDone={moveToDone}
-            moveToInProgress={moveToInProgress}
-            deleteRow={deleteRow}
-            editTask={handleEditTask}
-          />
-        </Box>
-      )}
+    <Box flex={1}>
+      <TaskListDataGrid
+        team={team}
+        status={status}
+        tasks={tasks}
+        editTaskPermissions={editTaskPermissions}
+        tableRowCount={TABLE_ROW_COUNT}
+        setSelectedTask={setSelectedTask}
+        setModalShow={setModalShow}
+        addTask={addTask}
+        onAddCancel={onAddCancel}
+        createTask={createTask}
+        moveToBacklog={moveToBacklog}
+        moveToDone={moveToDone}
+        moveToInProgress={moveToInProgress}
+        deleteRow={deleteRow}
+        editTask={handleEditTask}
+      />
       {modalShow && (
         <TaskListNotesModal
           modalShow={modalShow}
@@ -197,7 +189,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           hasEditPermissions={editTaskPermissions(selectedTask!)}
         />
       )}
-    </div>
+    </Box>
   );
 };
 
