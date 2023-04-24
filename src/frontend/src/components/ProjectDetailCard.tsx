@@ -48,7 +48,9 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
       </Grid>
       <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
         <ScheduleIcon sx={{ mr: 1 }} />
-        <Typography>{daysLeft ? daysToDaysOrWeeks(daysLeft) : emDashPipe('')} left</Typography>
+        <Typography>
+          {daysLeft ? `${daysToDaysOrWeeks(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'overdue'}` : emDashPipe('')}
+        </Typography>
       </Grid>
       <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
         <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>

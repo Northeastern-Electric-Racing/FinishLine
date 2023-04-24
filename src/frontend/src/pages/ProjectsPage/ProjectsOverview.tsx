@@ -54,10 +54,9 @@ const ProjectsOverview: React.FC = () => {
     >
       {projects
         .sort((a, b) => {
-          if (a.endDate && b.endDate) {
-            return a.endDate.getTime() - b.endDate.getTime();
-          }
-          return 0;
+          const aEndDate = a.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
+          const bEndDate = b.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
+          return aEndDate - bEndDate;
         })
         .map((project) => (
           <Grid item>

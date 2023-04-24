@@ -101,5 +101,5 @@ export const timelinePipe = (status: string) => {
  */
 export const daysToDaysOrWeeks = (days: number): string => {
   if (days < 7) return `${days} day${days === 1 ? '' : 's'}`;
-  return `${days} ${weeksPipe(Math.floor(days / 7))}`;
+  return `${weeksPipe(Math.floor(days / 7))}`;
 };

@@ -91,7 +91,7 @@ const calculateDaysLeftInProject = (project: Project): number | null => {
   const endDate = calculateProjectEndDate(project.workPackages);
   if (!endDate) return null;
 
-  return daysBetween(new Date(), endDate);
+  return daysBetween(endDate, new Date());
 };
 
 export {
