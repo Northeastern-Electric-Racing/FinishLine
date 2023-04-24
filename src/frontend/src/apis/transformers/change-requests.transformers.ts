@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, ChangeRequestType, ImplementedChange } from 'shared';
+import { ChangeRequest, ImplementedChange } from 'shared';
 
 /**
  * Transforms a change request to ensure deep field transformation of date objects.
