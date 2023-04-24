@@ -39,7 +39,7 @@ const ChangeRequestsTable: React.FC = () => {
   const auth = useAuth();
   const theme = useTheme();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !data) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
@@ -133,9 +133,14 @@ const ChangeRequestsTable: React.FC = () => {
       filterable: false,
       valueFormatter: (params) => params.value.length,
       maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'status',
+      headerName: 'Status',
+      maxWidth: 150
     }
   ];
-
   return (
     <div>
       <div style={{ marginBottom: 15 }}>
@@ -168,7 +173,7 @@ const ChangeRequestsTable: React.FC = () => {
         error={error}
         rows={
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data?.map((v) => ({
+          data.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
             wbs: { wbsNum: v.wbsNum, name: v.wbsName },

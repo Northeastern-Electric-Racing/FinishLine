@@ -19,6 +19,7 @@ import {
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 
@@ -105,11 +106,7 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = {
-          changeRequestId: crId,
-          implementerId: reviewer.userId,
-          detail: buildChangeDetail('Budget', String(foundCR.wbsElement.project.budget), String(newBudget))
-        };
+        const change = createChange('Budget', foundCR.wbsElement.project.budget, newBudget, crId, reviewer.userId);
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -137,16 +134,8 @@ export default class ChangeRequestsService {
 
         // create changes that reflect the new budget and duration
         const changes = [
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
-          },
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
-          }
+          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
+          createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
         ];
 
         // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration

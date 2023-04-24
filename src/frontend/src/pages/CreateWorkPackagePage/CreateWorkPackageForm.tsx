@@ -11,13 +11,14 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
+import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 
 export interface CreateWorkPackageFormInputs {
   name: string;
   startDate: Date;
   duration: number | null;
-  crId: string | number;
-  stage: WorkPackageStage | string;
+  crId: number;
+  stage: WorkPackageStage | 'None';
   wbsNum: string;
   blockedBy: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
@@ -38,7 +39,11 @@ const CreateWorkPackageForm: React.FC = () => {
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
-    // exits handleSubmit if form input invalid (should be changed in wire up)
+    if (!duration) {
+      toast.error('Please enter a valid duration!', 3000);
+      return;
+    }
+
     try {
       const wbsNumValidated = validateWBS(wbsNum);
 
@@ -46,15 +51,17 @@ const CreateWorkPackageForm: React.FC = () => {
         toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
-      const depWbsNums = blockedBy.map((blocker: { wbsNum: string }) => {
-        const depWbsNum = validateWBS(blocker.wbsNum);
+
+      const blockedByWbsNums = blockedBy.map((blocker: { wbsNum: string }) => {
+        const blockedWbsNum = validateWBS(blocker.wbsNum);
         return {
-          carNumber: depWbsNum.carNumber,
-          projectNumber: depWbsNum.projectNumber,
-          workPackageNumber: depWbsNum.workPackageNumber
+          carNumber: blockedWbsNum.carNumber,
+          projectNumber: blockedWbsNum.projectNumber,
+          workPackageNumber: blockedWbsNum.workPackageNumber
         };
       });
-      const createdWbsNum = await mutateAsync({
+
+      const payload: CreateWorkPackageApiInputs = {
         name: name.trim(),
         crId,
         projectWbsNum: {
@@ -62,13 +69,15 @@ const CreateWorkPackageForm: React.FC = () => {
           projectNumber: wbsNumValidated.projectNumber,
           workPackageNumber: wbsNumValidated.workPackageNumber
         },
-        startDate: startDate.toLocaleDateString(),
+        startDate,
         duration,
-        blockedBy: depWbsNums,
+        blockedBy: blockedByWbsNums,
         expectedActivities,
         deliverables,
-        stage
-      });
+        stage: stage === 'None' ? null : stage
+      };
+
+      const createdWbsNum = await mutateAsync(payload);
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {
       if (e instanceof Error) {

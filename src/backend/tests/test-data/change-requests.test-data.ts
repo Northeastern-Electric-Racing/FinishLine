@@ -5,7 +5,7 @@ import {
   Description_Bullet as PrismaDescriptionBullet,
   CR_Type as PrismaCRType
 } from '@prisma/client';
-import { ChangeRequest as SharedChangeRequest, ChangeRequestType } from 'shared';
+import { ChangeRequest as SharedChangeRequest, ChangeRequestStatus, ChangeRequestType } from 'shared';
 import { sharedUser1 } from './users.test-data';
 
 export const prismaChangeRequest1: PrismaChangeRequest = {
@@ -81,5 +81,6 @@ export const sharedChangeRequest: SharedChangeRequest = {
   wbsName: 'whip',
   submitter: sharedUser1,
   dateSubmitted: new Date('12-25-2000'),
-  type: ChangeRequestType.Redefinition
+  type: ChangeRequestType.Redefinition,
+  status: ChangeRequestStatus.Open
 };
