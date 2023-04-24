@@ -72,7 +72,7 @@ export const getSingleUserSettings = (id: number) => {
  */
 export const getUsersFavoriteProjects = (id: number) => {
   return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`), {
-    transformResponse: (data) => projectTransformer(JSON.parse(data))
+    transformResponse: (data) => JSON.parse(data).map(projectTransformer)
   });
 };
 
