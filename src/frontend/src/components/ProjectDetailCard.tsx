@@ -10,7 +10,7 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { calculateDaysLeftInProject, daysBetween, Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
-import { daysOrWeeksLeftOrOverdue, emDashPipe, fullNamePipe } from '../utils/pipes';
+import { daysOrWeeksLeftOrLate, emDashPipe, fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
 import TaskIcon from '@mui/icons-material/Task';
@@ -48,7 +48,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
       </Grid>
       <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
         <ScheduleIcon sx={{ mr: 1 }} />
-        <Typography>{daysLeft ? daysOrWeeksLeftOrOverdue(daysLeft) : emDashPipe('')}</Typography>
+        <Typography>{daysLeft ? daysOrWeeksLeftOrLate(daysLeft) : emDashPipe('')}</Typography>
       </Grid>
       <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
         <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
@@ -90,7 +90,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
                 </Grid>
                 <Grid item xs={3} display="flex">
                   <Box display="flex">
-                    <ScheduleIcon sx={{ mr: 1 }} /> <Typography>{daysOrWeeksLeftOrOverdue(workPackageDaysLeft)}</Typography>
+                    <ScheduleIcon sx={{ mr: 1 }} /> <Typography>{daysOrWeeksLeftOrLate(workPackageDaysLeft)}</Typography>
                   </Box>
                 </Grid>
               </Grid>

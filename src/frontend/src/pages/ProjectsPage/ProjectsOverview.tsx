@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hooks';
@@ -41,11 +41,13 @@ const ProjectsOverview: React.FC = () => {
 
   return (
     <Box>
-      {favoriteProjects.length > 0 ? (
-        <ProjectsOverviewCards projects={favoriteProjects} title="My Favorites" favoriteProjectsSet={favoriteProjectsSet} />
-      ) : (
-        <Typography sx={{ mt: 2 }}>You have no favorite projects. Click the star on a project's page to add one!</Typography>
-      )}
+      <ProjectsOverviewCards
+        projects={favoriteProjects}
+        title="My Favorites"
+        favoriteProjectsSet={favoriteProjectsSet}
+        emptyMessage="You have no favorite projects. Click the star on a project's page to add one!"
+      />
+
       {myTeamsProjects.length > 0 && (
         <ProjectsOverviewCards
           projects={myTeamsProjects}

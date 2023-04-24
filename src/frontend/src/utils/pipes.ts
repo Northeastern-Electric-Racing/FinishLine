@@ -104,6 +104,6 @@ export const daysToDaysOrWeeksPipe = (days: number): string => {
   return `${weeksPipe(Math.floor(days / 7))}`;
 };
 
-export const daysOrWeeksLeftOrOverdue = (daysLeft: number) => {
+export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };

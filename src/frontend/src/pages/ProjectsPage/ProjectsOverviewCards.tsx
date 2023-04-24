@@ -14,9 +14,15 @@ interface ProjectsOverviewCardsProps {
   projects: Project[];
   title: string;
   favoriteProjectsSet: Set<number>;
+  emptyMessage?: string;
 }
 
-const ProjectsOverviewCards: React.FC<ProjectsOverviewCardsProps> = ({ projects, title, favoriteProjectsSet }) => {
+const ProjectsOverviewCards: React.FC<ProjectsOverviewCardsProps> = ({
+  projects,
+  title,
+  favoriteProjectsSet,
+  emptyMessage
+}) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -39,30 +45,34 @@ const ProjectsOverviewCards: React.FC<ProjectsOverviewCardsProps> = ({ projects,
           {title}
         </Typography>
       </Box>
-      {!collapsed && (
-        <Grid
-          container
-          spacing={3}
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            overflow: 'auto',
-            justifyContent: 'flex-start'
-          }}
-        >
-          {projects
-            .sort((a, b) => {
-              const aEndDate = a.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
-              const bEndDate = b.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
-              return aEndDate - bEndDate;
-            })
-            .map((project) => (
-              <Grid item>
-                <ProjectDetailCard project={project} projectIsFavorited={favoriteProjectsSet.has(project.id)} />
-              </Grid>
-            ))}
-        </Grid>
+      {emptyMessage && !projects.length ? (
+        <Typography sx={{ mt: 2 }}>{emptyMessage}</Typography>
+      ) : (
+        !collapsed && (
+          <Grid
+            container
+            spacing={3}
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              overflow: 'auto',
+              justifyContent: 'flex-start'
+            }}
+          >
+            {projects
+              .sort((a, b) => {
+                const aEndDate = a.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
+                const bEndDate = b.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
+                return aEndDate - bEndDate;
+              })
+              .map((project) => (
+                <Grid item>
+                  <ProjectDetailCard project={project} projectIsFavorited={favoriteProjectsSet.has(project.id)} />
+                </Grid>
+              ))}
+          </Grid>
+        )
       )}
     </>
   );
