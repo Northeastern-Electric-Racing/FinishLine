@@ -14,6 +14,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material';
 import WorkPackageSummary from './WorkPackageSummary';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -36,57 +37,33 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
 
         <Grid container spacing={2}>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <Construction />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              Project Lead:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
-              {fullNamePipe(project.projectLead)}
-            </Typography>
+            <Construction sx={{ mr: 2 }} />
+            <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={1} />
           </Grid>
 
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <ScheduleIcon />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              Start Date:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
-              {datePipe(project.startDate) || 'n/a'}
-            </Typography>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={1} />
           </Grid>
 
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <Work />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              Project Manager:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{fullNamePipe(project.projectManager)}</Typography>
+            <Work sx={{ mr: 2 }} />
+            <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={1} />
           </Grid>
 
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <ScheduleIcon />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              End Date:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{datePipe(project.endDate) || 'n/a'}</Typography>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={1} />
           </Grid>
 
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <AttachMoneyIcon />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              Budget:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }} textAlign={'center'}>
-              {dollarsPipe(project.budget)}
-            </Typography>
+            <AttachMoneyIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={1} />
           </Grid>
 
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
-            <ScheduleIcon />
-            <Typography sx={{ ml: 2, mr: 1, fontWeight: 'bold' }} display="inline" textAlign={'right'}>
-              Duration:
-            </Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{weeksPipe(project.duration)}</Typography>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={1} />
           </Grid>
         </Grid>
       </Grid>
