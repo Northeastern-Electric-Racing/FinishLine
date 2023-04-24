@@ -67,7 +67,7 @@ export const seedWorkPackage = async (
     workPackage.wbsElement.name,
     changeRequestId,
     stage,
-    workPackage.startDate.toString(),
+    '2023-04-24T16:00:00.000Z',
     workPackage.duration,
     workPackage.blockedBy,
     workPackage.expectedActivities.map(descBulletConverter),
