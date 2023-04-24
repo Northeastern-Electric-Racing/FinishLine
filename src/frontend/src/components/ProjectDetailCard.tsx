@@ -9,8 +9,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
-import { fullNamePipe } from '../utils/pipes';
+import { calculateDaysLeftInProject, daysBetween, Project, TaskStatus, WbsElementStatus, wbsPipe } from 'shared';
+import { daysOrWeeksLeftOrLate, emDashPipe, fullNamePipe } from '../utils/pipes';
 import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
 import TaskIcon from '@mui/icons-material/Task';
@@ -21,7 +21,7 @@ interface ProjectDetailCardProps {
 }
 
 const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectIsFavorited }) => {
-  const containsWorkPackages = project.workPackages.length > 0;
+  const containsActiveWorkPackages = project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active).length;
   const tasksLeft: number = project.tasks.filter((task) => task.status !== TaskStatus.DONE).length;
 
   const ProjectDetailCardTitle = () => (
@@ -39,6 +39,8 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
     </Grid>
   );
 
+  const daysLeft = calculateDaysLeftInProject(project);
+
   const ProjectDetailCardDetails = () => (
     <Grid container sx={{ marginTop: '0.5rem' }}>
       <Grid item display="flex" xs={4}>
@@ -46,7 +48,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
       </Grid>
       <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
         <ScheduleIcon sx={{ mr: 1 }} />
-        <Typography>{project.duration} weeks left</Typography>
+        <Typography>{daysLeft ? daysOrWeeksLeftOrLate(daysLeft) : emDashPipe('')}</Typography>
       </Grid>
       <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
         <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
@@ -69,11 +71,13 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
   const ProjectDetailCardActiveWorkPackages = () => (
     <Box sx={{ marginTop: 2 }}>
       <Typography variant="h6">Active Work Packages:</Typography>
-      {containsWorkPackages ? (
+      {containsActiveWorkPackages ? (
         project.workPackages
           .filter((workPackage) => workPackage.status === WbsElementStatus.Active)
           .sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
           .map((workPackage) => {
+            const workPackageDaysLeft = daysBetween(workPackage.endDate, new Date());
+
             return (
               <Grid container sx={{ my: 1 }}>
                 <Grid item xs={6}>
@@ -86,7 +90,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
                 </Grid>
                 <Grid item xs={3} display="flex">
                   <Box display="flex">
-                    <ScheduleIcon sx={{ mr: 1 }} /> <Typography>{workPackage.duration} weeks left</Typography>
+                    <ScheduleIcon sx={{ mr: 1 }} /> <Typography>{daysOrWeeksLeftOrLate(workPackageDaysLeft)}</Typography>
                   </Box>
                 </Grid>
               </Grid>
