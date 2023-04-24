@@ -4,16 +4,10 @@
  */
 
 import { Link } from 'react-router-dom';
-import { WorkPackage, Project, isGuest, isAdmin } from 'shared';
+import { Project, isGuest, isAdmin } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
-import ChangesList from '../../../components/ChangesList';
-import DescriptionList from '../../../components/DescriptionList';
-import WorkPackageSummary from './WorkPackageSummary';
-import PageBlock from '../../../layouts/PageBlock';
 import ProjectDetails from './ProjectDetails';
-import RulesList from './RulesList';
 import { routes } from '../../../utils/routes';
-import ProjectGantt from './ProjectGantt';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,10 +17,14 @@ import { Grid, Menu, MenuItem, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import TaskList from './TaskList/TaskList';
+import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { ScopeTab } from './ScopeTab';
+import ProjectGantt from './ProjectGantt';
+import ProjectChangesList from './ProjectChangesList';
+import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -49,6 +47,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     setDeleteModalShow(true);
   };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [tab, setTab] = useState(0);
   const dropdownOpen = Boolean(anchorEl);
 
   if (isLoading || !favoriteProjects) return <LoadingIndicator />;
@@ -167,25 +166,18 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           </Grid>
         </Grid>
       </>
-      <ProjectDetails project={project} />
-      <TaskList project={project} />
-      <PageBlock title={'Summary'}>{project.summary}</PageBlock>
-      <ProjectGantt workPackages={project.workPackages} />
-      <DescriptionList title={'Goals'} items={project.goals.filter((goal) => !goal.dateDeleted)} />
-      <DescriptionList title={'Features'} items={project.features.filter((feature) => !feature.dateDeleted)} />
-      <DescriptionList
-        title={'Other Constraints'}
-        items={project.otherConstraints.filter((constraint) => !constraint.dateDeleted)}
-      />
-      <RulesList rules={project.rules} />
-      <PageBlock title={'Work Packages'}>
-        {project.workPackages.map((ele: WorkPackage) => (
-          <div key={wbsPipe(ele.wbsNum)} className="mt-3">
-            <WorkPackageSummary workPackage={ele} />
-          </div>
-        ))}
-      </PageBlock>
-      <ChangesList changes={project.changes} />
+      <ProjectDetailTabs project={project} setTab={setTab} />
+      {tab === 0 ? (
+        <ProjectDetails project={project} />
+      ) : tab === 1 ? (
+        <TaskList project={project} />
+      ) : tab === 2 ? (
+        <ScopeTab project={project} />
+      ) : tab === 3 ? (
+        <ProjectGantt workPackages={project.workPackages} />
+      ) : (
+        <ProjectChangesList changes={project.changes} />
+      )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
       )}

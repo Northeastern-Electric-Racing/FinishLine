@@ -320,6 +320,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         setPageSize(newPageSize);
       }}
       sx={styles.datagrid}
+      autoHeight={true}
     />
   );
 };

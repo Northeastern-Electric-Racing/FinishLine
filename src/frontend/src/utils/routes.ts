@@ -23,10 +23,12 @@ const TEAMS_BY_ID = TEAMS + `/:teamId`;
 
 /**************** Change Requests Section ****************/
 const CHANGE_REQUESTS = `/change-requests`;
+const ALL_CHANGE_REQUESTS = CHANGE_REQUESTS + `/all`;
 const CHANGE_REQUESTS_BY_ID = CHANGE_REQUESTS + `/:id`;
 const CR_BY_ID = `/cr/:id`; // short version of CHANGE_REQUESTS_BY_ID
 const CHANGE_REQUESTS_NEW = CHANGE_REQUESTS + `/new`;
 const CHANGE_REQUESTS_NEW_WITH_WBS = CHANGE_REQUESTS_NEW + `?wbsNum=`;
+const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
@@ -49,10 +51,12 @@ export const routes = {
   WORK_PACKAGE_NEW,
 
   CHANGE_REQUESTS,
+  ALL_CHANGE_REQUESTS,
   CHANGE_REQUESTS_BY_ID,
   CR_BY_ID,
   CHANGE_REQUESTS_NEW,
   CHANGE_REQUESTS_NEW_WITH_WBS,
+  CHANGE_REQUESTS_OVERVIEW,
 
   ADMIN_TOOLS
 };

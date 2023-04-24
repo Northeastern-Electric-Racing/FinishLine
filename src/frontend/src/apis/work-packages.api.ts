@@ -79,3 +79,12 @@ export const editWorkPackage = (payload: WorkPackageApiInputs) => {
 export const deleteWorkPackage = (wbsNum: WbsNumber) => {
   return axios.delete<{ message: string }>(apiUrls.workPackagesDelete(wbsPipe(wbsNum)));
 };
+
+/**
+ * Slack upcoming deadlines.
+ */
+export const slackUpcomingDeadlines = (deadline: Date) => {
+  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+    deadline
+  });
+};
