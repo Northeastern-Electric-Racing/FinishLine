@@ -82,20 +82,28 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
 
   let [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
 
-  const processRowUpdate = React.useCallback(async (newRow: GridRowModel) => {
+  const processRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
     setPriority(newRow.priority);
     setDeadline(newRow.deadline);
+    console.log("newRow Priority: " + newRow.priority);
+    console.log("UseState Priority: " + priority);
+    console.log("new Row Deadline: " + newRow.deadline);
+    console.log("Use State Deadline: " + deadline);
+    console.log("new Row Title: " + newRow.title);
+    console.log("Use State Title: " + title);
+    console.log("new Row Assignees: " + newRow.assignees);
+    console.log("use state Assignees: " + assignees);
     return {
       id: newRow.id,
-      title: newRow.title,
+      title: title,
       deadline: newRow.deadline,
       priority: newRow.priority,
-      assignees: newRow.assignees,
+      assignees: assignees,
       taskId: newRow.taskId,
       notes: newRow.notes,
       task: newRow.task
     };
-  }, []);
+  };
 
   const deleteCreateTask = () => {
     setTitle('');
@@ -236,6 +244,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
             onClick={() => {
+              console.log('test')
               setTitle(params.row.title);
               setDeadline(params.row.deadline);
               setPriority(params.row.priority);
@@ -334,7 +343,8 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       task: task
     };
   });
-  if (addTask) {
+
+  if (addTask && currentlyEditingId === undefined) {
     rows.unshift({
       id: -1,
       title: title,
@@ -366,7 +376,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     <DataGrid
       columns={columns}
       rows={rows}
-      editMode="row"
       experimentalFeatures={{ newEditingApi: true }}
       isCellEditable={isCellEditable}
       processRowUpdate={processRowUpdate}
