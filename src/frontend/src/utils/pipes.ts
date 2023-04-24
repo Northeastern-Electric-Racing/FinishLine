@@ -95,3 +95,11 @@ export const timelinePipe = (status: string) => {
     .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
     .join(' ');
 };
+
+/**
+ * Exports either 'X day(s)' or 'X week(s)' depending on how many days are given
+ */
+export const daysToDaysOrWeeks = (days: number): string => {
+  if (days < 7) return `${days} day${days === 1 ? '' : 's'}`;
+  return `${days} ${weeksPipe(Math.floor(days / 7))}`;
+};

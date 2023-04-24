@@ -13,6 +13,8 @@ const CREDITS = `/credits`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
+const PROJECTS_OVERVIEW = PROJECTS + '/overview';
+const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
@@ -46,6 +48,8 @@ export const routes = {
   GANTT,
 
   PROJECTS,
+  PROJECTS_OVERVIEW,
+  PROJECTS_ALL,
   PROJECTS_BY_WBS,
   PROJECTS_NEW,
   WORK_PACKAGE_NEW,

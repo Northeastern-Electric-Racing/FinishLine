@@ -8,6 +8,7 @@ import { Project, User } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
+import { projectTransformer } from './transformers/projects.transformers';
 
 /**
  * Fetches all users.
@@ -70,7 +71,9 @@ export const getSingleUserSettings = (id: number) => {
  * @param id User ID of the requested user's favorite projects.
  */
 export const getUsersFavoriteProjects = (id: number) => {
-  return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`));
+  return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`), {
+    transformResponse: (data) => projectTransformer(JSON.parse(data))
+  });
 };
 
 /**

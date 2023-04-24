@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { addWeeksToDate } from '../date-utils';
-import { WbsElementStatus } from '../types/project-types';
+import { addWeeksToDate, daysBetween } from '../date-utils';
+import { Project, WbsElementStatus } from '../types/project-types';
 import { TimelineStatus } from '../types/work-package-types';
 
 /**
@@ -87,11 +87,19 @@ const calculateProjectStartDate = (wps: { duration: number; startDate: Date }[])
   return minDate;
 };
 
+const calculateDaysLeftInProject = (project: Project): number | null => {
+  const endDate = calculateProjectEndDate(project.workPackages);
+  if (!endDate) return null;
+
+  return daysBetween(new Date(), endDate);
+};
+
 export {
   calculateDuration,
   calculateEndDate,
   calculateProjectEndDate,
   calculatePercentExpectedProgress,
   calculateTimelineStatus,
-  calculateProjectStartDate
+  calculateProjectStartDate,
+  calculateDaysLeftInProject
 };
