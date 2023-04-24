@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import ProjectDetailCard from '../../components/ProjectDetailCard';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hooks';
 import { useAllProjects } from '../../hooks/projects.hooks';
-import { Project } from 'shared';
+import ProjectsOverviewCards from './ProjectsOverviewCards';
 
 /**
  * Cards of all projects this user has favorited
@@ -40,57 +39,26 @@ const ProjectsOverview: React.FC = () => {
       project.team?.members.map((member) => member.userId).includes(user.userId)
   );
 
-  const DisplayProjectCards = ({ projects }: { projects: Project[] }) => (
-    <Grid
-      container
-      spacing={3}
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start'
-      }}
-    >
-      {projects
-        .sort((a, b) => {
-          const aEndDate = a.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
-          const bEndDate = b.endDate?.getTime() || Number.MAX_SAFE_INTEGER;
-          return aEndDate - bEndDate;
-        })
-        .map((project) => (
-          <Grid item>
-            <ProjectDetailCard project={project} projectIsFavorited={favoriteProjectsSet.has(project.id)} />
-          </Grid>
-        ))}
-    </Grid>
-  );
-
   return (
     <Box>
-      <Typography variant="h5" sx={{ cursor: 'pointer', mb: 2 }}>
-        My Favorites
-      </Typography>
       {favoriteProjects.length > 0 ? (
-        <DisplayProjectCards projects={favoriteProjects} />
+        <ProjectsOverviewCards projects={favoriteProjects} title="My Favorites" favoriteProjectsSet={favoriteProjectsSet} />
       ) : (
         <Typography sx={{ mt: 2 }}>You have no favorite projects. Click the star on a project's page to add one!</Typography>
       )}
       {myTeamsProjects.length > 0 && (
-        <>
-          <Typography variant="h5" sx={{ cursor: 'pointer', my: 2 }}>
-            My Team's Projects
-          </Typography>
-          <DisplayProjectCards projects={myTeamsProjects} />
-        </>
+        <ProjectsOverviewCards
+          projects={myTeamsProjects}
+          title="My Team's Projects"
+          favoriteProjectsSet={favoriteProjectsSet}
+        />
       )}
       {projectsImLeading.length > 0 && (
-        <>
-          <Typography variant="h5" sx={{ cursor: 'pointer', my: 2 }}>
-            Projects I'm Leading
-          </Typography>
-          <DisplayProjectCards projects={projectsImLeading} />
-        </>
+        <ProjectsOverviewCards
+          projects={projectsImLeading}
+          title="Projects I'm Leading"
+          favoriteProjectsSet={favoriteProjectsSet}
+        />
       )}
     </Box>
   );

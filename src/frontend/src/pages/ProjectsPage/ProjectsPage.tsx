@@ -19,7 +19,7 @@ const ProjectsPage: React.FC = () => {
   // Values that go in the URL depending on the tab value
   const viewUrlValues = useMemo(() => ['overview', 'all'], []);
 
-  const match = useRouteMatch<{ tabValueString: string }>(`${routes.CHANGE_REQUESTS}/:tabValueString`);
+  const match = useRouteMatch<{ tabValueString: string }>(`${routes.PROJECTS}/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
 
   // Default to the "overview" tab

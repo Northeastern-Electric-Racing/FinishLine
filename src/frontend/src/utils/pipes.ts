@@ -99,7 +99,11 @@ export const timelinePipe = (status: string) => {
 /**
  * Exports either 'X day(s)' or 'X week(s)' depending on how many days are given
  */
-export const daysToDaysOrWeeks = (days: number): string => {
+export const daysToDaysOrWeeksPipe = (days: number): string => {
   if (days < 7) return `${days} day${days === 1 ? '' : 's'}`;
   return `${weeksPipe(Math.floor(days / 7))}`;
+};
+
+export const daysOrWeeksLeftOrOverdue = (daysLeft: number) => {
+  return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
