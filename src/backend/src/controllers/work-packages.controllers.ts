@@ -126,6 +126,7 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
   static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
