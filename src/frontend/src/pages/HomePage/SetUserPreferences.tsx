@@ -14,6 +14,7 @@ import ExternalLink from '../../components/ExternalLink';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import ReactHookTextField from '../../components/ReactHookTextField';
+import { useToast } from '../../hooks/toasts.hooks';
 import { useUpdateUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 
@@ -22,6 +23,7 @@ interface SetUserPreferencesProps {
 }
 
 const SetUserPreferences: React.FC<SetUserPreferencesProps> = ({ userSettings }) => {
+  const toast = useToast();
   const { mutateAsync, isLoading, isError, error } = useUpdateUserSettings();
   const { handleSubmit, control } = useForm<{ slackId: string }>({
     defaultValues: { slackId: userSettings.slackId }
@@ -33,7 +35,11 @@ const SetUserPreferences: React.FC<SetUserPreferencesProps> = ({ userSettings })
   const onSubmit = async ({ slackId }: { slackId: string }) => {
     try {
       await mutateAsync({ ...userSettings, slackId });
-    } catch (error: unknown) {}
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   return (
