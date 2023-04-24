@@ -150,7 +150,7 @@ const ProjectsTable: React.FC = () => {
             return (
               <Link
                 component={RouterLink}
-                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}
+                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}/overview`}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 <GridRow {...props} />
