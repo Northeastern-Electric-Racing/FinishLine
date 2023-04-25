@@ -12,7 +12,6 @@ import {
   GridRenderCellParams,
   GridRenderEditCellParams,
   GridRowId,
-  GridRowModel,
   GridRowParams,
 } from '@mui/x-data-grid';
 import CheckIcon from '@mui/icons-material/Check';
@@ -27,7 +26,7 @@ import { fullNamePipe } from '../../../../utils/pipes';
 import { GridColDefStyle } from '../../../../utils/tables';
 import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
-import { AssigneeEdit, TitleEdit } from './TaskListComponents';
+import { AssigneeEdit, DeadlineEdit, PriorityEdit, TitleEdit } from './TaskListComponents';
 import { Cancel } from '@mui/icons-material';
 
 const styles = {
@@ -79,31 +78,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
   const theme = useTheme();
-
   let [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
-
-  const processRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
-    setPriority(newRow.priority);
-    setDeadline(newRow.deadline);
-    console.log("newRow Priority: " + newRow.priority);
-    console.log("UseState Priority: " + priority);
-    console.log("new Row Deadline: " + newRow.deadline);
-    console.log("Use State Deadline: " + deadline);
-    console.log("new Row Title: " + newRow.title);
-    console.log("Use State Title: " + title);
-    console.log("new Row Assignees: " + newRow.assignees);
-    console.log("use state Assignees: " + assignees);
-    return {
-      id: newRow.id,
-      title: title,
-      deadline: newRow.deadline,
-      priority: newRow.priority,
-      assignees: assignees,
-      taskId: newRow.taskId,
-      notes: newRow.notes,
-      task: newRow.task
-    };
-  };
 
   const deleteCreateTask = () => {
     setTitle('');
@@ -155,6 +130,14 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
 
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
     return <AssigneeEdit {...params} team={team} assignees={assignees} setAssignees={setAssignees} />;
+  };
+
+  const renderEditPriority = (params: GridRenderEditCellParams) => {
+    return <PriorityEdit {...params} priority={priority} setPriority={setPriority} />;
+  };
+
+  const renderEditDeadline = (params: GridRenderEditCellParams) => {
+    return <DeadlineEdit {...params} deadline={deadline} setDeadline={setDeadline} />;
   };
 
   const getActions = (params: GridRowParams) => {
@@ -299,6 +282,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       ...baseColDef,
       field: 'deadline',
       headerName: 'Deadline',
+      renderEditCell: renderEditDeadline,
       type: 'date',
       editable: true,
     },
@@ -308,6 +292,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       field: 'priority',
       headerName: 'Priority',
       renderCell: renderPriority,
+      renderEditCell: renderEditPriority,
       editable: true,
       type: 'singleSelect',
       valueOptions: [TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]
@@ -378,7 +363,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       rows={rows}
       experimentalFeatures={{ newEditingApi: true }}
       isCellEditable={isCellEditable}
-      processRowUpdate={processRowUpdate}
       pageSize={pageSize}
       rowsPerPageOptions={[5, 10, 15, 100]}
       onPageSizeChange={(newPageSize) => {

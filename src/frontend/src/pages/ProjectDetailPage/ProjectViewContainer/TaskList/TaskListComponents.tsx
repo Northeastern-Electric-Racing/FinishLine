@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, TextField } from '@mui/material';
+import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
+import { DatePicker } from '@mui/x-date-pickers';
 import { User, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { fullNamePipe } from '../../../../utils/pipes';
@@ -34,6 +35,60 @@ export const TitleEdit = (params: GridRenderEditCellParams) => {
       value={value}
       onChange={handleValueChange}
       ref={handleRef}
+    />
+  );
+};
+
+
+export const PriorityEdit = (params: GridRenderEditCellParams) => {
+  const { id, value, field, setPriority } = params;
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value; // The new value entered by the user
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+    setPriority(newValue);
+  };
+
+  const handleRef = (element: HTMLDivElement) => {
+    if (element) {
+      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+      input?.focus();
+    }
+  };
+
+  return (
+    <TextField fullWidth variant="outlined" select value={value} onChange={handleValueChange} ref={handleRef}>
+      <MenuItem value={'LOW'}>Low</MenuItem>
+      <MenuItem value={'MEDIUM'}>Medium</MenuItem>
+      <MenuItem value={'HIGH'}>High</MenuItem>
+    </TextField>
+  );
+};
+
+export const DeadlineEdit = (params: GridRenderEditCellParams) => {
+  const { id, value, field, setDeadline } = params;
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = (value: unknown, keyboardInputValue?: string | undefined) => {
+    const newValue = value; // The new value entered by the user
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+    setDeadline(newValue);
+  };
+
+  const handleRef = (element: HTMLDivElement) => {
+    if (element) {
+      const input = element.querySelector<HTMLInputElement>(`input[value="${value}"]`);
+      input?.focus();
+    }
+  };
+
+  return (
+    <DatePicker
+      value={value}
+      onChange={handleValueChange}
+      ref={handleRef}
+      renderInput={(params) => <TextField {...params} variant="outlined" />}
     />
   );
 };
