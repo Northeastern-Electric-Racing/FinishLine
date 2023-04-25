@@ -25,7 +25,7 @@ export interface Row {
   notes: string;
   task: Task;
   isNew?: boolean;
-};
+}
 
 export interface TaskListTabPanelProps {
   project: Project;

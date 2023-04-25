@@ -39,7 +39,6 @@ export const TitleEdit = (params: GridRenderEditCellParams) => {
   );
 };
 
-
 export const PriorityEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setPriority } = params;
   const apiRef = useGridApiContext();
