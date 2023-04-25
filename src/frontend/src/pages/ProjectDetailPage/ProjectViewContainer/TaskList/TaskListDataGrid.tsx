@@ -104,7 +104,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
 
   const renderAssignees = (params: GridRenderCellParams) => {
     let assigneeString = '';
-    if (assignees.length > 0 && params.row.id === -1) {
+    if (assignees.length > 0 && (params.row.id === -1 || params.row.id === currentlyEditingId)) {
       assigneeString = assignees.reduce(
         (accumulator: string, currentVal: UserPreview) => accumulator + fullNamePipe(currentVal) + ', ',
         ''
