@@ -35,6 +35,7 @@ export const seedWorkPackage = async (
   workPackageWbsNumber: WbsNumber;
   workPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
 }> => {
+  console.log('Creating work package...' + name)
   const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
     creator,
     projectWbsNumber,
@@ -67,7 +68,7 @@ export const seedWorkPackage = async (
     workPackage.wbsElement.name,
     changeRequestId,
     stage,
-    '2023-04-24T16:00:00.000Z',
+    "2023-04-24T16:00:00.000Z",
     workPackage.duration,
     workPackage.blockedBy,
     workPackage.expectedActivities.map(descBulletConverter),
