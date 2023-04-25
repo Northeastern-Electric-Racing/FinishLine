@@ -12,7 +12,7 @@ import {
   GridRenderCellParams,
   GridRenderEditCellParams,
   GridRowId,
-  GridRowParams,
+  GridRowParams
 } from '@mui/x-data-grid';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -227,7 +227,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
             onClick={() => {
-              console.log('test')
+              console.log('test');
               setTitle(params.row.title);
               setDeadline(params.row.deadline);
               setPriority(params.row.priority);
@@ -284,7 +284,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       headerName: 'Deadline',
       renderEditCell: renderEditDeadline,
       type: 'date',
-      editable: true,
+      editable: true
     },
     {
       ...baseColDef,
@@ -316,7 +316,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     }
   ];
 
-  const rows = tasks.map((task: Task, idx: number) => {
+  let rows = tasks.map((task: Task, idx: number) => {
     return {
       id: idx,
       title: task.title,
@@ -349,6 +349,24 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         deadline: new Date(),
         priority: TaskPriority.High,
         status: TaskStatus.DONE
+      }
+    });
+  }
+  if (currentlyEditingId !== undefined) {
+    rows = rows.map((row) => {
+      if (row.id === currentlyEditingId) {
+        return {
+          id: row.id,
+          title: title,
+          deadline: deadline,
+          priority: priority,
+          assignees: assignees,
+          taskId: row.taskId,
+          notes: row.notes,
+          task: row.task
+        };
+      } else {
+        return row;
       }
     });
   }
