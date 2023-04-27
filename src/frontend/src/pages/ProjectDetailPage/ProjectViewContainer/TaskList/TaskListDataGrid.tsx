@@ -70,7 +70,8 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   moveToBacklog,
   moveToDone,
   deleteRow,
-  editTask
+  editTask,
+  setDisabled
 }) => {
   const [title, setTitle] = useState('');
   const [deadline, setDeadline] = useState(new Date());
@@ -78,7 +79,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
   const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
   const theme = useTheme();
-  let [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
+  const [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
 
   const deleteCreateTask = () => {
     setTitle('');
@@ -181,6 +182,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             icon={<Cancel fontSize="small" />}
             label="cancel"
             onClick={() => {
+              setDisabled(false);
               setCurrentlyEditingId(undefined);
               setTitle('');
               setDeadline(new Date());
@@ -225,13 +227,14 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             icon={<EditIcon fontSize="small" />}
             label="Edit"
             showInMenu
-            disabled={!editTaskPermissions(params.row.task)}
+            disabled={!editTaskPermissions(params.row.task) || addTask}
             onClick={() => {
               setTitle(params.row.title);
               setDeadline(params.row.deadline);
               setPriority(params.row.priority);
               setAssignees(params.row.assignees);
               setCurrentlyEditingId(params.id);
+              setDisabled(true);
             }}
           />
         );
@@ -351,7 +354,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       }
     });
   }
-  if (currentlyEditingId !== undefined) {
+  if (currentlyEditingId !== undefined && !addTask) {
     rows = rows.map((row) => {
       if (row.id === currentlyEditingId) {
         return {

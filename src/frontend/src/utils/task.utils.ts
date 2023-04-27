@@ -32,6 +32,7 @@ export interface TaskListTabPanelProps {
   status: TaskStatus;
   addTask: boolean;
   onAddCancel: () => void;
+  setDisabled: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface TaskListDataGridProps {
@@ -50,6 +51,7 @@ export interface TaskListDataGridProps {
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   editTask: (editInfo: FormInput) => Promise<void>;
+  setDisabled: Dispatch<SetStateAction<boolean>>;
 }
 
 export const transformDate = (date: Date) => {
