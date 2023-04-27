@@ -1,15 +1,16 @@
 import { User } from 'shared';
-import { Controller } from 'react-hook-form';
+import { Controller, Control, FieldErrorsImpl } from 'react-hook-form';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
+import { dataPayload } from './ProjectEditContainer';
 
 interface ProjectEditDetailsProps {
   users: User[];
-  control: any;
-  errors: any;
+  control: Control<dataPayload>;
+  errors: FieldErrorsImpl<dataPayload>;
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
