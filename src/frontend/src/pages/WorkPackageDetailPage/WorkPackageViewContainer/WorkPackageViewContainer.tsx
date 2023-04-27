@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
@@ -17,7 +16,7 @@ import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalCont
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem, Link } from '@mui/material';
 import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -27,6 +26,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -120,7 +120,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   );
   const createCRButton = (
     <MenuItem
-      component={Link}
+      component={RouterLink}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
       disabled={!allowRequestChange}
       onClick={handleDropdownClose}
@@ -167,7 +167,9 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       <HorizontalList
         title={'Blocked By'}
         items={workPackage.blockedBy.map((dep) => (
-          <strong>{wbsPipe(dep)}</strong>
+          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep)}`}>
+            {wbsPipe(dep)}
+          </Link>
         ))}
       />
       <CheckList
