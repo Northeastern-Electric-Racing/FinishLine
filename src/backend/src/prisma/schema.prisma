@@ -323,7 +323,7 @@ enum Club_Accounts {
   BUDGET
 }
 
-enum Reimbursement_Status_Type { 
+enum Reimbursement_Status_Type {
   PENDING_FINANCE
   SABO_SUBMITTED
   ADVISOR_APPROVED
