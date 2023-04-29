@@ -136,11 +136,15 @@ export const updateBlocking = async (
  */
 export const validateChangeRequestAccepted = async (crId: number) => {
   const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
+  const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
   if (changeRequest.dateDeleted) throw new HttpException(400, 'Cannot use a deleted change request!');
   if (changeRequest.accepted === null) throw new HttpException(400, 'Cannot implement an unreviewed change request');
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
+  if (!changeRequest.dateReviewed) throw new HttpException(400, 'Cannot use an unreviewed change request');
+  if (currentDate.getTime() - changeRequest.dateReviewed.getTime() > 1000 * 60 * 60 * 24 * 5)
+    throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
   return changeRequest;
 };
