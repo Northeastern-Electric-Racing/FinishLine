@@ -82,26 +82,28 @@ model User {
   userSecureSettings User_Secure_Settings?
 
   // Relation references
-  submittedChangeRequests               Change_Request[]        @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests                Change_Request[]        @relation(name: "reviewedChangeRequests")
-  deletedChangeRequests                 Change_Request[]        @relation(name: "deletedChangeRequests")
-  markedAsProjectLead                   Activation_CR[]         @relation(name: "markAsProjectLead")
-  markedAsProjectManager                Activation_CR[]         @relation(name: "markAsProjectManager")
-  changes                               Change[]
-  projectLead                           WBS_Element[]           @relation(name: "projectLead")
-  projectManager                        WBS_Element[]           @relation(name: "projectManager")
-  Session                               Session[]
-  teams                                 Team[]                  @relation(name: "teamsAsMember")
-  teamAsLead                            Team?                   @relation(name: "teamAsLead")
-  deletedWBSElements                    WBS_Element[]           @relation(name: "deletedWbsElements")
-  checkedDescriptionBullets             Description_Bullet[]    @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions              Proposed_Solution[]
-  createdTasks                          Task[]                  @relation(name: "createdBy")
-  deletedTasks                          Task[]                  @relation(name: "deletedBy")
-  assignedTasks                         Task[]                  @relation(name: "assignedTo")
-  favoriteProjects                      Project[]               @relation(name: "favoritedBy")
-  reimbursementRequests                 Reimbursement_Request[] @relation(name: "reimbursementRequestRecepient")
-  reimbursementStatuses                 Reimbursement_Status[]
+  submittedChangeRequests   Change_Request[]        @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests    Change_Request[]        @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests     Change_Request[]        @relation(name: "deletedChangeRequests")
+  markedAsProjectLead       Activation_CR[]         @relation(name: "markAsProjectLead")
+  markedAsProjectManager    Activation_CR[]         @relation(name: "markAsProjectManager")
+  changes                   Change[]
+  projectLead               WBS_Element[]           @relation(name: "projectLead")
+  projectManager            WBS_Element[]           @relation(name: "projectManager")
+  Session                   Session[]
+  teams                     Team[]                  @relation(name: "teamsAsMember")
+  teamAsLead                Team?                   @relation(name: "teamAsLead")
+  deletedWBSElements        WBS_Element[]           @relation(name: "deletedWbsElements")
+  checkedDescriptionBullets Description_Bullet[]    @relation(name: "checkDescriptionBullets")
+  createdProposedSolutions  Proposed_Solution[]
+  createdTasks              Task[]                  @relation(name: "createdBy")
+  deletedTasks              Task[]                  @relation(name: "deletedBy")
+  assignedTasks             Task[]                  @relation(name: "assignedTo")
+  favoriteProjects          Project[]               @relation(name: "favoritedBy")
+  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecepient")
+  reimbursementStatuses     Reimbursement_Status[]
+  reimbursements            Reimbursement[]         @relation(name: "purchaser")
+  submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
 }
 
 model Team {
@@ -385,6 +387,16 @@ model Expense_Type {
   code          Int
   allowed       Boolean
   requests      Reimbursement_Request[]
+}
+
+model Reimbursement {
+  reimbursementId String   @id @default(uuid())
+  dateCreated     DateTime @default(now())
+  amount          Int
+  userSubmittedId Int
+  userSubmitted   User     @relation(fields: [userSubmittedId], references: [userId], name: "submitter")
+  purchaserId     Int
+  purchaser       User     @relation(fields: [purchaserId], references: [userId], name: "purchaser")
 }
 
 model User_Secure_Settings {
