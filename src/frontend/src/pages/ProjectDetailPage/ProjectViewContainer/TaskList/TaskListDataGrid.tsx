@@ -170,7 +170,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
                 assignees: assignees.map((assignee: UserPreview) => assignee.userId),
                 priority: priority
               });
-              setDisabled(false)
+              setDisabled(false);
               setTitle('');
               setDeadline(new Date());
               setPriority(TaskPriority.High);
