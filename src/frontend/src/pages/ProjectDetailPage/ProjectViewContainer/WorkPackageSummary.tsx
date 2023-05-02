@@ -10,8 +10,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateEndDate, WorkPackage } from 'shared';
-import { weeksPipe, wbsPipe, listPipe, datePipe } from '../../../utils/pipes';
+import { calculateEndDate, WbsNumber, WorkPackage } from 'shared';
+import { weeksPipe, wbsPipe, datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
 import Grid from '@mui/material/Grid';
@@ -44,6 +44,18 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
     </ul>
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
+  const dependencyList = (
+    <Typography sx={{ fontWeight: 'normal' }} display="inline">
+      {workPackage.blockedBy.map((wbsNum: WbsNumber) => (
+        <Typography display="inline">
+          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
+            {wbsPipe(wbsNum)}
+          </Link>
+          {workPackage.blockedBy.indexOf(wbsNum) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
+        </Typography>
+      ))}
+    </Typography>
+  );
 
   const theme = useTheme();
 
@@ -82,9 +94,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               </Box>
             </Grid>
             <Grid item xs={6}>
-              <Box display="flex" flexDirection="row">
-                <DetailDisplay label="Blocked By" content={listPipe(workPackage.blockedBy, wbsPipe)} paddingRight={1} />
-              </Box>
+              <Typography fontWeight="bold">Blocked By: {dependencyList}</Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
