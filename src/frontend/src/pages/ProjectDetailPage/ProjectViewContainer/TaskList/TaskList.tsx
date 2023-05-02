@@ -31,6 +31,7 @@ const sortAscendingDate = (task1: Task, task2: Task) => {
 const TaskList = ({ project }: TaskListProps) => {
   const auth: Auth = useAuth();
 
+  const [disabled, setDisabled] = useState<boolean>(false);
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
   const tabUrlValues = useMemo(() => ['in-backlog', 'in-progress', 'done'], []);
 
@@ -75,7 +76,7 @@ const TaskList = ({ project }: TaskListProps) => {
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={!createTaskPermissions || !project.team}
+      disabled={!createTaskPermissions || !project.team || disabled}
       startIcon={<AddTask />}
       sx={{
         height: 32,
@@ -125,6 +126,7 @@ const TaskList = ({ project }: TaskListProps) => {
           status={TaskStatus.IN_BACKLOG}
           addTask={addTask}
           onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
         />
       ) : value === 1 ? (
         <TaskListTabPanel
@@ -133,6 +135,7 @@ const TaskList = ({ project }: TaskListProps) => {
           status={TaskStatus.IN_PROGRESS}
           addTask={addTask}
           onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
         />
       ) : (
         <TaskListTabPanel
@@ -141,6 +144,7 @@ const TaskList = ({ project }: TaskListProps) => {
           status={TaskStatus.DONE}
           addTask={addTask}
           onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
         />
       )}
     </Box>
