@@ -4,13 +4,23 @@
  */
 
 import { wbsPipe, WorkPackage } from 'shared';
-import { Dialog, DialogContent, DialogTitle, Grid, Breakpoint, IconButton, useTheme, DialogActions } from '@mui/material';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Breakpoint,
+  IconButton,
+  useTheme,
+  DialogActions,
+  Typography
+} from '@mui/material';
 import NERSuccessButton from '../components/NERSuccessButton';
 import NERFailButton from '../components/NERFailButton';
 import { Close } from '@mui/icons-material';
-import BulletList from './BulletList';
 
 interface BlockerWarningModalProps {
+  duration: number;
   blockingWorkPackages: WorkPackage[];
   open: boolean;
   onHide: () => void;
@@ -18,12 +28,20 @@ interface BlockerWarningModalProps {
 }
 
 const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
+  duration,
   blockingWorkPackages,
   open,
   onHide,
   handleContinue
 }: BlockerWarningModalProps) => {
   const theme = useTheme();
+
+  const title = `The following work packages' start dates will be delayed by ${duration} weeks`;
+  const list = blockingWorkPackages.map((wp) => {
+    return '#' + wbsPipe(wp.wbsNum) + ' - ' + wp.projectName + ' - ' + wp.name;
+  });
+  const listPrepared = list.map((bullet, idx) => <li key={idx}>{bullet}</li>);
+  let BuiltList = <ul>{listPrepared}</ul>;
 
   const dialogWidth: Breakpoint = 'md';
   return (
@@ -61,13 +79,8 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <BulletList
-              title="The following work packages will be automatically delayed:"
-              list={blockingWorkPackages.map((wp) => {
-                return '#' + wbsPipe(wp.wbsNum) + ' - ' + wp.projectName + ' - ' + wp.name;
-              })}
-              readOnly
-            />
+            <Typography>{title}</Typography>
+            {BuiltList}
           </Grid>
         </Grid>
       </DialogContent>

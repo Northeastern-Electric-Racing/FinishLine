@@ -590,7 +590,7 @@ export default class WorkPackagesService {
   }
 
   /**
-   * Gets the blocking work packages for the given work package
+   * Gets the work packages the given work package is blocking
    * @param wbsNum the wbs number of the work package to get the blocking work packages for
    * @returns the blocking work packages for the given work package
    */
@@ -613,7 +613,7 @@ export default class WorkPackagesService {
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
 
-    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId)
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 

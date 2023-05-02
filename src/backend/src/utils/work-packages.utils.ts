@@ -194,8 +194,8 @@ export const createDescriptionBulletChangesJson = (
 };
 
 /**
- * Gets all the blocking workpackages for a given work package
- * @param initialWorkPackage the work package that to get the blocking work packages for
+ * Gets all the work packages the given work package is blocking
+ * @param initialWorkPackage the work package to get the blocking work packages for
  * @returns an array of the blocking work packages
  */
 export const getBlockingWorkPackages = async (
@@ -225,6 +225,7 @@ export const getBlockingWorkPackages = async (
     });
 
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
+    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it 
     if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     // get all the blockings of the current wbs and add them to the queue to update

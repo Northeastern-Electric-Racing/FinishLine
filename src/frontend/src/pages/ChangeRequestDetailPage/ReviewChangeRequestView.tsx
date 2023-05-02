@@ -27,6 +27,8 @@ import NERFailButton from '../../components/NERFailButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -47,12 +49,16 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   onSubmit
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
+  const [selectedTimelineImpact, setSelectedTimelineImpact] = useState(-1);
   const toast = useToast();
-  const { data: blockingWorkPackages } = useGetBlockingWorkPackages(cr.wbsNum);
+  const { isLoading, isError, error, data: blockingWorkPackages } = useGetBlockingWorkPackages(cr.wbsNum);
   const [showWarning, setShowWarning] = useState(false);
   const { register, setValue, getFieldState, reset, handleSubmit, control, getValues } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
+
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} />;
 
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
@@ -74,12 +80,14 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   };
 
   const handleShowWarning = (data: FormInput) => {
+    if (selected === -1) {
+      onSubmitWrapper(data);
+      return;
+    }
     const standardChangeRequest = cr as StandardChangeRequest;
-    if (
-      standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!.timelineImpact > 0 &&
-      blockingWorkPackages &&
-      blockingWorkPackages.length > 0
-    ) {
+    const selectedProposedSolution = standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!;
+    if (selectedProposedSolution.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
+      setSelectedTimelineImpact(selectedProposedSolution.timelineImpact);
       setShowWarning(true);
     } else {
       onSubmitWrapper(data);
@@ -278,6 +286,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
       ;
       {showWarning && (
         <ChangeRequestBlockerWarning
+          duration={selectedTimelineImpact}
           onHide={() => setShowWarning(false)}
           open={showWarning}
           handleContinue={() => onSubmitWrapper(getValues())}
