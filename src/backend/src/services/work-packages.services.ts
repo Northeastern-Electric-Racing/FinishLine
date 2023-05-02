@@ -221,10 +221,6 @@ export default class WorkPackagesService {
     const date = new Date(startDate.split('T')[0]);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
-    if (date.getDay() !== 1) {
-      throw new HttpException(400, 'Start day must be a monday');
-    }
-
     // add to the database
     const created = await prisma.work_Package.create({
       data: {
@@ -449,12 +445,8 @@ export default class WorkPackagesService {
       .concat(deliverablesChangeJson.changes);
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
-    const date = new Date(startDate.split('T')[0]);
+    const date = new Date(startDate);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
-
-    if (date.getDay() !== 1) {
-      throw new HttpException(400, 'Start day must be a monday');
-    }
 
     // update the work package with the input fields
     const updatedWorkPackage = await prisma.work_Package.update({

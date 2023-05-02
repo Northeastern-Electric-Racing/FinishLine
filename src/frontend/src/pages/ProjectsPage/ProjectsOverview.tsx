@@ -9,6 +9,7 @@ import ErrorPage from '../ErrorPage';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hooks';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ProjectsOverviewCards from './ProjectsOverviewCards';
+import { WbsElementStatus } from 'shared';
 
 /**
  * Cards of all projects this user has favorited
@@ -31,11 +32,13 @@ const ProjectsOverview: React.FC = () => {
   const favoriteProjectsSet: Set<number> = new Set(favoriteProjects.map((project) => project.id));
 
   const projectsImLeading = projects.filter(
-    (project) => project.projectLead?.userId === user.userId || project.projectManager?.userId === user.userId
+    (project) =>
+      (project.status !== WbsElementStatus.Complete && project.projectLead?.userId === user.userId) ||
+      project.projectManager?.userId === user.userId
   );
   const myTeamsProjects = projects.filter(
     (project) =>
-      (user.teamAsLeadId && user.teamAsLeadId === project.team?.teamId) ||
+      (project.status !== WbsElementStatus.Complete && user.teamAsLeadId && user.teamAsLeadId === project.team?.teamId) ||
       project.team?.members.map((member) => member.userId).includes(user.userId)
   );
 
