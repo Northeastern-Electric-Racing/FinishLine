@@ -613,7 +613,7 @@ export default class WorkPackagesService {
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
 
-    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId)
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 

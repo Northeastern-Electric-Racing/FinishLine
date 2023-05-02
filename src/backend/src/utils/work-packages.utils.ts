@@ -225,7 +225,7 @@ export const getBlockingWorkPackages = async (
     });
 
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
-    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it 
+    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
     if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     // get all the blockings of the current wbs and add them to the queue to update
