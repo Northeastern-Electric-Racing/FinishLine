@@ -5,12 +5,12 @@ import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
-import { dataPayload } from './ProjectEditContainer';
+import { ProjectEditFormInput } from './ProjectEditContainer';
 
 interface ProjectEditDetailsProps {
   users: User[];
-  control: Control<dataPayload>;
-  errors: FieldErrorsImpl<dataPayload>;
+  control: Control<ProjectEditFormInput>;
+  errors: FieldErrorsImpl<ProjectEditFormInput>;
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {

@@ -41,14 +41,14 @@ interface ProjectEditContainerProps {
   exitEditMode: () => void;
 }
 
-export interface dataPayload {
+export interface ProjectEditFormInput {
   name: string;
-  budget: number;
+  budget: string;
   summary: string;
-  bomLink: string | undefined;
-  googleDriveFolderLink: string | undefined;
-  taskListLink: string | undefined;
-  slideDeckLink: string | undefined;
+  bomLink: string;
+  googleDriveFolderLink: string;
+  taskListLink: string;
+  slideDeckLink: string;
   // projectId: number;
   crId: string;
   goals: {
@@ -65,7 +65,9 @@ export interface dataPayload {
   }[];
   projectLeadId: number | undefined;
   projectManagerId: number | undefined;
-  rules: { rule: string }[];
+  rules: {
+    rule: string;
+  }[];
 }
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
@@ -116,7 +118,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
-  const onSubmit = async (data: dataPayload) => {
+  const onSubmit = async (data: ProjectEditFormInput) => {
     const {
       name,
       budget,
@@ -135,7 +137,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
     const payload = {
       name,
-      budget,
+      budget: parseInt(budget),
       summary,
       bomLink,
       googleDriveFolderLink,
