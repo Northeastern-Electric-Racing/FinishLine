@@ -18,6 +18,11 @@ import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
+import AppContextUser from './AppContextUser';
+import { useSingleUserSettings } from '../hooks/users.hooks';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ErrorPage from '../pages/ErrorPage';
+import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 
 const styles = {
   content: {
@@ -26,9 +31,18 @@ const styles = {
   }
 };
 
-const AppAuthenticated: React.FC = () => {
-  return (
-    <>
+interface AppAuthenticatedProps {
+  userId: number;
+}
+
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
+
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  return userSettingsData.slackId ? (
+    <AppContextUser>
       <NavTopBar />
       <div>
         <Sidebar />
@@ -50,7 +64,9 @@ const AppAuthenticated: React.FC = () => {
           </Container>
         </div>
       </div>
-    </>
+    </AppContextUser>
+  ) : (
+    <SetUserPreferences userSettings={userSettingsData} />
   );
 };
 

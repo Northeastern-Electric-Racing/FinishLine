@@ -3,13 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, useTheme } from '@mui/material';
+import { Grid, Link, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
@@ -116,9 +115,7 @@ const ProjectsTable: React.FC = () => {
 
   const theme = useTheme();
   return (
-    <>
-      <PageTitle title={'Projects'} previousPages={[]} />
-
+    <Grid container xs={12}>
       <DataGrid
         autoHeight
         disableSelectionOnClick
@@ -150,7 +147,7 @@ const ProjectsTable: React.FC = () => {
             return (
               <Link
                 component={RouterLink}
-                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}
+                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}/overview`}
                 sx={{ color: 'inherit', textDecoration: 'none' }}
               >
                 <GridRow {...props} />
@@ -176,7 +173,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
       />
-    </>
+    </Grid>
   );
 };
 

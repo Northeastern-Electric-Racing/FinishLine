@@ -65,8 +65,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
   goals: [],
   features: [],
   otherConstraints: [],
-  risks: [],
-  team: prismaTeam1
+  team: prismaTeam1,
+  favoritedBy: []
 };
 
 export const sharedProject1: SharedProject = {
@@ -92,6 +92,5 @@ export const sharedProject1: SharedProject = {
   features: [],
   otherConstraints: [],
   workPackages: [],
-  risks: [],
   tasks: []
 };

@@ -7,10 +7,15 @@ import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
-import { WbsNumber } from 'shared';
+import { validateWBS, WbsNumber } from 'shared';
 import { User } from '@prisma/client';
 
 jest.mock('../src/utils/projects.utils');
@@ -40,6 +45,16 @@ describe('Projects', () => {
     await expect(
       async () => await ProjectsService.getSingleProject({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
     ).rejects.toThrow(new NotFoundException('Project', '1.1.0'));
+  });
+
+  test('getSingleProject fails when project has been deleted', async () => {
+    jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+      wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
+      projectId: prismaProject1.projectId
+    } as any);
+    await expect(
+      async () => await ProjectsService.getSingleProject({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
+    ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
   });
 
   test('getSingleProject works', async () => {
@@ -110,7 +125,7 @@ describe('Projects', () => {
             { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
             'teamId'
           )
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set project teams'));
     });
 
     test('setProjectTeam fails with no permission from submitter (leadership)', async () => {
@@ -121,7 +136,7 @@ describe('Projects', () => {
       await expect(
         async () =>
           await ProjectsService.setProjectTeam(aquaman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 }, 'teamId')
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set project teams'));
     });
 
     test('setProjectTeam works if the submitter is not an admin but is the lead of the team', async () => {
@@ -153,7 +168,7 @@ describe('Projects', () => {
       await expect(
         async () =>
           await ProjectsService.deleteProject(wonderwoman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
-      ).rejects.toThrow(new AccessDeniedException('Guests, Members, and Leadership cannot delete projects'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete projects'));
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
@@ -180,6 +195,63 @@ describe('Projects', () => {
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
+    });
+
+    test('deleteProject fails when project has been deleted', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
+        projectId: prismaProject1.projectId
+      } as any);
+      await expect(
+        async () => await ProjectsService.deleteProject(batman, { carNumber: 1, projectNumber: 1, workPackageNumber: 0 })
+      ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
+    });
+  });
+
+  describe('toggleFavorite', () => {
+    test('fails when project does not exist', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const fakeProjectWBS = '100.100.0';
+      await expect(() => ProjectsService.toggleFavorite(validateWBS(fakeProjectWBS), batman)).rejects.toThrow(
+        new NotFoundException('Project', fakeProjectWBS)
+      );
+      expect(prisma.project.findFirst).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(0);
+    });
+
+    test('fails when wbs num is not a project', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+
+      const fakeProjectWBS = '100.100.100';
+      await expect(() => ProjectsService.toggleFavorite(validateWBS(fakeProjectWBS), batman)).rejects.toThrow(
+        new HttpException(400, `${fakeProjectWBS} is not a valid project WBS #!`)
+      );
+      expect(prisma.project.findFirst).toBeCalledTimes(0);
+    });
+
+    test('fails when project has been deleted', async () => {
+      const deletedWbsElement = { ...prismaProject1.wbsElement, dateDeleted: new Date() };
+      // console.log(wbsElement);
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, wbsElement: deletedWbsElement } as any);
+
+      const query = '1.1.0';
+      await expect(() => ProjectsService.toggleFavorite(validateWBS(query), batman)).rejects.toThrow(
+        new DeletedException('Project', prismaProject1.projectId)
+      );
+      expect(prisma.project.findFirst).toBeCalledTimes(1);
+    });
+
+    test('toggles successfully', async () => {
+      jest.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, favoritedBy: [] } as any);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(batman);
+
+      const res = await ProjectsService.toggleFavorite(validateWBS('1.1.0'), batman);
+
+      expect(res).toBe(sharedProject1);
+      expect(prisma.project.findFirst).toBeCalledTimes(1);
+      expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
 });

@@ -1,5 +1,5 @@
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { RoleEnum } from 'shared';
+import { isAdmin } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
@@ -10,7 +10,7 @@ const AdminTools: React.FC = () => {
 
   if (!auth.user) return <LoadingIndicator />;
 
-  if (auth.user.role !== RoleEnum.ADMIN && auth.user.role !== RoleEnum.APP_ADMIN) {
+  if (!isAdmin(auth.user.role)) {
     return (
       <Redirect
         to={{

@@ -71,3 +71,11 @@ export const setProjectTeam = (wbsNum: WbsNumber, teamId: string) => {
 export const deleteProject = (wbsNumber: WbsNumber) => {
   return axios.delete<{ message: string }>(apiUrls.projectsDelete(wbsPipe(wbsNumber)));
 };
+
+/**
+ * Toggles a user's favorite status on a project
+ * @param wbsNum Project WBS number of the requested project to toggle favorite for.
+ */
+export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
+  return axios.post<{ message: string }>(apiUrls.projectsToggleFavorite(wbsPipe(wbsNum)));
+};

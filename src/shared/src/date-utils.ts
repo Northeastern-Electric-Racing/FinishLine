@@ -23,4 +23,21 @@ const addDaysToDate = (start: Date, days: number) => {
   return end;
 };
 
-export { addWeeksToDate, addDaysToDate };
+/**
+ * Returns the day of the given date.
+ * Note: this is not the day of the week. For example, 04/21/2023 is day 19468 and 04/22/2023 is day 19469
+ * @param date the given date to get the day of
+ * @returns the day of the date
+ */
+const getDay = (date: Date): number => {
+  return Math.round(date.getTime() / (1000 * 60 * 60 * 24));
+};
+
+/**
+ * Calculate the days between two dates
+ */
+const daysBetween = (date1: Date, date2: Date): number => {
+  return Math.round((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+export { addWeeksToDate, addDaysToDate, getDay, daysBetween };

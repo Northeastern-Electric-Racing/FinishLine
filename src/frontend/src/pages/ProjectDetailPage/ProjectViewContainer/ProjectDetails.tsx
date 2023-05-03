@@ -3,17 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Construction, Work } from '@mui/icons-material';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { Folder, FormatListBulleted, FormatListNumbered, CoPresent } from '@mui/icons-material';
 import Link from '@mui/material/Link';
-import { Project } from 'shared';
+import { Project, WorkPackage, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
-import WbsStatus from '../../../components/WbsStatus';
-import PageBlock from '../../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import DetailDisplay from '../../../components/DetailDisplay';
 import { useTheme } from '@mui/material';
+import WorkPackageSummary from './WorkPackageSummary';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -22,67 +23,124 @@ interface ProjectDetailsProps {
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   const theme = useTheme();
   return (
-    <PageBlock title={'Project Details'} headerRight={<WbsStatus status={project.status} />}>
-      <Grid container spacing={1}>
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={2} />
+    <Grid container display="flex" flexDirection="row" sx={{ mt: '10px' }}>
+      <Grid item sm={12} md={6} sx={{ mb: 2 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            cursor: 'pointer',
+            mb: 1
+          }}
+        >
+          Details
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <Construction sx={{ mr: 2 }} />
+            <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={1} />
+          </Grid>
+
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={1} />
+          </Grid>
+
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <Work sx={{ mr: 2 }} />
+            <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={1} />
+          </Grid>
+
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={1} />
+          </Grid>
+
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <AttachMoneyIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={1} />
+          </Grid>
+
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <ScheduleIcon sx={{ mr: 2 }} />
+            <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={1} />
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid container display="flex" flexDirection="row" item sm={12} md={6} sx={{ mb: 2 }}>
+        <Grid item xs sx={{ mb: 2 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              mb: 1,
+              cursor: 'pointer'
+            }}
+          >
+            Summary
+          </Typography>
+          <Typography>{project.summary}</Typography>
         </Grid>
 
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={3} md={3}>
-          <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={2} />
-        </Grid>
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={2} />
-        </Grid>
-        <Grid item xs={1} md={1}>
-          <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Stack direction="row" alignItems="center">
-            <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Slide Deck
-            </Link>
-          </Stack>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Stack direction="row" alignItems="center">
-            <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.taskListLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Task List
-            </Link>
-          </Stack>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Stack direction="row" alignItems="center">
-            <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.bomLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              BOM
-            </Link>
-          </Stack>
-        </Grid>
-        <Grid item xs={2} md={2}>
-          <Stack direction="row" alignItems="center">
+        <Grid container item xs={12}>
+          <Grid item xs={12}>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 1,
+                cursor: 'pointer'
+              }}
+            >
+              Links
+            </Typography>
+          </Grid>
+          <Grid item xs={6} display="flex" alignItems="center">
             <Folder sx={{ fontSize: 22, color: theme.palette.text.primary }} />
             <Link href={project.gDriveLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               Google Drive
             </Link>
-          </Stack>
+          </Grid>
+
+          <Grid item xs={6} display="flex" alignItems="center">
+            <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.taskListLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
+              Task List
+            </Link>
+          </Grid>
+          <Grid item xs={6} display="flex" alignItems="center">
+            <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
+              Slide Deck
+            </Link>
+          </Grid>
+          <Grid item xs={6} display="flex" alignItems="center">
+            <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            <Link href={project.bomLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
+              BOM
+            </Link>
+          </Grid>
         </Grid>
       </Grid>
-    </PageBlock>
+
+      <Grid container item display="flex">
+        <Grid item xs={12}>
+          <Typography
+            variant="h5"
+            sx={{
+              mb: 1,
+              cursor: 'pointer'
+            }}
+          >
+            Work Packages
+          </Typography>
+        </Grid>
+        {project.workPackages.map((ele: WorkPackage) => (
+          <Grid item xs={12} key={wbsPipe(ele.wbsNum)} sx={{ mb: 0.5 }}>
+            <WorkPackageSummary workPackage={ele} />
+          </Grid>
+        ))}
+      </Grid>
+    </Grid>
   );
 };
 
