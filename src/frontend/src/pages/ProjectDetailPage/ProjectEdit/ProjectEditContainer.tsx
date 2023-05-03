@@ -43,12 +43,12 @@ interface ProjectEditContainerProps {
 
 export interface ProjectEditFormInput {
   name: string;
-  budget: string;
+  budget: number;
   summary: string;
-  bomLink: string;
-  googleDriveFolderLink: string;
-  taskListLink: string;
-  slideDeckLink: string;
+  bomLink: string | undefined;
+  googleDriveFolderLink: string | undefined;
+  taskListLink: string | undefined;
+  slideDeckLink: string | undefined;
   // projectId: number;
   crId: string;
   goals: {
@@ -123,21 +123,21 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       name,
       budget,
       summary,
-      bomLink,
-      googleDriveFolderLink,
-      taskListLink,
-      slideDeckLink,
-      projectLeadId,
-      projectManagerId
+      bomLink = '',
+      googleDriveFolderLink = '',
+      taskListLink = '',
+      slideDeckLink = '',
+      projectLeadId = 0,
+      projectManagerId = 0
     } = data;
-    const rules = data.rules.map((rule) => rule.rule || rule);
+    const rules = data.rules.map((rule) => rule.rule);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
     const payload = {
       name,
-      budget: parseInt(budget),
+      budget,
       summary,
       bomLink,
       googleDriveFolderLink,
