@@ -18,7 +18,7 @@ interface ReactHookTextFieldProps {
   icon?: SvgIconProps;
   multiline?: boolean;
   rows?: number;
-  endAdornment?: React.ReactNode;
+  endAdornment?: React.ReactElement;
   errorMessage?: FieldError;
 }
 
