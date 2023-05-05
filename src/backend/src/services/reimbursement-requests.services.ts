@@ -51,7 +51,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    addReimbursementProducts(reimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
+    await addReimbursementProducts(reimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
 
     prisma.reimbursement_Status.create({
       data: {
