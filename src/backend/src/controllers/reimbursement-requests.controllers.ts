@@ -33,4 +33,14 @@ export default class ReimbursementRequestController {
       next(error);
     }
   }
+
+  static async createExpenseType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code, allowed } = req.body;
+      const createdExpenseTypeId = await ReimbursementRequestService.createExpenseType(name, code, allowed);
+      res.status(200).json(createdExpenseTypeId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
