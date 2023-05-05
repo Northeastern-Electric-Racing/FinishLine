@@ -23,4 +23,14 @@ export default class ReimbursementRequestController {
       next(error);
     }
   }
+
+  static async createVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const createdVendorId = await ReimbursementRequestService.createVendor(name);
+      res.status(200).json(createdVendorId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

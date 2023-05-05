@@ -63,4 +63,14 @@ export default class ReimbursementRequestService {
 
     return createdReimbursementRequest.reimbursementRequestId;
   }
+
+  static async createVendor(name: string) {
+    const vendor = await prisma.vendor.create({
+      data: {
+        name
+      }
+    });
+
+    return vendor.vendorId;
+  }
 }
