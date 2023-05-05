@@ -13,9 +13,9 @@ describe('Reimbursement Requests', () => {
     test('Create Vendor Successfully returns vendor Id', async () => {
       jest.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
 
-      const reimbursementRequestId = await ReimbursementRequestService.createVendor('HOLA BUDDY');
+      const vendorId = await ReimbursementRequestService.createVendor('HOLA BUDDY');
 
-      expect(reimbursementRequestId).toBe('CHICKEN');
+      expect(vendorId).toBe('CHICKEN');
     });
   });
 });
