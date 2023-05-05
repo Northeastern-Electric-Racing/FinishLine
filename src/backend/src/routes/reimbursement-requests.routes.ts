@@ -14,7 +14,7 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('receiptPictures.*')),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
-  intMinZero(body("reimbursementProducts.*.wbsElementId")),
+  intMinZero(body('reimbursementProducts.*.wbsElementId')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
   validateInputs,

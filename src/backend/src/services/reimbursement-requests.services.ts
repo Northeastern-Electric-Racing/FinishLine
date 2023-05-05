@@ -5,6 +5,18 @@ import { addReimbursementProducts } from '../utils/reimbursement-requests.utils'
 import { NotFoundException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestService {
+   /**
+    * Creates a reimbursement request in the database
+    * @param receipient the user who is creating the reimbursement request
+    * @param dateOfExpense the date that the expense occured
+    * @param vendorId the id of the vendor that the expense was made for
+    * @param account the account to be reimbursed from
+    * @param receiptPictures the links to the s3 buckets to retrieve the pictures
+    * @param reimbursementProducts the products that the user bought 
+    * @param expenseTypeId the id of the expense type the user made
+    * @param totalCost the total cost of the reimbursement
+    * @returns the id of the created reimbursement request
+    */
   static async createReimbursementRequest(
     receipient: User,
     dateOfExpense: Date,

@@ -2,6 +2,12 @@ import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 
+/**
+ * Adds a reimbursement product to the database
+ * @param reimbursementProductCreateArgs the reimbursement products to add to the data base
+ * @param reimbursementRequestId the id of the reimbursement request that the products belogn to
+ * @throws if any of the wbs elements are deleted or dont exist
+ */
 export const addReimbursementProducts = async (
   reimbursementProductCreateArgs: { name: string; cost: number; wbsElementId: number }[],
   reimbursementRequestId: string
