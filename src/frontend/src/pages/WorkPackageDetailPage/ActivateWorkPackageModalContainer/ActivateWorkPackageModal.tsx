@@ -17,7 +17,8 @@ import { Radio } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { string } from 'yup/lib/locale';
+import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -28,15 +29,11 @@ interface ActivateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  projectLeadId: yup.number().required().min(0),
-  projectManagerId: yup.number().required().min(0),
   startDate: yup.date().required(),
   confirmDetails: yup.boolean().required()
 });
 
 const defaultValues: FormInput = {
-  projectLeadId: {label: "", id: ""},
-  projectManagerId: {label: "", id: ""},
   startDate: new Date().toLocaleDateString(),
   confirmDetails: false
 };
@@ -53,11 +50,28 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     defaultValues
   });
 
+  const [projectLeadId, setProjectLeadId] = useState<string>();
+  const [projectManagerId, setProjectManagerId] = useState<string>();
+  const toast = useToast();
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
   const onSubmitWrapper = async (data: FormInput) => {
-    await onSubmit(data);
+    const { startDate, confirmDetails } = data;
+    if (!projectLeadId) {
+      toast.error('Please Set A Value For Project Lead');
+      return;
+    }
+    if (!projectManagerId) {
+      toast.error('Please Set A Value For Project Manager');
+      return;
+    }
+    await onSubmit({
+      startDate,
+      confirmDetails,
+      projectLeadId: parseInt(projectLeadId),
+      projectManagerId: parseInt(projectManagerId)
+    });
     reset(defaultValues);
   };
 
@@ -68,49 +82,29 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Controller
-                name="projectLeadId"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <Typography>Project Lead</Typography>
-                    <NERAutocomplete
-                      id="project-lead-autocomplete"
-                      onChange={onChange}
-                      options={allUsers.map((p) => ({
-                        label: fullNamePipe(p),
-                        id: p.userId.toString()
-                      }))}
-                      value={value}
-                      size="small"
-                      placeholder="Project Lead"
-                    />
-                  </>
-                )}
+              <Typography>Project Lead</Typography>
+              <NERAutocomplete
+                id="project-lead-autocomplete"
+                onChange={(_event, value) => setProjectLeadId(value?.id)}
+                options={allUsers.map((p) => ({
+                  label: fullNamePipe(p),
+                  id: p.userId.toString()
+                }))}
+                size="small"
+                placeholder="Project Lead"
               />
             </Grid>
             <Grid item xs={6}>
-              <Controller
-                name="projectManagerId"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <Typography>Project Manager</Typography>
-                    <NERAutocomplete
-                      id="project-manager-autocomplete"
-                      onChange={onChange}
-                      value={value}
-                      options={allUsers.map((p) => ({
-                        label: fullNamePipe(p),
-                        id: p.userId.toString()
-                      }))}
-                      size="small"
-                      placeholder="Project Manager"
-                    />
-                  </>
-                )}
+              <Typography>Project Manager</Typography>
+              <NERAutocomplete
+                id="project-manager-autocomplete"
+                onChange={(_event, value) => setProjectManagerId(value?.id)}
+                options={allUsers.map((p) => ({
+                  label: fullNamePipe(p),
+                  id: p.userId.toString()
+                }))}
+                size="small"
+                placeholder="Project Manager"
               />
             </Grid>
             <Grid item xs={6}>

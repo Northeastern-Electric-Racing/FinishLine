@@ -20,8 +20,8 @@ interface ActivateWorkPackageModalContainerProps {
 }
 
 export interface FormInput {
-  projectLeadId?: {label: string, id: string};
-  projectManagerId?: {label: string, id: string};
+  projectLeadId?: number;
+  projectManagerId?: number;
   startDate: string;
   confirmDetails: boolean;
 }
@@ -39,14 +39,12 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   const handleConfirm = async ({ projectLeadId, projectManagerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create activation change request without being logged in');
-    const { id } = projectLeadId!;
-    const { id: id2 } = projectManagerId!;
     await mutateAsync({
       submitterId: auth.user?.userId,
       wbsNum,
       type: ChangeRequestType.Activation,
-      id,
-      id2,
+      projectLeadId,
+      projectManagerId,
       startDate,
       confirmDetails
     });
