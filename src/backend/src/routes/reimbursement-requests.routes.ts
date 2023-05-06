@@ -42,4 +42,13 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createVendor
 );
 
+reimbursementRequestsRouter.post(
+  '/expense-types/new',
+  nonEmptyString(body('name')),
+  intMinZero(body('code')),
+  body('allowed').isBoolean(),
+  validateInputs,
+  ReimbursementRequestController.createExpenseType
+);
+
 export default reimbursementRequestsRouter;

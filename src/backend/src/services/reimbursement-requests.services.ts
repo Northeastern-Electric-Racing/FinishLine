@@ -172,4 +172,23 @@ export default class ReimbursementRequestService {
 
     return vendor.vendorId;
   }
+
+  /**
+   * Service function to create an expense type in our database
+   * @param name The name of the expense type
+   * @param code the expense type's code
+   * @param allowed whether or not this expense type is allowed
+   * @returns the id of the created expense type
+   */
+  static async createExpenseType(name: string, code: number, allowed: boolean) {
+    const expense = await prisma.expense_Type.create({
+      data: {
+        name,
+        allowed,
+        code
+      }
+    });
+
+    return expense.expenseTypeId;
+  }
 }
