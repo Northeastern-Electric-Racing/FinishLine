@@ -21,4 +21,18 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createReimbursementRequest
 );
 
+reimbursementRequestsRouter.post(
+  '/pending-advisor/send',
+  intMinZero(body('saboNumbers.*')),
+  validateInputs,
+  ReimbursementRequestController.sendPendingAdvisorList
+);
+
+reimbursementRequestsRouter.post(
+  '/:id/add-sabo-number',
+  intMinZero(body('saboNumber')),
+  validateInputs,
+  ReimbursementRequestController.addSaboNumber
+);
+
 export default reimbursementRequestsRouter;

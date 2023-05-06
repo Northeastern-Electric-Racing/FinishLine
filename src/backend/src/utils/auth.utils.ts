@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { Team, User } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
@@ -72,9 +72,15 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
  * @returns the user
  * @throws if no user with the userId exists
  */
-export const getCurrentUser = async (res: Response): Promise<User> => {
+export const getCurrentUser = async (
+  res: Response
+): Promise<
+  User & {
+    teams: Team[];
+  }
+> => {
   const { userId } = res.locals;
-  const user = await prisma.user.findUnique({ where: { userId } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { teams: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };
