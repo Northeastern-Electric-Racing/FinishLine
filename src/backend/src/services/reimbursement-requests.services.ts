@@ -157,4 +157,19 @@ export default class ReimbursementRequestService {
 
     return reimbursementRequestWithSaboNumber;
   }
+
+  /**
+   * Function to create a vendor in our database
+   * @param name the name of the vendor
+   * @returns the id of the created vendor
+   */
+  static async createVendor(name: string) {
+    const vendor = await prisma.vendor.create({
+      data: {
+        name
+      }
+    });
+
+    return vendor.vendorId;
+  }
 }
