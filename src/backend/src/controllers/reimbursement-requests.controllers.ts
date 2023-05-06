@@ -24,6 +24,28 @@ export default class ReimbursementRequestController {
     }
   }
 
+  static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, saboId } = req.body;
+      const user = await getCurrentUser(res);
+      const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
+        id,
+        dateOfExpense,
+        vendorId,
+        account,
+        expenseTypeId,
+        totalCost,
+        reimbursementProducts,
+        saboId,
+        user
+      );
+      res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

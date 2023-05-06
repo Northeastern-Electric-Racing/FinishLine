@@ -1,8 +1,12 @@
-import { User } from '@prisma/client';
+import { Club_Accounts, User } from '@prisma/client';
 import { Club_Account } from 'shared';
 import prisma from '../prisma/prisma';
-import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { NotFoundException } from '../utils/errors.utils';
+import {
+  ReimbursementProductCreateArgs,
+  addReimbursementProducts,
+  updateReimbursementProducts
+} from '../utils/reimbursement-requests.utils';
+import { AccessDeniedException, DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -23,7 +27,7 @@ export default class ReimbursementRequestService {
     vendorId: string,
     account: Club_Account,
     receiptPictures: string[],
-    reimbursementProducts: { name: string; cost: number; wbsElementId: number }[],
+    reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
   ): Promise<String> {
@@ -62,6 +66,77 @@ export default class ReimbursementRequestService {
     });
 
     return createdReimbursementRequest.reimbursementRequestId;
+  }
+
+  /**
+   *
+   * @param id the id of the reimbursement request we are editing
+   * @param dateOfExpense the updated date of expense
+   * @param vendorId the updated vendor id
+   * @param account the updated account
+   * @param expenseTypeId the updated expense type id
+   * @param totalCost the updated total cost
+   * @param reimbursementProducts the updated reimbursement products
+   * @param saboId the updated saboId
+   * @param submitter the person editing the reimbursement request
+   * @returns the edited reimbursement requests id
+   */
+  static async editReimbursementRequest(
+    id: string,
+    dateOfExpense: Date,
+    vendorId: string,
+    account: Club_Accounts,
+    expenseTypeId: string,
+    totalCost: number,
+    reimbursementProducts: ReimbursementProductCreateArgs[],
+    saboId: number | null,
+    submitter: User
+  ) {
+    const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId: id },
+      include: {
+        reimbursementProducts: true
+      }
+    });
+
+    if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', id);
+    if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', id);
+    if (oldReimbursementRequest.recepientId !== submitter.userId)
+      throw new AccessDeniedException(
+        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+      );
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { vendorId }
+    });
+
+    if (!vendor) throw new NotFoundException('Vendor', vendorId);
+
+    const expenseType = await prisma.expense_Type.findUnique({
+      where: { expenseTypeId }
+    });
+
+    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+
+    await updateReimbursementProducts(
+      oldReimbursementRequest.reimbursementProducts,
+      reimbursementProducts,
+      oldReimbursementRequest.reimbursementRequestId
+    );
+
+    const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
+      data: {
+        dateOfExpense,
+        account,
+        totalCost,
+        expenseTypeId,
+        vendorId,
+        saboId
+      }
+    });
+
+    return updatedReimbursementRequest.reimbursementRequestId;
   }
 
   /**

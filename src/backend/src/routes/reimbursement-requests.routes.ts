@@ -22,6 +22,22 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
+  '/:id/edit',
+  isDate(body('dateOfExpense')),
+  nonEmptyString(body('vendorId')),
+  isAccount(body('account')),
+  nonEmptyString(body('receiptPictures.*')),
+  nonEmptyString(body('reimbursementProducts.*.name')),
+  intMinZero(body('reimbursementProducts.*.cost')),
+  intMinZero(body('reimbursementProducts.*.wbsElementId')),
+  nonEmptyString(body('expenseTypeId')),
+  intMinZero(body('totalCost')),
+  body('saboId'),
+  validateInputs,
+  ReimbursementRequestController.editReimbursementRequest
+);
+
+reimbursementRequestsRouter.post(
   '/vendors/new',
   nonEmptyString(body('name')),
   validateInputs,
