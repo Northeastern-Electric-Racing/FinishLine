@@ -159,6 +159,7 @@ describe('Reimbursement Requests', () => {
       jest.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
       jest.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
       jest.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue(GiveMeMyMoney);
+      jest.spyOn(prisma.reimbursement_Product, 'updateMany').mockResolvedValue({ count: 1 });
       jest.spyOn(prisma.reimbursement_Product, 'update').mockResolvedValue(GiveMeMoneyProduct);
 
       const reimbursementRequest = await ReimbursementRequestService.editReimbursementRequest(

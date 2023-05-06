@@ -107,7 +107,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload : EditSingleProjectPayload = {
+    const payload: EditSingleProjectPayload = {
       name,
       budget: parseInt(budget),
       summary,
