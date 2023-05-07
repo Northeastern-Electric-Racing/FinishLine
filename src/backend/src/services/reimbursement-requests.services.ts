@@ -3,6 +3,9 @@ import { Club_Account } from 'shared';
 import prisma from '../prisma/prisma';
 import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
 import { NotFoundException } from '../utils/errors.utils';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
+import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
+import reimbursementRequestTransformer from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -62,5 +65,20 @@ export default class ReimbursementRequestService {
     });
 
     return createdReimbursementRequest.reimbursementRequestId;
+  }
+
+  /**
+   * Gets all the reimbursement requests from the database
+   * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
+   */
+  static async getAllReimbursementRequests(): Promise<ReimbursementRequest[]> {
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null },
+      ...reimbursementRequestQueryArgs
+    });
+
+    const outputReimbursementRequests = reimbursementRequests.map(reimbursementRequestTransformer);
+
+    return outputReimbursementRequests;
   }
 }

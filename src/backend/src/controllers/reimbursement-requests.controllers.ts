@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 
 export default class ReimbursementRequestController {
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
@@ -19,6 +20,15 @@ export default class ReimbursementRequestController {
         totalCost
       );
       res.status(200).json(createdReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests();
+      res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
       next(error);
     }

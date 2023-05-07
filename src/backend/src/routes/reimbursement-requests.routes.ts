@@ -21,4 +21,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createReimbursementRequest
 );
 
+reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
+
 export default reimbursementRequestsRouter;
