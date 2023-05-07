@@ -3,7 +3,7 @@ import { Club_Account } from 'shared';
 import prisma from '../prisma/prisma';
 import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
-import transporter from '../utils/transporter.utils';
+import sendEmail from '../utils/transporter.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -108,15 +108,13 @@ export default class ReimbursementRequestService {
     }
 
     const mailOptions = {
-      from: 'mckee.p@northeastern.edu',
+      from: 'aqua.retro1@gmail.com',
       to: 'mckee.p@northeastern.edu',
       subject: 'Reimbursement Requests To Be Approved By Advisor',
       text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
     };
 
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log('Message sent: %s', info.messageId);
+    await sendEmail();
 
     reimbursementRequests.forEach((reimbursementRequest) => {
       prisma.reimbursement_Status.create({
