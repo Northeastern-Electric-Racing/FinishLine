@@ -6,30 +6,41 @@
 import { NavLink } from 'react-router-dom';
 import { MUILinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
-import styles from '../../stylesheets/layouts/sidebar/nav-page-links.module.css';
+import { Box } from '@mui/system';
+import { Typography } from '@mui/material';
+import { useTheme } from '@emotion/react';
+import { CSSProperties } from 'react';
+import { nerThemeOptions } from '../../utils/themes';
 
 interface NavPageLinkProps {
   linkItems: MUILinkItem[];
 }
 
 const NavPageLinks: React.FC<NavPageLinkProps> = ({ linkItems }: NavPageLinkProps) => {
-  const genNavItems = (linkItems: MUILinkItem[]) => {
-    return linkItems.map((item) => {
-      return (
-        <NavLink
-          key={item.name}
-          to={item.route}
-          className={styles.row}
-          activeClassName={styles.activeLink}
-          exact={item.route === routes.HOME}
-        >
-          {item.icon ? <item.icon fontSize="large" className={styles.iconsAndText + ' ' + styles.icon} /> : ''}
-          <p className={styles.iconsAndText + ' ' + styles.text}>{item.name}</p>
-        </NavLink>
-      );
-    });
-  };
-  return <div className={styles.navPageLinks}>{genNavItems(linkItems)}</div>;
+  const navLinks = linkItems.map((item) => (
+    <NavLink
+      key={item.name}
+      to={item.route}
+      exact={item.route === routes.HOME}
+      style={(isActive): CSSProperties => {
+        return {
+          textDecoration: 'none',
+          color: isActive ? '#ef4345' : 'white',
+          backgroundColor: isActive ? 'white' : 'transparent',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '8px',
+          borderRadius: '8px',
+          padding: '8px',
+          margin: '8px'
+        };
+      }}
+    >
+      {item.icon}
+      <Typography>{item.name}</Typography>
+    </NavLink>
+  ));
+  return <Box>{navLinks}</Box>;
 };
 
 export default NavPageLinks;

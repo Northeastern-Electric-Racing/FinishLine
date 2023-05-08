@@ -7,7 +7,7 @@ import { routes } from '../../utils/routes';
 import { MUILinkItem } from '../../utils/types';
 import NavPageLinks from './NavPageLinks';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography } from '@mui/material';
+import { Box, Drawer, Typography } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -19,42 +19,44 @@ const Sidebar: React.FC = () => {
   const linkItems: MUILinkItem[] = [
     {
       name: 'Home',
-      icon: HomeIcon,
+      icon: <HomeIcon />,
       route: routes.HOME
     },
     {
       name: 'Gantt',
-      icon: AlignHorizontalLeftIcon,
+      icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
     },
     {
       name: 'Projects',
-      icon: FolderIcon,
+      icon: <FolderIcon />,
       route: routes.PROJECTS
     },
     {
       name: 'Change Requests',
-      icon: SyncAltIcon,
+      icon: <SyncAltIcon />,
       route: routes.CHANGE_REQUESTS
     },
     {
       name: 'Teams',
-      icon: GroupIcon,
+      icon: <GroupIcon />,
       route: routes.TEAMS
     }
   ];
 
   linkItems.push({
     name: 'Info',
-    icon: QuestionMarkIcon,
+    icon: <QuestionMarkIcon />,
     route: routes.INFO
   });
 
   return (
-    <div className={styles.sidebar}>
-      <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.8.0</Typography>
-    </div>
+    <Drawer variant="persistent" open={true} sx={{ position: 'sticky' }}>
+      <Box sx={{ mt: '68px' }}>
+        <NavPageLinks linkItems={linkItems} />
+        <Typography className={styles.versionNumber}>3.8.0</Typography>
+      </Box>
+    </Drawer>
   );
 };
 

@@ -25,7 +25,7 @@ export interface LinkItem {
 
 export interface MUILinkItem {
   name: string;
-  icon?: typeof SvgIcon;
+  icon: JSX.Element;
   route: string;
 }
 
