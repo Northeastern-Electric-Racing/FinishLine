@@ -1,10 +1,11 @@
 import { User } from 'shared';
-import { Controller } from 'react-hook-form';
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { useState } from 'react';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -13,6 +14,26 @@ interface ProjectEditDetailsProps {
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+  };
+
+  const usersSearchOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      const user = users.find((user: User) => user.userId.toString() === value.id);
+      if (user) {
+        setUser(user);
+      }
+    } else {
+      setUser(null);
+    }
+  };
+
   return (
     <PageBlock title="Project Details">
       <Grid container xs={12} sx={{ my: 1 }}>
@@ -40,46 +61,28 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item sx={{ my: 1 }}>
-          <FormControl>
-            <FormLabel>Project Lead</FormLabel>
-            <Controller
-              name="projectLeadId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
+        <Grid item xs={12} md={3}>
+          <FormLabel>Project Lead</FormLabel>
+          <NERAutocomplete
+            id="users-autocomplete"
+            onChange={usersSearchOnChange}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={user ? userToAutocompleteOption(user) : null}
+          />
         </Grid>
-        <Grid item sx={{ my: 1 }}>
+        <Grid item xs={12} md={3}>
           <FormControl>
             <FormLabel>Project Manager</FormLabel>
-            <Controller
-              name="projectManagerId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
+            <NERAutocomplete
+            id="users-autocomplete"
+            onChange={usersSearchOnChange}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={user ? userToAutocompleteOption(user) : null}
+          />
           </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
