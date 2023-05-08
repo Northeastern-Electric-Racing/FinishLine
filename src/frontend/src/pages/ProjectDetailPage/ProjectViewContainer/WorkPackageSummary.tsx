@@ -95,7 +95,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold" paddingRight={1} display="inline">
-                Blocked By:
+                {'Blocked By: '}
               </Typography>
               {dependencyList}
             </Grid>
