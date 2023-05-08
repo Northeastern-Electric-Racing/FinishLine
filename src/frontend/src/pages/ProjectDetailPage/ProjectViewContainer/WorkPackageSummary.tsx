@@ -45,7 +45,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
   const dependencyList = (
-    <Typography sx={{ fontWeight: 'normal' }} display="inline">
+    <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>
       {workPackage.blockedBy.map((wbsNum: WbsNumber) => (
         <Typography display="inline">
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
@@ -94,7 +94,10 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               </Box>
             </Grid>
             <Grid item xs={6}>
-              <Typography fontWeight="bold">Blocked By: {dependencyList}</Typography>
+              <Typography fontWeight="bold" paddingRight={1} display="inline">
+                Blocked By:
+              </Typography>
+              {dependencyList}
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
