@@ -168,7 +168,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         title={'Blocked By'}
         items={workPackage.blockedBy.map((dep) => (
           <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep)}`}>
-            {wbsPipe(dep)}
+            <strong>{wbsPipe(dep)}</strong>
           </Link>
         ))}
       />

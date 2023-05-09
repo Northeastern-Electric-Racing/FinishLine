@@ -48,9 +48,11 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
       {workPackage.blockedBy.map((wbsNum: WbsNumber, idx) => (
         <Typography display="inline" key={idx}>
-          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
-            {wbsPipe(wbsNum)}
-          </Link>
+          <strong>
+            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
+              {wbsPipe(wbsNum)}
+            </Link>
+          </strong>
           {workPackage.blockedBy.indexOf(wbsNum) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
         </Typography>
       ))}
