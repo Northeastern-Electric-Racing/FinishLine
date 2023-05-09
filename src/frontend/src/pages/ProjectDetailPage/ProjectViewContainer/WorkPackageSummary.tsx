@@ -46,8 +46,8 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const numMoreDeliverables = workPackage.deliverables.length - 3;
   const dependencyList = (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
-      {workPackage.blockedBy.map((wbsNum: WbsNumber) => (
-        <Typography display="inline">
+      {workPackage.blockedBy.map((wbsNum: WbsNumber, idx) => (
+        <Typography display="inline" key={idx}>
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
             {wbsPipe(wbsNum)}
           </Link>
