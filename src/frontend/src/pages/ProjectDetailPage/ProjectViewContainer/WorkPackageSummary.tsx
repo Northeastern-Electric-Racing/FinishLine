@@ -45,16 +45,16 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
   const dependencyList = (
-    <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>
+    <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
       {workPackage.blockedBy.map((wbsNum: WbsNumber) => (
-        <Box display="inline">
+        <Typography display="inline">
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
             {wbsPipe(wbsNum)}
           </Link>
           {workPackage.blockedBy.indexOf(wbsNum) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
-        </Box>
+        </Typography>
       ))}
-    </Typography>
+    </Box>
   );
 
   const theme = useTheme();
