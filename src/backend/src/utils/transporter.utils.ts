@@ -1,35 +1,48 @@
 import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
-const sendEmail = async () => {
-  // configure the OAuth2 client
+const sendMail = async () => {
+  const clientId = process.env.OAUTH_CLIENT_ID;
+  const clientSecret = process.env.OAUTH_CLIENT_SECRET;
+  const redirectUri = 'http://localhost:3000/home';
+  const refreshToken = process.env.OAUTH_REFRESH_TOKEN;
 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      type: 'OAuth2',
-      clientId: process.env.OAUTH_CLIENT_ID,
-      clientSecret: process.env.OAUTH_CLIENT_SECRET
-    }
-  });
+  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
-  console.log('transporter', transporter);
+  oAuth2Client.setCredentials({ refresh_token: refreshToken });
+  try {
+    const accessToken = await oAuth2Client.getAccessToken();
+    if (!accessToken.token) throw new Error('Failed to get access token');
 
-  const mailOptions = {
-    from: 'aqua.retro1@gmail.com',
-    to: 'mckee.p@northeastern.edu',
-    subject: 'Test Email',
-    text: 'Hello World!',
-    auth: {
-      user: 'aqua.retro1@gmail.com',
-      refreshToken: process.env.OAUTH_REFRESH_TOKEN
-    }
-  };
+    console.log(accessToken.token);
 
-  const info = await transporter.sendMail(mailOptions)
-  
-  console.log(info)
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        type: 'OAuth2',
+        user: 'aqua.retro1@gmail.com',
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken: accessToken.token
+      }
+    });
+
+    const mailOptions = {
+      from: 'aqua.retro1@gmail.com',
+      to: 'mckee.p@northeastern.edu',
+      subject: 'Test email',
+      text: 'This is a test email'
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log(`Message sent: ${info.messageId}`);
+  } catch (error) {
+    throw error;
+  }
 };
 
-export default sendEmail;
+export default sendMail;
