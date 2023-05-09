@@ -47,12 +47,12 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const dependencyList = (
     <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>
       {workPackage.blockedBy.map((wbsNum: WbsNumber) => (
-        <Typography display="inline">
+        <Box display="inline">
           <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}`}>
             {wbsPipe(wbsNum)}
           </Link>
           {workPackage.blockedBy.indexOf(wbsNum) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
-        </Typography>
+        </Box>
       ))}
     </Typography>
   );
