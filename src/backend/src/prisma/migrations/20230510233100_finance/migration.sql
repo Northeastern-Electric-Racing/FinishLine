@@ -26,9 +26,9 @@ CREATE TABLE "Reimbursement_Request" (
     "vendorId" TEXT NOT NULL,
     "account" "Club_Accounts" NOT NULL,
     "totalCost" INTEGER NOT NULL,
-    "receiptPicture" TEXT[],
-    "expenssTypeId" TEXT NOT NULL,
+    "receiptPictures" TEXT[],
     "dateDelivered" TIMESTAMP(3),
+    "expenseTypeId" TEXT NOT NULL,
 
     CONSTRAINT "Reimbursement_Request_pkey" PRIMARY KEY ("reimbursementRequestId")
 );
@@ -107,7 +107,7 @@ ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_recepi
 ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("vendorId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_expenssTypeId_fkey" FOREIGN KEY ("expenssTypeId") REFERENCES "Expense_Type"("expenseTypeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_expenseTypeId_fkey" FOREIGN KEY ("expenseTypeId") REFERENCES "Expense_Type"("expenseTypeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Product" ADD CONSTRAINT "Reimbursement_Product_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
