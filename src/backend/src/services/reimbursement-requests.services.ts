@@ -76,7 +76,16 @@ export default class ReimbursementRequestService {
     },
     saboNumbers: number[]
   ) {
-    if (!sender.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID)) {
+    const financeTeam = await prisma.team.findUnique({
+      where: { teamId: process.env.FINANCE_TEAM_ID }
+    });
+
+    if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+    if (
+      !sender.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
+      !(financeTeam.leaderId === sender.userId)
+    ) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
@@ -108,13 +117,11 @@ export default class ReimbursementRequestService {
     }
 
     const mailOptions = {
-      from: 'aqua.retro1@gmail.com',
-      to: 'mckee.p@northeastern.edu',
       subject: 'Reimbursement Requests To Be Approved By Advisor',
       text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
     };
 
-    await sendEmail();
+    await sendEmail(mailOptions.subject, mailOptions.text);
 
     reimbursementRequests.forEach((reimbursementRequest) => {
       prisma.reimbursement_Status.create({
@@ -128,7 +135,16 @@ export default class ReimbursementRequestService {
   }
 
   static async addSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: User & { teams: Team[] }) {
-    if (!submitter.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID)) {
+    const financeTeam = await prisma.team.findUnique({
+      where: { teamId: process.env.FINANCE_TEAM_ID }
+    });
+
+    if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+    if (
+      !submitter.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
+      !(financeTeam.leaderId === submitter.userId)
+    ) {
       throw new AccessDeniedException(`You are not a member of the finance team!`);
     }
 
