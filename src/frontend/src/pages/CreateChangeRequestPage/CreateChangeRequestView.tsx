@@ -224,7 +224,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         <CreateProposedSolutionsList
           proposedSolutions={proposedSolutions}
           setProposedSolutions={setProposedSolutions}
-          wbsNum={wbsNum}
         />
       </PageBlock>
       <Box textAlign="right">

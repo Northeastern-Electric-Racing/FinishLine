@@ -15,13 +15,11 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
-  wbsNum: string;
 }
 
 const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = ({
   proposedSolutions,
   setProposedSolutions,
-  wbsNum
 }) => {
   const auth = useAuth();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);

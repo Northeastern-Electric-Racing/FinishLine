@@ -24,7 +24,7 @@ interface BlockerWarningModalProps {
   blockingWorkPackages: WorkPackage[];
   open: boolean;
   onHide: () => void;
-  handleContinue: () => Promise<void>;
+  onSubmit: () => Promise<void>;
 }
 
 const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
@@ -32,16 +32,30 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
   blockingWorkPackages,
   open,
   onHide,
-  handleContinue
+  onSubmit
 }: BlockerWarningModalProps) => {
   const theme = useTheme();
+  const dialogStyle = {
+    '&::-webkit-scrollbar': {
+      height: '20px'
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'transparent'
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: theme.palette.divider,
+      borderRadius: '20px',
+      border: '6px solid transparent',
+      backgroundClip: 'content-box'
+    }
+  };
 
   const title = `The following work packages' start dates will be delayed by ${duration} weeks`;
   const list = blockingWorkPackages.map((wp) => {
     return '#' + wbsPipe(wp.wbsNum) + ' - ' + wp.projectName + ' - ' + wp.name;
   });
   const listPrepared = list.map((bullet, idx) => <li key={idx}>{bullet}</li>);
-  let BuiltList = <ul>{listPrepared}</ul>;
+  const BuiltList = <ul>{listPrepared}</ul>;
 
   const dialogWidth: Breakpoint = 'md';
   return (
@@ -61,22 +75,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
           <Close />
         </IconButton>
       </DialogTitle>
-      <DialogContent
-        sx={{
-          '&::-webkit-scrollbar': {
-            height: '20px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.divider,
-            borderRadius: '20px',
-            border: '6px solid transparent',
-            backgroundClip: 'content-box'
-          }
-        }}
-      >
+      <DialogContent sx={dialogStyle}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography>{title}</Typography>
@@ -88,7 +87,7 @@ const ChangeRequestWarningModal: React.FC<BlockerWarningModalProps> = ({
         <NERFailButton type="submit" variant="contained" sx={{ mx: 1 }} onClick={onHide}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={handleContinue}>
+        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={onSubmit}>
           Continue
         </NERSuccessButton>
       </DialogActions>
