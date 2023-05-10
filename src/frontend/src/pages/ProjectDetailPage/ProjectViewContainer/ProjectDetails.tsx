@@ -37,25 +37,22 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={2} />
         </Grid>
 
-        <Grid item xs={4} md={4}>
+        <Grid item xs={4}>
           <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={2} />
         </Grid>
-        <Grid item xs={4} md={4}>
+        <Grid item xs={4}>
           <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={2} />
         </Grid>
-        <Grid item xs={1} md={1}>
+        <Grid item xs={1}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
         </Grid>
-        <Grid item xs={2} md={2}>
+        <Grid item xs={2}>
           <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
         </Grid>
-        <Grid item xs={2} md={2}>
-          <ExternalLink icon={faList} link={project.taskListLink!} description={'Task List'} />
-        </Grid>
-        <Grid item xs={2} md={2}>
+        <Grid item xs={2}>
           <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
         </Grid>
-        <Grid item xs={2} md={2}>
+        <Grid item xs={4}>
           <ExternalLink icon={faFolderOpen} link={project.gDriveLink!} description={'Google Drive'} />
         </Grid>
       </Grid>
