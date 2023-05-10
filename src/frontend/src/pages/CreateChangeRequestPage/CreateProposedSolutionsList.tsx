@@ -19,7 +19,7 @@ interface CreateProposedSolutionsListProps {
 
 const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = ({
   proposedSolutions,
-  setProposedSolutions,
+  setProposedSolutions
 }) => {
   const auth = useAuth();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);

@@ -221,10 +221,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         </Grid>
       </PageBlock>
       <PageBlock title="Proposed Solutions">
-        <CreateProposedSolutionsList
-          proposedSolutions={proposedSolutions}
-          setProposedSolutions={setProposedSolutions}
-        />
+        <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="right">
         <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
