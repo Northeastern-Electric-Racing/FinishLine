@@ -14,23 +14,42 @@ interface ProjectEditDetailsProps {
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [projectLead, setProjectLead] = useState<User | null>(null);
+  const [projectManager, setProjectManager] = useState<User | null>(null);
 
-  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+  const projectLeadToAutocompleteOption = (user: User): { label: string; id: string } => {
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  const usersSearchOnChange = (
+  const projectManagerToAutocompleteOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+  };
+
+  const projectLeadSearchOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
     value: { label: string; id: string } | null
   ) => {
     if (value) {
       const user = users.find((user: User) => user.userId.toString() === value.id);
       if (user) {
-        setUser(user);
+        setProjectLead(user);
       }
     } else {
-      setUser(null);
+      setProjectLead(null);
+    }
+  };
+
+  const projectManagerSearchOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      const user = users.find((user: User) => user.userId.toString() === value.id);
+      if (user) {
+        setProjectManager(user);
+      }
+    } else {
+      setProjectManager(null);
     }
   };
 
@@ -65,25 +84,23 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={usersSearchOnChange}
-            options={users.map(userToAutocompleteOption)}
+            onChange={projectLeadSearchOnChange}
+            options={users.map(projectLeadToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={user ? userToAutocompleteOption(user) : null}
+            value={projectLead ? projectLeadToAutocompleteOption(projectLead) : null}
           />
         </Grid>
         <Grid item xs={12} md={3}>
-          <FormControl>
-            <FormLabel>Project Manager</FormLabel>
-            <NERAutocomplete
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
             id="users-autocomplete"
-            onChange={usersSearchOnChange}
-            options={users.map(userToAutocompleteOption)}
+            onChange={projectManagerSearchOnChange}
+            options={users.map(projectManagerToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={user ? userToAutocompleteOption(user) : null}
+            value={projectManager ? projectManagerToAutocompleteOption(projectManager) : null}
           />
-          </FormControl>
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
