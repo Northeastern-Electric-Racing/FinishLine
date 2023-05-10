@@ -93,7 +93,15 @@ describe('Users', () => {
 
     test('setUserSecureSettings works', async () => {
       jest.spyOn(prisma.user_Secure_Settings, 'upsert').mockResolvedValue(batmanSecureSettings);
-      const res = await UsersService.setUserSecureSettings(batman, 'nuid', 'street', 'city', 'state', 'zipcode');
+      const res = await UsersService.setUserSecureSettings(
+        batman,
+        'nuid',
+        'street',
+        'city',
+        'state',
+        'zipcode',
+        '019-932-1234'
+      );
 
       expect(res).toBe(batmanSecureSettings.userSecureSettingsId);
     });

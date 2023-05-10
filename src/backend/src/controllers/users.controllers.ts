@@ -114,7 +114,15 @@ export default class UsersController {
       const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
       const user = await getCurrentUser(res);
 
-      const secureSettingsId = await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
+      const secureSettingsId = await UsersService.setUserSecureSettings(
+        user,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      );
 
       res.status(200).json(secureSettingsId);
     } catch (error: unknown) {
