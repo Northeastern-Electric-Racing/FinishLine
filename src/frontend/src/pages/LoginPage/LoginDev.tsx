@@ -23,7 +23,7 @@ interface LoginDevProps {
  * Form for dev users to do login on the dev environment.
  */
 const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
-  if (process.env.NODE_ENV !== 'development') return <></>;
+  if (import.meta.env.MODE !== 'development') return <></>;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { isLoading, data: usersList } = useAllUsers();

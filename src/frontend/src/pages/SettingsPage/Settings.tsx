@@ -88,7 +88,7 @@ const Settings: React.FC = () => {
               <FormControlLabel
                 label="Trickster Mode"
                 control={
-                  process.env.NODE_ENV === 'development' ? (
+                  import.meta.env.MODE === 'development' ? (
                     <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
                   ) : (
                     <GoogleLogout
