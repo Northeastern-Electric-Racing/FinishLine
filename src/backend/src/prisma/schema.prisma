@@ -408,4 +408,5 @@ model User_Secure_Settings {
   city                 String
   state                String
   zipcode              String
+  phoneNumber          String @unique
 }
