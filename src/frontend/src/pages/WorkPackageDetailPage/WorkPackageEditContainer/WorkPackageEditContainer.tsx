@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, validateWBS, WorkPackage } from 'shared';
+import { isGuest, User, validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -26,6 +26,7 @@ import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -37,18 +38,12 @@ const schema = yup.object().shape({
 });
 
 interface WorkPackageEditContainerProps {
-  // projectManager: string;
-  // projectLead: string;
-  // setPM: (val: string) => void;
-  // setPL: (val: string) => void;
   workPackage: WorkPackage;
   exitEditMode: () => void;
 }
 
 export interface WorkPackageEditFormPayload {
   name: string;
-  projectLead: number | undefined;
-  projectManager: number | undefined;
   workPackageId: number;
   startDate: Date;
   duration: number;
@@ -81,8 +76,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      projectLead: workPackage.projectLead?.userId,
-      projectManager: workPackage.projectManager?.userId,
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
@@ -97,6 +90,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       deliverables: bulletsToObject(workPackage.deliverables)
     }
   });
+
+  const [manager, setManager] = useState<User | undefined>(workPackage.projectManager);
+  const [lead, setLead] = useState<User | undefined>(workPackage.projectLead);
+
   // lists of stuff
   const {
     fields: expectedActivities,
@@ -126,14 +123,14 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
   const onSubmit = async (data: WorkPackageEditFormPayload) => {
-    const { name, projectLead, projectManager, startDate, duration, crId, blockedBy, stage } = data;
+    const { name, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
     try {
       const payload = {
-        projectLead,
-        projectManager,
+        projectLead: lead?.userId,
+        projectManager: manager?.userId,
         workPackageId: workPackage.id,
         userId,
         name,
@@ -181,7 +178,16 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <WorkPackageEditDetails control={control} errors={errors} usersForProjectLead={users} usersForProjectManager={users} />
+      <WorkPackageEditDetails
+        control={control}
+        errors={errors}
+        usersForProjectLead={users}
+        usersForProjectManager={users}
+        lead={lead}
+        manager={manager}
+        setLead={setLead}
+        setManager={setManager}
+      />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
           return (

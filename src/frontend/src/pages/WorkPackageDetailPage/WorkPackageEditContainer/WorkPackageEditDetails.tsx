@@ -4,7 +4,7 @@
  */
 
 import { User, WorkPackageStage } from 'shared';
-import { useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
@@ -14,16 +14,26 @@ import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface Props {
+  lead: User | undefined;
+  manager: User | undefined;
+  setManager: Dispatch<SetStateAction<User | undefined>>;
+  setLead: Dispatch<SetStateAction<User | undefined>>;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
   control: any;
   errors: any;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({ usersForProjectLead, usersForProjectManager, control, errors }) => {
-  const [lead, setLead] = useState<User | null>(null);
-  const [manager, setManager] = useState<User | null>(null);
-
+const WorkPackageEditDetails: React.FC<Props> = ({
+  lead,
+  manager,
+  setManager,
+  setLead,
+  usersForProjectLead,
+  usersForProjectManager,
+  control,
+  errors
+}) => {
   const leadSearchOnChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => {
     if (value) {
       const lead = usersForProjectLead.find((lead: User) => lead.userId.toString() === value.id);
@@ -31,7 +41,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForProjectLead, usersFor
         setLead(lead);
       }
     } else {
-      setLead(null);
+      setLead(undefined);
     }
   };
 
@@ -45,7 +55,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ usersForProjectLead, usersFor
         setManager(manager);
       }
     } else {
-      setManager(null);
+      setManager(undefined);
     }
   };
 
