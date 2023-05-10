@@ -192,7 +192,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         {blockedBy.map((_element, i) => {
           return (
             <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TextField required autoComplete="on" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+              <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
               <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>
