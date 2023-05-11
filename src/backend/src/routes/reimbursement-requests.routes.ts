@@ -22,7 +22,7 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/vendors/new',
+  '/vendors/create',
   nonEmptyString(body('name')),
   validateInputs,
   ReimbursementRequestController.createVendor
