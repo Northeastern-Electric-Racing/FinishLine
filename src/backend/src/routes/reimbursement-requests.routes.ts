@@ -29,7 +29,7 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/expense-types/new',
+  '/expense-types/create',
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
