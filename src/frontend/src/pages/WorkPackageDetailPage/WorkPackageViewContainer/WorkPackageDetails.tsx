@@ -80,8 +80,6 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
           <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={1} />
         </Grid>
 
-
-
         <Grid item display="flex" alignItems="center" xs={6} sm={3}>
           <ScheduleIcon sx={{ mr: 2 }} />
           <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={1} />
