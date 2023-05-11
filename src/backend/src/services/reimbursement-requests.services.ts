@@ -11,7 +11,7 @@ export default class ReimbursementRequestService {
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
-   * @param receiptPictures the links to the s3 buckets to retrieve the pictures
+   * @param receiptPictures the links for the receipt pictures in the google drive
    * @param reimbursementProducts the products that the user bought
    * @param expenseTypeId the id of the expense type the user made
    * @param totalCost the total cost of the reimbursement with tax
