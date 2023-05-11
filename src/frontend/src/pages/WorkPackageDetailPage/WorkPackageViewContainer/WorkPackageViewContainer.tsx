@@ -9,7 +9,6 @@ import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
@@ -164,12 +163,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         actionButton={projectActionsDropdown}
       />
       <WorkPackageDetails workPackage={workPackage} />
-      <HorizontalList
-        title={'Blocked By'}
-        items={workPackage.blockedBy.map((dep) => (
-          <strong>{wbsPipe(dep)}</strong>
-        ))}
-      />
       <CheckList
         title={'Expected Activities'}
         items={workPackage.expectedActivities
