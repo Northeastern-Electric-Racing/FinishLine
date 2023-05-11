@@ -27,7 +27,7 @@ const NavUserMenu: React.FC = () => {
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const googleAuthClientId = import.meta.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
+  const googleAuthClientId = import.meta.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const logout = () => {
     if (!auth) return;
