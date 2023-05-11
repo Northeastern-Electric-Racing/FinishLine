@@ -1,8 +1,8 @@
 import { User } from '@prisma/client';
-import { Club_Account } from 'shared';
+import { Club_Account, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -81,7 +81,8 @@ export default class ReimbursementRequestService {
    * @param allowed whether or not this expense type is allowed
    * @returns the id of the created expense type
    */
-  static async createExpenseType(name: string, code: number, allowed: boolean) {
+  static async createExpenseType(submitter: User, name: string, code: number, allowed: boolean) {
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
     const expense = await prisma.expense_Type.create({
       data: {
         name,
