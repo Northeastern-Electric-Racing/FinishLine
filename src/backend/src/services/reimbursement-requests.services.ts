@@ -55,7 +55,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    addReimbursementProducts(reimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
+    await addReimbursementProducts(reimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
 
     prisma.reimbursement_Status.create({
       data: {
@@ -103,7 +103,7 @@ export default class ReimbursementRequestService {
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', id);
     if (oldReimbursementRequest.recepientId !== submitter.userId)
       throw new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+        'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
       );
 
     const vendor = await prisma.vendor.findUnique({
