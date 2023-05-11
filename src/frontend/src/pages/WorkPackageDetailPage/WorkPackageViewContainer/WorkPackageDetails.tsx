@@ -99,9 +99,15 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
       </Box>
 
       <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
-      {workPackage.blockedBy.length === 0 ? <Typography>No Blockers</Typography> : workPackage.blockedBy.map((dep, idx) => (
-          <Typography sx={{fontWeight: 'bold'}} key={idx}>{wbsPipe(dep)}</Typography>
-        ))}
+        {workPackage.blockedBy.length === 0 ? (
+          <Typography>No Blockers</Typography>
+        ) : (
+          workPackage.blockedBy.map((dep, idx) => (
+            <Typography sx={{ fontWeight: 'bold' }} key={idx}>
+              {wbsPipe(dep)}
+            </Typography>
+          ))
+        )}
       </Stack>
     </>
   );
