@@ -21,7 +21,7 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
-    <Grid item sm={12} md={6} sx={{ mb: 2 }}>
+    <>
       <Typography
         variant="h5"
         sx={{
@@ -32,7 +32,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         Work Package Details
       </Typography>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} xs={12} sm={3}>
         <Grid item display="flex" alignItems="center" xs={12} sm={6}>
           <Construction sx={{ mr: 2 }} />
           <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={1} />
@@ -79,7 +79,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         </Box>
 
       </Grid>
-    </Grid>
+    </>
   );
 };
 
