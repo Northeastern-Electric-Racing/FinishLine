@@ -7,10 +7,11 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 const reimbursementRequestsRouter = express.Router();
 
 reimbursementRequestsRouter.post(
-  '/new',
+  '/create',
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
+  body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*')),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
