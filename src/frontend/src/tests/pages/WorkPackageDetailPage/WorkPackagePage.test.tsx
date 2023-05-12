@@ -10,10 +10,14 @@ import { Auth } from '../../../utils/types';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
-import { exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
+import { exampleAllWorkPackages, exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
+import { mockUseAllProjectsReturnValue, mockUseAllWorkPackagesReturnValue } from '../../test-support/mock-hooks';
+import { exampleAllProjects } from '../../test-support/test-data/projects.stub';
+import * as wpHooks from '../../../hooks/work-packages.hooks';
+import * as projectHooks from '../../../hooks/projects.hooks';
 
 jest.mock('../../../hooks/work-packages.hooks');
 
@@ -41,6 +45,11 @@ const renderComponent = () => {
 };
 
 describe('work package container', () => {
+  beforeEach(() => {
+    jest.spyOn(wpHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue(exampleAllWorkPackages));
+    jest.spyOn(projectHooks, 'useAllProjects').mockReturnValue(mockUseAllProjectsReturnValue(exampleAllProjects));
+  });
+
   it('renders the loading indicator', () => {
     mockSingleWPHook(true, false);
     mockAuthHook();

@@ -79,3 +79,6 @@ export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
 
 export const mockUseAllWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
   mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());
+
+export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
+  mockUseQueryResult<Project[]>(false, false, projects, new Error());
