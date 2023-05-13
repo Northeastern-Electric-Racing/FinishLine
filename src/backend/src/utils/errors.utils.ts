@@ -17,6 +17,17 @@ export class HttpException extends Error {
   }
 }
 
+export class DeletedException extends HttpException {
+  /**
+   * Constructs a deleted error
+   * @param name the name of the thing that is deleted
+   * @param id the id of the thing that is deleted
+   */
+  constructor(name: ExceptionObjectNames, id: number | string) {
+    super(404, `${name} with id: ${id} has been deleted!`);
+  }
+}
+
 export class NotFoundException extends HttpException {
   /**
    * Constructs a not found error
@@ -28,17 +39,6 @@ export class NotFoundException extends HttpException {
   }
 }
 
-export class DeletedException extends HttpException {
-  /**
-   * Constructs a deleted error
-   * @param name the name of the thing that was deleted
-   * @param id the id of the thing that was deleted
-   */
-  constructor(name: ExceptionObjectNames, id: number | string) {
-    super(400, `${name} with id: ${id} has already been deleted!`);
-  }
-}
-
 export class AccessDeniedException extends HttpException {
   /**
    * Constructs an access denied error
@@ -46,6 +46,36 @@ export class AccessDeniedException extends HttpException {
    */
   constructor(message?: string) {
     super(403, 'Access Denied' + (message ? `: ${message}` : '!'));
+  }
+}
+
+export class AccessDeniedAdminOnlyException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that non-admins may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`admin and app-admin only have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedMemberException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests and members may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`members and guests do not have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedGuestException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`guests do not have the ability to ${message}`);
   }
 }
 
@@ -68,7 +98,6 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
 // type so that the not found error messages are consistent
 type ExceptionObjectNames =
   | 'User'
-  | 'Risk'
   | 'Work Package'
   | 'Project'
   | 'Description Bullet'

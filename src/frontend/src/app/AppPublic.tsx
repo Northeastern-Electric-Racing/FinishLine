@@ -9,6 +9,7 @@ import { routes } from '../utils/routes';
 import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
@@ -22,14 +23,14 @@ const AppPublic: React.FC = () => {
         theme.toggleTheme();
       }
 
-      return <AppAuthenticated />;
+      return <AppAuthenticated userId={auth.user.userId} />;
     }
 
     // if we're on development and the userId is stored in localStorage,
     // then dev login right away (no login page redirect needed!)
     if (process.env.NODE_ENV === 'development' && devUserId) {
       auth.devSignin(parseInt(devUserId));
-      return <AppAuthenticated />;
+      return <LoadingIndicator />;
     }
 
     // otherwise, the user needs to login manually

@@ -1,16 +1,25 @@
-import { ChangeRequest, wbsPipe } from 'shared';
+import { ChangeRequest, isAdmin, isGuest, isNotLeadership, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
-import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  AccessDeniedGuestException,
+  AccessDeniedMemberException,
+  HttpException,
+  NotFoundException,
+  DeletedException
+} from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
   updateBlocking,
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification
 } from '../utils/change-requests.utils';
-import { Role, CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
+import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 
@@ -60,7 +69,7 @@ export default class ChangeRequestsService {
     psId: string | null
   ): Promise<Number> {
     // verify that the user is allowed review change requests
-    if (reviewer.role === Role.GUEST || reviewer.role === Role.MEMBER) throw new AccessDeniedException();
+    if (isNotLeadership(reviewer.role)) throw new AccessDeniedMemberException('review change requests');
 
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
@@ -97,11 +106,7 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = {
-          changeRequestId: crId,
-          implementerId: reviewer.userId,
-          detail: buildChangeDetail('Budget', String(foundCR.wbsElement.project.budget), String(newBudget))
-        };
+        const change = createChange('Budget', foundCR.wbsElement.project.budget, newBudget, crId, reviewer.userId);
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -129,16 +134,8 @@ export default class ChangeRequestsService {
 
         // create changes that reflect the new budget and duration
         const changes = [
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Budget', String(wpProj.budget), String(newBudget))
-          },
-          {
-            changeRequestId: crId,
-            implementerId: reviewer.userId,
-            detail: buildChangeDetail('Duration', String(foundCR.wbsElement.workPackage.duration), String(updatedDuration))
-          }
+          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
+          createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
         ];
 
         // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
@@ -333,7 +330,7 @@ export default class ChangeRequestsService {
     confirmDetails: boolean
   ): Promise<number> {
     // verify user is allowed to create activation change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create activation change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -408,7 +405,7 @@ export default class ChangeRequestsService {
     confirmDone: boolean
   ): Promise<Number> {
     // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create stage gate change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -489,8 +486,8 @@ export default class ChangeRequestsService {
     what: string,
     why: { type: Scope_CR_Why_Type; explain: string }[]
   ): Promise<number> {
-    // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    // verify user is allowed to create standard change requests
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -567,8 +564,8 @@ export default class ChangeRequestsService {
     timelineImpact: number,
     scopeImpact: string
   ): Promise<string> {
-    // verify user is allowed to create stage gate change requests
-    if (submitter.role === Role.GUEST) throw new AccessDeniedException();
+    // verify user is allowed to add proposed solutions
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('add proposed solutions');
 
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
@@ -612,8 +609,8 @@ export default class ChangeRequestsService {
     if (!foundCR) throw new NotFoundException('Change Request', crId);
 
     // verify user is allowed to delete change requests
-    if (!(submitter.role === 'ADMIN' || submitter.role === 'APP_ADMIN' || submitter.userId === foundCR.submitterId))
-      throw new AccessDeniedException();
+    if (!(isAdmin(submitter.role) || submitter.userId === foundCR.submitterId))
+      throw new AccessDeniedAdminOnlyException('delete change requests');
 
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
 

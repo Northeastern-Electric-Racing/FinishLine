@@ -7,28 +7,37 @@ import { AddTask } from '@mui/icons-material';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
-import { Project, Task, TaskStatus, wbsPipe } from 'shared';
+import { isLeadership, Project, Task, TaskStatus, wbsPipe } from 'shared';
 import { useAuth } from '../../../../hooks/auth.hooks';
-import PageBlock from '../../../../layouts/PageBlock';
 import { routes } from '../../../../utils/routes';
 import { Auth } from '../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 
-const TASK_LIST_TITLE: string = 'Task List';
 interface TaskListProps {
   project: Project;
-  defaultClosed?: boolean;
 }
 
+//used two sort two Tasks based on ascending times
+const sortAscendingDate = (task1: Task, task2: Task) => {
+  const deadLine1 = task1.deadline.getTime();
+  const deadLine2 = task2.deadline.getTime();
+
+  if (deadLine1 !== deadLine2) return deadLine1 - deadLine2;
+  return task1.dateCreated.getTime() - task2.dateCreated.getTime();
+};
+
 // Page block containing task list view
-const TaskList = ({ project, defaultClosed }: TaskListProps) => {
+const TaskList = ({ project }: TaskListProps) => {
   const auth: Auth = useAuth();
 
+  const [disabled, setDisabled] = useState<boolean>(false);
   // Values that go in the URL depending on the tab value, example /projects/0.0.0/in-progress
   const tabUrlValues = useMemo(() => ['in-backlog', 'in-progress', 'done'], []);
 
-  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
+  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(
+    `${routes.PROJECTS}/:wbsNum/Tasks/:tabValueString`
+  );
   const tabValueString = match?.params?.tabValueString;
   const wbsNum = wbsPipe(project.wbsNum);
 
@@ -44,13 +53,14 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   }, [pathname, setValue, tabUrlValues, tabValueString]);
 
   const [addTask, setAddTask] = useState(false);
+  const tasks = project.tasks.sort(sortAscendingDate);
 
-  const tasks = project.tasks;
   const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
   const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
   const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
+    console.log(newValue);
     setValue(newValue);
   };
 
@@ -58,9 +68,7 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   if (!user) return <LoadingIndicator />;
 
   const createTaskPermissions =
-    user.role === 'APP_ADMIN' ||
-    user.role === 'ADMIN' ||
-    user.role === 'LEADERSHIP' ||
+    isLeadership(user.role) ||
     project.projectLead?.userId === user.userId ||
     project.projectManager?.userId === user.userId ||
     project.team?.leader.userId === user.userId;
@@ -68,13 +76,14 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={!createTaskPermissions || !project.team}
+      disabled={!createTaskPermissions || !project.team || disabled}
       startIcon={<AddTask />}
       sx={{
         height: 32,
         px: '12px',
         textTransform: 'none',
-        fontSize: 16
+        fontSize: 16,
+        marginRight: 2
       }}
       onClick={() => setAddTask(true)}
     >
@@ -83,55 +92,62 @@ const TaskList = ({ project, defaultClosed }: TaskListProps) => {
   );
 
   return (
-    <PageBlock title={TASK_LIST_TITLE} headerRight={addTaskButton} defaultClosed={defaultClosed}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleTabChange} variant="fullWidth" aria-label="task-list-tabs">
+    <Box display="flex" flexDirection="row">
+      <Box sx={{ borderRight: 1, borderColor: 'divider', paddingTop: 2 }}>
+        {addTaskButton}
+        <Tabs
+          value={value}
+          onChange={handleTabChange}
+          orientation="vertical"
+          variant="scrollable"
+          aria-label="task-list-tabs"
+        >
           <Tab
             label="In Backlog"
             aria-label="in-backlog"
             value={0}
             component={Link}
-            to={`${routes.PROJECTS}/${wbsNum}/in-backlog`}
+            to={`${routes.PROJECTS}/${wbsNum}/tasks/in-backlog`}
           />
           <Tab
             label="In Progress"
             aria-label="in-progress"
             value={1}
             component={Link}
-            to={`${routes.PROJECTS}/${wbsNum}/in-progress`}
+            to={`${routes.PROJECTS}/${wbsNum}/tasks/in-progress`}
           />
-          <Tab label="Done" aria-label="done" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/done`} />
+          <Tab label="Done" aria-label="done" value={2} component={Link} to={`${routes.PROJECTS}/${wbsNum}/tasks/done`} />
         </Tabs>
       </Box>
-      <TaskListTabPanel
-        tasks={backLogTasks}
-        value={value}
-        index={0}
-        project={project}
-        status={TaskStatus.IN_BACKLOG}
-        addTask={addTask}
-        onAddCancel={() => setAddTask(false)}
-      />
-      <TaskListTabPanel
-        tasks={inProgressTasks}
-        value={value}
-        index={1}
-        project={project}
-        status={TaskStatus.IN_PROGRESS}
-        addTask={addTask}
-        onAddCancel={() => setAddTask(false)}
-      />
-
-      <TaskListTabPanel
-        tasks={doneTasks}
-        value={value}
-        index={2}
-        project={project}
-        status={TaskStatus.DONE}
-        addTask={addTask}
-        onAddCancel={() => setAddTask(false)}
-      />
-    </PageBlock>
+      {value === 0 ? (
+        <TaskListTabPanel
+          tasks={backLogTasks}
+          project={project}
+          status={TaskStatus.IN_BACKLOG}
+          addTask={addTask}
+          onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
+        />
+      ) : value === 1 ? (
+        <TaskListTabPanel
+          tasks={inProgressTasks}
+          project={project}
+          status={TaskStatus.IN_PROGRESS}
+          addTask={addTask}
+          onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
+        />
+      ) : (
+        <TaskListTabPanel
+          tasks={doneTasks}
+          project={project}
+          status={TaskStatus.DONE}
+          addTask={addTask}
+          onAddCancel={() => setAddTask(false)}
+          setDisabled={setDisabled}
+        />
+      )}
+    </Box>
   );
 };
 

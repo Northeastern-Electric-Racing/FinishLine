@@ -10,6 +10,7 @@ const userRouter = express.Router();
 userRouter.get('/', UsersController.getAllUsers);
 userRouter.get('/:userId', UsersController.getSingleUser);
 userRouter.get('/:userId/settings', UsersController.getUserSettings);
+userRouter.get('/:userId/favorite-projects', UsersController.getUsersFavoriteProjects);
 userRouter.post(
   '/:userId/settings',
   body('defaultTheme').isIn([Theme.DARK, Theme.LIGHT]),

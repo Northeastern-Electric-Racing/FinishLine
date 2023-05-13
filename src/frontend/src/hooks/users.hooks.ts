@@ -11,10 +11,22 @@ import {
   logUserIn,
   logUserInDev,
   updateUserSettings,
-  updateUserRole
+  updateUserRole,
+  getUsersFavoriteProjects
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings } from 'shared';
+import { User, AuthenticatedUser, UserSettings, Project } from 'shared';
 import { useAuth } from './auth.hooks';
+import { useContext } from 'react';
+import { UserContext } from '../app/AppContextUser';
+
+/**
+ * Custom React Hook to supply the current user
+ */
+export const useCurrentUser = (): AuthenticatedUser => {
+  const user = useContext(UserContext);
+  if (!user) throw Error('useCurrentUser must be used inside of context.');
+  return user;
+};
 
 /**
  * Custom React Hook to supply all users.
@@ -66,6 +78,18 @@ export const useLogUserInDev = () => {
 export const useSingleUserSettings = (id: number) => {
   return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply a single user's settings.
+ *
+ * @param id User ID of the requested user's settings.
+ */
+export const useUsersFavoriteProjects = (id: number) => {
+  return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
+    const { data } = await getUsersFavoriteProjects(id);
     return data;
   });
 };

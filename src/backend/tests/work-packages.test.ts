@@ -3,12 +3,19 @@ import { batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
-import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import WorkPackageService from '../src/services/work-packages.services';
 import { WbsNumber } from 'shared';
 import { User } from '@prisma/client';
 import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import * as slackUtils from '../src/utils/slack.utils';
 import { prismaProject1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
 import { prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
@@ -22,7 +29,7 @@ describe('Work Packages', () => {
   };
   const name = 'Pack your bags';
   const crId = 1;
-  const startDate = '2022-09-18';
+  const startDate = '2023-04-24';
   const duration = 5;
   const blockedBy: WbsNumber[] = [
     {
@@ -192,6 +199,7 @@ describe('Work Packages', () => {
       };
       const newPrismaWp = {
         ...prismaWorkPackage1,
+        startDate: new Date('04/24/2023'),
         wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
       };
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
@@ -217,7 +225,7 @@ describe('Work Packages', () => {
 
     test('User does not have submit permission', async () => {
       await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
-        new AccessDeniedException()
+        new AccessDeniedAdminOnlyException('delete work packages')
       );
     });
 
@@ -280,6 +288,18 @@ describe('Work Packages', () => {
       const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
       expect(result).toStrictEqual(sharedWorkPackage);
+    });
+  });
+
+  describe('slackMessageUpcomingDeadlines', () => {
+    beforeEach(() => {
+      jest.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});
+    });
+
+    it('fails when the user is not an admin', async () => {
+      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, new Date())).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages')
+      );
     });
   });
 });

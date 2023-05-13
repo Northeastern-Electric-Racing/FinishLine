@@ -1,7 +1,10 @@
-import { Role, User, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
+  getDay,
   DescriptionBullet,
   equalsWbsNumber,
+  isAdmin,
+  isGuest,
   isProject,
   TimelineStatus,
   WbsElementStatus,
@@ -11,7 +14,13 @@ import {
   WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  HttpException,
+  AccessDeniedGuestException,
+  AccessDeniedAdminOnlyException,
+  DeletedException
+} from '../utils/errors.utils';
 import {
   createChangeJsonDates,
   createChangeJsonNonList,
@@ -24,6 +33,7 @@ import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -124,7 +134,7 @@ export default class WorkPackagesService {
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
     await validateChangeRequestAccepted(crId);
 
@@ -274,7 +284,7 @@ export default class WorkPackagesService {
     projectManager: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
 
     const { userId } = user;
 
@@ -492,7 +502,7 @@ export default class WorkPackagesService {
    */
   static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
@@ -576,5 +586,39 @@ export default class WorkPackagesService {
         }
       }
     });
+  }
+
+  /**
+   * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * Sends a message for every work package that is due before or on the given deadline (even before today)
+   * @param user - the user doing the sending
+   * @param deadline - the deadline
+   * @returns
+   */
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date): Promise<void> {
+    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
+      throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
+      ...workPackageQueryArgs
+    });
+
+    const upcomingWorkPackages = workPackages
+      .map(workPackageTransformer)
+      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+
+    // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
+    await upcomingWorkPackages.reduce(
+      (previousCall, workPackage) =>
+        previousCall.then(async () => {
+          await sendSlackUpcomingDeadlineNotification(workPackage); // send the slack message for this work package
+          await new Promise((callBack) => setTimeout(callBack, 2000)); // sleep for 2 seconds
+        }),
+      Promise.resolve()
+    );
+
+    return;
   }
 }

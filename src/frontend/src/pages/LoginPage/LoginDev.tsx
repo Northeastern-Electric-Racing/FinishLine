@@ -13,9 +13,10 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import { rankUserRole } from 'shared';
+import { FormEvent } from 'react';
 interface LoginDevProps {
   devSetUser: (userId: number) => void;
-  devFormSubmit: (e: any) => any;
+  devFormSubmit: (e: FormEvent) => void;
 }
 
 /**
