@@ -8,16 +8,21 @@ import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
+import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
 
 interface Props {
   users: User[];
-  control: any;
-  errors: any;
+  control: Control<WorkPackageEditFormPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
+  };
+
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Stage Select</FormLabel>
@@ -37,6 +42,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       />
     </FormControl>
   );
+
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
@@ -65,6 +71,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 </>
