@@ -28,3 +28,7 @@ export const isTaskStatus = (validationObject: ValidationChain): ValidationChain
 export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn(['RESEARCH', 'DESIGN', 'MANUFACTURING', 'INTEGRATION', 'NONE']);
 };
+
+export const isAccount = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(['CASH', 'BUDGET']);
+};
