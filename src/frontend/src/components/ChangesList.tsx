@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from '@mui/material';
+import { Link, Box } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';
@@ -18,23 +18,26 @@ interface ChangesListProps {
 
 const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
   return (
-    <BulletList
-      title={'Changes'}
-      list={changes.map((ic) => (
-        <>
-          [
-          <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
-            #{ic.changeRequestId}
-          </Link>
-          ]
-          <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
-            <Typography component="span">{ic.detail}</Typography>
-          </DynamicTooltip>
-        </>
-      ))}
-      readOnly={true}
-      defaultClosed
-    />
+    <Box>
+      <ul>
+        {changes.map((ic, idx) => (
+          <li key={idx}>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+              <div style={{ marginRight: '4px' }}>
+                [
+                <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
+                  #{ic.changeRequestId}
+                </Link>
+                ]
+              </div>
+              <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
+                <Typography component="span">{ic.detail}</Typography>
+              </DynamicTooltip>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Box>
   );
 };
 

@@ -163,53 +163,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         ]}
         actionButton={projectActionsDropdown}
       />
-      <WorkPackageDetails workPackage={workPackage} />
-      <HorizontalList
-        title={'Blocked By'}
-        items={workPackage.blockedBy.map((dep) => (
-          <strong>{wbsPipe(dep)}</strong>
-        ))}
-      />
-      <CheckList
-        title={'Expected Activities'}
-        items={workPackage.expectedActivities
-          .filter((ea) => !ea.dateDeleted)
-          .map((ea) => {
-            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
-          })}
-        isDisabled={checkListDisabled}
-      />
-      <CheckList
-        title={'Deliverables'}
-        items={workPackage.deliverables
-          .filter((del) => !del.dateDeleted)
-          .map((del) => {
-            return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
-          })}
-        isDisabled={checkListDisabled}
-      />
       <ChangesList changes={workPackage.changes} />
-      {showActivateModal && (
-        <ActivateWorkPackageModalContainer
-          wbsNum={workPackage.wbsNum}
-          modalShow={showActivateModal}
-          handleClose={() => setShowActivateModal(false)}
-        />
-      )}
-      {showStageGateModal && (
-        <StageGateWorkPackageModalContainer
-          wbsNum={workPackage.wbsNum}
-          modalShow={showStageGateModal}
-          handleClose={() => setShowStageGateModal(false)}
-        />
-      )}
-      {showDeleteModal && (
-        <DeleteWorkPackage
-          wbsNum={workPackage.wbsNum}
-          modalShow={showDeleteModal}
-          handleClose={() => setShowDeleteModal(false)}
-        />
-      )}
     </>
   );
 };
