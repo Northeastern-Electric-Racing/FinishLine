@@ -51,7 +51,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [tab, setTab] = useState(0);
   const dropdownOpen = Boolean(anchorEl);
   const tabUrlValues = useMemo(() => ['overview', 'scope', 'changes'], []);
 
@@ -67,12 +66,10 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const { pathname } = useLocation();
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
-    setTab(newTabValue);
     setTabValue(newTabValue);
-  }, [pathname, setTab, setTabValue, tabUrlValues, tabValueString]);
+  }, [pathname, setTabValue, tabUrlValues, tabValueString]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    setTab(newValue);
     setTabValue(newValue);
   };
 
@@ -206,7 +203,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           to={`${routes.PROJECTS}/${wbsNum}/changes`}
         />
       </Tabs>
-      {tab === 0 ? (
+      {tabValue === 0 ? (
         <>
           <WorkPackageDetails workPackage={workPackage} />
           <HorizontalList
@@ -216,7 +213,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
             ))}
           />
         </>
-      ) : tab === 1 ? (
+      ) : tabValue === 1 ? (
         <>
           <CheckList
             title={'Expected Activities'}
