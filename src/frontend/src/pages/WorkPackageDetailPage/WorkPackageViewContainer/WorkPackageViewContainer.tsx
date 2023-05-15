@@ -18,8 +18,6 @@ import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem, Tab, Tabs } from '@mui/material';
-import { useAuth } from '../../../hooks/auth.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -27,6 +25,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -47,7 +46,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -77,9 +76,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     setTabValue(newValue);
   };
 
-  if (!auth.user) return <LoadingIndicator />;
-
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
