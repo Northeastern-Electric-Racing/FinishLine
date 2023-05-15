@@ -22,27 +22,17 @@ interface WorkPackageDetailsProps {
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
     <>
-      <Box sx={{ mb: 1 }}>
-        <Grid container spacing={2}>
-          <Grid item display="flex" alignItems="center" xs={6} sm={3}>
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 1,
-                cursor: 'pointer'
-              }}
-            >
-              Work Package Details
-            </Typography>
-          </Grid>
-          <Grid item display="flex" alignItems="center" xs={6} sm={3}>
-            <Box>
-              {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
-              <WbsStatus status={workPackage.status} />
-            </Box>
-          </Grid>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <Typography variant="h5">Work Package Details</Typography>
         </Grid>
-      </Box>
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <Box>
+            {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+            <WbsStatus status={workPackage.status} />
+          </Box>
+        </Grid>
+      </Grid>
 
       <Grid container spacing={2}>
         <Grid item display="flex" alignItems="center" xs={6} sm={3}>
@@ -86,17 +76,15 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 5 }}>
-        <Typography
-          variant="h5"
-          sx={{
-            mb: 1,
-            cursor: 'pointer'
-          }}
-        >
-          Blocked By
-        </Typography>
-      </Box>
+      <Typography
+        variant="h5"
+        sx={{
+          mb: 1,
+          mt: 5
+        }}
+      >
+        Blocked By
+      </Typography>
 
       <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
         {workPackage.blockedBy.length === 0 ? (
