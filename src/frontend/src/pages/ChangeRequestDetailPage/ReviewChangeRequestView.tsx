@@ -283,13 +283,12 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
       {cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
         ? renderProposedSolutionModal(cr as StandardChangeRequest)
         : renderModal()}
-      ;
       {showWarning && (
         <ChangeRequestBlockerWarning
           duration={selectedTimelineImpact}
           onHide={() => setShowWarning(false)}
           open={showWarning}
-          handleContinue={() => onSubmitWrapper(getValues())}
+          onSubmit={() => onSubmitWrapper(getValues())}
           blockingWorkPackages={blockingWorkPackages ?? []}
         />
       )}
