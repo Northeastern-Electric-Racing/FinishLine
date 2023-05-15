@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, Box } from '@mui/material';
+import { Link } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { ImplementedChange } from 'shared';
 import { fullNamePipe, datePipe } from '../utils/pipes';

@@ -8,13 +8,8 @@ import { Link } from 'react-router-dom';
 import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import HorizontalList from '../../../components/HorizontalList';
-import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
-import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
@@ -26,7 +21,6 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
-import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -55,8 +49,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const dropdownOpen = Boolean(anchorEl);
 
   if (!auth.user) return <LoadingIndicator />;
-
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
