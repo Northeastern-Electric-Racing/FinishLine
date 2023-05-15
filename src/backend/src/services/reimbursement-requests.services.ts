@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { Reimbursement_Request, User } from '@prisma/client';
 import { Club_Account, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
