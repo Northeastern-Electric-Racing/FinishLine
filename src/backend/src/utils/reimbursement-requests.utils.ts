@@ -16,7 +16,7 @@ export interface ReimbursementProductCreateArgs {
  */
 export const validateReimbursementProducts = async (reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]) => {
   if (reimbursementProductCreateArgs.length === 0) {
-    return;
+    throw new HttpException(400, 'You must have at least one product to reimburse');
   }
 
   const wbsElementIds = reimbursementProductCreateArgs.map(

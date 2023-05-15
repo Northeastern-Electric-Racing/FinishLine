@@ -13,6 +13,7 @@ reimbursementRequestsRouter.post(
   isAccount(body('account')),
   body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*')),
+  body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
   intMinZero(body('reimbursementProducts.*.wbsElementId')),

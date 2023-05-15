@@ -1,4 +1,5 @@
 import { ValidationChain } from 'express-validator';
+import { Club_Account } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -30,5 +31,5 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
 };
 
 export const isAccount = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['CASH', 'BUDGET']);
+  return validationObject.isString().isIn([Club_Account.BUDGET, Club_Account.CASH]);
 };
