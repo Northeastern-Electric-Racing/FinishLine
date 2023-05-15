@@ -3,6 +3,16 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 
 export default class ReimbursementRequestsController {
+  static async getUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =

@@ -6,6 +6,17 @@ import { AccessDeniedGuestException, NotFoundException } from '../utils/errors.u
 
 export default class ReimbursementRequestService {
   /**
+   * Returns all reimbursement requests in the database that are created by a user.
+   * @param recipient the user retrieving their reimbursement requests
+   */
+  static async getUserReimbursementRequests(recipient: User): Promise<Reimbursement_Request[]> {
+    const prismaQueryResult = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null, recepientId: recipient.userId }
+    });
+    return prismaQueryResult;
+  }
+
+  /**
    * Creates a reimbursement request in the database
    * @param recipient the user who is creating the reimbursement request
    * @param dateOfExpense the date that the expense occured

@@ -6,6 +6,8 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 
 const reimbursementRequestsRouter = express.Router();
 
+reimbursementRequestsRouter.get('/me', ReimbursementRequestController.getUserReimbursementRequests);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
