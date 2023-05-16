@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { isGuest, WbsElement, WbsElementStatus, WorkPackage } from 'shared';
+import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
@@ -27,8 +27,7 @@ import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAllProjects } from '../../../hooks/projects.hooks';
-import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import ErrorPage from '../../ErrorPage';
 
 interface WorkPackageViewContainerProps {
@@ -55,13 +54,11 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: workPackages, isError: wpIsError, isLoading: wpIsLoading, error: wpError } = useAllWorkPackages();
-  const { data: projects, isError: projectIsError, isLoading: projectIsLoading, error: projectError } = useAllProjects();
+  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (!auth.user || !projects || !workPackages || wpIsLoading || projectIsLoading) return <LoadingIndicator />;
-  if (wpIsError) return <ErrorPage message={wpError?.message} />;
-  if (projectIsError) return <ErrorPage message={projectError?.message} />;
+  if (!auth.user || !dependencies || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
 
@@ -160,16 +157,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
-  const projectDependencies = projects.filter((project) =>
-    workPackage.blockedBy.map((wbs) => wbsPipe(wbs)).includes(wbsPipe(project.wbsNum))
-  );
-  const workPackageDependencies = workPackages.filter((wp) =>
-    workPackage.blockedBy.map((wbs) => wbsPipe(wbs)).includes(wbsPipe(wp.wbsNum))
-  );
-  const dependenciesAsElements = (projectDependencies as WbsElement[]).concat(workPackageDependencies);
-  workPackage.blockedBy.forEach((wbs) => console.log(wbsPipe(wbs)));
-  projects.forEach((p) => console.log(wbsPipe(p.wbsNum)));
-
   return (
     <>
       <PageTitle
@@ -183,9 +170,9 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList
         title={'Blocked By'}
-        items={dependenciesAsElements.map((dep) => (
-          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`}>
-            <strong>{`${wbsPipe(dep.wbsNum)} - ${dep.name}`}</strong>
+        items={dependencies.map((dep) => (
+          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
+            {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
           </Link>
         ))}
       />

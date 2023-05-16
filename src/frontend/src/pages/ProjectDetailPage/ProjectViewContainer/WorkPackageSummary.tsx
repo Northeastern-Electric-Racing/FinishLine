@@ -10,7 +10,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
-import { calculateEndDate, WbsElement, WorkPackage } from 'shared';
+import { calculateEndDate, WorkPackage } from 'shared';
 import { weeksPipe, wbsPipe, datePipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import WbsStatus from '../../../components/WbsStatus';
@@ -18,8 +18,7 @@ import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
-import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
-import { useAllProjects } from '../../../hooks/projects.hooks';
+import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -38,24 +37,11 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
     </ul>
   );
 
-  const { data: workPackages, isError: wpIsError, isLoading: wpIsLoading, error: wpError } = useAllWorkPackages();
-  const { data: projects, isError: projectIsError, isLoading: projectIsLoading, error: projectError } = useAllProjects();
+  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const theme = useTheme();
 
-  if (!projects || !workPackages || wpIsLoading || projectIsLoading) return <LoadingIndicator />;
-  if (wpIsError) return <ErrorPage message={wpError?.message} />;
-  if (projectIsError) return <ErrorPage message={projectError?.message} />;
-
-  const projectDependencies = projects.filter((project) =>
-    workPackage.blockedBy.map((wbs) => wbsPipe(wbs)).includes(wbsPipe(project.wbsNum))
-  );
-  const workPackageDependencies = workPackages.filter((wp) =>
-    workPackage.blockedBy.map((wbs) => wbsPipe(wbs)).includes(wbsPipe(wp.wbsNum))
-  );
-
-  const dependenciesAsElements = (projectDependencies as WbsElement[]).concat(workPackageDependencies);
-  workPackage.blockedBy.forEach((wbs) => console.log(wbsPipe(wbs)));
-  projects.forEach((p) => console.log(wbsPipe(p.wbsNum)));
+  if (!dependencies || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const numMoreExpectedActivities = workPackage.expectedActivities.length - 3;
   const deliverablesList = (
@@ -70,12 +56,12 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
   const numMoreDeliverables = workPackage.deliverables.length - 3;
   const dependencyList = (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
-      {dependenciesAsElements.map((wbs: WbsElement, idx) => (
+      {dependencies.map((wp: WorkPackage, idx) => (
         <Typography display="inline" key={idx}>
-          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wbs.wbsNum)}`}>
-            <strong>{`${wbsPipe(wbs.wbsNum)} - ${wbs.name}`}</strong>
+          <Link component={RouterLink} fontWeight="bold" to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`}>
+            {`${wbsPipe(wp.wbsNum)} - ${wp.name}`}
           </Link>
-          {dependenciesAsElements.indexOf(wbs) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
+          {dependencies.indexOf(wp) !== workPackage.blockedBy.length - 1 ? ', ' : ''}
         </Typography>
       ))}
     </Box>
