@@ -28,4 +28,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createReimbursementRequest
 );
 
+reimbursementRequestsRouter.post(
+  '/vendors/create',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ReimbursementRequestController.createVendor
+);
+
 export default reimbursementRequestsRouter;

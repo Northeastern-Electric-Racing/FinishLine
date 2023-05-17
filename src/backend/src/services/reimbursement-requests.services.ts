@@ -4,10 +4,10 @@
  */
 
 import { Reimbursement_Request, User } from '@prisma/client';
-import { Club_Account, isGuest } from 'shared';
+import { Club_Account, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import { ReimbursementProductCreateArgs, validateReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { AccessDeniedGuestException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, AccessDeniedGuestException, NotFoundException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -78,5 +78,23 @@ export default class ReimbursementRequestService {
     });
 
     return createdReimbursementRequest;
+  }
+
+  /**
+   * Function to create a vendor in our database
+   * @param submitter the user who is creating the vendor
+   * @param name the name of the vendor
+   * @returns the created vendor
+   */
+  static async createVendor(submitter: User, name: string) {
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create vendors');
+
+    const vendor = await prisma.vendor.create({
+      data: {
+        name
+      }
+    });
+
+    return vendor;
   }
 }

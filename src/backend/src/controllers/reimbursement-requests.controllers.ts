@@ -28,4 +28,15 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async createVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdVendor = await ReimbursementRequestService.createVendor(user, name);
+      res.status(200).json(createdVendor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

@@ -89,6 +89,9 @@ CREATE TABLE "User_Secure_Settings" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Vendor_name_key" ON "Vendor"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_Secure_Settings_nuid_key" ON "User_Secure_Settings"("nuid");
 
 -- CreateIndex
