@@ -87,7 +87,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
 
   return (
     <form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-      <Dialog open={modalShow} onClose={onHide} sx={{ overflow: 'hidden', '&::-webkit-scrollbar': { display: 'none' } }}>
+      <Dialog open={modalShow} onClose={onHide}>
         <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
@@ -101,6 +101,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 }))}
                 size="small"
                 placeholder="Project Lead"
+                listboxProps={{ style: { maxHeight: '199px' } }}
               />
             </Grid>
             <Grid item xs={6}>
@@ -113,6 +114,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 }))}
                 size="small"
                 placeholder="Project Manager"
+                listboxProps={{ style: { maxHeight: '199px' } }}
               />
             </Grid>
             <Grid item xs={6}>
