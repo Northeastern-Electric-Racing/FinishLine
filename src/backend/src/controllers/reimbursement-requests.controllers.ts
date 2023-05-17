@@ -8,7 +8,7 @@ export default class ReimbursementRequestController {
       const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
         req.body;
       const user = await getCurrentUser(res);
-      const createdReimbursementRequestId = await ReimbursementRequestService.createReimbursementRequest(
+      const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
@@ -18,7 +18,7 @@ export default class ReimbursementRequestController {
         expenseTypeId,
         totalCost
       );
-      res.status(200).json(createdReimbursementRequestId);
+      res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }

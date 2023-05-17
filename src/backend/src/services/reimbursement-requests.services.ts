@@ -1,4 +1,4 @@
-import { Club_Accounts, User } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, User } from '@prisma/client';
 import { Club_Account } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -69,7 +69,8 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   *
+   * Edits the given reimbursement Request
+   * 
    * @param id the id of the reimbursement request we are editing
    * @param dateOfExpense the updated date of expense
    * @param vendorId the updated vendor id
@@ -79,7 +80,7 @@ export default class ReimbursementRequestService {
    * @param reimbursementProducts the updated reimbursement products
    * @param saboId the updated saboId
    * @param submitter the person editing the reimbursement request
-   * @returns the edited reimbursement requests id
+   * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
     id: string,
@@ -91,7 +92,7 @@ export default class ReimbursementRequestService {
     reimbursementProducts: ReimbursementProductCreateArgs[],
     saboId: number | null,
     submitter: User
-  ) {
+  ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: id },
       include: {
@@ -136,7 +137,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    return updatedReimbursementRequest.reimbursementRequestId;
+    return updatedReimbursementRequest;
   }
 
   /**
