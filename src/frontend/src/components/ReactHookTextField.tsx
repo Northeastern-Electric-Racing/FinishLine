@@ -2,23 +2,23 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { Controller, FieldError } from 'react-hook-form';
-import { TextField, InputAdornment } from '@mui/material';
+import { Control, Controller, FieldError } from 'react-hook-form';
+import { TextField, InputAdornment, SxProps, Theme, SvgIconProps } from '@mui/material';
 
 interface ReactHookTextFieldProps {
   name: string;
-  control: any;
-  rules?: any;
+  control: Control<any, any>;
+  rules?: Omit<any, any>;
   fullWidth?: boolean;
   label?: string;
   placeholder?: string;
   size?: 'small' | 'medium';
-  sx?: any;
-  type?: any;
-  icon?: any;
+  sx?: SxProps<Theme>;
+  type?: string;
+  icon?: SvgIconProps;
   multiline?: boolean;
   rows?: number;
-  endAdornment?: any;
+  endAdornment?: React.ReactElement;
   errorMessage?: FieldError;
 }
 
