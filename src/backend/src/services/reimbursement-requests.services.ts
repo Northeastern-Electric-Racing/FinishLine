@@ -101,7 +101,7 @@ export default class ReimbursementRequestService {
   /**
    * Service function to create an expense type in our database
    * @param name The name of the expense type
-   * @param code the expense type's code
+   * @param code the expense type's SABO code
    * @param allowed whether or not this expense type is allowed
    * @returns the created expense type
    */
