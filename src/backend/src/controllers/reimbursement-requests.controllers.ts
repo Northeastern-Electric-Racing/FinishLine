@@ -33,8 +33,8 @@ export default class ReimbursementRequestsController {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
-      const createdVendorId = await ReimbursementRequestService.createVendor(user, name);
-      res.status(200).json(createdVendorId);
+      const createdVendor = await ReimbursementRequestService.createVendor(user, name);
+      res.status(200).json(createdVendor);
     } catch (error: unknown) {
       next(error);
     }
