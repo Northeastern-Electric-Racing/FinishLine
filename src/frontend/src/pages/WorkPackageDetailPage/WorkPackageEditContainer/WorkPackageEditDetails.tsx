@@ -34,7 +34,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   control,
   errors
 }) => {
-
   const userToOption = (user: User): { label: string; id: string } => {
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
