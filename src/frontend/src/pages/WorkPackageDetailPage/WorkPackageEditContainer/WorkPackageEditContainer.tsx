@@ -129,8 +129,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
 
     try {
       const payload = {
-        projectLead: leadId ? parseInt(leadId) : leadId,
-        projectManager: managerId ? parseInt(managerId) : managerId,
+        projectLead: leadId ? parseInt(leadId) : undefined,
+        projectManager: managerId ? parseInt(managerId) : undefined,
         workPackageId: workPackage.id,
         userId,
         name,
