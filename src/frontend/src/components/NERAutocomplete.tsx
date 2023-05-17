@@ -26,7 +26,16 @@ interface NERAutocompleteProps {
   listboxProps?: HTMLAttributes<HTMLUListElement>;
 }
 
-const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options, size, placeholder, sx, value, listboxProps }) => {
+const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
+  id,
+  onChange,
+  options,
+  size,
+  placeholder,
+  sx,
+  value,
+  listboxProps
+}) => {
   const theme = useTheme();
 
   const autocompleteStyle = {
