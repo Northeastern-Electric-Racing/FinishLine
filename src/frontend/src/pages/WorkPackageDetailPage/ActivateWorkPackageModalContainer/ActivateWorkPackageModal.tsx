@@ -10,7 +10,17 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Grid } from '@mui/material';
+import {
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Grid,
+  FormLabel,
+  FormControl
+} from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
@@ -59,11 +69,11 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   const onSubmitWrapper = async (data: FormInput) => {
     const { startDate, confirmDetails } = data;
     if (!projectLeadId) {
-      toast.error('Please Set A Value For Project Lead');
+      toast.error('Please Select a Project Lead');
       return;
     }
     if (!projectManagerId) {
-      toast.error('Please Set A Value For Project Manager');
+      toast.error('Please Select a Project Manager');
       return;
     }
     await onSubmit({
@@ -77,12 +87,11 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
 
   return (
     <form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-      <Dialog open={modalShow} onClose={onHide}>
+      <Dialog open={modalShow} onClose={onHide} sx={{ overflow: 'hidden', '&::-webkit-scrollbar': { display: 'none' } }}>
         <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography>Project Lead</Typography>
               <NERAutocomplete
                 id="project-lead-autocomplete"
                 onChange={(_event, value) => setProjectLeadId(value?.id)}
@@ -95,7 +104,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               />
             </Grid>
             <Grid item xs={6}>
-              <Typography>Project Manager</Typography>
               <NERAutocomplete
                 id="project-manager-autocomplete"
                 onChange={(_event, value) => setProjectManagerId(value?.id)}
@@ -108,45 +116,49 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               />
             </Grid>
             <Grid item xs={6}>
-              <Controller
-                name="startDate"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <Typography>Start Date (YYYY-MM-DD)</Typography>
-                    <DatePicker
-                      inputFormat="yyyy-MM-dd"
-                      onChange={onChange}
-                      className={'padding: 10'}
-                      value={value}
-                      renderInput={(params) => <TextField autoComplete="off" {...params} />}
-                    />
-                  </>
-                )}
-              />
+              <FormControl fullWidth>
+                <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+                <Controller
+                  name="startDate"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { onChange, value } }) => (
+                    <>
+                      <DatePicker
+                        inputFormat="yyyy-MM-dd"
+                        onChange={onChange}
+                        className={'padding: 10'}
+                        value={value}
+                        renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                      />
+                    </>
+                  )}
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={6}>
-              <Controller
-                name="confirmDetails"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <Typography>Are the WP details correct?</Typography>
-                    <RadioGroup
-                      value={value}
-                      row
-                      aria-labelledby="demo-row-radio-buttons-group-label"
-                      name="row-radio-buttons-group"
-                      onChange={onChange}
-                    >
-                      <FormControlLabel value={1} control={<Radio />} label="Yes" />
-                      <FormControlLabel value={0} control={<Radio />} label="No" />
-                    </RadioGroup>
-                  </>
-                )}
-              />
+              <FormControl fullWidth>
+                <FormLabel>Are the WP details correct?</FormLabel>
+                <Controller
+                  name="confirmDetails"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { onChange, value } }) => (
+                    <>
+                      <RadioGroup
+                        value={value}
+                        row
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        onChange={onChange}
+                      >
+                        <FormControlLabel value={1} control={<Radio />} label="Yes" />
+                        <FormControlLabel value={0} control={<Radio />} label="No" />
+                      </RadioGroup>
+                    </>
+                  )}
+                />
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>
