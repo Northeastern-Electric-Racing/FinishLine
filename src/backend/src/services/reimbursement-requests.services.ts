@@ -1,32 +1,39 @@
-import { User } from '@prisma/client';
-import { Club_Account, isAdmin } from 'shared';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { Reimbursement_Request, User } from '@prisma/client';
+import { Club_Account, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
-import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { ReimbursementProductCreateArgs, validateReimbursementProducts } from '../utils/reimbursement-requests.utils';
+import { AccessDeniedAdminOnlyException, AccessDeniedGuestException, NotFoundException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestService {
   /**
    * Creates a reimbursement request in the database
-   * @param receipient the user who is creating the reimbursement request
+   * @param recipient the user who is creating the reimbursement request
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
-   * @param receiptPictures the links to the s3 buckets to retrieve the pictures
+   * @param receiptPictures the links for the receipt pictures in the google drive
    * @param reimbursementProducts the products that the user bought
    * @param expenseTypeId the id of the expense type the user made
-   * @param totalCost the total cost of the reimbursement
-   * @returns the id of the created reimbursement request
+   * @param totalCost the total cost of the reimbursement with tax
+   * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    receipient: User,
+    recipient: User,
     dateOfExpense: Date,
     vendorId: string,
     account: Club_Account,
     receiptPictures: string[],
-    reimbursementProducts: { name: string; cost: number; wbsElementId: number }[],
+    reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
-  ): Promise<String> {
+  ): Promise<Reimbursement_Request> {
+    if (isGuest(recipient.role)) throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
+
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
     });
@@ -39,39 +46,56 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
+    await validateReimbursementProducts(reimbursementProducts);
+
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
-        recepientId: receipient.userId,
+        recepientId: recipient.userId,
         dateOfExpense,
         vendorId: vendor.vendorId,
         account,
         receiptPictures,
         expenseTypeId: expenseType.expenseTypeId,
-        totalCost
+        totalCost,
+        reimbursementsStatuses: {
+          create: {
+            type: 'PENDING_FINANCE',
+            userId: recipient.userId
+          }
+        },
+        reimbursementProducts: {
+          createMany: {
+            data: reimbursementProducts.map((reimbursementProductInfo) => {
+              return {
+                name: reimbursementProductInfo.name,
+                cost: reimbursementProductInfo.cost,
+                wbsElementId: reimbursementProductInfo.wbsElementId
+              };
+            })
+          }
+        }
       }
     });
 
-    addReimbursementProducts(reimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
-
-    prisma.reimbursement_Status.create({
-      data: {
-        type: 'PENDING_FINANCE',
-        userId: receipient.userId,
-        reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId
-      }
-    });
-
-    return createdReimbursementRequest.reimbursementRequestId;
+    return createdReimbursementRequest;
   }
 
-  static async createVendor(name: string) {
+  /**
+   * Function to create a vendor in our database
+   * @param submitter the user who is creating the vendor
+   * @param name the name of the vendor
+   * @returns the created vendor
+   */
+  static async createVendor(submitter: User, name: string) {
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create vendors');
+
     const vendor = await prisma.vendor.create({
       data: {
         name
       }
     });
 
-    return vendor.vendorId;
+    return vendor;
   }
 
   /**

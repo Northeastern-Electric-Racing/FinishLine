@@ -12,12 +12,18 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Vendor Tests', () => {
+    test('Create Vendor throws error if user is not admin', async () => {
+      await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create vendors')
+      );
+    });
+
     test('Create Vendor Successfully returns vendor Id', async () => {
       jest.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
 
-      const reimbursementRequestId = await ReimbursementRequestService.createVendor('HOLA BUDDY');
+      const vendor = await ReimbursementRequestService.createVendor(batman, 'HOLA BUDDY');
 
-      expect(reimbursementRequestId).toBe('CHICKEN');
+      expect(vendor.vendorId).toBe('CHICKEN');
     });
   });
 
