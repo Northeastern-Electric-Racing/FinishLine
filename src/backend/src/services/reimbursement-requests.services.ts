@@ -79,7 +79,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the expense type
    * @param code the expense type's code
    * @param allowed whether or not this expense type is allowed
-   * @returns the id of the created expense type
+   * @returns the created expense type
    */
   static async createExpenseType(submitter: User, name: string, code: number, allowed: boolean) {
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
@@ -91,6 +91,6 @@ export default class ReimbursementRequestService {
       }
     });
 
-    return expense.expenseTypeId;
+    return expense;
   }
 }

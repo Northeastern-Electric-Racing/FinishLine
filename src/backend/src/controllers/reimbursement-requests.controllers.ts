@@ -38,8 +38,8 @@ export default class ReimbursementRequestController {
     try {
       const { name, code, allowed } = req.body;
       const user = await getCurrentUser(res);
-      const createdExpenseTypeId = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
-      res.status(200).json(createdExpenseTypeId);
+      const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
+      res.status(200).json(createdExpenseType);
     } catch (error: unknown) {
       next(error);
     }
