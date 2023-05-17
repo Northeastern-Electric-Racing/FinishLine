@@ -14,10 +14,10 @@ import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface Props {
-  lead: User | undefined;
-  manager: User | undefined;
-  setManager: Dispatch<SetStateAction<User | undefined>>;
-  setLead: Dispatch<SetStateAction<User | undefined>>;
+  lead: string | undefined;
+  manager: string | undefined;
+  setManager: Dispatch<SetStateAction<string | undefined>>;
+  setLead: Dispatch<SetStateAction<string | undefined>>;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
   control: any;
@@ -34,30 +34,6 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   control,
   errors
 }) => {
-  const leadSearchOnChange = (_event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => {
-    if (value) {
-      const lead = usersForProjectLead.find((lead: User) => lead.userId.toString() === value.id);
-      if (lead) {
-        setLead(lead);
-      }
-    } else {
-      setLead(undefined);
-    }
-  };
-
-  const managerSearchOnChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: string } | null
-  ) => {
-    if (value) {
-      const manager = usersForProjectManager.find((manager: User) => manager.userId.toString() === value.id);
-      if (manager) {
-        setManager(manager);
-      }
-    } else {
-      setManager(undefined);
-    }
-  };
 
   const userToOption = (user: User): { label: string; id: string } => {
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
@@ -143,11 +119,10 @@ const WorkPackageEditDetails: React.FC<Props> = ({
           <NERAutocomplete
             sx={{ mt: 1, width: '90%' }}
             id="project-lead-autocomplete"
-            onChange={leadSearchOnChange}
+            onChange={(_event, value) => setLead(value?.id)}
             options={usersForProjectLead.map(userToOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={lead ? userToOption(lead) : null}
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 1 }}>
@@ -155,11 +130,10 @@ const WorkPackageEditDetails: React.FC<Props> = ({
           <NERAutocomplete
             sx={{ mt: 1, width: '90%' }}
             id="project-manager-autocomplete"
-            onChange={managerSearchOnChange}
+            onChange={(_event, value) => setManager(value?.id)}
             options={usersForProjectManager.map(userToOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={manager ? userToOption(manager) : null}
           />
         </Grid>
       </Grid>

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, User, validateWBS, WorkPackage } from 'shared';
+import { isGuest, validateWBS, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -91,8 +91,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     }
   });
 
-  const [manager, setManager] = useState<User | undefined>(workPackage.projectManager);
-  const [lead, setLead] = useState<User | undefined>(workPackage.projectLead);
+  const [managerId, setManagerId] = useState<string | undefined>(workPackage.projectManager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(workPackage.projectLead?.userId.toString());
 
   // lists of stuff
   const {
@@ -129,8 +129,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
 
     try {
       const payload = {
-        projectLead: lead?.userId,
-        projectManager: manager?.userId,
+        projectLead: leadId ? parseInt(leadId) : leadId,
+        projectManager: managerId ? parseInt(managerId) : managerId,
         workPackageId: workPackage.id,
         userId,
         name,
@@ -183,10 +183,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         errors={errors}
         usersForProjectLead={users}
         usersForProjectManager={users}
-        lead={lead}
-        manager={manager}
-        setLead={setLead}
-        setManager={setManager}
+        lead={leadId}
+        manager={managerId}
+        setLead={setLeadId}
+        setManager={setManagerId}
       />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
