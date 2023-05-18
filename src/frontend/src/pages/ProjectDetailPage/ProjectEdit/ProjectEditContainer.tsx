@@ -41,6 +41,35 @@ interface ProjectEditContainerProps {
   exitEditMode: () => void;
 }
 
+export interface ProjectEditFormInput {
+  name: string;
+  budget: number;
+  summary: string;
+  bomLink: string | undefined;
+  googleDriveFolderLink: string | undefined;
+  taskListLink: string | undefined;
+  slideDeckLink: string | undefined;
+  // projectId: number;
+  crId: string;
+  goals: {
+    bulletId: number;
+    detail: string;
+  }[];
+  features: {
+    bulletId: number;
+    detail: string;
+  }[];
+  constraints: {
+    bulletId: number;
+    detail: string;
+  }[];
+  projectLeadId: number | undefined;
+  projectManagerId: number | undefined;
+  rules: {
+    rule: string;
+  }[];
+}
+
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const query = useQuery();
   const allUsers = useAllUsers();
@@ -89,26 +118,26 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ProjectEditFormInput) => {
     const {
       name,
       budget,
       summary,
-      bomLink,
-      googleDriveFolderLink,
-      taskListLink,
-      slideDeckLink,
-      projectLeadId,
-      projectManagerId
+      bomLink = '',
+      googleDriveFolderLink = '',
+      taskListLink = '',
+      slideDeckLink = '',
+      projectLeadId = 0,
+      projectManagerId = 0
     } = data;
-    const rules = data.rules.map((rule: any) => rule.rule || rule);
+    const rules = data.rules.map((rule) => rule.rule);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
     const payload = {
       name,
-      budget: parseInt(budget),
+      budget,
       summary,
       bomLink,
       googleDriveFolderLink,
