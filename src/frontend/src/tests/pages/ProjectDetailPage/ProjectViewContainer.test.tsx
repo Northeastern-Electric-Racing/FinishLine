@@ -4,48 +4,45 @@
  */
 
 import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../test-support/test-utils';
-import { Auth } from '../../../utils/types';
-import { useAuth } from '../../../hooks/auth.hooks';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
 import { WorkPackageStage } from 'shared/src/types/work-package-types';
+import * as userHooks from '../../../hooks/users.hooks';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
 
 jest.mock('../../../utils/axios');
-jest.mock('../../../hooks/auth.hooks');
 jest.mock('../../../hooks/toasts.hooks');
-
-const mockedUseAuth = useAuth as jest.Mock<Auth>;
-
-const mockAuthHook = (user = exampleAdminUser) => {
-  mockedUseAuth.mockReturnValue(mockAuth(false, user));
-};
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProjectViewContainer proj={exampleProject1} enterEditMode={jest.fn} />
+      <ProjectViewContainer project={exampleProject1} enterEditMode={jest.fn} />
     </RouterWrapper>
   );
 };
 
 describe('Rendering Project View Container', () => {
-  it('renders the provided project', () => {
-    mockAuthHook();
+  beforeEach(() => {
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    jest.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
     renderComponent();
+  });
 
+  it('renders the provided project', () => {
     expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(2);
-    expect(screen.getByText('Project Details')).toBeInTheDocument();
+    expect(screen.getByText('Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();
     expect(screen.getByText('Bodywork Concept of Design')).toBeInTheDocument();
   });
 
   it('disables the buttons for guest users', () => {
-    mockAuthHook(exampleGuestUser);
-    renderComponent();
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
 
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
@@ -55,9 +52,6 @@ describe('Rendering Project View Container', () => {
   });
 
   it('enables the buttons for admin users', () => {
-    mockAuthHook(exampleAdminUser);
-    renderComponent();
-
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
     });
@@ -67,18 +61,12 @@ describe('Rendering Project View Container', () => {
 
   describe('Work Package Preview', () => {
     it('renders the work package names', () => {
-      mockAuthHook();
-      renderComponent();
-
       exampleProject1.workPackages.forEach((wp) => {
         expect(screen.getByText(wp.name)).toBeInTheDocument();
       });
     });
 
     it('renders the work package statuses', () => {
-      mockAuthHook();
-      renderComponent();
-
       // should be the same as textMap in the WorkPackageStageChip component
       const statusLabels: Record<WorkPackageStage, string> = {
         [WorkPackageStage.Research]: 'Research',

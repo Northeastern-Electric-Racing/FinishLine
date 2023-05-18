@@ -4,13 +4,15 @@
  */
 
 import PageTitle from '../../layouts/PageTitle/PageTitle';
-import AdminToolsUserMangaement from './AdminToolsUserManagement';
+import AdminToolsUserManagement from './AdminToolsUserManagement';
+import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
 
 const AdminToolsPage: React.FC = () => {
   return (
     <>
-      <PageTitle title={'Admin Tools'} previousPages={[]} />
-      <AdminToolsUserMangaement />
+      <PageTitle title="Admin Tools" previousPages={[]} />
+      <AdminToolsUserManagement />
+      <AdminToolsSlackUpcomingDeadlines />
     </>
   );
 };

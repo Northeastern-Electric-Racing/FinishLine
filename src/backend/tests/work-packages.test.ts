@@ -29,7 +29,7 @@ describe('Work Packages', () => {
   };
   const name = 'Pack your bags';
   const crId = 1;
-  const startDate = '2022-09-18';
+  const startDate = '2023-04-24';
   const duration = 5;
   const blockedBy: WbsNumber[] = [
     {
@@ -199,6 +199,7 @@ describe('Work Packages', () => {
       };
       const newPrismaWp = {
         ...prismaWorkPackage1,
+        startDate: new Date('04/24/2023'),
         wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
       };
       jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
@@ -296,7 +297,7 @@ describe('Work Packages', () => {
     });
 
     it('fails when the user is not an admin', async () => {
-      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, 3)).rejects.toThrow(
+      await expect(() => WorkPackageService.slackMessageUpcomingDeadlines(wonderwoman, new Date())).rejects.toThrow(
         new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages')
       );
     });

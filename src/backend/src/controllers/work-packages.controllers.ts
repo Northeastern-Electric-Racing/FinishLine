@@ -116,12 +116,23 @@ export default class WorkPackagesController {
     }
   }
 
+  static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum);
+
+      return res.status(200).json(blockingWorkPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { daysUntilDeadline } = req.body;
+      const { deadline } = req.body;
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(user, daysUntilDeadline);
+      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
     } catch (error: unknown) {
       next(error);
     }

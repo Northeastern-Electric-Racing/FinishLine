@@ -95,6 +95,7 @@ export const updateBlocking = async (
     });
 
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
+    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
     if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     const newStartDate: Date = addWeeksToDate(currWbs.workPackage.startDate, timelineImpact);

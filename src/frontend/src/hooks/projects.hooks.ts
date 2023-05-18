@@ -11,9 +11,11 @@ import {
   getAllProjects,
   getSingleProject,
   setProjectTeam,
-  deleteProject
+  deleteProject,
+  toggleProjectFavorite
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
+import { useCurrentUser } from './users.hooks';
 
 /**
  * Custom React Hook to supply all projects.
@@ -106,6 +108,28 @@ export const useDeleteProject = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to toggle a user's favorite status on a project.
+ */
+export const useToggleProjectFavorite = (wbsNumber: WbsNumber) => {
+  const queryClient = useQueryClient();
+  const user = useCurrentUser();
+
+  return useMutation<{ message: string }, Error>(
+    ['projects', 'edit', 'favorite'],
+    async () => {
+      const { data } = await toggleProjectFavorite(wbsNumber);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects', wbsNumber]);
+        queryClient.invalidateQueries(['users', user.userId, 'favorite projects']);
       }
     }
   );

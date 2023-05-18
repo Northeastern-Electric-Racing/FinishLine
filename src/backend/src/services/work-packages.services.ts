@@ -1,6 +1,6 @@
 import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
-  daysBetween,
+  getDay,
   DescriptionBullet,
   equalsWbsNumber,
   isAdmin,
@@ -25,7 +25,8 @@ import {
   createChangeJsonDates,
   createChangeJsonNonList,
   createBlockedByChangesJson,
-  createDescriptionBulletChangesJson
+  createDescriptionBulletChangesJson,
+  getBlockingWorkPackages
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -589,12 +590,44 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Gets the work packages the given work package is blocking
+   * @param wbsNum the wbs number of the work package to get the blocking work packages for
+   * @returns the blocking work packages for the given work package
+   */
+  static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    // is a project so just return empty array until we implement blocking projects
+    if (workPackageNumber === 0) return [];
+
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
+
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
+
+    return blockingWorkPackages.map(workPackageTransformer);
+  }
+
+  /**
    * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * Sends a message for every work package that is due before or on the given deadline (even before today)
    * @param user - the user doing the sending
-   * @param daysUntilDeadline - days forwards (or backwards!) to check
+   * @param deadline - the deadline
    * @returns
    */
-  static async slackMessageUpcomingDeadlines(user: User, daysUntilDeadline: number): Promise<void> {
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date): Promise<void> {
     if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
@@ -605,7 +638,7 @@ export default class WorkPackagesService {
 
     const upcomingWorkPackages = workPackages
       .map(workPackageTransformer)
-      .filter((wp) => daysBetween(wp.endDate, new Date()) <= daysUntilDeadline)
+      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
 
     // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting

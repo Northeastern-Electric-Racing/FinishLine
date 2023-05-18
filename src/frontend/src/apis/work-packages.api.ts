@@ -79,3 +79,22 @@ export const editWorkPackage = (payload: WorkPackageApiInputs) => {
 export const deleteWorkPackage = (wbsNum: WbsNumber) => {
   return axios.delete<{ message: string }>(apiUrls.workPackagesDelete(wbsPipe(wbsNum)));
 };
+
+/**
+ * Get all the work packages that this work package is blocking.
+ * @param wbsNum The WBS Number of the work package being changed.
+ */
+export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
+  return axios.get<WorkPackage[]>(apiUrls.workPackagesBlocking(wbsPipe(wbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+  });
+};
+
+/**
+ * Slack upcoming deadlines.
+ */
+export const slackUpcomingDeadlines = (deadline: Date) => {
+  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+    deadline
+  });
+};

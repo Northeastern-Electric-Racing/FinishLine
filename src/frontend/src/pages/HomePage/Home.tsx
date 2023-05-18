@@ -18,7 +18,7 @@ const Home = () => {
   const history = useHistory();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
