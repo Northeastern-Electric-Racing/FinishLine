@@ -27,14 +27,12 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
           <Typography variant="h5">Work Package Details</Typography>
         </Grid>
         <Grid item display="flex" alignItems="center">
-          <Box>
-            {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
-          </Box>
+          <Box>{workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}</Box>
         </Grid>
 
-          <Grid item display="flex" alignItems="center">
+        <Grid item display="flex" alignItems="center">
           <Box>
-          <WbsStatus status={workPackage.status} />
+            <WbsStatus status={workPackage.status} />
           </Box>
         </Grid>
       </Grid>
