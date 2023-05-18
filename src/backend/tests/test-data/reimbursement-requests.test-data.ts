@@ -5,7 +5,6 @@ import {
   Reimbursement_Product as PrismaReimbursementProduct
 } from '@prisma/client';
 import { Club_Account } from 'shared';
-
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),

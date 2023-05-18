@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
@@ -10,63 +15,47 @@ export interface ReimbursementProductCreateArgs {
   wbsElementId: number;
 }
 
+export interface ReimbursementProductCreateArgs {
+  name: string;
+  cost: number;
+  wbsElementId: number;
+}
+
 /**
  * Adds a reimbursement product to the database
  * @param reimbursementProductCreateArgs the reimbursement products to add to the data base
  * @param reimbursementRequestId the id of the reimbursement request that the products belogn to
  * @throws if any of the wbs elements are deleted or dont exist
  */
-export const addReimbursementProducts = async (
-  reimbursementProductCreateArgs: ReimbursementProductCreateArgs[],
-  reimbursementRequestId: string
-) => {
-  if (reimbursementProductCreateArgs.length > 0) {
-    const wbsElements = await prisma.wBS_Element.findMany({
-      where: {
-        wbsElementId: {
-          in: reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsElementId)
-        }
+export const validateReimbursementProducts = async (reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]) => {
+  if (reimbursementProductCreateArgs.length === 0) {
+    throw new HttpException(400, 'You must have at least one product to reimburse');
+  }
+
+  const wbsElementIds = reimbursementProductCreateArgs.map(
+    (reimbursementProductInfo) => reimbursementProductInfo.wbsElementId
+  );
+  const wbsElements = await prisma.wBS_Element.findMany({
+    where: {
+      wbsElementId: {
+        in: wbsElementIds
       }
-    });
-
-    const deletedWbsElements = wbsElements.filter((wbsElement) => wbsElement.dateDeleted);
-    if (deletedWbsElements.length > 0) {
-      const deletedWbsNumbers = deletedWbsElements
-        .map((wbsElement) =>
-          wbsPipe({
-            carNumber: wbsElement.carNumber,
-            projectNumber: wbsElement.projectNumber,
-            workPackageNumber: wbsElement.workPackageNumber
-          })
-        )
-        .join(', ');
-      throw new HttpException(400, `The following projects or work packages have been deleted: ${deletedWbsNumbers}`);
     }
+  });
 
-    if (wbsElements.length < reimbursementProductCreateArgs.length) {
-      const prismaWbsElementIds = reimbursementProductCreateArgs.map((productInfo) => productInfo.wbsElementId);
-      const missingWbsNumbers = wbsElements
-        .filter((wbsElement) => prismaWbsElementIds.includes(wbsElement.wbsElementId))
-        .map((wbsElement) =>
-          wbsPipe({
-            carNumber: wbsElement.carNumber,
-            projectNumber: wbsElement.projectNumber,
-            workPackageNumber: wbsElement.workPackageNumber
-          })
-        );
-      throw new HttpException(400, `The following projects or work packages do not exist: ${missingWbsNumbers.join(', ')}`);
-    }
+  const deletedWbsElements = wbsElements.filter((wbsElement) => wbsElement.dateDeleted);
 
-    await prisma.reimbursement_Product.createMany({
-      data: reimbursementProductCreateArgs.map((reimbursementProductInfo) => {
-        return {
-          name: reimbursementProductInfo.name,
-          cost: reimbursementProductInfo.cost,
-          wbsElementId: reimbursementProductInfo.wbsElementId,
-          reimbursementRequestId
-        };
-      })
-    });
+  if (deletedWbsElements.length > 0) {
+    const deletedWbsNumbers = deletedWbsElements.map(wbsPipe).join(', ');
+    throw new HttpException(400, `The following projects or work packages have been deleted: ${deletedWbsNumbers}`);
+  }
+
+  if (wbsElements.length < reimbursementProductCreateArgs.length) {
+    const prismaWbsElementIds = reimbursementProductCreateArgs.map((productInfo) => productInfo.wbsElementId);
+    const missingWbsNumbers = wbsElements
+      .filter((wbsElement) => prismaWbsElementIds.includes(wbsElement.wbsElementId))
+      .map(wbsPipe);
+    throw new HttpException(400, `The following projects or work packages do not exist: ${missingWbsNumbers.join(', ')}`);
   }
 };
 
@@ -115,7 +104,17 @@ export const updateReimbursementProducts = async (
   });
 
   //create the new reimbursement products
-  await addReimbursementProducts(newProducts, reimbursementRequestId);
+  if (newProducts.length !== 0) {
+    await validateReimbursementProducts(newProducts);
+    await prisma.reimbursement_Product.createMany({
+      data: newProducts.map((product) => ({
+        name: product.name,
+        cost: product.cost,
+        wbsElementId: product.wbsElementId,
+        reimbursementRequestId
+      }))
+    });
+  }
 
   //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
   // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one

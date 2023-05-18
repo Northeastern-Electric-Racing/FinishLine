@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import express from 'express';
 import { body } from 'express-validator';
 import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
@@ -7,11 +12,13 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 const reimbursementRequestsRouter = express.Router();
 
 reimbursementRequestsRouter.post(
-  '/new',
+  '/create',
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
+  body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*')),
+  body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
   intMinZero(body('reimbursementProducts.*.wbsElementId')),
@@ -40,10 +47,19 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/vendors/new',
+  '/vendors/create',
   nonEmptyString(body('name')),
   validateInputs,
   ReimbursementRequestController.createVendor
+);
+
+reimbursementRequestsRouter.post(
+  '/expense-types/create',
+  nonEmptyString(body('name')),
+  intMinZero(body('code')),
+  body('allowed').isBoolean(),
+  validateInputs,
+  ReimbursementRequestController.createExpenseType
 );
 
 export default reimbursementRequestsRouter;

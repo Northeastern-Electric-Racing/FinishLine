@@ -1,8 +1,14 @@
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../src/utils/errors.utils';
 import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
-import { batman, superman } from './test-data/users.test-data';
+import { batman, superman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -12,12 +18,34 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Vendor Tests', () => {
+    test('Create Vendor throws error if user is not admin', async () => {
+      await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create vendors')
+      );
+    });
+
     test('Create Vendor Successfully returns vendor Id', async () => {
       jest.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
 
-      const vendorId = await ReimbursementRequestService.createVendor('HOLA BUDDY');
+      const vendor = await ReimbursementRequestService.createVendor(batman, 'HOLA BUDDY');
 
-      expect(vendorId).toBe('CHICKEN');
+      expect(vendor.vendorId).toBe('CHICKEN');
+    });
+  });
+
+  describe('Expense Tests', () => {
+    test('Create Expense Type fails for non admins', async () => {
+      await expect(
+        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
+    });
+
+    test('Create Expense Type Successfully returns expense type Id', async () => {
+      jest.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
+
+      const expenseType = await ReimbursementRequestService.createExpenseType(batman, Parts.name, Parts.code, Parts.allowed);
+
+      expect(expenseType.expenseTypeId).toBe(Parts.expenseTypeId);
     });
   });
 
@@ -78,7 +106,7 @@ describe('Reimbursement Requests', () => {
         )
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+          'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
         )
       );
     });
@@ -181,7 +209,7 @@ describe('Reimbursement Requests', () => {
         batman
       );
 
-      expect(reimbursementRequest).toEqual(GiveMeMyMoney.reimbursementRequestId);
+      expect(reimbursementRequest.reimbursementRequestId).toEqual(GiveMeMyMoney.reimbursementRequestId);
       expect(prisma.reimbursement_Request.update).toHaveBeenCalledTimes(1);
     });
   });
