@@ -25,7 +25,6 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { EditSingleProjectPayload } from '../../../utils/types';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -136,7 +135,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload: EditSingleProjectPayload = {
+    const payload = {
       name,
       budget,
       summary,
