@@ -5,18 +5,27 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
 interface ProjectEditDetailsProps {
   users: User[];
   control: any;
   errors: any;
+  projectManager: string | undefined;
+  projectLead: string | undefined;
+  setProjectManager: Dispatch<SetStateAction<string | undefined>>;
+  setProjectLead: Dispatch<SetStateAction<string | undefined>>;
 }
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
-  const [projectLead, setProjectLead] = useState<User | null>(null);
-  const [projectManager, setProjectManager] = useState<User | null>(null);
-
+const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
+  users,
+  control,
+  errors,
+  projectManager,
+  projectLead,
+  setProjectLead,
+  setProjectManager
+}) => {
   const projectLeadToAutocompleteOption = (user: User): { label: string; id: string } => {
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
@@ -25,33 +34,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  const projectLeadSearchOnChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: string } | null
-  ) => {
-    if (value) {
-      const user = users.find((user: User) => user.userId.toString() === value.id);
-      if (user) {
-        setProjectLead(user);
-      }
-    } else {
-      setProjectLead(null);
-    }
-  };
-
-  const projectManagerSearchOnChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: string } | null
-  ) => {
-    if (value) {
-      const user = users.find((user: User) => user.userId.toString() === value.id);
-      if (user) {
-        setProjectManager(user);
-      }
-    } else {
-      setProjectManager(null);
-    }
-  };
 
   return (
     <PageBlock title="Project Details">
@@ -84,22 +66,20 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={projectLeadSearchOnChange}
+            onChange={(_event, value) => setProjectLead(value?.id)}
             options={users.map(projectLeadToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={projectLead ? projectLeadToAutocompleteOption(projectLead) : null}
           />
         </Grid>
         <Grid item xs={12} md={3}>
           <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={projectManagerSearchOnChange}
+            onChange={(_event, value) => setProjectManager(value?.id)}
             options={users.map(projectManagerToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={projectManager ? projectManagerToAutocompleteOption(projectManager) : null}
           />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
