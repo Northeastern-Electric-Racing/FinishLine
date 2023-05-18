@@ -33,6 +33,7 @@ reimbursementRequestsRouter.post(
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
+  body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.id').optional()),

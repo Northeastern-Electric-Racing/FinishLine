@@ -63,6 +63,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -84,6 +85,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           batman
         )
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -102,6 +104,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           superman
         )
       ).rejects.toThrow(
@@ -125,6 +128,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           batman
         )
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
@@ -145,6 +149,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           batman
         )
       ).rejects.toThrow(new NotFoundException('Expense Type', GiveMeMyMoney.expenseTypeId));
@@ -176,6 +181,7 @@ describe('Reimbursement Requests', () => {
             }
           ],
           GiveMeMyMoney.saboId,
+          GiveMeMyMoney.receiptPictures,
           batman
         )
       ).rejects.toThrow(new HttpException(400, 'The following products do not exist: test'));
@@ -206,6 +212,7 @@ describe('Reimbursement Requests', () => {
           }
         ],
         GiveMeMyMoney.saboId,
+        GiveMeMyMoney.receiptPictures,
         batman
       );
 

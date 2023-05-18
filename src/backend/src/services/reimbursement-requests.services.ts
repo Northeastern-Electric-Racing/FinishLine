@@ -113,6 +113,7 @@ export default class ReimbursementRequestService {
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
     saboId: number | null,
+    receiptPictures: string[],
     submitter: User
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -155,6 +156,7 @@ export default class ReimbursementRequestService {
         totalCost,
         expenseTypeId,
         vendorId,
+        receiptPictures,
         saboId
       }
     });
