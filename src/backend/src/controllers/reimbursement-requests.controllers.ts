@@ -31,12 +31,12 @@ export default class ReimbursementRequestsController {
 
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const { requestId } = req.params;
       const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, saboId, receiptPictures } =
         req.body;
       const user = await getCurrentUser(res);
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
-        id,
+        requestId,
         dateOfExpense,
         vendorId,
         account,

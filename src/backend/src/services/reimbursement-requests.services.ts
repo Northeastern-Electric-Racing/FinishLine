@@ -101,11 +101,12 @@ export default class ReimbursementRequestService {
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
    * @param saboId the updated saboId
+   * @param receiptPictures the updated receipt pictures
    * @param submitter the person editing the reimbursement request
    * @returns the edited reimbursement request
    */
   static async editReimbursementRequest(
-    id: string,
+    requestId: string,
     dateOfExpense: Date,
     vendorId: string,
     account: Club_Accounts,
@@ -117,14 +118,14 @@ export default class ReimbursementRequestService {
     submitter: User
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId: id },
+      where: { reimbursementRequestId: requestId },
       include: {
         reimbursementProducts: true
       }
     });
 
-    if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', id);
-    if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', id);
+    if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
+    if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.recepientId !== submitter.userId)
       throw new AccessDeniedException(
         'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'

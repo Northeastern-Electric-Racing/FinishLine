@@ -71,12 +71,12 @@ export const updateReimbursementProducts = async (
   reimbursementRequestId: string
 ) => {
   //if a product has an id that means it existed before and was updated
-  const updatedProducts = updatedReimbursementProducts.filter((product) => product.id);
+  const updatedExistingProducts = updatedReimbursementProducts.filter((product) => product.id);
 
   //Check to make sure that the updated products actually exist in the database
   const prismaProductIds = currentReimbursementProducts.map((product) => product.reimbursementProductId);
 
-  const missingProductIds = updatedProducts.filter((product) => !prismaProductIds.includes(product.id!));
+  const missingProductIds = updatedExistingProducts.filter((product) => !prismaProductIds.includes(product.id!));
 
   if (missingProductIds.length > 0) {
     throw new HttpException(
@@ -85,46 +85,72 @@ export const updateReimbursementProducts = async (
     );
   }
 
-  const updatedProductIds = updatedProducts.map((product) => product.id!);
+  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
 
   //if the product does not have an id that means it is new
   const newProducts = updatedReimbursementProducts.filter((product) => !product.id);
 
   //if there are products that exist in the current database but were not included in this edit, that means they were deleted
   const deletedProducts = currentReimbursementProducts.filter(
-    (product) => !updatedProductIds.includes(product.reimbursementProductId)
+    (product) => !updatedExistingProductIds.includes(product.reimbursementProductId)
   );
 
-  //update the deleted reimbursement products by setting their date deleted to now
-  await prisma.reimbursement_Product.updateMany({
-    where: { reimbursementProductId: { in: deletedProducts.map((product) => product.reimbursementProductId) } },
-    data: {
-      dateDeleted: new Date()
-    }
-  });
+  await updateDeletedProducts(deletedProducts);
 
-  //create the new reimbursement products
-  if (newProducts.length !== 0) {
-    await validateReimbursementProducts(newProducts);
-    await prisma.reimbursement_Product.createMany({
-      data: newProducts.map((product) => ({
-        name: product.name,
-        cost: product.cost,
-        wbsElementId: product.wbsElementId,
-        reimbursementRequestId
-      }))
-    });
-  }
+  await createNewProducts(newProducts, reimbursementRequestId);
 
+  await updateExistingProducts(updatedExistingProducts);
+};
+
+/**
+ * updates the existing products in the database
+ *
+ * @param products the products to update
+ */
+const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]) => {
   //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
   // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one
-  for (const product of updatedProducts) {
+  for (const product of products) {
     await prisma.reimbursement_Product.update({
       where: { reimbursementProductId: product.id },
       data: {
         name: product.name,
         cost: product.cost
       }
+    });
+  }
+};
+
+/**
+ * Soft deletes the given products in the database
+ *
+ * @param products the products to delete
+ */
+const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
+  //update the deleted reimbursement products by setting their date deleted to now
+  await prisma.reimbursement_Product.updateMany({
+    where: { reimbursementProductId: { in: products.map((product) => product.reimbursementProductId) } },
+    data: {
+      dateDeleted: new Date()
+    }
+  });
+};
+
+/**
+ * Creates the new products in the database
+ * @param products the products to create
+ */
+const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
+  //create the new reimbursement products
+  if (products.length !== 0) {
+    await validateReimbursementProducts(products);
+    await prisma.reimbursement_Product.createMany({
+      data: products.map((product) => ({
+        name: product.name,
+        cost: product.cost,
+        wbsElementId: product.wbsElementId,
+        reimbursementRequestId
+      }))
     });
   }
 };
