@@ -26,14 +26,15 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   setProjectLead,
   setProjectManager
 }) => {
-  const projectLeadToAutocompleteOption = (user: User): { label: string; id: string } => {
+  const projectLeadToAutocompleteOption = (user?: User): { label: string; id: string } => {
+    if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  const projectManagerToAutocompleteOption = (user: User): { label: string; id: string } => {
+  const projectManagerToAutocompleteOption = (user?: User): { label: string; id: string } => {
+    if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
-
 
   return (
     <PageBlock title="Project Details">
@@ -70,6 +71,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             options={users.map(projectLeadToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
+            value={projectLeadToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
           />
         </Grid>
         <Grid item xs={12} md={3}>
@@ -80,6 +82,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             options={users.map(projectManagerToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
+            value={projectManagerToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
           />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
