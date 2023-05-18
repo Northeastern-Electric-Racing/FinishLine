@@ -4,7 +4,6 @@
  */
 
 import { User, WorkPackageStage } from 'shared';
-import { Dispatch, SetStateAction } from 'react';
 import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
@@ -14,10 +13,10 @@ import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface Props {
-  lead: string | undefined;
-  manager: string | undefined;
-  setManager: Dispatch<SetStateAction<string | undefined>>;
-  setLead: Dispatch<SetStateAction<string | undefined>>;
+  lead?: string;
+  manager?: string;
+  setManager: (manager?: string) => void;
+  setLead: (lead?: string) => void;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
   control: any;
