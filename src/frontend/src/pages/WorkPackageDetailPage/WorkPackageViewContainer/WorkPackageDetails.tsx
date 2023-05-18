@@ -3,14 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage } from 'shared';
+import { WorkPackage, wbsPipe } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
-import PageBlock from '../../../layouts/PageBlock';
-import { Box, Grid } from '@mui/material';
+import { Box, Divider, Grid, Stack, Typography } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 import { timelinePipe } from '../../../utils/pipes';
+import { Construction, Work } from '@mui/icons-material';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -18,49 +21,88 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
-    <PageBlock
-      title={'Work Package Details'}
-      headerRight={
-        <Box>
-          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+    <>
+      <Grid container columnSpacing={2} justifyContent="flex-start" sx={{ mb: 2, mt: 1 }}>
+        <Grid item display="flex" alignItems="center">
+          <Typography variant="h5">Work Package Details</Typography>
+        </Grid>
+        <Grid item display="flex" alignItems="center">
+          <Box>
+            {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+          </Box>
+        </Grid>
+
+          <Grid item display="flex" alignItems="center">
+          <Box>
           <WbsStatus status={workPackage.status} />
-        </Box>
-      }
-    >
-      <Grid container spacing={1}>
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Progress" content={percentPipe(workPackage.progress)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={2} />
-        </Grid>
-
-        <Grid item xs={4} md={4}>
-          <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={2} />
+          </Box>
         </Grid>
       </Grid>
-    </PageBlock>
+
+      <Grid container spacing={2}>
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <Construction sx={{ mr: 2 }} />
+          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <ScheduleIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="Start Date" content={datePipe(workPackage.startDate)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <StackedLineChartIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="Progress" content={percentPipe(workPackage.progress)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <ScheduleIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="Duration" content={weeksPipe(workPackage.duration)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <Work sx={{ mr: 2 }} />
+          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <ScheduleIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="End Date" content={datePipe(workPackage.endDate)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <DoneAllIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="Expected Progress" content={percentPipe(workPackage.expectedProgress)} paddingRight={1} />
+        </Grid>
+
+        <Grid item display="flex" alignItems="center" xs={6} sm={3}>
+          <ScheduleIcon sx={{ mr: 2 }} />
+          <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={1} />
+        </Grid>
+      </Grid>
+
+      <Typography
+        variant="h5"
+        sx={{
+          mb: 1,
+          mt: 5
+        }}
+      >
+        Blocked By
+      </Typography>
+
+      <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
+        {workPackage.blockedBy.length === 0 ? (
+          <Typography>No Blockers</Typography>
+        ) : (
+          workPackage.blockedBy.map((dep, idx) => (
+            <Typography sx={{ fontWeight: 'bold' }} key={idx}>
+              {wbsPipe(dep)}
+            </Typography>
+          ))
+        )}
+      </Stack>
+    </>
   );
 };
 
