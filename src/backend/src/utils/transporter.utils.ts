@@ -45,6 +45,7 @@ const createTransporter = async () => {
 
 const sendMailToAdvisor = async (subject: string, text: string) => {
   try {
+    //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: process.env.USER_EMAIL,
       to: 'mckee.p@northeastern.edu',
