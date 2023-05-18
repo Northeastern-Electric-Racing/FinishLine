@@ -34,7 +34,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   control,
   errors
 }) => {
-  const userToOption = (user: User): { label: string; id: string } => {
+  const userToOption = (user?: User): { label: string; id: string } => {
+    if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
@@ -122,6 +123,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             options={usersForProjectLead.map(userToOption)}
             size="small"
             placeholder="Select a Project Lead"
+            value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
           />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 1 }}>
@@ -133,6 +135,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             options={usersForProjectManager.map(userToOption)}
             size="small"
             placeholder="Select a Project Manager"
+            value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
           />
         </Grid>
       </Grid>
