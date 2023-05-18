@@ -23,13 +23,14 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
+  body('saboNumbers').isArray(),
   intMinZero(body('saboNumbers.*')),
   validateInputs,
   ReimbursementRequestController.sendPendingAdvisorList
 );
 
 reimbursementRequestsRouter.post(
-  '/:id/add-sabo-number',
+  '/:requestId/add-sabo-number',
   intMinZero(body('saboNumber')),
   validateInputs,
   ReimbursementRequestController.addSaboNumber

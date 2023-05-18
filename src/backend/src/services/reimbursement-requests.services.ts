@@ -1,8 +1,12 @@
 import { Reimbursement_Status_Type, Team, User } from '@prisma/client';
 import { Club_Account } from 'shared';
 import prisma from '../prisma/prisma';
-import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  UserWithTeam,
+  addReimbursementProducts,
+  validateUserIsPartOfFinanceTeam
+} from '../utils/reimbursement-requests.utils';
+import { DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import sendEmail from '../utils/transporter.utils';
 
 export default class ReimbursementRequestService {
@@ -70,24 +74,8 @@ export default class ReimbursementRequestService {
    * @param sender the person sending the pending advisor list
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    */
-  static async sendPendingAdvisorList(
-    sender: User & {
-      teams: Team[];
-    },
-    saboNumbers: number[]
-  ) {
-    const financeTeam = await prisma.team.findUnique({
-      where: { teamId: process.env.FINANCE_TEAM_ID }
-    });
-
-    if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
-
-    if (
-      !sender.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
-      !(financeTeam.leaderId === sender.userId)
-    ) {
-      throw new AccessDeniedException(`You are not a member of the finance team!`);
-    }
+  static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
+    await validateUserIsPartOfFinanceTeam(sender);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
@@ -135,18 +123,7 @@ export default class ReimbursementRequestService {
   }
 
   static async addSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: User & { teams: Team[] }) {
-    const financeTeam = await prisma.team.findUnique({
-      where: { teamId: process.env.FINANCE_TEAM_ID }
-    });
-
-    if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
-
-    if (
-      !submitter.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
-      !(financeTeam.leaderId === submitter.userId)
-    ) {
-      throw new AccessDeniedException(`You are not a member of the finance team!`);
-    }
+    await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
