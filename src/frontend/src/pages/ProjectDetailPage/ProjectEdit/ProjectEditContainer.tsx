@@ -112,8 +112,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         goals,
         features,
         otherConstraints,
-        projectLead: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManager: projectManagerId ? parseInt(projectManagerId) : undefined
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
       await mutateAsync(payload);
       exitEditMode();

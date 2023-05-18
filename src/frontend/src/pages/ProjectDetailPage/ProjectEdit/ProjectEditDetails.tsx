@@ -26,12 +26,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   setProjectLead,
   setProjectManager
 }) => {
-  const projectLeadToAutocompleteOption = (user?: User): { label: string; id: string } => {
-    if (!user) return { label: '', id: '' };
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-  };
-
-  const projectManagerToAutocompleteOption = (user?: User): { label: string; id: string } => {
+  const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
@@ -68,10 +63,10 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectLead(value?.id)}
-            options={users.map(projectLeadToAutocompleteOption)}
+            options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={projectLeadToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
           />
         </Grid>
         <Grid item xs={12} md={3}>
@@ -79,10 +74,10 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectManager(value?.id)}
-            options={users.map(projectManagerToAutocompleteOption)}
+            options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={projectManagerToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
           />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
