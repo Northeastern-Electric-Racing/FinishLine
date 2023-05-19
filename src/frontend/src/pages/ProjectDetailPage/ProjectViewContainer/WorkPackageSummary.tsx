@@ -54,7 +54,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
     </ul>
   );
   const numMoreDeliverables = workPackage.deliverables.length - 3;
-  const dependencyList = (
+  const DependencyList = () => (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
       {dependencies.map((wp: WorkPackage, idx) => (
         <Typography display="inline" key={idx}>
@@ -105,7 +105,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
               <Typography fontWeight="bold" paddingRight={1} display="inline">
                 {'Blocked By: '}
               </Typography>
-              {dependencyList}
+              <DependencyList></DependencyList>
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
