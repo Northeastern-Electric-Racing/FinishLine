@@ -9,6 +9,7 @@ import {
   createSingleWorkPackage,
   deleteWorkPackage,
   editWorkPackage,
+  getAllBlockingWorkPackages,
   getAllWorkPackages,
   getSingleWorkPackage,
   slackUpcomingDeadlines
@@ -102,6 +103,16 @@ export const useDeleteWorkPackage = () => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to get all blocking work packages
+ */
+export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
+  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNum], async () => {
+    const { data } = await getAllBlockingWorkPackages(wbsNum);
+    return data;
+  });
 };
 
 /**
