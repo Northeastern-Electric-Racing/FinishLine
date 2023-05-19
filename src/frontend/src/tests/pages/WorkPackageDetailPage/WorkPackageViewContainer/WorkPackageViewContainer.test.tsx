@@ -9,7 +9,6 @@ import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/Wo
 import * as userHooks from '../../../../hooks/users.hooks';
 import * as wpHooks from '../../../../hooks/work-packages.hooks';
 import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
-import { exampleAllWorkPackages } from '../../../test-support/test-data/work-packages.stub';
 import { mockUseManyWorkPackagesReturnValue } from '../../../test-support/mock-hooks';
 
 // Sets up the component under test with the desired values and renders it.
