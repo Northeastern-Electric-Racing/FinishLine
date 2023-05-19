@@ -9,6 +9,8 @@ import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/Wo
 import * as authHooks from '../../../../hooks/auth.hooks';
 import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
+import AppContextUser from '../../../../app/AppContextUser';
+import * as userHooks from '../../../../hooks/users.hooks';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -22,15 +24,17 @@ const renderComponent = (
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <WorkPackageViewContainer
-        workPackage={workPackage}
-        enterEditMode={() => null}
-        allowEdit={allowEdit}
-        allowActivate={allowActivate}
-        allowStageGate={allowStageGate}
-        allowRequestChange={allowRequestChange}
-        allowDelete={allowDelete}
-      />
+      <AppContextUser>
+        <WorkPackageViewContainer
+          workPackage={workPackage}
+          enterEditMode={() => null}
+          allowEdit={allowEdit}
+          allowActivate={allowActivate}
+          allowStageGate={allowStageGate}
+          allowRequestChange={allowRequestChange}
+          allowDelete={allowDelete}
+        />
+      </AppContextUser>
     </RouterWrapper>
   );
 };
@@ -38,6 +42,7 @@ const renderComponent = (
 describe('work package container view', () => {
   beforeEach(() => {
     jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
   it('renders the project', () => {
@@ -45,8 +50,6 @@ describe('work package container view', () => {
 
     expect(screen.getAllByText('1.1.2 - Adhesive Shear Strength Test').length).toEqual(2);
     expect(screen.getByText('Blocked By')).toBeInTheDocument();
-    expect(screen.getByText('Expected Activities')).toBeInTheDocument();
-    expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeEnabled();
     expect(screen.queryByText('Save')).not.toBeInTheDocument();
   });

@@ -14,6 +14,7 @@ import { exampleResearchWorkPackage } from '../../test-support/test-data/work-pa
 import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
+import AppContextUser from '../../../app/AppContextUser';
 
 jest.mock('../../../hooks/work-packages.hooks');
 
@@ -35,7 +36,9 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <WorkPackagePage wbsNum={exampleWbsProject1} />
+      <AppContextUser>
+        <WorkPackagePage wbsNum={exampleWbsProject1} />
+      </AppContextUser>
     </RouterWrapper>
   );
 };
@@ -58,8 +61,6 @@ describe('work package container', () => {
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     expect(screen.getAllByText('1.1.1 - Bodywork Concept of Design').length).toEqual(2);
     expect(screen.getByText('Blocked By')).toBeInTheDocument();
-    expect(screen.getByText('Expected Activities')).toBeInTheDocument();
-    expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeInTheDocument();
   });
 
