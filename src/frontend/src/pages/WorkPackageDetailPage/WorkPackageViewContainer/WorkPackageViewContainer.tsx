@@ -17,7 +17,6 @@ import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem, Link } from '@mui/material';
-import { useAuth } from '../../../hooks/auth.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,6 +28,7 @@ import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPack
 import { Link as RouterLink } from 'react-router-dom';
 import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import ErrorPage from '../../ErrorPage';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -49,7 +49,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -57,10 +57,10 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (!auth.user || !dependencies || isLoading) return <LoadingIndicator />;
+  if (!user || !dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

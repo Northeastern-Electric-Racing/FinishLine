@@ -4,7 +4,7 @@
  */
 
 import { render, screen, routerWrapperBuilder, fireEvent, act } from '../../test-support/test-utils';
-import { exampleAllProjects, exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewContainer/ProjectViewContainer';
@@ -12,12 +12,7 @@ import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
-import * as projectHooks from '../../../hooks/projects.hooks';
-import {
-  mockUseAllProjectsReturnValue,
-  mockUseAllWorkPackagesReturnValue,
-  mockUseUsersFavoriteProjects
-} from '../../test-support/mock-hooks';
+import { mockUseManyWorkPackagesReturnValue, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 
 jest.mock('../../../utils/axios');
@@ -38,8 +33,7 @@ describe('Rendering Project View Container', () => {
     jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     jest.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
-    jest.spyOn(wpHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue(exampleAllWorkPackages));
-    jest.spyOn(projectHooks, 'useAllProjects').mockReturnValue(mockUseAllProjectsReturnValue(exampleAllProjects));
+    jest.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(mockUseManyWorkPackagesReturnValue(exampleAllWorkPackages));
     renderComponent();
   });
 
