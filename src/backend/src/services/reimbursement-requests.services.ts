@@ -4,12 +4,22 @@
  */
 
 import { Reimbursement_Request, User } from '@prisma/client';
-import { Club_Account, isAdmin, isGuest } from 'shared';
+import { Club_Account, isAdmin, isGuest, Vendor } from 'shared';
 import prisma from '../prisma/prisma';
 import { ReimbursementProductCreateArgs, validateReimbursementProducts } from '../utils/reimbursement-requests.utils';
 import { AccessDeniedAdminOnlyException, AccessDeniedGuestException, NotFoundException } from '../utils/errors.utils';
+import vendorTransformer from '../transformers/vendor.transformer';
 
 export default class ReimbursementRequestService {
+  /**
+   * Get all the vendors in the database.
+   * @returns all the vendors
+   */
+  static async getAllVendors(): Promise<Vendor[]> {
+    const vendors = await prisma.vendor.findMany();
+    return vendors.map(vendorTransformer);
+  }
+
   /**
    * Creates a reimbursement request in the database
    * @param recipient the user who is creating the reimbursement request
