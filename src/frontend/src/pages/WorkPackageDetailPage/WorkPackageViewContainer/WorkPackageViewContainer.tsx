@@ -230,6 +230,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       ) : (
         <ChangesList changes={workPackage.changes} />
       )}
+      {console.log('Hi Laith (remove me when you actually add your changes')}
       {showActivateModal && (
         <ActivateWorkPackageModalContainer
           wbsNum={workPackage.wbsNum}
