@@ -5,6 +5,7 @@
 
 import { ReactNode } from 'react';
 import PageBlock from '../layouts/PageBlock';
+import { Typography } from '@mui/material';
 
 interface BulletListProps {
   title: string;
@@ -29,11 +30,7 @@ const BulletList: React.FC<BulletListProps> = ({ title, headerRight, list, order
   if (ordered) {
     builtList = <ol style={styles.bulletList}>{listPrepared}</ol>;
   }
-  return (
-    <PageBlock title={title} headerRight={headerRight} defaultClosed={defaultClosed}>
-      {builtList}
-    </PageBlock>
-  );
+  return <Typography variant="h3">{builtList}</Typography>;
 };
 
 export default BulletList;
