@@ -26,7 +26,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
           <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
             #{ic.changeRequestId}
           </Link>
-          ]
+          ]{' '}
           <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
             <Typography component="span">{ic.detail}</Typography>
           </DynamicTooltip>
