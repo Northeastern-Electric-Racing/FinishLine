@@ -4,7 +4,6 @@
  */
 
 import { ReactNode } from 'react';
-import PageBlock from '../layouts/PageBlock';
 import { Typography } from '@mui/material';
 
 interface BulletListProps {
