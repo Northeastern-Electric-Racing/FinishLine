@@ -84,11 +84,11 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Slide Deck Link</FormLabel>
+            <FormLabel>Confluence Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
               control={control}
-              placeholder="Enter slide deck link..."
+              placeholder="Enter confluence link..."
               errorMessage={errors.slideDeckLink}
             />
           </FormControl>
