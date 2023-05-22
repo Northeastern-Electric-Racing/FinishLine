@@ -8,7 +8,7 @@ import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
@@ -19,8 +19,49 @@ interface Props {
   setLead: (lead?: string) => void;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
-  control: any;
-  errors: any;
+  control: Control<
+    {
+      workPackageId: number;
+      name: string;
+      crId: string;
+      stage: string;
+      startDate: Date;
+      duration: number;
+      blockedBy: {
+        wbsNum: string;
+      }[];
+      expectedActivities: {
+        bulletId: number;
+        detail: string;
+      }[];
+      deliverables: {
+        bulletId: number;
+        detail: string;
+      }[];
+    },
+    any
+  >;
+  errors: Partial<
+    FieldErrorsImpl<{
+      workPackageId: number;
+      name: string;
+      crId: string;
+      stage: string;
+      startDate: Date;
+      duration: number;
+      blockedBy: {
+        wbsNum: string;
+      }[];
+      expectedActivities: {
+        bulletId: number;
+        detail: string;
+      }[];
+      deliverables: {
+        bulletId: number;
+        detail: string;
+      }[];
+    }>
+  >;
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({
