@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
+//import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { routes } from '../../utils/routes';
@@ -149,7 +149,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} md={2}>
             <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -161,7 +161,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+{/*           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <FormLabel>Work Package Stage</FormLabel>
               <Controller
@@ -181,8 +181,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Grid> */}
+          <Grid item xs={6} md={4}>
             <FormControl fullWidth>
               <FormLabel>Project WBS Number</FormLabel>
               <ReactHookTextField
@@ -193,7 +193,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={6} md={3}>
             <FormControl fullWidth>
               <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
               <Controller
@@ -213,7 +213,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={8} md={3}>
             <FormControl fullWidth>
               <FormLabel>Duration</FormLabel>
               <ReactHookTextField
