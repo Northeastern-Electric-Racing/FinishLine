@@ -84,6 +84,7 @@ CREATE TABLE "User_Secure_Settings" (
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
     "zipcode" TEXT NOT NULL,
+    "phoneNumber" TEXT NOT NULL,
 
     CONSTRAINT "User_Secure_Settings_pkey" PRIMARY KEY ("userSecureSettingsId")
 );
@@ -96,6 +97,9 @@ CREATE UNIQUE INDEX "User_Secure_Settings_nuid_key" ON "User_Secure_Settings"("n
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_Secure_Settings_userId_key" ON "User_Secure_Settings"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_Secure_Settings_phoneNumber_key" ON "User_Secure_Settings"("phoneNumber");
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
