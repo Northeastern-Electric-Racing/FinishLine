@@ -46,3 +46,8 @@ export interface UserSettings {
   defaultTheme: ThemeName;
   slackId: string;
 }
+
+export interface UserRole {
+  userId: number;
+  role: string;
+}
