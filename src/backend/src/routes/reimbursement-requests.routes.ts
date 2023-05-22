@@ -42,7 +42,6 @@ reimbursementRequestsRouter.post(
   intMinZero(body('reimbursementProducts.*.wbsElementId')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
-  body('saboId'),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );

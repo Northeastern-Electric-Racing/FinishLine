@@ -62,7 +62,6 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           batman
         )
@@ -84,7 +83,6 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           batman
         )
@@ -103,7 +101,6 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           superman
         )
@@ -127,7 +124,6 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           batman
         )
@@ -148,7 +144,6 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           batman
         )
@@ -180,7 +175,6 @@ describe('Reimbursement Requests', () => {
               wbsElementId: 1
             }
           ],
-          GiveMeMyMoney.saboId,
           GiveMeMyMoney.receiptPictures,
           batman
         )
@@ -211,7 +205,6 @@ describe('Reimbursement Requests', () => {
             wbsElementId: 1
           }
         ],
-        GiveMeMyMoney.saboId,
         GiveMeMyMoney.receiptPictures,
         batman
       );

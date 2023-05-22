@@ -113,7 +113,6 @@ export default class ReimbursementRequestService {
     expenseTypeId: string,
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
-    saboId: number | null,
     receiptPictures: string[],
     submitter: User
   ): Promise<Reimbursement_Request> {
@@ -157,8 +156,7 @@ export default class ReimbursementRequestService {
         totalCost,
         expenseTypeId,
         vendorId,
-        receiptPictures,
-        saboId
+        receiptPictures
       }
     });
 

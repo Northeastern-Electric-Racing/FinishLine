@@ -32,7 +32,7 @@ export default class ReimbursementRequestsController {
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
-      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, saboId, receiptPictures } =
+      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, receiptPictures } =
         req.body;
       const user = await getCurrentUser(res);
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
@@ -43,7 +43,6 @@ export default class ReimbursementRequestsController {
         expenseTypeId,
         totalCost,
         reimbursementProducts,
-        saboId,
         receiptPictures,
         user
       );
