@@ -97,4 +97,24 @@ export default class ReimbursementRequestService {
 
     return vendor;
   }
+
+  /**
+   * Service function to create an expense type in our database
+   * @param name The name of the expense type
+   * @param code the expense type's SABO code
+   * @param allowed whether or not this expense type is allowed
+   * @returns the created expense type
+   */
+  static async createExpenseType(submitter: User, name: string, code: number, allowed: boolean) {
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
+    const expense = await prisma.expense_Type.create({
+      data: {
+        name,
+        allowed,
+        code
+      }
+    });
+
+    return expense;
+  }
 }

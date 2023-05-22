@@ -39,4 +39,15 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async createExpenseType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, code, allowed } = req.body;
+      const user = await getCurrentUser(res);
+      const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
+      res.status(200).json(createdExpenseType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

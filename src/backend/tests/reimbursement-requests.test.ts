@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { AccessDeniedAdminOnlyException } from '../src/utils/errors.utils';
-import { PopEyes } from './test-data/reimbursement-requests.test-data';
+import { Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
 import { batman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
@@ -24,6 +24,27 @@ describe('Reimbursement Requests', () => {
       const vendor = await ReimbursementRequestService.createVendor(batman, 'HOLA BUDDY');
 
       expect(vendor.vendorId).toBe('CHICKEN');
+    });
+  });
+
+  describe('Expense Tests', () => {
+    test('Create Expense Type fails for non admins', async () => {
+      await expect(
+        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
+    });
+
+    test('Create Expense Type Successfully returns expense type Id', async () => {
+      jest.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
+
+      const expenseType = await ReimbursementRequestService.createExpenseType(
+        batman,
+        Parts.name,
+        Parts.code,
+        Parts.allowed
+      );
+
+      expect(expenseType.expenseTypeId).toBe(Parts.expenseTypeId);
     });
   });
 });
