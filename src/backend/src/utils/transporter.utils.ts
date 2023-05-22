@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { HttpException } from './errors.utils';
 
 const { OAuth2 } = google.auth;
 
@@ -56,7 +57,7 @@ const sendMailToAdvisor = async (subject: string, text: string) => {
     const emailTransporter = (await createTransporter()) as nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
-    console.log('ERROR: ', err);
+    throw new HttpException(500, "Failed to send Email");
   }
 };
 

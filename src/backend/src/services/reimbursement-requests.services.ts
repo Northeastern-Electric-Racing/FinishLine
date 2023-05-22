@@ -100,6 +100,8 @@ export default class ReimbursementRequestService {
   static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
     await validateUserIsPartOfFinanceTeam(sender);
 
+    if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
+
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: {
@@ -145,7 +147,15 @@ export default class ReimbursementRequestService {
     });
   }
 
-  static async addSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: UserWithTeam) {
+  /**
+   * Sets the given reimbursement request with the given sabo number
+   * 
+   * @param reimbursementRequestId The id of the reimbursement request to add the sabo number to
+   * @param saboNumber the sabo number you are adding to the reimbursement request
+   * @param submitter the person adding the sabo number
+   * @returns the reimbursement request with the sabo number
+   */
+  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: UserWithTeam) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -156,10 +166,6 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
-    }
-
-    if (reimbursementRequest.saboId) {
-      throw new HttpException(400, `This reimbursement request already has a sabo number!`);
     }
 
     const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({

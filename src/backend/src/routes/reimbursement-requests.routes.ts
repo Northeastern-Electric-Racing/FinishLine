@@ -37,10 +37,10 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/:requestId/add-sabo-number',
+  '/:requestId/set-sabo-number',
   intMinZero(body('saboNumber')),
   validateInputs,
-  ReimbursementRequestController.addSaboNumber
+  ReimbursementRequestController.setSaboNumber
 );
 
 reimbursementRequestsRouter.post(

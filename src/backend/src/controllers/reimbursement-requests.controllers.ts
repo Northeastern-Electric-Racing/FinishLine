@@ -40,13 +40,13 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async addSaboNumber(req: Request, res: Response, next: NextFunction) {
+  static async setSaboNumber(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
       const { saboNumber } = req.body;
       const user = await getCurrentUser(res);
-      await ReimbursementRequestService.addSaboNumber(requestId, saboNumber, user);
-      res.status(200).json({ message: 'Successfully added sabo number' });
+      await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, user);
+      res.status(200).json({ message: 'Successfully set sabo number' });
     } catch (error: unknown) {
       next(error);
     }
