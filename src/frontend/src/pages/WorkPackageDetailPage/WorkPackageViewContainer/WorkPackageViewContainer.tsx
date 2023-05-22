@@ -57,7 +57,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (!user || !dependencies || isLoading) return <LoadingIndicator />;
+  if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
