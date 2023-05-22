@@ -40,6 +40,7 @@ const createTransporter = async () => {
     });
     return transporter;
   } catch (err) {
+    console.log('ERROR: ' + err);
     return err;
   }
 };
