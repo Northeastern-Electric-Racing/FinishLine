@@ -11,6 +11,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
 
 interface Props {
   lead?: string;
@@ -19,49 +20,8 @@ interface Props {
   setLead: (lead?: string) => void;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
-  control: Control<
-    {
-      workPackageId: number;
-      name: string;
-      crId: string;
-      stage: string;
-      startDate: Date;
-      duration: number;
-      blockedBy: {
-        wbsNum: string;
-      }[];
-      expectedActivities: {
-        bulletId: number;
-        detail: string;
-      }[];
-      deliverables: {
-        bulletId: number;
-        detail: string;
-      }[];
-    },
-    any
-  >;
-  errors: Partial<
-    FieldErrorsImpl<{
-      workPackageId: number;
-      name: string;
-      crId: string;
-      stage: string;
-      startDate: Date;
-      duration: number;
-      blockedBy: {
-        wbsNum: string;
-      }[];
-      expectedActivities: {
-        bulletId: number;
-        detail: string;
-      }[];
-      deliverables: {
-        bulletId: number;
-        detail: string;
-      }[];
-    }>
-  >;
+  control: Control<WorkPackageEditFormPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
 }
 
 const WorkPackageEditDetails: React.FC<Props> = ({
