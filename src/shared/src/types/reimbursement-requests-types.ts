@@ -7,3 +7,9 @@ export enum Club_Account {
   CASH = 'CASH',
   BUDGET = 'BUDGET'
 }
+
+export interface Vendor {
+  vendorId: string;
+  dateCreated: Date;
+  name: string;
+}

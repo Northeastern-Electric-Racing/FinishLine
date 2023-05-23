@@ -4,7 +4,7 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { Club_Account, isAdmin, isGuest } from 'shared';
+import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -20,8 +20,18 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import sendMailToAdvisor from '../utils/transporter.utils';
+import vendorTransformer from '../transformers/vendor.transformer';
 
 export default class ReimbursementRequestService {
+  /**
+   * Get all the vendors in the database.
+   * @returns all the vendors
+   */
+  static async getAllVendors(): Promise<Vendor[]> {
+    const vendors = await prisma.vendor.findMany();
+    return vendors.map(vendorTransformer);
+  }
+
   /**
    * Creates a reimbursement request in the database
    * @param recipient the user who is creating the reimbursement request
