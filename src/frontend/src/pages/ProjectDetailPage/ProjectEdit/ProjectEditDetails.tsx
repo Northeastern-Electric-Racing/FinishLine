@@ -5,7 +5,6 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { Dispatch, SetStateAction } from 'react';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -13,8 +12,8 @@ interface ProjectEditDetailsProps {
   errors: any;
   projectManager: string | undefined;
   projectLead: string | undefined;
-  setProjectManager: Dispatch<SetStateAction<string | undefined>>;
-  setProjectLead: Dispatch<SetStateAction<string | undefined>>;
+  setProjectManager: (projectManager?: string) => void;
+  setProjectLead: (projectLead?: string) => void;
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
@@ -59,7 +58,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={3}>
-          <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectLead(value?.id)}
@@ -70,7 +68,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           />
         </Grid>
         <Grid item xs={12} md={3}>
-          <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectManager(value?.id)}

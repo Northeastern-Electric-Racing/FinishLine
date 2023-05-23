@@ -120,7 +120,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
-        return;
       }
     }
   };
