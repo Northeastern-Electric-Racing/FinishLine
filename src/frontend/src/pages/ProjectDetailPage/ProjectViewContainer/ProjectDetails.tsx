@@ -109,6 +109,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           </Grid>
           <Grid item xs={6} display="flex" alignItems="center">
             <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */} 
             <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
               Confluence
             </Link>

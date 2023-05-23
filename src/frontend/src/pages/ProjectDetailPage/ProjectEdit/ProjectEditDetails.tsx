@@ -84,6 +84,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */} 
             <FormLabel>Confluence Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
