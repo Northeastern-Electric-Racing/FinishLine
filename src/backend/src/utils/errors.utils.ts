@@ -106,4 +106,7 @@ type ExceptionObjectNames =
   | 'Proposed Solution'
   | 'Team'
   | 'User Settings'
-  | 'Task';
+  | 'Task'
+  | 'Vendor'
+  | 'Expense Type'
+  | 'Reimbursement Request';

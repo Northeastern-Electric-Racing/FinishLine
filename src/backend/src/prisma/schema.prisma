@@ -345,7 +345,7 @@ model Reimbursement_Status {
 
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
-  saboId                 Int?
+  saboId                 Int?                    @unique
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
   dateOfExpense          DateTime
@@ -356,11 +356,11 @@ model Reimbursement_Request {
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
   totalCost              Int
-  receiptPicture         String[]
+  receiptPictures        String[]
   reimbursementProducts  Reimbursement_Product[]
-  expenssTypeId          String
   dateDelivered          DateTime?
-  expenseType            Expense_Type            @relation(fields: [expenssTypeId], references: [expenseTypeId])
+  expenseTypeId          String
+  expenseType            Expense_Type            @relation(fields: [expenseTypeId], references: [expenseTypeId])
 }
 
 model Reimbursement_Product {
@@ -377,7 +377,7 @@ model Reimbursement_Product {
 model Vendor {
   vendorId    String                  @id @default(uuid())
   dateCreated DateTime                @default(now())
-  name        String
+  name        String                  @unique
   requests    Reimbursement_Request[]
 }
 
@@ -408,4 +408,5 @@ model User_Secure_Settings {
   city                 String
   state                String
   zipcode              String
+  phoneNumber          String @unique
 }

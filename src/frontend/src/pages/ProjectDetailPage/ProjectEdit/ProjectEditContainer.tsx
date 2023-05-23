@@ -27,10 +27,11 @@ import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
 
+/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
   budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-  slideDeckLink: yup.string().required('Slide deck link is required!').url('Invalid URL'),
+  slideDeckLink: yup.string().required('Confluence link is required!').url('Invalid URL'),
   googleDriveFolderLink: yup.string().required('Google Drive folder link is required!').url('Invalid URL'),
   bomLink: yup.string().url('Invalid URL').required('Bom link is required!'),
   taskListLink: yup.string().required('Task list link is required!').url('Invalid URL'),
@@ -40,6 +41,35 @@ const schema = yup.object().shape({
 interface ProjectEditContainerProps {
   project: Project;
   exitEditMode: () => void;
+}
+
+export interface ProjectEditFormInput {
+  name: string;
+  budget: number;
+  summary: string;
+  bomLink: string | undefined;
+  googleDriveFolderLink: string | undefined;
+  taskListLink: string | undefined;
+  slideDeckLink: string | undefined;
+  // projectId: number;
+  crId: string;
+  goals: {
+    bulletId: number;
+    detail: string;
+  }[];
+  features: {
+    bulletId: number;
+    detail: string;
+  }[];
+  constraints: {
+    bulletId: number;
+    detail: string;
+  }[];
+  projectLeadId: number | undefined;
+  projectManagerId: number | undefined;
+  rules: {
+    rule: string;
+  }[];
 }
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
@@ -89,10 +119,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   }
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
-
   const onSubmit = async (data: any) => {
     const { name, budget, summary, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
     const rules = data.rules.map((rule: any) => rule.rule || rule);
+
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);

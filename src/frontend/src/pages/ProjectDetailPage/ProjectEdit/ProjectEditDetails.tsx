@@ -14,6 +14,7 @@ interface ProjectEditDetailsProps {
   projectLead: string | undefined;
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
+
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
@@ -79,11 +80,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Slide Deck Link</FormLabel>
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
+            <FormLabel>Confluence Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
               control={control}
-              placeholder="Enter slide deck link..."
+              placeholder="Enter confluence link..."
               errorMessage={errors.slideDeckLink}
             />
           </FormControl>
