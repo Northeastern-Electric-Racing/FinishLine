@@ -12,6 +12,15 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Vendor Tests', () => {
+    test('Get all vendors works', async () => {
+      jest.spyOn(prisma.vendor, 'findMany').mockResolvedValue([]);
+
+      const res = await ReimbursementRequestService.getAllVendors();
+
+      expect(prisma.vendor.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
+
     test('Create Vendor throws error if user is not admin', async () => {
       await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
         new AccessDeniedAdminOnlyException('create vendors')

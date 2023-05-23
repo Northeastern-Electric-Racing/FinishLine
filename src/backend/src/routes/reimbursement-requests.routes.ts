@@ -11,6 +11,8 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 
 const reimbursementRequestsRouter = express.Router();
 
+reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
