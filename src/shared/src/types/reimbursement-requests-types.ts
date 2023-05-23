@@ -1,25 +1,32 @@
-import { UserPreview } from './user-types';
 import { WbsNumber } from './project-types';
+import { User } from './user-types';
 
-export enum Club_Account {
-  CASH = 'CASH',
-  BUDGET = 'BUDGET'
-}
+export const ClubAccountConst = {
+  Cash: 'CASH',
+  Budget: 'BUDGET'
+} as const;
+export type ClubAccount = typeof ClubAccountConst[keyof typeof ClubAccountConst];
 
-export enum ReimbursementStatusType {
-  PENDING_FINANCE = 'PENDING FINANCE',
-  SABO_SUBMITTED = 'SABO SUBMITTED',
-  ADVISOR_APPROVED = 'ADVISOR_APPROVED',
-  REIMBURSED = 'REIMBURSED'
-}
+export const ReimbursementStatusTypeConst = {
+  PendingFinance: 'PENDING FINANCE',
+  SaboSubmitted: 'SABO SUBMITTED',
+  AdvisorApproved: 'ADVISOR_APPROVED',
+  Reimbursed: 'REIMBURSED'
+} as const;
+export type ReimbursementStatusType = typeof ReimbursementStatusTypeConst[keyof typeof ReimbursementStatusTypeConst];
 
 export interface ReimbursementStatus {
   reimbursementStatusId: number;
   type: ReimbursementStatusType;
-  user: UserPreview;
+  user: User;
   dateCreated: Date;
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestPreview;
 }
+
+export type ReimbursementStatusPreview = Pick<
+  ReimbursementStatus,
+  'reimbursementStatusId' | 'type' | 'user' | 'dateCreated'
+>;
 
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
@@ -27,16 +34,30 @@ export interface ReimbursementRequest {
   dateCreated: Date;
   dateDeleted?: Date;
   dateOfExpense: Date;
-  reimbursementsStatuses: ReimbursementStatus[];
-  recepient: UserPreview;
-  vendor: VendorShared;
-  account: Club_Account;
+  reimbursementsStatuses: ReimbursementStatusPreview[];
+  recepient: User;
+  vendor: VendorPreview;
+  account: ClubAccount;
   totalCost: number;
   receiptPictures: string[];
-  reimbursementProducts: ReimbursementProduct[];
+  reimbursementProducts: ReimbursementProductPreview[];
   dateDelivered?: Date;
-  expenseType: ExpenseType;
+  expenseType: ExpenseTypePreview;
 }
+
+export type ReimbursementRequestPreview = Pick<
+  ReimbursementRequest,
+  | 'reimbursementRequestId'
+  | 'saboId'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'dateOfExpense'
+  | 'recepient'
+  | 'account'
+  | 'totalCost'
+  | 'receiptPictures'
+  | 'dateDelivered'
+>;
 
 export interface ReimbursementProduct {
   reimbursementProductId: string;
@@ -47,12 +68,19 @@ export interface ReimbursementProduct {
   reimbursementRequest: ReimbursementRequest;
 }
 
+export type ReimbursementProductPreview = Pick<
+  ReimbursementProduct,
+  'reimbursementProductId' | 'name' | 'dateDeleted' | 'cost' | 'wbsNum'
+>;
+
 export interface VendorShared {
   vendorId: string;
   dateCreated: Date;
   name: string;
   requests: ReimbursementRequest[];
 }
+
+export type VendorPreview = Pick<VendorShared, 'vendorId' | 'dateCreated' | 'name'>;
 
 export interface ExpenseType {
   expenseTypeId: string;
@@ -61,3 +89,5 @@ export interface ExpenseType {
   allowed: boolean;
   requests: ReimbursementRequest[];
 }
+
+export type ExpenseTypePreview = Pick<ExpenseType, 'expenseTypeId' | 'name' | 'code' | 'allowed'>;
