@@ -39,6 +39,29 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { saboNumbers } = req.body;
+      const user = await getCurrentUser(res);
+      await ReimbursementRequestService.sendPendingAdvisorList(user, saboNumbers);
+      res.status(200).json({ message: 'Successfully sent pending advisor list' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setSaboNumber(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { saboNumber } = req.body;
+      const user = await getCurrentUser(res);
+      await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, user);
+      res.status(200).json({ message: 'Successfully set sabo number' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createVendor(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

@@ -5,7 +5,8 @@
 
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
-import { HttpException } from './errors.utils';
+import { AccessDeniedException, HttpException } from './errors.utils';
+import { Team, User } from '@prisma/client';
 
 export interface ReimbursementProductCreateArgs {
   name: string;
@@ -48,5 +49,19 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
       .filter((wbsElement) => prismaWbsElementIds.includes(wbsElement.wbsElementId))
       .map(wbsPipe);
     throw new HttpException(400, `The following projects or work packages do not exist: ${missingWbsNumbers.join(', ')}`);
+  }
+};
+
+export type UserWithTeam = User & { teams: Team[] };
+
+export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
+    throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };

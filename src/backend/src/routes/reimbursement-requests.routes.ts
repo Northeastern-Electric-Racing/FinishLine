@@ -31,6 +31,21 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
+  '/pending-advisor/send',
+  body('saboNumbers').isArray(),
+  intMinZero(body('saboNumbers.*')),
+  validateInputs,
+  ReimbursementRequestController.sendPendingAdvisorList
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/set-sabo-number',
+  intMinZero(body('saboNumber')),
+  validateInputs,
+  ReimbursementRequestController.setSaboNumber
+);
+
+reimbursementRequestsRouter.post(
   '/vendors/create',
   nonEmptyString(body('name')),
   validateInputs,

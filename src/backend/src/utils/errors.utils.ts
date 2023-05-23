@@ -108,4 +108,5 @@ type ExceptionObjectNames =
   | 'User Settings'
   | 'Task'
   | 'Vendor'
-  | 'Expense Type';
+  | 'Expense Type'
+  | 'Reimbursement Request';

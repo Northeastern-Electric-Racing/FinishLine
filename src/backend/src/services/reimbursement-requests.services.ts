@@ -3,11 +3,23 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement_Request, User } from '@prisma/client';
-import { Club_Account, isAdmin, isGuest, Vendor } from 'shared';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
-import { ReimbursementProductCreateArgs, validateReimbursementProducts } from '../utils/reimbursement-requests.utils';
-import { AccessDeniedAdminOnlyException, AccessDeniedGuestException, NotFoundException } from '../utils/errors.utils';
+import {
+  ReimbursementProductCreateArgs,
+  UserWithTeam,
+  validateReimbursementProducts,
+  validateUserIsPartOfFinanceTeam
+} from '../utils/reimbursement-requests.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
+import sendMailToAdvisor from '../utils/transporter.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
 
 export default class ReimbursementRequestService {
@@ -88,6 +100,92 @@ export default class ReimbursementRequestService {
     });
 
     return createdReimbursementRequest;
+  }
+
+  /**
+   * sends the pending advisor reimbursements to the advisor
+   * @param sender the person sending the pending advisor list
+   * @param saboNumbers the sabo numbers of the reimbursement requests to send
+   */
+  static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
+    await validateUserIsPartOfFinanceTeam(sender);
+
+    if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
+
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        saboId: {
+          in: saboNumbers
+        }
+      }
+    });
+
+    if (reimbursementRequests.length < saboNumbers.length) {
+      const saboNumbersNotFound = saboNumbers.filter((saboNumber) => {
+        return !reimbursementRequests.some((reimbursementRequest) => reimbursementRequest.saboId === saboNumber);
+      });
+      throw new HttpException(400, `The following sabo numbers do not exist: ${saboNumbersNotFound.join(', ')}`);
+    }
+
+    const deletedReimbursementRequests = reimbursementRequests.filter(
+      (reimbursementRequest) => reimbursementRequest.dateDeleted
+    );
+
+    if (deletedReimbursementRequests.length > 0) {
+      const saboNumbersDeleted = deletedReimbursementRequests.map((reimbursementRequest) => reimbursementRequest.saboId);
+      throw new HttpException(
+        400,
+        `The following reimbursement requests with these sabo numbers have been deleted: ${saboNumbersDeleted.join(', ')}`
+      );
+    }
+
+    const mailOptions = {
+      subject: 'Reimbursement Requests To Be Approved By Advisor',
+      text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
+    };
+
+    await sendMailToAdvisor(mailOptions.subject, mailOptions.text);
+
+    reimbursementRequests.forEach((reimbursementRequest) => {
+      prisma.reimbursement_Status.create({
+        data: {
+          type: Reimbursement_Status_Type.ADVISOR_APPROVED,
+          userId: sender.userId,
+          reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+        }
+      });
+    });
+  }
+
+  /**
+   * Sets the given reimbursement request with the given sabo number
+   *
+   * @param reimbursementRequestId The id of the reimbursement request to add the sabo number to
+   * @param saboNumber the sabo number you are adding to the reimbursement request
+   * @param submitter the person adding the sabo number
+   * @returns the reimbursement request with the sabo number
+   */
+  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: UserWithTeam) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        saboId: saboNumber
+      }
+    });
+
+    return reimbursementRequestWithSaboNumber;
   }
 
   /**
