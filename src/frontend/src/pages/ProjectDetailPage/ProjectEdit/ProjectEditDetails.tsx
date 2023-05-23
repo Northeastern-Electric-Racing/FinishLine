@@ -14,7 +14,6 @@ interface ProjectEditDetailsProps {
   projectLead: string | undefined;
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
-
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
