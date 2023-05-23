@@ -58,6 +58,7 @@ const sendMailToAdvisor = async (subject: string, text: string) => {
     const emailTransporter = (await createTransporter()) as nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
+    console.log('Error: ' + err);
     throw new HttpException(500, 'Failed to send Email');
   }
 };
