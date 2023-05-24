@@ -14,7 +14,7 @@ export const nonEmptyString = (validationObject: ValidationChain): ValidationCha
 export const isRole = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
-    .isIn([RoleEnum.ADMIN, RoleEnum.APP_ADMIN, RoleEnum.GUEST, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER]);
+    .isIn([RoleEnum.APP_ADMIN, RoleEnum.ADMIN, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER, RoleEnum.GUEST]);
 };
 
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
@@ -33,10 +33,11 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
   return validationObject
     .isString()
     .isIn([
+      WorkPackageStage.Research,
       WorkPackageStage.Design,
-      WorkPackageStage.Integration,
       WorkPackageStage.Manufacturing,
-      WorkPackageStage.Research
+      WorkPackageStage.Integration,
+      'NONE'
     ]);
 };
 
