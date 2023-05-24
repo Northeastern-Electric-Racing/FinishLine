@@ -5,11 +5,13 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import { ProjectEditFormInput } from './ProjectEditContainer';
+import { Control, FieldErrorsImpl } from 'react-hook-form';
 
 interface ProjectEditDetailsProps {
   users: User[];
-  control: any;
-  errors: any;
+  control: Control<ProjectEditFormInput>;
+  errors: FieldErrorsImpl<ProjectEditFormInput>;
   projectManager: string | undefined;
   projectLead: string | undefined;
   setProjectManager: (projectManager?: string) => void;

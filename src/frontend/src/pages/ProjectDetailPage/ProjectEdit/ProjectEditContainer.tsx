@@ -65,8 +65,6 @@ export interface ProjectEditFormInput {
     bulletId: number;
     detail: string;
   }[];
-  projectLeadId: number | undefined;
-  projectManagerId: number | undefined;
   rules: {
     rule: string;
   }[];
