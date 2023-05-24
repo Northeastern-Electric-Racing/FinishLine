@@ -1,5 +1,6 @@
 import { ValidationChain } from 'express-validator';
 import { Club_Account } from 'shared';
+import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -11,7 +12,9 @@ export const nonEmptyString = (validationObject: ValidationChain): ValidationCha
 };
 
 export const isRole = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['APP_ADMIN', 'ADMIN', 'HEAD', 'LEADERSHIP', 'MEMBER', 'GUEST']);
+  return validationObject
+    .isString()
+    .isIn([RoleEnum.ADMIN, RoleEnum.APP_ADMIN, RoleEnum.GUEST, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER]);
 };
 
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
@@ -19,15 +22,22 @@ export const isDate = (validationObject: ValidationChain): ValidationChain => {
 };
 
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['LOW', 'MEDIUM', 'HIGH']);
+  return validationObject.isString().isIn([TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]);
 };
 
 export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['IN_BACKLOG', 'IN_PROGRESS', 'DONE']);
+  return validationObject.isString().isIn([TaskStatus.DONE, TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS]);
 };
 
 export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn(['RESEARCH', 'DESIGN', 'MANUFACTURING', 'INTEGRATION', 'NONE']);
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Design,
+      WorkPackageStage.Integration,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Research
+    ]);
 };
 
 export const isAccount = (validationObject: ValidationChain): ValidationChain => {
