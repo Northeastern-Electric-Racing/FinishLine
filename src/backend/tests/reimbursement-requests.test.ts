@@ -98,7 +98,7 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
-    test('Edit Reimbursement Request Fails When User is not the recepient', async () => {
+    test('Edit Reimbursement Request Fails When User is not the recipient', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
       await expect(() =>
