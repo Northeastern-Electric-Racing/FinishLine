@@ -108,4 +108,25 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async setUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
+      const user = await getCurrentUser(res);
+
+      const secureSettingsId = await UsersService.setUserSecureSettings(
+        user,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      );
+
+      res.status(200).json(secureSettingsId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

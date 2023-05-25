@@ -6,8 +6,18 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
+import { Vendor } from 'shared';
 
 export default class ReimbursementRequestsController {
+  static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();
+      return res.status(200).json(vendors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
@@ -47,6 +57,29 @@ export default class ReimbursementRequestsController {
         user
       );
       res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { saboNumbers } = req.body;
+      const user = await getCurrentUser(res);
+      await ReimbursementRequestService.sendPendingAdvisorList(user, saboNumbers);
+      res.status(200).json({ message: 'Successfully sent pending advisor list' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setSaboNumber(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { saboNumber } = req.body;
+      const user = await getCurrentUser(res);
+      await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, user);
+      res.status(200).json({ message: 'Successfully set sabo number' });
     } catch (error: unknown) {
       next(error);
     }

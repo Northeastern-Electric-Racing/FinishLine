@@ -11,6 +11,8 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 
 const reimbursementRequestsRouter = express.Router();
 
+reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
@@ -44,6 +46,21 @@ reimbursementRequestsRouter.post(
   intMinZero(body('totalCost')),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
+);
+
+reimbursementRequestsRouter.post(
+  '/pending-advisor/send',
+  body('saboNumbers').isArray(),
+  intMinZero(body('saboNumbers.*')),
+  validateInputs,
+  ReimbursementRequestController.sendPendingAdvisorList
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/set-sabo-number',
+  intMinZero(body('saboNumber')),
+  validateInputs,
+  ReimbursementRequestController.setSaboNumber
 );
 
 reimbursementRequestsRouter.post(

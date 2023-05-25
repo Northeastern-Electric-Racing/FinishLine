@@ -345,7 +345,7 @@ model Reimbursement_Status {
 
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
-  saboId                 Int?
+  saboId                 Int?                    @unique
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
   dateOfExpense          DateTime
@@ -408,4 +408,5 @@ model User_Secure_Settings {
   city                 String
   state                String
   zipcode              String
+  phoneNumber          String @unique
 }
