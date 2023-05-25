@@ -3,22 +3,26 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Club_Accounts, Reimbursement_Request, User } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
+  UserWithTeam,
   updateReimbursementProducts,
-  validateReimbursementProducts
+  validateReimbursementProducts,
+  validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   AccessDeniedGuestException,
   DeletedException,
+  HttpException,
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
+import sendMailToAdvisor from '../utils/transporter.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -135,7 +139,7 @@ export default class ReimbursementRequestService {
 
     if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
-    if (oldReimbursementRequest.recepientId !== submitter.userId)
+    if (oldReimbursementRequest.recipientId !== submitter.userId)
       throw new AccessDeniedException(
         'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
       );

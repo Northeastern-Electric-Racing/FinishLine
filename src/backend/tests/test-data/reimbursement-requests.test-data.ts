@@ -24,7 +24,7 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   dateCreated: new Date('20/8/2023'),
   dateDeleted: null,
   dateOfExpense: new Date('18/8/2023'),
-  recepientId: 1,
+  recipientId: 1,
   vendorId: '',
   account: Club_Account.CASH,
   totalCost: 0,
