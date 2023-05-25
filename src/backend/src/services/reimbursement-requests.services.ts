@@ -107,7 +107,7 @@ export default class ReimbursementRequestService {
   /**
    * Edits the given reimbursement Request
    *
-   * @param id the id of the reimbursement request we are editing
+   * @param requestId the id of the reimbursement request we are editing
    * @param dateOfExpense the updated date of expense
    * @param vendorId the updated vendor id
    * @param account the updated account

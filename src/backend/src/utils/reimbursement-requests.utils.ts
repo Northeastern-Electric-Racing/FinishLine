@@ -60,7 +60,7 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
 };
 
 /**
- * This function updates the current reimbursement products of a reimbursement request versus the new reimbursement products of a reimbursement request.
+ * This function updates any current reimbursement products associated with a reimbursement request, creates any new reimbursement products, and deletes any deleted reimbursement products
  * @param currentReimbursementProducts the current reimbursement products of a reimbursement request
  * @param updatedReimbursementProducts the new reimbursement products to compare
  * @param reimbursementRequestId the reimbursement request that is being changed id
@@ -70,20 +70,14 @@ export const updateReimbursementProducts = async (
   updatedReimbursementProducts: ReimbursementProductCreateArgs[],
   reimbursementRequestId: string
 ) => {
+  if (updatedReimbursementProducts.length === 0) {
+    throw new HttpException(400, 'A reimbursement request must have at least one reimbursement product!');
+  }
+
   //if a product has an id that means it existed before and was updated
   const updatedExistingProducts = updatedReimbursementProducts.filter((product) => product.id);
 
-  //Check to make sure that the updated products actually exist in the database
-  const prismaProductIds = currentReimbursementProducts.map((product) => product.reimbursementProductId);
-
-  const missingProductIds = updatedExistingProducts.filter((product) => !prismaProductIds.includes(product.id!));
-
-  if (missingProductIds.length > 0) {
-    throw new HttpException(
-      400,
-      `The following products do not exist: ${missingProductIds.map((product) => product.name).join(', ')}`
-    );
-  }
+  validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
 
   const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
 
@@ -118,6 +112,28 @@ const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]
         cost: product.cost
       }
     });
+  }
+};
+
+/**
+ * validates that the products that should be updated in the database exist
+ * @param currentReimbursementProducts The products that do exist in the database
+ * @param updatedExistingProducts The products that are being updated that already have Ids
+ */
+const validateUpdatedProductsExistInDatabase = (
+  currentReimbursementProducts: Reimbursement_Product[],
+  updatedExistingProducts: ReimbursementProductCreateArgs[]
+) => {
+  //Check to make sure that the updated products actually exist in the database
+  const prismaProductIds = currentReimbursementProducts.map((product) => product.reimbursementProductId);
+
+  const missingProductIds = updatedExistingProducts.filter((product) => !prismaProductIds.includes(product.id!));
+
+  if (missingProductIds.length > 0) {
+    throw new HttpException(
+      400,
+      `The following products do not exist: ${missingProductIds.map((product) => product.name).join(', ')}`
+    );
   }
 };
 
