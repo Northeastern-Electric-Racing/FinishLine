@@ -7,6 +7,7 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { Vendor } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
@@ -20,7 +21,7 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
+      const { dateOfExpense, vendorId, account, reimbursementProducts, receiptPictures, expenseTypeId, totalCost } =
         req.body;
       const user = await getCurrentUser(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
@@ -102,6 +103,20 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
       res.status(200).json(createdExpenseType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+
+      const imageData = await ReimbursementRequestService.uploadReceipt(file);
+
+      res.status(200).json(imageData);
     } catch (error: unknown) {
       next(error);
     }

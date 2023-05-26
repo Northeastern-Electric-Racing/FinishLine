@@ -343,6 +343,15 @@ model Reimbursement_Status {
   reimbursementRequest   Reimbursement_Request     @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
+model Receipt {
+  receiptId              String                @id @default(uuid())
+  googleFileId           String                @unique
+  name                   String
+  dateDeleted            DateTime?
+  reimbursementRequestId String
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
   saboId                 Int?                    @unique
@@ -356,7 +365,7 @@ model Reimbursement_Request {
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
   totalCost              Int
-  receiptPictures        String[]
+  receiptPictures        Receipt[]
   reimbursementProducts  Reimbursement_Product[]
   dateDelivered          DateTime?
   expenseTypeId          String

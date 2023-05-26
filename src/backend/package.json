@@ -22,6 +22,7 @@
     "google-auth-library": "^8.1.1",
     "googleapis": "^118.0.0",
     "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.1",
     "shared": "1.0.0"
   },

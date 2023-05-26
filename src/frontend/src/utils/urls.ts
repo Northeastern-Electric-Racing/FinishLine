@@ -71,6 +71,10 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
+/**************** Finance Endpoints **************************/
+const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
+const financeUploadRceipt = () => `${financeEndpoints()}/upload-receipt`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -122,6 +126,8 @@ export const apiUrls = {
   teamsSetDescription,
 
   descriptionBulletsCheck,
+
+  financeUploadRceipt,
 
   version
 };

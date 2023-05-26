@@ -8,7 +8,9 @@ import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   UserWithTeam,
+  updateReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserIsPartOfFinanceTeam
@@ -22,7 +24,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import sendMailToAdvisor from '../utils/transporter.utils';
+import { sendMailToAdvisor, uploadFile } from '../utils/transporter.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -51,7 +53,7 @@ export default class ReimbursementRequestService {
     dateOfExpense: Date,
     vendorId: string,
     account: Club_Account,
-    receiptPictures: string[],
+    receiptPictures: ReimbursementReceiptCreateArgs[],
     reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
@@ -78,7 +80,13 @@ export default class ReimbursementRequestService {
         dateOfExpense,
         vendorId: vendor.vendorId,
         account,
-        receiptPictures,
+        receiptPictures: {
+          createMany: {
+            data: receiptPictures.map((receipt) => {
+              return { name: receipt.name, googleFileId: receipt.googleFileId };
+            })
+          }
+        },
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
         reimbursementsStatuses: {
@@ -127,13 +135,14 @@ export default class ReimbursementRequestService {
     expenseTypeId: string,
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
-    receiptPictures: string[],
+    receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
-        reimbursementProducts: true
+        reimbursementProducts: true,
+        receiptPictures: true
       }
     });
 
@@ -162,6 +171,12 @@ export default class ReimbursementRequestService {
       oldReimbursementRequest.reimbursementRequestId
     );
 
+    await updateReceiptPictures(
+      receiptPictures,
+      oldReimbursementRequest.receiptPictures,
+      oldReimbursementRequest.reimbursementRequestId
+    );
+
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
@@ -169,8 +184,7 @@ export default class ReimbursementRequestService {
         account,
         totalCost,
         expenseTypeId,
-        vendorId,
-        receiptPictures
+        vendorId
       }
     });
 
@@ -299,5 +313,16 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Service function to upload a picture to the receipts folder in the NER google drive
+   * @param file The file data for the image
+   * @returns the google drive id for the file
+   */
+  static async uploadReceipt(file: Express.Multer.File) {
+    const imageData = await uploadFile(file);
+
+    return imageData;
   }
 }

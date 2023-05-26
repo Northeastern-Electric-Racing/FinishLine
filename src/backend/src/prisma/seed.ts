@@ -25,6 +25,7 @@ import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
+import ReimbursementRequestService from '../services/reimbursement-requests.services';
 
 const prisma = new PrismaClient();
 
@@ -622,6 +623,10 @@ const performSeed: () => Promise<void> = async () => {
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId]
   );
+
+  await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+
+  await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
 };
 
 performSeed()

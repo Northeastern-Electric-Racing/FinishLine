@@ -6,7 +6,7 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Reimbursement_Product, Team, User } from '@prisma/client';
+import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -15,11 +15,50 @@ export interface ReimbursementProductCreateArgs {
   wbsElementId: number;
 }
 
+export interface ReimbursementReceiptCreateArgs {
+  name: string;
+  googleFileId: string;
+}
+
 export interface ReimbursementProductCreateArgs {
   name: string;
   cost: number;
   wbsElementId: number;
 }
+
+/**
+ * This function removes any deleted receipts and adds any new receipts
+ * @param receipts the new list of receipts to compare against the old ones
+ * @param currentReceipts the current list of receipts on the request that's being edited
+ * @param reimbursementRequestId the id of the reimbursement request that's being edited
+ */
+export const updateReceiptPictures = async (
+  receipts: ReimbursementReceiptCreateArgs[],
+  currentReceipts: Receipt[],
+  reimbursementRequestId: string
+) => {
+  const newReceipts = receipts.filter(
+    (receipt) => !currentReceipts.find((currentReceipt) => currentReceipt.googleFileId === receipt.googleFileId)
+  );
+  const deletedReceipts = currentReceipts.filter(
+    (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
+  );
+
+  //create new receipts in the database
+  await prisma.receipt.createMany({
+    data: newReceipts.map((receipt) => {
+      return { name: receipt.name, googleFileId: receipt.googleFileId, reimbursementRequestId };
+    })
+  });
+
+  //mark any deleted receipts as deleted in the database
+  await prisma.receipt.updateMany({
+    where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
+    data: {
+      dateDeleted: new Date()
+    }
+  });
+};
 
 /**
  * Adds a reimbursement product to the database
