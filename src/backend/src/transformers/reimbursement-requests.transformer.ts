@@ -34,7 +34,7 @@ const reimbursementRequestTransformer = (
       name: reimbursementProduct.name,
       dateDeleted: reimbursementProduct.dateDeleted,
       cost: reimbursementProduct.cost,
-      wbsNum: wbsNumOf(reimbursementProduct.wbsNum)
+      wbsNum: wbsNumOf(reimbursementProduct.wbsElement)
     })),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     expenseType: {

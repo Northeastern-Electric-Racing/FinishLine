@@ -2,16 +2,16 @@ import { Prisma } from '@prisma/client';
 
 const reimbursementRequestQueryArgs = Prisma.validator<Prisma.Reimbursement_RequestArgs>()({
   include: {
-    saboId: true,
-    totalCost: true,
-    dateOfExpense: true,
-    dateDelivered: true,
-    reimbursementStatuses: {
+    recepient: true,
+    vendor: true,
+    expenseType: true,
+    reimbursementsStatuses: true,
+    reimbursementProducts: {
       where: {
         dateDeleted: null
       },
       include: {
-        type: true
+        wbsElement: true
       }
     }
   }

@@ -65,7 +65,7 @@ export interface ReimbursementProduct {
   dateDeleted?: Date;
   cost: number;
   wbsNum: WbsNumber;
-  reimbursementRequest: ReimbursementRequest;
+  reimbursementRequest: ReimbursementRequestPreview;
 }
 
 export type ReimbursementProductPreview = Pick<
@@ -77,7 +77,7 @@ export interface VendorShared {
   vendorId: string;
   dateCreated: Date;
   name: string;
-  requests: ReimbursementRequest[];
+  requests: ReimbursementRequestPreview[];
 }
 
 export type VendorPreview = Pick<VendorShared, 'vendorId' | 'dateCreated' | 'name'>;
@@ -87,7 +87,7 @@ export interface ExpenseType {
   name: string;
   code: number;
   allowed: boolean;
-  requests: ReimbursementRequest[];
+  requests: ReimbursementRequestPreview[];
 }
 
 export type ExpenseTypePreview = Pick<ExpenseType, 'expenseTypeId' | 'name' | 'code' | 'allowed'>;
