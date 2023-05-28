@@ -11,7 +11,9 @@ import ProjectViewContainer from '../../../pages/ProjectDetailPage/ProjectViewCo
 import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
-import { mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import * as wpHooks from '../../../hooks/work-packages.hooks';
+import { mockUseManyWorkPackagesReturnValue, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 
 jest.mock('../../../utils/axios');
 jest.mock('../../../hooks/toasts.hooks');
@@ -31,6 +33,7 @@ describe('Rendering Project View Container', () => {
     jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     jest.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
+    jest.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(mockUseManyWorkPackagesReturnValue(exampleAllWorkPackages));
     renderComponent();
   });
 
