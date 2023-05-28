@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { ReimbursementRequest } from 'shared';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import { wbsNumOf } from '../utils/utils';
+import reimbursementStatusTransformer from './reimbursement-statuses.transformer';
 import userTransformer from './user.transformer';
 
 const reimbursementRequestTransformer = (
@@ -14,12 +15,7 @@ const reimbursementRequestTransformer = (
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
     dateOfExpense: reimbursementRequest.dateOfExpense,
-    reimbursementsStatuses: reimbursementRequest.reimbursementsStatuses.map((reimbursementStatus) => ({
-      reimbursementStatusId: reimbursementStatus.reimbursementStatusId,
-      type: reimbursementStatus.type,
-      user: userTransformer(reimbursementStatus.user),
-      dateCreated: reimbursementStatus.dateCreated
-    })),
+    reimbursementsStatuses: reimbursementRequest.reimbursementsStatuses.map(reimbursementStatusTransformer),
     recepient: userTransformer(reimbursementRequest.recepient),
     vendor: {
       vendorId: vendor.vendorId,

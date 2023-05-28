@@ -1,23 +1,21 @@
 import { WbsNumber } from './project-types';
 import { User } from './user-types';
 
-export const ClubAccountConst = {
-  Cash: 'CASH',
-  Budget: 'BUDGET'
-} as const;
-export type ClubAccount = typeof ClubAccountConst[keyof typeof ClubAccountConst];
+export enum Club_Account {
+  CASH = 'CASH',
+  BUDGET = 'BUDGET'
+}
 
-export const ReimbursementStatusTypeConst = {
-  PendingFinance: 'PENDING FINANCE',
-  SaboSubmitted: 'SABO SUBMITTED',
-  AdvisorApproved: 'ADVISOR_APPROVED',
-  Reimbursed: 'REIMBURSED'
-} as const;
-export type ReimbursementStatusType = typeof ReimbursementStatusTypeConst[keyof typeof ReimbursementStatusTypeConst];
+export enum Reimbursement_Status_Type_Shared {
+  PENDING_FINANCE = 'PENDING_FINANCE',
+  SABO_SUBMITTED = 'SABO_SUBMITTED',
+  ADVISOR_APPROVED = 'ADVISOR_APPROVED',
+  REIMBURSED = 'REIMBURSED'
+}
 
 export interface ReimbursementStatus {
   reimbursementStatusId: number;
-  type: ReimbursementStatusType;
+  type: Reimbursement_Status_Type_Shared;
   user: User;
   dateCreated: Date;
   reimbursementRequest: ReimbursementRequestPreview;
@@ -37,7 +35,7 @@ export interface ReimbursementRequest {
   reimbursementsStatuses: ReimbursementStatusPreview[];
   recepient: User;
   vendor: VendorPreview;
-  account: ClubAccount;
+  account: Club_Account;
   totalCost: number;
   receiptPictures: string[];
   reimbursementProducts: ReimbursementProductPreview[];
