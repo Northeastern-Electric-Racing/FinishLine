@@ -18,7 +18,6 @@ export interface ReimbursementStatus {
   type: Reimbursement_Status_Type_Shared;
   user: User;
   dateCreated: Date;
-  reimbursementRequest: ReimbursementRequestPreview;
 }
 
 export type ReimbursementStatusPreview = Pick<
@@ -63,7 +62,6 @@ export interface ReimbursementProduct {
   dateDeleted?: Date;
   cost: number;
   wbsNum: WbsNumber;
-  reimbursementRequest: ReimbursementRequestPreview;
 }
 
 export type ReimbursementProductPreview = Pick<
@@ -71,21 +69,19 @@ export type ReimbursementProductPreview = Pick<
   'reimbursementProductId' | 'name' | 'dateDeleted' | 'cost' | 'wbsNum'
 >;
 
-export interface VendorShared {
+export interface Vendor {
   vendorId: string;
   dateCreated: Date;
   name: string;
-  requests: ReimbursementRequestPreview[];
 }
 
-export type VendorPreview = Pick<VendorShared, 'vendorId' | 'dateCreated' | 'name'>;
+export type VendorPreview = Pick<Vendor, 'vendorId' | 'dateCreated' | 'name'>;
 
 export interface ExpenseType {
   expenseTypeId: string;
   name: string;
   code: number;
   allowed: boolean;
-  requests: ReimbursementRequestPreview[];
 }
 
 export type ExpenseTypePreview = Pick<ExpenseType, 'expenseTypeId' | 'name' | 'code' | 'allowed'>;
