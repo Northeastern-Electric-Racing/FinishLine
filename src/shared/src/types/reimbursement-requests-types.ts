@@ -1,12 +1,12 @@
 import { WbsNumber } from './project-types';
 import { User } from './user-types';
 
-export enum Club_Account {
+export enum ClubAccount {
   CASH = 'CASH',
   BUDGET = 'BUDGET'
 }
 
-export enum Reimbursement_Status_Type_Shared {
+export enum ReimbursementStatusType {
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
@@ -15,7 +15,7 @@ export enum Reimbursement_Status_Type_Shared {
 
 export interface ReimbursementStatus {
   reimbursementStatusId: number;
-  type: Reimbursement_Status_Type_Shared;
+  type: ReimbursementStatusType;
   user: User;
   dateCreated: Date;
 }
@@ -34,7 +34,7 @@ export interface ReimbursementRequest {
   reimbursementsStatuses: ReimbursementStatusPreview[];
   recepient: User;
   vendor: VendorPreview;
-  account: Club_Account;
+  account: ClubAccount;
   totalCost: number;
   receiptPictures: string[];
   reimbursementProducts: ReimbursementProductPreview[];
@@ -62,6 +62,7 @@ export interface ReimbursementProduct {
   dateDeleted?: Date;
   cost: number;
   wbsNum: WbsNumber;
+  wbsName: string;
 }
 
 export type ReimbursementProductPreview = Pick<

@@ -11,7 +11,8 @@ const reimbursementProductTransformer = (
     name: reimbursementProduct.name,
     dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
-    wbsNum: wbsNumOf(reimbursementProduct.wbsElement)
+    wbsNum: wbsNumOf(reimbursementProduct.wbsElement),
+    wbsName: reimbursementProduct.wbsElement.name
   };
 };
 
