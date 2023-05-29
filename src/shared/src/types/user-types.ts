@@ -47,7 +47,7 @@ export interface UserSettings {
   slackId: string;
 }
 
-export interface UserRole {
+export interface UpdateUserRolePayload {
   userId: number;
   role: string;
 }
