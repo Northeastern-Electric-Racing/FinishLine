@@ -37,27 +37,32 @@ export const updateReceiptPictures = async (
   currentReceipts: Receipt[],
   reimbursementRequestId: string
 ) => {
-  const newReceipts = receipts.filter(
-    (receipt) => !currentReceipts.find((currentReceipt) => currentReceipt.googleFileId === receipt.googleFileId)
-  );
-  const deletedReceipts = currentReceipts.filter(
-    (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
-  );
+  if (receipts.length > 0) {
+    const newReceipts = receipts.filter(
+      (receipt) => !currentReceipts.find((currentReceipt) => currentReceipt.googleFileId === receipt.googleFileId)
+    );
 
-  //create new receipts in the database
-  await prisma.receipt.createMany({
-    data: newReceipts.map((receipt) => {
-      return { name: receipt.name, googleFileId: receipt.googleFileId, reimbursementRequestId };
-    })
-  });
+    //create new receipts in the database
+    await prisma.receipt.createMany({
+      data: newReceipts.map((receipt) => {
+        return { name: receipt.name, googleFileId: receipt.googleFileId, reimbursementRequestId };
+      })
+    });
+  }
 
-  //mark any deleted receipts as deleted in the database
-  await prisma.receipt.updateMany({
-    where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
-    data: {
-      dateDeleted: new Date()
-    }
-  });
+  if (currentReceipts.length > 0) {
+    const deletedReceipts = currentReceipts.filter(
+      (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
+    );
+
+    //mark any deleted receipts as deleted in the database
+    await prisma.receipt.updateMany({
+      where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+  }
 };
 
 /**

@@ -28,7 +28,6 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   vendorId: '',
   account: Club_Account.CASH,
   totalCost: 0,
-  receiptPictures: [],
   dateDelivered: null,
   expenseTypeId: ''
 };
