@@ -6,7 +6,14 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Team, User } from '@prisma/client';
+import { Reimbursement_Product, Team, User } from '@prisma/client';
+
+export interface ReimbursementProductCreateArgs {
+  id?: string;
+  name: string;
+  cost: number;
+  wbsElementId: number;
+}
 
 export interface ReimbursementProductCreateArgs {
   name: string;
@@ -49,6 +56,118 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
       .filter((wbsElement) => prismaWbsElementIds.includes(wbsElement.wbsElementId))
       .map(wbsPipe);
     throw new HttpException(400, `The following projects or work packages do not exist: ${missingWbsNumbers.join(', ')}`);
+  }
+};
+
+/**
+ * This function updates any current reimbursement products associated with a reimbursement request, creates any new reimbursement products, and deletes any deleted reimbursement products
+ * @param currentReimbursementProducts the current reimbursement products of a reimbursement request
+ * @param updatedReimbursementProducts the new reimbursement products to compare
+ * @param reimbursementRequestId the reimbursement request that is being changed id
+ */
+export const updateReimbursementProducts = async (
+  currentReimbursementProducts: Reimbursement_Product[],
+  updatedReimbursementProducts: ReimbursementProductCreateArgs[],
+  reimbursementRequestId: string
+) => {
+  if (updatedReimbursementProducts.length === 0) {
+    throw new HttpException(400, 'A reimbursement request must have at least one reimbursement product!');
+  }
+
+  //if a product has an id that means it existed before and was updated
+  const updatedExistingProducts = updatedReimbursementProducts.filter((product) => product.id);
+
+  validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
+
+  const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
+
+  //if the product does not have an id that means it is new
+  const newProducts = updatedReimbursementProducts.filter((product) => !product.id);
+
+  //if there are products that exist in the current database but were not included in this edit, that means they were deleted
+  const deletedProducts = currentReimbursementProducts.filter(
+    (product) => !updatedExistingProductIds.includes(product.reimbursementProductId)
+  );
+
+  await updateDeletedProducts(deletedProducts);
+
+  await createNewProducts(newProducts, reimbursementRequestId);
+
+  await updateExistingProducts(updatedExistingProducts);
+};
+
+/**
+ * updates the existing products in the database
+ *
+ * @param products the products to update
+ */
+const updateExistingProducts = async (products: ReimbursementProductCreateArgs[]) => {
+  //updates the cost and name of the remaining products, which should be products that existed before that were not deleted
+  // Does not update wbs element id because we are requiring the user on the frontend to delete it from the wbs number and then adding it to another one
+  for (const product of products) {
+    await prisma.reimbursement_Product.update({
+      where: { reimbursementProductId: product.id },
+      data: {
+        name: product.name,
+        cost: product.cost
+      }
+    });
+  }
+};
+
+/**
+ * validates that the products that should be updated in the database exist
+ * @param currentReimbursementProducts The products that do exist in the database
+ * @param updatedExistingProducts The products that are being updated that already have Ids
+ */
+const validateUpdatedProductsExistInDatabase = (
+  currentReimbursementProducts: Reimbursement_Product[],
+  updatedExistingProducts: ReimbursementProductCreateArgs[]
+) => {
+  //Check to make sure that the updated products actually exist in the database
+  const prismaProductIds = currentReimbursementProducts.map((product) => product.reimbursementProductId);
+
+  const missingProductIds = updatedExistingProducts.filter((product) => !prismaProductIds.includes(product.id!));
+
+  if (missingProductIds.length > 0) {
+    throw new HttpException(
+      400,
+      `The following products do not exist: ${missingProductIds.map((product) => product.name).join(', ')}`
+    );
+  }
+};
+
+/**
+ * Soft deletes the given products in the database
+ *
+ * @param products the products to delete
+ */
+const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
+  //update the deleted reimbursement products by setting their date deleted to now
+  await prisma.reimbursement_Product.updateMany({
+    where: { reimbursementProductId: { in: products.map((product) => product.reimbursementProductId) } },
+    data: {
+      dateDeleted: new Date()
+    }
+  });
+};
+
+/**
+ * Creates the new products in the database
+ * @param products the products to create
+ */
+const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
+  //create the new reimbursement products
+  if (products.length !== 0) {
+    await validateReimbursementProducts(products);
+    await prisma.reimbursement_Product.createMany({
+      data: products.map((product) => ({
+        name: product.name,
+        cost: product.cost,
+        wbsElementId: product.wbsElementId,
+        reimbursementRequestId
+      }))
+    });
   }
 };
 
