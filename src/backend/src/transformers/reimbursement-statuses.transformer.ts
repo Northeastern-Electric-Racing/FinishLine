@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { ReimbursementStatus } from 'shared';
+import { ReimbursementStatus, ReimbursementStatusType } from 'shared';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 import userTransformer from './user.transformer';
 
@@ -8,10 +8,9 @@ const reimbursementStatusTransformer = (
 ): ReimbursementStatus => {
   return {
     reimbursementStatusId: reimbursementStatus.reimbursementStatusId,
-    type: reimbursementStatus.type,
+    type: reimbursementStatus.type as ReimbursementStatusType,
     user: userTransformer(reimbursementStatus.user),
-    dateCreated: reimbursementStatus.dateCreated,
-    reimbursementRequestId: reimbursementStatus.reimbursementRequestId
+    dateCreated: reimbursementStatus.dateCreated
   };
 };
 
