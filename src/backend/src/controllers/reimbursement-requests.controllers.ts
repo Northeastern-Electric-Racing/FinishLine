@@ -114,7 +114,9 @@ export default class ReimbursementRequestsController {
 
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
-      const imageData = await ReimbursementRequestService.uploadReceipt(file);
+      const user = await getCurrentUser(res);
+
+      const imageData = await ReimbursementRequestService.uploadReceipt(file, user);
 
       res.status(200).json(imageData);
     } catch (error: unknown) {

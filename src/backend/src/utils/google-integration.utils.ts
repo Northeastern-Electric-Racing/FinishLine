@@ -17,7 +17,7 @@ const GOOGLE_DRIVE_FOLDER_ID = '1MHvHLPxMKa0rPd0OokgvQ8xQW8GRHAS8';
 const createTransporter = async () => {
   try {
     oauth2Client.setCredentials({
-      refresh_token: process.env.REFRESH_TOKEN
+      refresh_token: process.env.EMAIL_REFRESH_TOKEN
     });
 
     let accessToken: string | null | undefined;
@@ -38,7 +38,7 @@ const createTransporter = async () => {
         accessToken: accessToken?.toString(),
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.REFRESH_TOKEN
+        refreshToken: process.env.EMAIL_REFRESH_TOKEN
       }
     });
     return transporter;
@@ -66,6 +66,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
   }
 };
 
+//tutorial used to set this up: https://www.labnol.org/google-drive-api-upload-220412
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
@@ -89,8 +90,10 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       fields: 'id,name'
     });
 
+    if (!response.data.id) throw new HttpException(500, 'Error while uploading file');
+
     await drive.permissions.create({
-      fileId: response.data.id!,
+      fileId: response.data.id,
       requestBody: {
         role: 'reader',
         type: 'anyone'

@@ -24,7 +24,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { sendMailToAdvisor, uploadFile } from '../utils/transporter.utils';
+import { sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -320,7 +320,9 @@ export default class ReimbursementRequestService {
    * @param file The file data for the image
    * @returns the google drive id for the file
    */
-  static async uploadReceipt(file: Express.Multer.File) {
+  static async uploadReceipt(file: Express.Multer.File, submitter: User) {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('Guests cannot upload receiptps');
+
     const imageData = await uploadFile(file);
 
     return imageData;
