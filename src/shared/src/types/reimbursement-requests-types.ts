@@ -1,5 +1,10 @@
-import { WbsNumber } from './project-types';
-import { User } from './user-types';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { WbsNumber } from "./project-types";
+import { UserPreview } from "./user-types";
 
 export enum ClubAccount {
   CASH = 'CASH',
@@ -16,7 +21,7 @@ export enum ReimbursementStatusType {
 export interface ReimbursementStatus {
   reimbursementStatusId: number;
   type: ReimbursementStatusType;
-  user: User;
+  user: UserPreview;
   dateCreated: Date;
 }
 
@@ -32,7 +37,7 @@ export interface ReimbursementRequest {
   dateDeleted?: Date;
   dateOfExpense: Date;
   reimbursementsStatuses: ReimbursementStatusPreview[];
-  recepient: User;
+  recepient: UserPreview;
   vendor: VendorPreview;
   account: ClubAccount;
   totalCost: number;

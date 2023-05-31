@@ -214,4 +214,47 @@ export default class UsersService {
 
     return userTransformer(targetUser);
   }
+
+  /**
+   * Sets the user's secure settings
+   * @param user the user to set the secure settings for
+   * @param nuid the users nuid
+   * @param street the users street address
+   * @param city the users city
+   * @param state the users state
+   * @param zipcode the users zipcode
+   * @returns the id of the user's secure settings
+   */
+  static async setUserSecureSettings(
+    user: User,
+    nuid: string,
+    street: string,
+    city: string,
+    state: string,
+    zipcode: string,
+    phoneNumber: string
+  ): Promise<string> {
+    const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      },
+      create: {
+        userId: user.userId,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      }
+    });
+
+    return newUserSecureSettings.userSecureSettingsId;
+  }
 }

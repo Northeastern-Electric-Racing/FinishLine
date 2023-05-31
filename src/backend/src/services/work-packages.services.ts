@@ -25,7 +25,8 @@ import {
   createChangeJsonDates,
   createChangeJsonNonList,
   createBlockedByChangesJson,
-  createDescriptionBulletChangesJson
+  createDescriptionBulletChangesJson,
+  getBlockingWorkPackages
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -586,6 +587,37 @@ export default class WorkPackagesService {
         }
       }
     });
+  }
+
+  /**
+   * Gets the work packages the given work package is blocking
+   * @param wbsNum the wbs number of the work package to get the blocking work packages for
+   * @returns the blocking work packages for the given work package
+   */
+  static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    // is a project so just return empty array until we implement blocking projects
+    if (workPackageNumber === 0) return [];
+
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
+
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
+
+    return blockingWorkPackages.map(workPackageTransformer);
   }
 
   /**
