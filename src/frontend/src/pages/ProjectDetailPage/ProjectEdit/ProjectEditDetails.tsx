@@ -12,11 +12,16 @@ interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectEditFormInput>;
   errors: FieldErrorsImpl<ProjectEditFormInput>;
-  projectManager: string | undefined;
-  projectLead: string | undefined;
+  projectManager?: string;
+  projectLead?: string;
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
 }
+
+const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
+  if (!user) return { label: '', id: '' };
+  return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+};
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   users,
@@ -27,11 +32,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   setProjectLead,
   setProjectManager
 }) => {
-  const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
-    if (!user) return { label: '', id: '' };
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-  };
-
   return (
     <PageBlock title="Project Details">
       <Grid container xs={12} sx={{ my: 1 }}>
@@ -59,8 +59,10 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
+            sx={{ width: '90%' }}
             id="users-autocomplete"
             onChange={(_event, value) => setProjectLead(value?.id)}
             options={users.map(userToAutocompleteOption)}
@@ -69,8 +71,10 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
           />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
+            sx={{ width: '90%' }}
             id="users-autocomplete"
             onChange={(_event, value) => setProjectManager(value?.id)}
             options={users.map(userToAutocompleteOption)}
