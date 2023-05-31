@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber } from "./project-types";
-import { UserPreview } from "./user-types";
+import { WbsNumber } from './project-types';
+import { UserPreview } from './user-types';
 
 export enum ClubAccount {
   CASH = 'CASH',
@@ -37,7 +37,7 @@ export interface ReimbursementRequest {
   dateDeleted?: Date;
   dateOfExpense: Date;
   reimbursementsStatuses: ReimbursementStatusPreview[];
-  recepient: UserPreview;
+  recipient: UserPreview;
   vendor: VendorPreview;
   account: ClubAccount;
   totalCost: number;
@@ -54,7 +54,7 @@ export type ReimbursementRequestPreview = Pick<
   | 'dateCreated'
   | 'dateDeleted'
   | 'dateOfExpense'
-  | 'recepient'
+  | 'recipient'
   | 'account'
   | 'totalCost'
   | 'receiptPictures'

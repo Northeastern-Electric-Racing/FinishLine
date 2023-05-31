@@ -4,7 +4,7 @@ import reimbursementStatusQueryArgs from './reimbursement-statuses.query-args';
 
 const reimbursementRequestQueryArgs = Prisma.validator<Prisma.Reimbursement_RequestArgs>()({
   include: {
-    recepient: true,
+    recipient: true,
     vendor: true,
     expenseType: true,
     reimbursementsStatuses: {
