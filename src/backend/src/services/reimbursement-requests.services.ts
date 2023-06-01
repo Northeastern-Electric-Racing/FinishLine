@@ -237,12 +237,13 @@ export default class ReimbursementRequestService {
    */
   static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId },
+      where: { reimbursementRequestId }
     });
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    if (!(submitter.userId === reimbursementRequest.recepientId)) throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
+    if (!(submitter.userId === reimbursementRequest.recepientId))
+      throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
