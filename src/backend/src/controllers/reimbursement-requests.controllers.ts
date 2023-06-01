@@ -83,4 +83,15 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

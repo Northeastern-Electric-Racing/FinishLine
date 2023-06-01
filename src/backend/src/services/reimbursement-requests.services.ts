@@ -14,6 +14,7 @@ import {
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedException,
   AccessDeniedGuestException,
   DeletedException,
   HttpException,
@@ -224,5 +225,32 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Service function to make a reimbursement request as delivered
+   * @param submitter is the User marking the request as delivered
+   * @param requestId is the ID of the reimbursement request to be marked as delivered
+   * @throws NotFoundException if the id is invalid or not there
+   * @throws AccessDeniedException if the creator of the request is not the submitter
+   * @returns the updated reimbursement request
+   */
+  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (!(submitter.userId === reimbursementRequest.recepientId)) throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
+
+    const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        dateDelivered: new Date()
+      }
+    });
+
+    return reimbursementRequestDelivered;
   }
 }
