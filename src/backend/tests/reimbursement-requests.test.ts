@@ -1,8 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { AccessDeniedAdminOnlyException, AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
-import { validateReimbursementProducts } from '../src/utils/reimbursement-requests.utils';
-import { Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
+import { Parts, PopEyes, requestDeliveredValid } from './test-data/reimbursement-requests.test-data';
 import { batman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
@@ -61,17 +60,17 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
-      await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, '')).rejects.toThrow(
-        new NotFoundException('Reimbursement Request', reimbursementRequestId /* TODO */)
+      await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '')).rejects.toThrow(
+        new NotFoundException('Reimbursement Request', requestDeliveredValid.reimbursementRequestId)
       );
     });
 
     test('Mark request as delivered successfully', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(/* TODO: reimbursement_Request value*/);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(requestDeliveredValid);
 
-      const expenseType = await ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, PopEyes.vendorId);
+      const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, PopEyes.vendorId);
 
-      expect(/* TODO */).toBe(/* TODO */);
+      expect(reimbursementRequest.dateDelivered).toBe(new Date());
     });
   });
 });
