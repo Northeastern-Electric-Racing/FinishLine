@@ -49,7 +49,7 @@ export const requestDeliveredValid: Reimbursement_Request = {
   dateCreated: new Date('12/22/203'),
   dateDeleted: null,
   dateOfExpense: new Date('12/07/203'),
-  recepientId: 343,
+  recipientId: 343,
   vendorId: 'CHICKEN',
   account: Club_Account.CASH,
   totalCost: 343,
