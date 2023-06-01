@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman, batmanSecureSettings } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
@@ -89,6 +89,21 @@ describe('Users', () => {
       expect(res.userId).toStrictEqual(1);
       expect(res.defaultTheme).toStrictEqual('DARK');
       expect(res.slackId).toStrictEqual('slack');
+    });
+
+    test('setUserSecureSettings works', async () => {
+      jest.spyOn(prisma.user_Secure_Settings, 'upsert').mockResolvedValue(batmanSecureSettings);
+      const res = await UsersService.setUserSecureSettings(
+        batman,
+        'nuid',
+        'street',
+        'city',
+        'state',
+        'zipcode',
+        '019-932-1234'
+      );
+
+      expect(res).toBe(batmanSecureSettings.userSecureSettingsId);
     });
   });
 });

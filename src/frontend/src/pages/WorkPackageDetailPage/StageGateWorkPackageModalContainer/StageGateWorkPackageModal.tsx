@@ -58,9 +58,10 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
+                  {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
                   <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
                   <ul style={{ marginTop: 0, marginBottom: 2 }}>
-                    <li>Updated slide deck & documentation</li>
+                    <li>Updated confluence & documentation</li>
                     <li>Creating any outstanding change requests</li>
                     <li>Submitted all receipts to the procurement form</li>
                     <li>Completed all Work Package expected activities</li>

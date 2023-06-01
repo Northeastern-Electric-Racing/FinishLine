@@ -1,15 +1,16 @@
 import { User } from 'shared';
-import { Controller } from 'react-hook-form';
+import { Controller, Control, FieldErrorsImpl } from 'react-hook-form';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
+import { ProjectEditFormInput } from './ProjectEditContainer';
 
 interface ProjectEditDetailsProps {
   users: User[];
-  control: any;
-  errors: any;
+  control: Control<ProjectEditFormInput>;
+  errors: FieldErrorsImpl<ProjectEditFormInput>;
 }
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
@@ -84,11 +85,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Slide Deck Link</FormLabel>
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
+            <FormLabel>Confluence Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
               control={control}
-              placeholder="Enter slide deck link..."
+              placeholder="Enter confluence link..."
               errorMessage={errors.slideDeckLink}
             />
           </FormControl>
