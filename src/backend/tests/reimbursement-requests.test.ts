@@ -222,4 +222,15 @@ describe('Reimbursement Requests', () => {
       expect(prisma.reimbursement_Request.update).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Get Reimbursement Requests Tests', () => {
+    test('Get all Reimbursement Requests works', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
+
+      const res = await ReimbursementRequestService.getAllReimbursementRequests();
+
+      expect(prisma.reimbursement_Request.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
+  });
 });
