@@ -2,11 +2,7 @@ import {
   Vendor as PrismaVendor,
   Reimbursement_Request as PrismaReimbursementRequest,
   Expense_Type as PrismaExpenseType,
-  Reimbursement_Product as PrismaReimbursementProduct,
-  Reimbursement_Request,
-  Club_Accounts,
-  Reimbursement_Status_Type,
-  Reimbursement_Status
+  Reimbursement_Product as PrismaReimbursementProduct
 } from '@prisma/client';
 import { ClubAccount } from 'shared';
 export const PopEyes: PrismaVendor = {
