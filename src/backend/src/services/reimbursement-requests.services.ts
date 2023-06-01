@@ -316,7 +316,7 @@ export default class ReimbursementRequestService {
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    if (!(submitter.userId === reimbursementRequest.recepientId))
+    if (!(submitter.userId === reimbursementRequest.recipientId))
       throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
