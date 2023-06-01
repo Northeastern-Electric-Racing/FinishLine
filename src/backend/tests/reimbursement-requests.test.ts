@@ -7,7 +7,13 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes, requestDeliveredValid } from './test-data/reimbursement-requests.test-data';
+import {
+  GiveMeMoneyProduct,
+  GiveMeMyMoney,
+  Parts,
+  PopEyes,
+  requestDeliveredValid
+} from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
@@ -239,7 +245,10 @@ describe('Reimbursement Requests', () => {
     test('Mark request as delivered successfully', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(requestDeliveredValid);
 
-      const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, PopEyes.vendorId);
+      const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+        batman,
+        PopEyes.vendorId
+      );
 
       expect(reimbursementRequest.dateDelivered).toBe(new Date());
     });
