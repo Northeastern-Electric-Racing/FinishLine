@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
-import { Club_Account } from 'shared';
+import { ClubAccount } from 'shared';
 import prisma from '../prisma/prisma';
 import { addReimbursementProducts } from '../utils/reimbursement-requests.utils';
 import { NotFoundException } from '../utils/errors.utils';
@@ -24,7 +24,7 @@ export default class ReimbursementRequestService {
     receipient: User,
     dateOfExpense: Date,
     vendorId: string,
-    account: Club_Account,
+    account: ClubAccount,
     receiptPictures: string[],
     reimbursementProducts: { name: string; cost: number; wbsElementId: number }[],
     expenseTypeId: string,
