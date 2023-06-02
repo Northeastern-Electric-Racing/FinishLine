@@ -302,7 +302,7 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Service function to make a reimbursement request as delivered
+   * Service function to mark a reimbursement request as delivered
    * @param submitter is the User marking the request as delivered
    * @param requestId is the ID of the reimbursement request to be marked as delivered
    * @throws NotFoundException if the id is invalid or not there
@@ -313,6 +313,9 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
+
+    if (!(reimbursementRequest?.dateDelivered === null))
+      throw new AccessDeniedException('Can only be marked as delivered once');
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 

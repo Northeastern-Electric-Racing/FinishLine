@@ -12,7 +12,7 @@ import {
   GiveMeMyMoney,
   Parts,
   PopEyes,
-  requestDeliveredValid
+  requestDelivered
 } from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
 
@@ -230,27 +230,39 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Delivered Tests', () => {
-    test('Mark as delivered fails for non admins', async () => {
+    test('Mark as delivered fails for non submitter', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
       await expect(
-        ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, PopEyes.vendorId)
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, requestDelivered.reimbursementRequestId)
       ).rejects.toThrow(new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered'));
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
       await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '')).rejects.toThrow(
-        new NotFoundException('Reimbursement Request', requestDeliveredValid.reimbursementRequestId)
+        new NotFoundException('Reimbursement Request', requestDelivered.reimbursementRequestId)
       );
     });
 
+    test('Mark as delivered fails for already marked as delivered', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(requestDelivered);
+
+      await expect(
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, requestDelivered.reimbursementRequestId)
+      ).rejects.toThrow(new AccessDeniedException('Can only be marked as delivered once'));
+    });
+
     test('Mark request as delivered successfully', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(requestDeliveredValid);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         batman,
-        PopEyes.vendorId
+        requestDelivered.reimbursementRequestId
       );
 
-      expect(reimbursementRequest.dateDelivered).toBe(new Date());
+      expect(reimbursementRequest.dateDelivered).toBe(new Date('12/25/203'));
     });
   });
 });
