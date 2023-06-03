@@ -49,6 +49,29 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, receiptPictures } =
+        req.body;
+      const user = await getCurrentUser(res);
+      const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
+        requestId,
+        dateOfExpense,
+        vendorId,
+        account,
+        expenseTypeId,
+        totalCost,
+        reimbursementProducts,
+        receiptPictures,
+        user
+      );
+      res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const { saboNumbers } = req.body;

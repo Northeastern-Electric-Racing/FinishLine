@@ -100,7 +100,7 @@ model User {
   deletedTasks              Task[]                  @relation(name: "deletedBy")
   assignedTasks             Task[]                  @relation(name: "assignedTo")
   favoriteProjects          Project[]               @relation(name: "favoritedBy")
-  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecepient")
+  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecipient")
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
@@ -350,8 +350,8 @@ model Reimbursement_Request {
   dateDeleted            DateTime?
   dateOfExpense          DateTime
   reimbursementsStatuses Reimbursement_Status[]
-  recepientId            Int
-  recepient              User                    @relation(name: "reimbursementRequestRecepient", fields: [recepientId], references: [userId])
+  recipientId            Int
+  recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId               String
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
