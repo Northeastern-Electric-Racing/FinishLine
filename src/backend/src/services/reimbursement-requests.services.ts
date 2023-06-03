@@ -177,6 +177,24 @@ export default class ReimbursementRequestService {
     return updatedReimbursementRequest;
   }
 
+  static async deleteReimbursementRequest(requestId: string, deleter: User) {
+    const request = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId: requestId },
+      include: {
+        reimbursementProducts: true
+      }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement Request', requestId);
+    if (request.recepientId !== deleter.userId)
+      throw new AccessDeniedException(
+        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+      );
+    if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
+
+    request.dateDeleted = new Date();
+  }
+
   /**
    * sends the pending advisor reimbursements to the advisor
    * @param sender the person sending the pending advisor list
