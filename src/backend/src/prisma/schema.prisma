@@ -286,6 +286,7 @@ model LinkType {
   name        String
   dateCreated DateTime @default(now())
   creatorId   Int
+  iconName    String
   creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
   links       Link[]   @relation(name: "linkTypes")
 }

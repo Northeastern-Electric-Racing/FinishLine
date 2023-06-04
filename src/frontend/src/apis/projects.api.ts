@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, WbsNumber } from 'shared';
+import { LinkType, Project, WbsNumber } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { projectTransformer } from './transformers/projects.transformers';
@@ -78,4 +78,12 @@ export const deleteProject = (wbsNumber: WbsNumber) => {
  */
 export const toggleProjectFavorite = (wbsNum: WbsNumber) => {
   return axios.post<{ message: string }>(apiUrls.projectsToggleFavorite(wbsPipe(wbsNum)));
+};
+
+/**
+ * gets all the link types from the database
+ * @returns gets all the link types
+ */
+export const getAllLinkTypes = () => {
+  return axios.get<LinkType[]>(apiUrls.projectsLinkTypes());
 };

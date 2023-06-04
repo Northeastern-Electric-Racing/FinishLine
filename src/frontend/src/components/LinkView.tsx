@@ -1,9 +1,12 @@
-import { Box, Link } from '@mui/material';
+import Icon from '@mui/material/Icon';
+import { Box } from '@mui/system';
 import { Link as SharedLink } from 'shared';
+import { Link } from '@mui/material';
 
 const LinkView: React.FC<{ link: SharedLink }> = ({ link }) => {
   return (
     <Box>
+      <Icon>star</Icon>
       <Link href={link.url} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
         {link.linkType.name}
       </Link>

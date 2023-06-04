@@ -106,7 +106,7 @@ export const createListChanges = <T>(
   });
 
   newArray.forEach((changeListValue) => {
-    if (!seenOld.has(changeListValue.comparator)) {
+    if (changeListValue.comparator === "-1" || !seenOld.has(changeListValue.comparator)) {
       changes.push({ changeListValue, type: ChangeType.ADDED });
     } else if (seenOld.get(changeListValue.comparator) !== changeListValue.displayValue) {
       changes.push({ changeListValue, type: ChangeType.EDITED });

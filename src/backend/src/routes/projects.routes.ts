@@ -7,6 +7,7 @@ import ProjectsController from '../controllers/projects.controllers';
 const projectRouter = express.Router();
 
 projectRouter.get('/', ProjectsController.getAllProjects);
+projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 projectRouter.post(
   '/create',
@@ -35,10 +36,10 @@ projectRouter.post(
   body('otherConstraints').isArray(),
   body('otherConstraints.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('otherConstraints.*.detail')),
-  nonEmptyString(body('googleDriveFolderLink')),
-  nonEmptyString(body('slideDeckLink')),
-  nonEmptyString(body('bomLink')),
-  nonEmptyString(body('taskListLink')),
+  body('links').isArray(),
+  nonEmptyString(body('links.*.name')),
+  nonEmptyString(body('links.*.url')),
+  nonEmptyString(body('links.*.linkTypeId')),
   intMinZero(body('projectLeadId').optional()),
   intMinZero(body('projectManagerId').optional()),
   validateInputs,

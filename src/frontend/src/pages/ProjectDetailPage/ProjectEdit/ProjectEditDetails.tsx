@@ -83,7 +83,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        {}
       </Grid>
     </PageBlock>
   );

@@ -52,10 +52,7 @@ export default class ProjectsController {
         goals,
         features,
         otherConstraints,
-        googleDriveFolderLink,
-        slideDeckLink,
-        bomLink,
-        taskListLink,
+        links,
         projectLeadId,
         projectManagerId
       } = req.body;
@@ -71,10 +68,7 @@ export default class ProjectsController {
         goals,
         features,
         otherConstraints,
-        googleDriveFolderLink,
-        slideDeckLink,
-        bomLink,
-        taskListLink,
+        links,
         projectLeadId || null,
         projectManagerId || null
       );
@@ -118,6 +112,15 @@ export default class ProjectsController {
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, user);
 
       res.status(200).json(targetProject);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllLinkTypes(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const linkTypes = await ProjectsService.getAllLinkTypes();
+      res.status(200).json(linkTypes);
     } catch (error: unknown) {
       next(error);
     }

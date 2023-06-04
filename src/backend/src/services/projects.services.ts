@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
-import { isAdmin, isGuest, isProject, LinkCreateArgs, Project, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -26,6 +26,8 @@ import {
   descriptionBulletToChangeListValue
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
+import linkTypeTransformer from '../transformers/link-types.transformer';
+import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 
 export default class ProjectsService {
   /**
@@ -348,6 +350,36 @@ export default class ProjectsService {
         .concat(otherConstraintsChangeJson.editedElements)
     );
 
+    await linkChanges.addedElements.forEach(async (link) => {
+      await prisma.link.create({
+        data: {
+          url: link.url,
+          linkTypeId: link.linkTypeId,
+          creatorId: userId,
+          projectId
+        }
+      });
+    });
+
+    await linkChanges.editedElements.forEach(async (link) => {
+      await prisma.link.update({
+        where: {
+          linkId: link.linkId
+        },
+        data: {
+          ...link
+        }
+      });
+    });
+
+    await linkChanges.deletedElements.forEach(async (link) => {
+      await prisma.link.delete({
+        where: {
+          linkId: link.linkId
+        }
+      });
+    });
+
     // create the changes in prisma
     await prisma.change.createMany({
       data: changes
@@ -550,5 +582,13 @@ export default class ProjectsService {
         });
 
     return projectTransformer(project);
+  }
+
+  static async getAllLinkTypes(): Promise<LinkType[]> {
+    return (
+      await prisma.linkType.findMany({
+        ...linkTypeQueryArgs
+      })
+    ).map(linkTypeTransformer);
   }
 }

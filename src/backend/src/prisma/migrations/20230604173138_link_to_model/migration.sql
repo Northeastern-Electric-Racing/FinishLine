@@ -19,6 +19,7 @@ CREATE TABLE "LinkType" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "creatorId" INTEGER NOT NULL,
+    "iconName" TEXT NOT NULL,
 
     CONSTRAINT "LinkType_pkey" PRIMARY KEY ("linkTypeId")
 );

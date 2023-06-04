@@ -77,6 +77,7 @@ export interface LinkType {
   linkTypeId: string;
   dateCreated: Date;
   creator: UserPreview;
+  iconName: string;
   name: string;
 }
 

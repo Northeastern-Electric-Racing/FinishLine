@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, Project } from 'shared';
+import { LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -25,15 +25,11 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import LinkEditView from '../../../components/LinkEditView';
 
-/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
   budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-  slideDeckLink: yup.string().required('Confluence link is required!').url('Invalid URL'),
-  googleDriveFolderLink: yup.string().required('Google Drive folder link is required!').url('Invalid URL'),
-  bomLink: yup.string().url('Invalid URL').required('Bom link is required!'),
-  taskListLink: yup.string().required('Task list link is required!').url('Invalid URL'),
   summary: yup.string().required('Summary is required!')
 });
 
@@ -46,7 +42,7 @@ export interface ProjectEditFormInput {
   name: string;
   budget: number;
   summary: string;
-  links: Link[];
+  links: LinkCreateArgs[];
   crId: string;
   goals: {
     bulletId: number;
@@ -71,7 +67,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const allUsers = useAllUsers();
   const toast = useToast();
-  const { links, name, budget, summary } = project;
+  const { name, budget, summary } = project;
   const {
     register,
     handleSubmit,
@@ -82,7 +78,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     defaultValues: {
       name,
       budget,
-      links,
       summary,
       projectLeadId: project.projectLead?.userId,
       projectManagerId: project.projectManager?.userId,
@@ -90,11 +85,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       rules: project.rules.map((rule) => {
         return { rule };
       }),
+      links: project.links.map((link) => {
+        return {
+          linkId: link.linkId,
+          linkTypeId: link.linkType.linkTypeId,
+          url: link.url
+        };
+      }),
       goals: bulletsToObject(project.goals),
       features: bulletsToObject(project.features),
       constraints: bulletsToObject(project.otherConstraints)
     }
   });
+  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
   const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
   const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
   const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
@@ -103,6 +106,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     append: appendConstraint,
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
+
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
@@ -176,6 +180,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             errorMessage={errors.summary}
           />
         </Grid>
+      </PageBlock>
+      <PageBlock title="Links">
+        <LinkEditView name="links" ls={links} register={register} append={appendLink} remove={removeLink} />
       </PageBlock>
       <PageBlock title="Goals">
         <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />

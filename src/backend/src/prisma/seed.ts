@@ -57,6 +57,7 @@ const performSeed: () => Promise<void> = async () => {
   const confluenceLinkType = await prisma.linkType.create({
     data: {
       name: 'Confluence',
+      iconName: 'Description',
       creator: {
         connect: {
           userId: thomasEmrax.userId
@@ -68,6 +69,7 @@ const performSeed: () => Promise<void> = async () => {
   const bomLinkType = await prisma.linkType.create({
     data: {
       name: 'Bill of Materials',
+      iconName: 'Format List Numbered',
       creator: {
         connect: {
           userId: thomasEmrax.userId
@@ -182,7 +184,18 @@ const performSeed: () => Promise<void> = async () => {
     ['Decrease size by 90% from 247 cubic inches to 24.7 cubic inches'],
     ['Capable of absorbing 5000N in a head-on collision'],
     ['Cannot go further towards the rear of the car than the front roll hoop'],
-    [],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: confluenceLinkType.linkTypeId
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: bomLinkType.linkTypeId
+      }
+    ],
     thomasEmrax.userId,
     joeBlow.userId
   );
@@ -201,7 +214,18 @@ const performSeed: () => Promise<void> = async () => {
     ['Decrease weight by 90% from 4.8 pounds to 0.48 pounds'],
     ['Provides removable section for easy access to the pedal box'],
     ['Compatible with a side-pod chassis design'],
-    [],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: confluenceLinkType.linkTypeId
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: bomLinkType.linkTypeId
+      }
+    ],
     joeShmoe.userId,
     thomasEmrax.userId
   );
@@ -250,7 +274,18 @@ const performSeed: () => Promise<void> = async () => {
     ['Power consumption stays under 10 watts from the low voltage system'],
     ['Capable of interfacing via I2C or comparable serial interface.'],
     ['Must be compatible with chain drive', 'Must be well designed and whatnot'],
-    [],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: confluenceLinkType.linkTypeId
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: bomLinkType.linkTypeId
+      }
+    ],
     joeShmoe.userId,
     joeBlow.userId
   );
@@ -269,7 +304,18 @@ const performSeed: () => Promise<void> = async () => {
     ['Decrease installed component costs by 63% from $2,700 to $1000'],
     ['All wires are bundled and secured to the chassis at least every 6 inches', 'Wires are not wireless'],
     ['Utilizes 8020 frame construction'],
-    [],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: confluenceLinkType.linkTypeId
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeId: bomLinkType.linkTypeId
+      }
+    ],
     thomasEmrax.userId,
     joeBlow.userId
   );
