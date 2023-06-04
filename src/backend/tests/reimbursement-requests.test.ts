@@ -59,7 +59,7 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Get User Reimbursement Request Tests', () => {
-    it('successfully calls the Prisma function', async () => {
+    test('successfully calls the Prisma function', async () => {
       // mock prisma calls
       const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
       prismaGetManySpy.mockResolvedValue([GiveMeMyMoney]);
