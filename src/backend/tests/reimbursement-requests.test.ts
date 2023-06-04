@@ -58,6 +58,22 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Get User Reimbursement Request Tests', () => {
+    it('successfully calls the Prisma function', async () => {
+      // mock prisma calls
+      const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
+      prismaGetManySpy.mockResolvedValue([GiveMeMyMoney]);
+
+      // act
+      const matches = await ReimbursementRequestService.getUserReimbursementRequests(batman);
+
+      // assert
+      expect(prismaGetManySpy).toBeCalledTimes(1);
+      expect(prismaGetManySpy).toBeCalledWith({ where: { dateDeleted: null, recipientId: batman.userId } });
+      expect(matches).toEqual([GiveMeMyMoney]);
+    });
+  });
+
   describe('Edit Reimbursement Request Tests', () => {
     test('Request Fails When Id does not exist', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);

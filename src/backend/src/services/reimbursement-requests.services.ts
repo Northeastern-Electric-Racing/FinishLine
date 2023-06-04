@@ -30,10 +30,10 @@ export default class ReimbursementRequestService {
    * @param recipient the user retrieving their reimbursement requests
    */
   static async getUserReimbursementRequests(recipient: User): Promise<Reimbursement_Request[]> {
-    const prismaQueryResult = await prisma.reimbursement_Request.findMany({
-      where: { dateDeleted: null, recepientId: recipient.userId }
+    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null, recipientId: recipient.userId }
     });
-    return prismaQueryResult;
+    return userReimbursementRequests;
   }
 
   /**
