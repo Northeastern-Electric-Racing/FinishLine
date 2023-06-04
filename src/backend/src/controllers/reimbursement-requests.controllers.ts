@@ -62,6 +62,16 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const { saboNumbers } = req.body;
