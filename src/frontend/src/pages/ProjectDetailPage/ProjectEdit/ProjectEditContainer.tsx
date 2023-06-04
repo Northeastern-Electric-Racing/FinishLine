@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project } from 'shared';
+import { Link, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -46,11 +46,7 @@ export interface ProjectEditFormInput {
   name: string;
   budget: number;
   summary: string;
-  bomLink: string | undefined;
-  googleDriveFolderLink: string | undefined;
-  taskListLink: string | undefined;
-  slideDeckLink: string | undefined;
-  // projectId: number;
+  links: Link[];
   crId: string;
   goals: {
     bulletId: number;
@@ -75,7 +71,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
   const allUsers = useAllUsers();
   const toast = useToast();
-  const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
+  const { links, name, budget, summary } = project;
   const {
     register,
     handleSubmit,
@@ -86,10 +82,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     defaultValues: {
       name,
       budget,
-      slideDeckLink,
-      bomLink,
-      taskListLink,
-      googleDriveFolderLink: gDriveLink,
+      links,
       summary,
       projectLeadId: project.projectLead?.userId,
       projectManagerId: project.projectManager?.userId,
@@ -120,17 +113,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const onSubmit = async (data: ProjectEditFormInput) => {
-    const {
-      name,
-      budget,
-      summary,
-      bomLink = '',
-      googleDriveFolderLink = '',
-      taskListLink = '',
-      slideDeckLink = '',
-      projectLeadId = 0,
-      projectManagerId = 0
-    } = data;
+    const { name, budget, summary, links, projectLeadId = 0, projectManagerId = 0 } = data;
     const rules = data.rules.map((rule) => rule.rule);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -140,10 +123,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       name,
       budget,
       summary,
-      bomLink,
-      googleDriveFolderLink,
-      taskListLink,
-      slideDeckLink,
+      links,
       projectId: project.id,
       crId: parseInt(data.crId),
       rules,

@@ -16,6 +16,7 @@ import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from '../transformers/user.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
+import linkTransformer from './links.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -42,10 +43,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     team: project.team ? project.team : undefined,
     summary: project.summary,
     budget: project.budget,
-    gDriveLink: project.googleDriveFolderLink ?? undefined,
-    taskListLink: project.taskListLink ?? undefined,
-    slideDeckLink: project.slideDeckLink ?? undefined,
-    bomLink: project.bomLink ?? undefined,
+    links: project.links.map(linkTransformer),
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),

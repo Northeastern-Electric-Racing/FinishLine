@@ -21,20 +21,20 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException
 } from '../utils/errors.utils';
-import {
-  createChangeJsonDates,
-  createChangeJsonNonList,
-  createBlockedByChangesJson,
-  createDescriptionBulletChangesJson,
-  getBlockingWorkPackages
-} from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
-import { descBulletConverter } from '../utils/utils';
+import { wbsNumOf } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
+import { createChange, createListChanges } from '../utils/changes.utils';
+import {
+  DescriptionBulletPreview,
+  descriptionBulletToChangeListValue,
+  descriptionBulletsToChangeListValues
+} from '../utils/description-bullets.utils';
+import { getBlockingWorkPackages } from '../utils/work-packages.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -330,7 +330,7 @@ export default class WorkPackagesService {
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
 
-    const depsIds = await Promise.all(
+    const updatedBlockedBys = await Promise.all(
       blockedBy.map(async (wbsNum: WbsNumber) => {
         const { carNumber, projectNumber, workPackageNumber } = wbsNum;
         const wbsElem = await prisma.wBS_Element.findUnique({
@@ -342,66 +342,55 @@ export default class WorkPackagesService {
         if (!wbsElem) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
         if (wbsElem.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
-        return wbsElem.wbsElementId;
+        return wbsElem;
       })
     );
 
     const { wbsElementId } = originalWorkPackage;
     let changes = [];
     // get the changes or undefined for each of the fields
-    const nameChangeJson = createChangeJsonNonList(
-      'name',
-      originalWorkPackage.wbsElement.name,
-      name,
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const stageChangeJson = createChangeJsonNonList(
-      'stage',
-      originalWorkPackage.stage,
-      stage ?? 'None',
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const startDateChangeJson = createChangeJsonDates(
+    const nameChangeJson = createChange('name', originalWorkPackage.wbsElement.name, name, crId, userId, wbsElementId!);
+    const stageChangeJson = createChange('stage', originalWorkPackage.stage, stage ?? 'None', crId, userId, wbsElementId!);
+    const startDateChangeJson = createChange(
       'start date',
-      originalWorkPackage.startDate,
-      new Date(startDate),
+      originalWorkPackage.startDate.toDateString(),
+      new Date(startDate).toDateString(),
       crId,
       userId,
       wbsElementId!
     );
-    const durationChangeJson = createChangeJsonNonList(
-      'duration',
-      originalWorkPackage.duration,
-      duration,
-      crId,
-      userId,
-      wbsElementId!
-    );
-    const blockedByChangeJson = await createBlockedByChangesJson(
-      originalWorkPackage.blockedBy.map((element) => element.wbsElementId),
-      depsIds.map((elem) => elem as number),
+    const durationChangeJson = createChange('duration', originalWorkPackage.duration, duration, crId, userId, wbsElementId!);
+    const blockedByChangeJson = createListChanges(
+      originalWorkPackage.blockedBy.map((element) => {
+        return {
+          element,
+          comparator: `${element.wbsElementId}`,
+          displayValue: wbsPipe(wbsNumOf(element))
+        };
+      }),
+      updatedBlockedBys.map((element) => {
+        return {
+          element,
+          comparator: `${element.wbsElementId}`,
+          displayValue: wbsPipe(wbsNumOf(element))
+        };
+      }),
       crId,
       userId,
       wbsElementId!,
       'blocked by'
     );
-    const expectedActivitiesChangeJson = createDescriptionBulletChangesJson(
-      originalWorkPackage.expectedActivities
-        .filter((ele) => !ele.dateDeleted)
-        .map((element) => descBulletConverter(element)),
-      expectedActivities,
+    const expectedActivitiesChangeJson = createListChanges(
+      descriptionBulletsToChangeListValues(originalWorkPackage.expectedActivities.filter((ele) => !ele.dateDeleted)),
+      expectedActivities.map(descriptionBulletToChangeListValue),
       crId,
       userId,
       wbsElementId!,
       'expected activity'
     );
-    const deliverablesChangeJson = createDescriptionBulletChangesJson(
-      originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted).map((element) => descBulletConverter(element)),
-      deliverables,
+    const deliverablesChangeJson = createListChanges(
+      descriptionBulletsToChangeListValues(originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted)),
+      deliverables.map(descriptionBulletToChangeListValue),
       crId,
       userId,
       wbsElementId!,
@@ -414,7 +403,7 @@ export default class WorkPackagesService {
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
     if (stageChangeJson !== undefined) changes.push(stageChangeJson);
 
-    const projectManagerChangeJson = createChangeJsonNonList(
+    const projectManagerChangeJson = createChange(
       'project manager',
       await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
       await getUserFullName(projectManager),
@@ -426,7 +415,7 @@ export default class WorkPackagesService {
       changes.push(projectManagerChangeJson);
     }
 
-    const projectLeadChangeJson = createChangeJsonNonList(
+    const projectLeadChangeJson = createChange(
       'project lead',
       await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
       await getUserFullName(projectLead),
@@ -440,7 +429,7 @@ export default class WorkPackagesService {
 
     // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
-      .concat(blockedByChangeJson)
+      .concat(blockedByChangeJson.changes)
       .concat(expectedActivitiesChangeJson.changes)
       .concat(deliverablesChangeJson.changes);
 
@@ -464,33 +453,35 @@ export default class WorkPackagesService {
         stage,
         blockedBy: {
           set: [], // remove all the connections then add all the given ones
-          connect: depsIds.map((ele) => ({ wbsElementId: ele }))
+          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele.wbsElementId }))
         }
       }
     });
 
     // Update any deleted description bullets to have their date deleted as right now
-    const deletedIds = expectedActivitiesChangeJson.deletedIds.concat(deliverablesChangeJson.deletedIds);
-    if (deletedIds.length > 0) {
+    const deletedElements: DescriptionBulletPreview[] = expectedActivitiesChangeJson.deletedElements.concat(
+      deliverablesChangeJson.deletedElements
+    );
+    if (deletedElements.length > 0) {
       await prisma.description_Bullet.updateMany({
-        where: { descriptionId: { in: deletedIds } },
+        where: { descriptionId: { in: deletedElements.map((descriptionBullet) => descriptionBullet.id) } },
         data: { dateDeleted: new Date() }
       });
     }
 
-    addDescriptionBullets(
-      expectedActivitiesChangeJson.addedDetails,
+    await addDescriptionBullets(
+      expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackage.workPackageId,
       'workPackageIdExpectedActivities'
     );
-    addDescriptionBullets(
-      deliverablesChangeJson.addedDetails,
+
+    await addDescriptionBullets(
+      deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackage.workPackageId,
       'workPackageIdDeliverables'
     );
-    editDescriptionBullets(
-      expectedActivitiesChangeJson.editedIdsAndDetails.concat(deliverablesChangeJson.editedIdsAndDetails)
-    );
+
+    await editDescriptionBullets(expectedActivitiesChangeJson.editedElements.concat(deliverablesChangeJson.editedElements));
 
     // create the changes in prisma
     await prisma.change.createMany({ data: changes });

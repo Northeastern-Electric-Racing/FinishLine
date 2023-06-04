@@ -8,7 +8,6 @@ import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
-  UserWithTeam,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserIsPartOfFinanceTeam
@@ -23,6 +22,7 @@ import {
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
+import { UserWithTeam } from '../utils/auth.utils';
 
 export default class ReimbursementRequestService {
   /**

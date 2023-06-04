@@ -18,7 +18,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
     <PageBlock title="Project Details">
       <Grid container xs={12} sx={{ my: 1 }}>
         <Grid item xs={8}>
-          <FormControl sx={{ width: '90%' }}>
+          <FormControl>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
               name="name"
@@ -29,7 +29,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
           </FormControl>
         </Grid>
         <Grid item xs={4}>
-          <FormControl sx={{ width: '90%' }}>
+          <FormControl>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
               name="budget"
@@ -83,51 +83,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '80%' }}>
-            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
-            <FormLabel>Confluence Link</FormLabel>
-            <ReactHookTextField
-              name="slideDeckLink"
-              control={control}
-              placeholder="Enter confluence link..."
-              errorMessage={errors.slideDeckLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Google Drive Folder Link</FormLabel>
-            <ReactHookTextField
-              name="googleDriveFolderLink"
-              control={control}
-              placeholder="Enter Google Drive folder link..."
-              errorMessage={errors.googleDriveFolderLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Bom Link</FormLabel>
-            <ReactHookTextField
-              name="bomLink"
-              control={control}
-              placeholder="Enter bom link..."
-              errorMessage={errors.bomLink}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={12} sx={{ my: 1 }}>
-          <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Task List Link</FormLabel>
-            <ReactHookTextField
-              name="taskListLink"
-              control={control}
-              placeholder="Enter task list link..."
-              errorMessage={errors.taskListLink}
-            />
-          </FormControl>
-        </Grid>
+        {}
       </Grid>
     </PageBlock>
   );

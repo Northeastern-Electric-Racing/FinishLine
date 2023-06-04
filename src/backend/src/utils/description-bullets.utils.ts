@@ -2,6 +2,13 @@ import prisma from '../prisma/prisma';
 import { isLeadership } from 'shared';
 import { Work_Package, Description_Bullet } from '@prisma/client';
 import { HttpException } from './errors.utils';
+import { ChangeListValue } from './changes.utils';
+import { descBulletConverter } from './utils';
+
+export interface DescriptionBulletPreview {
+  id: number;
+  detail: string;
+}
 
 export const hasBulletCheckingPermissions = async (userId: number, descriptionId: number) => {
   const user = await prisma.user.findUnique({ where: { userId } });
@@ -51,4 +58,22 @@ export const throwIfUncheckedDescriptionBullets = (
     (element) => element.dateTimeChecked === null && element.dateDeleted === null
   );
   if (uncheckedDeliverables) throw new HttpException(400, `Work Package has unchecked deliverables`);
+};
+
+export const descriptionBulletToChangeListValue = (
+  descriptionBullet: DescriptionBulletPreview
+): ChangeListValue<DescriptionBulletPreview> => {
+  return {
+    element: descriptionBullet,
+    comparator: `${descriptionBullet.id}`,
+    displayValue: descriptionBullet.detail
+  };
+};
+
+export const descriptionBulletsToChangeListValues = (
+  descriptionBullets: Description_Bullet[]
+): ChangeListValue<DescriptionBulletPreview>[] => {
+  return descriptionBullets
+    .filter((constraint) => !constraint.dateDeleted)
+    .map((constraint) => descriptionBulletToChangeListValue(descBulletConverter(constraint)));
 };

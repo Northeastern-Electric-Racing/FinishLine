@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser } from 'shared';
+import { AuthenticatedUser, Link } from 'shared';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { SvgIcon } from '@mui/material';
 
@@ -43,10 +43,7 @@ export interface EditSingleProjectPayload {
   goals: { id: number; detail: string }[];
   features: { id: number; detail: string }[];
   otherConstraints: { id: number; detail: string }[];
-  googleDriveFolderLink: string;
-  slideDeckLink: string;
-  bomLink: string;
-  taskListLink: string;
+  links: Link[];
   projectLeadId?: number;
   projectManagerId?: number;
 }

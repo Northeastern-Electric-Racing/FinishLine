@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from './tasks.query-args';
+import linkQueryArgs from './links.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -34,7 +35,10 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         deliverables: { where: { dateDeleted: null } }
       }
     },
-    favoritedBy: true
+    favoritedBy: true,
+    links: {
+      ...linkQueryArgs
+    }
   }
 });
 

@@ -104,6 +104,8 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
+  createdLinks              Link[]                  @relation(name: "linkCreator")
+  createdLinkTypes          LinkType[]              @relation(name: "linkTypeCreator")
 }
 
 model Team {
@@ -248,23 +250,20 @@ model WBS_Element {
 }
 
 model Project {
-  projectId             Int                  @id @default(autoincrement())
-  wbsElementId          Int                  @unique
-  wbsElement            WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget                Int                  @default(0)
-  summary               String
-  googleDriveFolderLink String?
-  slideDeckLink         String?
-  bomLink               String?
-  taskListLink          String?
-  rules                 String[]
-  goals                 Description_Bullet[] @relation(name: "projectGoals")
-  features              Description_Bullet[] @relation(name: "projectFeatures")
-  otherConstraints      Description_Bullet[] @relation(name: "projectOtherConstraints")
-  workPackages          Work_Package[]
-  teamId                String?
-  team                  Team?                @relation(fields: [teamId], references: [teamId])
-  favoritedBy           User[]               @relation(name: "favoritedBy")
+  projectId        Int                  @id @default(autoincrement())
+  wbsElementId     Int                  @unique
+  wbsElement       WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget           Int                  @default(0)
+  summary          String
+  links            Link[]               @relation(name: "links")
+  rules            String[]
+  goals            Description_Bullet[] @relation(name: "projectGoals")
+  features         Description_Bullet[] @relation(name: "projectFeatures")
+  otherConstraints Description_Bullet[] @relation(name: "projectOtherConstraints")
+  workPackages     Work_Package[]
+  teamId           String?
+  team             Team?                @relation(fields: [teamId], references: [teamId])
+  favoritedBy      User[]               @relation(name: "favoritedBy")
 }
 
 model Work_Package {
@@ -280,6 +279,27 @@ model Work_Package {
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage              Work_Package_Stage?
+}
+
+model LinkType {
+  linkTypeId  String   @id @default(uuid())
+  name        String
+  dateCreated DateTime @default(now())
+  creatorId   Int
+  creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links       Link[]   @relation(name: "linkTypes")
+}
+
+model Link {
+  linkId      String   @id @default(uuid())
+  url         String
+  creatorId   Int
+  creator     User     @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated DateTime @default(now())
+  linkTypeId  String
+  linkType    LinkType @relation(name: "linkTypes", fields: [linkTypeId], references: [linkTypeId])
+  projectId   Int
+  project     Project  @relation(name: "links", fields: [projectId], references: [projectId])
 }
 
 model Description_Bullet {

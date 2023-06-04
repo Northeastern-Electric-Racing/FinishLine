@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from './user-types';
+import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
@@ -35,10 +35,7 @@ export enum WbsElementStatus {
 export interface Project extends WbsElement {
   summary: string;
   budget: number;
-  gDriveLink?: string;
-  taskListLink?: string;
-  slideDeckLink?: string;
-  bomLink?: string;
+  links: Link[];
   rules: string[];
   endDate?: Date;
   duration: number;
@@ -74,4 +71,25 @@ export interface DescriptionBullet {
   dateAdded: Date;
   dateDeleted?: Date;
   userChecked?: User;
+}
+
+export interface LinkType {
+  linkTypeId: string;
+  dateCreated: Date;
+  creator: UserPreview;
+  name: string;
+}
+
+export interface Link {
+  linkId: string;
+  linkType: LinkType;
+  dateCreated: Date;
+  creator: User;
+  url: string;
+}
+
+export interface LinkCreateArgs {
+  linkId: string;
+  linkTypeId: string;
+  url: string;
 }

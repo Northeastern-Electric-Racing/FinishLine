@@ -10,10 +10,7 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
   budget: 3,
   summary: 'ajsjdfk',
   rules: ['a'],
-  googleDriveFolderLink: 'https://drive.google.com/drive/folders/1',
-  slideDeckLink: 'https://docs.google.com/presentation/d/1',
-  bomLink: 'https://docs.google.com/spreadsheets/d/1',
-  taskListLink: 'https://docs.google.com/spreadsheets/d/1',
+  links: [],
   teamId: '1',
   wbsElement: {
     wbsElementId: 65,
