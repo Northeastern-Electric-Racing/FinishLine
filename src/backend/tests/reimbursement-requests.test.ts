@@ -7,13 +7,7 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import {
-  GiveMeMoneyProduct,
-  GiveMeMyMoney,
-  Parts,
-  PopEyes,
-  requestDelivered
-} from './test-data/reimbursement-requests.test-data';
+import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
@@ -231,38 +225,40 @@ describe('Reimbursement Requests', () => {
 
   describe('Delivered Tests', () => {
     test('Mark as delivered fails for non submitter', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
 
       await expect(
-        ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, requestDelivered.reimbursementRequestId)
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
       ).rejects.toThrow(new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered'));
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
 
-      await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '')).rejects.toThrow(
-        new NotFoundException('Reimbursement Request', requestDelivered.reimbursementRequestId)
+      await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '1234')).rejects.toThrow(
+        new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId)
       );
     });
 
     test('Mark as delivered fails for already marked as delivered', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(requestDelivered);
+      jest
+        .spyOn(prisma.reimbursement_Request, 'findUnique')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
 
       await expect(
-        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, requestDelivered.reimbursementRequestId)
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
       ).rejects.toThrow(new AccessDeniedException('Can only be marked as delivered once'));
     });
 
     test('Mark request as delivered successfully', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
 
       const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         batman,
-        requestDelivered.reimbursementRequestId
+        GiveMeMyMoney.reimbursementRequestId
       );
 
-      expect(reimbursementRequest.dateDelivered).toBe(new Date('12/25/203'));
+      expect(reimbursementRequest.dateDelivered).toBe({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
     });
   });
 });

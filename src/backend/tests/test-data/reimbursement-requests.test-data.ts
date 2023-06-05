@@ -42,18 +42,3 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   dateDeleted: null,
   wbsElementId: 1
 };
-
-export const requestDelivered: Reimbursement_Request = {
-  reimbursementRequestId: '12345',
-  saboId: null,
-  dateCreated: new Date('12/22/203'),
-  dateDeleted: null,
-  dateOfExpense: new Date('12/07/203'),
-  recipientId: 343,
-  vendorId: 'CHICKEN',
-  account: Club_Account.CASH,
-  totalCost: 343,
-  receiptPictures: [],
-  dateDelivered: new Date('12/25/203'),
-  expenseTypeId: 'PARTS'
-};
