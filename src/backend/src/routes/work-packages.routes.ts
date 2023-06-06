@@ -17,9 +17,9 @@ workPackagesRouter.post(
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
-  intMinZero(body('dependencies.*.carNumber')),
-  intMinZero(body('dependencies.*.projectNumber')),
-  intMinZero(body('dependencies.*.workPackageNumber')),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber')),
   body('expectedActivities').isArray(),
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
@@ -35,9 +35,9 @@ workPackagesRouter.post(
   body('startDate').isDate(),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
-  intMinZero(body('dependencies.*.carNumber')),
-  intMinZero(body('dependencies.*.projectNumber')),
-  intMinZero(body('dependencies.*.workPackageNumber')),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber')),
   body('expectedActivities').isArray(),
   body('expectedActivities.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('expectedActivities.*.detail')),
@@ -50,5 +50,12 @@ workPackagesRouter.post(
   WorkPackagesController.editWorkPackage
 );
 workPackagesRouter.delete('/:wbsNum/delete', WorkPackagesController.deleteWorkPackage);
+workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
+workPackagesRouter.post(
+  '/slack-upcoming-deadlines',
+  isDate(body('deadline')),
+  validateInputs,
+  WorkPackagesController.slackMessageUpcomingDeadlines
+);
 
 export default workPackagesRouter;

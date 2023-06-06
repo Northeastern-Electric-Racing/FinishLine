@@ -32,7 +32,7 @@ export default class WorkPackagesController {
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, startDate, duration, dependencies, expectedActivities, deliverables } = req.body;
+      const { projectWbsNum, name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
 
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -49,7 +49,7 @@ export default class WorkPackagesController {
         stage,
         startDate,
         duration,
-        dependencies,
+        blockedBy,
         expectedActivities,
         deliverables
       );
@@ -69,7 +69,7 @@ export default class WorkPackagesController {
         crId,
         startDate,
         duration,
-        dependencies,
+        blockedBy,
         expectedActivities,
         deliverables,
         projectLead,
@@ -91,7 +91,7 @@ export default class WorkPackagesController {
         stage,
         startDate,
         duration,
-        dependencies,
+        blockedBy,
         expectedActivities,
         deliverables,
         projectLead,
@@ -111,6 +111,28 @@ export default class WorkPackagesController {
 
       await WorkPackagesService.deleteWorkPackage(user, wbsNum);
       return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum);
+
+      return res.status(200).json(blockingWorkPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { deadline } = req.body;
+
+      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
     } catch (error: unknown) {
       next(error);
     }

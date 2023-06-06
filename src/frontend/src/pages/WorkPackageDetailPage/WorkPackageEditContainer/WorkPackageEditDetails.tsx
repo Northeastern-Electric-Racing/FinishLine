@@ -8,18 +8,43 @@ import { fullNamePipe } from '../../../utils/pipes';
 import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
 
 interface Props {
-  users: User[];
-  control: any;
-  errors: any;
+  lead?: string;
+  manager?: string;
+  setManager: (manager?: string) => void;
+  setLead: (lead?: string) => void;
+  usersForProjectLead: User[];
+  usersForProjectManager: User[];
+  control: Control<WorkPackageEditFormPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => {
+const WorkPackageEditDetails: React.FC<Props> = ({
+  lead,
+  manager,
+  setManager,
+  setLead,
+  usersForProjectLead,
+  usersForProjectManager,
+  control,
+  errors
+}) => {
+  const userToOption = (user?: User): { label: string; id: string } => {
+    if (!user) return { label: '', id: '' };
+    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+  };
+
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
+  };
+
   const StageSelect = () => (
-    <FormControl>
+    <FormControl fullWidth>
       <FormLabel>Stage Select</FormLabel>
       <Controller
         name="stage"
@@ -37,11 +62,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
       />
     </FormControl>
   );
+
   return (
     <PageBlock title="Work Package Details">
       <Grid container xs={12}>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
+        <Grid item xs={12} md={5} sx={{ mt: 2, mr: 2 }}>
+          <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
               name="name"
@@ -51,9 +77,9 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={'auto'} sx={{ mt: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
-            <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+          <FormControl fullWidth sx={{ overflow: 'hidden' }}>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
               name="startDate"
               control={control}
@@ -65,6 +91,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
                     onChange={onChange}
                     className={'padding: 10'}
                     value={value}
+                    shouldDisableDate={disableStartDate}
                     renderInput={(params) => <TextField autoComplete="off" {...params} />}
                   />
                 </>
@@ -72,59 +99,44 @@ const WorkPackageEditDetails: React.FC<Props> = ({ users, control, errors }) => 
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
-            <FormLabel>Project Lead</FormLabel>
-            <Controller
-              name="projectLead"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <TextField select onChange={onChange} value={value} fullWidth>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </FormControl>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+          <StageSelect />
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <FormControl sx={{ width: '90%' }}>
-            <FormLabel>Project Manager</FormLabel>
-            <Controller
-              name="projectManager"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <TextField select onChange={onChange} value={value} fullWidth>
-                  {users.map((t) => (
-                    <MenuItem key={t.userId} value={t.userId}>
-                      {fullNamePipe(t)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ my: 1 }}>
-          <FormControl>
+        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+          <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
               name="duration"
               control={control}
               type="number"
               placeholder="Enter duration..."
-              sx={{ width: '140%' }}
-              errorMessage={errors.budget}
+              errorMessage={errors.duration}
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 2, mb: 1 }}>
-          <StageSelect />
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel> Project Lead</FormLabel>
+          <NERAutocomplete
+            sx={{ mt: 1, width: '90%' }}
+            id="project-lead-autocomplete"
+            onChange={(_event, value) => setLead(value?.id)}
+            options={usersForProjectLead.map(userToOption)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
+          />
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
+            sx={{ mt: 1, width: '90%' }}
+            id="project-manager-autocomplete"
+            onChange={(_event, value) => setManager(value?.id)}
+            options={usersForProjectManager.map(userToOption)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
+          />
         </Grid>
       </Grid>
     </PageBlock>

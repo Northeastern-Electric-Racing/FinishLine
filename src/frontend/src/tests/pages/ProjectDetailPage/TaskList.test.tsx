@@ -9,7 +9,7 @@ import { Project } from 'shared';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as taskHooks from '../../../hooks/tasks.hooks';
 import * as userHooks from '../../../hooks/users.hooks';
-import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList';
+import TaskList from '../../../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskList';
 import {
   mockCreateTaskReturnValue,
   mockDeleteTaskReturnValue,
@@ -52,11 +52,6 @@ describe('TaskList component', () => {
     jest.spyOn(taskHooks, 'useEditTask').mockReturnValue(mockEditTaskReturnValue);
     jest.spyOn(taskHooks, 'useEditTaskAssignees').mockReturnValue(mockEditTaskAssigneesReturnValue);
     jest.spyOn(taskHooks, 'useDeleteTask').mockReturnValue(mockDeleteTaskReturnValue);
-  });
-
-  it('renders "Task List" on top', () => {
-    renderComponent();
-    expect(screen.getByText('Task List')).toBeInTheDocument();
   });
 
   it('renders all 3 labels', () => {

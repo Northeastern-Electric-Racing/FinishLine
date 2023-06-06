@@ -3,22 +3,20 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useHistory } from 'react-router-dom';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { routes } from '../../utils/routes';
+import { Grid, Link, useTheme } from '@mui/material';
+import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
+import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Project, WbsElementStatus } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { useTheme } from '@mui/material';
-import { useState } from 'react';
-import { WbsElementStatus } from 'shared';
+import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 
 /**
  * Table of all projects.
  */
 const ProjectsTable: React.FC = () => {
-  const history = useHistory();
   const { isLoading, data, error } = useAllProjects();
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
@@ -117,9 +115,7 @@ const ProjectsTable: React.FC = () => {
 
   const theme = useTheme();
   return (
-    <>
-      <PageTitle title={'Projects'} previousPages={[]} />
-
+    <Grid container xs={12}>
       <DataGrid
         autoHeight
         disableSelectionOnClick
@@ -144,10 +140,21 @@ const ProjectsTable: React.FC = () => {
         }
         columns={columns}
         sx={{ background: theme.palette.background.paper }}
-        onRowClick={(params) => {
-          history.push(`${routes.PROJECTS}/${wbsPipe(params.row.wbsNum)}`);
+        components={{
+          Toolbar: GridToolbar,
+          Row: (props: GridRowProps & { row: Project }) => {
+            const wbsNum = props.row.wbsNum;
+            return (
+              <Link
+                component={RouterLink}
+                to={`${routes.PROJECTS}/${wbsPipe(wbsNum)}/overview`}
+                sx={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GridRow {...props} />
+              </Link>
+            );
+          }
         }}
-        components={{ Toolbar: GridToolbar }}
         componentsProps={{
           toolbar: {
             showQuickFilter: true,
@@ -166,7 +173,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
       />
-    </>
+    </Grid>
   );
 };
 

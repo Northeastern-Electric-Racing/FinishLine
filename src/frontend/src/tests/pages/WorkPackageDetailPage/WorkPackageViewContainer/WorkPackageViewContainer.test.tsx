@@ -6,9 +6,10 @@
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../../test-support/test-utils';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
-import * as authHooks from '../../../../hooks/auth.hooks';
-import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import * as userHooks from '../../../../hooks/users.hooks';
+import * as wpHooks from '../../../../hooks/work-packages.hooks';
 import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
+import { mockUseManyWorkPackagesReturnValue } from '../../../test-support/mock-hooks';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -16,7 +17,8 @@ const renderComponent = (
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
-  allowRequestChange = true
+  allowRequestChange = true,
+  allowDelete = true
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -28,6 +30,7 @@ const renderComponent = (
         allowActivate={allowActivate}
         allowStageGate={allowStageGate}
         allowRequestChange={allowRequestChange}
+        allowDelete={allowDelete}
       />
     </RouterWrapper>
   );
@@ -35,14 +38,17 @@ const renderComponent = (
 
 describe('work package container view', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    jest
+      .spyOn(wpHooks, 'useManyWorkPackages')
+      .mockReturnValue(mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage]));
   });
 
   it('renders the project', () => {
     renderComponent();
 
     expect(screen.getAllByText('1.1.2 - Adhesive Shear Strength Test').length).toEqual(2);
-    expect(screen.getByText('Dependencies')).toBeInTheDocument();
+    expect(screen.getByText('Blocked By')).toBeInTheDocument();
     expect(screen.getByText('Expected Activities')).toBeInTheDocument();
     expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeEnabled();

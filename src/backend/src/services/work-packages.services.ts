@@ -1,7 +1,10 @@
-import { Role, User, WBS_Element } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
+  getDay,
   DescriptionBullet,
   equalsWbsNumber,
+  isAdmin,
+  isGuest,
   isProject,
   TimelineStatus,
   WbsElementStatus,
@@ -11,12 +14,19 @@ import {
   WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  HttpException,
+  AccessDeniedGuestException,
+  AccessDeniedAdminOnlyException,
+  DeletedException
+} from '../utils/errors.utils';
 import {
   createChangeJsonDates,
   createChangeJsonNonList,
-  createDependenciesChangesJson,
-  createDescriptionBulletChangesJson
+  createBlockedByChangesJson,
+  createDescriptionBulletChangesJson,
+  getBlockingWorkPackages
 } from '../utils/work-packages.utils';
 import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
 import { descBulletConverter } from '../utils/utils';
@@ -24,6 +34,7 @@ import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
 import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -106,7 +117,7 @@ export default class WorkPackagesService {
    * @param stage the stage of the work package
    * @param startDate the date string representing the start date
    * @param duration the expected duration of this work package, in weeks
-   * @param dependencies the WBS elements that need to be completed before this WP
+   * @param blockedBy the WBS elements that need to be completed before this WP
    * @param expectedActivities the expected activities descriptions for this WP
    * @param deliverables the expected deliverables descriptions for this WP
    * @returns the WBS number of the successfully created work package
@@ -120,11 +131,11 @@ export default class WorkPackagesService {
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WbsNumber[],
+    blockedBy: WbsNumber[],
     expectedActivities: string[],
     deliverables: string[]
   ): Promise<string> {
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
     await validateChangeRequestAccepted(crId);
 
@@ -139,8 +150,8 @@ export default class WorkPackagesService {
       );
     }
 
-    if (dependencies.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
-      throw new HttpException(400, 'A Work Package cannot have its own project as a dependency');
+    if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
+      throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
     }
 
     const wbsElem = await prisma.wBS_Element.findUnique({
@@ -154,14 +165,15 @@ export default class WorkPackagesService {
       include: {
         project: {
           include: {
-            workPackages: { include: { wbsElement: true, dependencies: true } }
+            workPackages: { include: { wbsElement: true, blockedBy: true } }
           }
         }
       }
     });
 
     if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElem.dateDeleted) throw new HttpException(400, 'Cannot create a work package for a deleted project!');
+    if (wbsElem.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { project } = wbsElem;
 
@@ -174,8 +186,8 @@ export default class WorkPackagesService {
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-    const dependenciesWBSElems: (WBS_Element | null)[] = await Promise.all(
-      dependencies.map(async (ele: WbsNumber) => {
+    const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
+      blockedBy.map(async (ele: WbsNumber) => {
         return await prisma.wBS_Element.findUnique({
           where: {
             wbsNumber: {
@@ -188,21 +200,21 @@ export default class WorkPackagesService {
       })
     );
 
-    const dependenciesIds: number[] = [];
-    // populate dependenciesIds with the element ID's
+    const blockedByIds: number[] = [];
+    // populate blockedByIds with the element ID's
     // and return error 400 if any elems are null
 
-    let dependenciesHasNulls = false;
-    dependenciesWBSElems.forEach((elem) => {
+    let blockedByHasNulls = false;
+    blockedByWBSElems.forEach((elem) => {
       if (elem === null) {
-        dependenciesHasNulls = true;
+        blockedByHasNulls = true;
         return;
       }
-      dependenciesIds.push(elem.wbsElementId);
+      blockedByIds.push(elem.wbsElementId);
     });
 
-    if (dependenciesHasNulls) {
-      throw new HttpException(400, 'One of the dependencies was not found.');
+    if (blockedByHasNulls) {
+      throw new HttpException(400, 'One of the blockers was not found.');
     }
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
@@ -232,7 +244,7 @@ export default class WorkPackagesService {
         startDate: date,
         duration,
         orderInProject: project.workPackages.length + 1,
-        dependencies: { connect: dependenciesIds.map((ele) => ({ wbsElementId: ele })) },
+        blockedBy: { connect: blockedByIds.map((ele) => ({ wbsElementId: ele })) },
         expectedActivities: { create: expectedActivities.map((ele: string) => ({ detail: ele })) },
         deliverables: { create: deliverables.map((ele: string) => ({ detail: ele })) }
       },
@@ -252,7 +264,7 @@ export default class WorkPackagesService {
    * @param crId the id of the change request implementing this edit
    * @param startDate the date string representing the new start date
    * @param duration the new duration of this work package, in weeks
-   * @param dependencies the new WBS elements to be completed before this WP
+   * @param blockedBy the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
    * @param projectLead the new lead for this work package
@@ -266,14 +278,14 @@ export default class WorkPackagesService {
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
-    dependencies: WbsNumber[],
+    blockedBy: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
     projectLead: number,
     projectManager: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
-    if (user.role === Role.GUEST) throw new AccessDeniedException();
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
 
     const { userId } = user;
 
@@ -282,17 +294,17 @@ export default class WorkPackagesService {
       where: { workPackageId },
       include: {
         wbsElement: true,
-        dependencies: true,
+        blockedBy: true,
         expectedActivities: true,
         deliverables: true
       }
     });
 
     if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
-    if (originalWorkPackage.wbsElement.dateDeleted) throw new HttpException(400, 'Cannot edit a deleted work package!');
+    if (originalWorkPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackageId);
 
     if (
-      dependencies.find((dep: WbsNumber) =>
+      blockedBy.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -300,11 +312,11 @@ export default class WorkPackagesService {
         })
       ) != null
     ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a dependency');
+      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
     }
 
     if (
-      dependencies.find((dep: WbsNumber) =>
+      blockedBy.find((dep: WbsNumber) =>
         equalsWbsNumber(dep, {
           carNumber: originalWorkPackage.wbsElement.carNumber,
           projectNumber: originalWorkPackage.wbsElement.projectNumber,
@@ -312,14 +324,14 @@ export default class WorkPackagesService {
         })
       ) != null
     ) {
-      throw new HttpException(400, 'A Work Package cannot have own project as a dependency');
+      throw new HttpException(400, 'A Work Package cannot have own project as a blocker');
     }
 
     // the crId must match a valid approved change request
     await validateChangeRequestAccepted(crId);
 
     const depsIds = await Promise.all(
-      dependencies.map(async (wbsNum: WbsNumber) => {
+      blockedBy.map(async (wbsNum: WbsNumber) => {
         const { carNumber, projectNumber, workPackageNumber } = wbsNum;
         const wbsElem = await prisma.wBS_Element.findUnique({
           where: {
@@ -328,7 +340,7 @@ export default class WorkPackagesService {
         });
 
         if (!wbsElem) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-        if (wbsElem.dateDeleted) throw new HttpException(400, `WBS ${wbsPipe(wbsNum)} has been deleted!`);
+        if (wbsElem.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
         return wbsElem.wbsElementId;
       })
@@ -369,13 +381,13 @@ export default class WorkPackagesService {
       userId,
       wbsElementId!
     );
-    const dependenciesChangeJson = await createDependenciesChangesJson(
-      originalWorkPackage.dependencies.map((element) => element.wbsElementId),
+    const blockedByChangeJson = await createBlockedByChangesJson(
+      originalWorkPackage.blockedBy.map((element) => element.wbsElementId),
       depsIds.map((elem) => elem as number),
       crId,
       userId,
       wbsElementId!,
-      'dependency'
+      'blocked by'
     );
     const expectedActivitiesChangeJson = createDescriptionBulletChangesJson(
       originalWorkPackage.expectedActivities
@@ -426,9 +438,9 @@ export default class WorkPackagesService {
       changes.push(projectLeadChangeJson);
     }
 
-    // add the changes for each of dependencies, expected activities, and deliverables
+    // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
-      .concat(dependenciesChangeJson)
+      .concat(blockedByChangeJson)
       .concat(expectedActivitiesChangeJson.changes)
       .concat(deliverablesChangeJson.changes);
 
@@ -450,7 +462,7 @@ export default class WorkPackagesService {
           }
         },
         stage,
-        dependencies: {
+        blockedBy: {
           set: [], // remove all the connections then add all the given ones
           connect: depsIds.map((ele) => ({ wbsElementId: ele }))
         }
@@ -491,7 +503,7 @@ export default class WorkPackagesService {
    */
   static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (submitter.role !== Role.ADMIN && submitter.role !== Role.APP_ADMIN) throw new AccessDeniedException();
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
@@ -510,7 +522,7 @@ export default class WorkPackagesService {
     });
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
-    if (workPackage.wbsElement.dateDeleted) throw new HttpException(400, 'This work package has already been deleted!');
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', wbsPipe(wbsNum));
 
     const { wbsElementId, workPackageId } = workPackage;
 
@@ -575,5 +587,70 @@ export default class WorkPackagesService {
         }
       }
     });
+  }
+
+  /**
+   * Gets the work packages the given work package is blocking
+   * @param wbsNum the wbs number of the work package to get the blocking work packages for
+   * @returns the blocking work packages for the given work package
+   */
+  static async getBlockingWorkPackages(wbsNum: WbsNumber): Promise<WorkPackage[]> {
+    const { carNumber, projectNumber, workPackageNumber } = wbsNum;
+
+    // is a project so just return empty array until we implement blocking projects
+    if (workPackageNumber === 0) return [];
+
+    const workPackage = await prisma.work_Package.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...workPackageQueryArgs
+    });
+
+    if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+
+    if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
+
+    const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
+
+    return blockingWorkPackages.map(workPackageTransformer);
+  }
+
+  /**
+   * Send a slack message to the project lead of each work package telling them when their work package is due.
+   * Sends a message for every work package that is due before or on the given deadline (even before today)
+   * @param user - the user doing the sending
+   * @param deadline - the deadline
+   * @returns
+   */
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date): Promise<void> {
+    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN)
+      throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
+
+    const workPackages = await prisma.work_Package.findMany({
+      where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE } },
+      ...workPackageQueryArgs
+    });
+
+    const upcomingWorkPackages = workPackages
+      .map(workPackageTransformer)
+      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
+
+    // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
+    await upcomingWorkPackages.reduce(
+      (previousCall, workPackage) =>
+        previousCall.then(async () => {
+          await sendSlackUpcomingDeadlineNotification(workPackage); // send the slack message for this work package
+          await new Promise((callBack) => setTimeout(callBack, 2000)); // sleep for 2 seconds
+        }),
+      Promise.resolve()
+    );
+
+    return;
   }
 }

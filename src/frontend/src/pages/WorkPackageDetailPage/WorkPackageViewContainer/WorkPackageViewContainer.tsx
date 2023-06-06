@@ -4,8 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { RoleEnum, WbsElementStatus, WorkPackage } from 'shared';
+import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
@@ -17,8 +16,7 @@ import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalCont
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem } from '@mui/material';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { Menu, MenuItem, Link } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,6 +25,10 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
+import { Link as RouterLink } from 'react-router-dom';
+import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
+import ErrorPage from '../../ErrorPage';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -47,16 +49,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (!auth.user) return <LoadingIndicator />;
+  if (!dependencies || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || auth.user.role === RoleEnum.GUEST;
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -120,7 +124,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   );
   const createCRButton = (
     <MenuItem
-      component={Link}
+      component={RouterLink}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
       disabled={!allowRequestChange}
       onClick={handleDropdownClose}
@@ -165,9 +169,11 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       />
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList
-        title={'Dependencies'}
-        items={workPackage.dependencies.map((dep) => (
-          <strong>{wbsPipe(dep)}</strong>
+        title={'Blocked By'}
+        items={dependencies.map((dep) => (
+          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
+            {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
+          </Link>
         ))}
       />
       <CheckList

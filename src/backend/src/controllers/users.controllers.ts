@@ -36,6 +36,18 @@ export default class UsersController {
     }
   }
 
+  static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+
+      const projects = await UsersService.getUsersFavoriteProjects(userId);
+
+      res.status(200).json(projects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { defaultTheme, slackId } = req.body;
@@ -64,12 +76,16 @@ export default class UsersController {
   }
 
   // for dev login only!
-  static async logUserInDev(req: any, res: any, next: NextFunction) {
+  static async logUserInDev(req: Request, res: Response, next: NextFunction) {
     try {
       if (process.env.NODE_ENV === 'production') throw new AccessDeniedException('Cant dev login on production!');
 
       const { userId } = req.body;
       const header = req.headers['user-agent'];
+
+      if (!header) {
+        throw new AccessDeniedException('You cannot put an unknown for dev login!');
+      }
 
       const user = await UsersService.logUserInDev(userId, header);
 
@@ -88,6 +104,27 @@ export default class UsersController {
       const targetUser = await UsersService.updateUserRole(targetUserId, user, role);
 
       res.status(200).json(targetUser);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
+      const user = await getCurrentUser(res);
+
+      const secureSettingsId = await UsersService.setUserSecureSettings(
+        user,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      );
+
+      res.status(200).json(secureSettingsId);
     } catch (error: unknown) {
       next(error);
     }

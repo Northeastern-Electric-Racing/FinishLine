@@ -4,7 +4,6 @@ import styles from './project.module.css';
 
 export const Project: React.FC<TaskItemProps> = ({ task, isSelected }) => {
   const barColor = isSelected ? task.styles.backgroundSelectedColor : task.styles.backgroundColor;
-  const processColor = isSelected ? task.styles.progressSelectedColor : task.styles.progressColor;
   const projectWidth = task.x2 - task.x1;
 
   return (
@@ -19,15 +18,19 @@ export const Project: React.FC<TaskItemProps> = ({ task, isSelected }) => {
         ry={task.barCornerRadius}
         className={styles.projectBackground}
       />
-      <rect
-        x={task.progressX}
-        width={task.progressWidth || 0}
-        y={task.y}
-        height={task.height}
-        ry={task.barCornerRadius}
-        rx={task.barCornerRadius}
-        fill={processColor}
-      />
+      {task.workPackageBars.map((workPackage) => {
+        return (
+          <rect
+            x={workPackage.x1}
+            width={workPackage.x2 - workPackage.x1}
+            y={task.y}
+            height={task.height}
+            ry={0}
+            rx={0}
+            fill={workPackage.styles.backgroundColor}
+          />
+        );
+      })}
     </g>
   );
 };
