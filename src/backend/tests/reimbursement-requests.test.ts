@@ -225,7 +225,9 @@ describe('Reimbursement Requests', () => {
 
   describe('Delivered Tests', () => {
     test('Mark as delivered fails for non submitter', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
+      jest
+        .spyOn(prisma.reimbursement_Request, 'findUnique')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
 
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
@@ -233,7 +235,9 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
+      jest
+        .spyOn(prisma.reimbursement_Request, 'findUnique')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
 
       await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '1234')).rejects.toThrow(
         new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId)
