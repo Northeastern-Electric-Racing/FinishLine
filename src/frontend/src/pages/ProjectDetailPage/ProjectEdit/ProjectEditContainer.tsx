@@ -25,6 +25,7 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useState } from 'react';
 
 /* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */
 const schema = yup.object().shape({
@@ -50,7 +51,6 @@ export interface ProjectEditFormInput {
   googleDriveFolderLink: string | undefined;
   taskListLink: string | undefined;
   slideDeckLink: string | undefined;
-  // projectId: number;
   crId: string;
   goals: {
     bulletId: number;
@@ -64,8 +64,6 @@ export interface ProjectEditFormInput {
     bulletId: number;
     detail: string;
   }[];
-  projectLeadId: number | undefined;
-  projectManagerId: number | undefined;
   rules: {
     rule: string;
   }[];
@@ -91,8 +89,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       taskListLink,
       googleDriveFolderLink: gDriveLink,
       summary,
-      projectLeadId: project.projectLead?.userId,
-      projectManagerId: project.projectManager?.userId,
       crId: query.get('crId') || '',
       rules: project.rules.map((rule) => {
         return { rule };
@@ -111,6 +107,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
+  const [projectManagerId, setprojectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -118,43 +116,32 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   }
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
-
   const onSubmit = async (data: ProjectEditFormInput) => {
-    const {
-      name,
-      budget,
-      summary,
-      bomLink = '',
-      googleDriveFolderLink = '',
-      taskListLink = '',
-      slideDeckLink = '',
-      projectLeadId = 0,
-      projectManagerId = 0
-    } = data;
+    const { name, budget, summary, bomLink = '', googleDriveFolderLink = '', taskListLink = '', slideDeckLink = '' } = data;
     const rules = data.rules.map((rule) => rule.rule);
+
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload = {
-      name,
-      budget,
-      summary,
-      bomLink,
-      googleDriveFolderLink,
-      taskListLink,
-      slideDeckLink,
-      projectId: project.id,
-      crId: parseInt(data.crId),
-      rules,
-      goals,
-      features,
-      otherConstraints,
-      projectLeadId,
-      projectManagerId
-    };
-
     try {
+      const payload = {
+        name,
+        budget: budget,
+        summary,
+        bomLink,
+        googleDriveFolderLink,
+        taskListLink,
+        slideDeckLink,
+        projectId: project.id,
+        crId: parseInt(data.crId),
+        rules,
+        goals,
+        features,
+        otherConstraints,
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+      };
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
@@ -183,7 +170,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <ProjectEditDetails users={users} control={control} errors={errors} />
+      <ProjectEditDetails
+        users={users}
+        control={control}
+        errors={errors}
+        projectLead={projectLeadId}
+        projectManager={projectManagerId}
+        setProjectLead={setProjectLeadId}
+        setProjectManager={setprojectManagerId}
+      />
       <PageBlock title="Project Summary">
         <Grid item sx={{ mt: 2 }}>
           <ReactHookTextField
