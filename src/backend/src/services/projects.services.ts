@@ -271,7 +271,7 @@ export default class ProjectsService {
       crId,
       userId,
       wbsElementId,
-      'other constraints'
+      'other constraint'
     );
 
     const linkChanges = createListChanges(
@@ -280,7 +280,7 @@ export default class ProjectsService {
       crId,
       userId,
       wbsElementId,
-      'links'
+      'link'
     );
 
     // add the changes for each of blockers, expected activities, and deliverables
@@ -354,7 +354,7 @@ export default class ProjectsService {
       await prisma.link.create({
         data: {
           url: link.url,
-          linkTypeId: link.linkTypeId,
+          linkTypeName: link.linkTypeName,
           creatorId: userId,
           projectId
         }

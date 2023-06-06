@@ -88,7 +88,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       links: project.links.map((link) => {
         return {
           linkId: link.linkId,
-          linkTypeId: link.linkType.linkTypeId,
+          linkTypeName: link.linkType.name,
           url: link.url
         };
       }),
@@ -97,7 +97,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       constraints: bulletsToObject(project.otherConstraints)
     }
   });
-  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
   const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
   const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
   const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
@@ -106,7 +105,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     append: appendConstraint,
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
-
+  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
@@ -182,7 +181,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         </Grid>
       </PageBlock>
       <PageBlock title="Links">
-        <LinkEditView name="links" ls={links} register={register} append={appendLink} remove={removeLink} />
+        <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} />
       </PageBlock>
       <PageBlock title="Goals">
         <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />

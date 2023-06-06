@@ -11,7 +11,6 @@ import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufacturingWorkPackage } from './work-packages.stub';
 
 const exampleConfluenceLinkType: LinkType = {
-  linkTypeId: '1',
   name: 'Confluence',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,
@@ -19,7 +18,6 @@ const exampleConfluenceLinkType: LinkType = {
 };
 
 const exampleBomLinkType: LinkType = {
-  linkTypeId: '2',
   name: 'BOM',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,
@@ -27,7 +25,6 @@ const exampleBomLinkType: LinkType = {
 };
 
 const exampleGDriveLinkType: LinkType = {
-  linkTypeId: '3',
   name: 'Google Drive',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,

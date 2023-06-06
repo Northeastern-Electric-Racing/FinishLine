@@ -74,11 +74,10 @@ export interface DescriptionBullet {
 }
 
 export interface LinkType {
-  linkTypeId: string;
+  name: string;
   dateCreated: Date;
   creator: UserPreview;
   iconName: string;
-  name: string;
 }
 
 export interface Link {
@@ -91,6 +90,6 @@ export interface Link {
 
 export interface LinkCreateArgs {
   linkId: string;
-  linkTypeId: string;
+  linkTypeName: string;
   url: string;
 }

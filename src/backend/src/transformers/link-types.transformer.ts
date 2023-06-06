@@ -4,7 +4,6 @@ import { LinkType } from 'shared';
 
 const linkTypeTransformer = (linkType: Prisma.LinkTypeGetPayload<typeof linkTypeQueryArgs>): LinkType => {
   return {
-    linkTypeId: linkType.linkTypeId,
     name: linkType.name,
     creator: linkType.creator,
     dateCreated: linkType.dateCreated,

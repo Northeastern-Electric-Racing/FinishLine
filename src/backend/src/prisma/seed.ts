@@ -188,12 +188,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: confluenceLinkType.linkTypeId
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: bomLinkType.linkTypeId
+        linkTypeName: bomLinkType.name
       }
     ],
     thomasEmrax.userId,
@@ -218,12 +218,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: confluenceLinkType.linkTypeId
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: bomLinkType.linkTypeId
+        linkTypeName: bomLinkType.name
       }
     ],
     joeShmoe.userId,
@@ -248,12 +248,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: confluenceLinkType.linkTypeId
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: bomLinkType.linkTypeId
+        linkTypeName: bomLinkType.name
       }
     ],
     joeShmoe.userId,
@@ -278,12 +278,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: confluenceLinkType.linkTypeId
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: bomLinkType.linkTypeId
+        linkTypeName: bomLinkType.name
       }
     ],
     joeShmoe.userId,
@@ -308,12 +308,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: confluenceLinkType.linkTypeId
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeId: bomLinkType.linkTypeId
+        linkTypeName: bomLinkType.name
       }
     ],
     thomasEmrax.userId,

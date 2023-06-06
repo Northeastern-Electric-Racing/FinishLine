@@ -282,8 +282,7 @@ model Work_Package {
 }
 
 model LinkType {
-  linkTypeId  String   @id @default(uuid())
-  name        String
+  name        String   @id @unique
   dateCreated DateTime @default(now())
   creatorId   Int
   iconName    String
@@ -292,15 +291,15 @@ model LinkType {
 }
 
 model Link {
-  linkId      String   @id @default(uuid())
-  url         String
-  creatorId   Int
-  creator     User     @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated DateTime @default(now())
-  linkTypeId  String
-  linkType    LinkType @relation(name: "linkTypes", fields: [linkTypeId], references: [linkTypeId])
-  projectId   Int
-  project     Project  @relation(name: "links", fields: [projectId], references: [projectId])
+  linkId       String   @id @default(uuid())
+  url          String
+  creatorId    Int
+  creator      User     @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated  DateTime @default(now())
+  linkTypeName String
+  linkType     LinkType @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  projectId    Int
+  project      Project  @relation(name: "links", fields: [projectId], references: [projectId])
 }
 
 model Description_Bullet {

@@ -6,12 +6,23 @@ import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegi
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const LinkEditView: React.FC<{
-  name: string;
   ls: FieldArrayWithId[];
-  register: UseFormRegister<any>;
+  register: UseFormRegister<{
+    name: string;
+    budget: number;
+    summary: string;
+    projectLeadId: number | undefined;
+    projectManagerId: number | undefined;
+    crId: string;
+    rules: { rule: string }[];
+    links: { linkId: string; linkTypeName: string; url: string }[];
+    goals: { bulletId: number; detail: string }[];
+    features: { bulletId: number; detail: string }[];
+    constraints: { bulletId: number; detail: string }[];
+  }>;
   append: UseFieldArrayAppend<any, any>;
   remove: UseFieldArrayRemove;
-}> = ({ name, ls, register, append, remove }) => {
+}> = ({ ls, register, append, remove }) => {
   const { isLoading, isError, error, data } = useAllLinkTypes();
   if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -21,17 +32,14 @@ const LinkEditView: React.FC<{
       {ls.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
-            <Select
-              {...register(`${name}.${i}.linkTypeId`)}
-              sx={{ minWidth: '200px', mr: '5px' }}
-            >
+            <Select {...register(`links.${i}.linkTypeName`, { required: true })} sx={{ minWidth: '200px', mr: '5px' }}>
               {data.map((linkType) => (
-                <MenuItem key={linkType.linkTypeId} value={linkType.linkTypeId}>
+                <MenuItem key={linkType.name} value={linkType.name}>
                   {linkType.name}
                 </MenuItem>
               ))}
             </Select>
-            <TextField required fullWidth autoComplete="off" {...register(`${name}.${i}.url`)} />
+            <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
             <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />
             </IconButton>
@@ -42,7 +50,7 @@ const LinkEditView: React.FC<{
       <Button
         variant="contained"
         color="success"
-        onClick={() => append({ bulletId: '-1', url: '', linkTypeId: '-1' })}
+        onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
         sx={{ my: 2, width: 'max-content' }}
       >
         + Add New Bullet

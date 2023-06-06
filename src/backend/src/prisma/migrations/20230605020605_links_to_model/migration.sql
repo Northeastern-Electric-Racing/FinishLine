@@ -15,13 +15,12 @@ DROP COLUMN "taskListLink";
 
 -- CreateTable
 CREATE TABLE "LinkType" (
-    "linkTypeId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "creatorId" INTEGER NOT NULL,
     "iconName" TEXT NOT NULL,
 
-    CONSTRAINT "LinkType_pkey" PRIMARY KEY ("linkTypeId")
+    CONSTRAINT "LinkType_pkey" PRIMARY KEY ("name")
 );
 
 -- CreateTable
@@ -30,11 +29,14 @@ CREATE TABLE "Link" (
     "url" TEXT NOT NULL,
     "creatorId" INTEGER NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "linkTypeId" TEXT NOT NULL,
+    "linkTypeName" TEXT NOT NULL,
     "projectId" INTEGER NOT NULL,
 
     CONSTRAINT "Link_pkey" PRIMARY KEY ("linkId")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LinkType_name_key" ON "LinkType"("name");
 
 -- AddForeignKey
 ALTER TABLE "LinkType" ADD CONSTRAINT "LinkType_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -43,7 +45,7 @@ ALTER TABLE "LinkType" ADD CONSTRAINT "LinkType_creatorId_fkey" FOREIGN KEY ("cr
 ALTER TABLE "Link" ADD CONSTRAINT "Link_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Link" ADD CONSTRAINT "Link_linkTypeId_fkey" FOREIGN KEY ("linkTypeId") REFERENCES "LinkType"("linkTypeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Link" ADD CONSTRAINT "Link_linkTypeName_fkey" FOREIGN KEY ("linkTypeName") REFERENCES "LinkType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Link" ADD CONSTRAINT "Link_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE RESTRICT ON UPDATE CASCADE;
