@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faFilePowerpoint, faFolderOpen, faList, faListOl } from '@fortawesome/free-solid-svg-icons';
+import { faFilePowerpoint, faFolderOpen, faListOl } from '@fortawesome/free-solid-svg-icons';
 import { Project } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import ExternalLink from '../../../components/ExternalLink';
@@ -43,13 +43,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid item xs={4}>
           <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={2} />
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={2}>
           <Typography sx={{ fontWeight: 'bold', paddingRight: 2, display: 'inline' }}>Links: </Typography>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
           <ExternalLink icon={faFilePowerpoint} link={project.slideDeckLink!} description={'Slide Deck'} />
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
           <ExternalLink icon={faListOl} link={project.bomLink!} description={'BOM'} />
         </Grid>
         <Grid item xs={4}>
