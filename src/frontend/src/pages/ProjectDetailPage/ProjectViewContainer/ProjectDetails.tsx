@@ -24,7 +24,7 @@ interface ProjectDetailsProps {
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
   const theme = useTheme();
-  const teamName = project.team ? project.team.teamName : 'No Team Assigned';
+  const teamName = project.team ? project.team.teamName : 'No Team';
   return (
     <Grid container display="flex" flexDirection="row" sx={{ mt: '10px' }}>
       <Grid item sm={12} md={6} sx={{ mb: 2 }}>
