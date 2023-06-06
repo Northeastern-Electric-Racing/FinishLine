@@ -173,7 +173,7 @@ export default class ReimbursementRequestService {
 
     await updateReceiptPictures(
       receiptPictures,
-      oldReimbursementRequest.receiptPictures || [],
+      oldReimbursementRequest.receiptPictures,
       oldReimbursementRequest.reimbursementRequestId
     );
 

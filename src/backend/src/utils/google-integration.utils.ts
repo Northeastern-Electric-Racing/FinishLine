@@ -12,7 +12,7 @@ const oauth2Client = new OAuth2(
   'https://developers.google.com/oauthplayground'
 );
 
-const GOOGLE_DRIVE_FOLDER_ID = '1MHvHLPxMKa0rPd0OokgvQ8xQW8GRHAS8';
+const { GOOGLE_DRIVE_FOLDER_ID } = process.env;
 
 const createTransporter = async () => {
   try {
