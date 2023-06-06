@@ -81,7 +81,7 @@ const robin: Prisma.UserCreateInput = {
   firstName: 'Damien',
   lastName: 'Wayne',
   googleAuthId: 'robin',
-  email: 'robin3@brucewayne.com',
+  email: 'robin4@brucewayne.com',
   role: Role.GUEST
 };
 
@@ -162,7 +162,79 @@ const nightwing: Prisma.UserCreateInput = {
   role: Role.GUEST
 };
 
-export const dbSeedAllUsers: Prisma.UserCreateInput[] = [
+const brandonHyde: Prisma.UserCreateInput = {
+  firstName: 'Brandon',
+  lastName: 'Hyde',
+  email: 'brandon.hyde@orioles.com',
+  googleAuthId: 'letsgoOs',
+  role: Role.LEADERSHIP
+};
+
+const calRipken: Prisma.UserCreateInput = {
+  firstName: 'Cal',
+  lastName: 'Ripken',
+  email: 'cal.ripken@orioles.com',
+  googleAuthId: 'ooooos',
+  role: Role.LEADERSHIP
+};
+
+const adleyRutschman: Prisma.UserCreateInput = {
+  firstName: 'Adley',
+  lastName: 'Rutschman',
+  email: 'adley.rutschman@orioles.com',
+  googleAuthId: 'catchin',
+  role: Role.MEMBER
+};
+
+const johnHarbaugh: Prisma.UserCreateInput = {
+  firstName: 'John',
+  lastName: 'Harbaugh',
+  email: 'john.harbaugh@ravens.com',
+  googleAuthId: 'hcjh',
+  role: Role.ADMIN
+};
+
+const lamarJackson: Prisma.UserCreateInput = {
+  firstName: 'Lamar',
+  lastName: 'Jackson',
+  email: 'lamar.jackson@ravens.com',
+  googleAuthId: 'lj8',
+  role: Role.LEADERSHIP
+};
+
+const nezamJazayeri: Prisma.UserCreateInput = {
+  firstName: 'Nezam',
+  lastName: 'Jazayeri',
+  email: 'nezam.jazayeri@steakman.com',
+  googleAuthId: 'strip',
+  role: Role.HEAD
+};
+
+const ryanHowe: Prisma.UserCreateInput = {
+  firstName: 'Ryan',
+  lastName: 'Howe',
+  email: 'howeryan@smoothie.com',
+  googleAuthId: 'ribeye',
+  role: Role.HEAD
+};
+
+const anthonyBernardi: Prisma.UserCreateInput = {
+  firstName: 'Anthony',
+  lastName: 'Bernadi',
+  email: 'bernardi.twan@leavingus.com',
+  googleAuthId: 'wagyu',
+  role: Role.HEAD
+};
+
+const reidChandler: Prisma.UserCreateInput = {
+  firstName: 'Reid',
+  lastName: 'Chandler',
+  email: 'rchandler@frontend.com',
+  googleAuthId: 'flank',
+  role: Role.HEAD
+};
+
+export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
   joeBlow,
@@ -177,5 +249,14 @@ export const dbSeedAllUsers: Prisma.UserCreateInput[] = [
   cyborg,
   greenLantern,
   martianManhunter,
-  nightwing
-];
+  nightwing,
+  brandonHyde,
+  calRipken,
+  adleyRutschman,
+  johnHarbaugh,
+  lamarJackson,
+  nezamJazayeri,
+  ryanHowe,
+  anthonyBernardi,
+  reidChandler
+};

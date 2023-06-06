@@ -9,19 +9,26 @@ import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import { dollarsPipe, weeksPipe } from '../../utils/pipes';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DetailDisplay from '../../components/DetailDisplay';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
   showDeleteButton?: boolean;
   onDelete?: (proposedSolution: ProposedSolution) => void;
+  crReviewed?: boolean;
 }
 
-const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSolution, showDeleteButton, onDelete }) => {
+const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
+  proposedSolution,
+  showDeleteButton,
+  onDelete,
+  crReviewed
+}) => {
+  const faded = crReviewed != null && proposedSolution.approved === false;
+
   return (
-    <PageBlock title="">
+    <PageBlock title="" style={{ opacity: faded ? 0.5 : 1 }}>
       {showDeleteButton && onDelete !== undefined ? (
         <Button
           color="error"
@@ -31,7 +38,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({ proposedSol
           }}
           sx={{ position: 'absolute', right: 75 }}
         >
-          <FontAwesomeIcon icon={faTrash} size="lg" data-testid={'deleteIcon'} />
+          <DeleteIcon />
         </Button>
       ) : null}
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>

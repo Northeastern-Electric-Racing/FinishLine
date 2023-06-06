@@ -3,20 +3,39 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, InputAdornment, TextField, useTheme } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteRenderInputParams,
+  InputAdornment,
+  SxProps,
+  TextField,
+  Theme,
+  useTheme
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { HTMLAttributes } from 'react';
 
 interface NERAutocompleteProps {
   id: string;
-  options: { label: string; id: any }[];
-  onChange: (event: React.SyntheticEvent<Element, Event>, value: { label: string; id: any } | null) => void;
+  options: { label: string; id: string }[];
+  onChange: (event: React.SyntheticEvent<Element, Event>, value: { label: string; id: string } | null) => void;
   size: 'small' | 'medium' | undefined;
   placeholder: string;
-  sx?: any;
-  value?: { label: string; id: any } | null;
+  sx?: SxProps<Theme>;
+  value?: { label: string; id: string } | null;
+  listboxProps?: HTMLAttributes<HTMLUListElement>;
 }
 
-const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options, size, placeholder, sx, value }) => {
+const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
+  id,
+  onChange,
+  options,
+  size,
+  placeholder,
+  sx,
+  value,
+  listboxProps
+}) => {
   const theme = useTheme();
 
   const autocompleteStyle = {
@@ -35,7 +54,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options
     ...sx
   };
 
-  const autocompleteRenderInput = (params: any) => {
+  const autocompleteRenderInput = (params: AutocompleteRenderInputParams) => {
     return (
       <TextField
         {...params}
@@ -64,6 +83,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options
       size={size}
       renderInput={autocompleteRenderInput}
       value={value}
+      ListboxProps={listboxProps}
     />
   );
 };

@@ -18,6 +18,18 @@ enum CR_Type {
   ACTIVATION
 }
 
+enum Task_Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Task_Status {
+  IN_BACKLOG
+  IN_PROGRESS
+  DONE
+}
+
 enum WBS_Element_Status {
   INACTIVE
   ACTIVE
@@ -27,6 +39,7 @@ enum WBS_Element_Status {
 enum Role {
   APP_ADMIN
   ADMIN
+  HEAD
   LEADERSHIP
   MEMBER
   GUEST
@@ -50,34 +63,47 @@ enum Scope_CR_Why_Type {
   OTHER
 }
 
+enum Work_Package_Stage {
+  RESEARCH
+  DESIGN
+  MANUFACTURING
+  INTEGRATION
+}
+
 model User {
-  userId       Int            @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  googleAuthId String         @unique
-  email        String         @unique
-  emailId      String?        @unique
-  role         Role           @default(GUEST)
-  userSettings User_Settings?
+  userId             Int                   @id @default(autoincrement())
+  firstName          String
+  lastName           String
+  googleAuthId       String                @unique
+  email              String                @unique
+  emailId            String?               @unique
+  role               Role                  @default(GUEST)
+  userSettings       User_Settings?
+  userSecureSettings User_Secure_Settings?
 
   // Relation references
-  submittedChangeRequests   Change_Request[]     @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests    Change_Request[]     @relation(name: "reviewedChangeRequests")
-  deletedChangeRequests     Change_Request[]     @relation(name: "deletedChangeRequests")
-  markedAsProjectLead       Activation_CR[]      @relation(name: "markAsProjectLead")
-  markedAsProjectManager    Activation_CR[]      @relation(name: "markAsProjectManager")
+  submittedChangeRequests   Change_Request[]        @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests    Change_Request[]        @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests     Change_Request[]        @relation(name: "deletedChangeRequests")
+  markedAsProjectLead       Activation_CR[]         @relation(name: "markAsProjectLead")
+  markedAsProjectManager    Activation_CR[]         @relation(name: "markAsProjectManager")
   changes                   Change[]
-  projectLead               WBS_Element[]        @relation(name: "projectLead")
-  projectManager            WBS_Element[]        @relation(name: "projectManager")
+  projectLead               WBS_Element[]           @relation(name: "projectLead")
+  projectManager            WBS_Element[]           @relation(name: "projectManager")
   Session                   Session[]
-  teams                     Team[]               @relation(name: "teamsAsMember")
-  teamAsLead                Team?                @relation(name: "teamAsLead")
-  deletedWBSElements        WBS_Element[]        @relation(name: "deletedWbsElements")
-  checkedDescriptionBullets Description_Bullet[] @relation(name: "checkDescriptionBullets")
-  createdRisks              Risk[]               @relation(name: "createdBy")
-  resolvedRisks             Risk[]               @relation(name: "resolvedBy")
-  deletedRisks              Risk[]               @relation(name: "deletedBy")
+  teams                     Team[]                  @relation(name: "teamsAsMember")
+  teamAsLead                Team?                   @relation(name: "teamAsLead")
+  deletedWBSElements        WBS_Element[]           @relation(name: "deletedWbsElements")
+  checkedDescriptionBullets Description_Bullet[]    @relation(name: "checkDescriptionBullets")
   createdProposedSolutions  Proposed_Solution[]
+  createdTasks              Task[]                  @relation(name: "createdBy")
+  deletedTasks              Task[]                  @relation(name: "deletedBy")
+  assignedTasks             Task[]                  @relation(name: "assignedTo")
+  favoriteProjects          Project[]               @relation(name: "favoritedBy")
+  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecipient")
+  reimbursementStatuses     Reimbursement_Status[]
+  reimbursements            Reimbursement[]         @relation(name: "purchaser")
+  submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
 }
 
 model Team {
@@ -196,25 +222,27 @@ model Change {
 }
 
 model WBS_Element {
-  wbsElementId          Int                @id @default(autoincrement())
-  dateCreated           DateTime           @default(now())
+  wbsElementId          Int                     @id @default(autoincrement())
+  dateCreated           DateTime                @default(now())
   dateDeleted           DateTime?
   carNumber             Int
   projectNumber         Int
   workPackageNumber     Int
   name                  String
-  status                WBS_Element_Status @default(INACTIVE)
+  status                WBS_Element_Status      @default(INACTIVE)
   projectLeadId         Int?
-  projectLead           User?              @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectLead           User?                   @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
   projectManagerId      Int?
-  projectManager        User?              @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  projectManager        User?                   @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
   changeRequests        Change_Request[]
   changes               Change[]
   deletedByUserId       Int?
-  deletedBy             User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
+  deletedBy             User?                   @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
   project               Project?
   workPackage           Work_Package?
-  dependentWorkPackages Work_Package[]     @relation("dependencies")
+  blocking              Work_Package[]          @relation("blockedBy")
+  tasks                 Task[]
+  reimbursementProducts Reimbursement_Product[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -236,7 +264,7 @@ model Project {
   workPackages          Work_Package[]
   teamId                String?
   team                  Team?                @relation(fields: [teamId], references: [teamId])
-  risks                 Risk[]
+  favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 
 model Work_Package {
@@ -248,9 +276,10 @@ model Work_Package {
   orderInProject     Int
   startDate          DateTime
   duration           Int
-  dependencies       WBS_Element[]        @relation(name: "dependencies")
+  blockedBy          WBS_Element[]        @relation(name: "blockedBy")
   expectedActivities Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables       Description_Bullet[] @relation(name: "workPackageDeliverables")
+  stage              Work_Package_Stage?
 }
 
 model Description_Bullet {
@@ -274,19 +303,110 @@ model Description_Bullet {
   workPackageDeliverables         Work_Package? @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
 }
 
-model Risk {
-  id               String    @id @default(uuid())
-  projectId        Int
-  project          Project   @relation(fields: [projectId], references: [projectId])
-  detail           String
-  isResolved       Boolean   @default(false)
-  dateDeleted      DateTime?
-  dateCreated      DateTime  @default(now())
-  createdByUserId  Int
-  createdBy        User      @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
-  resolvedByUserId Int?
-  resolvedBy       User?     @relation(name: "resolvedBy", fields: [resolvedByUserId], references: [userId])
-  resolvedAt       DateTime?
-  deletedByUserId  Int?
-  deletedBy        User?     @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+model Task {
+  taskId          String        @id @default(uuid())
+  title           String
+  notes           String
+  deadline        DateTime
+  assignees       User[]        @relation(name: "assignedTo")
+  priority        Task_Priority
+  status          Task_Status
+  deletedBy       User?         @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
+  deletedByUserId Int?
+  dateDeleted     DateTime?
+  createdBy       User          @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
+  createdByUserId Int
+  dateCreated     DateTime      @default(now())
+  wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId    Int
+}
+
+enum Club_Accounts {
+  CASH
+  BUDGET
+}
+
+enum Reimbursement_Status_Type {
+  PENDING_FINANCE
+  SABO_SUBMITTED
+  ADVISOR_APPROVED
+  REIMBURSED
+}
+
+model Reimbursement_Status {
+  reimbursementStatusId  Int                       @id @default(autoincrement())
+  type                   Reimbursement_Status_Type
+  userId                 Int
+  user                   User                      @relation(fields: [userId], references: [userId])
+  dateCreated            DateTime                  @default(now())
+  reimbursementRequestId String
+  reimbursementRequest   Reimbursement_Request     @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
+model Reimbursement_Request {
+  reimbursementRequestId String                  @id @default(uuid())
+  saboId                 Int?                    @unique
+  dateCreated            DateTime                @default(now())
+  dateDeleted            DateTime?
+  dateOfExpense          DateTime
+  reimbursementsStatuses Reimbursement_Status[]
+  recipientId            Int
+  recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
+  vendorId               String
+  vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
+  account                Club_Accounts
+  totalCost              Int
+  receiptPictures        String[]
+  reimbursementProducts  Reimbursement_Product[]
+  dateDelivered          DateTime?
+  expenseTypeId          String
+  expenseType            Expense_Type            @relation(fields: [expenseTypeId], references: [expenseTypeId])
+}
+
+model Reimbursement_Product {
+  reimbursementProductId String                @id @default(uuid())
+  name                   String
+  dateDeleted            DateTime?
+  cost                   Int
+  wbsElementId           Int
+  wbsElement             WBS_Element           @relation(fields: [wbsElementId], references: [wbsElementId])
+  reimbursementRequestId String
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
+model Vendor {
+  vendorId    String                  @id @default(uuid())
+  dateCreated DateTime                @default(now())
+  name        String                  @unique
+  requests    Reimbursement_Request[]
+}
+
+model Expense_Type {
+  expenseTypeId String                  @id @default(uuid())
+  name          String
+  code          Int
+  allowed       Boolean
+  requests      Reimbursement_Request[]
+}
+
+model Reimbursement {
+  reimbursementId String   @id @default(uuid())
+  dateCreated     DateTime @default(now())
+  amount          Int
+  userSubmittedId Int
+  userSubmitted   User     @relation(fields: [userSubmittedId], references: [userId], name: "submitter")
+  purchaserId     Int
+  purchaser       User     @relation(fields: [purchaserId], references: [userId], name: "purchaser")
+}
+
+model User_Secure_Settings {
+  userSecureSettingsId String @id @default(uuid())
+  nuid                 String @unique
+  userId               Int    @unique
+  user                 User   @relation(fields: [userId], references: [userId])
+  street               String
+  city                 String
+  state                String
+  zipcode              String
+  phoneNumber          String @unique
 }

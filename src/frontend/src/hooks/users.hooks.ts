@@ -11,10 +11,22 @@ import {
   logUserIn,
   logUserInDev,
   updateUserSettings,
-  updateUserRole
+  updateUserRole,
+  getUsersFavoriteProjects
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings } from 'shared';
+import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project } from 'shared';
 import { useAuth } from './auth.hooks';
+import { useContext } from 'react';
+import { UserContext } from '../app/AppContextUser';
+
+/**
+ * Custom React Hook to supply the current user
+ */
+export const useCurrentUser = (): AuthenticatedUser => {
+  const user = useContext(UserContext);
+  if (!user) throw Error('useCurrentUser must be used inside of context.');
+  return user;
+};
 
 /**
  * Custom React Hook to supply all users.
@@ -71,6 +83,18 @@ export const useSingleUserSettings = (id: number) => {
 };
 
 /**
+ * Custom React Hook to supply a single user's settings.
+ *
+ * @param id User ID of the requested user's settings.
+ */
+export const useUsersFavoriteProjects = (id: number) => {
+  return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
+    const { data } = await getUsersFavoriteProjects(id);
+    return data;
+  });
+};
+
+/**
  * Custom React Hook to update a user's settings.
  */
 export const useUpdateUserSettings = () => {
@@ -94,9 +118,9 @@ export const useUpdateUserSettings = () => {
 export const useUpdateUserRole = () => {
   const auth = useAuth();
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, UpdateUserRolePayload>(
     ['users', 'change-role'],
-    async (updateUserPayload: any) => {
+    async (updateUserPayload: UpdateUserRolePayload) => {
       if (!auth.user) throw new Error('Update role not allowed when not logged in');
       const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role);
       return data;

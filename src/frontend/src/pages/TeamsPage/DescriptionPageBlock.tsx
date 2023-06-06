@@ -7,14 +7,13 @@ import { Button, IconButton, TextField, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useEditTeamDescription } from '../../hooks/teams.hooks';
-import { Team } from 'shared';
+import { Team, isUnderWordCount, countWords, isAdmin } from 'shared';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
-import { isUnderWordCount, countWords } from 'shared';
 
 interface DescriptionPageBlockProps {
   team: Team;
@@ -43,9 +42,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     setIsEditingDescription(false);
     setIsPreview(false);
   };
-
-  const hasPerms =
-    auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'APP_ADMIN' || auth.user.userId === team.leader.userId);
+  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.leader.userId);
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
@@ -98,7 +95,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           inputProps={{
-            maxlength: isUnderWordCount(description, 300) ? null : 0
+            maxLength: isUnderWordCount(description, 300) ? null : 0
           }}
           helperText={`${countWords(description)}/300 words`}
           error={!isUnderWordCount(description, 300)}

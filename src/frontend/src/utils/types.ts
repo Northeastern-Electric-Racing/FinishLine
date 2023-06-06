@@ -5,6 +5,7 @@
 
 import { AuthenticatedUser } from 'shared';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { SvgIcon } from '@mui/material';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -20,4 +21,39 @@ export interface LinkItem {
   name: string;
   icon?: IconProp;
   route: string;
+}
+
+export interface MUILinkItem {
+  name: string;
+  icon?: typeof SvgIcon;
+  route: string;
+}
+
+export interface VersionObject {
+  tag_name: string;
+}
+
+export interface EditSingleProjectPayload {
+  projectId: number;
+  crId: number;
+  name: string;
+  budget: number;
+  summary: string;
+  rules: string[];
+  goals: { id: number; detail: string }[];
+  features: { id: number; detail: string }[];
+  otherConstraints: { id: number; detail: string }[];
+  googleDriveFolderLink: string;
+  slideDeckLink: string;
+  bomLink: string;
+  taskListLink: string;
+  projectLeadId?: number;
+  projectManagerId?: number;
+}
+
+export interface CreateSingleProjectPayload {
+  crId: number;
+  name: string;
+  carNumber: number;
+  summary: string;
 }

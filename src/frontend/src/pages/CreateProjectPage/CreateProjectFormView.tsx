@@ -4,19 +4,22 @@
  */
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
-import { FormControl, FormLabel } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CreateProjectFormInputs } from './CreateProjectForm';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useQuery } from '../../hooks/utils.hooks';
-import { SubmitButton } from '../../components/SubmitButton';
+import { useAllTeams } from '../../hooks/teams.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import { MouseEventHandler } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -32,18 +35,18 @@ const schema = yup.object().shape({
     .required('CR ID is required')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1'),
-  summary: yup.string().required('Summary is required')
+  summary: yup.string().required('Summary is required'),
+  teamId: yup.string().required('Team is required')
 });
 
 interface CreateProjectFormViewProps {
   allowSubmit: boolean;
-  onCancel: (e: any) => void;
+  onCancel: MouseEventHandler;
   onSubmit: (project: CreateProjectFormInputs) => void;
 }
 
 const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubmit, onCancel, onSubmit }) => {
   const query = useQuery();
-
   const {
     handleSubmit,
     control,
@@ -54,9 +57,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       name: '',
       carNumber: Number(query.get('wbs')?.charAt(0)),
       crId: Number(query.get('crId')),
-      summary: ''
+      summary: '',
+      teamId: ''
     }
   });
+
+  const { isLoading, data: teams } = useAllTeams();
+  if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
     <form
@@ -73,8 +80,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
       <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
-            <FormControl>
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
                 name="crId"
@@ -85,8 +92,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={9}>
-            <FormControl>
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth>
               <FormLabel>Car Number</FormLabel>
               <ReactHookTextField
                 name="carNumber"
@@ -97,8 +104,27 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <FormLabel>Team</FormLabel>
+              <Controller
+                name="teamId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <TextField select onChange={onChange} value={value}>
+                    {teams.map((t) => (
+                      <MenuItem key={t.teamName} value={t.teamId}>
+                        {t.teamName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
               <FormLabel>Project Name</FormLabel>
               <ReactHookTextField
                 name="name"
@@ -108,8 +134,8 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormControl sx={{ minWidth: 325, width: '37%' }}>
+          <Grid item xs={12} md={12}>
+            <FormControl fullWidth>
               <FormLabel>Project Summary</FormLabel>
               <ReactHookTextField
                 name="summary"
@@ -122,13 +148,13 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
             </FormControl>
           </Grid>
         </Grid>
-        <Box display="flex" gap={2} sx={{ mt: 2 }}>
-          <SubmitButton variant="contained" color="primary" type="submit" disabled={!allowSubmit}>
-            Create
-          </SubmitButton>
-          <Button variant="outlined" color="secondary" onClick={onCancel}>
+        <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
+          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
             Cancel
-          </Button>
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+            Create
+          </NERSuccessButton>
         </Box>
       </PageBlock>
     </form>

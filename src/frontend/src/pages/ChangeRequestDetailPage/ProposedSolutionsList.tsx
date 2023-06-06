@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProposedSolution } from 'shared';
+import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from './ProposedSolutionView';
@@ -49,10 +49,10 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
     <>
       <div className={styles.proposedSolutionsList}>
         {proposedSolutions.map((proposedSolution, i) => (
-          <ProposedSolutionView key={i} proposedSolution={proposedSolution} />
+          <ProposedSolutionView key={i} proposedSolution={proposedSolution} crReviewed={crReviewed} />
         ))}
       </div>
-      {crReviewed === undefined && auth.user?.role !== 'GUEST' ? (
+      {crReviewed === undefined && !isGuest(auth.user?.role) ? (
         <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
           + Add Proposed Solution
         </Button>

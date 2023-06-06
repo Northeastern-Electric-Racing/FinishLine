@@ -4,10 +4,29 @@
  */
 
 import axios from '../utils/axios';
-import { WbsNumber, WorkPackage } from 'shared';
+import { WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
+
+interface WorkPackageApiInputs {
+  name: string;
+  startDate: Date;
+  duration: number;
+  crId: number;
+  stage: WorkPackageStage | null;
+  blockedBy: WbsNumber[];
+}
+
+export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
+  projectWbsNum: {
+    carNumber: number;
+    projectNumber: number;
+    workPackageNumber: number;
+  };
+  deliverables: string[];
+  expectedActivities: string[];
+}
 
 /**
  * Fetch all work packages.
@@ -34,7 +53,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: any) => {
+export const createSingleWorkPackage = (payload: CreateWorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });
@@ -46,8 +65,36 @@ export const createSingleWorkPackage = (payload: any) => {
  * @param payload Object containing required key-value pairs for backend function to edit work package
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
-export const editWorkPackage = (payload: any) => {
+export const editWorkPackage = (payload: WorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
     ...payload
+  });
+};
+
+/**
+ * Delete a work package.
+ *
+ * @param wbsNum The WBS Number of the work package being deleted.
+ */
+export const deleteWorkPackage = (wbsNum: WbsNumber) => {
+  return axios.delete<{ message: string }>(apiUrls.workPackagesDelete(wbsPipe(wbsNum)));
+};
+
+/**
+ * Get all the work packages that this work package is blocking.
+ * @param wbsNum The WBS Number of the work package being changed.
+ */
+export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
+  return axios.get<WorkPackage[]>(apiUrls.workPackagesBlocking(wbsPipe(wbsNum)), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+  });
+};
+
+/**
+ * Slack upcoming deadlines.
+ */
+export const slackUpcomingDeadlines = (deadline: Date) => {
+  return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
+    deadline
   });
 };

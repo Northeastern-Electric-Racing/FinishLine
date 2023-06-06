@@ -7,8 +7,10 @@ import { WorkPackage } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
 import PageBlock from '../../../layouts/PageBlock';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
+import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
+import { timelinePipe } from '../../../utils/pipes';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
@@ -16,10 +18,18 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
   return (
-    <PageBlock title={'Work Package Details'} headerRight={<WbsStatus status={workPackage.status} />}>
+    <PageBlock
+      title={'Work Package Details'}
+      headerRight={
+        <Box>
+          {workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}
+          <WbsStatus status={workPackage.status} />
+        </Box>
+      }
+    >
       <Grid container spacing={1}>
         <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
+          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
@@ -31,7 +41,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <DetailDisplay label="Project Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
+          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={2} />
         </Grid>
 
         <Grid item xs={4} md={4}>
@@ -47,7 +57,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
         </Grid>
 
         <Grid item xs={4} md={4}>
-          <DetailDisplay label="Timeline Status" content={workPackage.timelineStatus} paddingRight={2} />
+          <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={2} />
         </Grid>
       </Grid>
     </PageBlock>

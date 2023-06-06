@@ -4,9 +4,11 @@
  */
 
 import { Project, WbsElementStatus } from 'shared';
+import { exampleTask1 } from './tasks.stub';
+import { exampleTeam } from './teams.stub';
 import { exampleAdminUser, exampleLeadershipUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
-import { exampleWorkPackage1, exampleWorkPackage2, exampleWorkPackage3 } from './work-packages.stub';
+import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufacturingWorkPackage } from './work-packages.stub';
 
 export const exampleProject1: Project = {
   id: 4,
@@ -57,8 +59,8 @@ export const exampleProject1: Project = {
   duration: 8,
   startDate: new Date('01/01/21'),
   endDate: new Date('02/26/21'),
-  workPackages: [exampleWorkPackage1, exampleWorkPackage2],
-  risks: []
+  workPackages: [exampleResearchWorkPackage, exampleDesignWorkPackage],
+  tasks: []
 };
 
 export const exampleProject2: Project = {
@@ -96,7 +98,7 @@ export const exampleProject2: Project = {
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  risks: []
+  tasks: []
 };
 
 export const exampleProject3: Project = {
@@ -139,8 +141,9 @@ export const exampleProject3: Project = {
   duration: 3,
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
-  workPackages: [exampleWorkPackage1],
-  risks: []
+  workPackages: [exampleResearchWorkPackage],
+  team: exampleTeam,
+  tasks: [exampleTask1]
 };
 
 export const exampleProject4: Project = {
@@ -177,8 +180,8 @@ export const exampleProject4: Project = {
   duration: 5,
   startDate: new Date('01/22/21'),
   endDate: new Date('02/26/21'),
-  workPackages: [exampleWorkPackage2],
-  risks: []
+  workPackages: [exampleDesignWorkPackage],
+  tasks: []
 };
 
 export const exampleProject5: Project = {
@@ -215,8 +218,8 @@ export const exampleProject5: Project = {
   duration: 2,
   startDate: new Date('01/01/21'),
   endDate: new Date('01/15/21'),
-  workPackages: [exampleWorkPackage3],
-  risks: []
+  workPackages: [exampleManufacturingWorkPackage],
+  tasks: []
 };
 
 export const exampleAllProjects: Project[] = [

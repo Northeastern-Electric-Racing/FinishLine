@@ -73,12 +73,13 @@ export const nerThemeOptions: ThemeOptions = {
   components: {
     MuiButtonBase: {
       defaultProps: {
-        disableRipple: true
+        disableRipple: true,
+        color: 'primary'
       }
     },
     MuiChip: {
       styleOverrides: {
-        colorSecondary: {
+        filledSecondary: {
           backgroundColor: 'gray'
         }
       }
@@ -102,6 +103,15 @@ export const nerThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           overflowWrap: 'anywhere'
+        }
+      }
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          '&:last-child': {
+            paddingBottom: '16px'
+          }
         }
       }
     }

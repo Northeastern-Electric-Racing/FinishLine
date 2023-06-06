@@ -7,9 +7,12 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { WorkPackage, WbsNumber } from 'shared';
 import {
   createSingleWorkPackage,
+  deleteWorkPackage,
   editWorkPackage,
+  getAllBlockingWorkPackages,
   getAllWorkPackages,
-  getSingleWorkPackage
+  getSingleWorkPackage,
+  slackUpcomingDeadlines
 } from '../apis/work-packages.api';
 
 /**
@@ -31,6 +34,22 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
   return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
     const { data } = await getSingleWorkPackage(wbsNum);
     return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply multiple work packages
+ *
+ * @param wbsNums WBS numbers of the requested work packages
+ */
+export const useManyWorkPackages = (wbsNums: WbsNumber[]) => {
+  return useQuery<WorkPackage[], Error>(['work packages', wbsNums], async () => {
+    const workPackagePromises = wbsNums.map(async (wbsNum) => {
+      const { data } = await getSingleWorkPackage(wbsNum);
+      return data;
+    });
+    const workPackages = await Promise.all(workPackagePromises);
+    return workPackages;
   });
 };
 
@@ -65,4 +84,43 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
       }
     }
   );
+};
+
+/**
+ * Custom React Hook to delete a work package.
+ */
+export const useDeleteWorkPackage = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['work packages', 'delete'],
+    async (wbsNum: WbsNumber) => {
+      const { data } = await deleteWorkPackage(wbsNum);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work packages']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all blocking work packages
+ */
+export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
+  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNum], async () => {
+    const { data } = await getAllBlockingWorkPackages(wbsNum);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to slack upcoming deadlines.
+ */
+export const useSlackUpcomingDeadlines = () => {
+  return useMutation<{ message: string }, Error, any>(['slack upcoming deadlines'], async (deadline: Date) => {
+    const { data } = await slackUpcomingDeadlines(deadline);
+    return data;
+  });
 };

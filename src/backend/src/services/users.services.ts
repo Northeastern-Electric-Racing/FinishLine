@@ -1,13 +1,14 @@
-import { Role, User_Settings, User as PrismaUser } from '@prisma/client';
+import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, User } from 'shared';
+import { AuthenticatedUser, isAdmin, Role, ThemeName, User, rankUserRole, Project } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
-import { rankUserRole } from '../utils/users.utils';
 import { generateAccessToken } from '../utils/auth.utils';
+import projectTransformer from '../transformers/projects.transformer';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 export default class UsersService {
   /**
@@ -57,6 +58,29 @@ export default class UsersService {
   }
 
   /**
+   * Get the given user's favorite projects.
+   * @param userId the user to get the projects for
+   * @returns the user's favorite projects
+   */
+  static async getUsersFavoriteProjects(userId: number): Promise<Project[]> {
+    const requestedUser = await prisma.user.findUnique({ where: { userId } });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const projects = await prisma.project.findMany({
+      where: {
+        favoritedBy: {
+          some: {
+            userId
+          }
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    return projects.map(projectTransformer);
+  }
+
+  /**
    * Edits a user's settings in the database
    * @param user the user who's settings are being updated
    * @param defaultTheme the defaultTheme of the user - a setting
@@ -64,7 +88,7 @@ export default class UsersService {
    * @returns the updated settings
    * @throws if the user does not exist
    */
-  static async updateUserSettings(user: PrismaUser, defaultTheme: any, slackId: string): Promise<User_Settings> {
+  static async updateUserSettings(user: PrismaUser, defaultTheme: ThemeName, slackId: string): Promise<User_Settings> {
     const { userId } = user;
 
     const updatedSettings = await prisma.user_Settings.upsert({
@@ -173,7 +197,7 @@ export default class UsersService {
     const userRole = rankUserRole(user.role);
     const targetUserRole = rankUserRole(targetUser.role);
 
-    if (user.role !== Role.APP_ADMIN && user.role !== Role.ADMIN) {
+    if (!isAdmin(user.role)) {
       throw new AccessDeniedException('Only admins can update user roles!');
     }
 
@@ -189,5 +213,48 @@ export default class UsersService {
     });
 
     return userTransformer(targetUser);
+  }
+
+  /**
+   * Sets the user's secure settings
+   * @param user the user to set the secure settings for
+   * @param nuid the users nuid
+   * @param street the users street address
+   * @param city the users city
+   * @param state the users state
+   * @param zipcode the users zipcode
+   * @returns the id of the user's secure settings
+   */
+  static async setUserSecureSettings(
+    user: User,
+    nuid: string,
+    street: string,
+    city: string,
+    state: string,
+    zipcode: string,
+    phoneNumber: string
+  ): Promise<string> {
+    const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      },
+      create: {
+        userId: user.userId,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      }
+    });
+
+    return newUserSecureSettings.userSecureSettingsId;
   }
 }

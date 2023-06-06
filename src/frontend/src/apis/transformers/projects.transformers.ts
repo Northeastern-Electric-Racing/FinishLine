@@ -5,6 +5,7 @@
 
 import { DescriptionBullet, Project } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
+import { taskTransformer } from './tasks.transformers';
 import { workPackageTransformer } from './work-packages.transformers';
 
 /**
@@ -37,6 +38,7 @@ export const projectTransformer = (project: Project) => {
     goals: project.goals.map(descriptionBulletTransformer),
     features: project.features.map(descriptionBulletTransformer),
     otherConstraints: project.otherConstraints.map(descriptionBulletTransformer),
-    changes: project.changes.map(implementedChangeTransformer)
+    changes: project.changes.map(implementedChangeTransformer),
+    tasks: project.tasks.map(taskTransformer)
   };
 };

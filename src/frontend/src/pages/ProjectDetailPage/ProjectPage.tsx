@@ -11,12 +11,14 @@ import ProjectEditContainer from './ProjectEdit/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useQuery } from '../../hooks/utils.hooks';
+import { useHistory } from 'react-router-dom';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;
 }
 
 const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
+  const history = useHistory();
   const query = useQuery();
   const { isLoading, isError, data, error } = useSingleProject(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
@@ -25,9 +27,17 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   if (editMode) {
-    return <ProjectEditContainer project={data} exitEditMode={() => setEditMode(false)} />;
+    return (
+      <ProjectEditContainer
+        project={data}
+        exitEditMode={() => {
+          setEditMode(false);
+          history.push(`${history.location.pathname}`);
+        }}
+      />
+    );
   }
-  return <ProjectViewContainer proj={data} enterEditMode={() => setEditMode(true)} />;
+  return <ProjectViewContainer project={data} enterEditMode={() => setEditMode(true)} />;
 };
 
 export default ProjectPage;

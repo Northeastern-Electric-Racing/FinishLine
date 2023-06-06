@@ -3,37 +3,36 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useHistory } from 'react-router-dom';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { Add } from '@mui/icons-material';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
-import { useAuth } from '../../hooks/auth.hooks';
-import { Link } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { useTheme } from '@mui/system';
 import { useState } from 'react';
-import { ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared';
+import { GridColDefStyle } from '../../utils/tables';
+import { Link } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 const ChangeRequestsTable: React.FC = () => {
-  const history = useHistory();
   const { isLoading, isError, data, error } = useAllChangeRequests();
-  const [pageSize, setPageSize] = useState(50);
+  if (localStorage.getItem('cr-table-row-count') === null) {
+    localStorage.setItem('cr-table-row-count', '50');
+  }
 
-  const baseColDef: any = {
+  const [pageSize, setPageSize] = useState(Number(localStorage.getItem('cr-table-row-count')));
+
+  const baseColDef: GridColDefStyle = {
     flex: 1,
     align: 'center',
     headerAlign: 'center'
   };
 
-  const auth = useAuth();
   const theme = useTheme();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !data) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
@@ -127,47 +126,32 @@ const ChangeRequestsTable: React.FC = () => {
       filterable: false,
       valueFormatter: (params) => params.value.length,
       maxWidth: 200
+    },
+    {
+      ...baseColDef,
+      field: 'status',
+      headerName: 'Status',
+      maxWidth: 150
     }
   ];
 
   return (
     <div>
-      <div style={{ marginBottom: 15 }}>
-        <PageTitle
-          title={'Change Requests'}
-          previousPages={[]}
-          actionButton={
-            <Button
-              style={{
-                textTransform: 'none',
-                fontSize: 16,
-                backgroundColor: '#ff0000',
-                borderColor: '#0062cc',
-                boxShadow: 'none'
-              }}
-              component={Link}
-              to={routes.CHANGE_REQUESTS_NEW}
-              variant="contained"
-              disabled={auth.user?.role === 'GUEST'}
-              startIcon={<Add />}
-            >
-              New Change Request
-            </Button>
-          }
-        />
-      </div>
       <DataGrid
         autoHeight
         disableSelectionOnClick
         density="compact"
         pageSize={pageSize}
         rowsPerPageOptions={[25, 50, 75, 100]}
-        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        onPageSizeChange={(newPageSize) => {
+          localStorage.setItem('cr-table-row-count', String(newPageSize));
+          setPageSize(newPageSize);
+        }}
         loading={isLoading}
         error={error}
         rows={
           // flatten some complex data to allow MUI to sort/filter yet preserve the original data being available to the front-end
-          data?.map((v) => ({
+          data.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
             wbs: { wbsNum: v.wbsNum, name: v.wbsName },
@@ -178,10 +162,20 @@ const ChangeRequestsTable: React.FC = () => {
         columns={columns}
         getRowId={(row) => row.crId}
         sx={{ background: theme.palette.background.paper }}
-        onRowClick={(params) => {
-          history.push(`${routes.CHANGE_REQUESTS}/${params.row.crId}`);
+        components={{
+          Toolbar: GridToolbar,
+          Row: (props: GridRowProps & { row: ChangeRequest }) => {
+            return (
+              <Link
+                component={RouterLink}
+                to={`${routes.CHANGE_REQUESTS}/${props.row.crId}`}
+                sx={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GridRow {...props} />
+              </Link>
+            );
+          }
         }}
-        components={{ Toolbar: GridToolbar }}
         componentsProps={{
           toolbar: {
             showQuickFilter: true,

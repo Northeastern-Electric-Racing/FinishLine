@@ -16,19 +16,24 @@ const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
+const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
+const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
+const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
+const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 
-/**************** Risks Endpoints ********************/
-const risks = () => `${API_URL}/risks`;
-const risksByProjectId = (projectId: number) => `${risks()}/${projectId}`;
-const risksCreate = () => `${risks()}/create`;
-const risksEdit = () => `${risks()}/edit`;
-const risksDelete = () => `${risks()}/delete`;
+/**************** Tasks Endpoints ********************/
+const tasks = () => `${API_URL}/tasks`;
+const tasksCreate = (wbsNum: string) => `${tasks()}/${wbsNum}`;
+const taskEditStatus = (taskId: string) => `${tasks()}/${taskId}/edit-status`;
+const editTaskById = (taskId: string) => `${tasks()}/${taskId}/edit`;
+const editTaskAssignees = (taskId: string) => `${tasks()}/${taskId}/edit-assignees`;
+const deleteTask = (taskId: string) => `${tasks()}/${taskId}/delete`;
 
 /**************** Work Packages Endpoints ****************/
 const workPackages = (queryParams?: { [field: string]: string }) => {
@@ -41,11 +46,15 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
+const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
+const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
+const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
 const changeRequestsById = (id: string) => `${changeRequests()}/${id}`;
 const changeRequestsReview = () => `${changeRequests()}/review`;
+const changeRequestDelete = (id: string) => changeRequestsById(id) + '/delete';
 const changeRequestsCreate = () => `${changeRequests()}/new`;
 const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activation`;
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
@@ -72,26 +81,35 @@ export const apiUrls = {
   usersLoginDev,
   userSettingsByUserId,
   userRoleByUserId,
+  userFavoriteProjects,
 
   projects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
+  projectsSetTeam,
+  projectsDelete,
+  projectsToggleFavorite,
 
-  risks,
-  risksByProjectId,
-  risksCreate,
-  risksEdit,
-  risksDelete,
+  tasksCreate,
+  tasks,
+  editTaskById,
+  taskEditStatus,
+  editTaskAssignees,
+  deleteTask,
 
   workPackages,
   workPackagesByWbsNum,
   workPackagesCreate,
   workPackagesEdit,
+  workPackagesDelete,
+  workPackagesBlocking,
+  workPackagesSlackUpcomingDeadlines,
 
   changeRequests,
   changeRequestsById,
   changeRequestsReview,
+  changeRequestDelete,
   changeRequestsCreate,
   changeRequestsCreateActivation,
   changeRequestsCreateStageGate,

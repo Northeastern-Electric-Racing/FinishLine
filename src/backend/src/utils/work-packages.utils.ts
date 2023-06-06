@@ -1,6 +1,8 @@
-import { Description_Bullet } from '@prisma/client';
+import { Description_Bullet, Prisma } from '@prisma/client';
 import { DescriptionBullet } from 'shared';
+import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import prisma from '../prisma/prisma';
+import { NotFoundException } from './errors.utils';
 import { buildChangeDetail } from './utils';
 
 export const calculateWorkPackageProgress = (
@@ -14,8 +16,8 @@ export const calculateWorkPackageProgress = (
 // create a change json if the old and new value are different, otherwise return undefined
 export const createChangeJsonNonList = (
   nameOfField: string,
-  oldValue: any,
-  newValue: any,
+  oldValue: string | number | null,
+  newValue: string | number | null,
   crId: number,
   implementerId: number,
   wbsElementId: number
@@ -36,6 +38,30 @@ export const createChangeJsonNonList = (
     };
   }
   return undefined;
+};
+
+// create a change json if the old and new value are different, otherwise return undefined
+export const createChange = (nameOfField: string, oldValue: any, newValue: any, crId: number, implementerId: number) => {
+  if (oldValue === newValue) {
+    return undefined;
+  } else if (oldValue === null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      detail: `Added ${nameOfField} "${newValue}"`
+    };
+  } else if (newValue === null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      detail: `Removed ${nameOfField} "${oldValue}"`
+    };
+  }
+  return {
+    changeRequestId: crId,
+    implementerId,
+    detail: buildChangeDetail(nameOfField, oldValue, newValue)
+  };
 };
 
 // create a change json if the old and new dates are different, otherwise return undefined
@@ -61,8 +87,8 @@ export const createChangeJsonDates = (
   return undefined;
 };
 
-// create a change json list for a given list (dependencies). Only works if the elements themselves should be compared (numbers)
-export const createDependenciesChangesJson = async (
+// create a change json list for a given list (blocked by). Only works if the elements themselves should be compared (numbers)
+export const createBlockedByChangesJson = async (
   oldArray: number[],
   newArray: number[],
   crId: number,
@@ -87,13 +113,13 @@ export const createDependenciesChangesJson = async (
     }
   });
 
-  // get the wbs number of each changing dependency for the change string
-  const changedDependencies = await prisma.wBS_Element.findMany({
+  // get the wbs number of each changing blocker for the change string
+  const changedBlocker = await prisma.wBS_Element.findMany({
     where: { wbsElementId: { in: changes.map((element) => element.element) } }
   });
 
   const wbsNumbers = new Map(
-    changedDependencies.map((element) => [
+    changedBlocker.map((element) => [
       element.wbsElementId,
       `${element.carNumber}.${element.projectNumber}.${element.workPackageNumber}`
     ])
@@ -165,4 +191,48 @@ export const createDescriptionBulletChangesJson = (
       return { changeRequestId: crId, implementerId, wbsElementId, detail };
     })
   };
+};
+
+/**
+ * Gets all the work packages the given work package is blocking
+ * @param initialWorkPackage the work package to get the blocking work packages for
+ * @returns an array of the blocking work packages
+ */
+export const getBlockingWorkPackages = async (
+  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>
+) => {
+  // track the wbs element ids we've seen so far so we don't update the same one multiple times
+  const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
+
+  // blocking ids that still need to be updated
+  const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
+  const blockingWorkPackages: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>[] = [];
+  while (blockingUpdateQueue.length > 0) {
+    const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
+
+    if (!currWbsId) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
+    if (seenWbsElementIds.has(currWbsId)) continue; // if we've already seen it we skip it
+
+    seenWbsElementIds.add(currWbsId);
+
+    // get the current wbs object from prisma
+    const currWbs = await prisma.wBS_Element.findUnique({
+      where: { wbsElementId: currWbsId },
+      include: {
+        blocking: true,
+        workPackage: { ...workPackageQueryArgs }
+      }
+    });
+
+    if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
+    if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
+    if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
+
+    // get all the blockings of the current wbs and add them to the queue to update
+    const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
+    blockingUpdateQueue.push(...newBlocking);
+    blockingWorkPackages.push(currWbs.workPackage);
+  }
+
+  return blockingWorkPackages;
 };

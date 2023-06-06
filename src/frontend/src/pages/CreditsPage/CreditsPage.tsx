@@ -3,7 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Button, Typography } from '@mui/material'; // some imports from libraries
+import { Grid, Typography } from '@mui/material'; // some imports from libraries
+import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
 import PageBlock from '../../layouts/PageBlock';
@@ -39,6 +40,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
     { name: 'Ryan Howe', color: '#3cce20' },
+    { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
     { name: 'Harish Sundar', color: '#7f00ff' },
     { name: 'Sahil Shah', color: '#288BA8' },
@@ -76,7 +78,23 @@ const CreditsPage: React.FC = () => {
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
     { name: 'Andrew Tsai', color: '#3281a8' },
-    { name: 'Ahnaf Inkiad', color: '#ab38b5' }
+    { name: 'Ahnaf Inkiad', color: '#ab38b5' },
+    { name: 'Aaryan Jain', color: '#e53774' },
+    { name: 'Jameson Ho', color: '#A020F0' },
+    { name: 'Yechan Na', color: '#C2B078' },
+    { name: 'Liam Kosar', color: '#eb66ff' },
+    { name: 'Daniel Yu', color: '#bdc0c7' },
+    { name: 'William Seward', color: '#e53774' },
+    {
+      name: 'Zach Norman',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    },
+    { name: 'Ethan Mouri', color: '#00bbff' },
+    { name: 'Laith Taher', color: '#000080' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
@@ -103,9 +121,9 @@ const CreditsPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <div style={{ justifyContent: 'center', display: 'flex' }}>
-        <Button onClick={() => setDisplaySnark(displaySnark + 1)} variant="contained">
+        <NERButton variant="contained" onClick={() => setDisplaySnark(displaySnark + 1)}>
           {displaySnark < snark.length ? snark[displaySnark] : '>:('}
-        </Button>
+        </NERButton>
       </div>
     </div>
   );

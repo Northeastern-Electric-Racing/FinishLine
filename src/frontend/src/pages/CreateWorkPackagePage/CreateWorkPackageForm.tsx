@@ -4,20 +4,23 @@
  */
 
 import { useHistory } from 'react-router-dom';
-import { isProject, validateWBS } from 'shared';
+import { useToast } from '../../hooks/toasts.hooks';
+import { isGuest, isProject, validateWBS, WorkPackageStage } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
+import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 
 export interface CreateWorkPackageFormInputs {
   name: string;
   startDate: Date;
-  duration: number;
-  crId: string;
+  duration: number | null;
+  crId: number;
+  stage: WorkPackageStage | 'None';
   wbsNum: string;
-  dependencies: { wbsNum: string }[];
+  blockedBy: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
 }
@@ -25,51 +28,60 @@ export interface CreateWorkPackageFormInputs {
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
+  const toast = useToast();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
 
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, dependencies, wbsNum } = data;
+    const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
-    // exits handleSubmit if form input invalid (should be changed in wire up)
+    if (!duration) {
+      toast.error('Please enter a valid duration!', 3000);
+      return;
+    }
+
     try {
       const wbsNumValidated = validateWBS(wbsNum);
 
       if (!isProject(wbsNumValidated)) {
-        alert('Please enter a valid Project WBS Number.');
+        toast.error('Please enter a valid Project WBS Number.', 3000);
         return;
       }
-      const depWbsNums = dependencies.map((dependency: any) => {
-        const depWbsNum = validateWBS(dependency.wbsNum);
+
+      const blockedByWbsNums = blockedBy.map((blocker: { wbsNum: string }) => {
+        const blockedWbsNum = validateWBS(blocker.wbsNum);
         return {
-          carNumber: depWbsNum.carNumber,
-          projectNumber: depWbsNum.projectNumber,
-          workPackageNumber: depWbsNum.workPackageNumber
+          carNumber: blockedWbsNum.carNumber,
+          projectNumber: blockedWbsNum.projectNumber,
+          workPackageNumber: blockedWbsNum.workPackageNumber
         };
       });
-      const createdWbsNum = await mutateAsync({
+
+      const payload: CreateWorkPackageApiInputs = {
         name: name.trim(),
-        crId: parseInt(crId),
+        crId,
         projectWbsNum: {
           carNumber: wbsNumValidated.carNumber,
           projectNumber: wbsNumValidated.projectNumber,
           workPackageNumber: wbsNumValidated.workPackageNumber
         },
-        startDate: startDate.toLocaleDateString(),
+        startDate,
         duration,
-        dependencies: depWbsNums,
+        blockedBy: blockedByWbsNums,
         expectedActivities,
-        deliverables
-      });
+        deliverables,
+        stage: stage === 'None' ? null : stage
+      };
+
+      const createdWbsNum = await mutateAsync(payload);
       history.push(`${routes.PROJECTS}/${createdWbsNum}`);
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
-        alert(e.message);
+        toast.error(e.message, 3000);
       }
     }
   };
@@ -78,7 +90,7 @@ const CreateWorkPackageForm: React.FC = () => {
     <CreateWorkPackageFormView
       onSubmit={handleSubmit}
       onCancel={() => history.goBack()}
-      allowSubmit={auth.user.role !== 'GUEST'}
+      allowSubmit={!isGuest(auth.user.role)}
     />
   );
 };

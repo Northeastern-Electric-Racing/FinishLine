@@ -5,8 +5,14 @@
 
 import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
 import AppAuthenticated from '../../app/AppAuthenticated';
+import { mockGetVersionNumberReturnValue, mockUseSingleUserSettings } from '../test-support/mock-hooks';
+import * as miscHooks from '../../hooks/misc.hooks';
+import * as authHooks from '../../hooks/auth.hooks';
 import * as workPackageHooks from '../../hooks/work-packages.hooks';
+import * as userHooks from '../../hooks/users.hooks';
 import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
+import { mockAuth } from '../test-support/test-data/test-utils.stub';
+import { exampleAdminUser } from '../test-support/test-data/users.stub';
 
 jest.mock('../../pages/ProjectsPage/Projects', () => {
   return {
@@ -32,6 +38,10 @@ const renderComponent = (path?: string, route?: string) => {
 describe('AppAuthenticated', () => {
   beforeEach(() => {
     jest.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
+    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
+    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    jest.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 
   it('renders nav links', () => {
@@ -43,7 +53,6 @@ describe('AppAuthenticated', () => {
 
   it('can navigate to projects page', () => {
     renderComponent();
-
     const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });
     expect(homeEle).toBeInTheDocument();
     fireEvent.click(screen.getByText('Projects'));

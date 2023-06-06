@@ -17,13 +17,24 @@ export class HttpException extends Error {
   }
 }
 
+export class DeletedException extends HttpException {
+  /**
+   * Constructs a deleted error
+   * @param name the name of the thing that is deleted
+   * @param id the id of the thing that is deleted
+   */
+  constructor(name: ExceptionObjectNames, id: number | string) {
+    super(404, `${name} with id: ${id} has been deleted!`);
+  }
+}
+
 export class NotFoundException extends HttpException {
   /**
    * Constructs a not found error
    * @param name the name of the thing that can't be found
    * @param id the id of the thing that can't be found
    */
-  constructor(name: NotFoundObjectNames, id: number | string) {
+  constructor(name: ExceptionObjectNames, id: number | string) {
     super(404, `${name} with id: ${id} not found!`);
   }
 }
@@ -38,6 +49,36 @@ export class AccessDeniedException extends HttpException {
   }
 }
 
+export class AccessDeniedAdminOnlyException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that non-admins may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`admin and app-admin only have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedMemberException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests and members may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`members and guests do not have the ability to ${message}`);
+  }
+}
+
+export class AccessDeniedGuestException extends AccessDeniedException {
+  /**
+   * Constructs an access denied error that guests may receive.
+   * @param message the action that is disallowed.
+   */
+  constructor(message: string) {
+    super(`guests do not have the ability to ${message}`);
+  }
+}
+
 /*
  * Error handling middleware. Takes the error and sends back the status of it and the message
  */
@@ -49,14 +90,14 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
   if (error instanceof HttpException) {
     res.status(error.status).json({ message: error.message });
   } else {
-    res.status(500).json({ message: 'Something went very wrong...' });
+    res.status(500).json({ message: JSON.stringify(error) });
+    throw error;
   }
 };
 
 // type so that the not found error messages are consistent
-type NotFoundObjectNames =
+type ExceptionObjectNames =
   | 'User'
-  | 'Risk'
   | 'Work Package'
   | 'Project'
   | 'Description Bullet'
@@ -64,4 +105,8 @@ type NotFoundObjectNames =
   | 'WBS Element'
   | 'Proposed Solution'
   | 'Team'
-  | 'User Settings';
+  | 'User Settings'
+  | 'Task'
+  | 'Vendor'
+  | 'Expense Type'
+  | 'Reimbursement Request';

@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import riskQueryArgs from './risks.query-args';
+import taskQueryArgs from './tasks.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -7,14 +7,14 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
       include: {
         projectLead: true,
         projectManager: true,
-        changes: { include: { implementer: true } }
+        tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
+        changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
       }
     },
-    team: true,
+    team: { include: { members: true, leader: true } },
     goals: { where: { dateDeleted: null } },
     features: { where: { dateDeleted: null } },
     otherConstraints: { where: { dateDeleted: null } },
-    risks: { where: { dateDeleted: null }, ...riskQueryArgs },
     workPackages: {
       where: {
         wbsElement: {
@@ -26,14 +26,15 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
           include: {
             projectLead: true,
             projectManager: true,
-            changes: { include: { implementer: true } }
+            changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
           }
         },
-        dependencies: true,
-        expectedActivities: true,
-        deliverables: true
+        blockedBy: { where: { dateDeleted: null } },
+        expectedActivities: { where: { dateDeleted: null } },
+        deliverables: { where: { dateDeleted: null } }
       }
-    }
+    },
+    favoritedBy: true
   }
 });
 

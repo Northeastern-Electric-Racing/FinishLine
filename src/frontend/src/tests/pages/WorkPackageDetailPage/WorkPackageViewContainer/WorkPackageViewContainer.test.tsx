@@ -4,19 +4,21 @@
  */
 
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../../test-support/test-utils';
-import { exampleWorkPackage1, exampleWorkPackage2 } from '../../../test-support/test-data/work-packages.stub';
+import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
-import * as authHooks from '../../../../hooks/auth.hooks';
-import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import * as userHooks from '../../../../hooks/users.hooks';
+import * as wpHooks from '../../../../hooks/work-packages.hooks';
 import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
+import { mockUseManyWorkPackagesReturnValue } from '../../../test-support/mock-hooks';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
-  workPackage = exampleWorkPackage2,
+  workPackage = exampleDesignWorkPackage,
   allowEdit = true,
   allowActivate = true,
   allowStageGate = true,
-  allowRequestChange = true
+  allowRequestChange = true,
+  allowDelete = true
 ) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
@@ -28,6 +30,7 @@ const renderComponent = (
         allowActivate={allowActivate}
         allowStageGate={allowStageGate}
         allowRequestChange={allowRequestChange}
+        allowDelete={allowDelete}
       />
     </RouterWrapper>
   );
@@ -35,14 +38,17 @@ const renderComponent = (
 
 describe('work package container view', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    jest
+      .spyOn(wpHooks, 'useManyWorkPackages')
+      .mockReturnValue(mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage]));
   });
 
   it('renders the project', () => {
     renderComponent();
 
     expect(screen.getAllByText('1.1.2 - Adhesive Shear Strength Test').length).toEqual(2);
-    expect(screen.getByText('Dependencies')).toBeInTheDocument();
+    expect(screen.getByText('Blocked By')).toBeInTheDocument();
     expect(screen.getByText('Expected Activities')).toBeInTheDocument();
     expect(screen.getByText('Deliverables')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeEnabled();
@@ -62,7 +68,7 @@ describe('work package container view', () => {
   });
 
   it('renders action menu buttons for active work package', () => {
-    renderComponent(exampleWorkPackage1);
+    renderComponent(exampleResearchWorkPackage);
 
     expect(screen.getByText('Actions')).toBeInTheDocument();
     act(() => {
@@ -74,7 +80,7 @@ describe('work package container view', () => {
   });
 
   it('disables edit button when not allowed', () => {
-    renderComponent(exampleWorkPackage2, false);
+    renderComponent(exampleDesignWorkPackage, false);
 
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
@@ -83,7 +89,7 @@ describe('work package container view', () => {
   });
 
   it('disables activate button when not allowed', () => {
-    renderComponent(exampleWorkPackage2, true, false);
+    renderComponent(exampleDesignWorkPackage, true, false);
 
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
@@ -92,7 +98,7 @@ describe('work package container view', () => {
   });
 
   it('disables stage gate button when not allowed', () => {
-    renderComponent(exampleWorkPackage1, true, true, false);
+    renderComponent(exampleResearchWorkPackage, true, true, false);
 
     act(() => {
       fireEvent.click(screen.getByText('Actions'));
@@ -101,7 +107,7 @@ describe('work package container view', () => {
   });
 
   it('disables request change button when not allowed', () => {
-    renderComponent(exampleWorkPackage1, true, true, true, false);
+    renderComponent(exampleResearchWorkPackage, true, true, true, false);
 
     act(() => {
       fireEvent.click(screen.getByText(/Actions/));

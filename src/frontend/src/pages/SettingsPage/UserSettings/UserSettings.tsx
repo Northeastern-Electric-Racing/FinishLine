@@ -3,8 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import { ThemeName } from 'shared';
 import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
@@ -46,7 +45,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
       headerRight={
         !edit ? (
           <IconButton onClick={() => setEdit(true)}>
-            <FontAwesomeIcon icon={faPencilAlt} size="sm" />
+            <EditIcon fontSize="small" />
           </IconButton>
         ) : (
           <div className="d-flex flex-row">

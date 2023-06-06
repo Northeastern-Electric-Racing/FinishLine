@@ -14,9 +14,15 @@ import Settings from '../pages/SettingsPage/Settings';
 import InfoPage from '../pages/InfoPage';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Container } from '@mui/material';
+import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
+import AppContextUser from './AppContextUser';
+import { useSingleUserSettings } from '../hooks/users.hooks';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ErrorPage from '../pages/ErrorPage';
+import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 
 const styles = {
   content: {
@@ -25,9 +31,18 @@ const styles = {
   }
 };
 
-const AppAuthenticated: React.FC = () => {
-  return (
-    <>
+interface AppAuthenticatedProps {
+  userId: number;
+}
+
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
+
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  return userSettingsData.slackId ? (
+    <AppContextUser>
       <NavTopBar />
       <div>
         <Sidebar />
@@ -37,6 +52,7 @@ const AppAuthenticated: React.FC = () => {
               <Route path={routes.PROJECTS} component={Projects} />
               <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
               <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+              <Route path={routes.GANTT} component={GanttPageWrapper} />
               <Route path={routes.TEAMS} component={Teams} />
               <Route path={routes.SETTINGS} component={Settings} />
               <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
@@ -48,7 +64,9 @@ const AppAuthenticated: React.FC = () => {
           </Container>
         </div>
       </div>
-    </>
+    </AppContextUser>
+  ) : (
+    <SetUserPreferences userSettings={userSettingsData} />
   );
 };
 

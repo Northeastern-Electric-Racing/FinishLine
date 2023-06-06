@@ -4,11 +4,12 @@
  */
 
 import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
-import { TextField, Typography } from '@mui/material';
+import { TextField, Typography, IconButton } from '@mui/material';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -26,14 +27,12 @@ const schema = yup.object().shape({
   budgetImpact: yup
     .number()
     .typeError('Budget Impact must be a number')
-    .min(0, 'Budget Impact must be greater than or equal to $0')
     .required('Budget Impact is required')
     .integer('Budget Impact must be an integer'),
   scopeImpact: yup.string().required('Scope Impact is required'),
   timelineImpact: yup
     .number()
     .typeError('Timeline Impact must be a number')
-    .min(0, 'Timeline Impact must be greater than or equal to 0 weeks')
     .required('Timeline Impact is required')
     .integer('Timeline Impact must be an integer')
 });
@@ -56,6 +55,18 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Propose a Solution</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={onClose}
+        sx={{
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500]
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent
         sx={{
           '&::-webkit-scrollbar': {
@@ -168,7 +179,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                   fullWidth
                   sx={{ width: 400 }}
                   disabled={readOnly}
-                  placeholder="# needed"
+                  placeholder="# of weeks needed"
                   error={!!formState.errors.timelineImpact}
                   helperText={formState.errors.timelineImpact?.message}
                 />

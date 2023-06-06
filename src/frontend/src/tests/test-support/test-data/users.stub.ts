@@ -47,7 +47,7 @@ export const exampleProjectLeadUser: User = {
   lastName: 'Smith',
   email: 'smith.a@husky.neu.edu',
   emailId: 'smith.a',
-  role: RoleEnum.LEADERSHIP
+  role: RoleEnum.HEAD
 };
 
 export const exampleProjectManagerUser: User = {
@@ -65,7 +65,7 @@ export const exampleMemberUser: User = {
   lastName: 'Bendara',
   email: 'bendara.e@husky.neu.edu',
   emailId: 'bendara.e',
-  role: RoleEnum.MEMBER
+  role: RoleEnum.HEAD
 };
 
 export const exampleGuestUser: User = {
@@ -74,6 +74,15 @@ export const exampleGuestUser: User = {
   lastName: 'James',
   email: 'james.j@husky.neu.edu',
   emailId: 'james.j',
+  role: RoleEnum.GUEST
+};
+
+export const exampleGuestUser2: User = {
+  userId: 8,
+  firstName: 'James',
+  lastName: 'Jackson',
+  email: 'jackson.j@husky.neu.edu',
+  emailId: 'jackson.j',
   role: RoleEnum.GUEST
 };
 

@@ -10,7 +10,6 @@ import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
 import { wbsPipe } from '../../../utils/pipes';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,9 +17,10 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  TextField,
   Typography
 } from '@mui/material';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import NERFailButton from '../../../components/NERFailButton';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
@@ -30,7 +30,6 @@ interface StageGateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  leftoverBudget: yup.number().required().min(0),
   confirmDone: yup.boolean().required()
 });
 
@@ -44,7 +43,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
    */
   const onSubmitWrapper = async (data: FormInput) => {
     await onSubmit(data);
-    reset({ leftoverBudget: 0, confirmDone: false });
+    reset({ confirmDone: false });
   };
 
   return (
@@ -54,36 +53,15 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
         <form id={'stage-gate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
           <div className={'px-4'}>
             <Controller
-              name="leftoverBudget"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <Typography sx={{ paddingTop: 1, paddingBottom: 1 }}>{'Leftover Budget'}</Typography>
-                  <TextField
-                    required
-                    variant="outlined"
-                    autoComplete="off"
-                    onChange={onChange}
-                    value={value}
-                    fullWidth
-                    InputProps={{
-                      startAdornment: <Typography sx={{ paddingRight: 1 }}>$</Typography>
-                    }}
-                  />
-                </>
-              )}
-            />
-
-            <Controller
               name="confirmDone"
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <>
+                  {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
                   <Typography sx={{ paddingTop: 1 }}>Is everything done?</Typography>
                   <ul style={{ marginTop: 0, marginBottom: 2 }}>
-                    <li>Updated slide deck & documentation</li>
+                    <li>Updated confluence & documentation</li>
                     <li>Creating any outstanding change requests</li>
                     <li>Submitted all receipts to the procurement form</li>
                     <li>Completed all Work Package expected activities</li>
@@ -113,18 +91,12 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
         </form>
       </DialogContent>
       <DialogActions>
-        <Button
-          color="secondary"
-          className={'ml-3'}
-          variant="contained"
-          form="stage-gate-work-package-form"
-          onClick={onHide}
-        >
+        <NERFailButton form="stage-gate-work-package-form" sx={{ mx: 1, mb: 1 }} onClick={onHide}>
           Cancel
-        </Button>
-        <Button color="success" variant="contained" type="submit" form="stage-gate-work-package-form">
+        </NERFailButton>
+        <NERSuccessButton type="submit" sx={{ mx: 1, mb: 1 }} form="stage-gate-work-package-form">
           Submit
-        </Button>
+        </NERSuccessButton>
       </DialogActions>
     </Dialog>
   );

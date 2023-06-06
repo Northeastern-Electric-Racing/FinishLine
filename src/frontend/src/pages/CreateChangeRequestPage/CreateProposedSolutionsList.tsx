@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProposedSolution } from 'shared';
+import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
@@ -47,20 +47,14 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
-      {auth.user.role !== 'GUEST' ? (
+      {!isGuest(auth.user.role) ? (
         <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
           + Add Proposed Solution
         </Button>
       ) : (
         ''
       )}
-      {showEditableForm ? (
-        <ProposedSolutionForm
-          onAdd={addProposedSolution}
-          open={showEditableForm}
-          onClose={() => setShowEditableForm(false)}
-        />
-      ) : null}
+      <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
     </>
   );
 };
