@@ -51,7 +51,6 @@ export interface ProjectEditFormInput {
   googleDriveFolderLink: string | undefined;
   taskListLink: string | undefined;
   slideDeckLink: string | undefined;
-  // projectId: number;
   crId: string;
   goals: {
     bulletId: number;
@@ -117,9 +116,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   }
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
-  const onSubmit = async (data: any) => {
-    const { name, budget, summary, bomLink, googleDriveFolderLink, taskListLink, slideDeckLink } = data;
-    const rules = data.rules.map((rule: any) => rule.rule || rule);
+  const onSubmit = async (data: ProjectEditFormInput) => {
+    const { name, budget, summary, bomLink = '', googleDriveFolderLink = '', taskListLink = '', slideDeckLink = '' } = data;
+    const rules = data.rules.map((rule) => rule.rule);
 
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -128,7 +127,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     try {
       const payload = {
         name,
-        budget: parseInt(budget),
+        budget: budget,
         summary,
         bomLink,
         googleDriveFolderLink,
