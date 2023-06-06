@@ -251,7 +251,9 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark request as delivered successfully', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: null });
+      jest
+        .spyOn(prisma.reimbursement_Request, 'findUnique')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
 
       const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         batman,
