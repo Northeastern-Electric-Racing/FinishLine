@@ -92,8 +92,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
             </Typography>
           </Grid>
           {project.links.map((link) => (
-            <Grid item xs={4}>
-              <LinkView link={link} key={link.linkId} />
+            <Grid item xs={4} key={link.linkId}>
+              <LinkView link={link} />
             </Grid>
           ))}
         </Grid>

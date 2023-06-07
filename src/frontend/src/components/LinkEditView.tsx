@@ -1,9 +1,10 @@
 import { useAllLinkTypes } from '../hooks/projects.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
-import { Button, Grid, IconButton, MenuItem, Select, TextField } from '@mui/material';
+import { Button, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { LinkCreateArgs } from 'shared';
 
 const LinkEditView: React.FC<{
   ls: FieldArrayWithId[];
@@ -15,14 +16,15 @@ const LinkEditView: React.FC<{
     projectManagerId: number | undefined;
     crId: string;
     rules: { rule: string }[];
-    links: { linkId: string; linkTypeName: string; url: string }[];
+    links: LinkCreateArgs[];
     goals: { bulletId: number; detail: string }[];
     features: { bulletId: number; detail: string }[];
     constraints: { bulletId: number; detail: string }[];
   }>;
   append: UseFieldArrayAppend<any, any>;
   remove: UseFieldArrayRemove;
-}> = ({ ls, register, append, remove }) => {
+  links: LinkCreateArgs[];
+}> = ({ ls, register, append, remove, links }) => {
   const { isLoading, isError, error, data } = useAllLinkTypes();
   if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -32,13 +34,18 @@ const LinkEditView: React.FC<{
       {ls.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
-            <Select {...register(`links.${i}.linkTypeName`, { required: true })} sx={{ minWidth: '200px', mr: '5px' }}>
+            <TextField
+              {...register(`links.${i}.linkTypeName`, { required: true })}
+              sx={{ minWidth: '200px', mr: '5px' }}
+              select
+              defaultValue={links[i].linkTypeName}
+            >
               {data.map((linkType) => (
                 <MenuItem key={linkType.name} value={linkType.name}>
                   {linkType.name}
                 </MenuItem>
               ))}
-            </Select>
+            </TextField>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
             <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
               <DeleteIcon />

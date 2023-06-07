@@ -23,7 +23,7 @@ export const linkToChangeListValue = (link: LinkCreateArgs) => {
   return {
     element: link,
     comparator: link.linkId,
-    displayValue: link.url
+    displayValue: `${link.linkTypeName}, ${link.url}`
   };
 };
 
@@ -99,8 +99,12 @@ export const createListChanges = <T>(
 
   const changes: { changeListValue: ChangeListValue<T>; type: ChangeType }[] = [];
 
+  console.log("old array ", oldArray);
+  console.log("new array ", newArray);
+
   oldArray.forEach((changeListValue) => {
     if (!seenNew.has(changeListValue.comparator)) {
+      console.log("removed ", changeListValue);
       changes.push({ changeListValue, type: ChangeType.REMOVED });
     }
   });

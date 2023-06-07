@@ -30,7 +30,7 @@ describe('project api hooks', () => {
 
     const result = await getAllProjects();
     expect(result.data).toHaveProperty('length', 5);
-    expect(result.data[0]).toHaveProperty('gDriveLink');
+    expect(result.data[0]).toHaveProperty('links');
     expect(result.data[1]).toHaveProperty('status');
     expect(result.data[0]).toHaveProperty('budget');
     expect(result.data[1]).toHaveProperty('projectLead');
@@ -46,6 +46,6 @@ describe('project api hooks', () => {
     const result = await getSingleProject({ carNumber: 1, projectNumber: 1, workPackageNumber: 0 });
     expect(result.data).not.toHaveProperty('length');
     expect(result.data).toHaveProperty('wbsNum');
-    expect(result.data).toHaveProperty('bomLink');
+    expect(result.data).toHaveProperty('links');
   });
 });

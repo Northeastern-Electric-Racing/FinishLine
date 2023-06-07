@@ -26,6 +26,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LinkEditView from '../../../components/LinkEditView';
+import { EditSingleProjectPayload } from '../../../utils/types';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -122,7 +123,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload = {
+    const payload: EditSingleProjectPayload = {
       name,
       budget,
       summary,
@@ -181,7 +182,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         </Grid>
       </PageBlock>
       <PageBlock title="Links">
-        <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} />
+        <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
       </PageBlock>
       <PageBlock title="Goals">
         <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />

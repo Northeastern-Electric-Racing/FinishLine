@@ -361,6 +361,8 @@ export default class ProjectsService {
       });
     });
 
+    console.log("Edited Items ", linkChanges.editedElements);
+
     await linkChanges.editedElements.forEach(async (link) => {
       await prisma.link.update({
         where: {
