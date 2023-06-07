@@ -1,10 +1,5 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
 import { WbsNumber } from './project-types';
-import { UserPreview } from './user-types';
+import { User } from './user-types';
 
 export enum ClubAccount {
   CASH = 'CASH',
@@ -21,14 +16,9 @@ export enum ReimbursementStatusType {
 export interface ReimbursementStatus {
   reimbursementStatusId: number;
   type: ReimbursementStatusType;
-  user: UserPreview;
+  user: User;
   dateCreated: Date;
 }
-
-export type ReimbursementStatusPreview = Pick<
-  ReimbursementStatus,
-  'reimbursementStatusId' | 'type' | 'user' | 'dateCreated'
->;
 
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
@@ -36,30 +26,16 @@ export interface ReimbursementRequest {
   dateCreated: Date;
   dateDeleted?: Date;
   dateOfExpense: Date;
-  reimbursementsStatuses: ReimbursementStatusPreview[];
-  recipient: UserPreview;
-  vendor: VendorPreview;
+  reimbursementsStatuses: ReimbursementStatus[];
+  recipient: User;
+  vendor: Vendor;
   account: ClubAccount;
   totalCost: number;
   receiptPictures: string[];
-  reimbursementProducts: ReimbursementProductPreview[];
+  reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
-  expenseType: ExpenseTypePreview;
+  expenseType: ExpenseType;
 }
-
-export type ReimbursementRequestPreview = Pick<
-  ReimbursementRequest,
-  | 'reimbursementRequestId'
-  | 'saboId'
-  | 'dateCreated'
-  | 'dateDeleted'
-  | 'dateOfExpense'
-  | 'recipient'
-  | 'account'
-  | 'totalCost'
-  | 'receiptPictures'
-  | 'dateDelivered'
->;
 
 export interface ReimbursementProduct {
   reimbursementProductId: string;
@@ -70,18 +46,11 @@ export interface ReimbursementProduct {
   wbsName: string;
 }
 
-export type ReimbursementProductPreview = Pick<
-  ReimbursementProduct,
-  'reimbursementProductId' | 'name' | 'dateDeleted' | 'cost' | 'wbsNum'
->;
-
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
   name: string;
 }
-
-export type VendorPreview = Pick<Vendor, 'vendorId' | 'dateCreated' | 'name'>;
 
 export interface ExpenseType {
   expenseTypeId: string;
@@ -89,5 +58,3 @@ export interface ExpenseType {
   code: number;
   allowed: boolean;
 }
-
-export type ExpenseTypePreview = Pick<ExpenseType, 'expenseTypeId' | 'name' | 'code' | 'allowed'>;

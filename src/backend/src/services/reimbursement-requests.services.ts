@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -24,7 +24,7 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import reimbursementRequestTransformer from '../transformers/reimbursement-requests.transformer';
+import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -125,7 +125,7 @@ export default class ReimbursementRequestService {
     requestId: string,
     dateOfExpense: Date,
     vendorId: string,
-    account: Club_Accounts,
+    account: ClubAccount,
     expenseTypeId: string,
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
@@ -304,7 +304,7 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Gets all the reimbursement requests from the database
+   * Gets all the reimbursement requests from the database that have no dateDeleted
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(): Promise<ReimbursementRequest[]> {
@@ -313,8 +313,6 @@ export default class ReimbursementRequestService {
       ...reimbursementRequestQueryArgs
     });
 
-    const outputReimbursementRequests = reimbursementRequests.map(reimbursementRequestTransformer);
-
-    return outputReimbursementRequests;
+    return reimbursementRequests.map(reimbursementRequestTransformer);
   }
 }
