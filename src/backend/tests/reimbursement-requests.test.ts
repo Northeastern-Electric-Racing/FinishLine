@@ -227,11 +227,11 @@ describe('Reimbursement Requests', () => {
     test('Mark as delivered fails for non submitter', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
-      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
-
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
       ).rejects.toThrow(new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered'));
+
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
@@ -270,7 +270,7 @@ describe('Reimbursement Requests', () => {
       expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
       expect(prisma.reimbursement_Request.update).toBeCalledTimes(1);
 
-      expect(reimbursementRequest.dateDelivered).toBe({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+      expect(reimbursementRequest).toBe({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
     });
   });
 });
