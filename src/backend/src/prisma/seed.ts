@@ -54,30 +54,6 @@ const performSeed: () => Promise<void> = async () => {
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
 
-  const confluenceLinkType = await prisma.linkType.create({
-    data: {
-      name: 'Confluence',
-      iconName: 'Description',
-      creator: {
-        connect: {
-          userId: thomasEmrax.userId
-        }
-      }
-    }
-  });
-
-  const bomLinkType = await prisma.linkType.create({
-    data: {
-      name: 'Bill of Materials',
-      iconName: 'Format List Numbered',
-      creator: {
-        connect: {
-          userId: thomasEmrax.userId
-        }
-      }
-    }
-  });
-
   /**
    * Make initial project so that we can start to create other stuff
    */
@@ -188,12 +164,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: confluenceLinkType.name
+        linkTypeName: 'Confluence'
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: bomLinkType.name
+        linkTypeName: 'Bill of materials'
       }
     ],
     thomasEmrax.userId,
@@ -218,12 +194,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: confluenceLinkType.name
+        linkTypeName: 'Confluence'
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: bomLinkType.name
+        linkTypeName: 'Bill of materials'
       }
     ],
     joeShmoe.userId,
@@ -248,12 +224,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: confluenceLinkType.name
+        linkTypeName: 'Confluence'
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: bomLinkType.name
+        linkTypeName: 'Bill of materials'
       }
     ],
     joeShmoe.userId,
@@ -278,12 +254,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: confluenceLinkType.name
+        linkTypeName: 'Confluence'
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: bomLinkType.name
+        linkTypeName: 'Bill of materials'
       }
     ],
     joeShmoe.userId,
@@ -308,12 +284,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: confluenceLinkType.name
+        linkTypeName: 'Confluence'
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: bomLinkType.name
+        linkTypeName: 'Bill of materials'
       }
     ],
     thomasEmrax.userId,
