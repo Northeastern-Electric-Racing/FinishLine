@@ -6,13 +6,17 @@
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isAdmin } from 'shared';
 
 const AdminToolsPage: React.FC = () => {
+  const currentUser = useCurrentUser();
+
   return (
     <>
       <PageTitle title="Admin Tools" previousPages={[]} />
       <AdminToolsUserManagement />
-      <AdminToolsSlackUpcomingDeadlines />
+      {isAdmin(currentUser.role) ? <AdminToolsSlackUpcomingDeadlines /> : null};
     </>
   );
 };
