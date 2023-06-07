@@ -13,7 +13,7 @@ const reimbursementRequestsRouter = express.Router();
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
-reimbursementRequestsRouter.get('/me', ReimbursementRequestController.getUserReimbursementRequests);
+reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
 reimbursementRequestsRouter.post(
   '/create',

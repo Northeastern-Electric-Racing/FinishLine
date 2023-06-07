@@ -65,7 +65,7 @@ describe('Reimbursement Requests', () => {
       prismaGetManySpy.mockResolvedValue([GiveMeMyMoney]);
 
       // act
-      const matches = await ReimbursementRequestService.getUserReimbursementRequests(batman);
+      const matches = await ReimbursementRequestService.getCurrentUserReimbursementRequests(batman);
 
       // assert
       expect(prismaGetManySpy).toBeCalledTimes(1);

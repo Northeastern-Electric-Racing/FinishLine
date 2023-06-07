@@ -26,10 +26,10 @@ import sendMailToAdvisor from '../utils/transporter.utils';
 
 export default class ReimbursementRequestService {
   /**
-   * Returns all reimbursement requests in the database that are created by a user.
+   * Returns all reimbursement requests in the database that are created by the given user.
    * @param recipient the user retrieving their reimbursement requests
    */
-  static async getUserReimbursementRequests(recipient: User): Promise<Reimbursement_Request[]> {
+  static async getCurrentUserReimbursementRequests(recipient: User): Promise<Reimbursement_Request[]> {
     const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, recipientId: recipient.userId }
     });

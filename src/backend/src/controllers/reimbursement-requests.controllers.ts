@@ -9,10 +9,10 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { Vendor } from 'shared';
 
 export default class ReimbursementRequestsController {
-  static async getUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      const userReimbursementRequests = await ReimbursementRequestService.getCurrentUserReimbursementRequests(user);
       res.status(200).json(userReimbursementRequests);
     } catch (error: unknown) {
       next(error);
