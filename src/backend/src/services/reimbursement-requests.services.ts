@@ -316,7 +316,7 @@ export default class ReimbursementRequestService {
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    if (!(reimbursementRequest?.dateDelivered === null))
+    if (!(reimbursementRequest.dateDelivered === null))
       throw new AccessDeniedException('Can only be marked as delivered once');
 
     if (!(submitter.userId === reimbursementRequest.recipientId))
