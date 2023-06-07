@@ -1,5 +1,5 @@
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { isAdmin, isLeadership } from 'shared';
+import { isLeadership } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
