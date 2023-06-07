@@ -79,9 +79,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
-reimbursementRequestsRouter.post(
-  '/reimbursement-requests/:id/delete',
-  ReimbursementRequestController.deleteReimbursementRequest
-);
+reimbursementRequestsRouter.post('/:id/delete', validateInputs, ReimbursementRequestController.deleteReimbursementRequest);
 
 export default reimbursementRequestsRouter;
