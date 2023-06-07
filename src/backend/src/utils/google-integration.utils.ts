@@ -5,19 +5,15 @@ import { HttpException } from './errors.utils';
 import stream from 'stream';
 
 const { OAuth2 } = google.auth;
+const { GOOGLE_DRIVE_FOLDER_ID, CLIENT_ID, CLIENT_SECRET, EMAIL_REFRESH_TOKEN, USER_EMAIL, DRIVE_REFRESH_TOKEN } =
+  process.env;
 
-const oauth2Client = new OAuth2(
-  process.env.CLIENT_ID,
-  process.env.CLIENT_SECRET,
-  'https://developers.google.com/oauthplayground'
-);
-
-const { GOOGLE_DRIVE_FOLDER_ID } = process.env;
+const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
 
 const createTransporter = async () => {
   try {
     oauth2Client.setCredentials({
-      refresh_token: process.env.EMAIL_REFRESH_TOKEN
+      refresh_token: EMAIL_REFRESH_TOKEN
     });
 
     let accessToken: string | null | undefined;
@@ -34,11 +30,11 @@ const createTransporter = async () => {
       service: 'gmail',
       auth: {
         type: 'OAuth2',
-        user: process.env.USER_EMAIL,
+        user: USER_EMAIL,
         accessToken: accessToken?.toString(),
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.EMAIL_REFRESH_TOKEN
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+        refreshToken: EMAIL_REFRESH_TOKEN
       }
     });
     return transporter;
@@ -52,7 +48,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
   try {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
-      from: process.env.USER_EMAIL,
+      from: USER_EMAIL,
       to: 'mckee.p@northeastern.edu',
       subject,
       text
@@ -72,7 +68,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   bufferStream.end(fileObject.buffer);
 
   oauth2Client.setCredentials({
-    refresh_token: process.env.DRIVE_REFRESH_TOKEN
+    refresh_token: DRIVE_REFRESH_TOKEN
   });
 
   try {
@@ -85,7 +81,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       },
       requestBody: {
         name: fileObject.originalname,
-        parents: [GOOGLE_DRIVE_FOLDER_ID]
+        parents: [GOOGLE_DRIVE_FOLDER_ID || '']
       },
       fields: 'id,name'
     });
