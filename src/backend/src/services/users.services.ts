@@ -1,17 +1,6 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import {
-  AuthenticatedUser,
-  isAdmin,
-  Role,
-  ThemeName,
-  User,
-  rankUserRole,
-  Project,
-  isNotLeadership,
-  RoleEnum,
-  isLeadership
-} from 'shared';
+import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, isNotLeadership, RoleEnum } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
