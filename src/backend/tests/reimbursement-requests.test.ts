@@ -227,7 +227,7 @@ describe('Reimbursement Requests', () => {
     test('Mark as delivered fails for non submitter', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
-      expect(prisma.reimbursementRequest.findUnique).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
 
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
@@ -241,7 +241,7 @@ describe('Reimbursement Requests', () => {
         new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId)
       );
 
-      expect(prisma.reimbursementRequest.findUnique).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
     });
 
     test('Mark as delivered fails for already marked as delivered', async () => {
@@ -253,7 +253,7 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
       ).rejects.toThrow(new AccessDeniedException('Can only be marked as delivered once'));
 
-      expect(prisma.reimbursementRequest.findUnique).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
     });
 
     test('Mark request as delivered successfully', async () => {
@@ -267,8 +267,8 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.reimbursementRequestId
       );
 
-      expect(prisma.reimbursementRequest.findUnique).toBeCalledTimes(1);
-      expect(prisma.reimbursementRequest.update).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.update).toBeCalledTimes(1);
 
       expect(reimbursementRequest.dateDelivered).toBe({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
     });
