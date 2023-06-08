@@ -24,12 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { Project, wbsPipe, WorkPackageStage } from 'shared';
-import NERAutocomplete from '../../components/NERAutocomplete';
-import { useState } from 'react';
-import { useAllProjects } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
+import { WorkPackageStage } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 
 const schema = yup.object().shape({
@@ -128,31 +123,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     </FormControl>
   );
 
-  const { isLoading, isError, error, data: projects } = useAllProjects();
-  const [wbsNum, setWbsNum] = useState('');
-
-  if (isLoading || !projects) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
-
-  const wbsAutocompleteOnChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: string } | null
-  ) => {
-    if (value) {
-      setWbsNum(value.id);
-    } else {
-      setWbsNum('');
-    }
-  };
-
-  const wbsDropdownOptions: { label: string; id: string }[] = [];
-  projects.forEach((project: Project) => {
-    wbsDropdownOptions.push({
-      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
-      id: wbsPipe(project.wbsNum)
-    });
-  });
-
   return (
     <form
       id={'create-work-package-form'}
@@ -215,26 +185,11 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <FormLabel>Project WBS Number</FormLabel>
-              {/* <ReactHookTextField
+              <ReactHookTextField
                 name="wbsNum"
                 control={control}
                 placeholder="Enter project WBS number..."
                 errorMessage={errors.wbsNum}
-              /> */}
-              <Controller
-                name="wbsNum"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <TextField id={'wbsNum-input'} onChange={onChange} value={wbsNum}></TextField>
-                )}
-              />
-              <NERAutocomplete
-                id="wbs-autocomplete"
-                onChange={wbsAutocompleteOnChange}
-                options={wbsDropdownOptions}
-                size="medium"
-                placeholder="Select a Project"
-                value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
               />
             </FormControl>
           </Grid>
