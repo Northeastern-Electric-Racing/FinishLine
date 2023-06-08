@@ -4,7 +4,7 @@ import {
   Expense_Type as PrismaExpenseType,
   Reimbursement_Product as PrismaReimbursementProduct
 } from '@prisma/client';
-import { Club_Account } from 'shared';
+import { ClubAccount } from 'shared';
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
@@ -26,7 +26,7 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   dateOfExpense: new Date('18/8/2023'),
   recipientId: 1,
   vendorId: '',
-  account: Club_Account.CASH,
+  account: ClubAccount.CASH,
   totalCost: 0,
   receiptPictures: [],
   dateDelivered: null,

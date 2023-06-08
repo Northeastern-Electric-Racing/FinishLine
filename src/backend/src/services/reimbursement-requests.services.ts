@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { Club_Account, Vendor, isAdmin, isGuest } from 'shared';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -23,6 +23,8 @@ import {
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
+import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
+import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -61,7 +63,7 @@ export default class ReimbursementRequestService {
     recipient: User,
     dateOfExpense: Date,
     vendorId: string,
-    account: Club_Account,
+    account: ClubAccount,
     receiptPictures: string[],
     reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
@@ -134,7 +136,7 @@ export default class ReimbursementRequestService {
     requestId: string,
     dateOfExpense: Date,
     vendorId: string,
-    account: Club_Accounts,
+    account: ClubAccount,
     expenseTypeId: string,
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
@@ -310,5 +312,18 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Gets all the reimbursement requests from the database that have no dateDeleted
+   * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
+   */
+  static async getAllReimbursementRequests(): Promise<ReimbursementRequest[]> {
+    const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { dateDeleted: null },
+      ...reimbursementRequestQueryArgs
+    });
+
+    return reimbursementRequests.map(reimbursementRequestTransformer);
   }
 }
