@@ -54,13 +54,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
       ) : (
         ''
       )}
-      {showEditableForm ? (
-        <ProposedSolutionForm
-          onAdd={addProposedSolution}
-          open={showEditableForm}
-          onClose={() => setShowEditableForm(false)}
-        />
-      ) : null}
+      <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
     </>
   );
 };

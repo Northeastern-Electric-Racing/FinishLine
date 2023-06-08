@@ -13,6 +13,7 @@ import {
   useTheme
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { HTMLAttributes } from 'react';
 
 interface NERAutocompleteProps {
   id: string;
@@ -22,9 +23,19 @@ interface NERAutocompleteProps {
   placeholder: string;
   sx?: SxProps<Theme>;
   value?: { label: string; id: string } | null;
+  listboxProps?: HTMLAttributes<HTMLUListElement>;
 }
 
-const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options, size, placeholder, sx, value }) => {
+const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
+  id,
+  onChange,
+  options,
+  size,
+  placeholder,
+  sx,
+  value,
+  listboxProps
+}) => {
   const theme = useTheme();
 
   const autocompleteStyle = {
@@ -72,6 +83,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({ id, onChange, options
       size={size}
       renderInput={autocompleteRenderInput}
       value={value}
+      ListboxProps={listboxProps}
     />
   );
 };

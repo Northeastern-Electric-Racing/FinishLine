@@ -26,6 +26,7 @@ import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -43,8 +44,6 @@ interface WorkPackageEditContainerProps {
 
 export interface WorkPackageEditFormPayload {
   name: string;
-  projectLead: number | undefined;
-  projectManager: number | undefined;
   workPackageId: number;
   startDate: Date;
   duration: number;
@@ -77,8 +76,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      projectLead: workPackage.projectLead?.userId,
-      projectManager: workPackage.projectManager?.userId,
       workPackageId: workPackage.id,
       name,
       crId: query.get('crId') || '',
@@ -93,6 +90,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       deliverables: bulletsToObject(workPackage.deliverables)
     }
   });
+
+  const [managerId, setManagerId] = useState<string | undefined>(workPackage.projectManager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(workPackage.projectLead?.userId.toString());
+
   // lists of stuff
   const {
     fields: expectedActivities,
@@ -122,14 +123,14 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
   const onSubmit = async (data: WorkPackageEditFormPayload) => {
-    const { name, projectLead, projectManager, startDate, duration, crId, blockedBy, stage } = data;
+    const { name, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
 
     try {
       const payload = {
-        projectLead,
-        projectManager,
+        projectLead: leadId ? parseInt(leadId) : undefined,
+        projectManager: managerId ? parseInt(managerId) : undefined,
         workPackageId: workPackage.id,
         userId,
         name,
@@ -177,7 +178,16 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
         }
       />
-      <WorkPackageEditDetails control={control} errors={errors} users={users} />
+      <WorkPackageEditDetails
+        control={control}
+        errors={errors}
+        usersForProjectLead={users}
+        usersForProjectManager={users}
+        lead={leadId}
+        manager={managerId}
+        setLead={setLeadId}
+        setManager={setManagerId}
+      />
       <PageBlock title="Blocked By">
         {blockedBy.map((_element, i) => {
           return (
