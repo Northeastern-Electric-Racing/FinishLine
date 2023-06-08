@@ -99,9 +99,6 @@ export const createListChanges = <T>(
 
   const changes: { changeListValue: ChangeListValue<T>; type: ChangeType }[] = [];
 
-  console.log("old array ", oldArray);
-  console.log("new array ", newArray);
-
   oldArray.forEach((changeListValue) => {
     if (!seenNew.has(changeListValue.comparator)) {
       console.log("removed ", changeListValue);

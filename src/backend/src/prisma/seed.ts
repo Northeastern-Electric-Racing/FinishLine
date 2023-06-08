@@ -169,7 +169,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of materials'
+        linkTypeName: 'Bill of Materials'
       }
     ],
     thomasEmrax.userId,
@@ -199,7 +199,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of materials'
+        linkTypeName: 'Bill of Materials'
       }
     ],
     joeShmoe.userId,
@@ -229,7 +229,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of materials'
+        linkTypeName: 'Bill of Materials'
       }
     ],
     joeShmoe.userId,
@@ -259,7 +259,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of materials'
+        linkTypeName: 'Bill of Materials'
       }
     ],
     joeShmoe.userId,
@@ -289,7 +289,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of materials'
+        linkTypeName: 'Bill of Materials'
       }
     ],
     thomasEmrax.userId,
