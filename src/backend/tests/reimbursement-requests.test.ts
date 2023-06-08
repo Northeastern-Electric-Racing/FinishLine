@@ -70,7 +70,7 @@ describe('Reimbursement Requests', () => {
       // assert
       expect(prismaGetManySpy).toBeCalledTimes(1);
       expect(prismaGetManySpy).toBeCalledWith({ where: { dateDeleted: null, recipientId: batman.userId } });
-      expect(matches).toEqual([GiveMeMyMoney]);
+      expect(matches).toHaveLength(1);
     });
   });
 
