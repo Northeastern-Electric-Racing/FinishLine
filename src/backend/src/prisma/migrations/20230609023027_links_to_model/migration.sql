@@ -37,9 +37,9 @@ INSERT INTO "User" ("userId", "firstName", "lastName", "googleAuthId", "email") 
   Adds Confluence, Google Drive and BOM Link Types to the database
 */
 -- Insert
-INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Confluence', 0, 'file-lines');
+INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Confluence', 0, 'description');
 INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Google Drive', 0, 'folder');
-INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Bill of Materials', 0, 'list-ol');
+INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Bill of Materials', 0, 'attach_money');
 
 /*
   Transfer over all the slide deck links to conflunce links

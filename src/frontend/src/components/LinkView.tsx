@@ -6,7 +6,7 @@ import { Link } from '@mui/material';
 const LinkView: React.FC<{ link: SharedLink }> = ({ link }) => {
   return (
     <Box>
-      <Icon>star</Icon>
+      <Icon>attach_money</Icon>
       <Link href={link.url} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
         {link.linkType.name}
       </Link>
