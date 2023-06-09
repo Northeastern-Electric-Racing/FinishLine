@@ -173,7 +173,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={5}>
             <FormControl fullWidth>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
@@ -184,7 +184,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -217,15 +217,9 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={4}>
             <FormControl fullWidth>
               <FormLabel>Project WBS Number</FormLabel>
-              <ReactHookTextField
-                name="wbsNum"
-                control={control}
-                placeholder="Enter project WBS number..."
-                errorMessage={errors.wbsNum}
-              />
               <NERAutocomplete
                 id="wbs-autocomplete"
                 onChange={wbsAutocompleteOnChange}
@@ -237,7 +231,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={4}>
             <FormControl fullWidth>
               <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
               <Controller

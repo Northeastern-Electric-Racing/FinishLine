@@ -90,8 +90,9 @@ const CreateWorkPackageForm: React.FC = () => {
     <CreateWorkPackageFormView
       onSubmit={handleSubmit}
       onCancel={() => history.goBack()}
-      allowSubmit={!isGuest(auth.user.role)}
-    />
+      allowSubmit={!isGuest(auth.user.role)} wbsNum={''} setWbsNum={function (val: string): void {
+        throw new Error('Function not implemented.');
+      } }    />
   );
 };
 
