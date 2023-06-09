@@ -24,8 +24,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { WorkPackageStage } from 'shared';
+import { Project, WorkPackage, WorkPackageStage, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -53,9 +56,11 @@ interface CreateWorkPackageFormViewProps {
   allowSubmit: boolean;
   onSubmit: (data: CreateWorkPackageFormInputs) => void;
   onCancel: () => void;
+  wbsNum: string;
+  setWbsNum: (val: string) => void;
 }
 
-const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ wbsNum, setWbsNum, allowSubmit, onSubmit, onCancel }) => {
   const startDate = new Date();
   const today = startDate.getDay();
   if (today !== 1) {
@@ -99,6 +104,11 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     return startDate.getDay() !== 1;
   };
 
+  const { data: projects } = useAllProjects();
+
+  // eslint-disable-next-line react/jsx-no-undef
+  if (!projects) return <LoadingIndicator />;
+
   const blockedByFormControl = (
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
@@ -122,6 +132,31 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       </Button>
     </FormControl>
   );
+
+  const wbsAutocompleteOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      setWbsNum(value.id);
+    } else {
+      setWbsNum('');
+    }
+  };
+
+  const wbsDropdownOptions: { label: string; id: string }[] = [];
+  projects.forEach((project: Project) => {
+    wbsDropdownOptions.push({
+      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    project.workPackages.forEach((workPackage: WorkPackage) => {
+      wbsDropdownOptions.push({
+        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
+        id: wbsPipe(workPackage.wbsNum)
+      });
+    });
+  });
 
   return (
     <form
@@ -190,6 +225,15 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
                 control={control}
                 placeholder="Enter project WBS number..."
                 errorMessage={errors.wbsNum}
+              />
+              <NERAutocomplete
+                id="wbs-autocomplete"
+                onChange={wbsAutocompleteOnChange}
+                options={wbsDropdownOptions}
+                size="small"
+                placeholder="Select a project or work package"
+                value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+                sx={{ width: 1 / 2 }}
               />
             </FormControl>
           </Grid>
