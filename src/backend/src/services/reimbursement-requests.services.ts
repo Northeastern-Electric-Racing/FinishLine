@@ -183,12 +183,9 @@ export default class ReimbursementRequestService {
    * @param requestId the request to be deleted
    * @param deleter the user deleting the request
    */
-  static async deleteReimbursementRequest(requestId: string, deleter: User): Promise<void> {
+  static async deleteReimbursementRequest(requestId: string, deleter: User): Promise<Reimbursement_Request> {
     const request = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId: requestId },
-      include: {
-        reimbursementProducts: true
-      }
+      where: { reimbursementRequestId: requestId }
     });
 
     if (!request) throw new NotFoundException('Reimbursement Request', requestId);
@@ -196,12 +193,14 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException(
         'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
       );
-    if (request.dateDeleted) throw new DeletedException('Reimbursement Request', request.reimbursementRequestId);
+    if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
 
-    await prisma.reimbursement_Request.update({
+    const deletedRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: requestId },
       data: { dateDeleted: new Date() }
     });
+
+    return deletedRequest;
   }
 
   /**

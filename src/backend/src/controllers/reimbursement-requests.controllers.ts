@@ -66,8 +66,8 @@ export default class ReimbursementRequestsController {
     try {
       const { id } = req.params;
       const user = await getCurrentUser(res);
-      await ReimbursementRequestService.deleteReimbursementRequest(id, user);
-      res.status(200).json({ message: 'Successfully deleted reimbursement request' });
+      const deletedRequest = await ReimbursementRequestService.deleteReimbursementRequest(id, user);
+      res.status(200).json(deletedRequest);
     } catch (error: unknown) {
       next(error);
     }
