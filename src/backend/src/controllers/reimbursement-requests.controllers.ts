@@ -64,9 +64,9 @@ export default class ReimbursementRequestsController {
 
   static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
+      const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const deletedRequest = await ReimbursementRequestService.deleteReimbursementRequest(id, user);
+      const deletedRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
       res.status(200).json(deletedRequest);
     } catch (error: unknown) {
       next(error);
