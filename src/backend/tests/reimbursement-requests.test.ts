@@ -1,3 +1,4 @@
+import { ClubAccount } from 'shared';
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import {
@@ -7,8 +8,15 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
+import {
+  GiveMeMoneyProduct,
+  GiveMeMyMoney,
+  Parts,
+  PopEyes,
+  prismaGiveMeMyMoney
+} from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -62,14 +70,17 @@ describe('Reimbursement Requests', () => {
     test('successfully calls the Prisma function', async () => {
       // mock prisma calls
       const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
-      prismaGetManySpy.mockResolvedValue([GiveMeMyMoney]);
+      prismaGetManySpy.mockResolvedValue([prismaGiveMeMyMoney]);
 
       // act
       const matches = await ReimbursementRequestService.getCurrentUserReimbursementRequests(batman);
 
       // assert
       expect(prismaGetManySpy).toBeCalledTimes(1);
-      expect(prismaGetManySpy).toBeCalledWith({ where: { dateDeleted: null, recipientId: batman.userId } });
+      expect(prismaGetManySpy).toBeCalledWith({
+        where: { dateDeleted: null, recipientId: batman.userId },
+        ...reimbursementRequestQueryArgs
+      });
       expect(matches).toHaveLength(1);
     });
   });
@@ -83,7 +94,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -104,7 +115,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -116,13 +127,12 @@ describe('Reimbursement Requests', () => {
 
     test('Edit Reimbursement Request Fails When User is not the recipient', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -145,7 +155,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -165,7 +175,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -189,7 +199,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [
@@ -219,7 +229,7 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.reimbursementRequestId,
         GiveMeMyMoney.dateOfExpense,
         GiveMeMyMoney.vendorId,
-        GiveMeMyMoney.account,
+        GiveMeMyMoney.account as ClubAccount,
         GiveMeMyMoney.expenseTypeId,
         GiveMeMyMoney.totalCost,
         [
