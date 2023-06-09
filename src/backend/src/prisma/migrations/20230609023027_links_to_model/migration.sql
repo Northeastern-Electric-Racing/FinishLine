@@ -45,17 +45,17 @@ INSERT INTO "LinkType" ("name", "creatorId", "iconName") VALUES ('Bill of Materi
   Transfer over all the slide deck links to conflunce links
 */
 -- Insert
-INSERT INTO "Link" ("url", "creatorId", "linkTypeName", "projectId") SELECT "slideDeckLink", 0, 'Confluence', "projectId" FROM "Project" WHERE "slideDeckLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(), "slideDeckLink", 0, 'Confluence', "projectId" FROM "Project" WHERE "slideDeckLink" IS NOT NULL;
 /*
   Transfer over all the Google Drive Folder links to Google Drive links
 */
 -- Insert
-INSERT INTO "Link" ("url", "creatorId", "linkTypeName", "projectId") SELECT "googleDriveFolderLink", 0, 'Google Drive', "projectId" FROM "Project" WHERE "googleDriveFolderLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(),"googleDriveFolderLink", 0, 'Google Drive', "projectId" FROM "Project" WHERE "googleDriveFolderLink" IS NOT NULL;
 /*
   Transfer over all the BOM links to BOM links
 */
 -- Insert
-INSERT INTO "Link" ("url", "creatorId", "linkTypeName", "projectId") SELECT "bomLink", 0, 'Bill of Materials', "projectId" FROM "Project" WHERE "bomLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(), "bomLink", 0, 'Bill of Materials', "projectId" FROM "Project" WHERE "bomLink" IS NOT NULL;
 /*
   Warnings:
   - You are about to drop the column `bomLink` on the `Project` table. All the data in the column will be lost.
