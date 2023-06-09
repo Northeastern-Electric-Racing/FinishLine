@@ -12,8 +12,6 @@ const LinkEditView: React.FC<{
     name: string;
     budget: number;
     summary: string;
-    projectLeadId: number | undefined;
-    projectManagerId: number | undefined;
     crId: string;
     rules: { rule: string }[];
     links: LinkCreateArgs[];
