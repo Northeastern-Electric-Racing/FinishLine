@@ -1,3 +1,4 @@
+import { ClubAccount } from 'shared';
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import {
@@ -67,7 +68,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -88,7 +89,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -106,7 +107,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -129,7 +130,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -149,7 +150,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
@@ -173,7 +174,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.reimbursementRequestId,
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
-          GiveMeMyMoney.account,
+          GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [
@@ -203,7 +204,7 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.reimbursementRequestId,
         GiveMeMyMoney.dateOfExpense,
         GiveMeMyMoney.vendorId,
-        GiveMeMyMoney.account,
+        GiveMeMyMoney.account as ClubAccount,
         GiveMeMyMoney.expenseTypeId,
         GiveMeMyMoney.totalCost,
         [
