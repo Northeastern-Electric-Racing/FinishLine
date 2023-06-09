@@ -145,4 +145,4 @@ export const useAllLinkTypes = () => {
     const { data } = await getAllLinkTypes();
     return data;
   });
-}
+};
