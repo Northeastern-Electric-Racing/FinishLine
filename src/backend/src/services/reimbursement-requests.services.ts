@@ -31,7 +31,7 @@ export default class ReimbursementRequestService {
    * Returns all reimbursement requests in the database that are created by the given user.
    * @param recipient the user retrieving their reimbursement requests
    */
-  static async getCurrentUserReimbursementRequests(recipient: User): Promise<ReimbursementRequest[]> {
+  static async getUserReimbursementRequests(recipient: User): Promise<ReimbursementRequest[]> {
     const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null, recipientId: recipient.userId },
       ...reimbursementRequestQueryArgs
