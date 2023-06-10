@@ -6,9 +6,20 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
 
 export default class ReimbursementRequestsController {
+  static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
     try {
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();
@@ -102,6 +113,15 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
       res.status(200).json(createdExpenseType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests();
+      res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
       next(error);
     }
