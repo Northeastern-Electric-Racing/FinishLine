@@ -118,6 +118,47 @@ export default class ReimbursementRequestService {
     return createdReimbursementRequest;
   }
 
+   /**
+   * Function to reimburse a user for their expenses.
+   * 
+   * @param recipient the user who will be receiving the reimbursement
+   * @param amount the amount to be reimbursed
+   * @param submitter the person performing the reimbursement
+   * @returns the created reimbursement
+   */
+   static async reimburseUser(
+    recipient: User,
+    amount: number,
+    submitter: UserWithTeam
+  ): Promise<Reimbursement_Request> {
+
+    await validateUserIsPartOfFinanceTeam(submitter);
+    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: { recipientId: recipient.userId, dateDeleted: null },
+    });
+
+    const totalOwed = userReimbursementRequests.reduce((acc: number, curr: ReimbursementRequest) => acc + curr.totalCost, 0);
+    
+    const totalReimbursed = await prisma.reimbursement.findMany({
+      where: { recipientId: recipient.userId },
+      select: { amount: true },
+    }).then((reimbursements: {amount: number}[]) => reimbursements.reduce((acc: number, curr: {amount: number} ) => acc + curr.amount, 0));
+
+    if (amount > totalOwed - totalReimbursed) {
+      throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
+    }
+    const newReimbursement = await prisma.reimbursement.create({
+      data: {
+        recipientId: recipient.userId,
+        amount,
+        dateReimbursed: new Date(),
+        reimbursedByUserId: submitter.userId,
+      },
+    });
+
+    return newReimbursement;
+  }
+
   /**
    * Edits the given reimbursement Request
    *

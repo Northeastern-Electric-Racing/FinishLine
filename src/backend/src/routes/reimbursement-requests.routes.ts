@@ -83,4 +83,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
+reimbursementRequestsRouter.post(
+  '/:userId/reimburse',
+  intMinZero(body('amount')),
+  validateInputs,
+  ReimbursementRequestController.reimburseUser
+);
+
 export default reimbursementRequestsRouter;
