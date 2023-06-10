@@ -8,8 +8,15 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
+import {
+  GiveMeMoneyProduct,
+  GiveMeMyMoney,
+  Parts,
+  PopEyes,
+  prismaGiveMeMyMoney
+} from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -59,6 +66,25 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Get User Reimbursement Request Tests', () => {
+    test('successfully calls the Prisma function', async () => {
+      // mock prisma calls
+      const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
+      prismaGetManySpy.mockResolvedValue([prismaGiveMeMyMoney]);
+
+      // act
+      const matches = await ReimbursementRequestService.getUserReimbursementRequests(batman);
+
+      // assert
+      expect(prismaGetManySpy).toBeCalledTimes(1);
+      expect(prismaGetManySpy).toBeCalledWith({
+        where: { dateDeleted: null, recipientId: batman.userId },
+        ...reimbursementRequestQueryArgs
+      });
+      expect(matches).toHaveLength(1);
+    });
+  });
+
   describe('Edit Reimbursement Request Tests', () => {
     test('Request Fails When Id does not exist', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
@@ -101,7 +127,6 @@ describe('Reimbursement Requests', () => {
 
     test('Edit Reimbursement Request Fails When User is not the recipient', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
           GiveMeMyMoney.reimbursementRequestId,

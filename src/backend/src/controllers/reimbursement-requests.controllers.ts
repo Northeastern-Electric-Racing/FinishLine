@@ -10,6 +10,16 @@ import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-re
 import { Vendor } from 'shared';
 
 export default class ReimbursementRequestsController {
+  static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
     try {
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();
