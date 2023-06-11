@@ -53,10 +53,10 @@ export default class ReimbursementRequestsController {
   static async reimburseUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { recipient } = req.body.recipient;
-      const { amount } = req.body.amount;
-      const reimbursementResult = await ReimbursementRequestService.reimburseUser(recipient, amount, user);
-      res.status(200).json(reimbursementResult);
+      const { recipient } = req.params;
+      const { amount } = req.body;
+      const reimbursement = await ReimbursementRequestService.reimburseUser(recipient, amount, user);
+      res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
     }

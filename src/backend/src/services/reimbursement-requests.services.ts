@@ -128,11 +128,13 @@ export default class ReimbursementRequestService {
    */
   static async reimburseUser(recipient: User, amount: number, submitter: UserWithTeam): Promise<Reimbursement_Request> {
     await validateUserIsPartOfFinanceTeam(submitter);
-    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
-      where: { recipientId: recipient.userId, dateDeleted: null }
-    });
-
-    const totalOwed = userReimbursementRequests.reduce((acc: number, curr: ReimbursementRequest) => acc + curr.totalCost, 0);
+     
+    const totalOwed = prisma.reimbursement_Request.findMany({
+        where: { recipientId: recipient.userId, dateDeleted: null }
+      })
+      .then((userReimbursementRequests: ReimbursementRequest[]) => {
+        userReimbursementRequests.reduce((acc: number, curr: ReimbursementRequest) => acc + curr.totalCost, 0);
+      });
 
     const totalReimbursed = await prisma.reimbursement
       .findMany({
