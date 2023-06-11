@@ -48,3 +48,16 @@ export const updateLinks = async (
     });
   });
 };
+
+/**
+ * transforms the given link to a change list value
+ * @param link the link to transform to a change list value
+ * @returns the change list value
+ */
+export const linkToChangeListValue = (link: LinkCreateArgs) => {
+  return {
+    element: link,
+    comparator: link.linkId,
+    displayValue: `${link.linkTypeName}, ${link.url}`
+  };
+};

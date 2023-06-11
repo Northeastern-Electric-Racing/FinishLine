@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { LinkCreateArgs, Project } from 'shared';
+import { LinkCreateArgs, Project, RequiredLinkType } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -74,6 +74,23 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const allUsers = useAllUsers();
   const toast = useToast();
   const { name, budget, summary } = project;
+
+  const projectLinks = project.links.map((link) => {
+    return {
+      linkId: link.linkId,
+      url: link.url,
+      linkTypeName: link.linkType.name
+    };
+  });
+
+  const linkTypes = projectLinks.map((link) => link.linkTypeName);
+
+  Object.values(RequiredLinkType).forEach((linkType) => {
+    if (!linkTypes.includes(linkType)) {
+      projectLinks.push({ linkId: '-1', url: '', linkTypeName: linkType });
+    }
+  });
+
   const {
     register,
     handleSubmit,
@@ -89,10 +106,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       rules: project.rules.map((rule) => {
         return { rule };
       }),
-      links: project.links.map((link) => {
+      links: projectLinks.map((link) => {
         return {
           linkId: link.linkId,
-          linkTypeName: link.linkType.name,
+          linkTypeName: link.linkTypeName,
           url: link.url
         };
       }),

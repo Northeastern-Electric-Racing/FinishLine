@@ -37,6 +37,7 @@ const LinkEditView: React.FC<{
               sx={{ minWidth: '200px', mr: '5px' }}
               select
               defaultValue={links[i].linkTypeName}
+              disabled={i < 3}
             >
               {data.map((linkType) => (
                 <MenuItem key={linkType.name} value={linkType.name}>
@@ -45,9 +46,11 @@ const LinkEditView: React.FC<{
               ))}
             </TextField>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
-            <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
-              <DeleteIcon />
-            </IconButton>
+            {i > 2 && (
+              <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
+                <DeleteIcon />
+              </IconButton>
+            )}
           </Grid>
         );
       })}

@@ -16,7 +16,7 @@ import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from '../transformers/user.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
-import linkTransformer from './links.transformer';
+import { linkTransformer } from './links.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;

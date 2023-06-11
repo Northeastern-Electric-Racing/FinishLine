@@ -93,3 +93,9 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
+
+export enum RequiredLinkType {
+  Confluence = 'Confluence',
+  BillOfMaterials = 'Bill of Materials',
+  GoogleDrive = 'Google Drive'
+}

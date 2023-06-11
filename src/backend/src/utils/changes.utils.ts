@@ -19,14 +19,6 @@ export interface ChangeListValue<T> {
   displayValue: string;
 }
 
-export const linkToChangeListValue = (link: LinkCreateArgs) => {
-  return {
-    element: link,
-    comparator: link.linkId,
-    displayValue: `${link.linkTypeName}, ${link.url}`
-  };
-};
-
 export const buildChangeDetail = (itemChanged: string, oldValue: string, newValue: string): string => {
   return `Changed ${itemChanged} from "${oldValue}" to "${newValue}"`;
 };

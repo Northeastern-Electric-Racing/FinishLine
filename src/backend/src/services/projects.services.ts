@@ -19,7 +19,7 @@ import {
 } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
-import { createChange, createListChanges, linkToChangeListValue } from '../utils/changes.utils';
+import { createChange, createListChanges } from '../utils/changes.utils';
 import {
   DescriptionBulletPreview,
   descriptionBulletsToChangeListValues,
@@ -28,7 +28,7 @@ import {
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
-import { updateLinks } from '../utils/links.utils';
+import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 
 export default class ProjectsService {
   /**
