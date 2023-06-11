@@ -316,10 +316,9 @@ export default class ReimbursementRequestService {
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    if (!(reimbursementRequest.dateDelivered === null))
-      throw new AccessDeniedException('Can only be marked as delivered once');
+    if (!reimbursementRequest.dateDelivered) throw new AccessDeniedException('Can only be marked as delivered once');
 
-    if (!(submitter.userId === reimbursementRequest.recipientId))
+    if (submitter.userId !== reimbursementRequest.recipientId)
       throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
