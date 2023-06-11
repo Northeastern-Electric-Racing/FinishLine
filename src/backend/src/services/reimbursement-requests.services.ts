@@ -4,7 +4,7 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -24,7 +24,7 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
+import { expenseTypeTransformer, reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -313,6 +313,15 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * gets all the expense types in the database
+   * @returns all the expense types in the database
+   */
+  static async getAllExpenseTypes(): Promise<ExpenseType[]> {
+    const expenseTypes = await prisma.expense_Type.findMany();
+    return expenseTypes.map(expenseTypeTransformer);
   }
 
   /**
