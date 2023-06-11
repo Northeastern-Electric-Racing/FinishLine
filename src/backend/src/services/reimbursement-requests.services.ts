@@ -196,7 +196,7 @@ export default class ReimbursementRequestService {
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
   static async getPendingAdvisorList(): Promise<ReimbursementRequest[]> {
-    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
+    const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: { not: null },
         reimbursementsStatuses: {
@@ -207,7 +207,7 @@ export default class ReimbursementRequestService {
       },
       ...reimbursementRequestQueryArgs
     });
-    return userReimbursementRequests.map(reimbursementRequestTransformer);
+    return requestsPendingAdvisors.map(reimbursementRequestTransformer);
   }
 
   /**
