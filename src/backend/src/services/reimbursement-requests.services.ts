@@ -327,4 +327,22 @@ export default class ReimbursementRequestService {
 
     return reimbursementRequests.map(reimbursementRequestTransformer);
   }
+
+  /**
+   * Gets a single reimbursement request for the given id
+   * @param reimbursementRequestId the id of thereimbursement request to get
+   * @returns the reimbursement request with the given id
+   */
+  static async getSingleReimbursementRequest(reimbursementRequestId: string): Promise<ReimbursementRequest> {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      ...reimbursementRequestQueryArgs
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+
+    return reimbursementRequestTransformer(reimbursementRequest);
+  }
 }

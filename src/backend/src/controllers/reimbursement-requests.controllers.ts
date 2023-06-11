@@ -126,4 +126,16 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+        requestId
+      );
+      res.status(200).json(reimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
