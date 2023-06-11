@@ -117,7 +117,7 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
-  
+
   static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
     try {
       const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
