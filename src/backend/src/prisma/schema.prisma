@@ -113,7 +113,7 @@ model Team {
   description String    @default("")
   leaderId    Int       @unique
   leader      User      @relation(name: "teamAsLead", fields: [leaderId], references: [userId])
-  projects    Project[]
+  projects    Project[] @relation(name:"assignedBy")
   members     User[]    @relation(name: "teamsAsMember")
 }
 
@@ -263,7 +263,7 @@ model Project {
   otherConstraints      Description_Bullet[] @relation(name: "projectOtherConstraints")
   workPackages          Work_Package[]
   teamId                String?
-  team                  Team?                @relation(fields: [teamId], references: [teamId])
+  team                  Team[]               @relation(name:"assignedBy")
   favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 

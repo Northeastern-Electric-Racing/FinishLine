@@ -39,7 +39,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    team: project.team ? project.team : undefined,
+    team: project.team,
     summary: project.summary,
     budget: project.budget,
     gDriveLink: project.googleDriveFolderLink ?? undefined,
