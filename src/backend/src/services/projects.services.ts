@@ -26,8 +26,9 @@ import {
   descriptionBulletToChangeListValue
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
-import linkTypeTransformer from '../transformers/link-types.transformer';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import { linkTypeTransformer } from '../transformers/links.transformer';
+import { updateLinks } from '../utils/links.utils';
 
 export default class ProjectsService {
   /**
@@ -350,35 +351,7 @@ export default class ProjectsService {
         .concat(otherConstraintsChangeJson.editedElements)
     );
 
-    await linkChanges.addedElements.forEach(async (link) => {
-      await prisma.link.create({
-        data: {
-          url: link.url,
-          linkTypeName: link.linkTypeName,
-          creatorId: userId,
-          projectId
-        }
-      });
-    });
-
-    await linkChanges.editedElements.forEach(async (link) => {
-      await prisma.link.update({
-        where: {
-          linkId: link.linkId
-        },
-        data: {
-          ...link
-        }
-      });
-    });
-
-    await linkChanges.deletedElements.forEach(async (link) => {
-      await prisma.link.delete({
-        where: {
-          linkId: link.linkId
-        }
-      });
-    });
+    await updateLinks(linkChanges, updatedProject.projectId, userId);
 
     // create the changes in prisma
     await prisma.change.createMany({

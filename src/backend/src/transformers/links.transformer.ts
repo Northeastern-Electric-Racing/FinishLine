@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
-import { Link } from 'shared';
+import { Link, LinkType } from 'shared';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
-import linkTypeTransformer from './link-types.transformer';
+import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 
-const linkTransformer = (link: Prisma.LinkGetPayload<typeof linkQueryArgs>): Link => {
+export const linkTransformer = (link: Prisma.LinkGetPayload<typeof linkQueryArgs>): Link => {
   return {
     linkId: link.linkId,
     linkType: linkTypeTransformer(link.linkType),
@@ -13,4 +13,11 @@ const linkTransformer = (link: Prisma.LinkGetPayload<typeof linkQueryArgs>): Lin
   };
 };
 
-export default linkTransformer;
+export const linkTypeTransformer = (linkType: Prisma.LinkTypeGetPayload<typeof linkTypeQueryArgs>): LinkType => {
+  return {
+    name: linkType.name,
+    creator: linkType.creator,
+    dateCreated: linkType.dateCreated,
+    iconName: linkType.iconName
+  };
+};
