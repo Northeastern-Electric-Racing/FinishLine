@@ -1,5 +1,3 @@
-import { LinkCreateArgs } from 'shared';
-
 export enum ChangeType {
   ADDED = 'Added new',
   REMOVED = 'Removed',
