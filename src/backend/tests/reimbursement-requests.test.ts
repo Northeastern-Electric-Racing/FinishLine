@@ -13,10 +13,13 @@ import {
   GiveMeMyMoney,
   Parts,
   PopEyes,
+  examplePendingFinanceStatus,
   prismaGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
+import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
+import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -82,6 +85,50 @@ describe('Reimbursement Requests', () => {
         ...reimbursementRequestQueryArgs
       });
       expect(matches).toHaveLength(1);
+    });
+  });
+
+  describe('Get Pending Advisor Reimbursement Request Tests', () => {
+    // just an example of what prisma request might return
+    const findManyResult: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
+      ...prismaGiveMeMyMoney,
+      saboId: 42,
+      reimbursementsStatuses: [
+        { ...examplePendingFinanceStatus, user: batman },
+        {
+          reimbursementStatusId: 2,
+          type: Reimbursement_Status_Type.SABO_SUBMITTED,
+          userId: batman.userId,
+          dateCreated: new Date('2023-08-20T08:02:00Z'),
+          reimbursementRequestId: '',
+          user: batman
+        }
+      ]
+    };
+
+    test('successfully calls the Prisma function', async () => {
+      // mock prisma calls
+      const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
+      prismaGetManySpy.mockResolvedValue([findManyResult]);
+
+      // act
+      const matches = await ReimbursementRequestService.getPendingAdvisorList();
+
+      // assert
+      expect(prismaGetManySpy).toBeCalledTimes(1);
+      expect(prismaGetManySpy).toBeCalledWith({
+        where: {
+          saboId: { not: null },
+          reimbursementsStatuses: {
+            none: {
+              type: Reimbursement_Status_Type.ADVISOR_APPROVED
+            }
+          }
+        },
+        ...reimbursementRequestQueryArgs
+      });
+      expect(matches).toHaveLength(1);
+      expect(matches).toEqual([reimbursementRequestTransformer(findManyResult)]);
     });
   });
 

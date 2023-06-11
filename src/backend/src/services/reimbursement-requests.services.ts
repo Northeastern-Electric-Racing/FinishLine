@@ -192,6 +192,25 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Returns all reimbursement requests that do not have an advisor approved reimbursement status.
+   * @returns reimbursement requests with no advisor approved reimbursement status
+   */
+  static async getPendingAdvisorList(): Promise<ReimbursementRequest[]> {
+    const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
+      where: {
+        saboId: { not: null },
+        reimbursementsStatuses: {
+          none: {
+            type: Reimbursement_Status_Type.ADVISOR_APPROVED
+          }
+        }
+      },
+      ...reimbursementRequestQueryArgs
+    });
+    return userReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
    * sends the pending advisor reimbursements to the advisor
    * @param sender the person sending the pending advisor list
    * @param saboNumbers the sabo numbers of the reimbursement requests to send

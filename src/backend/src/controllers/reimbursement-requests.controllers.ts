@@ -73,6 +73,15 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async getPendingAdvisorList(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList();
+      return res.status(200).json(requestsPendingAdvisors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const { saboNumbers } = req.body;
