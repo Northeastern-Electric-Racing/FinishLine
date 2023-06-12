@@ -50,4 +50,15 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async setTeamHead(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.body;
+      const user = await getCurrentUser(res);
+      const team = await TeamsService.setTeamHead(user, req.params.teamId, userId);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

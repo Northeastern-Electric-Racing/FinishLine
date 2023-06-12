@@ -112,4 +112,45 @@ export default class TeamsService {
 
     return teamTransformer(updateTeam);
   }
+
+  /**
+   * Update the team's head of the given team to the given user
+   * @param user The submitter of this request
+   * @param teamId The id for the team that is being edited
+   * @param userId The user to be the new team's head
+   * @returns The team with the new head
+   */
+  static async setTeamHead(user: User, teamId: string, userId: number): Promise<Team> {
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (!isAdmin(user.role) && user.userId !== team.leaderId)
+      throw new AccessDeniedException('you must be an admin or the team lead to update the leader!');
+
+    const newHead = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!newHead) throw new NotFoundException('User', userId);
+
+    // retrieve userId for the head to update team's head in the database
+    const transformedHead = {
+      userId: newHead.userId
+    };
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        leader: {
+          connect: transformedHead
+        }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(updateTeam);
+  }
 }

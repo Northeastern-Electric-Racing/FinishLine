@@ -117,4 +117,40 @@ describe('Teams', () => {
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('setTeamHead', () => {
+    test('setTeamHead head not found', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 122);
+
+      const expectedException = new HttpException(404, 'User with id: 122 not found!');
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
+    test('setTeamHead works', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      jest.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+
+      const teamId = 'id1';
+      const res = await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 2);
+
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.team.update).toHaveBeenCalledTimes(1);
+      expect(prisma.team.update).toHaveBeenCalledWith({
+        where: { teamId },
+        data: {
+          leader: {
+            connect: {
+              userId: 2
+            }
+          }
+        },
+        ...teamQueryArgs
+      });
+      expect(res).toStrictEqual(sharedTeam1);
+    });
+  });
 });
