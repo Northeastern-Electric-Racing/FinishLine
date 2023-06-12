@@ -126,4 +126,15 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      await ReimbursementRequestService.approveReimbursementRequests(requestId, user);
+      res.status(200).json({ message: 'Successfully set sabo number' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

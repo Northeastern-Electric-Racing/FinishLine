@@ -95,7 +95,7 @@ export default class ReimbursementRequestService {
         receiptPictures,
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
-        reimbursementsStatuses: {
+        reimbursementStatuses: {
           create: {
             type: 'PENDING_FINANCE',
             userId: recipient.userId
@@ -326,5 +326,41 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Adds a reimbursement status with type sabo submitted to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to approve
+   * @param submitter the user who is approving the reimbursement request
+   * @returns the reimbursement request with the sabo number
+   */
+  static async approveReimbursementRequests(reimbursementRequestId: string, submitter: UserWithTeam) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === 'SABO_SUBMITTED')) {
+      throw new HttpException(400, 'This reimbursement request has already been approved');
+    }
+
+    await prisma.reimbursement_Status.create({
+      data: {
+        type: 'SABO_SUBMITTED',
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      }
+    });
   }
 }

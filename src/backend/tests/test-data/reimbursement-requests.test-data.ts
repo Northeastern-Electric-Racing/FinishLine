@@ -48,7 +48,7 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
 
 export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
-  reimbursementsStatuses: [],
+  reimbursementStatuses: [],
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],

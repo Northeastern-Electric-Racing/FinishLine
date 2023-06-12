@@ -83,4 +83,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
+reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+
 export default reimbursementRequestsRouter;
