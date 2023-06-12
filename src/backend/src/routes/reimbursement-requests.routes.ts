@@ -11,6 +11,10 @@ import ReimbursementRequestController from '../controllers/reimbursement-request
 
 const reimbursementRequestsRouter = express.Router();
 
+reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
+
+reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
@@ -26,6 +30,41 @@ reimbursementRequestsRouter.post(
   intMinZero(body('totalCost')),
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
+);
+
+reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/edit',
+  isDate(body('dateOfExpense')),
+  nonEmptyString(body('vendorId')),
+  isAccount(body('account')),
+  body('receiptPictures').isArray(),
+  nonEmptyString(body('receiptPictures.*')),
+  body('reimbursementProducts').isArray(),
+  nonEmptyString(body('reimbursementProducts.*.id').optional()),
+  nonEmptyString(body('reimbursementProducts.*.name')),
+  intMinZero(body('reimbursementProducts.*.cost')),
+  intMinZero(body('reimbursementProducts.*.wbsElementId')),
+  nonEmptyString(body('expenseTypeId')),
+  intMinZero(body('totalCost')),
+  validateInputs,
+  ReimbursementRequestController.editReimbursementRequest
+);
+
+reimbursementRequestsRouter.post(
+  '/pending-advisor/send',
+  body('saboNumbers').isArray(),
+  intMinZero(body('saboNumbers.*')),
+  validateInputs,
+  ReimbursementRequestController.sendPendingAdvisorList
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/set-sabo-number',
+  intMinZero(body('saboNumber')),
+  validateInputs,
+  ReimbursementRequestController.setSaboNumber
 );
 
 reimbursementRequestsRouter.post(

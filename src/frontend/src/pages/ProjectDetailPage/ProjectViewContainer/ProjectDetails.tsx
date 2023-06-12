@@ -6,7 +6,7 @@
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Folder, FormatListBulleted, FormatListNumbered, CoPresent } from '@mui/icons-material';
+import { Folder, FormatListNumbered, CoPresent } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Project, WorkPackage, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
@@ -102,15 +102,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           </Grid>
 
           <Grid item xs={6} display="flex" alignItems="center">
-            <FormatListBulleted sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.taskListLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Task List
-            </Link>
-          </Grid>
-          <Grid item xs={6} display="flex" alignItems="center">
             <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
             <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Slide Deck
+              Confluence
             </Link>
           </Grid>
           <Grid item xs={6} display="flex" alignItems="center">
