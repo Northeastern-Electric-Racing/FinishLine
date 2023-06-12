@@ -28,8 +28,8 @@ import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
+import PageLayout from '../../../components/PageLayout';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -147,25 +147,22 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
   return (
-    <>
-      <>
-        <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
-        <Grid container alignItems="center" sx={{ mb: 2 }}>
-          <Grid item>
-            <Typography variant="h4" fontSize={30}>
-              {pageTitle}
-            </Typography>
-          </Grid>
-          <Grid item>
-            <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
-          </Grid>
-          <Grid item sx={{ mx: 0 }} xs>
-            <Grid container direction="row-reverse">
-              <Grid item>{projectActionsDropdown}</Grid>
-            </Grid>
+    <PageLayout title={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}>
+      <Grid container alignItems="center" sx={{ mb: 2 }}>
+        <Grid item>
+          <Typography variant="h4" fontSize={30}>
+            {pageTitle}
+          </Typography>
+        </Grid>
+        <Grid item>
+          <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
+        </Grid>
+        <Grid item sx={{ mx: 0 }} xs>
+          <Grid container direction="row-reverse">
+            <Grid item>{projectActionsDropdown}</Grid>
           </Grid>
         </Grid>
-      </>
+      </Grid>
       <ProjectDetailTabs project={project} setTab={setTab} />
       {tab === 0 ? (
         <ProjectDetails project={project} />
@@ -181,7 +178,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
       )}
-    </>
+    </PageLayout>
   );
 };
 

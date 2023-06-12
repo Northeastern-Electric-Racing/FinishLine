@@ -4,12 +4,12 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { Tab, Tabs } from '@mui/material';
 import ProjectsTable from './ProjectsTable';
 import { Link as RouterLink, useLocation, useRouteMatch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import ProjectsOverview from './ProjectsOverview';
+import PageLayout from '../../components/PageLayout';
 
 /**
  * Cards of all projects that this user is in their team.
@@ -38,31 +38,23 @@ const ProjectsPage: React.FC = () => {
   };
 
   return (
-    <>
-      <PageTitle
-        title={'Projects'}
-        previousPages={[]}
-        tabs={
-          <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="projects-tabs">
-            <Tab
-              label="Overview"
-              aria-label="overview"
-              value={0}
-              component={RouterLink}
-              to={`${routes.PROJECTS_OVERVIEW}`}
-            />
-            <Tab
-              label="All Projects"
-              aria-label="all-projects"
-              value={1}
-              component={RouterLink}
-              to={`${routes.PROJECTS_ALL}`}
-            />
-          </Tabs>
-        }
-      />
+    <PageLayout
+      title="Projects"
+      tabs={
+        <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="projects-tabs">
+          <Tab label="Overview" aria-label="overview" value={0} component={RouterLink} to={`${routes.PROJECTS_OVERVIEW}`} />
+          <Tab
+            label="All Projects"
+            aria-label="all-projects"
+            value={1}
+            component={RouterLink}
+            to={`${routes.PROJECTS_ALL}`}
+          />
+        </Tabs>
+      }
+    >
       {tabIndex === 0 ? <ProjectsOverview /> : <ProjectsTable />}
-    </>
+    </PageLayout>
   );
 };
 

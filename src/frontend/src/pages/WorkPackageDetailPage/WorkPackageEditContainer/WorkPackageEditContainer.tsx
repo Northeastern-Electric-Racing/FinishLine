@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -27,6 +26,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
+import PageLayout from '../../../components/PageLayout';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -157,80 +157,81 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <form
-      id="work-package-edit-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      actionButton={
+        <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
+      }
     >
-      <PageTitle
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        actionButton={
-          <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
-        }
-      />
-      <WorkPackageEditDetails
-        control={control}
-        errors={errors}
-        usersForProjectLead={users}
-        usersForProjectManager={users}
-        lead={leadId}
-        manager={managerId}
-        setLead={setLeadId}
-        setManager={setManagerId}
-      />
-      <PageBlock title="Blocked By">
-        {blockedBy.map((_element, i) => {
-          return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
-              <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          );
-        })}
-        <Button variant="contained" color="success" onClick={() => appendBlocker({ wbsNum: '' })} sx={{ mt: 2 }}>
-          + ADD NEW BLOCKER
-        </Button>
-      </PageBlock>
+      <form
+        id="work-package-edit-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
+        }}
+      >
+        <WorkPackageEditDetails
+          control={control}
+          errors={errors}
+          usersForProjectLead={users}
+          usersForProjectManager={users}
+          lead={leadId}
+          manager={managerId}
+          setLead={setLeadId}
+          setManager={setManagerId}
+        />
+        <PageBlock title="Blocked By">
+          {blockedBy.map((_element, i) => {
+            return (
+              <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
+                <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            );
+          })}
+          <Button variant="contained" color="success" onClick={() => appendBlocker({ wbsNum: '' })} sx={{ mt: 2 }}>
+            + ADD NEW BLOCKER
+          </Button>
+        </PageBlock>
 
-      <PageBlock title="Expected Activities">
-        <ReactHookEditableList
-          name="expectedActivities"
-          register={register}
-          ls={expectedActivities}
-          append={appendExpectedActivity}
-          remove={removeExpectedActivity}
-        />
-      </PageBlock>
-      <PageBlock title="Deliverables">
-        <ReactHookEditableList
-          name="deliverables"
-          register={register}
-          ls={deliverables}
-          append={appendDeliverable}
-          remove={removeDeliverable}
-        />
-      </PageBlock>
-      <Box textAlign="right" sx={{ my: 2 }}>
-        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-          Submit
-        </NERSuccessButton>
-      </Box>
-    </form>
+        <PageBlock title="Expected Activities">
+          <ReactHookEditableList
+            name="expectedActivities"
+            register={register}
+            ls={expectedActivities}
+            append={appendExpectedActivity}
+            remove={removeExpectedActivity}
+          />
+        </PageBlock>
+        <PageBlock title="Deliverables">
+          <ReactHookEditableList
+            name="deliverables"
+            register={register}
+            ls={deliverables}
+            append={appendDeliverable}
+            remove={removeDeliverable}
+          />
+        </PageBlock>
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      </form>
+    </PageLayout>
   );
 };
 
