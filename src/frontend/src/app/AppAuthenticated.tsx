@@ -9,11 +9,8 @@ import ChangeRequests from '../pages/ChangeRequestsPage/ChangeRequests';
 import Projects from '../pages/ProjectsPage/Projects';
 import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
-import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Settings from '../pages/SettingsPage/Settings';
 import InfoPage from '../pages/InfoPage';
-import Sidebar from '../layouts/Sidebar/Sidebar';
-import { Container } from '@mui/material';
 import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
@@ -23,13 +20,6 @@ import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
-
-const styles = {
-  content: {
-    marginTop: '4rem',
-    marginLeft: '85px'
-  }
-};
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -43,27 +33,19 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
 
   return userSettingsData.slackId ? (
     <AppContextUser>
-      <NavTopBar />
-      <div>
-        <Sidebar />
-        <div style={styles.content}>
-          <Container maxWidth={false} sx={{ p: 1 }}>
-            <Switch>
-              <Route path={routes.PROJECTS} component={Projects} />
-              <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-              <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-              <Route path={routes.GANTT} component={GanttPageWrapper} />
-              <Route path={routes.TEAMS} component={Teams} />
-              <Route path={routes.SETTINGS} component={Settings} />
-              <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
-              <Route path={routes.INFO} component={InfoPage} />
-              <Route path={routes.CREDITS} component={Credits} />
-              <Route exact path={routes.HOME} component={Home} />
-              <Route path="*" component={PageNotFound} />
-            </Switch>
-          </Container>
-        </div>
-      </div>
+      <Switch>
+        <Route path={routes.PROJECTS} component={Projects} />
+        <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+        <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+        <Route path={routes.GANTT} component={GanttPageWrapper} />
+        <Route path={routes.TEAMS} component={Teams} />
+        <Route path={routes.SETTINGS} component={Settings} />
+        <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
+        <Route path={routes.INFO} component={InfoPage} />
+        <Route path={routes.CREDITS} component={Credits} />
+        <Route exact path={routes.HOME} component={Home} />
+        <Route path="*" component={PageNotFound} />
+      </Switch>
     </AppContextUser>
   ) : (
     <SetUserPreferences userSettings={userSettingsData} />
