@@ -13,7 +13,7 @@ import { Grid, Select, MenuItem, TextField, Typography } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
 
 interface UserSettingsEditProps {
-  currentSettings: { slackId: string; defaultTheme: ThemeName };
+  currentSettings: { slackId: string; defaultTheme: ThemeName; address: string; phone: string; nuid: string };
   onSubmit: (data: FormInput) => Promise<void>;
 }
 
@@ -22,7 +22,10 @@ const schema = yup.object().shape({
     .mixed<ThemeName>()
     .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
     .required('Default theme is required'),
-  slackId: yup.string().optional()
+  slackId: yup.string().optional(),
+  address: yup.string().optional(),
+  phone: yup.string().optional(),
+  nuid: yup.string().optional()
 });
 const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
   const { handleSubmit, control } = useForm<FormInput>({
@@ -69,6 +72,57 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
                 />
               </div>
               <TextField required id="slackid-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="address"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.address}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>Address</Typography>
+              </div>
+              <TextField required id="address-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="phone"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.phone}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>Phone #</Typography>
+              </div>
+              <TextField required id="phone-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="nuid"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.nuid}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>NUID</Typography>
+              </div>
+              <TextField required id="nuid-input" autoComplete="off" onChange={onChange} value={value} />
             </>
           )}
         />

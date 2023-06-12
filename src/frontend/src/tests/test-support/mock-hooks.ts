@@ -25,7 +25,7 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
   mockUseQueryResult<UserSettings>(
     false,
     false,
-    settings || { id: 'id', defaultTheme: 'DARK', slackId: 'slackId' },
+    settings || { id: 'id', defaultTheme: 'DARK', slackId: 'slackId', address: 'address', phone: 'phone', nuid: 'nuid' },
     new Error()
   );
 

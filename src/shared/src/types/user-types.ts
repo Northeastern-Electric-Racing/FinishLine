@@ -45,6 +45,9 @@ export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;
   slackId: string;
+  address: string;
+  phone: string;
+  nuid: string;
 }
 
 export interface UpdateUserRolePayload {

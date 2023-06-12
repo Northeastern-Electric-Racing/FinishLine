@@ -25,6 +25,39 @@ const renderSlackId = (settings: UserSettings) => {
   );
 };
 
+const renderAddress = (settings: UserSettings) => {
+  return (
+    <>
+      <div style={{ display: 'flex' }}>
+        <Typography sx={{ fontWeight: 'bold' }}>Address: </Typography>
+        {settings.address}
+      </div>
+    </>
+  );
+};
+
+const renderPhone = (settings: UserSettings) => {
+  return (
+    <>
+      <div style={{ display: 'flex' }}>
+        <Typography sx={{ fontWeight: 'bold' }}>Phone #: </Typography>
+        {settings.phone}
+      </div>
+    </>
+  );
+};
+
+const renderNUID = (settings: UserSettings) => {
+  return (
+    <>
+      <div style={{ display: 'flex' }}>
+        <Typography sx={{ fontWeight: 'bold' }}>NUID: </Typography>
+        {settings.nuid}
+      </div>
+    </>
+  );
+};
+
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
@@ -34,6 +67,15 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
       </Grid>
       <Grid item xs={6}>
         {renderSlackId(settings)}
+      </Grid>
+      <Grid item xs={6}>
+        {renderAddress(settings)}
+      </Grid>
+      <Grid item xs={6}>
+        {renderPhone(settings)}
+      </Grid>
+      <Grid item xs={6}>
+        {renderNUID(settings)}
       </Grid>
     </>
   );
