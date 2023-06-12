@@ -75,7 +75,10 @@ export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: 1,
   defaultTheme: Theme.DARK,
-  slackId: 'slack'
+  slackId: 'slack',
+  address: '123 Gotham St.',
+  phone: '1234567890',
+  nuid: '001234567'
 };
 
 export const sharedUser1: SharedUser = {
