@@ -316,7 +316,7 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * gets all the expense types in the database
+   * Gets all the expense types in the database
    * @returns all the expense types in the database
    */
   static async getAllExpenseTypes(): Promise<ExpenseType[]> {
