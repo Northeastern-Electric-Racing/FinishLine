@@ -2,7 +2,9 @@ import {
   Vendor as PrismaVendor,
   Reimbursement_Request as PrismaReimbursementRequest,
   Expense_Type as PrismaExpenseType,
-  Reimbursement_Product as PrismaReimbursementProduct
+  Reimbursement_Product as PrismaReimbursementProduct,
+  Reimbursement_Status as PrismaReimbursementStatus,
+  Reimbursement_Status_Type
 } from '@prisma/client';
 import { Club_Account } from 'shared';
 export const PopEyes: PrismaVendor = {
@@ -40,4 +42,12 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   cost: 0,
   dateDeleted: null,
   wbsElementId: 1
+};
+
+export const Status: PrismaReimbursementStatus = {
+  reimbursementStatusId: 1,
+  type: Reimbursement_Status_Type.SABO_SUBMITTED,
+  userId: 2,
+  dateCreated: new Date(),
+  reimbursementRequestId: 'id'
 };

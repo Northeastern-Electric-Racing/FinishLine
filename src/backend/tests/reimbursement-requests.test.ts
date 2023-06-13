@@ -7,7 +7,7 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes } from './test-data/reimbursement-requests.test-data';
+import { GiveMeMoneyProduct, GiveMeMyMoney, Parts, PopEyes, Status } from './test-data/reimbursement-requests.test-data';
 import { batman, superman, wonderwoman } from './test-data/users.test-data';
 
 describe('Reimbursement Requests', () => {
@@ -224,7 +224,7 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Delete Reimbursement Request Tests', () => {
-    test('Request fails when Id does not exist', async () => {
+    test('Delete Reimbursement Request fails when Id does not exist', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
@@ -232,7 +232,7 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
-    test('Request fails if project is already deleted', async () => {
+    test('Delete Reimbursement Request fails if project is already deleted', async () => {
       jest
         .spyOn(prisma.reimbursement_Request, 'findUnique')
         .mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
@@ -241,7 +241,7 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
-    test('Request fails when deleter is not the creator', async () => {
+    test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
       await expect(() =>
@@ -253,7 +253,18 @@ describe('Reimbursement Requests', () => {
       );
     });
 
-    test('Request succeeds', async () => {
+    test('Delete Reimbursement Request fails if it has been approved', async () => {
+      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [Status] };
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
+
+      await expect(() =>
+        ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman)
+      ).rejects.toThrow(
+        new AccessDeniedException('You cannot delete this reimbursement request. It has already been approved')
+      );
+    });
+
+    test('Delete Reimbursement Request succeeds', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
       jest.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
 
