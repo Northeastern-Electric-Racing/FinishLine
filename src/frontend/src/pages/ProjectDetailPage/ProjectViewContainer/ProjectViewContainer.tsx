@@ -30,6 +30,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
+import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -147,7 +148,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
   return (
-    <PageLayout title={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}>
+    <PageLayout title={pageTitle} hidePageTitle>
+      <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
       <Grid container alignItems="center" sx={{ mb: 2 }}>
         <Grid item>
           <Typography variant="h4" fontSize={30}>
