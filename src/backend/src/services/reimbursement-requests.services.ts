@@ -212,7 +212,6 @@ export default class ReimbursementRequestService {
       );
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
-      request.reimbursementsStatuses &&
       request.reimbursementsStatuses.some(
         (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
       )
