@@ -4,9 +4,13 @@ import {
   Expense_Type as PrismaExpenseType,
   Reimbursement_Product as PrismaReimbursementProduct,
   Reimbursement_Status as PrismaReimbursementStatus,
-  Reimbursement_Status_Type
+  Reimbursement_Status_Type as PrismaReimbursementStatusType,
+  Prisma,
+  Club_Accounts
 } from '@prisma/client';
-import { Club_Account } from 'shared';
+import { batman } from './users.test-data';
+import { prismaWbsElement1 } from './wbs-element.test-data';
+import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
@@ -28,7 +32,7 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   dateOfExpense: new Date('18/8/2023'),
   recipientId: 1,
   vendorId: '',
-  account: Club_Account.CASH,
+  account: Club_Accounts.CASH,
   totalCost: 0,
   receiptPictures: [],
   dateDelivered: null,
@@ -46,8 +50,17 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
 
 export const Status: PrismaReimbursementStatus = {
   reimbursementStatusId: 1,
-  type: Reimbursement_Status_Type.SABO_SUBMITTED,
+  type: PrismaReimbursementStatusType.SABO_SUBMITTED,
   userId: 2,
   dateCreated: new Date(),
   reimbursementRequestId: 'id'
+};
+
+export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
+  ...GiveMeMyMoney,
+  reimbursementsStatuses: [],
+  recipient: batman,
+  vendor: PopEyes,
+  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  expenseType: Parts
 };
