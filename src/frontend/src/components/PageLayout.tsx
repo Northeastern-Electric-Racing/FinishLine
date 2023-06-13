@@ -1,4 +1,4 @@
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { Helmet } from 'react-helmet';
 import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
@@ -13,6 +13,7 @@ interface PageLayoutProps {
   actionButton?: ReactNode;
   tabs?: ReactElement;
 }
+// TODO: Fix horizontal scrolling bug
 
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
@@ -30,10 +31,12 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </Helmet>
       <NavTopBar />
       <Sidebar />
-      <Container maxWidth={false} sx={{ p: 1, mt: '4rem', ml: '85px' }}>
-        {!hidePageTitle && title && previousPages && <PageTitle {...{ title, previousPages, actionButton, tabs }} />}
-        {children}
-      </Container>
+      <Box sx={{ mt: '4rem', ml: '85px' }}>
+        <Container maxWidth={false} sx={{ p: 1 }}>
+          {!hidePageTitle && title && previousPages && <PageTitle {...{ title, previousPages, actionButton, tabs }} />}
+          {children}
+        </Container>
+      </Box>
     </React.Fragment>
   );
 };
