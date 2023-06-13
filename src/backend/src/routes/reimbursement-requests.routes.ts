@@ -13,8 +13,6 @@ const reimbursementRequestsRouter = express.Router();
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
-reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
-
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
@@ -31,8 +29,6 @@ reimbursementRequestsRouter.post(
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
 );
-
-reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
@@ -83,10 +79,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
-reimbursementRequestsRouter.delete(
-  '/:requestId/delete',
-  validateInputs,
-  ReimbursementRequestController.deleteReimbursementRequest
-);
+reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
 
 export default reimbursementRequestsRouter;
