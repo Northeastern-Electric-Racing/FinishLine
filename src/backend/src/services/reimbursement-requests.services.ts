@@ -28,7 +28,6 @@ import {
   reimbursementRequestTransformer,
   reimbursementStatusTransformer
 } from '../transformers/reimbursement-requests.transformer';
-import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 
 export default class ReimbursementRequestService {
   /**
