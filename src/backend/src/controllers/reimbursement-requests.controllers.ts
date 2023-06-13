@@ -131,8 +131,8 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      await ReimbursementRequestService.approveReimbursementRequests(requestId, user);
-      res.status(200).json({ message: 'Successfully set sabo number' });
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
       next(error);
     }

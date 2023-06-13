@@ -11,12 +11,15 @@ import {
 import {
   GiveMeMoneyProduct,
   GiveMeMyMoney,
+  GiveMeMyMoney2,
   Parts,
   PopEyes,
-  prismaGiveMeMyMoney
+  prismaGiveMeMyMoney,
+  prismaGiveMeMyMoney2
 } from './test-data/reimbursement-requests.test-data';
-import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
+import { justiceLeague, primsaTeam2 } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -257,6 +260,49 @@ describe('Reimbursement Requests', () => {
 
       expect(prisma.reimbursement_Request.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([]);
+    });
+  });
+
+  describe('Approve Reimbursement Request Tests', () => {
+    test('Approve Reimbursement Request fails if Submitter not on Finance Team', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));
+    });
+
+    test('Approve Reimbursement Request fails if Finance Team does not exist', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(500, 'Finance team does not exist!'));
+    });
+
+    test('Approve Reimbursement Request fails if the Request does not exist', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+    });
+
+    test('Approve Reimbursement Request fails if the Request has been deleted', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney2.reimbursementRequestId));
+    });
+
+    test('Approve Reimbursement Request fails if the request has already been approved', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
     });
   });
 });

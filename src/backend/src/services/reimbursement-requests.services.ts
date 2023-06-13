@@ -4,7 +4,7 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
+import { ClubAccount, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -24,7 +24,11 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
+import {
+  reimbursementRequestTransformer,
+  reimbursementStatusTransformer
+} from '../transformers/reimbursement-requests.transformer';
+import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -335,7 +339,7 @@ export default class ReimbursementRequestService {
    * @param submitter the user who is approving the reimbursement request
    * @returns the reimbursement request with the sabo number
    */
-  static async approveReimbursementRequests(reimbursementRequestId: string, submitter: UserWithTeam) {
+  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -351,16 +355,23 @@ export default class ReimbursementRequestService {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
 
-    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === 'SABO_SUBMITTED')) {
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
       throw new HttpException(400, 'This reimbursement request has already been approved');
     }
 
-    await prisma.reimbursement_Status.create({
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: 'SABO_SUBMITTED',
         userId: submitter.userId,
         reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
       }
     });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
   }
 }
