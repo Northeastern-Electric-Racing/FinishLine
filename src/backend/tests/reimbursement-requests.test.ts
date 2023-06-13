@@ -272,11 +272,11 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
-      await expect(ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, '1234')).rejects.toThrow(
-        new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId)
-      );
+      await expect(
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
 
       expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
     });
@@ -307,7 +307,7 @@ describe('Reimbursement Requests', () => {
       expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
       expect(prisma.reimbursement_Request.update).toBeCalledTimes(1);
 
-      expect(reimbursementRequest).toBe({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+      expect(reimbursementRequest).toStrictEqual({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
     });
   });
 });
