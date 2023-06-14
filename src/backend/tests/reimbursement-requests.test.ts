@@ -19,7 +19,6 @@ import {
   prismaGiveMeMyMoney2,
   prismaGiveMeMyMoney3,
   prismaReimbursementStatus,
-  prismaReimbursementStatus2,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
 import { alfred, batman, superman, wonderwoman } from './test-data/users.test-data';
