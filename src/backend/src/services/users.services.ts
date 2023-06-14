@@ -1,6 +1,6 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, isNotLeadership, RoleEnum } from 'shared';
+import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, RoleEnum, isHead } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
@@ -197,39 +197,31 @@ export default class UsersService {
     const userRole = rankUserRole(user.role);
     const targetUserRole = rankUserRole(targetUser.role);
 
-    if (isNotLeadership(user.role)) {
-      throw new AccessDeniedException('Guests and members cannot update user roles!');
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
     }
-
-    const headOrLeadershipAbility = (currentRole: Role, changeToRole: Role): boolean => {
-      if (currentRole !== RoleEnum.GUEST) {
-        throw new AccessDeniedException("Heads and Leads can only change guests' roles");
-      }
-      if (changeToRole !== RoleEnum.MEMBER) {
-        throw new AccessDeniedException('Heads and Leads can only change guests to members');
-      }
-      return true;
-    };
-
-    if (user.role === RoleEnum.HEAD || user.role === RoleEnum.LEADERSHIP) {
-      if (headOrLeadershipAbility(targetUser.role, role)) {
-        targetUser = await prisma.user.update({
-          where: { userId: targetUserId },
-          data: { role }
-        });
-      }
-    }
-
-    if (rankUserRole(role) > userRole) throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
 
     if (targetUserRole >= userRole) {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
     }
 
-    targetUser = await prisma.user.update({
-      where: { userId: targetUserId },
-      data: { role }
-    });
+    if (user.role === RoleEnum.HEAD) {
+      if (rankUserRole(role) >= userRole) {
+        throw new AccessDeniedException('Cannot promote user to a higher or equal role than yourself');
+      }
+      targetUser = await prisma.user.update({
+        where: { userId: targetUserId },
+        data: { role }
+      });
+    } else {
+      if (rankUserRole(role) > userRole) {
+        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
+      }
+      targetUser = await prisma.user.update({
+        where: { userId: targetUserId },
+        data: { role }
+      });
+    }
 
     return userTransformer(targetUser);
   }
