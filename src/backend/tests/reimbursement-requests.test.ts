@@ -259,4 +259,55 @@ describe('Reimbursement Requests', () => {
       expect(res).toStrictEqual([]);
     });
   });
+
+  describe('Delivered Tests', () => {
+    test('Mark as delivered fails for non submitter', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+
+      await expect(
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered'));
+
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
+    });
+
+    test('Mark as delivered fails for undefined ID', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
+    });
+
+    test('Mark as delivered fails for already marked as delivered', async () => {
+      jest
+        .spyOn(prisma.reimbursement_Request, 'findUnique')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+
+      await expect(
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new AccessDeniedException('Can only be marked as delivered once'));
+
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
+    });
+
+    test('Mark request as delivered successfully', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      jest
+        .spyOn(prisma.reimbursement_Request, 'update')
+        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+
+      const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+        batman,
+        GiveMeMyMoney.reimbursementRequestId
+      );
+
+      expect(prisma.reimbursement_Request.findUnique).toBeCalledTimes(1);
+      expect(prisma.reimbursement_Request.update).toBeCalledTimes(1);
+
+      expect(reimbursementRequest).toStrictEqual({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+    });
+  });
 });
