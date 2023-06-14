@@ -100,7 +100,7 @@ export default class ReimbursementRequestService {
         totalCost,
         reimbursementStatuses: {
           create: {
-            type: 'PENDING_FINANCE',
+            type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
         },
@@ -336,7 +336,7 @@ export default class ReimbursementRequestService {
    *
    * @param reimbursementRequestId the id of the reimbursement request to approve
    * @param submitter the user who is approving the reimbursement request
-   * @returns the reimbursement request with the sabo number
+   * @returns the created reimbursment status
    */
   static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
     await validateUserIsPartOfFinanceTeam(submitter);
@@ -362,7 +362,7 @@ export default class ReimbursementRequestService {
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
-        type: 'SABO_SUBMITTED',
+        type: ReimbursementStatusType.SABO_SUBMITTED,
         userId: submitter.userId,
         reimbursementRequestId: reimbursementRequest.reimbursementRequestId
       },

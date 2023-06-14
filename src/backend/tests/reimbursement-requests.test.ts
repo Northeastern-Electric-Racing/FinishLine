@@ -15,7 +15,10 @@ import {
   Parts,
   PopEyes,
   prismaGiveMeMyMoney,
-  prismaGiveMeMyMoney2
+  prismaGiveMeMyMoney2,
+  prismaGiveMeMyMoney3,
+  prismaGiveMeMyMoney3Approved,
+  prismaReimbursementStatus
 } from './test-data/reimbursement-requests.test-data';
 import { alfred, batman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
@@ -303,6 +306,19 @@ describe('Reimbursement Requests', () => {
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
       ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
+    });
+
+    test('Approve Reimbursment Request success', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
+      jest.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
+
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(
+        prismaGiveMeMyMoney3.reimbursementRequestId,
+        alfred
+      );
+
+      expect(reimbursementStatus.reimbursementStatusId).toStrictEqual(prismaReimbursementStatus.reimbursementStatusId);
     });
   });
 });

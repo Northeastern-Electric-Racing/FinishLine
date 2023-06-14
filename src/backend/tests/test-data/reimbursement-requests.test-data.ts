@@ -77,7 +77,7 @@ export const prismaReimbursementStatus: PrismaReimbursementStatus & { user: User
   type: 'SABO_SUBMITTED',
   userId: 0,
   dateCreated: new Date('20/8/2023'),
-  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  reimbursementRequestId: '',
   user: alfred
 };
 
@@ -102,6 +102,15 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
 export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
   reimbursementStatuses: [prismaReimbursementStatus2],
+  recipient: batman,
+  vendor: PopEyes,
+  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  expenseType: Parts
+};
+
+export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
+  ...GiveMeMyMoney,
+  reimbursementStatuses: [prismaReimbursementStatus2, prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
