@@ -85,6 +85,7 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
+reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
 reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
 
 reimbursementRequestsRouter.post(

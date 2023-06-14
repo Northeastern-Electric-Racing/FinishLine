@@ -192,6 +192,41 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Soft-deletes the given reimbursement request
+   *
+   * @param requestId the reimbursement request to be deleted
+   * @param submitter the user deleting the reimbursement request
+   */
+  static async deleteReimbursementRequest(requestId: string, submitter: User): Promise<Reimbursement_Request> {
+    const request = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId: requestId },
+      include: {
+        reimbursementsStatuses: true
+      }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement Request', requestId);
+    if (request.recipientId !== submitter.userId)
+      throw new AccessDeniedException(
+        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+      );
+    if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
+    if (
+      request.reimbursementsStatuses.some(
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
+      )
+    )
+      throw new AccessDeniedException('You cannot delete this reimbursement request. It has already been approved');
+
+    const deletedRequest = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId: requestId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedRequest;
+  }
+
+  /**
    * sends the pending advisor reimbursements to the advisor
    * @param sender the person sending the pending advisor list
    * @param saboNumbers the sabo numbers of the reimbursement requests to send

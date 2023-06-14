@@ -3,12 +3,14 @@ import {
   Reimbursement_Request as PrismaReimbursementRequest,
   Expense_Type as PrismaExpenseType,
   Reimbursement_Product as PrismaReimbursementProduct,
-  Club_Accounts,
-  Prisma
+  Reimbursement_Status as PrismaReimbursementStatus,
+  Reimbursement_Status_Type as PrismaReimbursementStatusType,
+  Prisma,
+  Club_Accounts
 } from '@prisma/client';
-import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
+import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
@@ -47,6 +49,14 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   cost: 0,
   dateDeleted: null,
   wbsElementId: 1
+};
+
+export const Status: PrismaReimbursementStatus = {
+  reimbursementStatusId: 1,
+  type: PrismaReimbursementStatusType.SABO_SUBMITTED,
+  userId: 2,
+  dateCreated: new Date(),
+  reimbursementRequestId: 'id'
 };
 
 export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
