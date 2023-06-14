@@ -4,7 +4,7 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -24,7 +24,7 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
+import { expenseTypeTransformer, reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -316,6 +316,15 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Gets all the expense types in the database
+   * @returns all the expense types in the database
+   */
+  static async getAllExpenseTypes(): Promise<ExpenseType[]> {
+    const expenseTypes = await prisma.expense_Type.findMany();
+    return expenseTypes.map(expenseTypeTransformer);
+  }
+
+  /**
    * Gets all the reimbursement requests from the database that have no dateDeleted
    * @param user the user getting the reimbursement requests
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
@@ -329,6 +338,36 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Service function to mark a reimbursement request as delivered
+   * @param submitter is the User marking the request as delivered
+   * @param requestId is the ID of the reimbursement request to be marked as delivered
+   * @throws NotFoundException if the id is invalid or not there
+   * @throws AccessDeniedException if the creator of the request is not the submitter
+   * @returns the updated reimbursement request
+   */
+  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDelivered) throw new AccessDeniedException('Can only be marked as delivered once');
+
+    if (submitter.userId !== reimbursementRequest.recipientId)
+      throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
+
+    const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        dateDelivered: new Date()
+      }
+    });
+
+    return reimbursementRequestDelivered;
   }
 
   /**

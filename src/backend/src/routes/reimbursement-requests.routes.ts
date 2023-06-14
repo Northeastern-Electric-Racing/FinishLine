@@ -85,4 +85,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/delivered',
+  ReimbursementRequestController.markReimbursementRequestAsDelivered
+);
+
 export default reimbursementRequestsRouter;
