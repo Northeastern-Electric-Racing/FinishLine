@@ -13,10 +13,12 @@ import {
   GiveMeMyMoney,
   Parts,
   PopEyes,
-  prismaGiveMeMyMoney
+  prismaGiveMeMyMoney,
+  sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
+import { justiceLeague } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -252,8 +254,9 @@ describe('Reimbursement Requests', () => {
   describe('Get Reimbursement Requests Tests', () => {
     test('Get all Reimbursement Requests works', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
-      const res = await ReimbursementRequestService.getAllReimbursementRequests();
+      const res = await ReimbursementRequestService.getAllReimbursementRequests({ ...batman, teams: [justiceLeague] });
 
       expect(prisma.reimbursement_Request.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([]);
@@ -319,6 +322,48 @@ describe('Reimbursement Requests', () => {
       expect(prisma.reimbursement_Request.update).toBeCalledTimes(1);
 
       expect(reimbursementRequest).toStrictEqual({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+    });
+  });
+
+  describe('Get Single Reimbursement Request Tests', () => {
+    test('Get Single Reimbursement Request fails when id does not exist', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(() =>
+        ReimbursementRequestService.getSingleReimbursementRequest(alfred, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+    });
+
+    test('Get Single Reimbursement Request fails when id is deleted', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
+        ...GiveMeMyMoney,
+        dateDeleted: new Date()
+      });
+
+      await expect(() =>
+        ReimbursementRequestService.getSingleReimbursementRequest(alfred, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+    });
+
+    test('Get Single Reimbursement Request fails when user is not the recipient and not a part of finance team', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+
+      await expect(() =>
+        ReimbursementRequestService.getSingleReimbursementRequest(alfred, GiveMeMyMoney.reimbursementRequestId)
+      ).rejects.toThrow(new AccessDeniedException('You do not have access to this reimbursement request'));
+    });
+
+    test('Get Single Reimbursement Request succeeds', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney);
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+
+      const reimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+        { ...batman, teams: [justiceLeague] },
+        GiveMeMyMoney.reimbursementRequestId
+      );
+
+      expect(reimbursementRequest).toEqual(sharedGiveMeMyMoney);
     });
   });
 });

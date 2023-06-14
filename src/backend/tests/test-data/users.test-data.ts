@@ -1,5 +1,6 @@
 import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings } from '@prisma/client';
 import { User as SharedUser } from 'shared';
+import { UserWithTeam } from '../../src/utils/reimbursement-requests.utils';
 
 export const batman: PrismaUser = {
   userId: 1,
@@ -96,4 +97,15 @@ export const batmanSecureSettings: User_Secure_Settings = {
   city: 'Gotham',
   state: 'NY',
   zipcode: '12345'
+};
+
+export const alfred: UserWithTeam = {
+  userId: 8,
+  firstName: 'Alfred',
+  lastName: 'Pennyworth',
+  email: '',
+  emailId: '',
+  role: 'APP_ADMIN',
+  googleAuthId: '',
+  teams: []
 };

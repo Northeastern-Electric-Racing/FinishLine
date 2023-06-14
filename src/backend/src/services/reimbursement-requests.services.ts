@@ -326,9 +326,12 @@ export default class ReimbursementRequestService {
 
   /**
    * Gets all the reimbursement requests from the database that have no dateDeleted
+   * @param user the user getting the reimbursement requests
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
-  static async getAllReimbursementRequests(): Promise<ReimbursementRequest[]> {
+  static async getAllReimbursementRequests(user: UserWithTeam): Promise<ReimbursementRequest[]> {
+    await validateUserIsPartOfFinanceTeam(user);
+
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null },
       ...reimbursementRequestQueryArgs
@@ -365,5 +368,34 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementRequestDelivered;
+  }
+
+  /**
+   * Gets a single reimbursement request for the given id
+   * @param user the user getting the reimbursement request
+   * @param reimbursementRequestId the id of thereimbursement request to get
+   * @returns the reimbursement request with the given id
+   */
+  static async getSingleReimbursementRequest(
+    user: UserWithTeam,
+    reimbursementRequestId: string
+  ): Promise<ReimbursementRequest> {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      ...reimbursementRequestQueryArgs
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+
+    try {
+      await validateUserIsPartOfFinanceTeam(user);
+    } catch {
+      if (user.userId !== reimbursementRequest.recipientId)
+        throw new AccessDeniedException('You do not have access to this reimbursement request');
+    }
+
+    return reimbursementRequestTransformer(reimbursementRequest);
   }
 }

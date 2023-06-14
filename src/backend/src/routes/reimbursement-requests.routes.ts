@@ -34,6 +34,8 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
 
+reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.getSingleReimbursementRequest);
+
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
   isDate(body('dateOfExpense')),

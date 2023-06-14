@@ -129,7 +129,10 @@ export default class ReimbursementRequestsController {
 
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests();
+      const user = await getCurrentUser(res);
+      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
+        user
+      );
       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
       next(error);
@@ -142,6 +145,20 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
       res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+        user,
+        requestId
+      );
+      res.status(200).json(reimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
