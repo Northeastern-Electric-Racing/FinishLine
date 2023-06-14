@@ -1,4 +1,4 @@
-import { isAdmin, Team } from 'shared';
+import { isAdmin, isHead, Team } from 'shared';
 import { User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
@@ -135,17 +135,13 @@ export default class TeamsService {
     });
 
     if (!newHead) throw new NotFoundException('User', userId);
-
-    // retrieve userId for the head to update team's head in the database
-    const transformedHead = {
-      userId: newHead.userId
-    };
+    if (!isHead(newHead.role)) throw new AccessDeniedException('the team head must be at least an head');
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
         leader: {
-          connect: transformedHead
+          connect: { userId }
         }
       },
       ...teamQueryArgs

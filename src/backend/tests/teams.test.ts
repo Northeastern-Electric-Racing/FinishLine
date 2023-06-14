@@ -120,11 +120,34 @@ describe('Teams', () => {
 
   describe('setTeamHead', () => {
     test('setTeamHead head not found', async () => {
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 122);
 
       const expectedException = new HttpException(404, 'User with id: 122 not found!');
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
+    test('setTeamHead team not found', async () => {
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, 'randomId', 2);
+
+      const expectedException = new HttpException(404, 'Team with id: randomId not found!');
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
+    test(`setTeamHead head's role is not at least head role`, async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 3);
+
+      const expectedException = new HttpException(403, 'Access Denied: the team head must be at least an head');
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
     });
