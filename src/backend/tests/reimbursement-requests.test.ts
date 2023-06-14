@@ -260,6 +260,17 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Get All Expense Types Tests', () => {
+    test('Get all Expense Types works', async () => {
+      jest.spyOn(prisma.expense_Type, 'findMany').mockResolvedValue([Parts]);
+
+      const res = await ReimbursementRequestService.getAllExpenseTypes();
+
+      expect(prisma.expense_Type.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([Parts]);
+    });
+  });
+
   describe('Delivered Tests', () => {
     test('Mark as delivered fails for non submitter', async () => {
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);

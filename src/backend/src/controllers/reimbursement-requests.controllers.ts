@@ -118,6 +118,15 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
+      res.status(200).json(expenseTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests();
