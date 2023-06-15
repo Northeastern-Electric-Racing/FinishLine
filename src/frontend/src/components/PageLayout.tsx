@@ -2,7 +2,7 @@ import { Box, Container } from '@mui/material';
 import { Helmet } from 'react-helmet';
 import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactNode, ReactElement, Fragment } from 'react';
 import PageTitle from '../layouts/PageTitle/PageTitle';
 import { LinkItem } from '../utils/types';
 
@@ -13,7 +13,6 @@ interface PageLayoutProps {
   actionButton?: ReactNode;
   tabs?: ReactElement;
 }
-// TODO: Fix horizontal scrolling bug
 
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
@@ -24,7 +23,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   tabs
 }) => {
   return (
-    <React.Fragment>
+    <Fragment>
       <Helmet>
         <title>{`FinishLine ${title && `| ${title}`}`}</title>
         <meta name="description" content="FinishLine Project Management Dashboard" />
@@ -37,7 +36,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           {children}
         </Container>
       </Box>
-    </React.Fragment>
+    </Fragment>
   );
 };
 
