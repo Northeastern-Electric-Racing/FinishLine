@@ -39,9 +39,9 @@ const renderComponent = (
 describe('work package container view', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    vi
-      .spyOn(wpHooks, 'useManyWorkPackages')
-      .mockReturnValue(mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage]));
+    vi.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(
+      mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage])
+    );
   });
 
   it('renders the project', () => {
