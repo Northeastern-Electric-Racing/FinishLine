@@ -47,6 +47,7 @@ const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
+const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 
 /**************** Change Requests Endpoints ****************/
@@ -102,6 +103,7 @@ export const apiUrls = {
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,
+  workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
 
   changeRequests,

@@ -21,6 +21,8 @@ import {
 
 vi.mock('../../../../hooks/change-requests.hooks');
 
+jest.mock('../../../../hooks/toasts.hooks');
+
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateActivationCR = useCreateActivationChangeRequest as jest.Mock<UseMutationResult>;
 

@@ -25,6 +25,10 @@ import { useToast } from '../../hooks/toasts.hooks';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
+import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -45,11 +49,16 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   onSubmit
 }: ReviewChangeRequestViewProps) => {
   const [selected, setSelected] = useState(-1);
+  const [selectedTimelineImpact, setSelectedTimelineImpact] = useState(-1);
   const toast = useToast();
-
-  const { register, setValue, getFieldState, reset, handleSubmit, control } = useForm<FormInput>({
+  const { isLoading, isError, error, data: blockingWorkPackages } = useGetBlockingWorkPackages(cr.wbsNum);
+  const [showWarning, setShowWarning] = useState(false);
+  const { register, setValue, getFieldState, reset, handleSubmit, control, getValues } = useForm<FormInput>({
     resolver: yupResolver(schema)
   });
+
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} />;
 
   /**
    * Register (or set registered field) to the appropriate boolean based on which action button was clicked
@@ -70,6 +79,21 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     reset({ reviewNotes: '' });
   };
 
+  const handleShowWarning = (data: FormInput) => {
+    if (selected === -1) {
+      onSubmitWrapper(data);
+      return;
+    }
+    const standardChangeRequest = cr as StandardChangeRequest;
+    const selectedProposedSolution = standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!;
+    if (selectedProposedSolution.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
+      setSelectedTimelineImpact(selectedProposedSolution.timelineImpact);
+      setShowWarning(true);
+    } else {
+      onSubmitWrapper(data);
+    }
+  };
+
   const overflowStyle: object = {
     overflowY: 'scroll',
     maxHeight: '300px'
@@ -85,7 +109,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
   const dialogWidth: Breakpoint = 'md';
   const dialogContentWidthRatio: number = 1; // dialog contents fit 100% width
 
-  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (scr: StandardChangeRequest) => {
+  const renderProposedSolutionModal: (scr: StandardChangeRequest) => JSX.Element = (
+    standardChangeRequest: StandardChangeRequest
+  ) => {
     return (
       <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide} style={{ color: 'black' }}>
         <IconButton
@@ -118,7 +144,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               ...overflowStyle
             }}
           >
-            {scr.proposedSolutions.map((solution: ProposedSolution, i: number) => {
+            {standardChangeRequest.proposedSolutions.map((solution: ProposedSolution, i: number) => {
               return (
                 <div style={proposedSolutionStyle}>
                   <ProposedSolutionSelectItem
@@ -130,7 +156,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
               );
             })}
           </Box>
-          <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
+          <form id={'review-notes-form'} onSubmit={handleSubmit(handleShowWarning)}>
             <Controller
               name="reviewNotes"
               control={control}
@@ -252,9 +278,22 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     );
   };
 
-  return cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
-    ? renderProposedSolutionModal(cr as StandardChangeRequest)
-    : renderModal();
+  return (
+    <>
+      {cr.type === 'ISSUE' || cr.type === 'DEFINITION_CHANGE' || cr.type === 'OTHER'
+        ? renderProposedSolutionModal(cr as StandardChangeRequest)
+        : renderModal()}
+      {
+        <ChangeRequestBlockerWarning
+          duration={selectedTimelineImpact}
+          onHide={() => setShowWarning(false)}
+          open={showWarning}
+          onSubmit={() => onSubmitWrapper(getValues())}
+          blockingWorkPackages={blockingWorkPackages ?? []}
+        />
+      }
+    </>
+  );
 };
 
 export default ReviewChangeRequestsView;

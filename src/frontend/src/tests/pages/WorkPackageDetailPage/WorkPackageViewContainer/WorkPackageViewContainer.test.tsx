@@ -6,9 +6,10 @@
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../../test-support/test-utils';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageViewContainer from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageViewContainer';
-import * as authHooks from '../../../../hooks/auth.hooks';
-import { mockAuth } from '../../../test-support/test-data/test-utils.stub';
+import * as userHooks from '../../../../hooks/users.hooks';
+import * as wpHooks from '../../../../hooks/work-packages.hooks';
 import { exampleAdminUser } from '../../../test-support/test-data/users.stub';
+import { mockUseManyWorkPackagesReturnValue } from '../../../test-support/mock-hooks';
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = (
@@ -37,7 +38,10 @@ const renderComponent = (
 
 describe('work package container view', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi
+      .spyOn(wpHooks, 'useManyWorkPackages')
+      .mockReturnValue(mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage]));
   });
 
   it('renders the project', () => {

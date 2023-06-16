@@ -100,7 +100,7 @@ model User {
   deletedTasks              Task[]                  @relation(name: "deletedBy")
   assignedTasks             Task[]                  @relation(name: "assignedTo")
   favoriteProjects          Project[]               @relation(name: "favoritedBy")
-  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecepient")
+  reimbursementRequests     Reimbursement_Request[] @relation(name: "reimbursementRequestRecipient")
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
@@ -345,22 +345,22 @@ model Reimbursement_Status {
 
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
-  saboId                 Int?
+  saboId                 Int?                    @unique
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
   dateOfExpense          DateTime
   reimbursementsStatuses Reimbursement_Status[]
-  recepientId            Int
-  recepient              User                    @relation(name: "reimbursementRequestRecepient", fields: [recepientId], references: [userId])
+  recipientId            Int
+  recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId               String
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
   totalCost              Int
-  receiptPicture         String[]
+  receiptPictures        String[]
   reimbursementProducts  Reimbursement_Product[]
-  expenssTypeId          String
   dateDelivered          DateTime?
-  expenseType            Expense_Type            @relation(fields: [expenssTypeId], references: [expenseTypeId])
+  expenseTypeId          String
+  expenseType            Expense_Type            @relation(fields: [expenseTypeId], references: [expenseTypeId])
 }
 
 model Reimbursement_Product {
@@ -377,7 +377,7 @@ model Reimbursement_Product {
 model Vendor {
   vendorId    String                  @id @default(uuid())
   dateCreated DateTime                @default(now())
-  name        String
+  name        String                  @unique
   requests    Reimbursement_Request[]
 }
 
@@ -408,4 +408,5 @@ model User_Secure_Settings {
   city                 String
   state                String
   zipcode              String
+  phoneNumber          String @unique
 }
