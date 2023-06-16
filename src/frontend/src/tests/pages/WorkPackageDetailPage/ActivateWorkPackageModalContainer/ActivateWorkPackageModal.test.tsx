@@ -9,7 +9,7 @@ import { exampleWbs1 } from '../../../test-support/test-data/wbs-numbers.stub';
 import ActivateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/ActivateWorkPackageModalContainer/ActivateWorkPackageModal';
 import { wbsPipe } from '../../../../utils/pipes';
 
-jest.mock('../../../../hooks/toasts.hooks');
+vi.mock('../../../../hooks/toasts.hooks');
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
