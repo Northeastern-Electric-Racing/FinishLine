@@ -19,7 +19,7 @@ import {
   mockUseAllUsersReturnValue
 } from '../../../test-support/mock-hooks';
 
-jest.mock('../../../../hooks/change-requests.hooks');
+vi.mock('../../../../hooks/change-requests.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateActivationCR = useCreateActivationChangeRequest as jest.Mock<UseMutationResult>;
@@ -36,10 +36,10 @@ const renderComponent = () => {
 
 describe('activate work package modal container test suite', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
-    jest.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
-    jest.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
+    vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
+    vi.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(exampleAllUsers));
   });
 
   it('renders component without crashing', () => {

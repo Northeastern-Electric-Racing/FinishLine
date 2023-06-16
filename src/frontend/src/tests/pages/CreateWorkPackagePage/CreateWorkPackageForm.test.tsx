@@ -12,11 +12,11 @@ import CreateWorkPackageForm from '../../../pages/CreateWorkPackagePage/CreateWo
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 
-jest.mock('../../../hooks/auth.hooks');
-jest.mock('../../../hooks/utils.hooks');
-jest.mock('../../../hooks/toasts.hooks');
+vi.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/utils.hooks');
+vi.mock('../../../hooks/toasts.hooks');
 
-jest.mock('../../../components/ReactHookTextField', () => {
+vi.mock('../../../components/ReactHookTextField', () => {
   return {
     __esModule: true,
     default: () => <p>React hook text field component</p>

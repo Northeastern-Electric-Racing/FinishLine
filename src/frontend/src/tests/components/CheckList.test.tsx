@@ -31,8 +31,8 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '', isDisa
 
 describe('Rendering CheckList Component', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(descBulletHooks, 'useCheckDescriptionBullet').mockReturnValue(mockCheckDescBulletReturnValue);
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(descBulletHooks, 'useCheckDescriptionBullet').mockReturnValue(mockCheckDescBulletReturnValue);
   });
 
   it('Renders the CheckList correctly when empty', () => {

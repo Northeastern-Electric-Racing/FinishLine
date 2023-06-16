@@ -12,7 +12,7 @@ import { routes } from '../../utils/routes';
 import { Auth } from '../../utils/types';
 import AppPublic from '../../app/AppPublic';
 
-jest.mock('../../app/AppAuthenticated', () => {
+vi.mock('../../app/AppAuthenticated', () => {
   return {
     __esModule: true,
     default: () => {
@@ -21,7 +21,7 @@ jest.mock('../../app/AppAuthenticated', () => {
   };
 });
 
-jest.mock('../../hooks/auth.hooks');
+vi.mock('../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

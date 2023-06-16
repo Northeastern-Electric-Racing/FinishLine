@@ -20,6 +20,12 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+describe('a', () => {
+  it('b', () => {
+    expect(1).toBeLessThan(2);
+  });
+});
+
 describe('change request api methods', () => {
   it('handles getting a list of change requests', async () => {
     server.use(

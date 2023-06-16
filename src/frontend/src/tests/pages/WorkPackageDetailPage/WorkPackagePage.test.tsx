@@ -15,7 +15,7 @@ import { exampleWbsProject1 } from '../../test-support/test-data/wbs-numbers.stu
 import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data/users.stub';
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 
-jest.mock('../../../hooks/work-packages.hooks');
+vi.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
 
@@ -23,7 +23,7 @@ const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPacka
   mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
 };
 
-jest.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

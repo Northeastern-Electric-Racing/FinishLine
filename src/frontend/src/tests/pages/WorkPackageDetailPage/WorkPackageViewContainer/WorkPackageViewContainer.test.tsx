@@ -37,7 +37,7 @@ const renderComponent = (
 
 describe('work package container view', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
 
   it('renders the project', () => {
