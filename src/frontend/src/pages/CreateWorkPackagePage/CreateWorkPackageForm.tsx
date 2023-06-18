@@ -12,6 +12,8 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
+import { useState } from 'react';
+import { useQuery } from '../../hooks/utils.hooks';
 
 export interface CreateWorkPackageFormInputs {
   name: string;
@@ -29,11 +31,11 @@ const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
   const toast = useToast();
+  const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
-
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
-
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
     const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
@@ -88,11 +90,12 @@ const CreateWorkPackageForm: React.FC = () => {
 
   return (
     <CreateWorkPackageFormView
+      wbsNum={wbsNum}
+      setWbsNum={setWbsNum}
       onSubmit={handleSubmit}
-      onCancel={() => history.goBack()}
-      allowSubmit={!isGuest(auth.user.role)} wbsNum={''} setWbsNum={function (val: string): void {
-        throw new Error('Function not implemented.');
-      } }    />
+      onCancel={() => history.goBack()} 
+      allowSubmit={!isGuest(auth.user.role)}
+      />
   );
 };
 
