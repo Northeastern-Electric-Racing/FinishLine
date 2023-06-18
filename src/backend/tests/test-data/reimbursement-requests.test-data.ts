@@ -3,15 +3,13 @@ import {
   Reimbursement_Request as PrismaReimbursementRequest,
   Expense_Type as PrismaExpenseType,
   Reimbursement_Product as PrismaReimbursementProduct,
-  Club_Accounts,
+  Reimbursement_Status as PrismaReimbursementStatus,
+  Reimbursement_Status_Type as PrismaReimbursementStatusType,
   Prisma,
-  Reimbursement_Status,
-  Reimbursement_Status_Type
+  Club_Accounts
 } from '@prisma/client';
-import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
@@ -49,9 +47,17 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   wbsElementId: 1
 };
 
-export const examplePendingFinanceStatus: Reimbursement_Status = {
+export const exampleSaboSubmittedStatus: PrismaReimbursementStatus = {
   reimbursementStatusId: 1,
-  type: Reimbursement_Status_Type.PENDING_FINANCE,
+  type: PrismaReimbursementStatusType.SABO_SUBMITTED,
+  userId: 2,
+  dateCreated: new Date(),
+  reimbursementRequestId: 'id'
+};
+
+export const examplePendingFinanceStatus: PrismaReimbursementStatus = {
+  reimbursementStatusId: 1,
+  type: PrismaReimbursementStatusType.PENDING_FINANCE,
   userId: batman.userId,
   dateCreated: new Date('2023-08-20T08:00:00Z'),
   reimbursementRequestId: ''
@@ -64,4 +70,30 @@ export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof 
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
   expenseType: Parts
+};
+
+export const sharedGiveMeMyMoney: ReimbursementRequest = {
+  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  dateCreated: GiveMeMyMoney.dateCreated,
+  dateOfExpense: GiveMeMyMoney.dateOfExpense,
+  totalCost: GiveMeMyMoney.totalCost,
+  receiptPictures: GiveMeMyMoney.receiptPictures,
+  expenseType: Parts,
+  vendor: PopEyes,
+  recipient: userTransformer(batman),
+  saboId: undefined,
+  dateDeleted: undefined,
+  account: GiveMeMyMoney.account as ClubAccount,
+  dateDelivered: undefined,
+  reimbursementsStatuses: [],
+  reimbursementProducts: [
+    {
+      wbsNum: wbsNumOf(prismaWbsElement1),
+      wbsName: 'car',
+      dateDeleted: undefined,
+      name: GiveMeMoneyProduct.name,
+      cost: GiveMeMoneyProduct.cost,
+      reimbursementProductId: GiveMeMoneyProduct.reimbursementProductId
+    }
+  ]
 };
