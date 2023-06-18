@@ -18,14 +18,14 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useQuery } from '../../hooks/utils.hooks';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { FormControl, FormLabel, IconButton } from '@mui/material';
+import { Autocomplete, FormControl, FormLabel } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { WorkPackageStage } from 'shared';
+import { Project, WorkPackage, WorkPackageStage } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
+import ProjectsService from '../../../../backend/src/services/projects.services';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -93,25 +93,31 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
+  const { append: appendBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const disableStartDate = (startDate: Date) => {
     return startDate.getDay() !== 1;
   };
 
+  const project: Project = await ProjectsService.getSingleProject(handleSubmit.wbsNum);
+  const workPackages: WorkPackage[] = project.workPackages;
+
   const blockedByFormControl = (
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
-      {blockedBy.map((_element, i) => {
-        return (
-          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Grid>
-        );
-      })}
+      <Autocomplete
+        //isOptionEqualToValue={(option, value) => option.id === value.id}
+        filterSelectedOptions
+        multiple
+        id="tags-standard"
+        options={workPackages}
+        //value={members}
+        //onChange={(_event, newValue) => setMembers(newValue)}
+        getOptionLabel={(option) => option.name}
+        renderInput={(params) => (
+          <TextField {...params} variant="standard" label="Work Packages" placeholder="Select A Work Package" />
+        )}
+      />
       <Button
         variant="contained"
         color="success"
