@@ -1,4 +1,4 @@
-import { ClubAccount } from 'shared';
+import { ClubAccount, ReimbursementStatusType } from 'shared';
 import prisma from '../src/prisma/prisma';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import {
@@ -18,7 +18,7 @@ import {
   prismaGiveMeMyMoney,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, flash, sharedUser1, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { justiceLeague } from './test-data/teams.test-data';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
@@ -499,7 +499,17 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.reimbursementRequestId
       );
 
-      expect(reimbursementRequest).toEqual(sharedGiveMeMyMoney);
+      expect(reimbursementRequest).toEqual({
+        ...sharedGiveMeMyMoney,
+        reimbursementsStatuses: [
+          {
+            reimbursementStatusId: 1,
+            type: ReimbursementStatusType.PENDING_FINANCE,
+            user: sharedUser1,
+            dateCreated: expect.any(Date)
+          }
+        ]
+      });
     });
   });
 });
