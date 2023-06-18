@@ -79,7 +79,7 @@ export const batmanSettings: User_Settings = {
   slackId: 'slack'
 };
 
-export const sharedUser1: SharedUser = {
+export const sharedBatman: SharedUser = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',

@@ -18,12 +18,13 @@ import {
   prismaGiveMeMyMoney,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, sharedUser1, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, flash, sharedBatman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { justiceLeague } from './test-data/teams.test-data';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
 import { prismaTeam1 } from './test-data/teams.test-data';
+import userTransformer from '../src/transformers/user.transformer';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -505,11 +506,15 @@ describe('Reimbursement Requests', () => {
           {
             reimbursementStatusId: 1,
             type: ReimbursementStatusType.PENDING_FINANCE,
-            user: sharedUser1,
+            user: sharedBatman,
             dateCreated: expect.any(Date)
           }
         ]
       });
+    });
+
+    test('batman property', () => {
+      expect(userTransformer(batman)).toEqual(sharedBatman);
     });
   });
 });
