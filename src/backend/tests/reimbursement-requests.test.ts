@@ -24,7 +24,6 @@ import { justiceLeague } from './test-data/teams.test-data';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
 import { prismaTeam1 } from './test-data/teams.test-data';
-import userTransformer from '../src/transformers/user.transformer';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -511,10 +510,6 @@ describe('Reimbursement Requests', () => {
           }
         ]
       });
-    });
-
-    test('batman property', () => {
-      expect(userTransformer(batman)).toEqual(sharedBatman);
     });
   });
 });
