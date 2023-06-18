@@ -16,10 +16,11 @@ import {
   examplePendingFinanceStatus,
   prismaGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { batman, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
+import { prismaTeam1 } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -106,13 +107,14 @@ describe('Reimbursement Requests', () => {
       ]
     };
 
-    test('successfully calls the Prisma function', async () => {
+    test('calls the Prisma function to get reimbursement requests', async () => {
       // mock prisma calls
       const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
       prismaGetManySpy.mockResolvedValue([findManyResult]);
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
 
       // act
-      const matches = await ReimbursementRequestService.getPendingAdvisorList();
+      const matches = await ReimbursementRequestService.getPendingAdvisorList(flash);
 
       // assert
       expect(prismaGetManySpy).toBeCalledTimes(1);
@@ -129,6 +131,38 @@ describe('Reimbursement Requests', () => {
       });
       expect(matches).toHaveLength(1);
       expect(matches).toEqual([reimbursementRequestTransformer(findManyResult)]);
+    });
+
+    test('calls the Prisma function to check finance team', async () => {
+      // mock prisma calls
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([findManyResult]);
+      const prismaFindTeamSpy = jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      // act
+      await ReimbursementRequestService.getPendingAdvisorList(flash);
+
+      // assert
+      expect(prismaFindTeamSpy).toBeCalledTimes(1);
+      expect(prismaFindTeamSpy).toBeCalledWith({
+        where: { teamId: process.env.FINANCE_TEAM_ID }
+      });
+    });
+
+    test('fails if user is not head of finance team', async () => {
+      // mock prisma calls
+      const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([findManyResult]);
+      const prismaFindTeamSpy = jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      // act
+      const action = async () => await ReimbursementRequestService.getPendingAdvisorList(batman);
+      await expect(action).rejects.toEqual(new AccessDeniedException('You are not the head of the finance team!'));
+
+      // assert
+      expect(prismaFindTeamSpy).toBeCalledTimes(1);
+      expect(prismaFindTeamSpy).toBeCalledWith({
+        where: { teamId: process.env.FINANCE_TEAM_ID }
+      });
+      expect(prismaGetManySpy).toBeCalledTimes(0);
     });
   });
 

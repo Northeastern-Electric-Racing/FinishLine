@@ -74,8 +74,10 @@ export default class ReimbursementRequestsController {
   }
 
   static async getPendingAdvisorList(_req: Request, res: Response, next: NextFunction) {
+    const user = await getCurrentUser(res);
+
     try {
-      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList();
+      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(user);
       return res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
       next(error);

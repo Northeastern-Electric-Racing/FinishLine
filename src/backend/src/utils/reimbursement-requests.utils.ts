@@ -184,3 +184,15 @@ export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };
+
+export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  if (!(financeTeam.leaderId === user.userId)) {
+    throw new AccessDeniedException('You are not the head of the finance team!');
+  }
+};

@@ -11,6 +11,7 @@ import {
   UserWithTeam,
   updateReimbursementProducts,
   validateReimbursementProducts,
+  validateUserIsHeadOfFinanceTeam,
   validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
@@ -193,9 +194,12 @@ export default class ReimbursementRequestService {
 
   /**
    * Returns all reimbursement requests that do not have an advisor approved reimbursement status.
+   * @param requester the user requesting the reimbursement requests
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
-  static async getPendingAdvisorList(): Promise<ReimbursementRequest[]> {
+  static async getPendingAdvisorList(requester: User): Promise<ReimbursementRequest[]> {
+    await validateUserIsHeadOfFinanceTeam(requester);
+
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: { not: null },
@@ -207,6 +211,7 @@ export default class ReimbursementRequestService {
       },
       ...reimbursementRequestQueryArgs
     });
+
     return requestsPendingAdvisors.map(reimbursementRequestTransformer);
   }
 
@@ -216,7 +221,7 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    */
   static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
-    await validateUserIsPartOfFinanceTeam(sender);
+    await validateUserIsHeadOfFinanceTeam(sender);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
