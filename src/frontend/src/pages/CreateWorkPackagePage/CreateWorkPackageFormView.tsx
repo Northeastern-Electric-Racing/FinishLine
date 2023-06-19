@@ -24,7 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { Project, WorkPackage, WorkPackageStage, wbsPipe } from 'shared';
+import { Project, WorkPackageStage, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -77,7 +77,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
@@ -149,12 +148,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
     wbsDropdownOptions.push({
       label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
       id: wbsPipe(project.wbsNum)
-    });
-    project.workPackages.forEach((workPackage: WorkPackage) => {
-      wbsDropdownOptions.push({
-        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
-        id: wbsPipe(workPackage.wbsNum)
-      });
     });
   });
 

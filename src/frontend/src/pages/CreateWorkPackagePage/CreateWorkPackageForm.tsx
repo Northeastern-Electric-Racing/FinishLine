@@ -21,7 +21,6 @@ export interface CreateWorkPackageFormInputs {
   duration: number | null;
   crId: number;
   stage: WorkPackageStage | 'None';
-  wbsNum: string;
   blockedBy: { wbsNum: string }[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
@@ -37,7 +36,7 @@ const CreateWorkPackageForm: React.FC = () => {
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, blockedBy, wbsNum, stage } = data;
+    const { name, startDate, duration, crId, blockedBy, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
