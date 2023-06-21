@@ -36,7 +36,7 @@ const CreateWorkPackageForm: React.FC = () => {
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    const { name, startDate, duration, crId, blockedBy, stage } = data;
+    const { name, crId, startDate, duration, blockedBy, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
 
