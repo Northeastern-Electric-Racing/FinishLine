@@ -21,7 +21,7 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { wbsTester, startDateTester } from '../../utils/form';
+import { startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { Project, WorkPackageStage, wbsPipe } from 'shared';
@@ -32,7 +32,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
-  wbsNum: yup.string().required('WBS Number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   crId: yup
     .number()
     .typeError('CR ID must be a number')
@@ -157,6 +156,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        console.log(wbsNum)
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {
