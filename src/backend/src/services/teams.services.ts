@@ -115,27 +115,27 @@ export default class TeamsService {
 
   /**
    * Update the team's head of the given team to the given user
-   * @param user The submitter of this request
+   * @param submitter The submitter of this request
    * @param teamId The id for the team that is being edited
    * @param userId The user to be the new team's head
    * @returns The team with the new head
    */
-  static async setTeamHead(user: User, teamId: string, userId: number): Promise<Team> {
+  static async setTeamHead(submitter: User, teamId: string, userId: number): Promise<Team> {
     const team = await prisma.team.findUnique({
       where: { teamId },
       ...teamQueryArgs
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (!isAdmin(user.role) && user.userId !== team.leaderId)
-      throw new AccessDeniedException('you must be an admin or the team lead to update the leader!');
+    if (!isAdmin(submitter.role) && submitter.userId !== team.leaderId)
+      throw new AccessDeniedException('You must be an admin or the team lead to update the leader!');
 
     const newHead = await prisma.user.findUnique({
       where: { userId }
     });
 
     if (!newHead) throw new NotFoundException('User', userId);
-    if (!isHead(newHead.role)) throw new AccessDeniedException('the team head must be at least an head');
+    if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least an head');
 
     const updateTeam = await prisma.team.update({
       where: { teamId },

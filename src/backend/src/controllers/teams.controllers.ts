@@ -55,8 +55,8 @@ export default class TeamsController {
     try {
       const { userId } = req.body;
       const { teamId } = req.params;
-      const user = await getCurrentUser(res);
-      const team = await TeamsService.setTeamHead(user, teamId, userId);
+      const submitter = await getCurrentUser(res);
+      const team = await TeamsService.setTeamHead(submitter, teamId, userId);
       return res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
