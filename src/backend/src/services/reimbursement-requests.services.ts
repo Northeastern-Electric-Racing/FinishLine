@@ -239,8 +239,8 @@ export default class ReimbursementRequestService {
       where: {
         saboId: { not: null },
         reimbursementsStatuses: {
-          none: {
-            type: Reimbursement_Status_Type.ADVISOR_APPROVED
+          some: {
+            type: Reimbursement_Status_Type.SABO_SUBMITTED
           }
         }
       },
