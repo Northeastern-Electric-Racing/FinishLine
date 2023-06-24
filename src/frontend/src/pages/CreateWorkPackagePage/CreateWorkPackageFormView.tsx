@@ -59,7 +59,13 @@ interface CreateWorkPackageFormViewProps {
   setWbsNum: (val: string) => void;
 }
 
-const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ wbsNum, setWbsNum, allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
+  wbsNum,
+  setWbsNum,
+  allowSubmit,
+  onSubmit,
+  onCancel
+}) => {
   const startDate = new Date();
   const today = startDate.getDay();
   if (today !== 1) {
@@ -156,7 +162,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ w
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(wbsNum)
+        console.log(wbsNum);
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {

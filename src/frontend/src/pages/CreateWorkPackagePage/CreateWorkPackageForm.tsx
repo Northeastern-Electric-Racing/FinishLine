@@ -6,7 +6,6 @@
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../hooks/toasts.hooks';
 import { isGuest, isProject, validateWBS, WorkPackageStage } from 'shared';
-import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -14,6 +13,7 @@ import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { useState } from 'react';
 import { useQuery } from '../../hooks/utils.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 export interface CreateWorkPackageFormInputs {
   name: string;
@@ -28,13 +28,13 @@ export interface CreateWorkPackageFormInputs {
 
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
-  const auth = useAuth();
+  const user = useCurrentUser();
   const toast = useToast();
   const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
-  if (isLoading || auth.user === undefined) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
     console.log('wbsNum:', wbsNum);
     const { name, crId, startDate, duration, blockedBy, stage } = data;
@@ -86,7 +86,6 @@ const CreateWorkPackageForm: React.FC = () => {
         toast.error(e.message, 3000);
       }
     }
-    
   };
 
   return (
@@ -94,9 +93,9 @@ const CreateWorkPackageForm: React.FC = () => {
       wbsNum={wbsNum}
       setWbsNum={setWbsNum}
       onSubmit={handleSubmit}
-      onCancel={() => history.goBack()} 
-      allowSubmit={!isGuest(auth.user.role)}
-      />
+      onCancel={() => history.goBack()}
+      allowSubmit={!isGuest(user.role)}
+    />
   );
 };
 
