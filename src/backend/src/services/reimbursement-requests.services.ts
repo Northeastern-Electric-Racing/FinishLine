@@ -25,6 +25,7 @@ import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
+import { userInfo } from 'os';
 
 export default class ReimbursementRequestService {
   /**
@@ -121,24 +122,24 @@ export default class ReimbursementRequestService {
   /**
    * Function to reimburse a user for their expenses.
    *
-   * @param recipient the user who will be receiving the reimbursement
+   * @param recipientId the user who will be receiving the reimbursement
    * @param amount the amount to be reimbursed
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(recipient: User, amount: number, submitter: UserWithTeam): Promise<Reimbursement_Request> {
+  static async reimburseUser(recipientId: number, amount: number, submitter: UserWithTeam): Promise<Reimbursement_Request> {
     await validateUserIsPartOfFinanceTeam(submitter);
      
     const totalOwed = prisma.reimbursement_Request.findMany({
-        where: { recipientId: recipient.userId, dateDeleted: null }
+        where: { recipientId, dateDeleted: null }
       })
-      .then((userReimbursementRequests: ReimbursementRequest[]) => {
-        userReimbursementRequests.reduce((acc: number, curr: ReimbursementRequest) => acc + curr.totalCost, 0);
+      .then((userReimbursementRequests: Reimbursement_Request[]) => {
+        userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
       });
 
     const totalReimbursed = await prisma.reimbursement
       .findMany({
-        where: { recipientId: recipient.userId },
+        where: { recipientId },
         select: { amount: true }
       })
       .then((reimbursements: { amount: number }[]) =>
@@ -150,7 +151,7 @@ export default class ReimbursementRequestService {
     }
     const newReimbursement = await prisma.reimbursement.create({
       data: {
-        recipientId: recipient.userId,
+        recipientId,
         amount,
         dateReimbursed: new Date(),
         reimbursedByUserId: submitter.userId
