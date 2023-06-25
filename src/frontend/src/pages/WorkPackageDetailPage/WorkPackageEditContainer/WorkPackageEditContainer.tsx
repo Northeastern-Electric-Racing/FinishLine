@@ -4,20 +4,18 @@
  */
 
 import { isGuest, validateWBS, WorkPackage } from 'shared';
-import { wbsPipe } from '../../../utils/pipes';
+import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Button, Box, TextField, Grid, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, TextField, Autocomplete, FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
@@ -27,6 +25,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
+import { useSingleProject } from '../../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -48,10 +47,8 @@ export interface WorkPackageEditFormPayload {
   startDate: Date;
   duration: number;
   crId: string;
-  blockedBy: {
-    wbsNum: string;
-  }[];
   stage: string;
+  blockedBy: { wbsNum: string }[];
   expectedActivities: {
     bulletId: number;
     detail: string;
@@ -64,7 +61,7 @@ export interface WorkPackageEditFormPayload {
 
 const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
   const toast = useToast();
-  const auth = useAuth();
+  const user = useCurrentUser();
   const query = useQuery();
   const allUsers = useAllUsers();
   const { name, startDate, duration } = workPackage;
@@ -81,11 +78,12 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       crId: query.get('crId') || '',
       stage: workPackage.stage || 'NONE',
       startDate,
-      duration,
-      blockedBy: workPackage.blockedBy.map((dep) => {
-        const wbsNum = wbsPipe(dep);
-        return { wbsNum };
+      blockedBy: workPackage.blockedBy.map((blocker) => {
+        return {
+          wbsNum: wbsPipe(blocker)
+        };
       }),
+      duration,
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
       deliverables: bulletsToObject(workPackage.deliverables)
     }
@@ -105,15 +103,31 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
+
+  const {
+    data: project,
+    isLoading: projectIsLoading,
+    isError: projectIsError,
+    error: projectError
+  } = useSingleProject(validateWBS(projectWbsPipe(workPackage.wbsNum)));
 
   const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
 
-  if (allUsers.isLoading || !allUsers.data || !auth.user) return <LoadingIndicator />;
+  if (allUsers.isLoading || !allUsers.data || projectIsLoading || !project) return <LoadingIndicator />;
   if (allUsers.isError) {
     return <ErrorPage message={allUsers.error?.message} />;
   }
-  const { userId } = auth.user;
+  if (projectIsError) {
+    return <ErrorPage message={projectError?.message} />;
+  }
+
+  const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
+    return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
+  };
+
+  const blockedByOptions = project.workPackages.map(blockedByToAutocompleteOption) || [];
+
+  const { userId } = user;
 
   const users = allUsers.data.filter((u) => !isGuest(u.role));
 
@@ -123,10 +137,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
   const onSubmit = async (data: WorkPackageEditFormPayload) => {
-    const { name, startDate, duration, crId, blockedBy, stage } = data;
+    const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
-
+    const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(`${blocker}`));
     try {
       const payload = {
         projectLead: leadId ? parseInt(leadId) : undefined,
@@ -137,9 +151,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         crId: parseInt(crId),
         startDate: transformDate(startDate),
         duration,
-        blockedBy: blockedBy.map((dep) => {
-          return validateWBS(dep.wbsNum);
-        }),
+        blockedBy: blockedByWbsNums,
         expectedActivities,
         deliverables,
         stage
@@ -156,6 +168,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
 
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
+  console.log(blockedByOptions);
   return (
     <form
       id="work-package-edit-form"
@@ -189,21 +202,37 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         setManager={setManagerId}
       />
       <PageBlock title="Blocked By">
-        {blockedBy.map((_element, i) => {
-          return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 1 / 10 }} />
-              <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          );
-        })}
-        <Button variant="contained" color="success" onClick={() => appendBlocker({ wbsNum: '' })} sx={{ mt: 2 }}>
-          + ADD NEW BLOCKER
-        </Button>
+        <FormControl fullWidth>
+          <FormLabel>Assignees</FormLabel>
+          <Controller
+            name="blockedBy"
+            control={control}
+            render={({ field: { onChange, value: formValue } }) => (
+              <Autocomplete
+                isOptionEqualToValue={(option, value) => {
+                  console.log(option, value);
+                  return option.id === value.id;
+                }}
+                filterSelectedOptions
+                multiple
+                options={blockedByOptions}
+                getOptionLabel={(option) => option.label}
+                onChange={(_, value) => onChange(value.map((v) => v.id))}
+                value={formValue.map((v: { wbsNum: string }) => {
+                  console.log('V', v);
+                  console.log(blockedByOptions);
+                  const change = blockedByOptions.find((o) => o.id === `${v}`);
+                  console.log('change', change);
+                  return change!;
+                })}
+                renderInput={(params) => (
+                  <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
+                )}
+              />
+            )}
+          />
+        </FormControl>
       </PageBlock>
-
       <PageBlock title="Expected Activities">
         <ReactHookEditableList
           name="expectedActivities"
