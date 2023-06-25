@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
+import { Reimbursement, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -24,8 +24,11 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import { reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
-import { userInfo } from 'os';
+import {
+  reimbursementRequestTransformer,
+  reimbursementStatusTransformer,
+  expenseTypeTransformer
+} from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -96,9 +99,9 @@ export default class ReimbursementRequestService {
         receiptPictures,
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
-        reimbursementsStatuses: {
+        reimbursementStatuses: {
           create: {
-            type: 'PENDING_FINANCE',
+            type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
         },
@@ -127,19 +130,20 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(recipientId: number, amount: number, submitter: UserWithTeam): Promise<Reimbursement_Request> {
+  static async reimburseUser(recipientId: number, amount: number, submitter: UserWithTeam): Promise<Reimbursement> {
     await validateUserIsPartOfFinanceTeam(submitter);
-     
-    const totalOwed = prisma.reimbursement_Request.findMany({
+
+    const totalOwed = await prisma.reimbursement_Request
+      .findMany({
         where: { recipientId, dateDeleted: null }
       })
       .then((userReimbursementRequests: Reimbursement_Request[]) => {
-        userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
+        return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
       });
 
     const totalReimbursed = await prisma.reimbursement
       .findMany({
-        where: { recipientId },
+        where: { purchaserId: recipientId },
         select: { amount: true }
       })
       .then((reimbursements: { amount: number }[]) =>
@@ -151,10 +155,10 @@ export default class ReimbursementRequestService {
     }
     const newReimbursement = await prisma.reimbursement.create({
       data: {
-        recipientId,
+        purchaserId: recipientId,
         amount,
-        dateReimbursed: new Date(),
-        reimbursedByUserId: submitter.userId
+        dateCreated: new Date(),
+        userSubmittedId: submitter.userId
       }
     });
 
@@ -232,6 +236,41 @@ export default class ReimbursementRequestService {
     });
 
     return updatedReimbursementRequest;
+  }
+
+  /**
+   * Soft-deletes the given reimbursement request
+   *
+   * @param requestId the reimbursement request to be deleted
+   * @param submitter the user deleting the reimbursement request
+   */
+  static async deleteReimbursementRequest(requestId: string, submitter: User): Promise<Reimbursement_Request> {
+    const request = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId: requestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement Request', requestId);
+    if (request.recipientId !== submitter.userId)
+      throw new AccessDeniedException(
+        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+      );
+    if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
+    if (
+      request.reimbursementStatuses.some(
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
+      )
+    )
+      throw new AccessDeniedException('You cannot delete this reimbursement request. It has already been approved');
+
+    const deletedRequest = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId: requestId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return deletedRequest;
   }
 
   /**
@@ -359,15 +398,129 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Gets all the expense types in the database
+   * @returns all the expense types in the database
+   */
+  static async getAllExpenseTypes(): Promise<ExpenseType[]> {
+    const expenseTypes = await prisma.expense_Type.findMany();
+    return expenseTypes.map(expenseTypeTransformer);
+  }
+
+  /**
    * Gets all the reimbursement requests from the database that have no dateDeleted
+   * @param user the user getting the reimbursement requests
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
-  static async getAllReimbursementRequests(): Promise<ReimbursementRequest[]> {
+  static async getAllReimbursementRequests(user: UserWithTeam): Promise<ReimbursementRequest[]> {
+    await validateUserIsPartOfFinanceTeam(user);
+
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null },
       ...reimbursementRequestQueryArgs
     });
 
     return reimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Service function to mark a reimbursement request as delivered
+   * @param submitter is the User marking the request as delivered
+   * @param requestId is the ID of the reimbursement request to be marked as delivered
+   * @throws NotFoundException if the id is invalid or not there
+   * @throws AccessDeniedException if the creator of the request is not the submitter
+   * @returns the updated reimbursement request
+   */
+  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDelivered) throw new AccessDeniedException('Can only be marked as delivered once');
+
+    if (submitter.userId !== reimbursementRequest.recipientId)
+      throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
+
+    const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        dateDelivered: new Date()
+      }
+    });
+
+    return reimbursementRequestDelivered;
+  }
+
+  /**
+   * Gets a single reimbursement request for the given id
+   * @param user the user getting the reimbursement request
+   * @param reimbursementRequestId the id of thereimbursement request to get
+   * @returns the reimbursement request with the given id
+   */
+  static async getSingleReimbursementRequest(
+    user: UserWithTeam,
+    reimbursementRequestId: string
+  ): Promise<ReimbursementRequest> {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      ...reimbursementRequestQueryArgs
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+
+    try {
+      await validateUserIsPartOfFinanceTeam(user);
+    } catch {
+      if (user.userId !== reimbursementRequest.recipientId)
+        throw new AccessDeniedException('You do not have access to this reimbursement request');
+    }
+
+    return reimbursementRequestTransformer(reimbursementRequest);
+  }
+
+  /**
+   * Adds a reimbursement status with type sabo submitted to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to approve
+   * @param submitter the user who is approving the reimbursement request
+   * @returns the created reimbursment status
+   */
+  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been approved');
+    }
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.SABO_SUBMITTED,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
   }
 }
