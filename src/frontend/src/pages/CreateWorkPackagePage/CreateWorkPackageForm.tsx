@@ -12,6 +12,7 @@ import { routes } from '../../utils/routes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateWorkPackageFormView from './CreateWorkPackageFormView';
 import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
+import { useQuery } from '../../hooks/utils.hooks';
 
 export interface CreateWorkPackageFormInputs {
   name: string;
@@ -29,6 +30,7 @@ const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
   const auth = useAuth();
   const toast = useToast();
+  const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
 

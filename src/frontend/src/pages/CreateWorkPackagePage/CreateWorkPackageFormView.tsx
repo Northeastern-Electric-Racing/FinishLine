@@ -23,9 +23,10 @@ import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { Project, WorkPackage, WorkPackageStage } from 'shared';
+import { WorkPackage, WorkPackageStage, validateWBS } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
-import ProjectsService from '../../../../backend/src/services/projects.services';
+import { useState } from 'react';
+import { useSingleProject } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -55,6 +56,10 @@ interface CreateWorkPackageFormViewProps {
   onCancel: () => void;
 }
 
+const workPackageToAutocompleteOption = (workPackage: WorkPackage): { label: string; id: number } => {
+  return { label: `${fullNamePipe(workPackage)} (${workPackage.name})`, id: number(workPackage.wbsNum) };
+};
+
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
   const startDate = new Date();
   const today = startDate.getDay();
@@ -63,6 +68,13 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     startDate.setDate(startDate.getDate() + daysUntilNextMonday);
   }
   const query = useQuery();
+
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+
+  const { data: project } = useSingleProject(validateWBS(wbsNum || ''));
+  const workPacks = project ? project.workPackages : undefined;
+
+  const [workPackages, setWorkPackages] = useState(workPacks.map(workPackageToAutocompleteOption));
   const {
     handleSubmit,
     control,
@@ -99,20 +111,17 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     return startDate.getDay() !== 1;
   };
 
-  const project: Project = await ProjectsService.getSingleProject(handleSubmit.wbsNum);
-  const workPackages: WorkPackage[] = project.workPackages;
-
   const blockedByFormControl = (
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
       <Autocomplete
-        //isOptionEqualToValue={(option, value) => option.id === value.id}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
         filterSelectedOptions
         multiple
         id="tags-standard"
-        options={workPackages}
-        //value={members}
-        //onChange={(_event, newValue) => setMembers(newValue)}
+        options={options}
+        value={workPackages}
+        onChange={(_event, newValue) => setWorkPackages(newValue)}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField {...params} variant="standard" label="Work Packages" placeholder="Select A Work Package" />
