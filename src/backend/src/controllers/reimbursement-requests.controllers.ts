@@ -56,11 +56,11 @@ export default class ReimbursementRequestsController {
       const { recipientId } = req.params;
       const { amount } = req.body;
 
-    const recipientIdString = parseInt(recipientId);
+      const recipientIdString = parseInt(recipientId);
 
-    if (isNaN(recipientIdString)) {
-      throw new Error('recipientId has to be a number');
-    }
+      if (isNaN(recipientIdString)) {
+        throw new Error('recipientId has to be a number');
+      }
 
       const reimbursement = await ReimbursementRequestService.reimburseUser(recipientIdString, amount, user);
       res.status(200).json(reimbursement);
