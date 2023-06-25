@@ -4,7 +4,7 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ExpenseType, ReimbursementRequest, Vendor, isAdmin, isGuest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -25,7 +25,11 @@ import {
 import vendorTransformer from '../transformers/vendor.transformer';
 import sendMailToAdvisor from '../utils/transporter.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import { expenseTypeTransformer, reimbursementRequestTransformer } from '../transformers/reimbursement-requests.transformer';
+import {
+  reimbursementRequestTransformer,
+  reimbursementStatusTransformer,
+  expenseTypeTransformer
+} from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
   /**
@@ -96,9 +100,9 @@ export default class ReimbursementRequestService {
         receiptPictures,
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
-        reimbursementsStatuses: {
+        reimbursementStatuses: {
           create: {
-            type: 'PENDING_FINANCE',
+            type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
         },
@@ -202,7 +206,7 @@ export default class ReimbursementRequestService {
     const request = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
-        reimbursementsStatuses: true
+        reimbursementStatuses: true
       }
     });
 
@@ -213,7 +217,7 @@ export default class ReimbursementRequestService {
       );
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
-      request.reimbursementsStatuses.some(
+      request.reimbursementStatuses.some(
         (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.SABO_SUBMITTED
       )
     )
@@ -238,7 +242,7 @@ export default class ReimbursementRequestService {
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
         saboId: { not: null },
-        reimbursementsStatuses: {
+        reimbursementStatuses: {
           some: {
             type: Reimbursement_Status_Type.SABO_SUBMITTED
           }
@@ -456,5 +460,48 @@ export default class ReimbursementRequestService {
     }
 
     return reimbursementRequestTransformer(reimbursementRequest);
+  }
+
+  /**
+   * Adds a reimbursement status with type sabo submitted to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to approve
+   * @param submitter the user who is approving the reimbursement request
+   * @returns the created reimbursment status
+   */
+  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been approved');
+    }
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.SABO_SUBMITTED,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
   }
 }

@@ -11,19 +11,23 @@ import {
 import {
   GiveMeMoneyProduct,
   GiveMeMyMoney,
+  GiveMeMyMoney2,
   Parts,
   PopEyes,
   exampleSaboSubmittedStatus,
   examplePendingFinanceStatus,
   prismaGiveMeMyMoney,
+  prismaGiveMeMyMoney2,
+  prismaGiveMeMyMoney3,
+  prismaReimbursementStatus,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
 import { alfred, batman, flash, sharedBatman, superman, wonderwoman } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
-import { justiceLeague } from './test-data/teams.test-data';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
 import { prismaTeam1 } from './test-data/teams.test-data';
+import { justiceLeague, primsaTeam2 } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -97,7 +101,7 @@ describe('Reimbursement Requests', () => {
     const findManyResult: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
       ...prismaGiveMeMyMoney,
       saboId: 42,
-      reimbursementsStatuses: [
+      reimbursementStatuses: [
         { ...examplePendingFinanceStatus, user: batman },
         {
           reimbursementStatusId: 2,
@@ -124,9 +128,9 @@ describe('Reimbursement Requests', () => {
       expect(prismaGetManySpy).toBeCalledWith({
         where: {
           saboId: { not: null },
-          reimbursementsStatuses: {
-            none: {
-              type: Reimbursement_Status_Type.ADVISOR_APPROVED
+          reimbursementStatuses: {
+            some: {
+              type: Reimbursement_Status_Type.SABO_SUBMITTED
             }
           }
         },
@@ -364,7 +368,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request fails if it has been approved', async () => {
-      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [exampleSaboSubmittedStatus] };
+      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementStatuses: [exampleSaboSubmittedStatus] };
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
 
       await expect(() =>
@@ -375,7 +379,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request succeeds', async () => {
-      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [] };
+      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementStatuses: [] };
       jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
       jest.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
 
@@ -501,7 +505,7 @@ describe('Reimbursement Requests', () => {
 
       expect(reimbursementRequest).toEqual({
         ...sharedGiveMeMyMoney,
-        reimbursementsStatuses: [
+        reimbursementStatuses: [
           {
             reimbursementStatusId: 1,
             type: ReimbursementStatusType.PENDING_FINANCE,
@@ -510,6 +514,61 @@ describe('Reimbursement Requests', () => {
           }
         ]
       });
+    });
+  });
+
+  describe('Approve Reimbursement Request Tests', () => {
+    test('Approve Reimbursement Request fails if Submitter not on Finance Team', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));
+    });
+
+    test('Approve Reimbursement Request fails if Finance Team does not exist', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(500, 'Finance team does not exist!'));
+    });
+
+    test('Approve Reimbursement Request fails if the Request does not exist', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+    });
+
+    test('Approve Reimbursement Request fails if the Request has been deleted', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney2.reimbursementRequestId));
+    });
+
+    test('Approve Reimbursement Request fails if the request has already been approved', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.approveReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
+    });
+    test('Approve Reimbursment Request success', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
+      jest.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
+
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(
+        prismaGiveMeMyMoney3.reimbursementRequestId,
+        alfred
+      );
+
+      expect(reimbursementStatus.reimbursementStatusId).toStrictEqual(prismaReimbursementStatus.reimbursementStatusId);
     });
   });
 });

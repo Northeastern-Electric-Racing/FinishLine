@@ -349,7 +349,7 @@ model Reimbursement_Request {
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
   dateOfExpense          DateTime
-  reimbursementsStatuses Reimbursement_Status[]
+  reimbursementStatuses  Reimbursement_Status[]
   recipientId            Int
   recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId               String
