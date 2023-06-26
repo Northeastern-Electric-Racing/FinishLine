@@ -57,7 +57,7 @@ interface CreateWorkPackageFormViewProps {
 }
 
 const workPackageToAutocompleteOption = (workPackage: WorkPackage): { label: string; id: number } => {
-  return { label: `${fullNamePipe(workPackage)} (${workPackage.name})`, id: number(workPackage.wbsNum) };
+  return { label: `(${workPackage.wbsNum}) (${workPackage.name})`, id: workPackage.id };
 };
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
@@ -122,7 +122,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
         options={options}
         value={workPackages}
         onChange={(_event, newValue) => setWorkPackages(newValue)}
-        getOptionLabel={(option) => option.name}
+        getOptionLabel={(option) => option.label}
         renderInput={(params) => (
           <TextField {...params} variant="standard" label="Work Packages" placeholder="Select A Work Package" />
         )}
