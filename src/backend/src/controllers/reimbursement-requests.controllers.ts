@@ -6,10 +6,21 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
+import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
 import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
+  static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
+      res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
     try {
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();
@@ -58,6 +69,17 @@ export default class ReimbursementRequestsController {
         user
       );
       res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
+      res.status(200).json(deletedReimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }
@@ -114,11 +136,70 @@ export default class ReimbursementRequestsController {
 
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
+      console.log(file);
+
       const user = await getCurrentUser(res);
 
       const imageData = await ReimbursementRequestService.uploadReceipt(file, user);
 
       res.status(200).json(imageData);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
+      res.status(200).json(expenseTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
+        user
+      );
+      res.status(200).json(reimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+        user,
+        requestId
+      );
+      res.status(200).json(reimbursementRequest);
     } catch (error: unknown) {
       next(error);
     }

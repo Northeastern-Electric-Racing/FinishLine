@@ -16,6 +16,8 @@ const upload = multer();
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
+reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
@@ -33,6 +35,10 @@ reimbursementRequestsRouter.post(
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
 );
+
+reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
+
+reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.getSingleReimbursementRequest);
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
@@ -85,5 +91,13 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post('/upload-receipt', upload.single('image'), ReimbursementRequestController.uploadReceipt);
+reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/delivered',
+  ReimbursementRequestController.markReimbursementRequestAsDelivered
+);
 
 export default reimbursementRequestsRouter;

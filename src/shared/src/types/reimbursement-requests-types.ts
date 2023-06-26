@@ -1,15 +1,67 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
+import { WbsNumber } from './project-types';
+import { User } from './user-types';
 
-export enum Club_Account {
+export enum ClubAccount {
   CASH = 'CASH',
   BUDGET = 'BUDGET'
+}
+
+export enum ReimbursementStatusType {
+  PENDING_FINANCE = 'PENDING_FINANCE',
+  SABO_SUBMITTED = 'SABO_SUBMITTED',
+  ADVISOR_APPROVED = 'ADVISOR_APPROVED',
+  REIMBURSED = 'REIMBURSED'
+}
+
+export interface ReimbursementStatus {
+  reimbursementStatusId: number;
+  type: ReimbursementStatusType;
+  user: User;
+  dateCreated: Date;
+}
+
+export interface Receipt {
+  receiptId: string;
+  googleFileId: string;
+  name: string;
+  dateDeleted?: Date;
+}
+
+export interface ReimbursementRequest {
+  reimbursementRequestId: string;
+  saboId?: number;
+  dateCreated: Date;
+  dateDeleted?: Date;
+  dateOfExpense: Date;
+  reimbursementStatuses: ReimbursementStatus[];
+  recipient: User;
+  vendor: Vendor;
+  account: ClubAccount;
+  totalCost: number;
+  receiptPictures: Receipt[];
+  reimbursementProducts: ReimbursementProduct[];
+  dateDelivered?: Date;
+  expenseType: ExpenseType;
+}
+
+export interface ReimbursementProduct {
+  reimbursementProductId: string;
+  name: string;
+  dateDeleted?: Date;
+  cost: number;
+  wbsNum: WbsNumber;
+  wbsName: string;
 }
 
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
   name: string;
+}
+
+export interface ExpenseType {
+  expenseTypeId: string;
+  name: string;
+  code: number;
+  allowed: boolean;
 }
