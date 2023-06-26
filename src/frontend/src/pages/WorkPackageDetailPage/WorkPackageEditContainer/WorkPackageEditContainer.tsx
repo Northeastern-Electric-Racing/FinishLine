@@ -125,7 +125,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
   };
 
-  const blockedByOptions = project.workPackages.map(blockedByToAutocompleteOption) || [];
+  const blockedByOptions =
+    project.workPackages.filter((wp) => wp.id !== workPackage.id).map(blockedByToAutocompleteOption) || [];
 
   const { userId } = user;
 
@@ -221,8 +222,10 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
                 value={formValue.map((v: { wbsNum: string }) => {
                   console.log('V', v);
                   console.log(blockedByOptions);
-                  const change = blockedByOptions.find((o) => o.id === `${v}`);
-                  console.log('change', change);
+                  let change = blockedByOptions.find((o) => o.id === `${v}`);
+                  if (!change) {
+                    change = blockedByOptions.find((o) => o.id === v.wbsNum);
+                  }
                   return change!;
                 })}
                 renderInput={(params) => (
