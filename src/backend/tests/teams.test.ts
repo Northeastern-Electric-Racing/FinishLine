@@ -152,10 +152,26 @@ describe('Teams', () => {
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
     });
 
+    test('setTeamHead new head is already a lead of another team', async () => {
+      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      jest.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 1);
+
+      const expectedException = new HttpException(
+        403,
+        'Access Denied: The new team head must not be a leader of another team'
+      );
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
     test('setTeamHead works', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       jest.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+      jest.spyOn(prisma.team, 'findFirst').mockResolvedValue(null);
 
       const teamId = 'id1';
       const res = await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 2);

@@ -137,6 +137,12 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least an head');
 
+    const newHeadTeam = await prisma.team.findFirst({
+      where: { leaderId: userId }
+    });
+
+    if (newHeadTeam) throw new AccessDeniedException('The new team head must not be a leader of another team');
+
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
