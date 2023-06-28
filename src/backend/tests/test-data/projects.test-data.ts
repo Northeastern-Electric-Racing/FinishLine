@@ -4,7 +4,7 @@ import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
 
-export const prismaProject2 : Project = {
+export const prismaProject2: Project = {
   projectId: 2,
   wbsElementId: 3,
   budget: 3,
@@ -14,8 +14,8 @@ export const prismaProject2 : Project = {
   slideDeckLink: 'https://docs.google.com/presentation/d/1',
   bomLink: 'https://docs.google.com/spreadsheets/d/1',
   taskListLink: 'https://docs.google.com/spreadsheets/d/1',
-  teamId: '1',  
-}
+  teamId: '1'
+};
 
 export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
   projectId: 2,
