@@ -32,15 +32,13 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, reimbursementProducts, receiptPictures, expenseTypeId, totalCost } =
-        req.body;
+      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
       const user = await getCurrentUser(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        receiptPictures,
         reimbursementProducts,
         expenseTypeId,
         totalCost
@@ -133,16 +131,15 @@ export default class ReimbursementRequestsController {
   static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
     try {
       const { file } = req;
+      const { requestId } = req.params;
 
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
 
-      console.log(file);
-
       const user = await getCurrentUser(res);
 
-      const imageData = await ReimbursementRequestService.uploadReceipt(file, user);
+      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
 
-      res.status(200).json(imageData);
+      res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);
     }

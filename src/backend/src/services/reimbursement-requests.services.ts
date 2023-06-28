@@ -60,7 +60,6 @@ export default class ReimbursementRequestService {
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
-   * @param receiptPictures the links for the receipt pictures in the google drive
    * @param reimbursementProducts the products that the user bought
    * @param expenseTypeId the id of the expense type the user made
    * @param totalCost the total cost of the reimbursement with tax
@@ -70,7 +69,6 @@ export default class ReimbursementRequestService {
     recipient: User,
     dateOfExpense: Date,
     vendorId: string,
-    receiptPictures: ReimbursementReceiptCreateArgs[],
     account: ClubAccount,
     reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
@@ -98,13 +96,6 @@ export default class ReimbursementRequestService {
         dateOfExpense,
         vendorId: vendor.vendorId,
         account,
-        receiptPictures: {
-          createMany: {
-            data: receiptPictures.map((receipt) => {
-              return { name: receipt.name, googleFileId: receipt.googleFileId };
-            })
-          }
-        },
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
         reimbursementStatuses: {
@@ -141,7 +132,7 @@ export default class ReimbursementRequestService {
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
    * @param saboId the updated saboId
-   * @param receiptPictures the updated receipt pictures
+   * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @returns the edited reimbursement request
    */
@@ -189,11 +180,8 @@ export default class ReimbursementRequestService {
       oldReimbursementRequest.reimbursementRequestId
     );
 
-    await updateReceiptPictures(
-      receiptPictures,
-      oldReimbursementRequest.receiptPictures || [],
-      oldReimbursementRequest.reimbursementRequestId
-    );
+    //set any deleted receipts with a dateDeleted
+    await updateReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || []);
 
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
@@ -370,15 +358,45 @@ export default class ReimbursementRequestService {
 
   /**
    * Service function to upload a picture to the receipts folder in the NER google drive
+   * @param reimbursementRequestId id for the reimbursement request we're tying the receipt to
    * @param file The file data for the image
+   * @param submitter user who is uploading the receipt
    * @returns the google drive id for the file
    */
-  static async uploadReceipt(file: Express.Multer.File, submitter: User) {
+  static async uploadReceipt(reimbursementRequestId: string, file: Express.Multer.File, submitter: User) {
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('Guests cannot upload receiptps');
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.recipientId !== submitter.userId) {
+      throw new AccessDeniedException(
+        'You do not have access to upload a receipt for this reimbursement request, only the creator can edit a reimbursement request'
+      );
+    }
 
     const imageData = await uploadFile(file);
 
-    return imageData;
+    if (!imageData.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
+    const receipt = await prisma.receipt.create({
+      data: {
+        googleFileId: imageData.id,
+        name: imageData.name,
+        reimbursementRequestId
+      }
+    });
+
+    return receipt;
   }
 
   /**

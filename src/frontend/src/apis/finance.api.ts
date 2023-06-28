@@ -10,8 +10,8 @@ import { apiUrls } from '../utils/urls';
  *
  * @param payload Payload containing the image data
  */
-export const uploadSingleReceipt = (formData: FormData) => {
-  return axios.post(apiUrls.financeUploadRceipt(), formData, {
+export const uploadSingleReceipt = (formData: FormData, id: string) => {
+  return axios.post(apiUrls.financeUploadRceipt(id), formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };

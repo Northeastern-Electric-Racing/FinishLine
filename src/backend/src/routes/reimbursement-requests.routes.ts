@@ -23,9 +23,6 @@ reimbursementRequestsRouter.post(
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
-  body('receiptPictures').isArray(),
-  nonEmptyString(body('receiptPictures.*.name')),
-  nonEmptyString(body('receiptPictures.*.googleFileId')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
@@ -90,7 +87,12 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.createExpenseType
 );
 
-reimbursementRequestsRouter.post('/upload-receipt', upload.single('image'), ReimbursementRequestController.uploadReceipt);
+reimbursementRequestsRouter.post(
+  '/:requestId/upload-receipt',
+  upload.single('image'),
+  ReimbursementRequestController.uploadReceipt
+);
+
 reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
 reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
 reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);

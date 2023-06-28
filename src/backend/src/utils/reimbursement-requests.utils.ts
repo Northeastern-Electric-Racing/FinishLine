@@ -30,26 +30,8 @@ export interface ReimbursementProductCreateArgs {
  * This function removes any deleted receipts and adds any new receipts
  * @param receipts the new list of receipts to compare against the old ones
  * @param currentReceipts the current list of receipts on the request that's being edited
- * @param reimbursementRequestId the id of the reimbursement request that's being edited
  */
-export const updateReceiptPictures = async (
-  receipts: ReimbursementReceiptCreateArgs[],
-  currentReceipts: Receipt[],
-  reimbursementRequestId: string
-) => {
-  if (receipts.length > 0) {
-    const newReceipts = receipts.filter(
-      (receipt) => !currentReceipts.find((currentReceipt) => currentReceipt.googleFileId === receipt.googleFileId)
-    );
-
-    //create new receipts in the database
-    await prisma.receipt.createMany({
-      data: newReceipts.map((receipt) => {
-        return { name: receipt.name, googleFileId: receipt.googleFileId, reimbursementRequestId };
-      })
-    });
-  }
-
+export const updateReceiptPictures = async (receipts: ReimbursementReceiptCreateArgs[], currentReceipts: Receipt[]) => {
   if (currentReceipts.length > 0) {
     const deletedReceipts = currentReceipts.filter(
       (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)

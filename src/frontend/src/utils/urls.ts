@@ -73,7 +73,7 @@ const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
 /**************** Finance Endpoints **************************/
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
-const financeUploadRceipt = () => `${financeEndpoints()}/upload-receipt`;
+const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
