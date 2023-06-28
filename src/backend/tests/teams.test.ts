@@ -10,15 +10,15 @@ import teamTransformer from '../src/transformers/teams.transformer';
 
 describe('Teams', () => {
   beforeEach(() => {
-    jest.spyOn(teamsTransformer, 'default').mockReturnValue(sharedTeam1);
+    vi.spyOn(teamsTransformer, 'default').mockReturnValue(sharedTeam1);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('getAllTeams works', async () => {
-    jest.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1]);
+    vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1]);
 
     const teams = await TeamsService.getAllTeams();
 
@@ -28,7 +28,7 @@ describe('Teams', () => {
   });
 
   test('getSingleTeam works', async () => {
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+    vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
 
     const { teamId } = prismaTeam1;
     const team = await TeamsService.getSingleTeam(teamId);
@@ -39,7 +39,7 @@ describe('Teams', () => {
   });
 
   test('getSingleTeam not found', async () => {
-    jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+    vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
     const { teamId } = prismaTeam1;
     await expect(() => TeamsService.getSingleTeam(teamId)).rejects.toThrow();
@@ -50,8 +50,8 @@ describe('Teams', () => {
 
   describe('setTeamMembers', () => {
     test('setTeamMembers members not found', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman]);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman]);
 
       const callSetTeamMembers = async () =>
         await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [batman.userId, 122, 55]);
@@ -63,9 +63,9 @@ describe('Teams', () => {
     });
 
     test('setTeamMembers works', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      jest.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
-      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+      vi.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
 
       const teamId = 'id1';
       const userIds = [
@@ -97,8 +97,8 @@ describe('Teams', () => {
     test('Update Team Description Success', async () => {
       const newJustice = { ...justiceLeague, description: 'hello!' };
 
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
-      jest.spyOn(prisma.team, 'update').mockResolvedValue(newJustice);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(newJustice);
 
       const res = await TeamsService.editDescription(batman, '1', 'hello!');
 
@@ -108,7 +108,7 @@ describe('Teams', () => {
     });
 
     test('Returns Error If Not Admin', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
       await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
         new AccessDeniedException('you must be an admin or the team lead to update the members!')

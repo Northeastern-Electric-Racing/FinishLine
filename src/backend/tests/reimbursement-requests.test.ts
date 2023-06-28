@@ -25,12 +25,12 @@ describe('Reimbursement Requests', () => {
   beforeEach(() => {});
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Vendor Tests', () => {
     test('Get all vendors works', async () => {
-      jest.spyOn(prisma.vendor, 'findMany').mockResolvedValue([]);
+      vi.spyOn(prisma.vendor, 'findMany').mockResolvedValue([]);
 
       const res = await ReimbursementRequestService.getAllVendors();
 
@@ -45,7 +45,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Create Vendor Successfully returns vendor Id', async () => {
-      jest.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
+      vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
 
       const vendor = await ReimbursementRequestService.createVendor(batman, 'HOLA BUDDY');
 
@@ -61,7 +61,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Create Expense Type Successfully returns expense type Id', async () => {
-      jest.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
+      vi.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
 
       const expenseType = await ReimbursementRequestService.createExpenseType(batman, Parts.name, Parts.code, Parts.allowed);
 
@@ -72,7 +72,7 @@ describe('Reimbursement Requests', () => {
   describe('Get User Reimbursement Request Tests', () => {
     test('successfully calls the Prisma function', async () => {
       // mock prisma calls
-      const prismaGetManySpy = jest.spyOn(prisma.reimbursement_Request, 'findMany');
+      const prismaGetManySpy = vi.spyOn(prisma.reimbursement_Request, 'findMany');
       prismaGetManySpy.mockResolvedValue([prismaGiveMeMyMoney]);
 
       // act
@@ -90,7 +90,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Edit Reimbursement Request Tests', () => {
     test('Request Fails When Id does not exist', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -108,7 +108,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Edit Reimbursement Request Fails When Request is deleted', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
         ...GiveMeMyMoney,
         dateDeleted: new Date()
       });
@@ -129,7 +129,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Edit Reimbursement Request Fails When User is not the recipient', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
           GiveMeMyMoney.reimbursementRequestId,
@@ -150,8 +150,8 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Edit Reimbursement Request Fails When Vendor does not exist', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-      jest.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -169,9 +169,9 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Edit Reimbursement Request Fails When Expense Type does not exist', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-      jest.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      jest.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
+      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -193,9 +193,9 @@ describe('Reimbursement Requests', () => {
         ...GiveMeMyMoney,
         reimbursementProducts: []
       };
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithoutProduct);
-      jest.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      jest.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithoutProduct);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
+      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -221,12 +221,12 @@ describe('Reimbursement Requests', () => {
 
     test('Edit Reimbursement Succeeds', async () => {
       const GiveMeMyMoneyWithProduct = { ...GiveMeMyMoney, reimbursementProducts: [GiveMeMoneyProduct] };
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithProduct);
-      jest.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      jest.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
-      jest.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue(GiveMeMyMoney);
-      jest.spyOn(prisma.reimbursement_Product, 'updateMany').mockResolvedValue({ count: 1 });
-      jest.spyOn(prisma.reimbursement_Product, 'update').mockResolvedValue(GiveMeMoneyProduct);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithProduct);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
+      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
+      vi.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.reimbursement_Product, 'updateMany').mockResolvedValue({ count: 1 });
+      vi.spyOn(prisma.reimbursement_Product, 'update').mockResolvedValue(GiveMeMoneyProduct);
 
       const reimbursementRequest = await ReimbursementRequestService.editReimbursementRequest(
         GiveMeMyMoney.reimbursementRequestId,
@@ -254,7 +254,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Delete Reimbursement Request Tests', () => {
     test('Delete Reimbursement Request fails when Id does not exist', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman)
@@ -262,16 +262,14 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request fails if project is already deleted', async () => {
-      jest
-        .spyOn(prisma.reimbursement_Request, 'findUnique')
-        .mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman)
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
     test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, superman)
@@ -284,7 +282,7 @@ describe('Reimbursement Requests', () => {
 
     test('Delete Reimbursement Request fails if it has been approved', async () => {
       const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [Status] };
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
 
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman)
@@ -295,8 +293,8 @@ describe('Reimbursement Requests', () => {
 
     test('Delete Reimbursement Request succeeds', async () => {
       const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [] };
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
-      jest.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
+      vi.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
 
       await ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman);
 
@@ -307,8 +305,8 @@ describe('Reimbursement Requests', () => {
   });
   describe('Get Reimbursement Requests Tests', () => {
     test('Get all Reimbursement Requests works', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       const res = await ReimbursementRequestService.getAllReimbursementRequests({ ...batman, teams: [justiceLeague] });
 
@@ -319,7 +317,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Get All Expense Types Tests', () => {
     test('Get all Expense Types works', async () => {
-      jest.spyOn(prisma.expense_Type, 'findMany').mockResolvedValue([Parts]);
+      vi.spyOn(prisma.expense_Type, 'findMany').mockResolvedValue([Parts]);
 
       const res = await ReimbursementRequestService.getAllExpenseTypes();
 
@@ -330,7 +328,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Delivered Tests', () => {
     test('Mark as delivered fails for non submitter', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
 
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(wonderwoman, GiveMeMyMoney.reimbursementRequestId)
@@ -340,7 +338,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark as delivered fails for undefined ID', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
@@ -350,9 +348,10 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark as delivered fails for already marked as delivered', async () => {
-      jest
-        .spyOn(prisma.reimbursement_Request, 'findUnique')
-        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
+        ...GiveMeMyMoney,
+        dateDelivered: new Date('12/25/203')
+      });
 
       await expect(
         ReimbursementRequestService.markReimbursementRequestAsDelivered(batman, GiveMeMyMoney.reimbursementRequestId)
@@ -362,10 +361,11 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Mark request as delivered successfully', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-      jest
-        .spyOn(prisma.reimbursement_Request, 'update')
-        .mockResolvedValue({ ...GiveMeMyMoney, dateDelivered: new Date('12/25/203') });
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({
+        ...GiveMeMyMoney,
+        dateDelivered: new Date('12/25/203')
+      });
 
       const reimbursementRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         batman,
@@ -381,7 +381,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Get Single Reimbursement Request Tests', () => {
     test('Get Single Reimbursement Request fails when id does not exist', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.getSingleReimbursementRequest(alfred, GiveMeMyMoney.reimbursementRequestId)
@@ -389,7 +389,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Get Single Reimbursement Request fails when id is deleted', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue({
         ...GiveMeMyMoney,
         dateDeleted: new Date()
       });
@@ -400,8 +400,8 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Get Single Reimbursement Request fails when user is not the recipient and not a part of finance team', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       await expect(() =>
         ReimbursementRequestService.getSingleReimbursementRequest(alfred, GiveMeMyMoney.reimbursementRequestId)
@@ -409,8 +409,8 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Get Single Reimbursement Request succeeds', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney);
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       const reimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
         { ...batman, teams: [justiceLeague] },

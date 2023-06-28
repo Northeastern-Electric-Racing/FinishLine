@@ -171,6 +171,7 @@ export default class WorkPackagesService {
       }
     });
 
+
     if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElem.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
@@ -206,7 +207,7 @@ export default class WorkPackagesService {
 
     let blockedByHasNulls = false;
     blockedByWBSElems.forEach((elem) => {
-      if (elem === null) {
+      if (!elem) {
         blockedByHasNulls = true;
         return;
       }

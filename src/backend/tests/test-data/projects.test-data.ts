@@ -1,8 +1,21 @@
-import { Prisma, WBS_Element_Status as PrismaWBSElementStatus } from '@prisma/client';
+import { Prisma, WBS_Element_Status as PrismaWBSElementStatus, Project } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
+
+export const prismaProject2 : Project = {
+  projectId: 2,
+  wbsElementId: 3,
+  budget: 3,
+  summary: 'ajsjdfk',
+  rules: ['a'],
+  googleDriveFolderLink: 'https://drive.google.com/drive/folders/1',
+  slideDeckLink: 'https://docs.google.com/presentation/d/1',
+  bomLink: 'https://docs.google.com/spreadsheets/d/1',
+  taskListLink: 'https://docs.google.com/spreadsheets/d/1',
+  teamId: '1',  
+}
 
 export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
   projectId: 2,
