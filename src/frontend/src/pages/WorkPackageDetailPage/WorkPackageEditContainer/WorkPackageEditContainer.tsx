@@ -48,7 +48,7 @@ export interface WorkPackageEditFormPayload {
   duration: number;
   crId: string;
   stage: string;
-  blockedBy: { wbsNum: string }[];
+  blockedBy: string[];
   expectedActivities: {
     bulletId: number;
     detail: string;
@@ -78,11 +78,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       crId: query.get('crId') || '',
       stage: workPackage.stage || 'NONE',
       startDate,
-      blockedBy: workPackage.blockedBy.map((blocker) => {
-        return {
-          wbsNum: wbsPipe(blocker)
-        };
-      }),
+      blockedBy: workPackage.blockedBy.map(wbsPipe),
       duration,
       expectedActivities: bulletsToObject(workPackage.expectedActivities),
       deliverables: bulletsToObject(workPackage.deliverables)
@@ -141,7 +137,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
-    const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(`${blocker}`));
+    const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
         projectLead: leadId ? parseInt(leadId) : undefined,
@@ -219,13 +215,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
                 options={blockedByOptions}
                 getOptionLabel={(option) => option.label}
                 onChange={(_, value) => onChange(value.map((v) => v.id))}
-                value={formValue.map((v: { wbsNum: string }) => {
-                  console.log('V', v);
-                  console.log(blockedByOptions);
-                  let change = blockedByOptions.find((o) => o.id === `${v}`);
-                  if (!change) {
-                    change = blockedByOptions.find((o) => o.id === v.wbsNum);
-                  }
+                value={formValue.map((v: string) => {
+                  let change = blockedByOptions.find((o) => o.id === v);
                   return change!;
                 })}
                 renderInput={(params) => (
