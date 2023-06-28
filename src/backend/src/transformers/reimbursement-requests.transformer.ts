@@ -23,7 +23,7 @@ export const reimbursementRequestTransformer = (
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
     dateOfExpense: reimbursementRequest.dateOfExpense,
-    reimbursementsStatuses: reimbursementRequest.reimbursementsStatuses.map(reimbursementStatusTransformer),
+    reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),
     account: reimbursementRequest.account as ClubAccount,
