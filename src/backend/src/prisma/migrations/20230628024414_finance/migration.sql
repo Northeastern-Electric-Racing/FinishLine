@@ -20,6 +20,7 @@ CREATE TABLE "Receipt" (
     "receiptId" TEXT NOT NULL,
     "googleFileId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "deletedByUserId" INTEGER,
     "dateDeleted" TIMESTAMP(3),
     "reimbursementRequestId" TEXT NOT NULL,
 
@@ -122,6 +123,9 @@ ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_userId_f
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;

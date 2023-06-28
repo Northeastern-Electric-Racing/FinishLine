@@ -104,6 +104,7 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
+  deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
 }
 
 model Team {
@@ -347,6 +348,8 @@ model Receipt {
   receiptId              String                @id @default(uuid())
   googleFileId           String                @unique
   name                   String
+  deletedByUserId        Int?
+  deletedBy              User?                 @relation(name: "deletedReceipts", fields: [deletedByUserId], references: [userId])
   dateDeleted            DateTime?
   reimbursementRequestId String
   reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])

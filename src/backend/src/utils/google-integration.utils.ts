@@ -5,10 +5,17 @@ import { HttpException } from './errors.utils';
 import stream from 'stream';
 
 const { OAuth2 } = google.auth;
-const { GOOGLE_DRIVE_FOLDER_ID, CLIENT_ID, CLIENT_SECRET, EMAIL_REFRESH_TOKEN, USER_EMAIL, DRIVE_REFRESH_TOKEN } =
-  process.env;
+const {
+  GOOGLE_DRIVE_FOLDER_ID,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  EMAIL_REFRESH_TOKEN,
+  USER_EMAIL,
+  DRIVE_REFRESH_TOKEN,
+  ADVISOR_EMAIL
+} = process.env;
 
-const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
+const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
 
 const createTransporter = async () => {
   try {
@@ -32,8 +39,8 @@ const createTransporter = async () => {
         type: 'OAuth2',
         user: USER_EMAIL,
         accessToken: accessToken?.toString(),
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET,
+        clientId: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
         refreshToken: EMAIL_REFRESH_TOKEN
       }
     });
@@ -49,7 +56,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: USER_EMAIL,
-      to: 'mckee.p@northeastern.edu',
+      to: ADVISOR_EMAIL,
       subject,
       text
     };
