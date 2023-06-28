@@ -245,6 +245,9 @@ export default class ReimbursementRequestService {
         reimbursementStatuses: {
           some: {
             type: Reimbursement_Status_Type.SABO_SUBMITTED
+          },
+          none: {
+            type: Reimbursement_Status_Type.ADVISOR_APPROVED
           }
         }
       },

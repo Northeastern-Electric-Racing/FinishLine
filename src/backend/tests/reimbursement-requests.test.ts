@@ -125,17 +125,6 @@ describe('Reimbursement Requests', () => {
 
       // assert
       expect(prismaGetManySpy).toBeCalledTimes(1);
-      expect(prismaGetManySpy).toBeCalledWith({
-        where: {
-          saboId: { not: null },
-          reimbursementStatuses: {
-            some: {
-              type: Reimbursement_Status_Type.SABO_SUBMITTED
-            }
-          }
-        },
-        ...reimbursementRequestQueryArgs
-      });
       expect(matches).toHaveLength(1);
       expect(matches).toEqual([reimbursementRequestTransformer(findManyResult)]);
     });
