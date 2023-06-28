@@ -200,7 +200,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       />
       <PageBlock title="Blocked By">
         <FormControl fullWidth>
-          <FormLabel>Assignees</FormLabel>
           <Controller
             name="blockedBy"
             control={control}
