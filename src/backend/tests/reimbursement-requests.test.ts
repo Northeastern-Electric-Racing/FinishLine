@@ -427,22 +427,22 @@ describe('Reimbursement Requests', () => {
 
   describe('Approve Reimbursement Request Tests', () => {
     test('Approve Reimbursement Request fails if Submitter not on Finance Team', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
       ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));
     });
 
     test('Approve Reimbursement Request fails if Finance Team does not exist', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
       ).rejects.toThrow(new HttpException(500, 'Finance team does not exist!'));
     });
 
     test('Approve Reimbursement Request fails if the Request does not exist', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
 
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
@@ -450,8 +450,8 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Approve Reimbursement Request fails if the Request has been deleted', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney2);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney2);
 
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney2.reimbursementRequestId, alfred)
@@ -459,17 +459,17 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Approve Reimbursement Request fails if the request has already been approved', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
 
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
       ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
     });
     test('Approve Reimbursment Request success', async () => {
-      jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
-      jest.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
-      jest.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
+      vi.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
 
       const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(
         prismaGiveMeMyMoney3.reimbursementRequestId,

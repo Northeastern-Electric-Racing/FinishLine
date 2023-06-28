@@ -5,7 +5,8 @@
     "target": "ES2019",
     "outDir": "./dist",
     "noEmit": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["vitest/globals"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["./index.ts", "./src/**/*.ts"]
