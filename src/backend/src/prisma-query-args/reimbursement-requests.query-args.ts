@@ -7,7 +7,7 @@ const reimbursementRequestQueryArgs = Prisma.validator<Prisma.Reimbursement_Requ
     recipient: true,
     vendor: true,
     expenseType: true,
-    reimbursementsStatuses: {
+    reimbursementStatuses: {
       ...reimbursementStatusQueryArgs
     },
     reimbursementProducts: {
