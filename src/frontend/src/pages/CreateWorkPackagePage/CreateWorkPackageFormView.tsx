@@ -110,36 +110,38 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     return startDate.getDay() !== 1;
   };
 
-  const options = workPackages
-    .filter((workPackage) => workPackage.userId !== team.leader.userId)
-    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-    .map(workPackageToAutocompleteOption);
+  const blockedByOptions = workPackages.map(workPackageToAutocompleteOption);
 
   const blockedByFormControl = (
-    // replace with lines 202 - 227 from Peyton's PR
     <FormControl fullWidth>
-      <FormLabel>Blocked By</FormLabel>
-      <Autocomplete
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        filterSelectedOptions
-        multiple
-        id="tags-standard"
-        options={options}
-        value={workPackages}
-        onChange={(_event, newValue) => setWorkPackages(newValue)}
-        getOptionLabel={(option) => option.label}
-        renderInput={(params) => (
-          <TextField {...params} variant="standard" label="Work Packages" placeholder="Select A Work Package" />
+      <Controller
+        name="blockedBy"
+        control={control}
+        render={({ field: { onChange, value: formValue } }) => (
+          <Autocomplete
+            isOptionEqualToValue={(option, value) => {
+              console.log(option, value);
+              return option.id === value.id;
+            }}
+            filterSelectedOptions
+            multiple
+            // id not here
+            options={blockedByOptions}
+            getOptionLabel={(option) => option.label}
+            // how does this onChange work
+            onChange={(_, value) => onChange(value.map((v) => v.id))}
+            // how does this value thing work
+            value={formValue.map((v: string) => {
+              let change = blockedByOptions.find((o) => o.id === v);
+              return change!;
+            })}
+            renderInput={(params) => (
+              // label not here
+              <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
+            )}
+          />
         )}
       />
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => appendBlocker({ wbsNum: '' })}
-        sx={{ my: 2, width: 'max-content' }}
-      >
-        + ADD NEW BLOCKER
-      </Button>
     </FormControl>
   );
 
