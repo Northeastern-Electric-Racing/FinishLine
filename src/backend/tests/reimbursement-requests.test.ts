@@ -329,7 +329,6 @@ describe('Reimbursement Requests', () => {
   describe('Delete Reimbursement Request Tests', () => {
     test('Delete Reimbursement Request fails when Id does not exist', async () => {
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
-
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, batman)
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -355,7 +354,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request fails if it has been approved', async () => {
-      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [Status] };
+      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementStatuses: [exampleSaboSubmittedStatus] };
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
 
       await expect(() =>
@@ -366,7 +365,7 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Delete Reimbursement Request succeeds', async () => {
-      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementsStatuses: [] };
+      const GiveMeMyMoneyWithStatus = { ...GiveMeMyMoney, reimbursementStatuses: [] };
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithStatus);
       vi.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue({ ...GiveMeMyMoney, dateDeleted: new Date() });
 
