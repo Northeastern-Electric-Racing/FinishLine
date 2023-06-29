@@ -92,7 +92,7 @@ model User {
   projectManager            WBS_Element[]           @relation(name: "projectManager")
   Session                   Session[]
   teams                     Team[]                  @relation(name: "teamsAsMember")
-  teamAsLead                Team?                   @relation(name: "teamAsLead")
+  teamAsHead                Team?                   @relation(name: "teamAsHead")
   deletedWBSElements        WBS_Element[]           @relation(name: "deletedWbsElements")
   checkedDescriptionBullets Description_Bullet[]    @relation(name: "checkDescriptionBullets")
   createdProposedSolutions  Proposed_Solution[]
@@ -104,6 +104,7 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
+  teamsAsLead               Team[]                  @relation(name: "teamsAsLead")
 }
 
 model Team {
@@ -111,10 +112,11 @@ model Team {
   teamName    String
   slackId     String
   description String    @default("")
-  leaderId    Int       @unique
-  leader      User      @relation(name: "teamAsLead", fields: [leaderId], references: [userId])
+  headId      Int       @unique
+  head        User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
   projects    Project[]
   members     User[]    @relation(name: "teamsAsMember")
+  leads       User[]    @relation(name: "teamsAsLead")
 }
 
 model Session {
