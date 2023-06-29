@@ -13,7 +13,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Grid, Menu, MenuItem, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -150,21 +150,15 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   return (
     <PageLayout title={pageTitle} hidePageTitle>
       <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
-      <Grid container alignItems="center" sx={{ mb: 2 }}>
-        <Grid item>
+      <Box sx={{ display: 'flex', flexDirection: ['column', 'row'], justifyContent: 'space-between', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
           <Typography variant="h4" fontSize={30}>
             {pageTitle}
           </Typography>
-        </Grid>
-        <Grid item>
           <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
-        </Grid>
-        <Grid item sx={{ mx: 0 }} xs>
-          <Grid container direction="row-reverse">
-            <Grid item>{projectActionsDropdown}</Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+        </Box>
+        <Grid item>{projectActionsDropdown}</Grid>
+      </Box>
       <ProjectDetailTabs project={project} setTab={setTab} />
       {tab === 0 ? (
         <ProjectDetails project={project} />

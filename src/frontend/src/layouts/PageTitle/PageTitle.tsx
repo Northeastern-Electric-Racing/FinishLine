@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Grid, Box, useTheme } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
 import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
