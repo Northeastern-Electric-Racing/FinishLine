@@ -20,6 +20,7 @@ interface PageTitleProps {
  * @param title The title of the page
  * @param previousPages The pages in the breadcrumb between home and the current page
  * @param headerRight The button to display on the right side of the page title
+ * @param tabs The tabs on the page to display.
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs }) => {
   return (
