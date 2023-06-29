@@ -130,7 +130,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser( amount: number, submitter: UserWithTeam): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, submitter: UserWithTeam): Promise<Reimbursement> {
     if (!isAdmin(submitter.role)) {
       throw new AccessDeniedException('Only an admin can reimburse a user for their expenses.');
     }
