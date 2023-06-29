@@ -1,12 +1,19 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman, batmanSecureSettings } from './test-data/users.test-data';
+import { batman, batmanSettings, flash, superman, batmanSecureSettings, sharedBatman } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
+import userTransformer from '../src/transformers/user.transformer';
 
 describe('Users', () => {
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('User Test Data properties', () => {
+    test('shared Batman matches prisma Batman', () => {
+      expect(userTransformer(batman)).toEqual(sharedBatman);
+    });
   });
 
   test('getAllUsers', async () => {

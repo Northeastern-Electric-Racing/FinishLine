@@ -6,7 +6,7 @@ import {
   CR_Type as PrismaCRType
 } from '@prisma/client';
 import { ChangeRequest as SharedChangeRequest, ChangeRequestStatus, ChangeRequestType } from 'shared';
-import { sharedUser1 } from './users.test-data';
+import { sharedBatman } from './users.test-data';
 
 export const prismaChangeRequest1: PrismaChangeRequest = {
   crId: 1,
@@ -79,7 +79,7 @@ export const sharedChangeRequest: SharedChangeRequest = {
     workPackageNumber: 3
   },
   wbsName: 'whip',
-  submitter: sharedUser1,
+  submitter: sharedBatman,
   dateSubmitted: new Date('12-25-2000'),
   type: ChangeRequestType.Redefinition,
   status: ChangeRequestStatus.Open
