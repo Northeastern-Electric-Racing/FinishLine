@@ -26,7 +26,7 @@ export interface ReimbursementRequest {
   dateCreated: Date;
   dateDeleted?: Date;
   dateOfExpense: Date;
-  reimbursementsStatuses: ReimbursementStatus[];
+  reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;
   account: ClubAccount;

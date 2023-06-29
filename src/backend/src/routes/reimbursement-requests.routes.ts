@@ -34,6 +34,8 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
 
+reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.getSingleReimbursementRequest);
+
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
   isDate(body('dateOfExpense')),
@@ -51,6 +53,8 @@ reimbursementRequestsRouter.post(
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );
+
+reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
 
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
@@ -81,6 +85,15 @@ reimbursementRequestsRouter.post(
   body('allowed').isBoolean(),
   validateInputs,
   ReimbursementRequestController.createExpenseType
+);
+
+reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/delivered',
+  ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
 export default reimbursementRequestsRouter;
