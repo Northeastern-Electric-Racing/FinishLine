@@ -35,38 +35,38 @@ const ChangeRequestsView: React.FC = () => {
     setTabIndex(newValue);
   };
 
-  return (
-    <PageLayout
-      title="Change Requests"
-      tabs={
-        <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
-          <Tab
-            label="Overview"
-            aria-label="overview"
-            value={0}
-            component={RouterLink}
-            to={`${routes.CHANGE_REQUESTS_OVERVIEW}`}
-          />
-          <Tab
-            label="All Change Requests"
-            aria-label="all-change-requests"
-            value={1}
-            component={RouterLink}
-            to={`${routes.ALL_CHANGE_REQUESTS}`}
-          />
-        </Tabs>
-      }
-      actionButton={
-        <NERButton
-          variant="contained"
-          disabled={isGuest(user.role)}
-          startIcon={<Add />}
-          onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
-        >
-          New Change Request
-        </NERButton>
-      }
+  const tabs = (
+    <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
+      <Tab
+        label="Overview"
+        aria-label="overview"
+        value={0}
+        component={RouterLink}
+        to={`${routes.CHANGE_REQUESTS_OVERVIEW}`}
+      />
+      <Tab
+        label="All Change Requests"
+        aria-label="all-change-requests"
+        value={1}
+        component={RouterLink}
+        to={`${routes.ALL_CHANGE_REQUESTS}`}
+      />
+    </Tabs>
+  );
+
+  const headerRight = (
+    <NERButton
+      variant="contained"
+      disabled={isGuest(user.role)}
+      startIcon={<Add />}
+      onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
     >
+      New Change Request
+    </NERButton>
+  );
+
+  return (
+    <PageLayout title="Change Requests" tabs={tabs} headerRight={headerRight}>
       {tabIndex === 0 ? <ChangeRequestsOverview /> : <ChangeRequestsTable />}
     </PageLayout>
   );

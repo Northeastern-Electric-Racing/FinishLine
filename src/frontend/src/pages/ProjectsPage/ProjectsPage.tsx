@@ -37,22 +37,15 @@ const ProjectsPage: React.FC = () => {
     setTabIndex(newValue);
   };
 
+  const tabs = (
+    <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="projects-tabs">
+      <Tab label="Overview" aria-label="overview" value={0} component={RouterLink} to={`${routes.PROJECTS_OVERVIEW}`} />
+      <Tab label="All Projects" aria-label="all-projects" value={1} component={RouterLink} to={`${routes.PROJECTS_ALL}`} />
+    </Tabs>
+  );
+
   return (
-    <PageLayout
-      title="Projects"
-      tabs={
-        <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="projects-tabs">
-          <Tab label="Overview" aria-label="overview" value={0} component={RouterLink} to={`${routes.PROJECTS_OVERVIEW}`} />
-          <Tab
-            label="All Projects"
-            aria-label="all-projects"
-            value={1}
-            component={RouterLink}
-            to={`${routes.PROJECTS_ALL}`}
-          />
-        </Tabs>
-      }
-    >
+    <PageLayout title="Projects" tabs={tabs}>
       {tabIndex === 0 ? <ProjectsOverview /> : <ProjectsTable />}
     </PageLayout>
   );
