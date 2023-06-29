@@ -262,8 +262,7 @@ model Project {
   features              Description_Bullet[] @relation(name: "projectFeatures")
   otherConstraints      Description_Bullet[] @relation(name: "projectOtherConstraints")
   workPackages          Work_Package[]
-  teamId                String?
-  team                  Team[]               @relation(name:"assignedBy")
+  teams                 Team[]               @relation(name:"assignedBy")
   favoritedBy           User[]               @relation(name: "favoritedBy")
 }
 

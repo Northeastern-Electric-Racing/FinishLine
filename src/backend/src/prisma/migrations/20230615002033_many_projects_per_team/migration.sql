@@ -1,4 +1,5 @@
 
+
 -- CreateTable
 CREATE TABLE "_assignedBy" (
     "A" INTEGER NOT NULL,
@@ -17,7 +18,16 @@ ALTER TABLE "_assignedBy" ADD CONSTRAINT "_assignedBy_A_fkey" FOREIGN KEY ("A") 
 -- AddForeignKey
 ALTER TABLE "_assignedBy" ADD CONSTRAINT "_assignedBy_B_fkey" FOREIGN KEY ("B") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
 
-INSERT INTO "_assignedBy" ("A", "B") SELECT ("projectId", "teamId") FROM "Project" WHERE "teamId" IS NOT NULL
+INSERT INTO "_assignedBy" ("A", "B") SELECT "projectId", "teamId" FROM "Project" WHERE "teamId" IS NOT NULL;
 
+/*
+  Warnings:
+
+  - You are about to drop the column `teamId` on the `Project` table. All the data in the column will be lost.
+
+*/
 -- DropForeignKey
 ALTER TABLE "Project" DROP CONSTRAINT "Project_teamId_fkey";
+
+-- AlterTable
+ALTER TABLE "Project" DROP COLUMN "teamId";
