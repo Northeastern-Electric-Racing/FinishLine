@@ -195,7 +195,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      actionButton={actionDropdown}
+      headerRight={actionDropdown}
     >
       <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
         <Grid container spacing={1}>

@@ -10,7 +10,7 @@ interface PageLayoutProps {
   title?: string;
   hidePageTitle?: boolean;
   previousPages?: LinkItem[];
-  actionButton?: ReactNode;
+  headerRight?: ReactNode;
   tabs?: ReactElement;
 }
 
@@ -19,7 +19,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   title,
   hidePageTitle = false,
   previousPages = [],
-  actionButton,
+  headerRight,
   tabs
 }) => {
   return (
@@ -32,7 +32,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <Sidebar />
       <Box sx={{ mt: '4rem', ml: '85px' }}>
         <Container maxWidth={false} sx={{ p: 1 }}>
-          {!hidePageTitle && title && previousPages && <PageTitle {...{ title, previousPages, actionButton, tabs }} />}
+          {!hidePageTitle && title && previousPages && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
           {children}
         </Container>
       </Box>

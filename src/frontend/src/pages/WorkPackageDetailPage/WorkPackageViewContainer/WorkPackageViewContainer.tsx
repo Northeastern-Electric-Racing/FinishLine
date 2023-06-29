@@ -164,7 +164,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      actionButton={projectActionsDropdown}
+      headerRight={projectActionsDropdown}
     >
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList

@@ -155,9 +155,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     <PageLayout
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      actionButton={
-        <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
-      }
+      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
     >
       <form
         id="project-edit-form"

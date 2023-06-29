@@ -163,9 +163,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      actionButton={
-        <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
-      }
+      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
     >
       <form
         id="work-package-edit-form"

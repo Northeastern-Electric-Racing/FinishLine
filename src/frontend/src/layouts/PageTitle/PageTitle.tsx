@@ -11,7 +11,7 @@ import PageBreadcrumbs from './PageBreadcrumbs';
 interface PageTitleProps {
   title: string;
   previousPages: LinkItem[];
-  actionButton?: ReactNode;
+  headerRight?: ReactNode;
   tabs?: ReactElement;
 }
 
@@ -19,9 +19,9 @@ interface PageTitleProps {
  * Build the page title section for a page.
  * @param title The title of the page
  * @param previousPages The pages in the breadcrumb between home and the current page
- * @param actionButton The button to display on the right side of the page title
+ * @param headerRight The button to display on the right side of the page title
  */
-const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButton, tabs }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs }) => {
   const theme = useTheme();
 
   return (
@@ -50,7 +50,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, actionButto
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>{tabs}</Box>
         </Grid>
         <Grid item sx={{ mx: 0 }}>
-          {actionButton}
+          {headerRight}
         </Grid>
       </Grid>
     </>
