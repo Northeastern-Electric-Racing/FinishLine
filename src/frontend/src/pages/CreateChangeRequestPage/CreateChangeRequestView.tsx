@@ -18,7 +18,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { FormControl, FormLabel, IconButton, MenuItem, NativeSelect } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteRenderInputParams,
+  FormControl,
+  FormLabel,
+  IconButton,
+  MenuItem,
+  Select
+} from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -72,7 +80,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     handleSubmit,
     control,
     formState: { errors },
-    register
+    register,
+    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -82,6 +91,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
+
   const { isLoading, isError, error, data: projects } = useAllProjects();
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
@@ -91,9 +101,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   if (isLoading || !projects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const projectOptions: { label: string; id: string }[] = [];
   const wbsDropdownOptions: { label: string; id: string }[] = [];
   projects.forEach((project: Project) => {
     wbsDropdownOptions.push({
+      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    projectOptions.push({
       label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
       id: wbsPipe(project.wbsNum)
     });
@@ -116,6 +131,43 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     }
   };
 
+  const renderReasonInput = (index: number) => {
+    const typeValue = watch(`why.${index}.type`);
+    return typeValue === `${ChangeRequestReason.OtherProject}` ? (
+      <Controller
+        key={index}
+        name={`why.${index}.explain`}
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <Autocomplete
+            id="other-project-autocomplete"
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            options={projectOptions}
+            size="small"
+            placeholder="Select a project"
+            value={projectOptions.find((element) => element.id === value) || null}
+            sx={{ mx: 1, flexGrow: 1, borderRadius: 2, height: '100%' }}
+            renderInput={(params: AutocompleteRenderInputParams) => <TextField sx={{height: '100%'}} {...params} label="Project" />}
+            onChange={(_event, value) => {
+              console.log(value);
+              onChange(value?.id);
+            }}
+          />
+        )}
+      />
+    ) : (
+      <ReactHookTextField
+        required
+        multiline
+        control={control}
+        label="Explain"
+        sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
+        {...register(`why.${index}.explain`)}
+        errorMessage={errors.why?.[index]?.explain}
+      />
+    );
+  };
+
   return (
     <form
       id={'create-standard-change-request-form'}
@@ -129,22 +181,27 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       }}
     >
       <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
-      <PageBlock title="Details">
+      <PageBlock title="Details" transparentBackground>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <FormLabel>WBS</FormLabel>
             <NERAutocomplete
               id="wbs-autocomplete"
               onChange={wbsAutocompleteOnChange}
               options={wbsDropdownOptions}
               size="small"
+              sx={{
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'gray',
+                  borderRadius: '25px'
+                }
+              }}
               placeholder="Select a project or work package"
               value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-              sx={{ width: 1 / 2 }}
             />
           </Grid>
-          <Grid item xs={12}>
-            <FormControl>
+          <Grid item xs={6}>
+            <FormControl fullWidth>
               <FormLabel>Type</FormLabel>
               <Controller
                 name="type"
@@ -163,7 +220,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <FormControl>
+            <FormControl fullWidth>
               <FormLabel>What</FormLabel>
               <ReactHookTextField
                 name="what"
@@ -172,39 +229,33 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 rows={4}
                 errorMessage={errors.what}
                 placeholder="What is the situation?"
-                sx={{ width: 300 }}
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl>
-              <FormLabel>Why</FormLabel>
-              <Box>
-                {whys.map((_element, index) => (
-                  <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                    <NativeSelect {...register(`why.${index}.type`)}>
-                      {Object.values(ChangeRequestReason).map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                    <ReactHookTextField
-                      required
-                      multiline
-                      control={control}
-                      label="Explain"
-                      sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
-                      {...register(`why.${index}.explain`)}
-                      errorMessage={errors.why?.[index]?.explain}
-                    />
-                    <IconButton type="button" onClick={() => removeWhy(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            </FormControl>
+          <Grid item xs={12}>
+            <FormLabel>Why</FormLabel>
+            <Box>
+              {whys.map((element, index) => (
+                <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                  <Select
+                    {...register(`why.${index}.type`)}
+                    sx={{ width: 200 }}
+                    defaultValue={element.type}
+                    key={element.id}
+                  >
+                    {Object.values(ChangeRequestReason).map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {renderReasonInput(index)}
+                  <IconButton type="button" onClick={() => removeWhy(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
             <FormHelperText>{errors.why?.message}</FormHelperText>
           </Grid>
           <Grid xs={12}>
@@ -220,7 +271,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           </Grid>
         </Grid>
       </PageBlock>
-      <PageBlock title="Proposed Solutions">
+      <PageBlock title="Proposed Solutions" transparentBackground>
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="right">

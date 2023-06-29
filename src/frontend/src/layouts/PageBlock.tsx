@@ -18,6 +18,7 @@ interface PageBlockProps {
   headerRight?: ReactNode;
   style?: SxProps<Theme>;
   defaultClosed?: boolean;
+  transparentBackground?: boolean;
 }
 
 /**
@@ -28,12 +29,19 @@ interface PageBlockProps {
  * @param style Optional styling for the pageblock
  * @param defaultClosed Sets the pageblock to be closed (collapsed) by default.
  */
-const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultClosed }) => {
+const PageBlock: React.FC<PageBlockProps> = ({
+  title,
+  headerRight,
+  children,
+  style,
+  defaultClosed,
+  transparentBackground
+}) => {
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultClosed);
-
+  const background = transparentBackground ? 'transparent' : theme.palette.background.paper;
   return (
-    <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
+    <Card sx={{ my: 2, background: background, border: 'none', ...style }} variant="outlined">
       <CardContent
         sx={
           collapsed
