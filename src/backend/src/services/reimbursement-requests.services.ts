@@ -8,7 +8,9 @@ import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   UserWithTeam,
+  removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserIsHeadOfFinanceTeam,
@@ -23,12 +25,12 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import sendMailToAdvisor from '../utils/transporter.utils';
+import { sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
+  expenseTypeTransformer,
   reimbursementRequestTransformer,
-  reimbursementStatusTransformer,
-  expenseTypeTransformer
+  reimbursementStatusTransformer
 } from '../transformers/reimbursement-requests.transformer';
 
 export default class ReimbursementRequestService {
@@ -59,7 +61,6 @@ export default class ReimbursementRequestService {
    * @param dateOfExpense the date that the expense occured
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
-   * @param receiptPictures the links for the receipt pictures in the google drive
    * @param reimbursementProducts the products that the user bought
    * @param expenseTypeId the id of the expense type the user made
    * @param totalCost the total cost of the reimbursement with tax
@@ -70,7 +71,6 @@ export default class ReimbursementRequestService {
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
-    receiptPictures: string[],
     reimbursementProducts: ReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
@@ -97,7 +97,6 @@ export default class ReimbursementRequestService {
         dateOfExpense,
         vendorId: vendor.vendorId,
         account,
-        receiptPictures,
         expenseTypeId: expenseType.expenseTypeId,
         totalCost,
         reimbursementStatuses: {
@@ -134,7 +133,7 @@ export default class ReimbursementRequestService {
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
    * @param saboId the updated saboId
-   * @param receiptPictures the updated receipt pictures
+   * @param receiptPictures the old receipts that haven't been deleted (new receipts must be separately uploaded)
    * @param submitter the person editing the reimbursement request
    * @returns the edited reimbursement request
    */
@@ -146,13 +145,14 @@ export default class ReimbursementRequestService {
     expenseTypeId: string,
     totalCost: number,
     reimbursementProducts: ReimbursementProductCreateArgs[],
-    receiptPictures: string[],
+    receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
-        reimbursementProducts: true
+        reimbursementProducts: true,
+        receiptPictures: true
       }
     });
 
@@ -188,10 +188,12 @@ export default class ReimbursementRequestService {
         account,
         totalCost,
         expenseTypeId,
-        vendorId,
-        receiptPictures
+        vendorId
       }
     });
+
+    //set any deleted receipts with a dateDeleted
+    await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
 
     return updatedReimbursementRequest;
   }
@@ -379,6 +381,50 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Service function to upload a picture to the receipts folder in the NER google drive
+   * @param reimbursementRequestId id for the reimbursement request we're tying the receipt to
+   * @param file The file data for the image
+   * @param submitter user who is uploading the receipt
+   * @returns the google drive id for the file
+   */
+  static async uploadReceipt(reimbursementRequestId: string, file: Express.Multer.File, submitter: User) {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('Guests cannot upload receipts');
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.recipientId !== submitter.userId) {
+      throw new AccessDeniedException(
+        'You do not have access to upload a receipt for this reimbursement request, only the creator can edit a reimbursement request'
+      );
+    }
+
+    const imageData = await uploadFile(file);
+
+    if (!imageData.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
+    const receipt = await prisma.receipt.create({
+      data: {
+        googleFileId: imageData.id,
+        name: imageData.name,
+        reimbursementRequestId,
+        createdByUserId: submitter.userId
+      }
+    });
+
+    return receipt;
   }
 
   /**

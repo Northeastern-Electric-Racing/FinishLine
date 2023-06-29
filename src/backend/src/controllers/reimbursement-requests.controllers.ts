@@ -8,6 +8,7 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
@@ -31,15 +32,13 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
-        req.body;
+      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
       const user = await getCurrentUser(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        receiptPictures,
         reimbursementProducts,
         expenseTypeId,
         totalCost
@@ -135,6 +134,23 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
       res.status(200).json(createdExpenseType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      const { requestId } = req.params;
+
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+
+      const user = await getCurrentUser(res);
+
+      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
+
+      res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);
     }

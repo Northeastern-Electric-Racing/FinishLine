@@ -6,7 +6,7 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Reimbursement_Product, Team, User } from '@prisma/client';
+import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -15,11 +15,41 @@ export interface ReimbursementProductCreateArgs {
   wbsElementId: number;
 }
 
+export interface ReimbursementReceiptCreateArgs {
+  name: string;
+  googleFileId: string;
+}
+
 export interface ReimbursementProductCreateArgs {
   name: string;
   cost: number;
   wbsElementId: number;
 }
+
+/**
+ * This function removes any deleted receipts and adds any new receipts
+ * @param receipts the new list of receipts to compare against the old ones
+ * @param currentReceipts the current list of receipts on the request that's being edited
+ */
+export const removeDeletedReceiptPictures = async (
+  newReceipts: ReimbursementReceiptCreateArgs[],
+  currentReceipts: Receipt[],
+  submitter: User
+) => {
+  if (currentReceipts.length === 0) return;
+  const deletedReceipts = currentReceipts.filter(
+    (currentReceipt) => !newReceipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
+  );
+
+  //mark any deleted receipts as deleted in the database
+  await prisma.receipt.updateMany({
+    where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
+    data: {
+      dateDeleted: new Date(),
+      deletedByUserId: submitter.userId
+    }
+  });
+};
 
 /**
  * Adds a reimbursement product to the database

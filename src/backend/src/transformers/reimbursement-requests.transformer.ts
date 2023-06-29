@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
+  Receipt,
   ReimbursementProduct,
   ReimbursementRequest,
   ReimbursementStatus,
@@ -13,6 +14,17 @@ import userTransformer from './user.transformer';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
+import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
+
+export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
+  return {
+    receiptId: receipt.receiptId,
+    googleFileId: receipt.googleFileId,
+    name: receipt.name,
+    dateDeleted: receipt.dateDeleted ?? undefined,
+    deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
+  };
+};
 
 export const reimbursementRequestTransformer = (
   reimbursementRequest: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs>
@@ -28,7 +40,7 @@ export const reimbursementRequestTransformer = (
     vendor: vendorTransformer(reimbursementRequest.vendor),
     account: reimbursementRequest.account as ClubAccount,
     totalCost: reimbursementRequest.totalCost,
-    receiptPictures: reimbursementRequest.receiptPictures,
+    receiptPictures: reimbursementRequest.receiptPictures.map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     expenseType: expenseTypeTransformer(reimbursementRequest.expenseType)
