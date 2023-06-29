@@ -130,12 +130,14 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(recipientId: number, amount: number, submitter: UserWithTeam): Promise<Reimbursement> {
-    await validateUserIsPartOfFinanceTeam(submitter);
+  static async reimburseUser( amount: number, submitter: UserWithTeam): Promise<Reimbursement> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('Only an admin can reimburse a user for their expenses.');
+    }
 
     const totalOwed = await prisma.reimbursement_Request
       .findMany({
-        where: { recipientId, dateDeleted: null }
+        where: { recipientId: submitter.userId, dateDeleted: null }
       })
       .then((userReimbursementRequests: Reimbursement_Request[]) => {
         return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
@@ -143,7 +145,7 @@ export default class ReimbursementRequestService {
 
     const totalReimbursed = await prisma.reimbursement
       .findMany({
-        where: { purchaserId: recipientId },
+        where: { purchaserId: submitter.userId },
         select: { amount: true }
       })
       .then((reimbursements: { amount: number }[]) =>
@@ -155,7 +157,7 @@ export default class ReimbursementRequestService {
     }
     const newReimbursement = await prisma.reimbursement.create({
       data: {
-        purchaserId: recipientId,
+        purchaserId: submitter.userId,
         amount,
         dateCreated: new Date(),
         userSubmittedId: submitter.userId

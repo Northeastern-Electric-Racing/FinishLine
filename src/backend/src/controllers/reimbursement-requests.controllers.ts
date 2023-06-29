@@ -8,6 +8,7 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
@@ -53,16 +54,9 @@ export default class ReimbursementRequestsController {
   static async reimburseUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { recipientId } = req.params;
       const { amount } = req.body;
 
-      const recipientIdString = parseInt(recipientId);
-
-      if (isNaN(recipientIdString)) {
-        throw new Error('recipientId has to be a number');
-      }
-
-      const reimbursement = await ReimbursementRequestService.reimburseUser(recipientIdString, amount, user);
+      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, user);
       res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
