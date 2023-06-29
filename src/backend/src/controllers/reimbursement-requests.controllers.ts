@@ -8,7 +8,6 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
-import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
