@@ -180,9 +180,6 @@ export default class ReimbursementRequestService {
       oldReimbursementRequest.reimbursementRequestId
     );
 
-    //set any deleted receipts with a dateDeleted
-    await updateReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || []);
-
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
@@ -193,6 +190,9 @@ export default class ReimbursementRequestService {
         vendorId
       }
     });
+
+    //set any deleted receipts with a dateDeleted
+    await updateReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || []);
 
     return updatedReimbursementRequest;
   }
@@ -364,7 +364,7 @@ export default class ReimbursementRequestService {
    * @returns the google drive id for the file
    */
   static async uploadReceipt(reimbursementRequestId: string, file: Express.Multer.File, submitter: User) {
-    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('Guests cannot upload receiptps');
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('Guests cannot upload receipts');
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
@@ -392,7 +392,8 @@ export default class ReimbursementRequestService {
       data: {
         googleFileId: imageData.id,
         name: imageData.name,
-        reimbursementRequestId
+        reimbursementRequestId,
+        createdByUserId: submitter.userId
       }
     });
 

@@ -105,6 +105,7 @@ model User {
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
   deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
+  createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
 }
 
 model Team {
@@ -351,6 +352,9 @@ model Receipt {
   deletedByUserId        Int?
   deletedBy              User?                 @relation(name: "deletedReceipts", fields: [deletedByUserId], references: [userId])
   dateDeleted            DateTime?
+  createdBy              User                  @relation(name: "receiptsCreatedBy", fields: [createdByUserId], references: [userId])
+  createdByUserId        Int
+  dateCreated            DateTime              @default(now())
   reimbursementRequestId String
   reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }

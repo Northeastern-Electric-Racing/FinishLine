@@ -32,19 +32,18 @@ export interface ReimbursementProductCreateArgs {
  * @param currentReceipts the current list of receipts on the request that's being edited
  */
 export const updateReceiptPictures = async (receipts: ReimbursementReceiptCreateArgs[], currentReceipts: Receipt[]) => {
-  if (currentReceipts.length > 0) {
-    const deletedReceipts = currentReceipts.filter(
-      (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
-    );
+  if (currentReceipts.length === 0) return;
+  const deletedReceipts = currentReceipts.filter(
+    (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
+  );
 
-    //mark any deleted receipts as deleted in the database
-    await prisma.receipt.updateMany({
-      where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
-      data: {
-        dateDeleted: new Date()
-      }
-    });
-  }
+  //mark any deleted receipts as deleted in the database
+  await prisma.receipt.updateMany({
+    where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
+    data: {
+      dateDeleted: new Date()
+    }
+  });
 };
 
 /**

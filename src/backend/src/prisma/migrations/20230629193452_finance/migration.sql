@@ -22,6 +22,8 @@ CREATE TABLE "Receipt" (
     "name" TEXT NOT NULL,
     "deletedByUserId" INTEGER,
     "dateDeleted" TIMESTAMP(3),
+    "createdByUserId" INTEGER NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reimbursementRequestId" TEXT NOT NULL,
 
     CONSTRAINT "Receipt_pkey" PRIMARY KEY ("receiptId")
@@ -126,6 +128,9 @@ ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_reimburs
 
 -- AddForeignKey
 ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
