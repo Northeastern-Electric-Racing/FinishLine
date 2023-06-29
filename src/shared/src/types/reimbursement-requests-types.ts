@@ -25,6 +25,7 @@ export interface Receipt {
   googleFileId: string;
   name: string;
   dateDeleted?: Date;
+  deletedBy?: User;
 }
 
 export interface ReimbursementRequest {

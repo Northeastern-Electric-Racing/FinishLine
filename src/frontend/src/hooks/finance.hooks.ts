@@ -9,7 +9,7 @@ import { uploadSingleReceipt } from '../apis/finance.api';
  * Custom React Hook to upload a new picture.
  *
  */
-export const useUploadSinglePicture = (id: string) => {
+export const useUploadSingleReceipt = (id: string) => {
   return useMutation<any, Error, any>(['finance', 'image'], async (formData: FormData) => {
     const { data } = await uploadSingleReceipt(formData, id);
     return data;

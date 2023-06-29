@@ -10,7 +10,7 @@ import {
   ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   UserWithTeam,
-  updateReceiptPictures,
+  removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserIsHeadOfFinanceTeam,
@@ -193,7 +193,7 @@ export default class ReimbursementRequestService {
     });
 
     //set any deleted receipts with a dateDeleted
-    await updateReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || []);
+    await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
 
     return updatedReimbursementRequest;
   }

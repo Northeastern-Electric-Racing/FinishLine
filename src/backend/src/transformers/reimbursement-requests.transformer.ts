@@ -14,13 +14,15 @@ import userTransformer from './user.transformer';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
+import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
 
-export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<null>): Receipt => {
+export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
     receiptId: receipt.receiptId,
     googleFileId: receipt.googleFileId,
     name: receipt.name,
-    dateDeleted: receipt.dateDeleted ?? undefined
+    dateDeleted: receipt.dateDeleted ?? undefined,
+    deletedBy: receipt.deletedBy ? userTransformer(receipt.deletedBy) : undefined
   };
 };
 

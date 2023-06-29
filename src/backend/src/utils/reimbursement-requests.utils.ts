@@ -31,17 +31,22 @@ export interface ReimbursementProductCreateArgs {
  * @param receipts the new list of receipts to compare against the old ones
  * @param currentReceipts the current list of receipts on the request that's being edited
  */
-export const updateReceiptPictures = async (receipts: ReimbursementReceiptCreateArgs[], currentReceipts: Receipt[]) => {
+export const removeDeletedReceiptPictures = async (
+  newReceipts: ReimbursementReceiptCreateArgs[],
+  currentReceipts: Receipt[],
+  submitter: User
+) => {
   if (currentReceipts.length === 0) return;
   const deletedReceipts = currentReceipts.filter(
-    (currentReceipt) => !receipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
+    (currentReceipt) => !newReceipts.find((receipt) => receipt.googleFileId === currentReceipt.googleFileId)
   );
 
   //mark any deleted receipts as deleted in the database
   await prisma.receipt.updateMany({
     where: { receiptId: { in: deletedReceipts.map((receipt) => receipt.receiptId) } },
     data: {
-      dateDeleted: new Date()
+      dateDeleted: new Date(),
+      deletedByUserId: submitter.userId
     }
   });
 };

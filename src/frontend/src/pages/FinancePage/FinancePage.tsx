@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { Button, Stack, TextField, Typography } from '@mui/material';
-import { useUploadSinglePicture } from '../../hooks/finance.hooks';
+import { useUploadSingleReceipt } from '../../hooks/finance.hooks';
 
 const FinancePage = () => {
   const [file, setFile] = useState<File>();
@@ -12,9 +12,7 @@ const FinancePage = () => {
   const [fileName, setFileName] = useState('');
   const [reimbursementRequestId, setReimbursementRequestId] = useState('');
 
-  const { mutateAsync } = useUploadSinglePicture(reimbursementRequestId);
-
-  console.log(reimbursementRequestId);
+  const { mutateAsync } = useUploadSingleReceipt(reimbursementRequestId);
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
