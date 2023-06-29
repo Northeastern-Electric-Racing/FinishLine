@@ -69,12 +69,11 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   }
   const query = useQuery();
 
-  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
-
-  const { data: project } = useSingleProject(validateWBS(wbsNum || ''));
-  const workPacks = project ? project.workPackages : undefined;
+  const { data: project } = useSingleProject(validateWBS(query.get('wbsNum') || ''));
+  const workPacks = project ? project.workPackages : [];
 
   const [workPackages, setWorkPackages] = useState(workPacks.map(workPackageToAutocompleteOption));
+  // useState for project wbsNum, don't need one for workPackages
   const {
     handleSubmit,
     control,
@@ -111,7 +110,13 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     return startDate.getDay() !== 1;
   };
 
+  const options = workPackages
+    .filter((workPackage) => workPackage.userId !== team.leader.userId)
+    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .map(workPackageToAutocompleteOption);
+
   const blockedByFormControl = (
+    // replace with lines 202 - 227 from Peyton's PR
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
       <Autocomplete
