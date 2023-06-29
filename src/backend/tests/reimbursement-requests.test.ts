@@ -175,7 +175,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -196,7 +196,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -213,7 +213,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           superman
         )
       ).rejects.toThrow(
@@ -236,7 +236,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
@@ -256,7 +256,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Expense Type', GiveMeMyMoney.expenseTypeId));
@@ -287,7 +287,7 @@ describe('Reimbursement Requests', () => {
               wbsElementId: 1
             }
           ],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new HttpException(400, 'The following products do not exist: test'));
@@ -317,7 +317,7 @@ describe('Reimbursement Requests', () => {
             wbsElementId: 1
           }
         ],
-        GiveMeMyMoney.receiptPictures,
+        [],
         batman
       );
 

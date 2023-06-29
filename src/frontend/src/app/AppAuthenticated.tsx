@@ -20,6 +20,8 @@ import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
+import Finance from '../pages/FinancePage/Finance';
+
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -43,6 +45,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
         <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
         <Route path={routes.INFO} component={InfoPage} />
         <Route path={routes.CREDITS} component={Credits} />
+        <Route path={routes.FINANCE} component={Finance} />
         <Route exact path={routes.HOME} component={Home} />
         <Route path="*" component={PageNotFound} />
       </Switch>
