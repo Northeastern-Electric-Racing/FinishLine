@@ -85,6 +85,7 @@ model User {
   submittedChangeRequests   Change_Request[]        @relation(name: "submittedChangeRequests")
   reviewedChangeRequests    Change_Request[]        @relation(name: "reviewedChangeRequests")
   deletedChangeRequests     Change_Request[]        @relation(name: "deletedChangeRequests")
+  changeRequestsToReview    Change_Request[]        @relation(name: "requestedChangeRequestReviewers")
   markedAsProjectLead       Activation_CR[]         @relation(name: "markAsProjectLead")
   markedAsProjectManager    Activation_CR[]         @relation(name: "markAsProjectManager")
   changes                   Change[]
@@ -144,6 +145,7 @@ model Change_Request {
   type                    CR_Type
   reviewerId              Int?
   reviewer                User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  requestedReviewers      User[]         @relation(name: "requestedChangeRequestReviewers")
   deletedByUserId         Int?
   deletedBy               User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed            DateTime?
