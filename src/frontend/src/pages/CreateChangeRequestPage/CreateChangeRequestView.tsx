@@ -147,7 +147,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             placeholder="Select a project"
             value={projectOptions.find((element) => element.id === value) || null}
             sx={{ mx: 1, flexGrow: 1, borderRadius: 2, height: '100%' }}
-            renderInput={(params: AutocompleteRenderInputParams) => <TextField sx={{height: '100%'}} {...params} label="Project" />}
+            renderInput={(params: AutocompleteRenderInputParams) => (
+              <TextField sx={{ height: '100%' }} {...params} label="Project" />
+            )}
             onChange={(_event, value) => {
               console.log(value);
               onChange(value?.id);
