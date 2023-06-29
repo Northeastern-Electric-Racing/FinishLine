@@ -15,6 +15,7 @@ import { prismaWbsElement1 } from './wbs-element.test-data';
 import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
+
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
@@ -67,7 +68,7 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   wbsElementId: 1
 };
 
-export const Status: PrismaReimbursementStatus = {
+export const exampleSaboSubmittedStatus: PrismaReimbursementStatus = {
   reimbursementStatusId: 1,
   type: PrismaReimbursementStatusType.SABO_SUBMITTED,
   userId: 2,
@@ -75,9 +76,17 @@ export const Status: PrismaReimbursementStatus = {
   reimbursementRequestId: 'id'
 };
 
+export const examplePendingFinanceStatus: PrismaReimbursementStatus = {
+  reimbursementStatusId: 1,
+  type: PrismaReimbursementStatusType.PENDING_FINANCE,
+  userId: batman.userId,
+  dateCreated: new Date('2023-08-20T08:00:00Z'),
+  reimbursementRequestId: ''
+};
+
 export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
-  reimbursementStatuses: [],
+  reimbursementStatuses: [{ ...examplePendingFinanceStatus, user: batman }],
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],

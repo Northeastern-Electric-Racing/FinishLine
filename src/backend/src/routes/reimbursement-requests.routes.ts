@@ -54,6 +54,8 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editReimbursementRequest
 );
 
+reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
+
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
   body('saboNumbers').isArray(),
