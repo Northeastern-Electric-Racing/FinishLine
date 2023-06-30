@@ -120,4 +120,16 @@ export default class ChangeRequestsController {
       next(error);
     }
   }
+
+  static async requestCRAReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+      const crId = parseInt(req.params.crId);
+      const submitter: User = await getCurrentUser(res);
+      const targetChangeRequest = await ChangeRequestsService.requestCRAReview(submitter, userIds, crId);
+      return res.status(200).json(targetChangeRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

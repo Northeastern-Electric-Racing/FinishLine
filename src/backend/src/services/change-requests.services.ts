@@ -621,4 +621,45 @@ export default class ChangeRequestsService {
       data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
     });
   }
+
+  /**
+   * set a reviewer to the given change request
+   * @param submitter The user who sets a reviewer to the change request
+   * @param userId The reviewer who reviews the change request
+   * @param crId The change request that will be reviewed
+   */
+  static async requestCRAReview(submitter: User, userIds: number[], crId: number) {
+    // check for submitter priviledge check if cr's submitter is same as submitter
+
+    const reviewers = await prisma.user.findMany({
+      where: { userId }
+    });
+
+    if (!reviewers) throw new NotFoundException('User', userId);
+    // check for reviewer's privilege  check if leadership or above
+
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId }
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
+
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot assign a reviewer to a reviewed change request!`);
+
+    // what are we doing if the requested reviewer has already been assigned as a reviewer to a cr?
+    // origin: [ user_A, user_B ] with requested reviewers: [ user_A, user_C ] => new reviewers in CR: [ user_A, user_B, user_C ] (just add user_c into db)
+    // every time we request this endpoint, it will re-send slack notification for those who's already in CR's reviewers (a stuff to consider for slack ticket)
+    const newReviewers: User[] = [];
+
+    await prisma.change_Request.update({
+      where: { crId },
+      data: {
+        requestedReviewers: {
+          set: newReviewers
+        }
+      }
+    });
+  }
 }

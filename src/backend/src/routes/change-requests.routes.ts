@@ -79,4 +79,12 @@ changeRequestsRouter.post(
   ChangeRequestsController.addProposedSolution
 );
 
+changeRequestsRouter.post(
+  '/:crId/request-review',
+  body('userIds').isArray(),
+  intMinZero(body('userIds.*')),
+  validateInputs,
+  ChangeRequestsController.requestCRAReview
+);
+
 export default changeRequestsRouter;
