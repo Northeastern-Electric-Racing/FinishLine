@@ -20,6 +20,7 @@ export interface ChangeRequest {
   dateImplemented?: Date;
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
+  requestedReviewers: User[];
 }
 
 export const ChangeRequestType = {
