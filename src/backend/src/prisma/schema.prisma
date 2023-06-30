@@ -104,12 +104,9 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
-<<<<<<< HEAD
   teamsAsLead               Team[]                  @relation(name: "teamsAsLead")
-=======
   deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
   createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
->>>>>>> 56b8c67dd7103fcd7c80ad08f85fc17da8833484
 }
 
 model Team {
