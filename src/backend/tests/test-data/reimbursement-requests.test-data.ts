@@ -15,6 +15,7 @@ import { prismaWbsElement1 } from './wbs-element.test-data';
 import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
+
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
@@ -38,7 +39,6 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   vendorId: '',
   account: Club_Accounts.CASH,
   totalCost: 0,
-  receiptPictures: [],
   dateDelivered: null,
   expenseTypeId: ''
 };
@@ -53,7 +53,6 @@ export const GiveMeMyMoney2: PrismaReimbursementRequest = {
   vendorId: '',
   account: Club_Accounts.CASH,
   totalCost: 0,
-  receiptPictures: [],
   dateDelivered: null,
   expenseTypeId: ''
 };
@@ -67,7 +66,7 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   wbsElementId: 1
 };
 
-export const Status: PrismaReimbursementStatus = {
+export const exampleSaboSubmittedStatus: PrismaReimbursementStatus = {
   reimbursementStatusId: 1,
   type: PrismaReimbursementStatusType.SABO_SUBMITTED,
   userId: 2,
@@ -75,9 +74,18 @@ export const Status: PrismaReimbursementStatus = {
   reimbursementRequestId: 'id'
 };
 
+export const examplePendingFinanceStatus: PrismaReimbursementStatus = {
+  reimbursementStatusId: 1,
+  type: PrismaReimbursementStatusType.PENDING_FINANCE,
+  userId: batman.userId,
+  dateCreated: new Date('2023-08-20T08:00:00Z'),
+  reimbursementRequestId: ''
+};
+
 export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
-  reimbursementStatuses: [],
+  receiptPictures: [],
+  reimbursementStatuses: [{ ...examplePendingFinanceStatus, user: batman }],
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
@@ -104,6 +112,7 @@ export const prismaReimbursementStatus2: PrismaReimbursementStatus & { user: Use
 
 export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
@@ -113,6 +122,7 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
 
 export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus2],
   recipient: batman,
   vendor: PopEyes,
@@ -122,6 +132,7 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
 
 export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus2, prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
@@ -134,7 +145,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   dateCreated: GiveMeMyMoney.dateCreated,
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,
-  receiptPictures: GiveMeMyMoney.receiptPictures,
+  receiptPictures: [],
   expenseType: Parts,
   vendor: PopEyes,
   recipient: userTransformer(batman),

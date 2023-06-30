@@ -104,7 +104,12 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
+<<<<<<< HEAD
   teamsAsLead               Team[]                  @relation(name: "teamsAsLead")
+=======
+  deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
+  createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
+>>>>>>> 56b8c67dd7103fcd7c80ad08f85fc17da8833484
 }
 
 model Team {
@@ -345,6 +350,20 @@ model Reimbursement_Status {
   reimbursementRequest   Reimbursement_Request     @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
+model Receipt {
+  receiptId              String                @id @default(uuid())
+  googleFileId           String                @unique
+  name                   String
+  deletedByUserId        Int?
+  deletedBy              User?                 @relation(name: "deletedReceipts", fields: [deletedByUserId], references: [userId])
+  dateDeleted            DateTime?
+  createdBy              User                  @relation(name: "receiptsCreatedBy", fields: [createdByUserId], references: [userId])
+  createdByUserId        Int
+  dateCreated            DateTime              @default(now())
+  reimbursementRequestId String
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
   saboId                 Int?                    @unique
@@ -358,7 +377,7 @@ model Reimbursement_Request {
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
   totalCost              Int
-  receiptPictures        String[]
+  receiptPictures        Receipt[]
   reimbursementProducts  Reimbursement_Product[]
   dateDelivered          DateTime?
   expenseTypeId          String
