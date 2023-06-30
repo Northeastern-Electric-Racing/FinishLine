@@ -44,18 +44,10 @@ jest.mock('../../../components/ReactHookTextField', () => {
 //   );
 // };
 
-describe('create wp form test suite', () => {
+describe.skip('create wp form test suite', () => {
   it('disables submit button for guest users', () => {
-    // mockCurrentUser(exampleGuestUser);
-    // mockUseQuery();
-    // renderComponent();
-    // expect(screen.getByText('Create')).toBeDisabled();
   });
 
   it('enables submit button for admin users', () => {
-    // mockCurrentUser();
-    // mockUseQuery();
-    // renderComponent();
-    // expect(screen.getByText('Create')).not.toBeDisabled();
   });
 });

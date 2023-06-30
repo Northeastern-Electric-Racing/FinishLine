@@ -33,10 +33,9 @@ const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
-  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  const [wbsNum, setWbsNum] = useState(query.get('wbs') || '');
   if (isLoading) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
-    console.log('wbsNum:', wbsNum);
     const { name, crId, startDate, duration, blockedBy, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);

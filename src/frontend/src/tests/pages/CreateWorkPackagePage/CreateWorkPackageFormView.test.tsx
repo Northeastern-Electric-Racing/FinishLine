@@ -41,16 +41,10 @@ jest.mock('../../../components/ReactHookTextField', () => {
 //   );
 // };
 
-describe('create wp form view test suite', () => {
+describe.skip('create wp form view test suite', () => {
   it('disables submit button when allowSubmit is false', () => {
-    // mockUseQuery();
-    // renderComponent(false);
-    // expect(screen.getByText('Create')).toBeDisabled();
   });
 
   it('enables submit button when allowSubmit is true', () => {
-    // mockUseQuery();
-    // renderComponent(true);
-    // expect(screen.getByText('Create')).not.toBeDisabled();
   });
 });
