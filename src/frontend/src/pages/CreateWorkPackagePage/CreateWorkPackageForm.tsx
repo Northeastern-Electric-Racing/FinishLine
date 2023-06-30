@@ -21,13 +21,11 @@ export interface CreateWorkPackageFormInputs {
   duration: number | null;
   crId: number;
   stage: WorkPackageStage | 'None';
-  wbsNum: string;
-  blockedBy: { wbsNum: string }[];
+  wbsNum: string | null;
+  blockedBy: string[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
 }
-
-// Stuff from Mihir's PR goes in this file and only this file
 
 const CreateWorkPackageForm: React.FC = () => {
   const history = useHistory();
@@ -36,8 +34,8 @@ const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
-  if (isLoading || auth.user === undefined) return <LoadingIndicator />;
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  if (isLoading || auth.user === undefined) return <LoadingIndicator />;
   if (isLoading) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {
     const { name, startDate, duration, crId, blockedBy, stage } = data;
@@ -57,8 +55,8 @@ const CreateWorkPackageForm: React.FC = () => {
         return;
       }
 
-      const blockedByWbsNums = blockedBy.map((blocker: { wbsNum: string }) => {
-        const blockedWbsNum = validateWBS(blocker.wbsNum);
+      const blockedByWbsNums = blockedBy.map((blocker: string) => {
+        const blockedWbsNum = validateWBS(blocker);
         return {
           carNumber: blockedWbsNum.carNumber,
           projectNumber: blockedWbsNum.projectNumber,

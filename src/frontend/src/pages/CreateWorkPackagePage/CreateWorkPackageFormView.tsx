@@ -5,7 +5,6 @@
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -23,7 +22,7 @@ import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { wbsTester, startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { WorkPackage, WorkPackageStage, validateWBS } from 'shared';
+import { WorkPackage, WorkPackageStage, validateWBS, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 import { useState } from 'react';
 import { useSingleProject } from '../../hooks/projects.hooks';
@@ -51,16 +50,24 @@ const schema = yup.object().shape({
 });
 
 interface CreateWorkPackageFormViewProps {
+  wbsNum: string;
+  setWbsNum: (val: string) => void;
   allowSubmit: boolean;
   onSubmit: (data: CreateWorkPackageFormInputs) => void;
   onCancel: () => void;
 }
 
-const workPackageToAutocompleteOption = (workPackage: WorkPackage): { label: string; id: number } => {
-  return { label: `(${workPackage.wbsNum}) (${workPackage.name})`, id: workPackage.id };
+const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
+  return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
 };
 
-const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
+  wbsNum,
+  setWbsNum,
+  allowSubmit,
+  onSubmit,
+  onCancel
+}) => {
   const startDate = new Date();
   const today = startDate.getDay();
   if (today !== 1) {
@@ -70,10 +77,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
   const query = useQuery();
 
   const { data: project } = useSingleProject(validateWBS(query.get('wbsNum') || ''));
-  const workPacks = project ? project.workPackages : [];
+  const workPackages = project ? project.workPackages : [];
 
-  const [workPackages, setWorkPackages] = useState(workPacks.map(workPackageToAutocompleteOption));
-  // useState for project wbsNum, don't need one for workPackages
   const {
     handleSubmit,
     control,
@@ -83,16 +88,18 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
+      wbsNum: null,
       duration: null,
-      blockedBy: [] as { wbsNum: string }[],
+      blockedBy: [] as string[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
       deliverables: [] as { bulletId: number; detail: string }[]
     }
   });
+
+  const blockedByOptions = workPackages.map(blockedByToAutocompleteOption);
 
   const {
     fields: expectedActivities,
@@ -104,13 +111,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const { append: appendBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const disableStartDate = (startDate: Date) => {
     return startDate.getDay() !== 1;
   };
-
-  const blockedByOptions = workPackages.map(workPackageToAutocompleteOption);
 
   const blockedByFormControl = (
     <FormControl fullWidth>
@@ -129,7 +133,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
             // how does this onChange work
-            onChange={(_, value) => onChange(value.map((v) => v.id))}
+            onChange={(_, values) => onChange(values.map((v) => v.id))}
             // how does this value thing work
             value={formValue.map((v: string) => {
               let change = blockedByOptions.find((o) => o.id === v);
