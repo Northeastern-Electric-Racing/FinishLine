@@ -6,7 +6,6 @@
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { LinkItem } from '../../utils/types';
-import { routes } from '../../utils/routes';
 import { Breadcrumbs } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 

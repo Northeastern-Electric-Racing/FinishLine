@@ -22,7 +22,6 @@ import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 
-
 interface AppAuthenticatedProps {
   userId: number;
 }
