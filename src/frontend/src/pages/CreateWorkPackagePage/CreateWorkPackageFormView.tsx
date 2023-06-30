@@ -24,7 +24,6 @@ import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { WorkPackage, WorkPackageStage, validateWBS, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
-import { useState } from 'react';
 import { useSingleProject } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
