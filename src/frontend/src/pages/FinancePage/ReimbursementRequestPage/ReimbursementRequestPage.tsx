@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Chip, Grid, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { Box } from '@mui/system';
+import { Chip, Grid, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme } from '@mui/material';
+import { Box, width } from '@mui/system';
 import { ReimbursementProduct, wbsPipe } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -20,27 +20,32 @@ const ReimbursementRequestPage: React.FC = () => {
   const { id } = useParams<ParamTypes>();
   const { data: reimbursementRequest } = useSingleReimbursementRequest(id);
 
+  const theme = useTheme();
+
   if (!reimbursementRequest) return <LoadingIndicator />;
 
   const BasicInformationView = () => {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <DetailDisplay label="Recipient" content={fullNamePipe(reimbursementRequest.recipient)} />
+      <Box>
+        <Typography variant="h5">Basic Information</Typography>
+        <Grid container spacing={2} sx={{ ml: 2, mt: 2 }}>
+          <Grid item xs={12}>
+            <DetailDisplay label="Recipient" content={fullNamePipe(reimbursementRequest.recipient)} />
+          </Grid>
+          <Grid item xs={12}>
+            <DetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
+          </Grid>
+          <Grid item xs={12}>
+            <DetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
+          </Grid>
+          <Grid item xs={12}>
+            <DetailDisplay label="Date of Expense" content={`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`} />
+          </Grid>
+          <Grid item xs={12}>
+            <DetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+          </Grid>
         </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Date of Expense" content={`${reimbursementRequest.dateOfExpense}`} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
-        </Grid>
-      </Grid>
+      </Box>
     );
   };
 
@@ -56,43 +61,101 @@ const ReimbursementRequestPage: React.FC = () => {
       }
     });
 
-    console.log(uniqueWbsElementsWithProducts);
+    const keys = [];
+    for (const key of uniqueWbsElementsWithProducts.keys()) {
+      keys.push(key);
+    }
 
     return (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>WBS Element</TableCell>
-            <TableCell>Products</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {uniqueWbsElementsWithProducts.forEach((products, wbs) => {
-            console.log(wbs);
-            
-              return <TableRow>
-                <TableCell>{wbs}</TableCell>
-                <TableCell>
-                  {products.map((product) => {
-                    return <Chip label={product.name} />;
-                  })}
-                </TableCell>
-              </TableRow>
-            
-          })}
-        </TableBody>
-      </Table>
+      <>
+        <Typography variant="h5">Products</Typography>
+        <Table sx={{ mx: 2 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>WBS Element</TableCell>
+              <TableCell>Products</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {keys.map((key) => {
+              return (
+                <TableRow>
+                  <TableCell>{key}</TableCell>
+                  <TableCell>
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
+                      return <Chip label={`${product.name} $${product.cost}`} />;
+                    })}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </>
+    );
+  };
+
+  const ReceiptsView = () => {
+    return (
+      <Box overflow={'auto'}>
+        <Typography variant="h5">Receipts</Typography>
+        {reimbursementRequest.receiptPictures.map((receipt) => {
+          return <iframe src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`} title="ollie"></iframe>;
+        })}
+      </Box>
     );
   };
 
   return (
-    <>
-      <PageTitle title="Reimbursement Request" previousPages={[]}></PageTitle>
-      <Box>
-        <BasicInformationView />
-        <ReimbursementProductsView />
-      </Box>
-    </>
+    <Box>
+      <PageTitle
+        title={`${fullNamePipe(reimbursementRequest.recipient)}\`s Reimbursement Request`}
+        previousPages={[]}
+      ></PageTitle>
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          borderRadius: '25px',
+          borderColor: theme.palette.divider,
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          backgroundColor: theme.palette.background.paper
+        }}
+      >
+        <Grid container rowSpacing={5} item xs={6} sx={{}}>
+          <Grid item xs={12}>
+            <BasicInformationView />
+          </Grid>
+          <Grid item xs={12}>
+            <ReimbursementProductsView />
+          </Grid>
+          <Grid item xs={12} mb={2}>
+            <Typography variant="h5" display="inline">
+              {'Total Cost: '}
+            </Typography>
+            <Typography variant="h5" fontWeight={'normal'} display={'inline'}>
+              ${reimbursementRequest.totalCost}
+            </Typography>
+          </Grid>
+        </Grid>
+        <Grid item xs={1} justifyContent={'center'} display={'flex'} mt={'-16px'}>
+          <Box
+            sx={{
+              height: '100%',
+              borderColor: theme.palette.divider,
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              width: '0px',
+              textAlign: 'center'
+            }}
+          />
+        </Grid>
+        <Grid item xs={5}>
+          <ReceiptsView />
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
