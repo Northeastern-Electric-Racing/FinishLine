@@ -15,3 +15,7 @@ export const uploadSingleReceipt = (formData: FormData, id: string) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
+
+export const getSingleReimbursementRequest = (id: string) => {
+  return axios.get(apiUrls.financeReimbursementRequestById(id));
+}
