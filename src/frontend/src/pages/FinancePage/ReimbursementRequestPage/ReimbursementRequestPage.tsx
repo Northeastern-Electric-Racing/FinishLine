@@ -4,7 +4,7 @@
  */
 
 import { Chip, Grid, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme } from '@mui/material';
-import { Box, width } from '@mui/system';
+import { Box } from '@mui/system';
 import { ReimbursementProduct, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
@@ -12,6 +12,7 @@ import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useParams } from 'react-router-dom';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
+import { useEffect, useRef, useState } from 'react';
 
 const ReimbursementRequestPage: React.FC = () => {
   interface ParamTypes {
@@ -19,6 +20,18 @@ const ReimbursementRequestPage: React.FC = () => {
   }
   const { id } = useParams<ParamTypes>();
   const { data: reimbursementRequest } = useSingleReimbursementRequest(id);
+
+  const ref = useRef<HTMLDivElement>(null);
+
+  const [height, setHeight] = useState<number>();
+
+  // doesnt work with the dependency array for some reason
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (ref.current) {
+      setHeight(ref.current.clientHeight + 350);
+    }
+  });
 
   const theme = useTheme();
 
@@ -67,7 +80,7 @@ const ReimbursementRequestPage: React.FC = () => {
     }
 
     return (
-      <>
+      <div ref={ref}>
         <Typography variant="h5">Products</Typography>
         <Table sx={{ mx: 2 }}>
           <TableHead>
@@ -91,13 +104,13 @@ const ReimbursementRequestPage: React.FC = () => {
             })}
           </TableBody>
         </Table>
-      </>
+      </div>
     );
   };
 
   const ReceiptsView = () => {
     return (
-      <Box overflow={'auto'}>
+      <Box sx={{ maxHeight: `${height!}px`, overflow: 'auto' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return <iframe src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`} title="ollie"></iframe>;
@@ -115,6 +128,7 @@ const ReimbursementRequestPage: React.FC = () => {
       <Grid
         container
         spacing={2}
+        mt={2}
         sx={{
           borderRadius: '25px',
           borderColor: theme.palette.divider,
@@ -123,7 +137,7 @@ const ReimbursementRequestPage: React.FC = () => {
           backgroundColor: theme.palette.background.paper
         }}
       >
-        <Grid container rowSpacing={5} item xs={6} sx={{}}>
+        <Grid container rowSpacing={5} item xs={6}>
           <Grid item xs={12}>
             <BasicInformationView />
           </Grid>

@@ -411,7 +411,7 @@ export default class ReimbursementRequestService {
 
     const imageData = await uploadFile(file);
 
-    if (!imageData.name) {
+    if (!imageData?.name) {
       throw new HttpException(500, 'Image Name not found');
     }
 
