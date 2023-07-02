@@ -18,4 +18,4 @@ export const uploadSingleReceipt = (formData: FormData, id: string) => {
 
 export const getSingleReimbursementRequest = (id: string) => {
   return axios.get(apiUrls.financeReimbursementRequestById(id));
-}
+};
