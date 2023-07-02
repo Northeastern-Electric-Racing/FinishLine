@@ -34,7 +34,7 @@ const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
 
   const { isLoading, mutateAsync } = useCreateSingleWorkPackage();
-  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  const [wbsNum, setWbsNum] = useState(query.get('wbs') || '');
   if (isLoading || auth.user === undefined) return <LoadingIndicator />;
   if (isLoading) return <LoadingIndicator />;
   const handleSubmit = async (data: CreateWorkPackageFormInputs) => {

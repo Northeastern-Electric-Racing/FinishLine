@@ -62,7 +62,6 @@ const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   wbsNum,
-  setWbsNum,
   allowSubmit,
   onSubmit,
   onCancel
@@ -75,7 +74,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   }
   const query = useQuery();
 
-  const { data: project } = useSingleProject(validateWBS(query.get('wbsNum') || ''));
+  const { data: project } = useSingleProject(validateWBS(query.get('wbs') || ''));
   const workPackages = project ? project.workPackages : [];
 
   const {
@@ -90,7 +89,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
-      wbsNum: null,
+      wbsNum: wbsNum,
       duration: null,
       blockedBy: [] as string[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
@@ -128,18 +127,14 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             }}
             filterSelectedOptions
             multiple
-            // id not here
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
-            // how does this onChange work
             onChange={(_, values) => onChange(values.map((v) => v.id))}
-            // how does this value thing work
             value={formValue.map((v: string) => {
               let change = blockedByOptions.find((o) => o.id === v);
               return change!;
             })}
             renderInput={(params) => (
-              // label not here
               <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
             )}
           />
