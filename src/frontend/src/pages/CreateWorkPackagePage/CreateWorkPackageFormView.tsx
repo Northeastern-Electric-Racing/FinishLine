@@ -74,7 +74,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   }
   const query = useQuery();
 
-  const { data: project } = useSingleProject(validateWBS(query.get('wbs') || ''));
+  const { data: project } = useSingleProject(validateWBS(wbsNum));
   const workPackages = project ? project.workPackages : [];
 
   const {
