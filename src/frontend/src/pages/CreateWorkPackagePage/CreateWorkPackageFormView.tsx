@@ -29,6 +29,7 @@ import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -108,9 +109,13 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     return startDate.getDay() !== 1;
   };
 
-  const { data: projects } = useAllProjects();
+  const { data: projects, isLoading, error, isError } = useAllProjects();
 
-  if (!projects) return <LoadingIndicator />;
+  if (isLoading || !projects) return <LoadingIndicator />;
+
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
 
   const blockedByFormControl = (
     <FormControl fullWidth>
@@ -224,7 +229,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
                 size="small"
                 placeholder="Select a project or work package"
                 value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-                sx={{ width: 1 / 2 }}
               />
             </FormControl>
           </Grid>
