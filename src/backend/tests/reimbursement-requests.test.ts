@@ -560,4 +560,67 @@ describe('Reimbursement Requests', () => {
       expect(reimbursementStatus.reimbursementStatusId).toStrictEqual(prismaReimbursementStatus.reimbursementStatusId);
     });
   });
+
+  describe('Reimbursement User Tests', () => {
+    test('Throws an error if user is not an admin', async () => {
+      await expect(ReimbursementRequestService.reimburseUser(100, wonderwoman)).rejects.toThrow(
+        new AccessDeniedException('Only an admin can reimburse a user for their expenses.')
+      );
+    });
+
+    test('Throws an error if reimbursement amount is greater than owed', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+        {
+          amount: 100,
+          reimbursementId: '1',
+          dateCreated: new Date(),
+          userSubmittedId: batman.userId,
+          purchaserId: batman.userId
+        }
+      ]);
+
+      await expect(ReimbursementRequestService.reimburseUser(200, batman)).rejects.toThrow(
+        new HttpException(400, 'Reimbursement is greater than the total amount owed to the user')
+      );
+    });
+
+    test('Creates a new reimbursement for a user', async () => {
+      const totalOwed = GiveMeMyMoney.totalCost;
+      const reimbursementAmount = 50;
+      const reimbursementMock = {
+        reimbursementId: 'reimbursementMockId',
+        purchaserId: batman.userId,
+        amount: reimbursementAmount,
+        dateCreated: new Date(),
+        userSubmittedId: batman.userId
+      };
+
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      jest
+        .spyOn(prisma.reimbursement, 'findMany')
+        .mockResolvedValue([
+          {
+            amount: totalOwed - reimbursementAmount,
+            reimbursementId: '1',
+            dateCreated: new Date(),
+            userSubmittedId: batman.userId,
+            purchaserId: batman.userId
+          }
+        ]);
+      jest.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
+
+      const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
+
+      expect(newReimbursement).toStrictEqual(reimbursementMock);
+      expect(prisma.reimbursement.create).toHaveBeenCalledWith({
+        data: {
+          purchaserId: batman.userId,
+          amount: reimbursementAmount,
+          dateCreated: expect.any(Date),
+          userSubmittedId: batman.userId
+        }
+      });
+    });
+  });
 });
