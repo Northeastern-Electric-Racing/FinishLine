@@ -39,7 +39,6 @@ const CreateWorkPackageForm: React.FC = () => {
     const { name, crId, startDate, duration, blockedBy, stage } = data;
     const expectedActivities = data.expectedActivities.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
     const deliverables = data.deliverables.map((bullet: { bulletId: number; detail: string }) => bullet.detail);
-
     if (!duration) {
       toast.error('Please enter a valid duration!', 3000);
       return;

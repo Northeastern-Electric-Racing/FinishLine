@@ -110,7 +110,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
 
   const { data: projects } = useAllProjects();
 
-  // eslint-disable-next-line react/jsx-no-undef
   if (!projects) return <LoadingIndicator />;
 
   const blockedByFormControl = (
@@ -162,7 +161,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(wbsNum);
         handleSubmit(onSubmit)(e);
       }}
       onKeyPress={(e) => {
