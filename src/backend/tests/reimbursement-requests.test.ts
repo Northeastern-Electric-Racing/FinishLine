@@ -597,17 +597,15 @@ describe('Reimbursement Requests', () => {
       };
 
       jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
-      jest
-        .spyOn(prisma.reimbursement, 'findMany')
-        .mockResolvedValue([
-          {
-            amount: totalOwed - reimbursementAmount,
-            reimbursementId: '1',
-            dateCreated: new Date(),
-            userSubmittedId: batman.userId,
-            purchaserId: batman.userId
-          }
-        ]);
+      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+        {
+          amount: totalOwed - reimbursementAmount,
+          reimbursementId: '1',
+          dateCreated: new Date(),
+          userSubmittedId: batman.userId,
+          purchaserId: batman.userId
+        }
+      ]);
       jest.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
 
       const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
