@@ -111,7 +111,7 @@ describe('Teams', () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
       await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
-        new AccessDeniedException('you must be an admin or the team lead to update the members!')
+        new AccessDeniedException('you must be an admin or the team head to update the members!')
       );
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
@@ -161,7 +161,7 @@ describe('Teams', () => {
 
       const expectedException = new HttpException(
         403,
-        'Access Denied: The new team head must not be a leader of another team'
+        'Access Denied: The new team head must not be a head of another team'
       );
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
@@ -181,7 +181,7 @@ describe('Teams', () => {
       expect(prisma.team.update).toHaveBeenCalledWith({
         where: { teamId },
         data: {
-          leader: {
+          head: {
             connect: {
               userId: 2
             }

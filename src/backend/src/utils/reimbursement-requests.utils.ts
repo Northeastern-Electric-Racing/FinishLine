@@ -210,7 +210,7 @@ export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
+  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.headId === user.userId)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };
@@ -222,7 +222,7 @@ export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!(financeTeam.leaderId === user.userId)) {
+  if (!(financeTeam.headId === user.userId)) {
     throw new AccessDeniedException('You are not the head of the finance team!');
   }
 };

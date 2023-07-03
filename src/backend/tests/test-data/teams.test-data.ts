@@ -13,10 +13,11 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   teamName,
   slackId,
   description,
-  leader: flash,
-  leaderId: 4,
+  head: flash,
+  headId: 4,
   projects: [],
-  members: [batman, wonderwoman, alfred]
+  members: [batman, wonderwoman, alfred],
+  leads: [superman]
 };
 
 export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
@@ -24,10 +25,11 @@ export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   teamName,
   slackId,
   description,
-  leader: alfred,
-  leaderId: 10,
+  head: alfred,
+  headId: 10,
   projects: [],
-  members: []
+  members: [],
+  leads: []
 };
 
 export const sharedTeam1: SharedTeam = {
@@ -35,9 +37,10 @@ export const sharedTeam1: SharedTeam = {
   teamName,
   slackId,
   description,
-  leader: flash,
+  head: flash,
   members: [],
-  projects: []
+  projects: [],
+  leads: [wonderwoman, batman]
 };
 
 export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
@@ -45,8 +48,9 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   teamName: 'Justice League',
   description: 'hiii :3',
   slackId: '1234',
-  leaderId: 1,
-  leader: batman,
+  headId: 1,
+  head: batman,
   projects: [],
-  members: [superman, wonderwoman]
+  members: [superman, wonderwoman],
+  leads: [batman, flash]
 };

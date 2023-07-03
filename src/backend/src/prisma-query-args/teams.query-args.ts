@@ -3,7 +3,8 @@ import { Prisma } from '@prisma/client';
 const teamQueryArgs = Prisma.validator<Prisma.TeamArgs>()({
   include: {
     members: true,
-    leader: true,
+    head: true,
+    leads: true,
     projects: {
       where: {
         wbsElement: {

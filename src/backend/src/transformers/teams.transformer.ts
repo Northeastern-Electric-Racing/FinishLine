@@ -11,14 +11,15 @@ const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Tea
     teamName: team.teamName,
     slackId: team.slackId,
     description: team.description,
-    leader: userTransformer(team.leader),
+    head: userTransformer(team.head),
     members: team.members.map(userTransformer),
     projects: team.projects.map((project) => ({
       id: project.projectId,
       wbsNum: wbsNumOf(project.wbsElement),
       name: project.wbsElement.name,
       status: calculateProjectStatus(project)
-    }))
+    })),
+    leads: team.leads.map((lead) => userTransformer(lead))
   };
 };
 
