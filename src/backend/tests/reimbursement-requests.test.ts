@@ -22,7 +22,7 @@ import {
   prismaReimbursementStatus,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, sharedBatman, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
@@ -562,9 +562,9 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Reimbursement User Tests', () => {
-    test('Throws an error if user is not an admin', async () => {
-      await expect(ReimbursementRequestService.reimburseUser(100, wonderwoman)).rejects.toThrow(
-        new AccessDeniedException('Only an admin can reimburse a user for their expenses.')
+    test('Throws an error if user is a guest', async () => {
+      await expect(ReimbursementRequestService.reimburseUser(100, theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Guests cannot reimburse a user for their expenses.')
       );
     });
 

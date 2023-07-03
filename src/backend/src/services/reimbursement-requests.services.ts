@@ -125,14 +125,13 @@ export default class ReimbursementRequestService {
   /**
    * Function to reimburse a user for their expenses.
    *
-   * @param recipientId the user who will be receiving the reimbursement
    * @param amount the amount to be reimbursed
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
   static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
-    if (!isAdmin(submitter.role)) {
-      throw new AccessDeniedException('Only an admin can reimburse a user for their expenses.');
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
 
     const totalOwed = await prisma.reimbursement_Request
