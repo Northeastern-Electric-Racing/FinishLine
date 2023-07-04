@@ -74,7 +74,7 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
  */
 export const getCurrentUser = async (res: Response): Promise<UserWithTeam> => {
   const { userId } = res.locals;
-  const user = await prisma.user.findUnique({ where: { userId }, include: { teams: true } });
+  const user = await prisma.user.findUnique({ where: { userId }, include: { teamsAsMember: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };

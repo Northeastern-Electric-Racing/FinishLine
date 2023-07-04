@@ -99,7 +99,7 @@ export const batmanSecureSettings: User_Secure_Settings = {
   zipcode: '12345'
 };
 
-export const alfred: PrismaUser & { teams: Team[] } = {
+export const alfred: PrismaUser & { teamsAsMember: Team[] } = {
   userId: 10,
   firstName: 'Alfred',
   lastName: 'Pennyworth',
@@ -107,5 +107,5 @@ export const alfred: PrismaUser & { teams: Team[] } = {
   emailId: 'butler',
   role: PrismaRole.APP_ADMIN,
   googleAuthId: 'u',
-  teams: [prismaTeam1]
+  teamsAsMember: [prismaTeam1]
 };

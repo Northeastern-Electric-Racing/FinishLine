@@ -385,7 +385,10 @@ describe('Reimbursement Requests', () => {
       jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
-      const res = await ReimbursementRequestService.getAllReimbursementRequests({ ...batman, teams: [justiceLeague] });
+      const res = await ReimbursementRequestService.getAllReimbursementRequests({
+        ...batman,
+        teamsAsMember: [justiceLeague]
+      });
 
       expect(prisma.reimbursement_Request.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([]);
@@ -488,7 +491,7 @@ describe('Reimbursement Requests', () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       const reimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
-        { ...batman, teams: [justiceLeague] },
+        { ...batman, teamsAsMember: [justiceLeague] },
         GiveMeMyMoney.reimbursementRequestId
       );
 
