@@ -25,7 +25,8 @@ import {
   FormLabel,
   IconButton,
   MenuItem,
-  Select
+  Select,
+  Typography
 } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
@@ -144,16 +145,12 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             isOptionEqualToValue={(option, value) => option.id === value.id}
             options={projectOptions}
             size="small"
-            placeholder="Select a project"
-            value={projectOptions.find((element) => element.id === value) || null}
-            sx={{ mx: 1, flexGrow: 1, borderRadius: 2, height: '100%' }}
+            value={projectOptions.find((element) => element.id === value)}
+            sx={{ mx: 1, flex: 1, '.MuiInputBase-input': { height: '39px' } }}
             renderInput={(params: AutocompleteRenderInputParams) => (
-              <TextField sx={{ height: '100%' }} {...params} label="Project" />
+              <TextField {...params} placeholder='Select a Project' />
             )}
-            onChange={(_event, value) => {
-              console.log(value);
-              onChange(value?.id);
-            }}
+            onChange={(_event, value) => onChange(value?.id)}
           />
         )}
       />
@@ -183,7 +180,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       }}
     >
       <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
-      <PageBlock title="Details" transparentBackground>
+      <PageBlock title="Details">
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <FormLabel>WBS</FormLabel>
@@ -192,12 +189,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               onChange={wbsAutocompleteOnChange}
               options={wbsDropdownOptions}
               size="small"
-              sx={{
-                '.MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'gray',
-                  borderRadius: '25px'
-                }
-              }}
               placeholder="Select a project or work package"
               value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
             />
@@ -235,30 +226,32 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <FormLabel>Why</FormLabel>
-            <Box>
-              {whys.map((element, index) => (
-                <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                  <Select
-                    {...register(`why.${index}.type`)}
-                    sx={{ width: 200 }}
-                    defaultValue={element.type}
-                    key={element.id}
-                  >
-                    {Object.values(ChangeRequestReason).map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {renderReasonInput(index)}
-                  <IconButton type="button" onClick={() => removeWhy(index)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-            <FormHelperText>{errors.why?.message}</FormHelperText>
+            <FormControl fullWidth>
+              <FormLabel>Why</FormLabel>
+              <Box>
+                {whys.map((element, index) => (
+                  <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                    <Select
+                      {...register(`why.${index}.type`)}
+                      sx={{ width: 200 }}
+                      defaultValue={element.type}
+                      key={element.id}
+                    >
+                      {Object.values(ChangeRequestReason).map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {renderReasonInput(index)}
+                    <IconButton type="button" onClick={() => removeWhy(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+              <FormHelperText>{errors.why?.message}</FormHelperText>
+            </FormControl>
           </Grid>
           <Grid xs={12}>
             <Button
@@ -273,7 +266,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           </Grid>
         </Grid>
       </PageBlock>
-      <PageBlock title="Proposed Solutions" transparentBackground>
+      <PageBlock title="Proposed Solutions">
         <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
       </PageBlock>
       <Box textAlign="right">

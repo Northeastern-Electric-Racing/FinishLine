@@ -18,7 +18,6 @@ interface PageBlockProps {
   headerRight?: ReactNode;
   style?: SxProps<Theme>;
   defaultClosed?: boolean;
-  transparentBackground?: boolean;
 }
 
 /**
@@ -35,13 +34,11 @@ const PageBlock: React.FC<PageBlockProps> = ({
   children,
   style,
   defaultClosed,
-  transparentBackground
 }) => {
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultClosed);
-  const background = transparentBackground ? 'transparent' : theme.palette.background.paper;
   return (
-    <Card sx={{ my: 2, background: background, border: 'none', ...style }} variant="outlined">
+    <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
       <CardContent
         sx={
           collapsed
