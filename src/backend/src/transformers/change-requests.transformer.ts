@@ -60,7 +60,8 @@ const changeRequestTransformer = (
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
-    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined
+    confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
+    requestedReviewers: changeRequest.requestedReviewers ?? undefined
   };
 };
 

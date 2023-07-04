@@ -82,5 +82,6 @@ export const sharedChangeRequest: SharedChangeRequest = {
   submitter: sharedBatman,
   dateSubmitted: new Date('12-25-2000'),
   type: ChangeRequestType.Redefinition,
-  status: ChangeRequestStatus.Open
+  status: ChangeRequestStatus.Open,
+  requestedReviewers: []
 };
