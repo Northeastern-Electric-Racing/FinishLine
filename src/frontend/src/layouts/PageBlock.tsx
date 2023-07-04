@@ -28,13 +28,7 @@ interface PageBlockProps {
  * @param style Optional styling for the pageblock
  * @param defaultClosed Sets the pageblock to be closed (collapsed) by default.
  */
-const PageBlock: React.FC<PageBlockProps> = ({
-  title,
-  headerRight,
-  children,
-  style,
-  defaultClosed,
-}) => {
+const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultClosed }) => {
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultClosed);
   return (
