@@ -139,7 +139,7 @@ describe('Projects', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('set project teams'));
     });
 
-    test('setProjectTeam works if the submitter is not an admin but is the lead of the team', async () => {
+    test('setProjectTeam works if the submitter is not an admin but is the head of the team', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...prismaTeam1, headId: aquaman.userId });
       jest.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 

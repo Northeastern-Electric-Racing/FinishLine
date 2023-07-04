@@ -94,7 +94,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
 
   const options = team
     ? team.members
-        .concat(team.leader)
+        .concat(team.head)
         .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
         .map(userToAutocompleteOption)
     : [];

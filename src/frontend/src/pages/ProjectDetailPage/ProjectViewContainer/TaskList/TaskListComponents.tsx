@@ -102,7 +102,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   };
 
   const options = team.members
-    .concat(team.leader)
+    .concat(team.head)
     .sort((a: any, b: any) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
@@ -113,7 +113,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
       id: number;
     }[]
   ) => {
-    const teamMembers = team.members.concat(team.leader);
+    const teamMembers = team.members.concat(team.head);
     const users = newValue.map((user) => teamMembers.find((o: any) => o.userId === user.id)!);
     setAssignees(users);
   };

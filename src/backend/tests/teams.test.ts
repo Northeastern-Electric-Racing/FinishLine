@@ -152,7 +152,7 @@ describe('Teams', () => {
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
     });
 
-    test('setTeamHead new head is already a lead of another team', async () => {
+    test('setTeamHead new head is already a head of another team', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       jest.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
