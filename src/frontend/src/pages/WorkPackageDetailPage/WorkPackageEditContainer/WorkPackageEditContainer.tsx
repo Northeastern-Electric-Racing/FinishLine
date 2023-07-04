@@ -163,9 +163,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     }
   };
 
-  const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
+  const projectWbsString: string = projectWbsPipe(workPackage.wbsNum);
 
-  console.log(blockedByOptions);
   return (
     <form
       id="work-package-edit-form"
@@ -205,19 +204,13 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             control={control}
             render={({ field: { onChange, value: formValue } }) => (
               <Autocomplete
-                isOptionEqualToValue={(option, value) => {
-                  console.log(option, value);
-                  return option.id === value.id;
-                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 filterSelectedOptions
                 multiple
                 options={blockedByOptions}
                 getOptionLabel={(option) => option.label}
                 onChange={(_, value) => onChange(value.map((v) => v.id))}
-                value={formValue.map((v: string) => {
-                  let change = blockedByOptions.find((o) => o.id === v);
-                  return change!;
-                })}
+                value={formValue.map((v: string) => blockedByOptions.find((o) => o.id === v)!)}
                 renderInput={(params) => (
                   <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
                 )}
