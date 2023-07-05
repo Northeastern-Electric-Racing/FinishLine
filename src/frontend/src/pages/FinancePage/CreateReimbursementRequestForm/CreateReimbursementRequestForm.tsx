@@ -17,7 +17,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CreateReimbursementRequestFormView from './CreateReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
-import { Router, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 export interface CreateReimbursementRequestFormInput {
   vendorId: string;
@@ -88,8 +89,9 @@ const CreateReimbursementRequestForm = () => {
     name: 'reimbursementProducts'
   });
 
-  const { mutateAsync: createReimbursementRequest } = useCreateReimbursementRequest();
-  const { mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
+    useCreateReimbursementRequest();
+  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const {
     isLoading: allVendorsIsLoading,
     isError: allVendorsIsError,
@@ -121,6 +123,8 @@ const CreateReimbursementRequestForm = () => {
     allExpenseTypesIsLoading ||
     allVendorsIsLoading ||
     allProjectsIsLoading ||
+    createReimbursementRequestIsLoading ||
+    uploadReceiptsIsLoading ||
     !allVendors ||
     !allExpenseTypes ||
     !allProjects
@@ -134,6 +138,7 @@ const CreateReimbursementRequestForm = () => {
         id: reimbursementRequestId,
         files: data.receiptFiles.map((receiptFile) => receiptFile.file)
       });
+      history.push(routes.FINANCE + '/' + reimbursementRequestId);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
