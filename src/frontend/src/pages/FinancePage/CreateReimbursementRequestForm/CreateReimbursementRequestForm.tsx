@@ -29,7 +29,6 @@ export interface CreateReimbursementRequestFormInput {
   receiptFiles: {
     file: File;
   }[];
-  totalCost: number;
 }
 
 const schema = yup.object().shape({
@@ -67,8 +66,7 @@ const CreateReimbursementRequestForm = () => {
       reimbursementProducts: [] as ReimbursementProductCreateArgs[],
       receiptFiles: [] as {
         file: File;
-      }[],
-      totalCost: 0
+      }[]
     }
   });
 
@@ -114,6 +112,7 @@ const CreateReimbursementRequestForm = () => {
 
   const toast = useToast();
   const history = useHistory();
+  const totalCost = reimbursementProducts.reduce((acc, curr) => Number(acc) + Number(curr.cost), 0);
 
   if (allVendorsIsError) return <ErrorPage message={allVendorsError?.message} />;
   if (allExpenseTypesIsError) return <ErrorPage message={allExpenseTypesError?.message} />;
@@ -133,7 +132,7 @@ const CreateReimbursementRequestForm = () => {
 
   const onSubmit = async (data: CreateReimbursementRequestFormInput) => {
     try {
-      const { reimbursementRequestId } = await createReimbursementRequest(data);
+      const { reimbursementRequestId } = await createReimbursementRequest({ ...data, totalCost: totalCost });
       await uploadReceipts({
         id: reimbursementRequestId,
         files: data.receiptFiles.map((receiptFile) => receiptFile.file)
@@ -182,6 +181,7 @@ const CreateReimbursementRequestForm = () => {
       onSubmit={onSubmit}
       handleSubmit={handleSubmit}
       allWbsElements={allWbsElements}
+      totalCost={totalCost}
     />
   );
 };

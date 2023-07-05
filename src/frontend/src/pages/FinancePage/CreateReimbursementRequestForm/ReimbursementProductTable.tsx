@@ -42,7 +42,6 @@ interface ReimbursementProductTableProps {
       receiptFiles: {
         file: File;
       }[];
-      totalCost: number;
     },
     any
   >;
@@ -108,12 +107,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 name={`reimbursementProducts.${product.index}.name`}
                                 control={control}
                                 render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    label={'Description'}
-                                    size={'small'}
-                                    variant={'outlined'}
-                                  />
+                                  <TextField {...field} label={'Description'} size={'small'} variant={'outlined'} />
                                 )}
                               />
                             </Grid>
@@ -127,7 +121,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     label={'Cost'}
                                     size={'small'}
                                     variant={'outlined'}
-                                    type='number'
+                                    type="number"
                                     InputProps={{
                                       startAdornment: <InputAdornment position="start">$</InputAdornment>
                                     }}

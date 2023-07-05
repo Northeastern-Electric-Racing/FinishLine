@@ -1,11 +1,10 @@
-import { AttachMoney, Delete, Money } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import {
   FormControl,
   FormHelperText,
   FormLabel,
   Grid,
   IconButton,
-  InputAdornment,
   MenuItem,
   Select,
   TextField,
@@ -16,7 +15,6 @@ import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, Vendor, WbsNumber, wbsPipe } from 'shared';
 import { DatePicker } from '@mui/x-date-pickers';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -41,7 +39,6 @@ interface CreateReimbursementRequestFormViewProps {
       expenseTypeId: string;
       reimbursementProducts: ReimbursementProductCreateArgs[];
       receiptFiles: { file: File }[];
-      totalCost: number;
     },
     any
   >;
@@ -58,7 +55,6 @@ interface CreateReimbursementRequestFormViewProps {
     expenseTypeId: string;
     reimbursementProducts: ReimbursementProductCreateArgs[];
     receiptFiles: { file: File }[];
-    totalCost: number;
   }>;
   errors: FieldErrors<{
     vendorId: string;
@@ -67,9 +63,10 @@ interface CreateReimbursementRequestFormViewProps {
     expenseTypeId: string;
     reimbursementProducts: ReimbursementProductCreateArgs[];
     receiptFiles: { file: File }[];
-    totalCost: number;
   }>;
+  totalCost: number;
 }
+
 const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFormViewProps> = ({
   allVendors,
   allExpenseTypes,
@@ -83,7 +80,8 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
   reimbursementProductRemove,
   onSubmit,
   handleSubmit,
-  errors
+  errors,
+  totalCost
 }) => {
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -111,7 +109,6 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
   return (
     <form
       onSubmit={(e) => {
-        console.log('test');
         e.preventDefault();
         e.stopPropagation();
         handleSubmit(onSubmit)(e);
@@ -199,16 +196,8 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
               <FormHelperText>{errors.expenseTypeId?.message}</FormHelperText>
             </Grid>
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Total Cost</FormLabel>
-                <ReactHookTextField
-                  type="number"
-                  name="totalCost"
-                  control={control}
-                  errorMessage={errors.totalCost}
-                  icon={<AttachMoney />}
-                />
-              </FormControl>
+              <FormLabel>Total Cost</FormLabel>
+              <Typography variant='h6'>${totalCost}</Typography>
             </Grid>
           </Grid>
           <Grid item xs={6}>

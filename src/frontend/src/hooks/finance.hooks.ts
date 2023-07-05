@@ -10,12 +10,22 @@ import {
   uploadSingleReceipt,
   getSingleReimbursementRequest
 } from '../apis/finance.api';
-import { ExpenseType, ReimbursementRequest, Vendor } from 'shared';
-import { CreateReimbursementRequestFormInput } from '../pages/FinancePage/CreateReimbursementRequestForm/CreateReimbursementRequestForm';
+import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, ReimbursementRequest, Vendor } from 'shared';
+
+export interface CreateReimbursementRequestArgs {
+  vendorId: string;
+  account: ClubAccount;
+  dateOfExpense: Date;
+  expenseTypeId: string;
+  reimbursementProducts: ReimbursementProductCreateArgs[];
+  receiptFiles: {
+    file: File;
+  }[];
+  totalCost: number;
+}
 
 /**
  * Custom React Hook to upload a new picture.
- *
  */
 export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
@@ -38,16 +48,26 @@ export const useUploadManyReceipts = () => {
   );
 };
 
+/**
+ * Custom react hook to create a reimbursement request
+ *
+ * @returns the created reimbursement request
+ */
 export const useCreateReimbursementRequest = () => {
-  return useMutation<ReimbursementRequest, Error, any>(
+  return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestArgs>(
     ['finance', 'create'],
-    async (formData: CreateReimbursementRequestFormInput) => {
+    async (formData: CreateReimbursementRequestArgs) => {
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
   );
 };
 
+/**
+ * Custom react hook to get all expense types
+ *
+ * @returns all the expense types
+ */
 export const useGetAllExpenseTypes = () => {
   return useQuery<ExpenseType[], Error>(['finance', 'expense-types'], async () => {
     const { data } = await getAllExpenseTypes();
@@ -55,6 +75,11 @@ export const useGetAllExpenseTypes = () => {
   });
 };
 
+/**
+ * Custom react hook to get all the vendors
+ *
+ * @returns all the vendors
+ */
 export const useGetAllVendors = () => {
   return useQuery<Vendor[], Error>(['finance', 'vendors'], async () => {
     const { data } = await getAllVendors();
@@ -63,8 +88,9 @@ export const useGetAllVendors = () => {
 };
 
 /**
- * custom react hook to get a single reimbursement request
- * @param id Id of the reimbursement request to get
+ * Custom react hook to get a single reimbursement request
+ *
+ * @param id id of the reimbursement request to get
  * @returns the reimbursement request
  */
 export const useSingleReimbursementRequest = (id: string) => {
