@@ -61,7 +61,7 @@ const changeRequestTransformer = (
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
-    requestedReviewers: changeRequest.requestedReviewers ?? undefined
+    requestedReviewers: changeRequest.requestedReviewers ?? []
   };
 };
 
