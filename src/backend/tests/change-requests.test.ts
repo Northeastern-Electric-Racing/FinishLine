@@ -429,4 +429,73 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Request reviewers to change request', async () => {
+    test('The submitter of the request does not match to cr submitter', async () => {
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
+      await expect(() => ChangeRequestsService.requestCRAReview(superman, [], 1)).rejects.toThrow(
+        new AccessDeniedException(`The submitter of this request must match to CR's reviewer`)
+      );
+    });
+
+    test('One or more reviewer does not exist', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+
+      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2, 123], 1)).rejects.toThrow(
+        new HttpException(404, 'User(s) with the following ids not found: 123')
+      );
+    });
+
+    test('One or more reviewer is not at least in leadership role', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman, wonderwoman]);
+
+      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2, 3], 1)).rejects.toThrow(
+        new AccessDeniedException('User(s) with the following ids are not at least in a leadership: 3')
+      );
+    });
+
+    test('Change Request does not exist', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => ChangeRequestsService.requestCRAReview(superman, [1, 2], 1)).rejects.toThrow(
+        new NotFoundException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already deleted', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+      jest
+        .spyOn(prisma.change_Request, 'findUnique')
+        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
+      await expect(() => ChangeRequestsService.requestCRAReview(superman, [1, 2], 1)).rejects.toThrow(
+        new DeletedException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already reviewed', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
+      await expect(() => ChangeRequestsService.requestCRAReview(superman, [1, 2], 1)).rejects.toThrow(
+        new HttpException(400, 'Cannot assign a reviewer to a reviewed change request!')
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request successfully assigned reviewers', async () => {
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      jest
+        .spyOn(prisma.change_Request, 'update')
+        .mockResolvedValue({ ...prismaChangeRequest1, requestedReviewers: [superman, batman] });
+
+      await ChangeRequestsService.requestCRAReview(superman, [1, 2], 1);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    });
+  });
 });
