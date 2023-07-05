@@ -7,6 +7,7 @@ import {
   Chip,
   Grid,
   IconButton,
+  InputAdornment,
   Paper,
   Table,
   TableBody,
@@ -123,9 +124,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 render={({ field }) => (
                                   <TextField
                                     {...field}
-                                    label={'Amount'}
+                                    label={'Cost'}
                                     size={'small'}
                                     variant={'outlined'}
+                                    type='number'
+                                    InputProps={{
+                                      startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                    }}
                                   />
                                 )}
                               />

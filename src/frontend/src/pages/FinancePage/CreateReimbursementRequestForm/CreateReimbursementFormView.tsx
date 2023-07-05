@@ -1,10 +1,11 @@
-import { Delete } from '@mui/icons-material';
+import { AttachMoney, Delete, Money } from '@mui/icons-material';
 import {
   FormControl,
   FormHelperText,
   FormLabel,
   Grid,
   IconButton,
+  InputAdornment,
   MenuItem,
   Select,
   TextField,
@@ -177,7 +178,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
               />
             </FormControl>
           </Grid>
-          <Grid item container xs={6}>
+          <Grid item container xs={6} spacing={2}>
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <FormLabel>Expense Type</FormLabel>
@@ -200,7 +201,13 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <FormLabel>Total Cost</FormLabel>
-                <ReactHookTextField type="number" name="totalCost" control={control} errorMessage={errors.totalCost} />
+                <ReactHookTextField
+                  type="number"
+                  name="totalCost"
+                  control={control}
+                  errorMessage={errors.totalCost}
+                  icon={<AttachMoney />}
+                />
               </FormControl>
             </Grid>
           </Grid>
