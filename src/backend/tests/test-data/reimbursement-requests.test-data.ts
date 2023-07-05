@@ -39,7 +39,6 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   vendorId: '',
   account: Club_Accounts.CASH,
   totalCost: 0,
-  receiptPictures: [],
   dateDelivered: null,
   expenseTypeId: ''
 };
@@ -54,7 +53,6 @@ export const GiveMeMyMoney2: PrismaReimbursementRequest = {
   vendorId: '',
   account: Club_Accounts.CASH,
   totalCost: 0,
-  receiptPictures: [],
   dateDelivered: null,
   expenseTypeId: ''
 };
@@ -86,6 +84,7 @@ export const examplePendingFinanceStatus: PrismaReimbursementStatus = {
 
 export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [{ ...examplePendingFinanceStatus, user: batman }],
   recipient: batman,
   vendor: PopEyes,
@@ -113,6 +112,7 @@ export const prismaReimbursementStatus2: PrismaReimbursementStatus & { user: Use
 
 export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
@@ -122,6 +122,7 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
 
 export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus2],
   recipient: batman,
   vendor: PopEyes,
@@ -131,6 +132,7 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
 
 export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
+  receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus2, prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
@@ -143,7 +145,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   dateCreated: GiveMeMyMoney.dateCreated,
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,
-  receiptPictures: GiveMeMyMoney.receiptPictures,
+  receiptPictures: [],
   expenseType: Parts,
   vendor: PopEyes,
   recipient: userTransformer(batman),

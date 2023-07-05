@@ -21,15 +21,18 @@ import ReactHookTextField from '../../components/ReactHookTextField';
 import { FormControl, FormLabel, IconButton } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { wbsTester, startDateTester } from '../../utils/form';
+import { startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { WorkPackageStage } from 'shared';
+import { Project, WorkPackageStage, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import { useAllProjects } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
-  wbsNum: yup.string().required('WBS Number is required').test('wbs-num-valid', 'WBS Number is not valid', wbsTester),
   crId: yup
     .number()
     .typeError('CR ID must be a number')
@@ -53,9 +56,17 @@ interface CreateWorkPackageFormViewProps {
   allowSubmit: boolean;
   onSubmit: (data: CreateWorkPackageFormInputs) => void;
   onCancel: () => void;
+  wbsNum: string;
+  setWbsNum: (val: string) => void;
 }
 
-const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ allowSubmit, onSubmit, onCancel }) => {
+const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
+  wbsNum,
+  setWbsNum,
+  allowSubmit,
+  onSubmit,
+  onCancel
+}) => {
   const startDate = new Date();
   const today = startDate.getDay();
   if (today !== 1) {
@@ -72,7 +83,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      wbsNum: query.get('wbs') || '',
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
@@ -99,6 +109,14 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     return startDate.getDay() !== 1;
   };
 
+  const { data: projects, isLoading, error, isError } = useAllProjects();
+
+  if (isLoading || !projects) return <LoadingIndicator />;
+
+  if (isError) {
+    return <ErrorPage message={error?.message} />;
+  }
+
   const blockedByFormControl = (
     <FormControl fullWidth>
       <FormLabel>Blocked By</FormLabel>
@@ -123,6 +141,25 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
     </FormControl>
   );
 
+  const wbsAutocompleteOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      setWbsNum(value.id);
+    } else {
+      setWbsNum('');
+    }
+  };
+
+  const wbsDropdownOptions: { label: string; id: string }[] = [];
+  projects.forEach((project: Project) => {
+    wbsDropdownOptions.push({
+      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      id: wbsPipe(project.wbsNum)
+    });
+  });
+
   return (
     <form
       id={'create-work-package-form'}
@@ -138,7 +175,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
       <PageTitle title={'New Work Package'} previousPages={[{ name: 'Work Packages', route: routes.PROJECTS }]} />
       <PageBlock title={''}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={5}>
             <FormControl fullWidth>
               <FormLabel>Work Package Name</FormLabel>
               <ReactHookTextField
@@ -149,7 +186,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <FormLabel>Change Request ID</FormLabel>
               <ReactHookTextField
@@ -161,7 +198,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <FormLabel>Work Package Stage</FormLabel>
               <Controller
@@ -182,18 +219,20 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <FormControl fullWidth>
               <FormLabel>Project WBS Number</FormLabel>
-              <ReactHookTextField
-                name="wbsNum"
-                control={control}
-                placeholder="Enter project WBS number..."
-                errorMessage={errors.wbsNum}
+              <NERAutocomplete
+                id="wbs-autocomplete"
+                onChange={wbsAutocompleteOnChange}
+                options={wbsDropdownOptions}
+                size="small"
+                placeholder="Select a project or work package"
+                value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <FormControl fullWidth>
               <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
               <Controller
@@ -213,7 +252,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({ a
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <FormLabel>Duration</FormLabel>
               <ReactHookTextField

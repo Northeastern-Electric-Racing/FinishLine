@@ -22,7 +22,7 @@ import {
   prismaReimbursementStatus,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, sharedBatman, superman, wonderwoman } from './test-data/users.test-data';
+import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
@@ -175,7 +175,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -196,7 +196,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -213,7 +213,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           superman
         )
       ).rejects.toThrow(
@@ -236,7 +236,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
@@ -256,7 +256,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
           [],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Expense Type', GiveMeMyMoney.expenseTypeId));
@@ -287,7 +287,7 @@ describe('Reimbursement Requests', () => {
               wbsElementId: 1
             }
           ],
-          GiveMeMyMoney.receiptPictures,
+          [],
           batman
         )
       ).rejects.toThrow(new HttpException(400, 'The following products do not exist: test'));
@@ -317,7 +317,7 @@ describe('Reimbursement Requests', () => {
             wbsElementId: 1
           }
         ],
-        GiveMeMyMoney.receiptPictures,
+        [],
         batman
       );
 
@@ -557,6 +557,67 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(reimbursementStatus.reimbursementStatusId).toStrictEqual(prismaReimbursementStatus.reimbursementStatusId);
+    });
+  });
+
+  describe('Reimbursement User Tests', () => {
+    test('Throws an error if user is a guest', async () => {
+      await expect(ReimbursementRequestService.reimburseUser(100, theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Guests cannot reimburse a user for their expenses.')
+      );
+    });
+
+    test('Throws an error if reimbursement amount is greater than owed', async () => {
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+        {
+          amount: 100,
+          reimbursementId: '1',
+          dateCreated: new Date(),
+          userSubmittedId: batman.userId,
+          purchaserId: batman.userId
+        }
+      ]);
+
+      await expect(ReimbursementRequestService.reimburseUser(200, batman)).rejects.toThrow(
+        new HttpException(400, 'Reimbursement is greater than the total amount owed to the user')
+      );
+    });
+
+    test('Creates a new reimbursement for a user', async () => {
+      const totalOwed = GiveMeMyMoney.totalCost;
+      const reimbursementAmount = 50;
+      const reimbursementMock = {
+        reimbursementId: 'reimbursementMockId',
+        purchaserId: batman.userId,
+        amount: reimbursementAmount,
+        dateCreated: new Date(),
+        userSubmittedId: batman.userId
+      };
+
+      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+        {
+          amount: totalOwed - reimbursementAmount,
+          reimbursementId: '1',
+          dateCreated: new Date(),
+          userSubmittedId: batman.userId,
+          purchaserId: batman.userId
+        }
+      ]);
+      jest.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
+
+      const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
+
+      expect(newReimbursement).toStrictEqual(reimbursementMock);
+      expect(prisma.reimbursement.create).toHaveBeenCalledWith({
+        data: {
+          purchaserId: batman.userId,
+          amount: reimbursementAmount,
+          dateCreated: expect.any(Date),
+          userSubmittedId: batman.userId
+        }
+      });
     });
   });
 });
