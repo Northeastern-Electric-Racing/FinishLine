@@ -81,8 +81,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell width={'200px'}>WBS Element</TableCell>
-            <TableCell>Products</TableCell>
+            <TableCell width={'40%'}>WBS Element</TableCell>
+            <TableCell width={'60%'}>Products</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -102,7 +102,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       ) : (
                         <ListItem key={product.index}>
                           <Grid container spacing={1}>
-                            <Grid item>
+                            <Grid item md={6} xs={12}>
                               <Controller
                                 name={`reimbursementProducts.${product.index}.name`}
                                 control={control}
@@ -112,12 +112,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     label={'Description'}
                                     size={'small'}
                                     variant={'outlined'}
-                                    sx={{ width: '200px' }}
                                   />
                                 )}
                               />
                             </Grid>
-                            <Grid item>
+                            <Grid item md={6} xs={12} display={'flex'}>
                               <Controller
                                 name={`reimbursementProducts.${product.index}.cost`}
                                 control={control}
@@ -127,7 +126,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     label={'Amount'}
                                     size={'small'}
                                     variant={'outlined'}
-                                    sx={{ width: '100px' }}
                                   />
                                 )}
                               />
@@ -168,8 +166,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 }}
                 id={'append-product-autocomplete'}
                 size={'small'}
-                placeholder={'Select a wbs number'}
-                renderInput={(params) => <TextField {...params} />}
+                renderInput={(params) => <TextField {...params} placeholder="Select a Wbs Element" />}
               />
             </TableCell>
           </TableRow>
