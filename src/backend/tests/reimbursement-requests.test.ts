@@ -568,8 +568,8 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Throws an error if reimbursement amount is greater than owed', async () => {
-      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
-      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+      vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      vi.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
         {
           amount: 100,
           reimbursementId: '1',
@@ -595,8 +595,8 @@ describe('Reimbursement Requests', () => {
         userSubmittedId: batman.userId
       };
 
-      jest.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
-      jest.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
+      vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([prismaGiveMeMyMoney]);
+      vi.spyOn(prisma.reimbursement, 'findMany').mockResolvedValue([
         {
           amount: totalOwed - reimbursementAmount,
           reimbursementId: '1',
@@ -605,7 +605,7 @@ describe('Reimbursement Requests', () => {
           purchaserId: batman.userId
         }
       ]);
-      jest.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
+      vi.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
 
       const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
 
