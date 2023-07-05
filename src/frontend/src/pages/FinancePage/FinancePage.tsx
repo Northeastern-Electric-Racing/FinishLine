@@ -5,26 +5,34 @@
 import { useState } from 'react';
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useUploadSingleReceipt } from '../../hooks/finance.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const FinancePage = () => {
   const [file, setFile] = useState<File>();
   const [fileId, setFileId] = useState('');
   const [fileName, setFileName] = useState('');
   const [reimbursementRequestId, setReimbursementRequestId] = useState('');
+  const toast = useToast();
 
-  const { mutateAsync } = useUploadSingleReceipt(reimbursementRequestId);
+  const { mutateAsync } = useUploadSingleReceipt();
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
-
-    const formData = new FormData();
-    formData.append('image', file!);
-    const { googleFileId, name } = await mutateAsync(formData);
-    if (typeof googleFileId === 'string') {
-      setFileId(googleFileId);
-    }
-    if (typeof fileName === 'string') {
-      setFileName(name);
+    try {
+      const { googleFileId, name } = await mutateAsync({
+        file: file!,
+        id: reimbursementRequestId
+      });
+      if (typeof googleFileId === 'string') {
+        setFileId(googleFileId);
+      }
+      if (typeof fileName === 'string') {
+        setFileName(name);
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
     }
   };
 
@@ -42,6 +50,7 @@ const FinancePage = () => {
             }}
             type="file"
             accept="image/*"
+            name="file"
           />
           <Typography>Reimbursement Request Id</Typography>
           <TextField onChange={(e) => setReimbursementRequestId(e.target.value)}></TextField>

@@ -13,6 +13,7 @@ const CREDITS = `/credits`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
+const NEW_REIMBURSEMENT_REQUEST = FINANCE + `/new-reimbursement-request`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
@@ -66,6 +67,7 @@ export const routes = {
   CHANGE_REQUESTS_OVERVIEW,
 
   FINANCE,
+  NEW_REIMBURSEMENT_REQUEST,
 
   ADMIN_TOOLS
 };

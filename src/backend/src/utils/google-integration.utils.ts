@@ -47,7 +47,7 @@ const createTransporter = async () => {
     return transporter;
   } catch (err) {
     console.log('ERROR: ' + err);
-    return err;
+    if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
   }
 };
 
@@ -65,7 +65,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
     console.log('Error: ' + err);
-    throw new HttpException(500, 'Failed to send Email');
+    if (err instanceof Error) throw new HttpException(500, 'Failed to send Email ' + err.message);
   }
 };
 

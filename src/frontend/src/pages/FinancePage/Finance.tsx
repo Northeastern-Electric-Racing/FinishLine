@@ -5,10 +5,12 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import FinancePage from './FinancePage';
+import CreateReimbursementRequestForm from './CreateReimbursementRequestForm/CreateReimbursementRequestForm';
 
 const Finance: React.FC = () => {
   return (
     <Switch>
+      <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestForm} />
       <Route path={routes.FINANCE} component={FinancePage} />
     </Switch>
   );

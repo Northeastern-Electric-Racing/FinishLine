@@ -4,10 +4,18 @@
  */
 
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
+import {
+  ClubAccount,
+  ExpenseType,
+  ReimbursementProductCreateArgs,
+  ReimbursementRequest,
+  ReimbursementStatusType,
+  Vendor,
+  isAdmin,
+  isGuest
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   UserWithTeam,
   removeDeletedReceiptPictures,
@@ -89,7 +97,7 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
-    await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -107,7 +115,7 @@ export default class ReimbursementRequestService {
         },
         reimbursementProducts: {
           createMany: {
-            data: reimbursementProducts.map((reimbursementProductInfo) => {
+            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
               return {
                 name: reimbursementProductInfo.name,
                 cost: reimbursementProductInfo.cost,

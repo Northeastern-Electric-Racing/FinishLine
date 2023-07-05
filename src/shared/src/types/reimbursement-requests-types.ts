@@ -66,3 +66,10 @@ export interface ExpenseType {
   code: number;
   allowed: boolean;
 }
+
+export interface ReimbursementProductCreateArgs {
+  id?: string;
+  name: string;
+  cost: number;
+  wbsNum: WbsNumber;
+}

@@ -636,7 +636,11 @@ const performSeed: () => Promise<void> = async () => {
     [
       {
         name: 'GLUE',
-        wbsElementId: 1,
+        wbsNum: {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 1
+        },
         cost: 200000
       }
     ],
