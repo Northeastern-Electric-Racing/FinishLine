@@ -3,7 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery } from 'react-query';
-import { createReimbursementRequest, getAllExpenseTypes, getAllVendors, uploadSingleReceipt } from '../apis/finance.api';
+import {
+  createReimbursementRequest,
+  getAllExpenseTypes,
+  getAllVendors,
+  uploadSingleReceipt,
+  getSingleReimbursementRequest
+} from '../apis/finance.api';
 import { ExpenseType, ReimbursementRequest, Vendor } from 'shared';
 import { CreateReimbursementRequestFormInput } from '../pages/FinancePage/CreateReimbursementRequestForm/CreateReimbursementRequestForm';
 
@@ -47,11 +53,23 @@ export const useGetAllExpenseTypes = () => {
     const { data } = await getAllExpenseTypes();
     return data;
   });
-}
+};
 
 export const useGetAllVendors = () => {
   return useQuery<Vendor[], Error>(['finance', 'vendors'], async () => {
     const { data } = await getAllVendors();
     return data;
   });
-}
+};
+
+/**
+ * custom react hook to get a single reimbursement request
+ * @param id Id of the reimbursement request to get
+ * @returns the reimbursement request
+ */
+export const useSingleReimbursementRequest = (id: string) => {
+  return useQuery<ReimbursementRequest, Error>(['reimbursement-requests', id], async () => {
+    const { data } = await getSingleReimbursementRequest(id);
+    return data;
+  });
+};

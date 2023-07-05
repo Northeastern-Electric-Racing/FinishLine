@@ -75,6 +75,7 @@ const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
 const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
+const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 
@@ -132,6 +133,7 @@ export const apiUrls = {
 
   financeUploadRceipt,
   financeCreateReimbursementRequest,
+  financeReimbursementRequestById,
   getAllExpenseTypes,
   getAllVendors,
 

@@ -29,3 +29,7 @@ export const getAllExpenseTypes = () => {
 export const getAllVendors = () => {
   return axios.get(apiUrls.getAllVendors());
 };
+
+export const getSingleReimbursementRequest = (id: string) => {
+  return axios.get(apiUrls.financeReimbursementRequestById(id));
+};

@@ -7,7 +7,7 @@ import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useUploadSingleReceipt } from '../../hooks/finance.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 
-const FinancePage = () => {
+const FinancePage: React.FC = () => {
   const [file, setFile] = useState<File>();
   const [fileId, setFileId] = useState('');
   const [fileName, setFileName] = useState('');
@@ -29,10 +29,8 @@ const FinancePage = () => {
       if (typeof fileName === 'string') {
         setFileName(name);
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      }
+    } catch (e: unknown) {
+      if (e instanceof Error) toast.error(e.message);
     }
   };
 
