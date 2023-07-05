@@ -5,7 +5,6 @@
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -18,18 +17,18 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useQuery } from '../../hooks/utils.hooks';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { FormControl, FormLabel, IconButton } from '@mui/material';
+import { Autocomplete, FormControl, FormLabel } from '@mui/material';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { startDateTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { Project, WorkPackageStage, wbsPipe } from 'shared';
+import { WorkPackage, validateWBS, Project, WorkPackageStage, wbsPipe } from 'shared';
 import { CreateWorkPackageFormInputs } from './CreateWorkPackageForm';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { useSingleProject } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -60,6 +59,10 @@ interface CreateWorkPackageFormViewProps {
   setWbsNum: (val: string) => void;
 }
 
+const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
+  return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
+};
+
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   wbsNum,
   setWbsNum,
@@ -74,6 +77,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     startDate.setDate(startDate.getDate() + daysUntilNextMonday);
   }
   const query = useQuery();
+  const { data: project } = useSingleProject(validateWBS(wbsNum));
+  const workPackages = project ? project.workPackages : [];
   const {
     handleSubmit,
     control,
@@ -86,12 +91,15 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
+      wbsNum: wbsNum,
       duration: null,
-      blockedBy: [] as { wbsNum: string }[],
+      blockedBy: [] as string[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
       deliverables: [] as { bulletId: number; detail: string }[]
     }
   });
+
+  const blockedByOptions = workPackages.map(blockedByToAutocompleteOption);
 
   const {
     fields: expectedActivities,
@@ -103,7 +111,6 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     append: appendDeliverable,
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
-  const { fields: blockedBy, append: appendBlocker, remove: removeBlocker } = useFieldArray({ control, name: 'blockedBy' });
 
   const disableStartDate = (startDate: Date) => {
     return startDate.getDay() !== 1;
@@ -119,25 +126,30 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
 
   const blockedByFormControl = (
     <FormControl fullWidth>
-      <FormLabel>Blocked By</FormLabel>
-      {blockedBy.map((_element, i) => {
-        return (
-          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" {...register(`blockedBy.${i}.wbsNum`)} sx={{ width: 9 / 10 }} />
-            <IconButton type="button" onClick={() => removeBlocker(i)} sx={{ mx: 1, my: 0 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Grid>
-        );
-      })}
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => appendBlocker({ wbsNum: '' })}
-        sx={{ my: 2, width: 'max-content' }}
-      >
-        + ADD NEW BLOCKER
-      </Button>
+      <Controller
+        name="blockedBy"
+        control={control}
+        render={({ field: { onChange, value: formValue } }) => (
+          <Autocomplete
+            isOptionEqualToValue={(option, value) => {
+              console.log(option, value);
+              return option.id === value.id;
+            }}
+            filterSelectedOptions
+            multiple
+            options={blockedByOptions}
+            getOptionLabel={(option) => option.label}
+            onChange={(_, values) => onChange(values.map((v) => v.id))}
+            value={formValue.map((v: string) => {
+              let change = blockedByOptions.find((o) => o.id === v);
+              return change!;
+            })}
+            renderInput={(params) => (
+              <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
+            )}
+          />
+        )}
+      />
     </FormControl>
   );
 
