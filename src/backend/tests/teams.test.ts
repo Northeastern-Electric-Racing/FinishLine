@@ -147,7 +147,7 @@ describe('Teams', () => {
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 3);
 
-      const expectedException = new HttpException(403, 'Access Denied: The team head must be at least an head');
+      const expectedException = new HttpException(403, 'Access Denied: The team head must be at least a head');
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
     });
