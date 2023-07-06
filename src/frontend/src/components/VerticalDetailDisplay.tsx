@@ -16,9 +16,7 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
   return (
     <Box paddingRight={paddingRight}>
       <Typography fontSize={20}>{content}</Typography>
-      <Typography fontWeight={'bold'}>
-        {label}
-      </Typography>
+      <Typography fontWeight={'bold'}>{label}</Typography>
     </Box>
   );
 };

@@ -126,7 +126,7 @@ const ReimbursementRequestPage: React.FC = () => {
         title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
         previousPages={[]}
       ></PageTitle>
-      <Grid container spacing={2} mt={2} sx={{}}>
+      <Grid container spacing={2} mt={2}>
         <Grid container rowSpacing={5} item md={5} xs={12}>
           <Grid item xs={12}>
             <BasicInformationView />
@@ -134,7 +134,7 @@ const ReimbursementRequestPage: React.FC = () => {
           <Grid item xs={12}>
             <ReimbursementProductsView />
           </Grid>
-          <Grid item xs={12} mb={2}>
+          <Grid item xs={12}>
             <Typography variant="h5" display="inline">
               {'Total Cost: '}
             </Typography>
