@@ -38,7 +38,7 @@ const ProjectsOverview: React.FC = () => {
   );
   const myTeamsProjects = projects.filter(
     (project) =>
-      (project.status !== WbsElementStatus.Complete && user.teamAsLeadId && user.teamAsLeadId === project.team?.teamId) ||
+      (project.status !== WbsElementStatus.Complete && user.teamAsHeadId && user.teamAsHeadId === project.team?.teamId) ||
       project.team?.members.map((member) => member.userId).includes(user.userId)
   );
 

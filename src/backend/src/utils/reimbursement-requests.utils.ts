@@ -201,7 +201,7 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   }
 };
 
-export type UserWithTeam = User & { teamsAsMember: Team[] };
+export type UserWithTeam = User & { teamsAsMember: Team[]; teamsAsLead: Team[] };
 
 export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
   const financeTeam = await prisma.team.findUnique({
@@ -212,7 +212,8 @@ export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
 
   if (
     !user.teamsAsMember.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
-    !(financeTeam.headId === user.userId)
+    !(financeTeam.headId === user.userId) &&
+    !user.teamsAsLead.some((team) => team.teamId === process.env.FINANCE_TEAM_ID)
   ) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }

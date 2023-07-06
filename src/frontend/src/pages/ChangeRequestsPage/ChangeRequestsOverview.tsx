@@ -34,7 +34,7 @@ const ChangeRequestsOverview: React.FC = () => {
   // projects whose change requests the user would have to review
   const myProjects = projects.filter(
     (project: Project) =>
-      (project.team && project.team.teamId === user.teamAsLeadId) ||
+      (project.team && project.team.teamId === user.teamAsHeadId) ||
       (project.projectLead && project.projectLead.userId === user.userId) ||
       (project.projectManager && project.projectManager.userId === user.userId)
   );

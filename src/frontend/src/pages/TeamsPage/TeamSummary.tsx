@@ -32,7 +32,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
           {team.members.length === 1 ? '' : 's'}
         </Typography>
         <Typography variant="body2">
-          <b>Lead:</b> {fullNamePipe(team.leader)}
+          <b>Head:</b> {fullNamePipe(team.head)}
         </Typography>
         <Typography noWrap variant="body2">
           <b>Projects:</b> {projectsList}

@@ -43,6 +43,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     setIsPreview(false);
   };
   const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
+
   const editButtons = (
     <div style={{ display: 'flex' }}>
       <Button
