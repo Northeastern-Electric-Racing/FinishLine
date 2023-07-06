@@ -13,7 +13,7 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     defaultTheme: user.userSettings?.defaultTheme,
     teamAsLeadId: user.teamAsLead?.teamId,
     favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
-    changeRequestsToReviewId: []
+    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
   };
 };
 
