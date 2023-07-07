@@ -38,7 +38,7 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           label="Local Dev User"
           labelId="localDevUser"
           onChange={(e: any) => devSetUser(e.target.value)}
-          value={1}
+          defaultValue={1}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />
