@@ -30,6 +30,11 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
 
   if (!usersList || isLoading) return <LoadingIndicator />;
 
+  const sortedUsers = usersList
+    .sort((a, b) => a.firstName.localeCompare(b.firstName))
+    .sort((a, b) => a.lastName.localeCompare(b.lastName))
+    .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role));
+
   return (
     <form onSubmit={devFormSubmit}>
       <FormControl fullWidth sx={{ marginTop: 2 }}>
@@ -38,22 +43,18 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           label="Local Dev User"
           labelId="localDevUser"
           onChange={(e: any) => devSetUser(e.target.value)}
-          defaultValue={1}
+          defaultValue={sortedUsers[0].userId}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />
             </IconButton>
           }
         >
-          {usersList
-            .sort((a, b) => a.firstName.localeCompare(b.firstName))
-            .sort((a, b) => a.lastName.localeCompare(b.lastName))
-            .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role))
-            .map((user) => (
-              <MenuItem key={user.userId} value={user.userId}>
-                {fullNamePipe(user)} ({user.role.toLowerCase()})
-              </MenuItem>
-            ))}
+          {sortedUsers.map((user) => (
+            <MenuItem key={user.userId} value={user.userId}>
+              {fullNamePipe(user)} ({user.role.toLowerCase()})
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     </form>
