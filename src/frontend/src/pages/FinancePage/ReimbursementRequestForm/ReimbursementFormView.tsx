@@ -11,7 +11,6 @@ import {
   Typography
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, Vendor, WbsNumber, wbsPipe } from 'shared';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -19,9 +18,9 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { routes } from '../../../utils/routes';
-import { CreateReimbursementRequestFormInput } from './CreateReimbursementRequestForm';
+import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
-interface CreateReimbursementRequestFormViewProps {
+interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allExpenseTypes: ExpenseType[];
   receiptFiles: {
@@ -47,7 +46,7 @@ interface CreateReimbursementRequestFormViewProps {
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
   reimbursementProductRemove: (index: number) => void;
-  onSubmit: (data: CreateReimbursementRequestFormInput) => void;
+  onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<{
     vendorId: string;
     account: ClubAccount;
@@ -65,9 +64,10 @@ interface CreateReimbursementRequestFormViewProps {
     receiptFiles: { file: File }[];
   }>;
   totalCost: number;
+  submitText: string;
 }
 
-const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFormViewProps> = ({
+const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
   allVendors,
   allExpenseTypes,
   allWbsElements,
@@ -81,7 +81,8 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
   onSubmit,
   handleSubmit,
   errors,
-  totalCost
+  totalCost,
+  submitText
 }) => {
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -109,12 +110,10 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault();
         e.stopPropagation();
         handleSubmit(onSubmit)(e);
       }}
     >
-      <PageTitle title="Create Reimbursement Request" previousPages={[]} />
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
@@ -197,7 +196,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
             </Grid>
             <Grid item xs={12}>
               <FormLabel>Total Cost</FormLabel>
-              <Typography variant='h6'>${totalCost}</Typography>
+              <Typography variant="h6">${totalCost}</Typography>
             </Grid>
           </Grid>
           <Grid item xs={6}>
@@ -221,6 +220,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
         </Grid>
         <Grid item md={6} xs={12}>
           <ReimbursementProductTable
+            errors={errors}
             reimbursementProducts={reimbursementProducts}
             appendProduct={reimbursementProductAppend}
             removeProduct={reimbursementProductRemove}
@@ -235,11 +235,11 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
           Cancel
         </NERFailButton>
         <NERSuccessButton variant="contained" type="submit">
-          Submit
+          {submitText}
         </NERSuccessButton>
       </Box>
     </form>
   );
 };
 
-export default CreateReimbursementRequestFormView;
+export default ReimbursementRequestFormView;

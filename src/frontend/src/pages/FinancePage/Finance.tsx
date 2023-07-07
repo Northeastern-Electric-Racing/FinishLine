@@ -5,13 +5,15 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import FinancePage from './FinancePage';
-import CreateReimbursementRequestForm from './CreateReimbursementRequestForm/CreateReimbursementRequestForm';
+import CreateReimbursementRequestPage from './CreateReimbursementRequest';
 import ReimbursementRequestPage from './ReimbursementRequestPage/ReimbursementRequestPage';
+import EditReimbursementRequestPage from './EditReimbursementRequest';
 
 const Finance: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestForm} />
+      <Route path={routes.REIMBURSEMENT_REQUEST_EDIT} component={EditReimbursementRequestPage} />
+      <Route path={routes.NEW_REIMBURSEMENT_REQUEST} component={CreateReimbursementRequestPage} />
       <Route path={routes.REIMBURSEMENT_REQUEST_BY_ID} component={ReimbursementRequestPage} />
       <Route path={routes.FINANCE} component={FinancePage} />
     </Switch>

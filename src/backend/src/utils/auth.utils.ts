@@ -20,7 +20,8 @@ export const prodHeaders = [
   'Authorization',
   'XMLHttpRequest',
   'X-Auth-Token',
-  'Client-Security-Token'
+  'Client-Security-Token',
+  'Access-Control-Allow-Origin'
 ];
 
 // middleware function for production that will enforce jwt authorization

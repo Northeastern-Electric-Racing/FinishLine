@@ -73,3 +73,8 @@ export interface ReimbursementProductCreateArgs {
   cost: number;
   wbsNum: WbsNumber;
 }
+
+export interface ReimbursementReceiptCreateArgs {
+  name: string;
+  googleFileId: string;
+}

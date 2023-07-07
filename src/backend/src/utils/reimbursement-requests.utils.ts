@@ -3,15 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException, NotFoundException } from './errors.utils';
 import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
-
-export interface ReimbursementReceiptCreateArgs {
-  name: string;
-  googleFileId: string;
-}
 
 /**
  * This function removes any deleted receipts and adds any new receipts

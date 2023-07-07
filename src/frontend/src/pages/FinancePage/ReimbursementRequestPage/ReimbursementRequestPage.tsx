@@ -2,17 +2,33 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { Chip, Grid, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme } from '@mui/material';
+import {
+  Chip,
+  Grid,
+  ListItemIcon,
+  MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  useTheme
+} from '@mui/material';
 import { Box } from '@mui/system';
 import { ReimbursementProduct, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import { useEffect, useRef, useState } from 'react';
+import { Edit } from '@mui/icons-material';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { routes } from '../../../utils/routes';
+import ActionsMenu from '../../../components/ActionsMenu';
 
 interface ParamTypes {
   id: string;
@@ -26,6 +42,8 @@ const ReimbursementRequestPage: React.FC = () => {
 
   const [height, setHeight] = useState<number>(350);
 
+  const history = useHistory();
+
   // doesnt work with the dependency array for some reason
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -35,6 +53,7 @@ const ReimbursementRequestPage: React.FC = () => {
   });
 
   const theme = useTheme();
+  const user = useCurrentUser();
 
   if (!reimbursementRequest) return <LoadingIndicator />;
 
@@ -112,11 +131,27 @@ const ReimbursementRequestPage: React.FC = () => {
             <iframe
               style={{ height: `${height - 20}px`, width: '100%' }}
               src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
-              title="ollie"
+              title={receipt.name}
             ></iframe>
           );
         })}
       </Box>
+    );
+  };
+
+  const allowEdit = user.userId === reimbursementRequest.recipient.userId;
+
+  const EditButton = () => {
+    return (
+      <MenuItem
+        onClick={() => history.push(`${routes.FINANCE}/${reimbursementRequest.reimbursementRequestId}/edit`)}
+        disabled={!allowEdit}
+      >
+        <ListItemIcon>
+          <Edit fontSize="small" />
+        </ListItemIcon>
+        Edit
+      </MenuItem>
     );
   };
 
@@ -125,6 +160,7 @@ const ReimbursementRequestPage: React.FC = () => {
       <PageTitle
         title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
         previousPages={[]}
+        actionButton={<ActionsMenu buttons={[<EditButton />]} />}
       ></PageTitle>
       <Grid container spacing={2} mt={2}>
         <Grid container rowSpacing={5} item md={5} xs={12}>

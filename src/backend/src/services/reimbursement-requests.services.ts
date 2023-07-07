@@ -8,6 +8,7 @@ import {
   ClubAccount,
   ExpenseType,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
@@ -16,7 +17,6 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  ReimbursementReceiptCreateArgs,
   UserWithTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { CreateReimbursementRequestArgs } from '../hooks/finance.hooks';
+import { ReimbursementRequestContentArgs } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 
@@ -24,8 +24,19 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @param formData the data to create a new reimbursement request
  * @returns the created reimbursement request
  */
-export const createReimbursementRequest = (formData: CreateReimbursementRequestArgs) => {
+export const createReimbursementRequest = (formData: ReimbursementRequestContentArgs) => {
   return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
+};
+
+/**
+ * Edits a reimbursment request
+ *
+ * @param id the id of the reimbursement request to edit
+ * @param formData the data to edit the reimbursement request with
+ * @returns the edited reimbursement request
+ */
+export const editReimbursementRequest = (id: string, formData: ReimbursementRequestContentArgs) => {
+  return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
 };
 
 /**

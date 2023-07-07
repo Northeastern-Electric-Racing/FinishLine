@@ -22,7 +22,7 @@ import {
 import { ClubAccount, ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Box } from '@mui/system';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -45,6 +45,14 @@ interface ReimbursementProductTableProps {
     },
     any
   >;
+  errors: FieldErrors<{
+    vendorId: string;
+    account: ClubAccount;
+    dateOfExpense: Date;
+    expenseTypeId: string;
+    reimbursementProducts: ReimbursementProductCreateArgs[];
+    receiptFiles: { file: File }[];
+  }>;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -56,7 +64,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   removeProduct,
   appendProduct,
   wbsElementAutocompleteOptions,
-  control
+  control,
+  errors
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -107,7 +116,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 name={`reimbursementProducts.${product.index}.name`}
                                 control={control}
                                 render={({ field }) => (
-                                  <TextField {...field} label={'Description'} size={'small'} variant={'outlined'} />
+                                  <TextField
+                                    {...field}
+                                    label={'Description'}
+                                    size={'small'}
+                                    variant={'outlined'}
+                                    error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                  />
                                 )}
                               />
                             </Grid>
@@ -125,6 +140,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     InputProps={{
                                       startAdornment: <InputAdornment position="start">$</InputAdornment>
                                     }}
+                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
                                   />
                                 )}
                               />

@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementRequest, WbsNumber } from 'shared';
 import {
-  useCreateReimbursementRequest,
+  ReimbursementRequestContentArgs,
   useGetAllExpenseTypes,
   useGetAllVendors,
   useUploadManyReceipts
@@ -15,12 +15,12 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import CreateReimbursementRequestFormView from './CreateReimbursementFormView';
+import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 
-export interface CreateReimbursementRequestFormInput {
+export interface ReimbursementRequestFormInput {
   vendorId: string;
   account: ClubAccount;
   dateOfExpense: Date;
@@ -29,6 +29,13 @@ export interface CreateReimbursementRequestFormInput {
   receiptFiles: {
     file: File;
   }[];
+}
+
+interface ReimbursementRequestFormProps {
+  submitText: string;
+  isLoading: boolean;
+  mutateAsync: (data: ReimbursementRequestContentArgs) => Promise<ReimbursementRequest>;
+  defaultValues?: ReimbursementRequestFormInput;
 }
 
 const schema = yup.object().shape({
@@ -47,11 +54,15 @@ const schema = yup.object().shape({
     )
     .required('reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
-  receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required'),
-  totalCost: yup.number().required('Total Cost is required').min(1, 'Total Cost must be greater than 0')
+  receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required')
 });
 
-const CreateReimbursementRequestForm = () => {
+const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
+  submitText,
+  mutateAsync,
+  defaultValues,
+  isLoading
+}) => {
   const {
     handleSubmit,
     control,
@@ -59,14 +70,16 @@ const CreateReimbursementRequestForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      vendorId: '',
-      account: ClubAccount.CASH,
-      dateOfExpense: new Date(),
-      expenseTypeId: '',
-      reimbursementProducts: [] as ReimbursementProductCreateArgs[],
-      receiptFiles: [] as {
-        file: File;
-      }[]
+      vendorId: defaultValues?.vendorId ?? '',
+      account: defaultValues?.account ?? ClubAccount.CASH,
+      dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
+      expenseTypeId: defaultValues?.expenseTypeId ?? '',
+      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
+      receiptFiles:
+        defaultValues?.receiptFiles ??
+        ([] as {
+          file: File;
+        }[])
     }
   });
 
@@ -87,8 +100,6 @@ const CreateReimbursementRequestForm = () => {
     name: 'reimbursementProducts'
   });
 
-  const { isLoading: createReimbursementRequestIsLoading, mutateAsync: createReimbursementRequest } =
-    useCreateReimbursementRequest();
   const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const {
     isLoading: allVendorsIsLoading,
@@ -122,17 +133,18 @@ const CreateReimbursementRequestForm = () => {
     allExpenseTypesIsLoading ||
     allVendorsIsLoading ||
     allProjectsIsLoading ||
-    createReimbursementRequestIsLoading ||
     uploadReceiptsIsLoading ||
+    isLoading ||
     !allVendors ||
     !allExpenseTypes ||
     !allProjects
   )
     return <LoadingIndicator />;
 
-  const onSubmit = async (data: CreateReimbursementRequestFormInput) => {
+  const onSubmit = async (data: ReimbursementRequestFormInput) => {
+    console.log('test');
     try {
-      const { reimbursementRequestId } = await createReimbursementRequest({ ...data, totalCost: totalCost });
+      const { reimbursementRequestId } = await mutateAsync({ ...data, totalCost: totalCost, receiptFiles: data.receiptFiles.map((receipt) => receipt.file.name) });
       await uploadReceipts({
         id: reimbursementRequestId,
         files: data.receiptFiles.map((receiptFile) => receiptFile.file)
@@ -182,8 +194,9 @@ const CreateReimbursementRequestForm = () => {
       handleSubmit={handleSubmit}
       allWbsElements={allWbsElements}
       totalCost={totalCost}
+      submitText={submitText}
     />
   );
 };
 
-export default CreateReimbursementRequestForm;
+export default ReimbursementRequestForm;
