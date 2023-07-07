@@ -489,9 +489,7 @@ describe('Change Requests', () => {
     test('Change request successfully assigned reviewers', async () => {
       jest.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
       jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest
-        .spyOn(prisma.change_Request, 'update')
-        .mockResolvedValue({ ...prismaChangeRequest1, requestedReviewers: [superman, batman] });
+      jest.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
       await ChangeRequestsService.requestCRAReview(superman, [1, 2], 1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
