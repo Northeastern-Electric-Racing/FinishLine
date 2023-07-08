@@ -26,8 +26,6 @@ const AppPublic: React.FC = () => {
       return <AppAuthenticated userId={auth.user.userId} />;
     }
 
-    console.log(`env${import.meta.env.VITE_REACT_APP_BACKEND_URL}`);
-
     // if we're on development and the userId is stored in localStorage,
     // then dev login right away (no login page redirect needed!)
     if (import.meta.env.MODE === 'development' && devUserId) {
