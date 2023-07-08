@@ -35,6 +35,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import { wbsNamePipe } from '../../utils/pipes';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -103,18 +104,19 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   const projectOptions: { label: string; id: string }[] = [];
   const wbsDropdownOptions: { label: string; id: string }[] = [];
+
   projects.forEach((project: Project) => {
     wbsDropdownOptions.push({
-      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
     projectOptions.push({
-      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
     project.workPackages.forEach((workPackage: WorkPackage) => {
       wbsDropdownOptions.push({
-        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
+        label: `${wbsNamePipe(workPackage)}`,
         id: wbsPipe(workPackage.wbsNum)
       });
     });
