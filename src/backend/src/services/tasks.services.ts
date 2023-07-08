@@ -37,27 +37,27 @@ export default class TasksService {
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsNumber: wbsNum },
-      include: { project: { include: { team: { ...teamQueryArgs }, wbsElement: true } } }
+      include: { project: { include: { teams: { ...teamQueryArgs }, wbsElement: true } } }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
     const { project } = requestedWbsElement;
     if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
-    const { team } = project;
-    if (!team) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    const { teams } = project;
+    if (!teams) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !isUserOnTeam(team, createdBy)) {
+    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && teams.map((team) => !isUserOnTeam(team, createdBy))) {
       throw new AccessDeniedException(
         'Only admins, app-admins, and project leads, project managers, or current team users can create tasks'
       );
     }
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
-    if (!allUsersOnTeam(team, users)) throw new HttpException(400, `All assignees must be part of the project's team!`);
+    if (teams.map((team) => !allUsersOnTeam(team, users))) throw new HttpException(400, `All assignees must be part of one of the project's team!`)
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');

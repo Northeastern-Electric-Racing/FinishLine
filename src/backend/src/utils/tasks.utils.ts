@@ -30,7 +30,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
           projectManagerId: true,
           project: {
             select: {
-              team: {
+              teams: {
                 select: {
                   leaderId: true,
                   members: {
@@ -46,7 +46,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
             select: {
               project: {
                 select: {
-                  team: {
+                  teams: {
                     select: {
                       leaderId: true,
                       members: {
@@ -78,10 +78,10 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   if (task.assignees.map((user) => user.userId).includes(user.userId)) return true;
 
   // Check if the user is the project leader or on the project team
-  if (task.wbsElement.project?.team?.leaderId === user.userId) return true;
+  if (task.wbsElement.project?.teams?.map((team) => team.leaderId).includes(user.userId)) return true;
 
   // Do the same thing, but for the work package's project
-  if (task.wbsElement.workPackage?.project?.team?.leaderId === user.userId) return true;
+  if (task.wbsElement.workPackage?.project?.teams?.map((team) => team.leaderId).includes(user.userId)) return true;
 
   return false;
 };
