@@ -92,7 +92,7 @@ const Settings: React.FC = () => {
                     <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
                   ) : (
                     <GoogleLogout
-                      clientId={import.meta.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+                      clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
                       onLogoutSuccess={logout}
                       render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
                     />

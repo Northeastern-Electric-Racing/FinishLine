@@ -22,7 +22,7 @@ interface LoginPageProps {
  * Page for unauthenticated users to do login.
  */
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
-  const googleAuthClientId = import.meta.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
+  const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const googleLogin = (
     <GoogleLogin

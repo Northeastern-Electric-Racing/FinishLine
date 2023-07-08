@@ -7,7 +7,7 @@
  * This file centralizes URLs used to query the API.
  */
 
-const API_URL: string = import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
