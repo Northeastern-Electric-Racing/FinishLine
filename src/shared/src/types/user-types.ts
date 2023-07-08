@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Team } from './team-types';
+
 export interface User {
   userId: number;
   firstName: string;
@@ -38,6 +40,7 @@ export interface AuthenticatedUser {
   role: Role;
   defaultTheme?: ThemeName;
   teamAsLeadId?: string;
+  isFinance?: boolean;
   favoritedProjectsId?: number[];
 }
 

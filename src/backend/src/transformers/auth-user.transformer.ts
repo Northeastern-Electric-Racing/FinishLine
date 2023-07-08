@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Team } from '@prisma/client';
 import { AuthenticatedUser } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 
@@ -12,7 +12,11 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     role: user.role,
     defaultTheme: user.userSettings?.defaultTheme,
     teamAsLeadId: user.teamAsLead?.teamId,
-    favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId)
+    favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
+    isFinance:
+      !!process.env.FINANCE_TEAM_ID &&
+      (user.teams.map((team: Team) => team.teamId).includes(process.env.FINANCE_TEAM_ID) ||
+        user.teamAsLead?.teamId === process.env.FINANCE_TEAM_ID)
   };
 };
 

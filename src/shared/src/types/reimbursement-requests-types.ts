@@ -66,3 +66,10 @@ export interface ExpenseType {
   code: number;
   allowed: boolean;
 }
+
+export interface Reimbursement {
+  reimbursementId: string;
+  dateCreated: Date;
+  amount: number;
+  userSubmitted: User;
+}

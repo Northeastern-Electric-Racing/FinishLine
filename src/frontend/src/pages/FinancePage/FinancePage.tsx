@@ -3,51 +3,91 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Button, Stack, TextField, Typography } from '@mui/material';
-import { useUploadSingleReceipt } from '../../hooks/finance.hooks';
+import { Box, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import PageBlock from '../../layouts/PageBlock';
+import PageTitle from '../../layouts/PageTitle/PageTitle';
+import { NERButton } from '../../components/NERButton';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import Refunds from './RefundsSection';
+import ReimbursementRequestTable from './ReimbursementRequestsSection';
+import { useCurrentUserReimbursementRequests } from '../../hooks/finance.hooks';
+import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const FinancePage = () => {
-  const [file, setFile] = useState<File>();
-  const [fileId, setFileId] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [reimbursementRequestId, setReimbursementRequestId] = useState('');
+  const user = useCurrentUser();
 
-  const { mutateAsync } = useUploadSingleReceipt(reimbursementRequestId);
+  const { data, isLoading, isError, error } = useCurrentUserReimbursementRequests();
 
-  const onSubmit = async (event: any) => {
-    event.preventDefault();
+  const isFinance = user.isFinance;
 
-    const formData = new FormData();
-    formData.append('image', file!);
-    const { googleFileId, name } = await mutateAsync(formData);
-    if (typeof googleFileId === 'string') {
-      setFileId(googleFileId);
-    }
-    if (typeof fileName === 'string') {
-      setFileName(name);
-    }
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  if (isError) return <ErrorPage message={error?.message} />;
+  if (isLoading || !data) return <LoadingIndicator />;
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const financeActionsDropdown = (
+    <>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="project-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={() => {}}>
+          <ListItemIcon>
+            <NoteAddIcon fontSize="small" />
+          </ListItemIcon>
+          Create Reimbursement Request
+        </MenuItem>
+        <MenuItem onClick={() => {}}>
+          <ListItemIcon>
+            <AttachMoneyIcon fontSize="small" />
+          </ListItemIcon>
+          Report Refund
+        </MenuItem>
+        <MenuItem onClick={() => {}} disabled={!isFinance}>
+          <ListItemIcon>
+            <ListAltIcon fontSize="small" />
+          </ListItemIcon>
+          Pending Advisor List
+        </MenuItem>
+        <MenuItem onClick={() => {}} disabled={!isFinance}>
+          <ListItemIcon>
+            <ReceiptIcon fontSize="small" />
+          </ListItemIcon>
+          Generate All Receipts
+        </MenuItem>
+      </Menu>
+    </>
+  );
   return (
     <div>
-      <Typography>{fileName}</Typography>
-      <iframe src={`https://drive.google.com/file/d/${fileId}/preview`} title="ollie"></iframe>
-      <form onSubmit={onSubmit}>
-        <Stack>
-          <input
-            onChange={(e) => {
-              if (e.target.files) {
-                setFile(e.target.files[0]);
-              }
-            }}
-            type="file"
-            accept="image/*"
-          />
-          <Typography>Reimbursement Request Id</Typography>
-          <TextField onChange={(e) => setReimbursementRequestId(e.target.value)}></TextField>
-          <Button type="submit"> Submit</Button>
-        </Stack>
-      </form>
+      <PageTitle title={'Reimbursement Requests'} previousPages={[]} actionButton={financeActionsDropdown} />
+      <Box sx={{ display: 'flex', flexDirection: 'horizontal' }}>
+        <PageBlock title="Refunds" style={{ flex: 2, marginRight: '10px' }}>
+          <Refunds currentUserRequests={data} />
+        </PageBlock>
+        <PageBlock title="Reimbursement Requests" style={{ flex: 3 }}>
+          <ReimbursementRequestTable currentUserRequests={data} />
+        </PageBlock>
+      </Box>
     </div>
   );
 };

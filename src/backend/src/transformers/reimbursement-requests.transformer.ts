@@ -3,6 +3,7 @@ import {
   ClubAccount,
   ExpenseType,
   Receipt,
+  Reimbursement,
   ReimbursementProduct,
   ReimbursementRequest,
   ReimbursementStatus,
@@ -15,6 +16,7 @@ import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-sta
 import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
+import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
@@ -85,5 +87,16 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
     name: vendor.name
+  };
+};
+
+export const reimbursementTransformer = (
+  reimbursement: Prisma.ReimbursementGetPayload<typeof reimbursementQueryArgs>
+): Reimbursement => {
+  return {
+    reimbursementId: reimbursement.reimbursementId,
+    dateCreated: reimbursement.dateCreated,
+    amount: reimbursement.amount,
+    userSubmitted: userTransformer(reimbursement.userSubmitted)
   };
 };

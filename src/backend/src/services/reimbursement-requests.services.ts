@@ -3,8 +3,22 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
+import {
+  Reimbursement_Request,
+  Reimbursement_Status_Type,
+  User,
+  Reimbursement as PrismaReimbursement
+} from '@prisma/client';
+import {
+  ClubAccount,
+  ExpenseType,
+  Reimbursement,
+  ReimbursementRequest,
+  ReimbursementStatusType,
+  Vendor,
+  isAdmin,
+  isGuest
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
@@ -30,8 +44,10 @@ import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-re
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
-  reimbursementStatusTransformer
+  reimbursementStatusTransformer,
+  reimbursementTransformer
 } from '../transformers/reimbursement-requests.transformer';
+import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 
 export default class ReimbursementRequestService {
   /**
@@ -44,6 +60,19 @@ export default class ReimbursementRequestService {
       ...reimbursementRequestQueryArgs
     });
     return userReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Returns all reimbursements in the database that are created by the given user.
+   * @param user ther user retrieving the reimbursements
+   * @returns all reimbursements for the given user
+   */
+  static async getUserReimbursements(user: User): Promise<Reimbursement[]> {
+    const userReimbursements = await prisma.reimbursement.findMany({
+      where: { userSubmittedId: user.userId },
+      ...reimbursementQueryArgs
+    });
+    return userReimbursements.map(reimbursementTransformer);
   }
 
   /**
@@ -129,7 +158,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, submitter: User): Promise<PrismaReimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
