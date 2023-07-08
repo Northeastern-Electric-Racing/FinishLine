@@ -40,7 +40,7 @@ export const reimbursementRequestTransformer = (
     vendor: vendorTransformer(reimbursementRequest.vendor),
     account: reimbursementRequest.account as ClubAccount,
     totalCost: reimbursementRequest.totalCost,
-    receiptPictures: reimbursementRequest.receiptPictures.map(receiptTransformer),
+    receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     expenseType: expenseTypeTransformer(reimbursementRequest.expenseType)

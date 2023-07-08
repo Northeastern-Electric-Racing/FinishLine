@@ -3,13 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementRequest, WbsNumber } from 'shared';
-import {
-  ReimbursementRequestContentArgs,
-  useGetAllExpenseTypes,
-  useGetAllVendors,
-  useUploadManyReceipts
-} from '../../../hooks/finance.hooks';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
+import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -26,16 +21,18 @@ export interface ReimbursementRequestFormInput {
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptFiles: {
-    file: File;
-  }[];
+  receiptFiles: ReimbursementReceiptUploadArgs[];
+}
+
+export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
+  totalCost: number;
 }
 
 interface ReimbursementRequestFormProps {
   submitText: string;
-  isLoading: boolean;
-  mutateAsync: (data: ReimbursementRequestContentArgs) => Promise<ReimbursementRequest>;
+  submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   defaultValues?: ReimbursementRequestFormInput;
+  previousPage: string;
 }
 
 const schema = yup.object().shape({
@@ -57,12 +54,7 @@ const schema = yup.object().shape({
   receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required')
 });
 
-const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
-  submitText,
-  mutateAsync,
-  defaultValues,
-  isLoading
-}) => {
+const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({ submitText, defaultValues, submitData, previousPage }) => {
   const {
     handleSubmit,
     control,
@@ -75,11 +67,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
-      receiptFiles:
-        defaultValues?.receiptFiles ??
-        ([] as {
-          file: File;
-        }[])
+      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
   });
 
@@ -100,7 +88,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     name: 'reimbursementProducts'
   });
 
-  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const {
     isLoading: allVendorsIsLoading,
     isError: allVendorsIsError,
@@ -133,21 +120,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     allExpenseTypesIsLoading ||
     allVendorsIsLoading ||
     allProjectsIsLoading ||
-    uploadReceiptsIsLoading ||
-    isLoading ||
     !allVendors ||
     !allExpenseTypes ||
     !allProjects
   )
     return <LoadingIndicator />;
 
-  const onSubmit = async (data: ReimbursementRequestFormInput) => {
-    console.log('test');
+  const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
-      const { reimbursementRequestId } = await mutateAsync({ ...data, totalCost: totalCost, receiptFiles: data.receiptFiles.map((receipt) => receipt.file.name) });
-      await uploadReceipts({
-        id: reimbursementRequestId,
-        files: data.receiptFiles.map((receiptFile) => receiptFile.file)
+      const reimbursementRequestId = await submitData({
+        ...data,
+        totalCost: totalCost
       });
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
     } catch (e: unknown) {
@@ -190,11 +173,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       receiptRemove={receiptRemove}
       reimbursementProductAppend={reimbursementProductAppend}
       reimbursementProductRemove={reimbursementProductRemove}
-      onSubmit={onSubmit}
+      onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
       allWbsElements={allWbsElements}
       totalCost={totalCost}
       submitText={submitText}
+      previousPage={previousPage}
     />
   );
 };

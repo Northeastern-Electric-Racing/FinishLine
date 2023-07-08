@@ -21,14 +21,17 @@ import {
 } from 'shared';
 import { downloadImage } from '../utils/reimbursement-request.utils';
 
-export interface ReimbursementRequestContentArgs {
+export interface ReimbursementRequestCreateArgs {
   vendorId: string;
   account: ClubAccount;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptFiles: ReimbursementReceiptCreateArgs[];
   totalCost: number;
+}
+
+export interface ReimbursementRequestEditArgs extends ReimbursementRequestCreateArgs {
+  receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
 /**
@@ -61,9 +64,9 @@ export const useUploadManyReceipts = () => {
  * @returns the created reimbursement request
  */
 export const useCreateReimbursementRequest = () => {
-  return useMutation<ReimbursementRequest, Error, ReimbursementRequestContentArgs>(
+  return useMutation<ReimbursementRequest, Error, ReimbursementRequestCreateArgs>(
     ['finance', 'create'],
-    async (formData: ReimbursementRequestContentArgs) => {
+    async (formData: ReimbursementRequestCreateArgs) => {
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
@@ -77,9 +80,9 @@ export const useCreateReimbursementRequest = () => {
  * @returns the edited reimbursement request
  */
 export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
-  return useMutation<ReimbursementRequest, Error, ReimbursementRequestContentArgs>(
+  return useMutation<ReimbursementRequest, Error, ReimbursementRequestEditArgs>(
     ['finance', 'edit'],
-    async (formData: ReimbursementRequestContentArgs) => {
+    async (formData: ReimbursementRequestEditArgs) => {
       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
       return data;
     }

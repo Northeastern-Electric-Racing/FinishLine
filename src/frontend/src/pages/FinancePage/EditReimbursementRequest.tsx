@@ -2,12 +2,14 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import ReimbursementRequestForm from './ReimbursementRequestForm/ReimbursementRequestForm';
+import ReimbursementRequestForm, {
+  ReimbursementRequestDataSubmission
+} from './ReimbursementRequestForm/ReimbursementRequestForm';
 import {
-  ReimbursementRequestContentArgs,
   useDownloadImages,
   useEditReimbursementRequest,
-  useSingleReimbursementRequest
+  useSingleReimbursementRequest,
+  useUploadManyReceipts
 } from '../../hooks/finance.hooks';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useParams } from 'react-router-dom';
@@ -19,50 +21,19 @@ import { ReimbursementRequest } from 'shared';
 
 const RenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
-  isLoading: boolean;
-  mutateAsync: (data: ReimbursementRequestContentArgs) => Promise<ReimbursementRequest>;
-}> = ({ reimbursementRequest, mutateAsync }) => {
+  submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
+}> = ({ reimbursementRequest, submitData }) => {
   const {
     data: receiptFiles,
+    isLoading,
     isError,
     error
   } = useDownloadImages(reimbursementRequest.receiptPictures.map((pic) => pic.googleFileId));
 
   if (isError) return <ErrorPage error={error} />;
-  if (!receiptFiles) return <LoadingIndicator />;
+  if (!receiptFiles || isLoading) return <LoadingIndicator />;
 
-  return (
-    <ReimbursementRequestForm
-      submitText="Save"
-      mutateAsync={mutateAsync}
-      isLoading={false}
-      defaultValues={{
-        vendorId: reimbursementRequest.vendor.vendorId,
-        account: reimbursementRequest.account,
-        dateOfExpense: new Date(reimbursementRequest.dateOfExpense),
-        expenseTypeId: reimbursementRequest.expenseType.expenseTypeId,
-        reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
-          wbsNum: product.wbsNum,
-          name: product.name,
-          cost: product.cost
-        })),
-        receiptFiles: receiptFiles.map((file, index) => ({
-          file: { ...file, name: reimbursementRequest.receiptPictures[index].name }
-        }))
-      }}
-    />
-  );
-};
-
-const EditReimbursementRequestPage: React.FC = () => {
-  const id = useParams<{ id: string }>().id;
-
-  const { isLoading, mutateAsync } = useEditReimbursementRequest(id);
-  const { isLoading: getIsLoading, isError, error, data: reimbursementRequest } = useSingleReimbursementRequest(id);
-
-  if (isError) return <ErrorPage error={error} />;
-
-  if (getIsLoading || !reimbursementRequest) return <LoadingIndicator />;
+  const previousPage = `${routes.FINANCE}/${reimbursementRequest.reimbursementRequestId}`;
 
   return (
     <>
@@ -73,13 +44,60 @@ const EditReimbursementRequestPage: React.FC = () => {
             name: `${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(
               new Date(reimbursementRequest.dateOfExpense)
             )}`,
-            route: `${routes.FINANCE}/${reimbursementRequest.reimbursementRequestId}`
+            route: previousPage
           }
         ]}
       />
-      <RenderedDefaultValues reimbursementRequest={reimbursementRequest} mutateAsync={mutateAsync} isLoading={isLoading} />
+      <ReimbursementRequestForm
+        submitText="Save"
+        submitData={submitData}
+        defaultValues={{
+          vendorId: reimbursementRequest.vendor.vendorId,
+          account: reimbursementRequest.account,
+          dateOfExpense: new Date(reimbursementRequest.dateOfExpense),
+          expenseTypeId: reimbursementRequest.expenseType.expenseTypeId,
+          reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
+            wbsNum: product.wbsNum,
+            name: product.name,
+            cost: product.cost
+          })),
+          receiptFiles: receiptFiles.map((file, index) => ({
+            file,
+            name: reimbursementRequest.receiptPictures[index].name,
+            googleFileId: reimbursementRequest.receiptPictures[index].googleFileId
+          }))
+        }}
+        previousPage={previousPage}
+      />
     </>
   );
+};
+
+const EditReimbursementRequestPage: React.FC = () => {
+  const id = useParams<{ id: string }>().id;
+
+  const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
+    useEditReimbursementRequest(id);
+  const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
+  const { isLoading: getIsLoading, isError, error, data: reimbursementRequest } = useSingleReimbursementRequest(id);
+
+  if (isError) return <ErrorPage error={error} />;
+
+  if (getIsLoading || editReimbursementRequestIsLoading || uploadReceiptsIsLoading || !reimbursementRequest)
+    return <LoadingIndicator />;
+
+  const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
+    const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
+    console.log(filesToKeep);
+    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep });
+    await uploadReceipts({
+      id: reimbursementRequest.reimbursementRequestId,
+      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file)
+    });
+    return reimbursementRequest.reimbursementRequestId;
+  };
+
+  return <RenderedDefaultValues reimbursementRequest={reimbursementRequest} submitData={onSubmit} />;
 };
 
 export default EditReimbursementRequestPage;

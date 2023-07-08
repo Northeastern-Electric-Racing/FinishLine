@@ -75,6 +75,10 @@ export interface ReimbursementProductCreateArgs {
 }
 
 export interface ReimbursementReceiptCreateArgs {
-  name: string;
   googleFileId: string;
+  name: string;
+}
+
+export interface ReimbursementReceiptUploadArgs extends ReimbursementReceiptCreateArgs {
+  file: File;
 }

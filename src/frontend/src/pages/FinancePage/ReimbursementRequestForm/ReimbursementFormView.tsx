@@ -12,20 +12,25 @@ import {
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
-import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, Vendor, WbsNumber, wbsPipe } from 'shared';
+import {
+  ClubAccount,
+  ExpenseType,
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptUploadArgs,
+  Vendor,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import { DatePicker } from '@mui/x-date-pickers';
 import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import { routes } from '../../../utils/routes';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allExpenseTypes: ExpenseType[];
-  receiptFiles: {
-    file: File;
-  }[];
+  receiptFiles: ReimbursementReceiptUploadArgs[];
   allWbsElements: {
     wbsNum: WbsNumber;
     wbsName: string;
@@ -37,12 +42,12 @@ interface ReimbursementRequestFormViewProps {
       dateOfExpense: Date;
       expenseTypeId: string;
       reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: { file: File }[];
+      receiptFiles: ReimbursementReceiptUploadArgs[];
     },
     any
   >;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptAppend: (args: { file: File }) => void;
+  receiptAppend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
   reimbursementProductRemove: (index: number) => void;
@@ -53,7 +58,7 @@ interface ReimbursementRequestFormViewProps {
     dateOfExpense: Date;
     expenseTypeId: string;
     reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: { file: File }[];
+    receiptFiles: ReimbursementReceiptUploadArgs[];
   }>;
   errors: FieldErrors<{
     vendorId: string;
@@ -61,10 +66,11 @@ interface ReimbursementRequestFormViewProps {
     dateOfExpense: Date;
     expenseTypeId: string;
     reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: { file: File }[];
+    receiptFiles: ReimbursementReceiptUploadArgs[];
   }>;
   totalCost: number;
   submitText: string;
+  previousPage: string;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -82,7 +88,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   totalCost,
-  submitText
+  submitText,
+  previousPage
 }) => {
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -96,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         {receiptFiles.map((receiptFile, index) => (
           <li>
             <Stack key={receiptFile.file.name} direction="row" justifyContent="space-between">
-              <Typography>{receiptFile.file.name}</Typography>
+              <Typography>{receiptFile.name}</Typography>
               <IconButton onClick={() => receiptRemove(index)}>
                 <Delete />
               </IconButton>
@@ -206,7 +213,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 onChange={(e) => {
                   if (e.target.files) {
                     receiptAppend({
-                      file: e.target.files[0]
+                      file: e.target.files[0],
+                      name: e.target.files[0].name,
+                      googleFileId: ''
                     });
                   }
                 }}
@@ -231,7 +240,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Grid>
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <NERFailButton variant="contained" href={routes.FINANCE} sx={{ mx: 1 }}>
+        <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
         <NERSuccessButton variant="contained" type="submit">

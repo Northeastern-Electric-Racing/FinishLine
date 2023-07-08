@@ -19,7 +19,7 @@ import {
   Typography,
   styled
 } from '@mui/material';
-import { ClubAccount, ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
@@ -39,9 +39,7 @@ interface ReimbursementProductTableProps {
       dateOfExpense: Date;
       expenseTypeId: string;
       reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: {
-        file: File;
-      }[];
+      receiptFiles: ReimbursementReceiptUploadArgs[];
     },
     any
   >;
@@ -51,7 +49,7 @@ interface ReimbursementProductTableProps {
     dateOfExpense: Date;
     expenseTypeId: string;
     reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: { file: File }[];
+    receiptFiles: ReimbursementReceiptUploadArgs[];
   }>;
 }
 
