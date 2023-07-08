@@ -25,7 +25,6 @@
     "customize-cra": "^0.9.1",
     "google-auth-library": "^8.1.1",
     "react": "^17.0.1",
-    "react-app-rewired": "^2.1.6",
     "react-dom": "^17.0.1",
     "react-google-charts": "^4.0.0",
     "react-google-login": "^5.2.2",
@@ -57,8 +56,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "test": "vitest",
-    "eject": "react-app-rewired eject"
+    "test": "vitest"
   },
   "eslintConfig": {
     "extends": "react-app"
