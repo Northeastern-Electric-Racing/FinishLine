@@ -17,7 +17,6 @@ const AppPublic: React.FC = () => {
   const theme = useProvideThemeToggle();
   const devUserId = localStorage.getItem('devUserId');
   const render: ((props: RouteComponentProps) => React.ReactNode) | undefined = (e) => {
-    console.log(import.meta.env.VITE_REACT_APP_BACKEND_URL);
     // if logged in, go to authenticated app
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
