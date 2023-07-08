@@ -61,6 +61,8 @@ export default class TeamsService {
     if (users.map((user) => user.userId).includes(team.headId))
       throw new HttpException(400, 'team head cannot be a member!');
 
+    if (users.some((user) => team.leads.includes(user))) throw new HttpException(400, 'team leads cannot be members!');
+
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
       return {

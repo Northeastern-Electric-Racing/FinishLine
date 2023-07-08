@@ -55,7 +55,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
   const options = users
-    .filter((user) => user.userId !== team.head.userId)
+    .filter((user) => user.userId !== team.head.userId && !team.leads.includes(user))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
