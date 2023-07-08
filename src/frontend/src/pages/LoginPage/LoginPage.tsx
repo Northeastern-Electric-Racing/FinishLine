@@ -24,8 +24,6 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
   const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
-  console.log(import.meta.env.VITE_REACT_APP_BACKEND_URL);
-
   const googleLogin = (
     <GoogleLogin
       clientId={googleAuthClientId!}
