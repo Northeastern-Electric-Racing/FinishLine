@@ -25,7 +25,7 @@ const options: cors.CorsOptions = {
   preflightContinue: true,
   exposedHeaders: '*',
   optionsSuccessStatus: 204,
-  allowedHeaders,
+  allowedHeaders
 };
 
 // so that we can use cookies and json

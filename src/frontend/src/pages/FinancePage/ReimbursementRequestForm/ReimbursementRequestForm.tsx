@@ -54,7 +54,12 @@ const schema = yup.object().shape({
   receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required')
 });
 
-const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({ submitText, defaultValues, submitData, previousPage }) => {
+const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
+  submitText,
+  defaultValues,
+  submitData,
+  previousPage
+}) => {
   const {
     handleSubmit,
     control,
