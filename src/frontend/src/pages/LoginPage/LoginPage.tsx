@@ -22,7 +22,7 @@ interface LoginPageProps {
  * Page for unauthenticated users to do login.
  */
 const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSuccess, prodFailure }) => {
-  const googleAuthClientId = process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID;
+  const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
   const googleLogin = (
     <GoogleLogin
@@ -45,7 +45,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ devSetUser, devFormSubmit, prodSu
         <Typography variant="body1" sx={{ mb: 1 }}>
           Login Required. Students must use their Husky Google account.
         </Typography>
-        {process.env.NODE_ENV === 'development' ? loginDev : googleLogin}
+        {import.meta.env.MODE === 'development' ? loginDev : googleLogin}
       </CardContent>
       <CardActions>
         <Typography variant="caption">

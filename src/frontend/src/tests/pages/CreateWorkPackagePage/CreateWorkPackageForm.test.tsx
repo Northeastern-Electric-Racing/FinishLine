@@ -11,11 +11,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { User } from 'shared';
 
-jest.mock('../../../hooks/utils.hooks');
-jest.mock('../../../hooks/toasts.hooks');
-jest.mock('../../../hooks/users.hooks');
+vi.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/utils.hooks');
+vi.mock('../../../hooks/toasts.hooks');
 
-jest.mock('../../../components/ReactHookTextField', () => {
+vi.mock('../../../components/ReactHookTextField', () => {
   return {
     __esModule: true,
     default: () => <p>React hook text field component</p>
