@@ -33,6 +33,7 @@ import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
+import { makeTeamList } from '../../../../utils/teams.utils';
 
 interface TaskListNotesModalProps {
   task: Task;
@@ -93,8 +94,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   };
 
   const options = team
-    ? team.members
-        .concat(team.head)
+    ? makeTeamList(team)
         .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
         .map(userToAutocompleteOption)
     : [];
