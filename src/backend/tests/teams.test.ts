@@ -3,7 +3,7 @@ import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
 import { prismaTeam1, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
-import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, flash, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
 import { AccessDeniedException, HttpException } from '../src/utils/errors.utils';
 import teamTransformer from '../src/transformers/teams.transformer';
@@ -65,18 +65,18 @@ describe('Teams', () => {
     test('setTeamMembers works', async () => {
       jest.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       jest.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
-      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([greenlantern, theVisitor]);
 
       const teamId = 'id1';
       const userIds = [
         {
-          userId: 2
+          userId: 5
         },
         {
-          userId: 3
+          userId: 7
         }
       ];
-      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [2, 3]);
+      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [5, 7]);
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.team.update).toHaveBeenCalledTimes(1);

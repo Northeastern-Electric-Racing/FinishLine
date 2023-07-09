@@ -40,7 +40,7 @@ const ProjectsOverview: React.FC = () => {
     (project) =>
       (project.status !== WbsElementStatus.Complete && user.teamAsHeadId && user.teamAsHeadId === project.team?.teamId) ||
       project.team?.members.map((member) => member.userId).includes(user.userId) ||
-      project.team?.leads.map((member) => member.userId).includes(user.userId)
+      project.team?.leads.map((lead) => lead.userId).includes(user.userId)
   );
 
   return (
