@@ -13,18 +13,20 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, ReimbursementStatusType } from 'shared';
+import { ReimbursementRequest, ReimbursementStatusType, User } from 'shared';
 import { getCurrentReimbursementStatus } from '../../utils/finance.utils';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { fullNamePipe } from '../../utils/pipes';
 
 const createRequestData = (
   amount: number,
   dateSubmitted: Date,
   status: ReimbursementStatusType,
+  submitter: User,
   saboId?: number,
   dateDelivered?: Date
 ) => {
-  return { saboId, amount, dateSubmitted, status, dateDelivered };
+  return { saboId, amount, dateSubmitted, status, dateDelivered, submitter };
 };
 
 interface ReimbursementRequestTableProps {
@@ -46,6 +48,7 @@ const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: Reimbur
       row.totalCost,
       row.dateCreated,
       getCurrentReimbursementStatus(row.reimbursementStatuses).type,
+      row.recipient,
       row.saboId,
       row.dateDelivered
     )
@@ -69,6 +72,11 @@ const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: Reimbur
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
+              {value === 1 && (
+                <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
+                  Recipient
+                </TableCell>
+              )}
               <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
                 Sabo ID
               </TableCell>
@@ -89,6 +97,7 @@ const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: Reimbur
           <TableBody>
             {rows.map((row, index) => (
               <TableRow key={`$${row.amount}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                {value === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{row.saboId != null ? row.saboId : '-----'}</TableCell>
                 <TableCell align="center">{row.amount}</TableCell>
                 <TableCell align="center">{row.dateSubmitted.toLocaleDateString()}</TableCell>

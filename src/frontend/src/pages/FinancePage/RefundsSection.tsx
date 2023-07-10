@@ -21,8 +21,9 @@ import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest } from 'shared';
+import { Reimbursement, ReimbursementRequest, User } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { fullNamePipe } from '../../utils/pipes';
 
 const NERProgressBar = styled(LinearProgress)(({ theme }) => ({
   height: 20,
@@ -36,8 +37,8 @@ const NERProgressBar = styled(LinearProgress)(({ theme }) => ({
   }
 }));
 
-const createRefundData = (date: Date, amount: number) => {
-  return { date, amount };
+const createRefundData = (date: Date, amount: number, recipient: User) => {
+  return { date, amount, recipient };
 };
 
 interface RefundTableProps {
@@ -62,7 +63,7 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
   };
 
   const rows = (allData && value === 1 ? allData : data).map((row: Reimbursement) =>
-    createRefundData(row.dateCreated, row.amount)
+    createRefundData(row.dateCreated, row.amount, row.userSubmitted)
   );
   const totalReceived = (allData && value === 1 ? allData : data).reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
@@ -122,6 +123,11 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
                   <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
                     Amount ($)
                   </TableCell>
+                  {value === 1 && (
+                    <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
+                      Recipient
+                    </TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -132,6 +138,7 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
                   >
                     <TableCell align="center">{row.date.toLocaleDateString()}</TableCell>
                     <TableCell align="center">{row.amount}</TableCell>
+                    {value === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
                   </TableRow>
                 ))}
               </TableBody>
