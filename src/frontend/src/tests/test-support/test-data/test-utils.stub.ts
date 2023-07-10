@@ -87,7 +87,7 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
 export const mockAuth = (isLoading: boolean, user?: User) => {
   return {
     user,
-    devSignin: (u) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)), // add autenticatedUser.stub.ts in test-data with same example user def
+    devSignin: (u) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
     signin: (t) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
     signout: () => {},
     isLoading

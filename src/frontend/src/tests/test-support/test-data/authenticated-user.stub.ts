@@ -15,5 +15,3 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   favoritedProjectsId: [],
   changeRequestsToReviewId: []
 };
-
-export const exampleAllAuthenticatedUsers: AuthenticatedUser[] = [exampleAuthenticatedAdminUser];
