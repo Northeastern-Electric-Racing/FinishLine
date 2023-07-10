@@ -511,7 +511,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Approve Reimbursement Request Tests', () => {
     test('Approve Reimbursement Request fails if Submitter not on Finance Team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
       ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));
