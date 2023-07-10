@@ -6,7 +6,6 @@
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { WbsElementStatus } from 'shared';
 import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
@@ -27,6 +26,7 @@ import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Box, createTheme, Paper, ThemeProvider, Typography } from '@mui/material';
 import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
+import PageLayout from '../../components/PageLayout';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -199,8 +199,7 @@ const GanttPageWrapper: FC = () => {
   });
 
   return (
-    <>
-      <PageTitle previousPages={[]} title="Gantt Chart"></PageTitle>
+    <PageLayout title="Gantt Chart">
       <GanttPageFilter
         car0Handler={car0Handler}
         car1Handler={car1Handler}
@@ -218,7 +217,7 @@ const GanttPageWrapper: FC = () => {
         resetHandler={resetHandler}
       />
       <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>{ganttCharts}</ThemeProvider>
-    </>
+    </PageLayout>
   );
 };
 
