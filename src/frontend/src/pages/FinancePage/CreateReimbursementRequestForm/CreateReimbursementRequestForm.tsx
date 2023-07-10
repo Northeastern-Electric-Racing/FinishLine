@@ -47,7 +47,7 @@ const schema = yup.object().shape({
     )
     .required('reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
-  receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required'),
+  receiptFiles: yup.array().required('receipt files required').min(1, 'At least one Receipt is required')
 });
 
 const CreateReimbursementRequestForm = () => {
