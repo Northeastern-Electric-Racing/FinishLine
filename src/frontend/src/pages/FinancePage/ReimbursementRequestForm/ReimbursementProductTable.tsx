@@ -17,12 +17,13 @@ import {
   TableRow,
   TextField,
   Typography,
-  styled
+  styled,
+  Box
 } from '@mui/material';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, validateWBS, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
-import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -32,25 +33,8 @@ interface ReimbursementProductTableProps {
     label: string;
     id: string;
   }[];
-  control: Control<
-    {
-      vendorId: string;
-      account: ClubAccount;
-      dateOfExpense: Date;
-      expenseTypeId: string;
-      reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: ReimbursementReceiptUploadArgs[];
-    },
-    any
-  >;
-  errors: FieldErrors<{
-    vendorId: string;
-    account: ClubAccount;
-    dateOfExpense: Date;
-    expenseTypeId: string;
-    reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: ReimbursementReceiptUploadArgs[];
-  }>;
+  errors: FieldErrors<ReimbursementRequestFormInput>;
+  control: Control<ReimbursementRequestFormInput, any>;
 }
 
 const ListItem = styled('li')(({ theme }) => ({

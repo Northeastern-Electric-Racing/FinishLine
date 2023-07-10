@@ -35,39 +35,15 @@ interface ReimbursementRequestFormViewProps {
     wbsNum: WbsNumber;
     wbsName: string;
   }[];
-  control: Control<
-    {
-      vendorId: string;
-      account: ClubAccount;
-      dateOfExpense: Date;
-      expenseTypeId: string;
-      reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: ReimbursementReceiptUploadArgs[];
-    },
-    any
-  >;
+  control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptAppend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
-  handleSubmit: UseFormHandleSubmit<{
-    vendorId: string;
-    account: ClubAccount;
-    dateOfExpense: Date;
-    expenseTypeId: string;
-    reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: ReimbursementReceiptUploadArgs[];
-  }>;
-  errors: FieldErrors<{
-    vendorId: string;
-    account: ClubAccount;
-    dateOfExpense: Date;
-    expenseTypeId: string;
-    reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: ReimbursementReceiptUploadArgs[];
-  }>;
+  handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
+  errors: FieldErrors<ReimbursementRequestFormInput>;
   totalCost: number;
   submitText: string;
   previousPage: string;
@@ -130,7 +106,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 name="vendorId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.vendorId}>
+                  <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
                     {allVendors.map((vendor) => (
                       <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
                         {vendor.name}
@@ -149,7 +125,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 name="account"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.account}>
+                  <Select
+                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    value={value}
+                    error={!!errors.account}
+                  >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
                         {account}
@@ -171,7 +151,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <DatePicker
                     value={value}
                     onChange={(newValue) => {
-                      onChange(newValue);
+                      onChange(newValue ?? new Date());
                     }}
                     renderInput={(params) => (
                       <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
@@ -189,7 +169,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   name="expenseTypeId"
                   control={control}
                   render={({ field: { onChange, value } }) => (
-                    <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.expenseTypeId}>
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value)}
+                      value={value}
+                      error={!!errors.expenseTypeId}
+                    >
                       {allExpenseTypes.map((expenseType) => (
                         <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
                           {expenseType.name}

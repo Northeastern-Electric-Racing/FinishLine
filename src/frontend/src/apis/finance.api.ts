@@ -14,7 +14,6 @@ import { apiUrls } from '../utils/urls';
 export const uploadSingleReceipt = (file: File, id: string) => {
   const formData = new FormData();
   formData.append('image', file);
-  console.log(formData);
   return axios.post(apiUrls.financeUploadRceipt(id), formData);
 };
 
