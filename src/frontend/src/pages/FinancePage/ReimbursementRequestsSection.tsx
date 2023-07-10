@@ -55,7 +55,11 @@ const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: Reimbur
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
       <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
         <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
-          <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="My Requests" value={0} />
+          <Tab
+            sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700, pointerEvents: user.isFinance ? 'auto' : 'none' }}
+            label="My Requests"
+            value={0}
+          />
           {user.isFinance && (
             <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Requests" value={1} />
           )}

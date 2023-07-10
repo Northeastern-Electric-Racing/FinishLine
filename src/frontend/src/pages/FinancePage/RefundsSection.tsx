@@ -75,10 +75,14 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
   const percentRefunded = (totalReceived / totalOwed) * 100;
 
   return (
-    <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
+    <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
       <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
         <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
-          <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="My Refunds" value={0} />
+          <Tab
+            sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700, pointerEvents: user.isFinance ? 'auto' : 'none' }}
+            label="My Refunds"
+            value={0}
+          />
           {user.isFinance && (
             <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Refunds" value={1} />
           )}
@@ -86,7 +90,7 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
       </AppBar>
       <Box
         sx={{
-          backgroundColor: theme.palette.background.default,
+          backgroundColor: theme.palette.background.paper,
           width: '100%',
           padding: '10px',
           borderRadius: '0 0 8px 8px'

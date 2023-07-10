@@ -88,12 +88,12 @@ const FinancePage = () => {
     <div>
       <PageTitle title={'Reimbursement Requests'} previousPages={[]} actionButton={financeActionsDropdown} />
       <Box sx={{ display: 'flex', flexDirection: 'horizontal' }}>
-        <PageBlock title="Refunds" style={{ flex: 2, marginRight: '10px' }}>
+        <Box style={{ flex: 2, marginRight: '10px' }}>
           <Refunds currentUserRequests={data} allRequests={allRequestData} />
-        </PageBlock>
-        <PageBlock title="Reimbursement Requests" style={{ flex: 3 }}>
+        </Box>
+        <Box style={{ flex: 3 }}>
           <ReimbursementRequestTable currentUserRequests={data} allRequests={allRequestData} />
-        </PageBlock>
+        </Box>
       </Box>
     </div>
   );
