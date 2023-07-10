@@ -90,6 +90,13 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
+  '/:userId/reimburse',
+  intMinZero(body('amount')),
+  validateInputs,
+  ReimbursementRequestController.reimburseUser
+);
+
+reimbursementRequestsRouter.post(
   '/:requestId/upload-receipt',
   upload.single('image'),
   ReimbursementRequestController.uploadReceipt

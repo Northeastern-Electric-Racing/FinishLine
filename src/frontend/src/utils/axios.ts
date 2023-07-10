@@ -1,7 +1,7 @@
 import { default as axiosStatic } from 'axios';
 
 const axios = axiosStatic.create({
-  withCredentials: process.env.NODE_ENV !== 'development' ? true : undefined
+  withCredentials: import.meta.env.MODE !== 'development' ? true : undefined
 });
 
 // This allows us to get good server errors
@@ -34,7 +34,7 @@ axios.interceptors.response.use(
 
 axios.interceptors.request.use(
   (request) => {
-    if (process.env.NODE_ENV === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
+    if (import.meta.env.MODE === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
     return request;
   },
   (error) => {

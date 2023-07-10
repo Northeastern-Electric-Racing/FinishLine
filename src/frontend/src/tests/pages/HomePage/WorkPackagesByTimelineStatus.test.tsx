@@ -12,7 +12,7 @@ import { exampleAllWorkPackages } from '../../test-support/test-data/work-packag
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import WorkPackagesByTimelineStatus from '../../../pages/HomePage/WorkPackagesByTimelineStatus';
 
-jest.mock('../../../hooks/work-packages.hooks');
+vi.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseAllWPs = useAllWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 
