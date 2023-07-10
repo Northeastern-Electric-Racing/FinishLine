@@ -206,7 +206,7 @@ export default class WorkPackagesService {
 
     let blockedByHasNulls = false;
     blockedByWBSElems.forEach((elem) => {
-      if (elem === null) {
+      if (!elem) {
         blockedByHasNulls = true;
         return;
       }

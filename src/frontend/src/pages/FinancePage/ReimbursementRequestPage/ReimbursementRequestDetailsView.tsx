@@ -17,67 +17,48 @@ import {
   useTheme
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { ReimbursementProduct, wbsPipe } from 'shared';
+import { ReimbursementProduct, ReimbursementRequest, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
-import { useSingleReimbursementRequest } from '../../../hooks/finance.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useHistory, useParams } from 'react-router-dom';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
-import { useEffect, useRef, useState } from 'react';
 import { Edit } from '@mui/icons-material';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ActionsMenu from '../../../components/ActionsMenu';
 
-interface ParamTypes {
-  id: string;
+interface ReimbursementRequestDetailsViewProps {
+  reimbursementRequest: ReimbursementRequest;
 }
 
-const ReimbursementRequestPage: React.FC = () => {
-  const { id } = useParams<ParamTypes>();
-  const { data: reimbursementRequest } = useSingleReimbursementRequest(id);
-
-  const ref = useRef<HTMLDivElement>(null);
-
-  const [height, setHeight] = useState<number>(350);
-
-  const history = useHistory();
-
-  // doesnt work with the dependency array for some reason
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (ref.current) {
-      setHeight(ref.current.clientHeight + 350);
-    }
-  });
-
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
+  const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
-
-  if (!reimbursementRequest) return <LoadingIndicator />;
 
   const BasicInformationView = () => {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={4}>
-          <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
+      <>
+        <Typography variant="h6">Basic Information</Typography>
+        <Grid container spacing={2}>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Sabo Number" content={`${reimbursementRequest.saboId ?? '----'}`} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+          </Grid>
         </Grid>
-        <Grid item xs={4}>
-          <VerticalDetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
-        </Grid>
-        <Grid item xs={4}>
-          <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
-        </Grid>
-        <Grid item xs={12}>
-          <VerticalDetailDisplay label="Sabo #" content={`${reimbursementRequest.saboId ?? '----'}`} />
-        </Grid>
-      </Grid>
+      </>
     );
   };
 
   const ReimbursementProductsView = () => {
-    const uniqueWbsElementsWithProducts = new Map<String, ReimbursementProduct[]>();
+    const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
     reimbursementRequest.reimbursementProducts.forEach((product) => {
       const wbs = wbsPipe(product.wbsNum);
       if (uniqueWbsElementsWithProducts.has(wbs)) {
@@ -88,13 +69,13 @@ const ReimbursementRequestPage: React.FC = () => {
       }
     });
 
-    const keys = [];
+    const keys: string[] = [];
     for (const key of uniqueWbsElementsWithProducts.keys()) {
       keys.push(key);
     }
 
     return (
-      <div ref={ref}>
+      <>
         <Typography variant="h5">Products</Typography>
         <Table component={Paper}>
           <TableHead>
@@ -118,18 +99,18 @@ const ReimbursementRequestPage: React.FC = () => {
             })}
           </TableBody>
         </Table>
-      </div>
+      </>
     );
   };
 
   const ReceiptsView = () => {
     return (
-      <Box sx={{ maxHeight: `${height!}px`, overflow: 'auto' }}>
+      <Box sx={{ maxHeight: `500px`, overflow: 'auto' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
             <iframe
-              style={{ height: `${height - 20}px`, width: '100%' }}
+              style={{ height: `250px`, width: '50%' }}
               src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
               title={receipt.name}
             ></iframe>
@@ -163,24 +144,21 @@ const ReimbursementRequestPage: React.FC = () => {
         actionButton={<ActionsMenu buttons={[<EditButton />]} />}
       ></PageTitle>
       <Grid container spacing={2} mt={2}>
-        <Grid container rowSpacing={5} item md={5} xs={12}>
+        <Grid container rowSpacing={5} item lg={6} xs={12}>
           <Grid item xs={12}>
             <BasicInformationView />
           </Grid>
-          <Grid item xs={12}>
-            <ReimbursementProductsView />
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="h5" display="inline">
-              {'Total Cost: '}
-            </Typography>
-            <Typography variant="h5" fontWeight={'normal'} display={'inline'}>
-              ${reimbursementRequest.totalCost}
-            </Typography>
+          <Grid item xs={12} container sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', mt: 2 }}>
+            <Grid item xs={6} textAlign={'center'}>
+              <Typography fontSize={50}>Total Cost</Typography>
+            </Grid>
+            <Grid xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography fontSize={50}>{`$${reimbursementRequest.totalCost}`}</Typography>
+            </Grid>
           </Grid>
         </Grid>
         {/*Divider*/}
-        <Grid item md={1} xs={0} justifyContent={'center'} display={'flex'}>
+        <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
           <Box
             sx={{
               height: '100%',
@@ -192,12 +170,17 @@ const ReimbursementRequestPage: React.FC = () => {
             }}
           />
         </Grid>
-        <Grid item md={5} xs={12}>
-          <ReceiptsView />
+        <Grid item lg={4} xs={12} container>
+          <Grid item xs={12}>
+            <ReimbursementProductsView />
+          </Grid>
+          <Grid item xs={12}>
+            <ReceiptsView />
+          </Grid>
         </Grid>
       </Grid>
     </Box>
   );
 };
 
-export default ReimbursementRequestPage;
+export default ReimbursementRequestDetailsView;
