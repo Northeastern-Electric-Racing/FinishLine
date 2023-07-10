@@ -101,15 +101,15 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
           <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
             <Stack sx={{ alignItems: 'center' }}>
               <Typography textAlign="center" sx={{ fontWeight: 700 }}>
-                Total Owed
-              </Typography>
-              <Typography> {`$${totalOwed}`}</Typography>
-            </Stack>
-            <Stack sx={{ alignItems: 'center' }}>
-              <Typography textAlign="center" sx={{ fontWeight: 700 }}>
                 Total Received
               </Typography>
               <Typography> {`$${totalReceived}`}</Typography>
+            </Stack>
+            <Stack sx={{ alignItems: 'center' }}>
+              <Typography textAlign="center" sx={{ fontWeight: 700 }}>
+                Total Owed
+              </Typography>
+              <Typography> {`$${totalOwed}`}</Typography>
             </Stack>
           </Box>
           <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
