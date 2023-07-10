@@ -25,6 +25,7 @@ import { Edit } from '@mui/icons-material';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ActionsMenu from '../../../components/ActionsMenu';
+import { useHistory } from 'react-router-dom';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -34,6 +35,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
+  const history = useHistory();
 
   const BasicInformationView = () => {
     return (
