@@ -12,7 +12,7 @@ import { exampleAllChangeRequests, exampleStageGateChangeRequest } from '../test
 import { getAllChangeRequests, getSingleChangeRequest } from '../../apis/change-requests.api';
 import { useAllChangeRequests, useSingleChangeRequest } from '../../hooks/change-requests.hooks';
 
-jest.mock('../../apis/change-requests.api');
+vi.mock('../../apis/change-requests.api');
 
 describe('change request hooks', () => {
   it('handles getting a list of change requests', async () => {

@@ -6,14 +6,14 @@
 import { render, screen } from '../test-support/test-utils';
 import AppMain from '../../app/AppMain';
 
-jest.mock('../../app/AppPublic', () => {
+vi.mock('../../app/AppPublic', () => {
   return {
     __esModule: true,
     default: () => <div>public</div>
   };
 });
 
-jest.mock('../../app/AppContext', () => {
+vi.mock('../../app/AppContext', () => {
   return {
     __esModule: true,
     default: (props: any) => (
