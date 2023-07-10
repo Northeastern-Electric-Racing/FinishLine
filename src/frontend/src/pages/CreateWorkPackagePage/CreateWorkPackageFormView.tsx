@@ -223,10 +223,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
               <FormControl fullWidth>
                 <FormLabel>Project WBS Number</FormLabel>
                 <NERAutocomplete
-                id="wbs-autocomplete"
+                  id="wbs-autocomplete"
                   onChange={wbsAutocompleteOnChange}
                   options={wbsDropdownOptions}
-                size="small"
+                  size="small"
                   placeholder="Select a project or work package"
                   value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
                 />
@@ -242,7 +242,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
                   render={({ field: { onChange, value } }) => (
                     <DatePicker
                       inputFormat="yyyy-MM-dd"
-                      onChange={onChange}
+                      onChange={(e) => onChange(e ?? new Date())}
                       className={'padding: 10'}
                       value={value}
                       shouldDisableDate={disableStartDate}
