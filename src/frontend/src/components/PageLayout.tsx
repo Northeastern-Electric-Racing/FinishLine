@@ -4,12 +4,12 @@ import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import React, { ReactNode, ReactElement, Fragment } from 'react';
 import PageTitle from '../layouts/PageTitle/PageTitle';
-import { LinkItem } from '../utils/types';
+import { MUILinkItem } from '../utils/types';
 
 interface PageLayoutProps {
   title?: string;
   hidePageTitle?: boolean;
-  previousPages?: LinkItem[];
+  previousPages?: MUILinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
 }
@@ -32,7 +32,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <Sidebar />
       <Box sx={{ mt: '4rem', ml: '85px' }}>
         <Container maxWidth={false} sx={{ p: 1 }}>
-          {!hidePageTitle && title && previousPages && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
+          {!hidePageTitle && title && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
           {children}
         </Container>
       </Box>

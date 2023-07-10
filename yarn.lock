@@ -3953,7 +3953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-is@npm:^18.2.0":
+"@types/react-is@npm:^18.2.1":
   version: 18.2.1
   resolution: "@types/react-is@npm:18.2.1"
   dependencies:

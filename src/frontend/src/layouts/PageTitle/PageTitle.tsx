@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, Grid } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
-import { LinkItem } from '../../utils/types';
+import { MUILinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
 
 interface PageTitleProps {
   title: string;
-  previousPages: LinkItem[];
+  previousPages: MUILinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
 }
@@ -26,13 +26,17 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
   return (
     <>
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-      <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', flexDirection: ['column', 'row'], justifyContent: 'space-between', gap: 1 }}>
-          <Typography variant="h4" fontSize={30} sx={{ verticalAlign: 'middle', display: 'inline-flex' }}>
-            {title}
-          </Typography>
-          <Box>{headerRight}</Box>
-        </Box>
+      <Box sx={{ mb: 2 }}>
+        <Grid container>
+          <Grid item xs={6} md={8}>
+            <Typography variant="h4" fontSize={30}>
+              {title}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={4} textAlign={'right'}>
+            {headerRight}
+          </Grid>
+        </Grid>
         {tabs && <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>{tabs}</Box>}
       </Box>
     </>

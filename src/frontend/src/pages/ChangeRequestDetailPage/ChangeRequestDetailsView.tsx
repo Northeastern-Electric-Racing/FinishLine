@@ -187,9 +187,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     </div>
   );
 
-  let actionDropdown = <></>;
-  if (changeRequest.accepted === undefined) actionDropdown = unreviewedActionsDropdown;
-  if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
+  const actionDropdown = changeRequest.accepted ? implementCrDropdown : unreviewedActionsDropdown;
 
   return (
     <PageLayout

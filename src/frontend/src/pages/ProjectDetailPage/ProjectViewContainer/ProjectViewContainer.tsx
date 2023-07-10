@@ -13,7 +13,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Box, Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -30,7 +30,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
-import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -124,42 +123,52 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const projectActionsDropdown = (
-    <Grid container>
-      <Grid item></Grid>
-      <Grid item>
-        <NERButton
-          endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-          variant="contained"
-          id="project-actions-dropdown"
-          onClick={handleClick}
-        >
-          Actions
-        </NERButton>
-      </Grid>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+    <Box ml={2}>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="project-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+      >
         <EditButton />
         <CreateChangeRequestButton />
         {teamAsLeadId && assignToMyTeamButton}
         <DeleteButton />
       </Menu>
-    </Grid>
+    </Box>
   );
 
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
+  const headerRight = (
+    <Box display="flex" justifyContent="flex-end">
+      <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
+      {projectActionsDropdown}
+    </Box>
+  );
+
   return (
-    <PageLayout title={pageTitle} hidePageTitle>
-      <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
-      <Box sx={{ display: 'flex', flexDirection: ['column', 'row'], justifyContent: 'space-between', gap: 1 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Typography variant="h4" fontSize={30}>
-            {pageTitle}
-          </Typography>
-          <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
-        </Box>
-        <Grid item>{projectActionsDropdown}</Grid>
-      </Box>
-      <ProjectDetailTabs project={project} setTab={setTab} />
+    <PageLayout
+      title={pageTitle}
+      headerRight={headerRight}
+      tabs={<ProjectDetailTabs project={project} setTab={setTab} />}
+      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+    >
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
