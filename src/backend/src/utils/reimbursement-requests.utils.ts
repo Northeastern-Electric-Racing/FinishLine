@@ -204,7 +204,7 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
 
 export type UserWithTeam = User & { teamsAsMember: Team[]; teamsAsLead: Team[] };
 
-export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
+export const validateUserIsPartOfFinanceTeam = async (user: User) => {
   const financeTeam = await prisma.team.findUnique({
     where: { teamId: process.env.FINANCE_TEAM_ID },
     include: { head: true, leads: true, members: true }

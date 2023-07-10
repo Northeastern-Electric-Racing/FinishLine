@@ -562,7 +562,7 @@ export default class ReimbursementRequestService {
    * @param submitter the user who is approving the reimbursement request
    * @returns the created reimbursment status
    */
-  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
+  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
