@@ -22,7 +22,7 @@ import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser, exampleGuestUser2, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import { routerWrapperBuilder } from '../../test-support/test-utils';
 
-jest.mock('../../../hooks/toasts.hooks');
+vi.mock('../../../hooks/toasts.hooks');
 
 const users = [exampleAdminUser, exampleLeadershipUser];
 
@@ -43,15 +43,15 @@ const renderComponent = (proj: Project = exampleProject3) => {
 
 describe('TaskList component', () => {
   // declaring in this scope allows you to mockReturnValue to a different user in each test
-  const spyUseAuthHook = jest.spyOn(authHooks, 'useAuth');
+  const spyUseAuthHook = vi.spyOn(authHooks, 'useAuth');
 
   beforeEach(() => {
     spyUseAuthHook.mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(users));
-    jest.spyOn(taskHooks, 'useCreateTask').mockReturnValue(mockCreateTaskReturnValue);
-    jest.spyOn(taskHooks, 'useEditTask').mockReturnValue(mockEditTaskReturnValue);
-    jest.spyOn(taskHooks, 'useEditTaskAssignees').mockReturnValue(mockEditTaskAssigneesReturnValue);
-    jest.spyOn(taskHooks, 'useDeleteTask').mockReturnValue(mockDeleteTaskReturnValue);
+    vi.spyOn(userHooks, 'useAllUsers').mockReturnValue(mockUseAllUsersReturnValue(users));
+    vi.spyOn(taskHooks, 'useCreateTask').mockReturnValue(mockCreateTaskReturnValue);
+    vi.spyOn(taskHooks, 'useEditTask').mockReturnValue(mockEditTaskReturnValue);
+    vi.spyOn(taskHooks, 'useEditTaskAssignees').mockReturnValue(mockEditTaskAssigneesReturnValue);
+    vi.spyOn(taskHooks, 'useDeleteTask').mockReturnValue(mockDeleteTaskReturnValue);
   });
 
   it('renders all 3 labels', () => {

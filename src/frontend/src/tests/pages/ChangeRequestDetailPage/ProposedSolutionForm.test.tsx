@@ -9,7 +9,7 @@ import ProposedSolutionForm from '../../../pages/ChangeRequestDetailPage/Propose
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
  */
-const mockHandleSubmit = jest.fn();
+const mockHandleSubmit = vi.fn();
 
 /**
  * Sets up the component under test with the desired values and renders it.

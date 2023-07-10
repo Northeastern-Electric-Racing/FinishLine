@@ -32,23 +32,23 @@ describe('Tasks', () => {
   const mockWBSElementWithProject = { ...prismaWbsElement1, project: { ...mockProjectWithTeam } };
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   beforeEach(() => {
-    jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
-    jest.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(true);
-    jest.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(true);
+    vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayShared);
+    vi.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(true);
+    vi.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(true);
   });
 
   describe('createTask', () => {
     beforeEach(() => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
     });
 
     test('create task fails when user does not have permission', async () => {
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
-      jest.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(false);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+      vi.spyOn(teamUtils, 'isUserOnTeam').mockReturnValue(false);
 
       await expect(() =>
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
@@ -62,7 +62,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when title is over word count', async () => {
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
 
       await expect(() =>
         TasksService.createTask(
@@ -81,7 +81,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when notes is over word count', async () => {
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', invalidTaskNotes, mockDate, 'HIGH', 'DONE', [])
@@ -92,7 +92,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when wbs element doesnt exist', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
@@ -102,7 +102,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when wbs element has been deleted', async () => {
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: mockDate });
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: mockDate });
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
@@ -112,8 +112,8 @@ describe('Tasks', () => {
     });
 
     test('create task fails when assignees are not on the project team', async () => {
-      jest.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(false);
-      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([]);
+      vi.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(false);
+      vi.spyOn(userUtils, 'getUsers').mockResolvedValue([]);
 
       await expect(() =>
         TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
@@ -126,8 +126,8 @@ describe('Tasks', () => {
     });
 
     test('create task succeeds', async () => {
-      jest.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
+      vi.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
       const task = await TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
         batman.userId,
@@ -142,9 +142,9 @@ describe('Tasks', () => {
 
   describe('editTaskStatus', () => {
     test('edit task status succeeds', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
       const taskId = '1';
       // Update from IN_PROGRESS to IN_BACKLOG
@@ -162,9 +162,9 @@ describe('Tasks', () => {
     });
 
     test('edit task status succeeds if the user is an assignee', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
       const taskId = '1';
       // Update from IN_PROGRESS to IN_BACKLOG
@@ -183,7 +183,7 @@ describe('Tasks', () => {
     });
 
     test('edit task fails when task does not exist', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
 
       const fakeTaskId = '100';
       await expect(() => TasksService.editTaskStatus(batman, fakeTaskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
@@ -192,9 +192,9 @@ describe('Tasks', () => {
     });
 
     test('edit task fails if user does not have permission', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
       const taskId = '1';
       // Try updating from IN_PROGRESS to IN_BACKLOG
@@ -206,9 +206,9 @@ describe('Tasks', () => {
     });
 
     test('edit task fails if the user did not create the task or is not an assignee', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
       const taskId = '1';
       // Try updating from IN_PROGRESS to IN_BACKLOG
@@ -221,7 +221,7 @@ describe('Tasks', () => {
     });
 
     test('edit task fails if task is deleted', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       const taskId = '1';
       // Try updating from IN_PROGRESS to IN_BACKLOG
@@ -233,13 +233,14 @@ describe('Tasks', () => {
 
   describe('editTaskAssignees', () => {
     test('edit task assignee succeeds', async () => {
-      jest
-        .spyOn(prisma.task, 'findUnique')
-        .mockResolvedValue({ ...taskSaveTheDayPrisma, wbsElement: { project: { team: {} } } } as any);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
-      jest.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({
+        ...taskSaveTheDayPrisma,
+        wbsElement: { project: { team: {} } }
+      } as any);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
 
       const taskId = '1';
       const userIds = [
@@ -267,7 +268,7 @@ describe('Tasks', () => {
     });
 
     test('edit task assignees fails when task does not exist', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
 
       const fakeTaskId = '100';
       await expect(() =>
@@ -276,9 +277,9 @@ describe('Tasks', () => {
     });
 
     test('edit task assignees fails if user does not have permission', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
-      jest.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
+      vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
 
       const taskId = '1';
       await expect(() =>
@@ -291,7 +292,7 @@ describe('Tasks', () => {
     });
 
     test('edit task assignees fails if task is deleted', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       const taskId = '1';
       await expect(() =>
@@ -304,7 +305,7 @@ describe('Tasks', () => {
     const mockTaskId = '4';
 
     test('delete task fails when task does not exist', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
         new NotFoundException('Task', mockTaskId)
@@ -314,7 +315,7 @@ describe('Tasks', () => {
     });
 
     test('delete task fails when task is already deleted', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
         new DeletedException('Task', mockTaskId)
@@ -324,8 +325,8 @@ describe('Tasks', () => {
     });
 
     test('delete task fails when wbs element does not exist', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
         new NotFoundException('WBS Element', taskSaveTheDayPrisma.wbsElementId)
@@ -336,8 +337,8 @@ describe('Tasks', () => {
     });
 
     test('delete task fails when wbs element is deleted', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue({ ...prismaWbsElement1, dateDeleted: new Date() });
 
       await expect(() => TasksService.deleteTask(batman, mockTaskId)).rejects.toThrow(
         new DeletedException('WBS Element', '1.2.0')
@@ -348,8 +349,8 @@ describe('Tasks', () => {
     });
 
     test('delete task fails when user does not have permission', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
 
       await expect(() => TasksService.deleteTask(wonderwoman, mockTaskId)).rejects.toThrow(
         new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks')
@@ -360,9 +361,9 @@ describe('Tasks', () => {
     });
 
     test('delete task succeeds', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
-      jest.spyOn(prisma.task, 'delete').mockResolvedValue(taskSaveTheDayDeletedPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      vi.spyOn(prisma.task, 'delete').mockResolvedValue(taskSaveTheDayDeletedPrisma);
 
       const deletedTask = await TasksService.deleteTask(batman, mockTaskId);
 
@@ -381,18 +382,18 @@ describe('Tasks', () => {
     const fakeDeadline = new Date();
 
     beforeEach(() => {
-      jest.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(true);
+      vi.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(true);
     });
 
     test('user access denied', async () => {
-      jest.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(false);
+      vi.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(false);
       await expect(() =>
         TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
       ).rejects.toThrow(new AccessDeniedException());
     });
 
     test('Task not found', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
       ).rejects.toThrow(new NotFoundException('Task', taskId));
@@ -400,9 +401,7 @@ describe('Tasks', () => {
     });
 
     test('Task deleted', async () => {
-      jest
-        .spyOn(prisma.task, 'findUnique')
-        .mockResolvedValue({ ...taskSaveTheDayPrisma, dateDeleted: new Date('1/1/2023') });
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({ ...taskSaveTheDayPrisma, dateDeleted: new Date('1/1/2023') });
       await expect(() =>
         TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
       ).rejects.toThrow(new DeletedException('Task', taskId));
@@ -410,7 +409,7 @@ describe('Tasks', () => {
     });
 
     test('Title over Limit', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       await expect(() =>
         TasksService.editTask(
           superman,
@@ -425,7 +424,7 @@ describe('Tasks', () => {
     });
 
     test('Notes over limit', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       await expect(() =>
         TasksService.editTask(superman, taskId, fakeTitle, invalidTaskNotes, fakePriority, fakeDeadline)
       ).rejects.toThrow(new HttpException(400, 'Notes must be less than 250 words'));
@@ -433,7 +432,7 @@ describe('Tasks', () => {
     });
 
     test('Task successfully edited', async () => {
-      jest.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
+      vi.spyOn(prisma.task, 'findUnique').mockResolvedValue(taskSaveTheDayPrisma);
       const updatedSaveTheDay = {
         ...taskSaveTheDayPrisma,
         title: fakeTitle,
@@ -441,7 +440,7 @@ describe('Tasks', () => {
         priority: fakePriority,
         deadline: fakeDeadline
       };
-      jest.spyOn(prisma.task, 'update').mockResolvedValue(updatedSaveTheDay);
+      vi.spyOn(prisma.task, 'update').mockResolvedValue(updatedSaveTheDay);
       const response = await TasksService.editTask(superman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline);
 
       expect(prisma.task.findUnique).toHaveBeenCalledTimes(1);

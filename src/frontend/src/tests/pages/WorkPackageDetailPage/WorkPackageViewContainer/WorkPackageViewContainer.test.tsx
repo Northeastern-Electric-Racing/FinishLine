@@ -38,10 +38,10 @@ const renderComponent = (
 
 describe('work package container view', () => {
   beforeEach(() => {
-    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    jest
-      .spyOn(wpHooks, 'useManyWorkPackages')
-      .mockReturnValue(mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage]));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(
+      mockUseManyWorkPackagesReturnValue([exampleResearchWorkPackage])
+    );
   });
 
   it('renders the project', () => {

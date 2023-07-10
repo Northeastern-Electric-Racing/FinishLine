@@ -12,7 +12,7 @@ import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { mockUseSingleUserSettings } from '../../test-support/mock-hooks';
 
-jest.mock('../../../pages/HomePage/UsefulLinks', () => {
+vi.mock('../../../pages/HomePage/UsefulLinks', () => {
   return {
     __esModule: true,
     default: () => {
@@ -21,7 +21,7 @@ jest.mock('../../../pages/HomePage/UsefulLinks', () => {
   };
 });
 
-jest.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
+vi.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
   return {
     __esModule: true,
     default: () => {
@@ -30,7 +30,7 @@ jest.mock('../../../pages/HomePage/UpcomingDeadlines', () => {
   };
 });
 
-jest.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
+vi.mock('../../../pages/HomePage/WorkPackagesByTimelineStatus', () => {
   return {
     __esModule: true,
     default: () => {
@@ -53,12 +53,12 @@ const renderComponent = () => {
 
 describe('home component', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    jest.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 
-  afterAll(() => jest.clearAllMocks());
+  afterAll(() => vi.clearAllMocks());
 
   it('renders welcome', () => {
     renderComponent();

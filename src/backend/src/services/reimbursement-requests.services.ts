@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Reimbursement, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -120,6 +120,50 @@ export default class ReimbursementRequestService {
     });
 
     return createdReimbursementRequest;
+  }
+
+  /**
+   * Function to reimburse a user for their expenses.
+   *
+   * @param amount the amount to be reimbursed
+   * @param submitter the person performing the reimbursement
+   * @returns the created reimbursement
+   */
+  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
+    }
+
+    const totalOwed = await prisma.reimbursement_Request
+      .findMany({
+        where: { recipientId: submitter.userId, dateDeleted: null }
+      })
+      .then((userReimbursementRequests: Reimbursement_Request[]) => {
+        return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
+      });
+
+    const totalReimbursed = await prisma.reimbursement
+      .findMany({
+        where: { purchaserId: submitter.userId },
+        select: { amount: true }
+      })
+      .then((reimbursements: { amount: number }[]) =>
+        reimbursements.reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0)
+      );
+
+    if (amount > totalOwed - totalReimbursed) {
+      throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
+    }
+    const newReimbursement = await prisma.reimbursement.create({
+      data: {
+        purchaserId: submitter.userId,
+        amount,
+        dateCreated: new Date(),
+        userSubmittedId: submitter.userId
+      }
+    });
+
+    return newReimbursement;
   }
 
   /**
