@@ -7,6 +7,7 @@ import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
 import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { isUserOnTeam } from './teams.utils';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -205,16 +206,13 @@ export type UserWithTeam = User & { teamsAsMember: Team[]; teamsAsLead: Team[] }
 
 export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
   const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true, members: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (
-    !user.teamsAsMember.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) &&
-    !(financeTeam.headId === user.userId) &&
-    !user.teamsAsLead.some((team) => team.teamId === process.env.FINANCE_TEAM_ID)
-  ) {
+  if (!isUserOnTeam(financeTeam, user)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };

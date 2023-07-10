@@ -28,7 +28,7 @@ export const allUsersOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsM
 export const isUserOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, user: User): boolean => {
   return (
     team.headId === user.userId ||
-    team.members.map((user) => user.userId).includes(user.userId) ||
-    team.leads.map((lead) => lead.userId).includes(user.userId)
+    team.leads.map((lead) => lead.userId).includes(user.userId) ||
+    team.members.map((member) => member.userId).includes(user.userId)
   );
 };
