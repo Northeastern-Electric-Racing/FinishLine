@@ -35,6 +35,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
           </Grid>
+          <Grid
+            item
+            xs={12}
+            container
+            mt={2}
+            ml={2}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px' }}
+          >
+            <Grid item xs={6} textAlign={'center'}>
+              <Typography fontSize={50}>Total Cost</Typography>
+            </Grid>
+            <Grid xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography fontSize={50}>{`$${reimbursementRequest.totalCost}`}</Typography>
+            </Grid>
+          </Grid>
         </Grid>
       </>
     );
@@ -88,15 +103,15 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const ReceiptsView = () => {
     return (
-      <Box sx={{ maxHeight: `500px`, overflow: 'auto' }}>
+      <Box sx={{ maxHeight: `250px`, overflow: 'auto' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
             <iframe
-              style={{ height: `250px`, width: '50%' }}
+              style={{ height: `200px`, width: '50%' }}
               src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
               title="ollie"
-            ></iframe>
+            />
           );
         })}
       </Box>
@@ -108,20 +123,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <PageTitle
         title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
         previousPages={[]}
-      ></PageTitle>
+      />
       <Grid container spacing={2} mt={2}>
-        <Grid container rowSpacing={5} item lg={6} xs={12}>
-          <Grid item xs={12}>
-            <BasicInformationView />
-          </Grid>
-          <Grid item xs={12} container sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', mt: 2 }}>
-            <Grid item xs={6} textAlign={'center'}>
-              <Typography fontSize={50}>Total Cost</Typography>
-            </Grid>
-            <Grid xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography fontSize={50}>{`$${reimbursementRequest.totalCost}`}</Typography>
-            </Grid>
-          </Grid>
+        <Grid item lg={6} xs={12}>
+          <BasicInformationView />
         </Grid>
         {/*Divider*/}
         <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
@@ -136,12 +141,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             }}
           />
         </Grid>
-        <Grid item lg={4} xs={12} container>
-          <Grid item xs={12}>
-            <ReimbursementProductsView />
-          </Grid>
+        <Grid item lg={4} xs={12} rowSpacing={5} container>
           <Grid item xs={12}>
             <ReceiptsView />
+          </Grid>
+          <Grid item xs={12}>
+            <ReimbursementProductsView />
           </Grid>
         </Grid>
       </Grid>
