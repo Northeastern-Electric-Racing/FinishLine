@@ -31,39 +31,15 @@ interface CreateReimbursementRequestFormViewProps {
     wbsNum: WbsNumber;
     wbsName: string;
   }[];
-  control: Control<
-    {
-      vendorId: string;
-      account: ClubAccount;
-      dateOfExpense: Date;
-      expenseTypeId: string;
-      reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: { file: File }[];
-    },
-    any
-  >;
+  control: Control<CreateReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptAppend: (args: { file: File }) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: CreateReimbursementRequestFormInput) => void;
-  handleSubmit: UseFormHandleSubmit<{
-    vendorId: string;
-    account: ClubAccount;
-    dateOfExpense: Date;
-    expenseTypeId: string;
-    reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: { file: File }[];
-  }>;
-  errors: FieldErrors<{
-    vendorId: string;
-    account: ClubAccount;
-    dateOfExpense: Date;
-    expenseTypeId: string;
-    reimbursementProducts: ReimbursementProductCreateArgs[];
-    receiptFiles: { file: File }[];
-  }>;
+  handleSubmit: UseFormHandleSubmit<CreateReimbursementRequestFormInput>;
+  errors: FieldErrors<CreateReimbursementRequestFormInput>;
   totalCost: number;
 }
 
@@ -124,7 +100,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
                 name="vendorId"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.vendorId}>
+                  <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
                     {allVendors.map((vendor) => (
                       <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
                         {vendor.name}
@@ -143,7 +119,11 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
                 name="account"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.account}>
+                  <Select
+                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    value={value}
+                    error={!!errors.account}
+                  >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
                         {account}
@@ -165,7 +145,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
                   <DatePicker
                     value={value}
                     onChange={(newValue) => {
-                      onChange(newValue);
+                      onChange(newValue ?? new Date());
                     }}
                     renderInput={(params) => (
                       <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
@@ -183,7 +163,11 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
                   name="expenseTypeId"
                   control={control}
                   render={({ field: { onChange, value } }) => (
-                    <Select onChange={(newValue) => onChange(newValue)} value={value} error={!!errors.expenseTypeId}>
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value)}
+                      value={value}
+                      error={!!errors.expenseTypeId}
+                    >
                       {allExpenseTypes.map((expenseType) => (
                         <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
                           {expenseType.name}
@@ -197,7 +181,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
             </Grid>
             <Grid item xs={12}>
               <FormLabel>Total Cost</FormLabel>
-              <Typography variant='h6'>${totalCost}</Typography>
+              <Typography variant="h6">${totalCost}</Typography>
             </Grid>
           </Grid>
           <Grid item xs={6}>

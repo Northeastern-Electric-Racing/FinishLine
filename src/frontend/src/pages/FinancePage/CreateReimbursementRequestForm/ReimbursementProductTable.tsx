@@ -19,10 +19,11 @@ import {
   Typography,
   styled
 } from '@mui/material';
-import { ClubAccount, ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Box } from '@mui/system';
 import { Control, Controller } from 'react-hook-form';
+import { CreateReimbursementRequestFormInput } from './CreateReimbursementRequestForm';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -32,19 +33,7 @@ interface ReimbursementProductTableProps {
     label: string;
     id: string;
   }[];
-  control: Control<
-    {
-      vendorId: string;
-      account: ClubAccount;
-      dateOfExpense: Date;
-      expenseTypeId: string;
-      reimbursementProducts: ReimbursementProductCreateArgs[];
-      receiptFiles: {
-        file: File;
-      }[];
-    },
-    any
-  >;
+  control: Control<CreateReimbursementRequestFormInput, any>;
 }
 
 const ListItem = styled('li')(({ theme }) => ({

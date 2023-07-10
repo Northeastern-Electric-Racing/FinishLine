@@ -37,6 +37,11 @@ export const useUploadSingleReceipt = () => {
   );
 };
 
+/**
+ * Uploads many receipts to a given reimbursement request
+ *
+ * @returns The created receipt information
+ */
 export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
     ['finance', 'image'],
