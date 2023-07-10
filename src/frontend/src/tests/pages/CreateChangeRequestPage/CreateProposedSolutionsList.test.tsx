@@ -23,7 +23,7 @@ const renderComponent = () => {
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
 
   it('Renders correctly when empty', () => {

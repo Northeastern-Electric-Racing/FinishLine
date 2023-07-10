@@ -15,25 +15,25 @@ import * as wpHooks from '../../../hooks/work-packages.hooks';
 import { mockUseManyWorkPackagesReturnValue, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 
-jest.mock('../../../utils/axios');
-jest.mock('../../../hooks/toasts.hooks');
+vi.mock('../../../utils/axios');
+vi.mock('../../../hooks/toasts.hooks');
 
 // Sets up the component under test with the desired values and renders it.
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProjectViewContainer project={exampleProject1} enterEditMode={jest.fn} />
+      <ProjectViewContainer project={exampleProject1} enterEditMode={vi.fn} />
     </RouterWrapper>
   );
 };
 
 describe('Rendering Project View Container', () => {
   beforeEach(() => {
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    jest.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
-    jest.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(mockUseManyWorkPackagesReturnValue(exampleAllWorkPackages));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
+    vi.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(mockUseManyWorkPackagesReturnValue(exampleAllWorkPackages));
     renderComponent();
   });
 
@@ -45,7 +45,7 @@ describe('Rendering Project View Container', () => {
   });
 
   it('disables the buttons for guest users', () => {
-    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleGuestUser);
 
     act(() => {
       fireEvent.click(screen.getByText('Actions'));

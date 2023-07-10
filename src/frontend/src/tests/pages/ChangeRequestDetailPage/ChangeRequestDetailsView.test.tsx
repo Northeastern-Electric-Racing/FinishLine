@@ -12,7 +12,7 @@ import { UseQueryResult } from 'react-query';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
 
-jest.mock('../../../hooks/projects.hooks');
+vi.mock('../../../hooks/projects.hooks');
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
 const mockSingleProjectHook = (isLoading: boolean, isError: boolean, data?: Project, error?: Error) => {
   mockedUseSingleProject.mockReturnValue(mockUseQueryResult<Project>(isLoading, isError, data, error));
