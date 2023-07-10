@@ -76,6 +76,18 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Returns all the reimbursements in the database
+   * @param user the user retrieving all the reimbursements
+   * @returns all the reimbursements in the database
+   */
+  static async getAllReimbursements(user: UserWithTeam): Promise<Reimbursement[]> {
+    await validateUserIsPartOfFinanceTeam(user);
+
+    const reimbursements = await prisma.reimbursement.findMany({ ...reimbursementQueryArgs });
+    return reimbursements.map(reimbursementTransformer);
+  }
+
+  /**
    * Get all the vendors in the database.
    * @returns all the vendors
    */

@@ -15,7 +15,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import Refunds from './RefundsSection';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
-import { useCurrentUserReimbursementRequests } from '../../hooks/finance.hooks';
+import { useAllReimbursementRequests, useCurrentUserReimbursementRequests } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
@@ -23,13 +23,20 @@ const FinancePage = () => {
   const user = useCurrentUser();
 
   const { data, isLoading, isError, error } = useCurrentUserReimbursementRequests();
+  const {
+    data: allRequestData,
+    isLoading: allIsLoading,
+    isError: allIsError,
+    error: allError
+  } = useAllReimbursementRequests();
 
   const isFinance = user.isFinance;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  if (user.isFinance && allIsError) return <ErrorPage message={allError?.message} />;
   if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !data) return <LoadingIndicator />;
+  if ((user.isFinance && (allIsLoading || !allRequestData)) || isLoading || !data) return <LoadingIndicator />;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -82,10 +89,10 @@ const FinancePage = () => {
       <PageTitle title={'Reimbursement Requests'} previousPages={[]} actionButton={financeActionsDropdown} />
       <Box sx={{ display: 'flex', flexDirection: 'horizontal' }}>
         <PageBlock title="Refunds" style={{ flex: 2, marginRight: '10px' }}>
-          <Refunds currentUserRequests={data} />
+          <Refunds currentUserRequests={data} allRequests={allRequestData} />
         </PageBlock>
         <PageBlock title="Reimbursement Requests" style={{ flex: 3 }}>
-          <ReimbursementRequestTable currentUserRequests={data} />
+          <ReimbursementRequestTable currentUserRequests={data} allRequests={allRequestData} />
         </PageBlock>
       </Box>
     </div>

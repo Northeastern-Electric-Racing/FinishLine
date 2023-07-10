@@ -18,10 +18,11 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { useCurrentUserReimbursements } from '../../hooks/finance.hooks';
+import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { Reimbursement, ReimbursementRequest } from 'shared';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const NERProgressBar = styled(LinearProgress)(({ theme }) => ({
   height: 20,
@@ -41,24 +42,33 @@ const createRefundData = (date: Date, amount: number) => {
 
 interface RefundTableProps {
   currentUserRequests: ReimbursementRequest[];
+  allRequests?: ReimbursementRequest[];
 }
 
-const Refunds = ({ currentUserRequests }: RefundTableProps) => {
+const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
   const [value, setValue] = useState(0);
+  const user = useCurrentUser();
 
   const { data, isLoading, isError, error } = useCurrentUserReimbursements();
+  const { data: allData, isLoading: allIsLoading, isError: allIsError, error: allError } = useAllReimbursements();
   const theme = useTheme();
 
+  if (user.isFinance && allIsError) return <ErrorPage message={allError?.message} />;
   if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !data) return <LoadingIndicator />;
+  if ((user.isFinance && (allIsLoading || !allData)) || isLoading || !data) return <LoadingIndicator />;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const rows = data.map((row: Reimbursement) => createRefundData(row.dateCreated, row.amount));
-  const totalReceived = data.reduce((accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount, 0);
-  const totalOwed = currentUserRequests.reduce(
+  const rows = (allData && value === 1 ? allData : data).map((row: Reimbursement) =>
+    createRefundData(row.dateCreated, row.amount)
+  );
+  const totalReceived = (allData && value === 1 ? allData : data).reduce(
+    (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
+    0
+  );
+  const totalOwed = (allRequests && value === 1 ? allRequests : currentUserRequests).reduce(
     (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
     0
   );
@@ -69,7 +79,9 @@ const Refunds = ({ currentUserRequests }: RefundTableProps) => {
       <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
         <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
           <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="My Refunds" value={0} />
-          <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Refunds" value={1} />
+          {user.isFinance && (
+            <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Refunds" value={1} />
+          )}
         </Tabs>
       </AppBar>
       <Box

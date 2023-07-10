@@ -31,6 +31,16 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async getAllReimbursements(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const reimbursements = await ReimbursementRequestService.getAllReimbursements(user);
+      res.status(200).json(reimbursements);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllVendors(_req: Request, res: Response, next: NextFunction) {
     try {
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors();

@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from 'react-query';
 import {
   getAllReimbursementRequests,
+  getAllReimbursements,
   getCurrentUserReimbursementRequests,
   getCurrentUserReimbursements,
   uploadSingleReceipt
@@ -50,6 +51,13 @@ export const useAllReimbursementRequests = () => {
 export const useCurrentUserReimbursements = () => {
   return useQuery<Reimbursement[], Error>(['reimbursement', 'user'], async () => {
     const { data } = await getCurrentUserReimbursements();
+    return data;
+  });
+};
+
+export const useAllReimbursements = () => {
+  return useQuery<Reimbursement[], Error>(['reimbursement'], async () => {
+    const { data } = await getAllReimbursements();
     return data;
   });
 };

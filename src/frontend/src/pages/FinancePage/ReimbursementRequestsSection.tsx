@@ -14,10 +14,8 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { ReimbursementRequest, ReimbursementStatusType } from 'shared';
-import { useAllReimbursementRequests } from '../../hooks/finance.hooks';
-import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { getCurrentReimbursementStatus } from '../../utils/finance.utils';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const createRequestData = (
   amount: number,
@@ -31,22 +29,19 @@ const createRequestData = (
 
 interface ReimbursementRequestTableProps {
   currentUserRequests: ReimbursementRequest[];
+  allRequests?: ReimbursementRequest[];
 }
 
-const ReimbursementRequestTable = ({ currentUserRequests }: ReimbursementRequestTableProps) => {
+const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: ReimbursementRequestTableProps) => {
   const theme = useTheme();
   const [value, setValue] = useState(0);
-
-  const { data, isLoading, isError, error } = useAllReimbursementRequests();
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading || !data) return <LoadingIndicator />;
+  const user = useCurrentUser();
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const rows = (value === 0 ? currentUserRequests : data).map((row: ReimbursementRequest) =>
+  const rows = (value === 1 && allRequests ? allRequests : currentUserRequests).map((row: ReimbursementRequest) =>
     createRequestData(
       row.totalCost,
       row.dateCreated,
@@ -61,7 +56,9 @@ const ReimbursementRequestTable = ({ currentUserRequests }: ReimbursementRequest
       <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
         <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
           <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="My Requests" value={0} />
-          <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Requests" value={1} />
+          {user.isFinance && (
+            <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Requests" value={1} />
+          )}
         </Tabs>
       </AppBar>
       <TableContainer component={Paper}>

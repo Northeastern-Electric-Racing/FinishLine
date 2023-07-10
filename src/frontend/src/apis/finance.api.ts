@@ -46,3 +46,12 @@ export const getCurrentUserReimbursements = () => {
     transformResponse: (data) => JSON.parse(data).map(reimbursementTransformer)
   });
 };
+
+/**
+ * Gets all reimbursements
+ */
+export const getAllReimbursements = () => {
+  return axios.get(apiUrls.financeGetAllReimbursements(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementTransformer)
+  });
+};
