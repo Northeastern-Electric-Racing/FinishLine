@@ -85,6 +85,7 @@ model User {
   submittedChangeRequests   Change_Request[]        @relation(name: "submittedChangeRequests")
   reviewedChangeRequests    Change_Request[]        @relation(name: "reviewedChangeRequests")
   deletedChangeRequests     Change_Request[]        @relation(name: "deletedChangeRequests")
+  changeRequestsToReview    Change_Request[]        @relation(name: "requestedChangeRequestReviewers")
   markedAsProjectLead       Activation_CR[]         @relation(name: "markAsProjectLead")
   markedAsProjectManager    Activation_CR[]         @relation(name: "markAsProjectManager")
   changes                   Change[]
@@ -104,6 +105,8 @@ model User {
   reimbursementStatuses     Reimbursement_Status[]
   reimbursements            Reimbursement[]         @relation(name: "purchaser")
   submittedReimbursements   Reimbursement[]         @relation(name: "submitter")
+  deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
+  createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
 }
 
 model Team {
@@ -144,6 +147,7 @@ model Change_Request {
   type                    CR_Type
   reviewerId              Int?
   reviewer                User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  requestedReviewers      User[]         @relation(name: "requestedChangeRequestReviewers")
   deletedByUserId         Int?
   deletedBy               User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed            DateTime?
@@ -343,6 +347,20 @@ model Reimbursement_Status {
   reimbursementRequest   Reimbursement_Request     @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
+model Receipt {
+  receiptId              String                @id @default(uuid())
+  googleFileId           String                @unique
+  name                   String
+  deletedByUserId        Int?
+  deletedBy              User?                 @relation(name: "deletedReceipts", fields: [deletedByUserId], references: [userId])
+  dateDeleted            DateTime?
+  createdBy              User                  @relation(name: "receiptsCreatedBy", fields: [createdByUserId], references: [userId])
+  createdByUserId        Int
+  dateCreated            DateTime              @default(now())
+  reimbursementRequestId String
+  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+}
+
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
   saboId                 Int?                    @unique
@@ -356,7 +374,7 @@ model Reimbursement_Request {
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
   totalCost              Int
-  receiptPictures        String[]
+  receiptPictures        Receipt[]
   reimbursementProducts  Reimbursement_Product[]
   dateDelivered          DateTime?
   expenseTypeId          String

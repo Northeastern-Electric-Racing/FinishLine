@@ -20,6 +20,14 @@ export interface ReimbursementStatus {
   dateCreated: Date;
 }
 
+export interface Receipt {
+  receiptId: string;
+  googleFileId: string;
+  name: string;
+  dateDeleted?: Date;
+  deletedBy?: User;
+}
+
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
   saboId?: number;
@@ -31,7 +39,7 @@ export interface ReimbursementRequest {
   vendor: Vendor;
   account: ClubAccount;
   totalCost: number;
-  receiptPictures: string[];
+  receiptPictures: Receipt[];
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
   expenseType: ExpenseType;
