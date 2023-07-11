@@ -217,7 +217,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             />
           </FormControl>
         </PageBlock>
-
         <PageBlock title="Expected Activities">
           <ReactHookEditableList
             name="expectedActivities"
