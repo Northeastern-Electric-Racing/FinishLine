@@ -90,138 +90,139 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
         handleSubmit(onSubmit)(e);
       }}
     >
-      <PageLayout title="Create Reimbursement Request" previousPages={[]} />
-      <Grid container spacing={2}>
-        <Grid item container spacing={2} md={6} xs={12}>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <FormLabel>Purchased From</FormLabel>
-              <Controller
-                name="vendorId"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
-                    {allVendors.map((vendor) => (
-                      <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
-                        {vendor.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </FormControl>
-            <FormHelperText>{errors.vendorId?.message}</FormHelperText>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Refund Source</FormLabel>
-              <Controller
-                name="account"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select
-                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
-                    value={value}
-                    error={!!errors.account}
-                  >
-                    {Object.values(ClubAccount).map((account) => (
-                      <MenuItem key={account} value={account}>
-                        {account}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </FormControl>
-            <FormHelperText>{errors.account?.message}</FormHelperText>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <FormLabel>Date of Expense</FormLabel>
-              <Controller
-                name="dateOfExpense"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <DatePicker
-                    value={value}
-                    onChange={(newValue) => {
-                      onChange(newValue ?? new Date());
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
-                    )}
-                  />
-                )}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item container xs={6} spacing={2}>
+      <PageLayout title="Create Reimbursement Request" previousPages={[]}>
+        <Grid container spacing={2}>
+          <Grid item container spacing={2} md={6} xs={12}>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <FormLabel>Expense Type</FormLabel>
+                <FormLabel>Purchased From</FormLabel>
                 <Controller
-                  name="expenseTypeId"
+                  name="vendorId"
                   control={control}
                   render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
+                    <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
+                      {allVendors.map((vendor) => (
+                        <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
+                          {vendor.name}
                         </MenuItem>
                       ))}
                     </Select>
                   )}
                 />
               </FormControl>
-              <FormHelperText>{errors.expenseTypeId?.message}</FormHelperText>
+              <FormHelperText>{errors.vendorId?.message}</FormHelperText>
             </Grid>
-            <Grid item xs={12}>
-              <FormLabel>Total Cost</FormLabel>
-              <Typography variant="h6">${totalCost}</Typography>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <FormLabel>Refund Source</FormLabel>
+                <Controller
+                  name="account"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                      value={value}
+                      error={!!errors.account}
+                    >
+                      {Object.values(ClubAccount).map((account) => (
+                        <MenuItem key={account} value={account}>
+                          {account}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              </FormControl>
+              <FormHelperText>{errors.account?.message}</FormHelperText>
+            </Grid>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <FormLabel>Date of Expense</FormLabel>
+                <Controller
+                  name="dateOfExpense"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <DatePicker
+                      value={value}
+                      onChange={(newValue) => {
+                        onChange(newValue ?? new Date());
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
+                      )}
+                    />
+                  )}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item container xs={6} spacing={2}>
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <FormLabel>Expense Type</FormLabel>
+                  <Controller
+                    name="expenseTypeId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Select
+                        onChange={(newValue) => onChange(newValue.target.value)}
+                        value={value}
+                        error={!!errors.expenseTypeId}
+                      >
+                        {allExpenseTypes.map((expenseType) => (
+                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                            {expenseType.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                </FormControl>
+                <FormHelperText>{errors.expenseTypeId?.message}</FormHelperText>
+              </Grid>
+              <Grid item xs={12}>
+                <FormLabel>Total Cost</FormLabel>
+                <Typography variant="h6">${totalCost}</Typography>
+              </Grid>
+            </Grid>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <ReceiptFileInput />
+                <input
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      receiptAppend({
+                        file: e.target.files[0]
+                      });
+                    }
+                  }}
+                  type="file"
+                  accept="image/*"
+                  name="receiptFiles"
+                />
+              </FormControl>
+              <FormHelperText>{errors.receiptFiles?.message}</FormHelperText>
             </Grid>
           </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <ReceiptFileInput />
-              <input
-                onChange={(e) => {
-                  if (e.target.files) {
-                    receiptAppend({
-                      file: e.target.files[0]
-                    });
-                  }
-                }}
-                type="file"
-                accept="image/*"
-                name="receiptFiles"
-              />
-            </FormControl>
-            <FormHelperText>{errors.receiptFiles?.message}</FormHelperText>
+          <Grid item md={6} xs={12}>
+            <ReimbursementProductTable
+              reimbursementProducts={reimbursementProducts}
+              appendProduct={reimbursementProductAppend}
+              removeProduct={reimbursementProductRemove}
+              wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+              control={control}
+            />
+            <FormHelperText>{errors.reimbursementProducts?.message}</FormHelperText>
           </Grid>
         </Grid>
-        <Grid item md={6} xs={12}>
-          <ReimbursementProductTable
-            reimbursementProducts={reimbursementProducts}
-            appendProduct={reimbursementProductAppend}
-            removeProduct={reimbursementProductRemove}
-            wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
-            control={control}
-          />
-          <FormHelperText>{errors.reimbursementProducts?.message}</FormHelperText>
-        </Grid>
-      </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <NERFailButton variant="contained" href={routes.FINANCE} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit">
-          Submit
-        </NERSuccessButton>
-      </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <NERFailButton variant="contained" href={routes.FINANCE} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit">
+            Submit
+          </NERSuccessButton>
+        </Box>
+      </PageLayout>
     </form>
   );
 };
