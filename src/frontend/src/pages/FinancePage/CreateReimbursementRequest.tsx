@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import LoadingIndicator from '../../components/LoadingIndicator';
+import PageLayout from '../../components/PageLayout';
 import { useCreateReimbursementRequest, useUploadManyReceipts } from '../../hooks/finance.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
 import ReimbursementRequestForm, {
   ReimbursementRequestDataSubmission
@@ -28,7 +28,7 @@ const CreateReimbursementRequestPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle
+      <PageLayout
         title="Create Reimbursement Request"
         previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
       />

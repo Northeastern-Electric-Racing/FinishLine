@@ -11,13 +11,13 @@ import {
   useSingleReimbursementRequest,
   useUploadManyReceipts
 } from '../../hooks/finance.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { useParams } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { datePipe, fullNamePipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { ReimbursementRequest } from 'shared';
+import PageLayout from '../../components/PageLayout';
 
 const RenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
@@ -37,7 +37,7 @@ const RenderedDefaultValues: React.FC<{
 
   return (
     <>
-      <PageTitle
+      <PageLayout
         title="Edit Reimbursement Request"
         previousPages={[
           {
