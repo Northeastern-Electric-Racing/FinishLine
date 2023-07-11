@@ -9,11 +9,11 @@ import PageBlock from '../../layouts/PageBlock';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
-import { useAllUsers, useUpdateUserRole } from '../../hooks/users.hooks';
+import { useAllUsers, useCurrentUser, useUpdateUserRole } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import { RoleEnum, User } from 'shared';
+import { RoleEnum, User, isAdmin, rankUserRole } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -26,6 +26,8 @@ const AdminToolsUserManagement: React.FC = () => {
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
   const toast = useToast();
+  const currentUser = useCurrentUser();
+  const currentUserRank = rankUserRole(currentUser.role);
 
   const styles = {
     roleSelectStyle: {
@@ -38,7 +40,6 @@ const AdminToolsUserManagement: React.FC = () => {
       '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
     }
   };
-
   if (isLoading || !users) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
@@ -92,7 +93,7 @@ const AdminToolsUserManagement: React.FC = () => {
           <NERAutocomplete
             id="users-autocomplete"
             onChange={usersSearchOnChange}
-            options={users.map(userToAutocompleteOption)}
+            options={users.filter((user) => rankUserRole(user.role) < currentUserRank).map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a User"
             value={user ? userToAutocompleteOption(user) : null}
@@ -108,13 +109,21 @@ const AdminToolsUserManagement: React.FC = () => {
             sx={styles.roleSelectStyle}
             disabled={!user}
           >
-            {Object.values(RoleEnum)
-              .filter((v) => v !== RoleEnum.APP_ADMIN)
-              .map((v) => (
-                <MenuItem value={v} key={v}>
-                  {v}
-                </MenuItem>
-              ))}
+            {isAdmin(currentUser.role)
+              ? Object.values(RoleEnum)
+                  .filter((v) => rankUserRole(v) <= currentUserRank)
+                  .map((v) => (
+                    <MenuItem value={v} key={v}>
+                      {v}
+                    </MenuItem>
+                  ))
+              : Object.values(RoleEnum)
+                  .filter((v) => rankUserRole(v) < currentUserRank)
+                  .map((v) => (
+                    <MenuItem value={v} key={v}>
+                      {v}
+                    </MenuItem>
+                  ))}
           </Select>
         </Grid>
       </Grid>
