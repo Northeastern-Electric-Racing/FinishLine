@@ -3,17 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
+import PageLayout from '../../components/PageLayout';
 
 const AdminToolsPage: React.FC = () => {
   return (
-    <>
-      <PageTitle title="Admin Tools" previousPages={[]} />
+    <PageLayout title="Admin Tools">
       <AdminToolsUserManagement />
       <AdminToolsSlackUpcomingDeadlines />
-    </>
+    </PageLayout>
   );
 };
 

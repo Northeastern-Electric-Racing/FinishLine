@@ -8,7 +8,6 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
 import { routes } from '../../utils/routes';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -27,6 +26,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import PageLayout from '../../components/PageLayout';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -117,121 +117,122 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   };
 
   return (
-    <form
-      id={'create-standard-change-request-form'}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
-    >
-      <PageTitle title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]} />
-      <PageBlock title="Details">
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <FormLabel>WBS</FormLabel>
-            <NERAutocomplete
-              id="wbs-autocomplete"
-              onChange={wbsAutocompleteOnChange}
-              options={wbsDropdownOptions}
-              size="small"
-              placeholder="Select a project or work package"
-              value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-              sx={{ width: 1 / 2 }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl>
-              <FormLabel>Type</FormLabel>
-              <Controller
-                name="type"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value}>
-                    {permittedTypes.map((t) => (
-                      <MenuItem key={t} value={t}>
-                        {t}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+    <PageLayout title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}>
+      <form
+        id={'create-standard-change-request-form'}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
+        }}
+      >
+        <PageBlock title="Details">
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <FormLabel>WBS</FormLabel>
+              <NERAutocomplete
+                id="wbs-autocomplete"
+                onChange={wbsAutocompleteOnChange}
+                options={wbsDropdownOptions}
+                size="small"
+                placeholder="Select a project or work package"
+                value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+                sx={{ width: 1 / 2 }}
               />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl>
-              <FormLabel>What</FormLabel>
-              <ReactHookTextField
-                name="what"
-                control={control}
-                multiline
-                rows={4}
-                errorMessage={errors.what}
-                placeholder="What is the situation?"
-                sx={{ width: 300 }}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl>
-              <FormLabel>Why</FormLabel>
-              <Box>
-                {whys.map((_element, index) => (
-                  <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                    <NativeSelect {...register(`why.${index}.type`)}>
-                      {Object.values(ChangeRequestReason).map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl>
+                <FormLabel>Type</FormLabel>
+                <Controller
+                  name="type"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { onChange, value } }) => (
+                    <TextField select onChange={onChange} value={value}>
+                      {permittedTypes.map((t) => (
+                        <MenuItem key={t} value={t}>
+                          {t}
+                        </MenuItem>
                       ))}
-                    </NativeSelect>
-                    <ReactHookTextField
-                      required
-                      multiline
-                      control={control}
-                      label="Explain"
-                      sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
-                      {...register(`why.${index}.explain`)}
-                      errorMessage={errors.why?.[index]?.explain}
-                    />
-                    <IconButton type="button" onClick={() => removeWhy(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            </FormControl>
-            <FormHelperText>{errors.why?.message}</FormHelperText>
+                    </TextField>
+                  )}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl>
+                <FormLabel>What</FormLabel>
+                <ReactHookTextField
+                  name="what"
+                  control={control}
+                  multiline
+                  rows={4}
+                  errorMessage={errors.what}
+                  placeholder="What is the situation?"
+                  sx={{ width: 300 }}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl>
+                <FormLabel>Why</FormLabel>
+                <Box>
+                  {whys.map((_element, index) => (
+                    <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                      <NativeSelect {...register(`why.${index}.type`)}>
+                        {Object.values(ChangeRequestReason).map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                      <ReactHookTextField
+                        required
+                        multiline
+                        control={control}
+                        label="Explain"
+                        sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
+                        {...register(`why.${index}.explain`)}
+                        errorMessage={errors.why?.[index]?.explain}
+                      />
+                      <IconButton type="button" onClick={() => removeWhy(index)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              </FormControl>
+              <FormHelperText>{errors.why?.message}</FormHelperText>
+            </Grid>
+            <Grid xs={12}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{ mt: 1 }}
+                onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
+                style={{ marginLeft: '15px' }}
+              >
+                Add Reason
+              </Button>
+            </Grid>
           </Grid>
-          <Grid xs={12}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              sx={{ mt: 1 }}
-              onClick={() => appendWhy({ type: ChangeRequestReason.Design, explain: '' })}
-              style={{ marginLeft: '15px' }}
-            >
-              Add Reason
-            </Button>
-          </Grid>
-        </Grid>
-      </PageBlock>
-      <PageBlock title="Proposed Solutions">
-        <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
-      </PageBlock>
-      <Box textAlign="right">
-        <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-          Submit
-        </NERSuccessButton>
-      </Box>
-    </form>
+        </PageBlock>
+        <PageBlock title="Proposed Solutions">
+          <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
+        </PageBlock>
+        <Box textAlign="right">
+          <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      </form>
+    </PageLayout>
   );
 };
 
