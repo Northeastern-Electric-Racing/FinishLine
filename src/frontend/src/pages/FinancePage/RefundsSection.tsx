@@ -1,94 +1,92 @@
 import {
-  AppBar,
   Box,
-  LinearProgress,
   Paper,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
   Typography,
-  linearProgressClasses,
-  styled,
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest, User } from 'shared';
+import { Reimbursement, ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { fullNamePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
+import NERProgressBar from '../../components/NERProgressBar';
+import { getRefundRowData } from '../../utils/finance.utils';
+import ColumnHeader from './FinanceComponents/ColumnHeader';
+import FinanceTabs from './FinanceComponents/FinanceTabs';
 
-const NERProgressBar = styled(LinearProgress)(({ theme }) => ({
-  height: 20,
-  borderRadius: 5,
-  [`&.${linearProgressClasses.colorPrimary}`]: {
-    backgroundColor: theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800]
-  },
-  [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
-    backgroundColor: '#ef4345'
-  }
-}));
-
-const createRefundData = (date: Date, amount: number, recipient: User) => {
-  return { date, amount, recipient };
+const RefundHeader = ({ header, data }: { header: string; data: string }) => {
+  return (
+    <Stack sx={{ alignItems: 'center' }}>
+      <Typography textAlign="center" sx={{ fontWeight: 700 }}>
+        {header}
+      </Typography>
+      <Typography> {data}</Typography>
+    </Stack>
+  );
 };
 
 interface RefundTableProps {
-  currentUserRequests: ReimbursementRequest[];
-  allRequests?: ReimbursementRequest[];
+  userReimbursementRequests: ReimbursementRequest[];
+  allReimbursementRequests?: ReimbursementRequest[];
 }
 
-const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
-  const [value, setValue] = useState(0);
+const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: RefundTableProps) => {
+  const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
 
-  const { data, isLoading, isError, error } = useCurrentUserReimbursements();
-  const { data: allData, isLoading: allIsLoading, isError: allIsError, error: allError } = useAllReimbursements();
+  const {
+    data: userReimbursements,
+    isLoading: userReimbursementsIsLoading,
+    isError: userReimbursementsIsError,
+    error: userReimbursementError
+  } = useCurrentUserReimbursements();
+  const {
+    data: allReimbursements,
+    isLoading: allReimbursementsIsLoading,
+    isError: allReimbursementsIsError,
+    error: allReimbursementsError
+  } = useAllReimbursements();
   const theme = useTheme();
 
-  if (user.isFinance && allIsError) return <ErrorPage message={allError?.message} />;
-  if (isError) return <ErrorPage message={error?.message} />;
-  if ((user.isFinance && (allIsLoading || !allData)) || isLoading || !data) return <LoadingIndicator />;
+  if (user.isFinance && allReimbursementsIsError) return <ErrorPage message={allReimbursementsError?.message} />;
+  if (userReimbursementsIsError) return <ErrorPage message={userReimbursementError?.message} />;
+  if (
+    (user.isFinance && (allReimbursementsIsLoading || !allReimbursements)) ||
+    userReimbursementsIsLoading ||
+    !userReimbursements
+  )
+    return <LoadingIndicator />;
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+  const displayedReimbursements = allReimbursements && tabValue === 1 ? allReimbursements : userReimbursements;
+  const displayedReimbursementRequests =
+    allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = (allData && value === 1 ? allData : data).map((row: Reimbursement) =>
-    createRefundData(row.dateCreated, row.amount, row.userSubmitted)
-  );
-  const totalReceived = (allData && value === 1 ? allData : data).reduce(
+  const rows = displayedReimbursements.map(getRefundRowData);
+  const totalReceived = displayedReimbursements.reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
     0
   );
-  const totalOwed = (allRequests && value === 1 ? allRequests : currentUserRequests).reduce(
+  const totalOwed = displayedReimbursementRequests.reduce(
     (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
     0
   );
   const percentRefunded = (totalReceived / totalOwed) * 100;
 
+  const tabs = [{ label: 'My Refunds', value: 0 }];
+  if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
+
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
-      <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
-        <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
-          <Tab
-            sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700, pointerEvents: user.isFinance ? 'auto' : 'none' }}
-            label="My Refunds"
-            value={0}
-          />
-          {user.isFinance && (
-            <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Refunds" value={1} />
-          )}
-        </Tabs>
-      </AppBar>
+      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
       <Box
         sx={{
           backgroundColor: theme.palette.background.paper,
@@ -99,35 +97,17 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
       >
         <Box sx={{ padding: '30px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
-            <Stack sx={{ alignItems: 'center' }}>
-              <Typography textAlign="center" sx={{ fontWeight: 700 }}>
-                Total Received
-              </Typography>
-              <Typography> {`$${totalReceived}`}</Typography>
-            </Stack>
-            <Stack sx={{ alignItems: 'center' }}>
-              <Typography textAlign="center" sx={{ fontWeight: 700 }}>
-                Total Owed
-              </Typography>
-              <Typography> {`$${totalOwed}`}</Typography>
-            </Stack>
+            <RefundHeader header="Total Received" data={`$${totalReceived}`} />
+            <RefundHeader header="Total Owed" data={`$${totalOwed}`} />
           </Box>
           <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                    Date
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                    Amount ($)
-                  </TableCell>
-                  {value === 1 && (
-                    <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                      Recipient
-                    </TableCell>
-                  )}
+                  <ColumnHeader title="Date" />
+                  <ColumnHeader title="Amount ($)" />
+                  {tabValue === 1 && <ColumnHeader title="Recipient" />}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -136,9 +116,9 @@ const Refunds = ({ currentUserRequests, allRequests }: RefundTableProps) => {
                     key={`${row.date}-$${row.amount}-${index}`}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
-                    <TableCell align="center">{row.date.toLocaleDateString()}</TableCell>
+                    <TableCell align="center">{datePipe(row.date)}</TableCell>
                     <TableCell align="center">{row.amount}</TableCell>
-                    {value === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
+                    {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
                   </TableRow>
                 ))}
               </TableBody>

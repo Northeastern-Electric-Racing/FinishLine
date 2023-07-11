@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { NERButton } from '../../components/NERButton';
@@ -21,21 +21,32 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 const FinancePage = () => {
   const user = useCurrentUser();
 
-  const { data, isLoading, isError, error } = useCurrentUserReimbursementRequests();
   const {
-    data: allRequestData,
-    isLoading: allIsLoading,
-    isError: allIsError,
-    error: allError
+    data: userReimbursementRequests,
+    isLoading: userReimbursementRequestIsLoading,
+    isError: userReimbursementRequestIsError,
+    error: userReimbursementRequestError
+  } = useCurrentUserReimbursementRequests();
+  const {
+    data: allReimbursementRequests,
+    isLoading: allReimbursementRequestsIsLoading,
+    isError: allReimbursementRequestsIsError,
+    error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
 
   const isFinance = user.isFinance;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  if (user.isFinance && allIsError) return <ErrorPage message={allError?.message} />;
-  if (isError) return <ErrorPage message={error?.message} />;
-  if ((user.isFinance && (allIsLoading || !allRequestData)) || isLoading || !data) return <LoadingIndicator />;
+  if (user.isFinance && allReimbursementRequestsIsError)
+    return <ErrorPage message={allReimbursementRequestsError?.message} />;
+  if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
+  if (
+    (user.isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
+    userReimbursementRequestIsLoading ||
+    !userReimbursementRequests
+  )
+    return <LoadingIndicator />;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -86,14 +97,22 @@ const FinancePage = () => {
   return (
     <div>
       <PageTitle title={'Reimbursement Requests'} previousPages={[]} actionButton={financeActionsDropdown} />
-      <Box sx={{ display: 'flex', flexDirection: 'horizontal' }}>
-        <Box style={{ flex: 2, marginRight: '10px' }}>
-          <Refunds currentUserRequests={data} allRequests={allRequestData} />
-        </Box>
-        <Box style={{ flex: 3 }}>
-          <ReimbursementRequestTable currentUserRequests={data} allRequests={allRequestData} />
-        </Box>
-      </Box>
+      <Grid container>
+        <Grid item xs={12} sm={12} md={4}>
+          <Refunds
+            userReimbursementRequests={userReimbursementRequests}
+            allReimbursementRequests={allReimbursementRequests}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={8}>
+          <Box sx={{ marginTop: { xs: '10px', sm: '10px', md: '0' }, marginLeft: { xs: '0', sm: '0', md: '10px' } }}>
+            <ReimbursementRequestTable
+              userReimbursementRequests={userReimbursementRequests}
+              allReimbursementRequests={allReimbursementRequests}
+            />
+          </Box>
+        </Grid>
+      </Grid>
     </div>
   );
 };

@@ -3,12 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  Reimbursement_Request,
-  Reimbursement_Status_Type,
-  User,
-  Reimbursement as PrismaReimbursement
-} from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -170,7 +165,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<PrismaReimbursement> {
+  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -201,10 +196,11 @@ export default class ReimbursementRequestService {
         amount,
         dateCreated: new Date(),
         userSubmittedId: submitter.userId
-      }
+      },
+      ...reimbursementQueryArgs
     });
 
-    return newReimbursement;
+    return reimbursementTransformer(newReimbursement);
   }
 
   /**

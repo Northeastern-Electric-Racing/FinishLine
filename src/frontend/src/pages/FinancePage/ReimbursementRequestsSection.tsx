@@ -1,109 +1,58 @@
-import {
-  AppBar,
-  Box,
-  Paper,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tabs,
-  useTheme
-} from '@mui/material';
+import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { ReimbursementRequest, ReimbursementStatusType, User } from 'shared';
-import { getCurrentReimbursementStatus } from '../../utils/finance.utils';
+import { ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { fullNamePipe } from '../../utils/pipes';
-
-const createRequestData = (
-  amount: number,
-  dateSubmitted: Date,
-  status: ReimbursementStatusType,
-  submitter: User,
-  saboId?: number,
-  dateDelivered?: Date
-) => {
-  return { saboId, amount, dateSubmitted, status, dateDelivered, submitter };
-};
+import { datePipe, fullNamePipe } from '../../utils/pipes';
+import { createReimbursementRequestRowData } from '../../utils/finance.utils';
+import ColumnHeader from './FinanceComponents/ColumnHeader';
+import FinanceTabs from './FinanceComponents/FinanceTabs';
 
 interface ReimbursementRequestTableProps {
-  currentUserRequests: ReimbursementRequest[];
-  allRequests?: ReimbursementRequest[];
+  userReimbursementRequests: ReimbursementRequest[];
+  allReimbursementRequests?: ReimbursementRequest[];
 }
 
-const ReimbursementRequestTable = ({ currentUserRequests, allRequests }: ReimbursementRequestTableProps) => {
+const ReimbursementRequestTable = ({
+  userReimbursementRequests,
+  allReimbursementRequests
+}: ReimbursementRequestTableProps) => {
   const theme = useTheme();
-  const [value, setValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
 
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+  const displayedReimbursementRequests =
+    tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = (value === 1 && allRequests ? allRequests : currentUserRequests).map((row: ReimbursementRequest) =>
-    createRequestData(
-      row.totalCost,
-      row.dateCreated,
-      getCurrentReimbursementStatus(row.reimbursementStatuses).type,
-      row.recipient,
-      row.saboId,
-      row.dateDelivered
-    )
-  );
+  const rows = displayedReimbursementRequests
+    .map(createReimbursementRequestRowData)
+    .sort((a, b) => (a.dateSubmitted > b.dateSubmitted ? -1 : 1));
+
+  const tabs = [{ label: 'My Requests', value: 0 }];
+  if (user.isFinance) tabs.push({ label: 'All Club Requests', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <AppBar sx={{ borderRadius: '8px 8px 0 0' }} position="static">
-        <Tabs value={value} onChange={handleChange} indicatorColor="secondary" textColor="inherit" variant="fullWidth">
-          <Tab
-            sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700, pointerEvents: user.isFinance ? 'auto' : 'none' }}
-            label="My Requests"
-            value={0}
-          />
-          {user.isFinance && (
-            <Tab sx={{ borderRadius: '8px 8px 0 0', fontWeight: 700 }} label="All Club Requests" value={1} />
-          )}
-        </Tabs>
-      </AppBar>
-      <TableContainer component={Paper}>
+      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+      <TableContainer component={Paper} sx={{ borderRadius: '0 0 8px 8px' }}>
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              {value === 1 && (
-                <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                  Recipient
-                </TableCell>
-              )}
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                Sabo ID
-              </TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                Amount ($)
-              </TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                Date Submitted
-              </TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                Date Delivered
-              </TableCell>
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
-                Status
-              </TableCell>
+              {tabValue === 1 && <ColumnHeader title="Recipient" />}
+              <ColumnHeader title="Sabo ID" />
+              <ColumnHeader title="Amount ($)" />
+              <ColumnHeader title="Date Submitted" />
+              <ColumnHeader title="Date Delivered" />
+              <ColumnHeader title="Status" />
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row, index) => (
               <TableRow key={`$${row.amount}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                {value === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{row.saboId != null ? row.saboId : '-----'}</TableCell>
                 <TableCell align="center">{row.amount}</TableCell>
-                <TableCell align="center">{row.dateSubmitted.toLocaleDateString()}</TableCell>
-                <TableCell align="center">
-                  {!!row.dateDelivered ? row.dateDelivered?.toLocaleDateString() : '-----'}
-                </TableCell>
+                <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
+                <TableCell align="center">{!!row.dateDelivered ? datePipe(row.dateDelivered) : '-----'}</TableCell>
                 <TableCell align="center">{row.status}</TableCell>
               </TableRow>
             ))}

@@ -6,7 +6,8 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -213,6 +214,14 @@ export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
   if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
+};
+
+export const isAuthUserOnFinanceTeam = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  return (
+    !!process.env.FINANCE_TEAM_ID &&
+    (user.teams.map((team: Team) => team.teamId).includes(process.env.FINANCE_TEAM_ID) ||
+      user.teamAsLead?.teamId === process.env.FINANCE_TEAM_ID)
+  );
 };
 
 export const validateUserIsHeadOfFinanceTeam = async (user: User) => {

@@ -35,7 +35,7 @@ export const useCurrentUserReimbursementRequests = () => {
 };
 
 /**
- * Custom React Hook to get the reimbursement requests for the current user
+ * Custom React Hook to get all the reimbursement requests
  *
  */
 export const useAllReimbursementRequests = () => {
@@ -55,6 +55,9 @@ export const useCurrentUserReimbursements = () => {
   });
 };
 
+/**
+ * Custom React Hook to get all the reimbursements
+ */
 export const useAllReimbursements = () => {
   return useQuery<Reimbursement[], Error>(['reimbursement'], async () => {
     const { data } = await getAllReimbursements();
