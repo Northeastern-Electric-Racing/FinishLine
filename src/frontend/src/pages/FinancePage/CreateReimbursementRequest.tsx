@@ -27,13 +27,12 @@ const CreateReimbursementRequestPage: React.FC = () => {
   };
 
   return (
-    <>
-      <PageLayout
-        title="Create Reimbursement Request"
-        previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
-      />
-      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />;
-    </>
+    <PageLayout
+      title="Create Reimbursement Request"
+      previousPages={[{ name: 'Reimbursement Requests', route: routes.FINANCE }]}
+    >
+      <ReimbursementRequestForm submitText="Submit" submitData={onSubmit} previousPage={routes.FINANCE} />
+    </PageLayout>
   );
 };
 

@@ -36,18 +36,17 @@ const RenderedDefaultValues: React.FC<{
   const previousPage = `${routes.FINANCE}/${reimbursementRequest.reimbursementRequestId}`;
 
   return (
-    <>
-      <PageLayout
-        title="Edit Reimbursement Request"
-        previousPages={[
-          {
-            name: `${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(
-              new Date(reimbursementRequest.dateOfExpense)
-            )}`,
-            route: previousPage
-          }
-        ]}
-      />
+    <PageLayout
+      title="Edit Reimbursement Request"
+      previousPages={[
+        {
+          name: `${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(
+            new Date(reimbursementRequest.dateOfExpense)
+          )}`,
+          route: previousPage
+        }
+      ]}
+    >
       <ReimbursementRequestForm
         submitText="Save"
         submitData={submitData}
@@ -69,7 +68,7 @@ const RenderedDefaultValues: React.FC<{
         }}
         previousPage={previousPage}
       />
-    </>
+    </PageLayout>
   );
 };
 
