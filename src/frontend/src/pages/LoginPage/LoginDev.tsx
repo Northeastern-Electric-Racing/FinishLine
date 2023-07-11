@@ -23,12 +23,17 @@ interface LoginDevProps {
  * Form for dev users to do login on the dev environment.
  */
 const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
-  if (process.env.NODE_ENV !== 'development') return <></>;
+  if (import.meta.env.MODE !== 'development') return <></>;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { isLoading, data: usersList } = useAllUsers();
 
   if (!usersList || isLoading) return <LoadingIndicator />;
+
+  const sortedUsers = usersList
+    .sort((a, b) => a.firstName.localeCompare(b.firstName))
+    .sort((a, b) => a.lastName.localeCompare(b.lastName))
+    .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role));
 
   return (
     <form onSubmit={devFormSubmit}>
@@ -38,21 +43,18 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           label="Local Dev User"
           labelId="localDevUser"
           onChange={(e: any) => devSetUser(e.target.value)}
+          defaultValue={sortedUsers[0].userId}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />
             </IconButton>
           }
         >
-          {usersList
-            .sort((a, b) => a.firstName.localeCompare(b.firstName))
-            .sort((a, b) => a.lastName.localeCompare(b.lastName))
-            .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role))
-            .map((user) => (
-              <MenuItem key={user.userId} value={user.userId}>
-                {fullNamePipe(user)} ({user.role.toLowerCase()})
-              </MenuItem>
-            ))}
+          {sortedUsers.map((user) => (
+            <MenuItem key={user.userId} value={user.userId}>
+              {fullNamePipe(user)} ({user.role.toLowerCase()})
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     </form>

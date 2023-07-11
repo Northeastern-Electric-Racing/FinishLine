@@ -8,7 +8,8 @@ const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
     favoriteProjects: true,
     teams: {
       ...teamQueryArgs
-    }
+    },
+    changeRequestsToReview: true
   }
 });
 

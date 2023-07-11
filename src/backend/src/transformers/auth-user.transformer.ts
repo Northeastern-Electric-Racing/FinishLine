@@ -14,7 +14,8 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     defaultTheme: user.userSettings?.defaultTheme,
     teamAsLeadId: user.teamAsLead?.teamId,
     favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
-    isFinance: isAuthUserOnFinanceTeam(user)
+    isFinance: isAuthUserOnFinanceTeam(user),
+    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
   };
 };
 

@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
@@ -17,6 +16,7 @@ import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import { useAllReimbursementRequests, useCurrentUserReimbursementRequests } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import PageLayout from '../../components/PageLayout';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -95,8 +95,7 @@ const FinancePage = () => {
     </>
   );
   return (
-    <div>
-      <PageTitle title={'Reimbursement Requests'} previousPages={[]} actionButton={financeActionsDropdown} />
+    <PageLayout title="Finance" headerRight={financeActionsDropdown}>
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>
           <Refunds
@@ -113,7 +112,7 @@ const FinancePage = () => {
           </Box>
         </Grid>
       </Grid>
-    </div>
+    </PageLayout>
   );
 };
 

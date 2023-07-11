@@ -5,13 +5,13 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import UserSettings from './UserSettings/UserSettings';
 import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { GoogleLogout } from 'react-google-login';
+import PageLayout from '../../components/PageLayout';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -75,8 +75,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <>
-      <PageTitle title={'Settings'} previousPages={[]} />
+    <PageLayout title="Settings">
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <PageBlock title={'Organization Settings'}>
         <Grid container>
@@ -88,11 +87,11 @@ const Settings: React.FC = () => {
               <FormControlLabel
                 label="Trickster Mode"
                 control={
-                  process.env.NODE_ENV === 'development' ? (
+                  import.meta.env.MODE === 'development' ? (
                     <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
                   ) : (
                     <GoogleLogout
-                      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}
+                      clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
                       onLogoutSuccess={logout}
                       render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
                     />
@@ -123,7 +122,7 @@ const Settings: React.FC = () => {
         </Grid>
       </PageBlock>
       <UserSettings userId={auth.user.userId} />
-    </>
+    </PageLayout>
   );
 };
 

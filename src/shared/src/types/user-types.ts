@@ -39,7 +39,8 @@ export interface AuthenticatedUser {
   defaultTheme?: ThemeName;
   teamAsLeadId?: string;
   isFinance?: boolean;
-  favoritedProjectsId?: number[];
+  favoritedProjectsId: number[];
+  changeRequestsToReviewId: number[];
 }
 
 export interface UserSettings {
