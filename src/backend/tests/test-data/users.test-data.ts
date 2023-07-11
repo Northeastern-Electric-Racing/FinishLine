@@ -1,5 +1,6 @@
-import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings } from '@prisma/client';
+import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings, Team } from '@prisma/client';
 import { User as SharedUser } from 'shared';
+import { prismaTeam1 } from './teams.test-data';
 
 export const batman: PrismaUser = {
   userId: 1,
@@ -78,7 +79,7 @@ export const batmanSettings: User_Settings = {
   slackId: 'slack'
 };
 
-export const sharedUser1: SharedUser = {
+export const sharedBatman: SharedUser = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',
@@ -96,4 +97,15 @@ export const batmanSecureSettings: User_Secure_Settings = {
   city: 'Gotham',
   state: 'NY',
   zipcode: '12345'
+};
+
+export const alfred: PrismaUser & { teams: Team[] } = {
+  userId: 10,
+  firstName: 'Alfred',
+  lastName: 'Pennyworth',
+  email: 'butler@gmail.com',
+  emailId: 'butler',
+  role: PrismaRole.APP_ADMIN,
+  googleAuthId: 'u',
+  teams: [prismaTeam1]
 };

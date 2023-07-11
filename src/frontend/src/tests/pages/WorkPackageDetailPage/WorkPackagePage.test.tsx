@@ -16,7 +16,7 @@ import { exampleAdminUser, exampleGuestUser } from '../../test-support/test-data
 import WorkPackagePage from '../../../pages/WorkPackageDetailPage/WorkPackagePage';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
-jest.mock('../../../hooks/work-packages.hooks');
+vi.mock('../../../hooks/work-packages.hooks');
 
 const mockedUseSingleWorkPackage = useSingleWorkPackage as jest.Mock<UseQueryResult<WorkPackage>>;
 
@@ -30,7 +30,7 @@ const mockManyWorkPackagesHook = (isLoading: boolean, isError: boolean, data?: W
   mockedUseManyWorkPackages.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
 };
 
-jest.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 
@@ -38,7 +38,7 @@ const mockAuthHook = (user = exampleAdminUser) => {
   mockedUseAuth.mockReturnValue(mockAuth(false, user));
 };
 
-jest.mock('../../../hooks/users.hooks');
+vi.mock('../../../hooks/users.hooks');
 
 const mockedUseCurrentUser = useCurrentUser as jest.Mock<AuthenticatedUser>;
 

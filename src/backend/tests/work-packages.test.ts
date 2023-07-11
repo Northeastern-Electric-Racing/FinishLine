@@ -34,7 +34,7 @@ describe('Work Packages', () => {
   const blockedBy: WbsNumber[] = [
     {
       carNumber: 1,
-      projectNumber: 1,
+      projectNumber: 2,
       workPackageNumber: 1
     }
   ];
@@ -56,15 +56,15 @@ describe('Work Packages', () => {
   /*********************************************************/
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   beforeEach(() => {
-    jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
       return prismaChangeRequest1;
     });
 
-    jest.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
+    vi.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
   });
 
   test('calculateWorkPackageProgress', async () => {
@@ -73,7 +73,7 @@ describe('Work Packages', () => {
 
   describe('createWorkPackage', () => {
     test('createWorkPackage fails if WBS number does not represent a project', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage(
@@ -100,11 +100,12 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if any elements in the blocked by are null', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest
-        .spyOn(prisma.wBS_Element, 'findUnique')
-        .mockResolvedValueOnce({ ...prismaWbsElement1, project: prismaProject1 } as any);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce({
+        ...prismaWbsElement1,
+        project: prismaProject1
+      } as any);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
@@ -114,7 +115,7 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if user does not have access', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage(
@@ -135,8 +136,8 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails when changeRequest validation fails', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
-      jest.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
         throw new HttpException(400, 'error');
       });
 
@@ -148,8 +149,8 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if the associated wbsElem returns null', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
@@ -159,8 +160,8 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(null);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
@@ -202,9 +203,9 @@ describe('Work Packages', () => {
         startDate: new Date('04/24/2023'),
         wbsElement: { carNumber: 1, projectNumber: 2, workPackageNumber: 3 }
       };
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(foundWbsElem);
-      jest.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
-      jest.spyOn(prisma.work_Package, 'create').mockResolvedValue(newPrismaWp);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(foundWbsElem);
+      vi.spyOn(prisma.work_Package, 'create').mockResolvedValue(newPrismaWp);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
@@ -230,7 +231,7 @@ describe('Work Packages', () => {
     });
 
     test('Work package does not exist', async () => {
-      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
       await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
         new NotFoundException('Work Package', '1.2.3')
       );
@@ -244,7 +245,7 @@ describe('Work Packages', () => {
     });
 
     test('Work package already deleted', async () => {
-      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
         ...prismaWorkPackage1,
         wbsElement: { dateDeleted: new Date() }
       } as any);
@@ -257,8 +258,8 @@ describe('Work Packages', () => {
     });
 
     test('Work package successfully deleted', async () => {
-      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
-      jest.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
+      vi.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
 
       await WorkPackageService.deleteWorkPackage(batman, wbsNum);
 
@@ -269,7 +270,7 @@ describe('Work Packages', () => {
 
   describe('getSingleWorkPackage', () => {
     test('getSingleWorkPackage fails if the work package does not exist', async () => {
-      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
 
       await expect(
         async () => await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 })
@@ -283,7 +284,7 @@ describe('Work Packages', () => {
     });
 
     test('getSingleWorkPackage runs properly', async () => {
-      jest.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(prismaWorkPackage1);
 
       const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
@@ -293,7 +294,7 @@ describe('Work Packages', () => {
 
   describe('slackMessageUpcomingDeadlines', () => {
     beforeEach(() => {
-      jest.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});
+      vi.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});
     });
 
     it('fails when the user is not an admin', async () => {

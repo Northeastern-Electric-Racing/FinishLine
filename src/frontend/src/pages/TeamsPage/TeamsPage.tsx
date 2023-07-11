@@ -6,9 +6,9 @@
 import { Grid } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
+import PageLayout from '../../components/PageLayout';
 
 const TeamsPage: React.FC = () => {
   const { isLoading, isError, data: teams, error } = useAllTeams();
@@ -18,8 +18,7 @@ const TeamsPage: React.FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   return (
-    <>
-      <PageTitle title={'Teams'} previousPages={[]} />
+    <PageLayout title="Teams">
       <Grid container spacing={2}>
         {teams?.map((team) => (
           <Grid item key={team.teamId}>
@@ -27,7 +26,7 @@ const TeamsPage: React.FC = () => {
           </Grid>
         ))}
       </Grid>
-    </>
+    </PageLayout>
   );
 };
 

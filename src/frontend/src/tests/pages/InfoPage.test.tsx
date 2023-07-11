@@ -22,7 +22,7 @@ const renderComponent = () => {
 describe('help page component', () => {
   it('renders everything', () => {
     renderComponent();
-    expect(screen.getAllByText('Information').length).toEqual(2);
+    expect(screen.getAllByText('Information').length).toEqual(1);
     expect(screen.getByText(/Resources/)).toBeInTheDocument();
     expect(screen.getByText(/Glossary/)).toBeInTheDocument();
     expect(screen.getByText(/Support/)).toBeInTheDocument();

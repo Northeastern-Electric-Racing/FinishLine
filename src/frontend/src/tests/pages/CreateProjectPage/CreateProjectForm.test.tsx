@@ -16,11 +16,11 @@ import { useAllTeams } from '../../../hooks/teams.hooks';
 import { UseQueryResult } from 'react-query';
 import { sharedTeam1 } from '../../../../../backend/tests/test-data/teams.test-data';
 
-jest.mock('../../../hooks/auth.hooks');
-jest.mock('../../../hooks/utils.hooks');
-jest.mock('../../../hooks/teams.hooks');
+vi.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/utils.hooks');
+vi.mock('../../../hooks/teams.hooks');
 
-jest.mock('../../../components/ReactHookTextField', () => {
+vi.mock('../../../components/ReactHookTextField', () => {
   return {
     __esModule: true,
     default: () => <p>React hook text field component</p>
