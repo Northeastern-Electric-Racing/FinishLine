@@ -45,7 +45,6 @@ const ProjectDetailTabs = ({ project, setTab }: ProjectDetailPageTabProps) => {
       sx={{ borderBottom: 1, borderColor: 'divider' }}
       value={tabValue}
       onChange={handleTabChange}
-      variant="fullWidth"
       aria-label="task-list-tabs"
     >
       <Tab

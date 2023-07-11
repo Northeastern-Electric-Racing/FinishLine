@@ -1,4 +1,4 @@
-FROM node:14.20.0
+FROM node:16.15.1
 WORKDIR /base
 COPY package.json .
 COPY .yarn .

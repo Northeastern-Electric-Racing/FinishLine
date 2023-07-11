@@ -7,7 +7,7 @@ import { render, screen, routerWrapperBuilder } from '../../test-support/test-ut
 import { routes } from '../../../utils/routes';
 import Projects from '../../../pages/ProjectsPage/Projects';
 
-jest.mock('../../../pages/ProjectsPage/ProjectsTable', () => {
+vi.mock('../../../pages/ProjectsPage/ProjectsTable', () => {
   return {
     __esModule: true,
     default: () => {
@@ -16,7 +16,7 @@ jest.mock('../../../pages/ProjectsPage/ProjectsTable', () => {
   };
 });
 
-jest.mock('../../../pages/WBSDetails', () => {
+vi.mock('../../../pages/WBSDetails', () => {
   return {
     __esModule: true,
     default: () => {

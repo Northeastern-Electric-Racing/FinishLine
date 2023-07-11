@@ -8,6 +8,7 @@ import { getCurrentUser } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
@@ -31,20 +32,30 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
-        req.body;
+      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
       const user = await getCurrentUser(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        receiptPictures,
         reimbursementProducts,
         expenseTypeId,
         totalCost
       );
       res.status(200).json(createdReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async reimburseUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { amount } = req.body;
+
+      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, user);
+      res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
     }
@@ -79,6 +90,17 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
       res.status(200).json(deletedReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPendingAdvisorList(_req: Request, res: Response, next: NextFunction) {
+    const user = await getCurrentUser(res);
+
+    try {
+      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(user);
+      return res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
       next(error);
     }
@@ -129,6 +151,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      const { requestId } = req.params;
+
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+
+      const user = await getCurrentUser(res);
+
+      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
+
+      res.status(200).json(receipt);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
     try {
       const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
@@ -145,6 +184,17 @@ export default class ReimbursementRequestsController {
         user
       );
       res.status(200).json(reimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
       next(error);
     }
