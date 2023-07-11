@@ -11,7 +11,6 @@ import {
   Typography
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, Vendor, WbsNumber, wbsPipe } from 'shared';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -20,6 +19,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { routes } from '../../../utils/routes';
 import { CreateReimbursementRequestFormInput } from './CreateReimbursementRequestForm';
+import PageLayout from '../../../components/PageLayout';
 
 interface CreateReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -90,7 +90,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
         handleSubmit(onSubmit)(e);
       }}
     >
-      <PageTitle title="Create Reimbursement Request" previousPages={[]} />
+      <PageLayout title="Create Reimbursement Request" previousPages={[]} />
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
