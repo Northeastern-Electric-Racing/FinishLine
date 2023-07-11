@@ -77,8 +77,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     startDate.setDate(startDate.getDate() + daysUntilNextMonday);
   }
   const query = useQuery();
-  const { data: project } = useSingleProject(validateWBS(wbsNum));
-  const workPackages = project ? project.workPackages : [];
+
   const {
     handleSubmit,
     control,
@@ -91,15 +90,12 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
       crId: Number(query.get('crId')),
       stage: 'NONE' as WorkPackageStage | 'None',
       startDate,
-      wbsNum: wbsNum,
       duration: null,
       blockedBy: [] as string[],
       expectedActivities: [] as { bulletId: number; detail: string }[],
       deliverables: [] as { bulletId: number; detail: string }[]
     }
   });
-
-  const blockedByOptions = workPackages.map(blockedByToAutocompleteOption);
 
   const {
     fields: expectedActivities,
@@ -118,11 +114,24 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
 
   const { data: projects, isLoading, error, isError } = useAllProjects();
 
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: useSingleProjectIsError,
+    error: useSingleProjectError
+  } = useSingleProject(validateWBS(wbsNum));
+
   if (isLoading || !projects) return <LoadingIndicator />;
 
   if (isError) {
     return <ErrorPage message={error?.message} />;
   }
+
+  if (useSingleProjectIsError) return <ErrorPage message={useSingleProjectError?.message} />;
+  if (!project || isProjectLoading) return <LoadingIndicator />;
+  const workPackages = project ? project.workPackages : [];
+
+  const blockedByOptions = workPackages.map(blockedByToAutocompleteOption);
 
   const blockedByFormControl = (
     <FormControl fullWidth>

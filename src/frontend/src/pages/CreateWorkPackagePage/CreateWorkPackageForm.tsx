@@ -21,7 +21,6 @@ export interface CreateWorkPackageFormInputs {
   duration: number | null;
   crId: number;
   stage: WorkPackageStage | 'None';
-  wbsNum: string | null;
   blockedBy: string[];
   expectedActivities: { bulletId: number; detail: string }[];
   deliverables: { bulletId: number; detail: string }[];
@@ -53,14 +52,7 @@ const CreateWorkPackageForm: React.FC = () => {
         return;
       }
 
-      const blockedByWbsNums = blockedBy.map((blocker: string) => {
-        const blockedWbsNum = validateWBS(blocker);
-        return {
-          carNumber: blockedWbsNum.carNumber,
-          projectNumber: blockedWbsNum.projectNumber,
-          workPackageNumber: blockedWbsNum.workPackageNumber
-        };
-      });
+      const blockedByWbsNums = blockedBy.map(validateWBS);
 
       const payload: CreateWorkPackageApiInputs = {
         name: name.trim(),
