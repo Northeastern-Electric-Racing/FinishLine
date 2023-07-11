@@ -6,8 +6,8 @@
 import { Grid, Typography } from '@mui/material'; // some imports from libraries
 import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
-import PageTitle from '../../layouts/PageTitle/PageTitle'; // ...and from other files
-import PageBlock from '../../layouts/PageBlock';
+import PageBlock from '../../layouts/PageBlock'; // ...and from other files
+import PageLayout from '../../components/PageLayout';
 
 const CreditsPage: React.FC = () => {
   // This is the list of names that get displayed, add yours here!
@@ -36,7 +36,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Kevin Chen', color: '#00A36C' },
     { name: 'Ji-min Kim', color: '#7ae0c1' },
-    { name: 'Zack Roth', color: '#60efa3' },
+    { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
     { name: 'Ryan Howe', color: '#3cce20' },
@@ -107,8 +107,7 @@ const CreditsPage: React.FC = () => {
   // inside a PageBlock component, we map the names list from above into components to display each name.
   // under that is a button that changes its display based on "displaySnark" whenever it is clicked.
   return (
-    <div>
-      <PageTitle title={'Credits'} previousPages={[]} />
+    <PageLayout title="Credits">
       <PageBlock>
         <Grid container spacing={2}>
           {names.map((item) => (
@@ -125,7 +124,7 @@ const CreditsPage: React.FC = () => {
           {displaySnark < snark.length ? snark[displaySnark] : '>:('}
         </NERButton>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
