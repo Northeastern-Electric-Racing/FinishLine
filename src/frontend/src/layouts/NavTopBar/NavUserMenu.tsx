@@ -116,7 +116,7 @@ const NavUserMenu: React.FC = () => {
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         {isHead(auth.user?.role) && <AdminTools />}
-        {process.env.NODE_ENV === 'development' ? <DevLogout /> : <ProdLogout />}
+        {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
     </>
   );
