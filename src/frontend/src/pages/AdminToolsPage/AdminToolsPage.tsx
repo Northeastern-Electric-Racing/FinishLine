@@ -15,7 +15,7 @@ const AdminToolsPage: React.FC = () => {
   return (
     <PageLayout title="Admin Tools">
       <AdminToolsUserManagement />
-      {isAdmin(currentUser.role) ? <AdminToolsSlackUpcomingDeadlines /> : null};
+      {isAdmin(currentUser.role) && <AdminToolsSlackUpcomingDeadlines />};
     </PageLayout>
   );
 };

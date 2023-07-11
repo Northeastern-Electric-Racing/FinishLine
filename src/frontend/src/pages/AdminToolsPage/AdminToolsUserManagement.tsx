@@ -40,7 +40,6 @@ const AdminToolsUserManagement: React.FC = () => {
       '&.Mui-disabled': { backgroundColor: theme.palette.background.paper }
     }
   };
-  if (!currentUser) return <LoadingIndicator />;
   if (isLoading || !users) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
@@ -110,16 +109,16 @@ const AdminToolsUserManagement: React.FC = () => {
             sx={styles.roleSelectStyle}
             disabled={!user}
           >
-            {!isAdmin(currentUser.role)
+            {isAdmin(currentUser.role)
               ? Object.values(RoleEnum)
-                  .filter((v) => rankUserRole(v) < currentUserRank)
+                  .filter((v) => rankUserRole(v) <= currentUserRank)
                   .map((v) => (
                     <MenuItem value={v} key={v}>
                       {v}
                     </MenuItem>
                   ))
               : Object.values(RoleEnum)
-                  .filter((v) => rankUserRole(v) <= currentUserRank)
+                  .filter((v) => rankUserRole(v) < currentUserRank)
                   .map((v) => (
                     <MenuItem value={v} key={v}>
                       {v}

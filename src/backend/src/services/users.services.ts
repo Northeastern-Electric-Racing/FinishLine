@@ -205,14 +205,8 @@ export default class UsersService {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
     }
 
-    if (user.role === RoleEnum.HEAD) {
-      if (rankUserRole(role) >= userRole) {
-        throw new AccessDeniedException('Cannot promote user to a higher or equal role than yourself');
-      }
-      targetUser = await prisma.user.update({
-        where: { userId: targetUserId },
-        data: { role }
-      });
+    if (user.role === RoleEnum.HEAD && rankUserRole(role) >= userRole) {
+      throw new AccessDeniedException('Heads can only promote to leadership or below');
     } else {
       if (rankUserRole(role) > userRole) {
         throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
