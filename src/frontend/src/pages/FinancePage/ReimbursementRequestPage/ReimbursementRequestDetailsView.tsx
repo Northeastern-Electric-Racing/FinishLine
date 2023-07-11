@@ -8,7 +8,7 @@ import { Box } from '@mui/system';
 import { ReimbursementProduct, ReimbursementRequest, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
+import PageLayout from '../../../components/PageLayout';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -120,7 +120,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   return (
     <Box>
-      <PageTitle
+      <PageLayout
         title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
         previousPages={[]}
       />
