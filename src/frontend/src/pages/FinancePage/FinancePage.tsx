@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useUploadSingleReceipt } from '../../hooks/finance.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
+import PageLayout from '../../components/PageLayout';
 
 const FinancePage: React.FC = () => {
   const [file, setFile] = useState<File>();
@@ -34,7 +35,7 @@ const FinancePage: React.FC = () => {
   };
 
   return (
-    <div>
+    <PageLayout title="Finance">
       <Typography>{fileName}</Typography>
       <iframe src={`https://drive.google.com/file/d/${fileId}/preview`} title="ollie"></iframe>
       <form onSubmit={onSubmit}>
@@ -53,7 +54,7 @@ const FinancePage: React.FC = () => {
           <Button type="submit"> Submit</Button>
         </Stack>
       </form>
-    </div>
+    </PageLayout>
   );
 };
 

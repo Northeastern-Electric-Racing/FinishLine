@@ -11,7 +11,6 @@ import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContai
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
@@ -29,6 +28,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import PageLayout from '../../../components/PageLayout';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -158,15 +158,14 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <>
-      <PageTitle
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        actionButton={projectActionsDropdown}
-      />
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      headerRight={projectActionsDropdown}
+    >
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList
         title={'Blocked By'}
@@ -216,7 +215,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           handleClose={() => setShowDeleteModal(false)}
         />
       )}
-    </>
+    </PageLayout>
   );
 };
 
