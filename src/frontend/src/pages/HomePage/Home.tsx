@@ -12,6 +12,7 @@ import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHistory } from 'react-router-dom';
+import PageLayout from '../../components/PageLayout';
 
 const Home = () => {
   const user = useCurrentUser();
@@ -22,7 +23,7 @@ const Home = () => {
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
-    <>
+    <PageLayout title="Home" hidePageTitle>
       <Typography variant="h3" sx={{ my: 2, textAlign: 'center', pt: 3 }}>
         Welcome, {user.firstName}!
       </Typography>
@@ -38,7 +39,7 @@ const Home = () => {
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-    </>
+    </PageLayout>
   );
 };
 

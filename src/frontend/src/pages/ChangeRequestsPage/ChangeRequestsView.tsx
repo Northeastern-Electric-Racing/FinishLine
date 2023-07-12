@@ -1,15 +1,14 @@
 import { Tab, Tabs } from '@mui/material';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { Link as RouterLink, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useEffect, useMemo, useState } from 'react';
 import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import { Add } from '@mui/icons-material';
-import { Box } from '@mui/system';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
+import PageLayout from '../../components/PageLayout';
 
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
@@ -36,44 +35,40 @@ const ChangeRequestsView: React.FC = () => {
     setTabIndex(newValue);
   };
 
+  const tabs = (
+    <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
+      <Tab
+        label="Overview"
+        aria-label="overview"
+        value={0}
+        component={RouterLink}
+        to={`${routes.CHANGE_REQUESTS_OVERVIEW}`}
+      />
+      <Tab
+        label="All Change Requests"
+        aria-label="all-change-requests"
+        value={1}
+        component={RouterLink}
+        to={`${routes.ALL_CHANGE_REQUESTS}`}
+      />
+    </Tabs>
+  );
+
+  const headerRight = (
+    <NERButton
+      variant="contained"
+      disabled={isGuest(user.role)}
+      startIcon={<Add />}
+      onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
+    >
+      New Change Request
+    </NERButton>
+  );
+
   return (
-    <>
-      <Box style={{ marginBottom: 15 }}>
-        <PageTitle
-          title={'Change Requests'}
-          previousPages={[]}
-          tabs={
-            <Tabs value={tabIndex} onChange={handleTabChange} variant="standard" aria-label="change-request-tabs">
-              <Tab
-                label="Overview"
-                aria-label="overview"
-                value={0}
-                component={RouterLink}
-                to={`${routes.CHANGE_REQUESTS_OVERVIEW}`}
-              />
-              <Tab
-                label="All Change Requests"
-                aria-label="all-change-requests"
-                value={1}
-                component={RouterLink}
-                to={`${routes.ALL_CHANGE_REQUESTS}`}
-              />
-            </Tabs>
-          }
-          actionButton={
-            <NERButton
-              variant="contained"
-              disabled={isGuest(user.role)}
-              startIcon={<Add />}
-              onClick={() => history.push(routes.CHANGE_REQUESTS_NEW)}
-            >
-              New Change Request
-            </NERButton>
-          }
-        />
-      </Box>
+    <PageLayout title="Change Requests" tabs={tabs} headerRight={headerRight}>
       {tabIndex === 0 ? <ChangeRequestsOverview /> : <ChangeRequestsTable />}
-    </>
+    </PageLayout>
   );
 };
 

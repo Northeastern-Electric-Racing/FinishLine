@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe } from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement } from 'shared';
 
 /**
  * Pipes:
@@ -106,4 +106,9 @@ export const daysToDaysOrWeeksPipe = (days: number): string => {
 
 export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
+};
+
+/** Display WBS number as string "1.2.0 - Project Name" */
+export const wbsNamePipe = (wbsElement: WbsElement) => {
+  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };

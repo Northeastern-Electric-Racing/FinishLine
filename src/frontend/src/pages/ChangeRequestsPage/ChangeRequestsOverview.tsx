@@ -70,13 +70,12 @@ const ChangeRequestsOverview: React.FC = () => {
   const crApproved = changeRequests
     .filter(
       (cr: ChangeRequest) =>
-        cr.dateImplemented &&
+        cr.dateReviewed &&
+        cr.accepted &&
         cr.submitter.userId === user.userId &&
-        currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
+        currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5
     )
-    .sort((a, b) =>
-      a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
-    );
+    .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box

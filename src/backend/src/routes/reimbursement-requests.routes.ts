@@ -8,8 +8,11 @@ import { body } from 'express-validator';
 import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
+import multer from 'multer';
 
 const reimbursementRequestsRouter = express.Router();
+
+const upload = multer();
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
@@ -20,8 +23,6 @@ reimbursementRequestsRouter.post(
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
-  body('receiptPictures').isArray(),
-  nonEmptyString(body('receiptPictures.*')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
@@ -34,13 +35,16 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/', ReimbursementRequestController.getAllReimbursementRequests);
 
+reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.getSingleReimbursementRequest);
+
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
   body('receiptPictures').isArray(),
-  nonEmptyString(body('receiptPictures.*')),
+  nonEmptyString(body('receiptPictures.*.name')),
+  nonEmptyString(body('receiptPictures.*.googleFileId')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.id').optional()),
   nonEmptyString(body('reimbursementProducts.*.name')),
@@ -51,6 +55,8 @@ reimbursementRequestsRouter.post(
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );
+
+reimbursementRequestsRouter.get('/pending-advisor/list', ReimbursementRequestController.getPendingAdvisorList);
 
 reimbursementRequestsRouter.post(
   '/pending-advisor/send',
@@ -81,6 +87,28 @@ reimbursementRequestsRouter.post(
   body('allowed').isBoolean(),
   validateInputs,
   ReimbursementRequestController.createExpenseType
+);
+
+reimbursementRequestsRouter.post(
+  '/:userId/reimburse',
+  intMinZero(body('amount')),
+  validateInputs,
+  ReimbursementRequestController.reimburseUser
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/upload-receipt',
+  upload.single('image'),
+  ReimbursementRequestController.uploadReceipt
+);
+
+reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/delivered',
+  ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
 export default reimbursementRequestsRouter;

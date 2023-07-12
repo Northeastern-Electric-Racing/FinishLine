@@ -16,6 +16,20 @@ CREATE TABLE "Reimbursement_Status" (
 );
 
 -- CreateTable
+CREATE TABLE "Receipt" (
+    "receiptId" TEXT NOT NULL,
+    "googleFileId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "deletedByUserId" INTEGER,
+    "dateDeleted" TIMESTAMP(3),
+    "createdByUserId" INTEGER NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reimbursementRequestId" TEXT NOT NULL,
+
+    CONSTRAINT "Receipt_pkey" PRIMARY KEY ("receiptId")
+);
+
+-- CreateTable
 CREATE TABLE "Reimbursement_Request" (
     "reimbursementRequestId" TEXT NOT NULL,
     "saboId" INTEGER,
@@ -26,7 +40,6 @@ CREATE TABLE "Reimbursement_Request" (
     "vendorId" TEXT NOT NULL,
     "account" "Club_Accounts" NOT NULL,
     "totalCost" INTEGER NOT NULL,
-    "receiptPictures" TEXT[],
     "dateDelivered" TIMESTAMP(3),
     "expenseTypeId" TEXT NOT NULL,
 
@@ -90,6 +103,9 @@ CREATE TABLE "User_Secure_Settings" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Receipt_googleFileId_key" ON "Receipt"("googleFileId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Reimbursement_Request_saboId_key" ON "Reimbursement_Request"("saboId");
 
 -- CreateIndex
@@ -109,6 +125,15 @@ ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_userId_f
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Status" ADD CONSTRAINT "Reimbursement_Status_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_reimbursementRequestId_fkey" FOREIGN KEY ("reimbursementRequestId") REFERENCES "Reimbursement_Request"("reimbursementRequestId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_recipientId_fkey" FOREIGN KEY ("recipientId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
