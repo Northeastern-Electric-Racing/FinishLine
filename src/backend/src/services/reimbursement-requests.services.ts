@@ -170,7 +170,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<PrismaReimbursement> {
+  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -201,10 +201,11 @@ export default class ReimbursementRequestService {
         amount,
         dateCreated: new Date(),
         userSubmittedId: submitter.userId
-      }
+      },
+      ...reimbursementQueryArgs
     });
 
-    return newReimbursement;
+    return reimbursementTransformer(newReimbursement);
   }
 
   /**
