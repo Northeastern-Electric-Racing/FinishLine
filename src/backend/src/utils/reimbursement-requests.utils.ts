@@ -6,7 +6,7 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Receipt, Reimbursement_Product, User } from '@prisma/client';
 import { isUserOnTeam } from './teams.utils';
 
 export interface ReimbursementProductCreateArgs {
@@ -201,8 +201,6 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
     });
   }
 };
-
-export type UserWithTeam = User & { teamsAsMember: Team[]; teamsAsLead: Team[] };
 
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
   const financeTeam = await prisma.team.findUnique({

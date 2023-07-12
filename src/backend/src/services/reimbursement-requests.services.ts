@@ -9,7 +9,6 @@ import prisma from '../prisma/prisma';
 import {
   ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
-  UserWithTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -308,7 +307,7 @@ export default class ReimbursementRequestService {
    * @param sender the person sending the pending advisor list
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    */
-  static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
+  static async sendPendingAdvisorList(sender: User, saboNumbers: number[]) {
     await validateUserIsHeadOfFinanceTeam(sender);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
@@ -366,7 +365,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person adding the sabo number
    * @returns the reimbursement request with the sabo number
    */
-  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: UserWithTeam) {
+  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: User) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -485,7 +484,7 @@ export default class ReimbursementRequestService {
    * @param user the user getting the reimbursement requests
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
-  static async getAllReimbursementRequests(user: UserWithTeam): Promise<ReimbursementRequest[]> {
+  static async getAllReimbursementRequests(user: User): Promise<ReimbursementRequest[]> {
     await validateUserIsPartOfFinanceTeam(user);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -532,10 +531,7 @@ export default class ReimbursementRequestService {
    * @param reimbursementRequestId the id of thereimbursement request to get
    * @returns the reimbursement request with the given id
    */
-  static async getSingleReimbursementRequest(
-    user: UserWithTeam,
-    reimbursementRequestId: string
-  ): Promise<ReimbursementRequest> {
+  static async getSingleReimbursementRequest(user: User, reimbursementRequestId: string): Promise<ReimbursementRequest> {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       ...reimbursementRequestQueryArgs
