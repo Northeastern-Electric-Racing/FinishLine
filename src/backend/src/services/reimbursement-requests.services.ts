@@ -3,12 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  Reimbursement_Request,
-  Reimbursement_Status_Type,
-  User,
-  Reimbursement as PrismaReimbursement
-} from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
