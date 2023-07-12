@@ -140,17 +140,14 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
         control={control}
         render={({ field: { onChange, value: formValue } }) => (
           <Autocomplete
-            isOptionEqualToValue={(option, value) => {
-              console.log(option, value);
-              return option.id === value.id;
-            }}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
             multiple
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
             onChange={(_, values) => onChange(values.map((v) => v.id))}
             value={formValue.map((v: string) => {
-              let change = blockedByOptions.find((o) => o.id === v);
+              const change = blockedByOptions.find((o) => o.id === v);
               return change!;
             })}
             renderInput={(params) => (
