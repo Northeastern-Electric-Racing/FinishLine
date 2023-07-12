@@ -17,7 +17,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { isAdmin } from 'shared';
+import { isHead } from 'shared';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -115,7 +115,7 @@ const NavUserMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
-        {isAdmin(auth.user?.role) ? <AdminTools /> : null}
+        {isHead(auth.user?.role) && <AdminTools />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
     </>

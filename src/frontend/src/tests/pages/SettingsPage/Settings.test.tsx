@@ -35,7 +35,7 @@ describe('settings page component', () => {
   beforeEach(() => vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser)));
   it('renders all the information', () => {
     renderComponent();
-    expect(screen.getAllByText('Settings').length).toEqual(2);
+    expect(screen.getAllByText('Settings').length).toEqual(1);
     expect(screen.getByText(/Organization/)).toBeInTheDocument();
     expect(screen.getByText(/First Name:/)).toBeInTheDocument();
     expect(screen.getByText(/Email:/)).toBeInTheDocument();

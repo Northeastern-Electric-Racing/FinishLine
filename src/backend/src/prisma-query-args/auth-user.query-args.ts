@@ -4,7 +4,8 @@ const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
   include: {
     userSettings: true,
     teamAsHead: true,
-    favoriteProjects: true
+    favoriteProjects: true,
+    changeRequestsToReview: true
   }
 });
 
