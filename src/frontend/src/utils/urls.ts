@@ -7,7 +7,7 @@
  * This file centralizes URLs used to query the API.
  */
 
-const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
@@ -71,6 +71,10 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
+/**************** Finance Endpoints **************************/
+const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
+const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -122,6 +126,8 @@ export const apiUrls = {
   teamsSetDescription,
 
   descriptionBulletsCheck,
+
+  financeUploadRceipt,
 
   version
 };

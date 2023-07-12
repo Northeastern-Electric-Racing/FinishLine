@@ -11,6 +11,9 @@ const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
 
+/**************** Finance Section ****************/
+const FINANCE = `/finance`;
+
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;
 const PROJECTS_OVERVIEW = PROJECTS + '/overview';
@@ -61,6 +64,8 @@ export const routes = {
   CHANGE_REQUESTS_NEW,
   CHANGE_REQUESTS_NEW_WITH_WBS,
   CHANGE_REQUESTS_OVERVIEW,
+
+  FINANCE,
 
   ADMIN_TOOLS
 };
