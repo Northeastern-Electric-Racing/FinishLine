@@ -7,7 +7,7 @@ import { Box, Grid, useTheme } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, Project, WorkPackage } from 'shared';
+import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -55,7 +55,12 @@ const ChangeRequestsOverview: React.FC = () => {
   const currentDate = new Date();
 
   const crToReview = changeRequests
-    .filter((cr) => !cr.dateReviewed && cr.submitter.userId !== user.userId && myWbsNumbers.includes(cr.wbsNum))
+    .filter(
+      (cr) =>
+        !cr.dateReviewed &&
+        cr.submitter.userId !== user.userId &&
+        myWbsNumbers.some((wbsNum) => equalsWbsNumber(wbsNum, cr.wbsNum))
+    )
     .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
   const crUnreviewed = changeRequests
@@ -65,13 +70,12 @@ const ChangeRequestsOverview: React.FC = () => {
   const crApproved = changeRequests
     .filter(
       (cr: ChangeRequest) =>
-        cr.dateImplemented &&
+        cr.dateReviewed &&
+        cr.accepted &&
         cr.submitter.userId === user.userId &&
-        currentDate.getTime() - cr.dateImplemented.getTime() <= 1000 * 60 * 60 * 24 * 5
+        currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5
     )
-    .sort((a, b) =>
-      a.dateImplemented && b.dateImplemented ? b.dateImplemented?.getTime() - a.dateImplemented?.getTime() : 0
-    );
+    .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box

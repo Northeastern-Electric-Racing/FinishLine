@@ -20,11 +20,12 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ClubAccount, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
+import ReimbursementRequestService from '../services/reimbursement-requests.services';
 
 const prisma = new PrismaClient();
 
@@ -621,6 +622,26 @@ const performSeed: () => Promise<void> = async () => {
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
     [joeShmoe.userId]
+  );
+
+  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+
+  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
+
+  await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    new Date(),
+    vendor.vendorId,
+    ClubAccount.CASH,
+    [
+      {
+        name: 'GLUE',
+        wbsElementId: 1,
+        cost: 200000
+      }
+    ],
+    expenseType.expenseTypeId,
+    100
   );
 };
 

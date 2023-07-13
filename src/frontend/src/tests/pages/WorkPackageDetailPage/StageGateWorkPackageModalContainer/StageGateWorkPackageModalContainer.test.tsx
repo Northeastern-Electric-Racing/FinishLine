@@ -11,9 +11,9 @@ import StageGateWorkPackageModalContainer from '../../../../pages/WorkPackageDet
 import { mockUseMutationResult } from '../../../test-support/test-data/test-utils.stub';
 import { useCreateStageGateChangeRequest } from '../../../../hooks/change-requests.hooks';
 
-jest.mock('../../../../hooks/change-requests.hooks');
+vi.mock('../../../../hooks/change-requests.hooks');
 
-jest.mock('../../../../hooks/toasts.hooks');
+vi.mock('../../../../hooks/toasts.hooks');
 
 // random shit to make test happy by mocking out this hook
 const mockedUseCreateStageGateCR = useCreateStageGateChangeRequest as jest.Mock<UseMutationResult>;

@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -25,6 +24,8 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useState } from 'react';
+import PageLayout from '../../../components/PageLayout';
 
 /* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */
 const schema = yup.object().shape({
@@ -50,7 +51,6 @@ export interface ProjectEditFormInput {
   googleDriveFolderLink: string | undefined;
   taskListLink: string | undefined;
   slideDeckLink: string | undefined;
-  // projectId: number;
   crId: string;
   goals: {
     bulletId: number;
@@ -64,8 +64,6 @@ export interface ProjectEditFormInput {
     bulletId: number;
     detail: string;
   }[];
-  projectLeadId: number | undefined;
-  projectManagerId: number | undefined;
   rules: {
     rule: string;
   }[];
@@ -91,8 +89,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       taskListLink,
       googleDriveFolderLink: gDriveLink,
       summary,
-      projectLeadId: project.projectLead?.userId,
-      projectManagerId: project.projectManager?.userId,
       crId: query.get('crId') || '',
       rules: project.rules.map((rule) => {
         return { rule };
@@ -111,6 +107,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
+  const [projectManagerId, setprojectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -118,43 +116,32 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   }
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
-
   const onSubmit = async (data: ProjectEditFormInput) => {
-    const {
-      name,
-      budget,
-      summary,
-      bomLink = '',
-      googleDriveFolderLink = '',
-      taskListLink = '',
-      slideDeckLink = '',
-      projectLeadId = 0,
-      projectManagerId = 0
-    } = data;
+    const { name, budget, summary, bomLink = '', googleDriveFolderLink = '', taskListLink = '', slideDeckLink = '' } = data;
     const rules = data.rules.map((rule) => rule.rule);
+
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
-    const payload = {
-      name,
-      budget,
-      summary,
-      bomLink,
-      googleDriveFolderLink,
-      taskListLink,
-      slideDeckLink,
-      projectId: project.id,
-      crId: parseInt(data.crId),
-      rules,
-      goals,
-      features,
-      otherConstraints,
-      projectLeadId,
-      projectManagerId
-    };
-
     try {
+      const payload = {
+        name,
+        budget: budget,
+        summary,
+        bomLink,
+        googleDriveFolderLink,
+        taskListLink,
+        slideDeckLink,
+        projectId: project.id,
+        crId: parseInt(data.crId),
+        rules,
+        goals,
+        features,
+        otherConstraints,
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+      };
       await mutateAsync(payload);
       exitEditMode();
     } catch (e) {
@@ -165,84 +152,91 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <form
-      id="project-edit-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
+    <PageLayout
+      title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
+      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
     >
-      <PageTitle
-        title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
-        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-        actionButton={
-          <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
-        }
-      />
-      <ProjectEditDetails users={users} control={control} errors={errors} />
-      <PageBlock title="Project Summary">
-        <Grid item sx={{ mt: 2 }}>
-          <ReactHookTextField
-            name="summary"
-            control={control}
-            sx={{ width: '50%' }}
-            label="Summary"
-            multiline={true}
-            rows={5}
-            errorMessage={errors.summary}
+      <form
+        id="project-edit-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
+        }}
+      >
+        <ProjectEditDetails
+          users={users}
+          control={control}
+          errors={errors}
+          projectLead={projectLeadId}
+          projectManager={projectManagerId}
+          setProjectLead={setProjectLeadId}
+          setProjectManager={setprojectManagerId}
+        />
+        <PageBlock title="Project Summary">
+          <Grid item sx={{ mt: 2 }}>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              sx={{ width: '50%' }}
+              label="Summary"
+              multiline={true}
+              rows={5}
+              errorMessage={errors.summary}
+            />
+          </Grid>
+        </PageBlock>
+        <PageBlock title="Goals">
+          <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
+        </PageBlock>
+        <PageBlock title="Features">
+          <ReactHookEditableList
+            name="features"
+            register={register}
+            ls={features}
+            append={appendFeature}
+            remove={removeFeature}
           />
-        </Grid>
-      </PageBlock>
-      <PageBlock title="Goals">
-        <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
-      </PageBlock>
-      <PageBlock title="Features">
-        <ReactHookEditableList
-          name="features"
-          register={register}
-          ls={features}
-          append={appendFeature}
-          remove={removeFeature}
-        />
-      </PageBlock>
-      <PageBlock title="Other Constraints">
-        <ReactHookEditableList
-          name="constraints"
-          register={register}
-          ls={constraints}
-          append={appendConstraint}
-          remove={removeConstraint}
-        />
-      </PageBlock>
-      <PageBlock title="Rules">
-        {rules.map((_rule, i) => {
-          return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
-              <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          );
-        })}
-        <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
-          + ADD NEW RULE
-        </Button>
-      </PageBlock>
+        </PageBlock>
+        <PageBlock title="Other Constraints">
+          <ReactHookEditableList
+            name="constraints"
+            register={register}
+            ls={constraints}
+            append={appendConstraint}
+            remove={removeConstraint}
+          />
+        </PageBlock>
+        <PageBlock title="Rules">
+          {rules.map((_rule, i) => {
+            return (
+              <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
+                <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            );
+          })}
+          <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
+            + ADD NEW RULE
+          </Button>
+        </PageBlock>
 
-      <Box textAlign="right" sx={{ my: 2 }}>
-        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-          Submit
-        </NERSuccessButton>
-      </Box>
-    </form>
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      </form>
+    </PageLayout>
   );
 };
 

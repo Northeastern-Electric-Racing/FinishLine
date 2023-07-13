@@ -13,7 +13,7 @@ import { exampleWbsProject1 } from '../test-support/test-data/wbs-numbers.stub';
 import { getAllProjects, getSingleProject } from '../../apis/projects.api';
 import { useAllProjects, useSingleProject } from '../../hooks/projects.hooks';
 
-jest.mock('../../apis/projects.api');
+vi.mock('../../apis/projects.api');
 
 describe('project hooks', () => {
   it('handles getting a list of projects', async () => {
