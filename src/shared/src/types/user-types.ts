@@ -42,13 +42,20 @@ export interface AuthenticatedUser {
   changeRequestsToReviewId: number[];
 }
 
-export interface UserSettings {
+export interface UserSettings extends UserSecureSettings {
   id: string;
   defaultTheme: ThemeName;
   slackId: string;
-  address: string;
-  phone: string;
+}
+
+export interface UserSecureSettings {
+  userSecureSettingsId: string;
   nuid: string;
+  street: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  phoneNumber: string;
 }
 
 export interface UpdateUserRolePayload {

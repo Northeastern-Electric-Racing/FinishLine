@@ -1,6 +1,6 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, RoleEnum, isHead } from 'shared';
+import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, RoleEnum, isHead, UserSettings } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
@@ -9,6 +9,7 @@ import { AccessDeniedException, NotFoundException } from '../utils/errors.utils'
 import { generateAccessToken } from '../utils/auth.utils';
 import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
+import userSettingsTransformer from '../transformers/user-settings.transformer';
 
 export default class UsersService {
   /**
@@ -41,7 +42,7 @@ export default class UsersService {
    * @returns the user settings object
    * @throws if the given user doesn't exist, or the given user's settings don't exist
    */
-  static async getUserSettings(userId: number): Promise<User_Settings> {
+  static async getUserSettings(userId: number): Promise<UserSettings> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
 
     if (!requestedUser) throw new NotFoundException('User', userId);
@@ -52,9 +53,15 @@ export default class UsersService {
       create: { userId }
     });
 
+    const secureSettings = await prisma.user_Secure_Settings.upsert({
+      where: { userId },
+      update: {},
+      create: { userId, nuid: `${userId}`, street: '', city: '', state: '', zipcode: '', phoneNumber: `${userId}` }
+    });
+
     if (!settings) throw new NotFoundException('User Settings', userId);
 
-    return settings;
+    return userSettingsTransformer(settings, secureSettings);
   }
 
   /**

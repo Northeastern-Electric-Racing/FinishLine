@@ -37,9 +37,9 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   if (isError) return <ErrorPage error={error} message={error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
-  const handleConfirm = async ({ defaultTheme, slackId, address, phone, nuid }: FormInput) => {
+  const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
     setEdit(false);
-    await update.mutateAsync({ id: userSettingsData.id!, defaultTheme, slackId, address, phone, nuid });
+    await update.mutateAsync({ id: userSettingsData.id!, defaultTheme, slackId });
   };
 
   return (

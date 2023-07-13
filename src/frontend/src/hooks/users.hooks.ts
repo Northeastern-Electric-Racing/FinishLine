@@ -12,7 +12,8 @@ import {
   logUserInDev,
   updateUserSettings,
   updateUserRole,
-  getUsersFavoriteProjects
+  getUsersFavoriteProjects,
+  updateUserSecureSettings
 } from '../apis/users.api';
 import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project } from 'shared';
 import { useAuth } from './auth.hooks';
@@ -87,6 +88,18 @@ export const useSingleUserSettings = (id: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
+export const useSingleUserSecureSettings = (id: number) => {
+  return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
+    const { data } = await getSingleUserSettings(id);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply a single user's settings.
+ *
+ * @param id User ID of the requested user's settings.
+ */
 export const useUsersFavoriteProjects = (id: number) => {
   return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
@@ -104,8 +117,9 @@ export const useUpdateUserSettings = () => {
     ['users', auth.user?.userId!, 'settings', 'update'],
     async (settings: UserSettings) => {
       if (!auth.user) throw new Error('Update settings not allowed when not logged in');
-      const { data } = await updateUserSettings(auth.user.userId, settings);
-      return data;
+      const { data: userSettingsData } = await updateUserSettings(auth.user.userId, settings);
+      const { data: userSecureSettings } = await updateUserSecureSettings(auth.user.userId, settings);
+      return { message: userSettingsData.message + userSecureSettings.message };
     },
     {
       onSuccess: () => {
