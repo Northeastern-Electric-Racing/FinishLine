@@ -13,7 +13,7 @@ import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/use
 import { getAllUsers, getSingleUser, logUserIn } from '../../apis/users.api';
 import { useAllUsers, useSingleUser, useLogUserIn } from '../../hooks/users.hooks';
 
-jest.mock('../../apis/users.api');
+vi.mock('../../apis/users.api');
 
 describe('user hooks', () => {
   it('handles getting a list of users', async () => {

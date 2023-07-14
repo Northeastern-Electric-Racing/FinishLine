@@ -6,7 +6,7 @@
 import { render, screen } from '../../test-support/test-utils';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
 
-jest.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
+vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
   return {
     __esModule: true,
     default: () => {

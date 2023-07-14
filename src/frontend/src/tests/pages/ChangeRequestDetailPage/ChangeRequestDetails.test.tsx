@@ -22,7 +22,7 @@ import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import ChangeRequestDetails from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetails';
 
-jest.mock('../../../hooks/change-requests.hooks');
+vi.mock('../../../hooks/change-requests.hooks');
 
 const mockedUseSingleChangeRequest = useSingleChangeRequest as jest.Mock<UseQueryResult<ChangeRequest>>;
 
@@ -30,7 +30,7 @@ const mockSingleCRHook = (isLoading: boolean, isError: boolean, data?: ChangeReq
   mockedUseSingleChangeRequest.mockReturnValue(mockUseQueryResult<ChangeRequest>(isLoading, isError, data, error));
 };
 
-jest.mock('../../../hooks/auth.hooks');
+vi.mock('../../../hooks/auth.hooks');
 
 const mockedUseAuth = useAuth as jest.Mock<Auth>;
 

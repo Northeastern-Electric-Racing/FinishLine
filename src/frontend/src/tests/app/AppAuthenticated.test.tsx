@@ -14,7 +14,7 @@ import { mockUseAllWorkPackagesReturnValue } from '../test-support/mock-hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 
-jest.mock('../../pages/ProjectsPage/Projects', () => {
+vi.mock('../../pages/ProjectsPage/Projects', () => {
   return {
     __esModule: true,
     default: () => {
@@ -23,7 +23,7 @@ jest.mock('../../pages/ProjectsPage/Projects', () => {
   };
 });
 
-jest.mock('../../utils/axios');
+vi.mock('../../utils/axios');
 
 // Sets up the component under test with the desired values and renders it
 const renderComponent = (path?: string, route?: string) => {
@@ -37,11 +37,11 @@ const renderComponent = (path?: string, route?: string) => {
 
 describe('AppAuthenticated', () => {
   beforeEach(() => {
-    jest.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
-    jest.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
-    jest.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-    jest.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    jest.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
+    vi.spyOn(workPackageHooks, 'useAllWorkPackages').mockReturnValue(mockUseAllWorkPackagesReturnValue([]));
+    vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+    vi.spyOn(userHooks, 'useSingleUserSettings').mockReturnValue(mockUseSingleUserSettings());
   });
 
   it('renders nav links', () => {

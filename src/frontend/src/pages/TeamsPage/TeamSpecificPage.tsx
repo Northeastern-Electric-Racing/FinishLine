@@ -3,12 +3,12 @@ import { useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ActiveProjectCardView from './ProjectCardsView';
 import DescriptionPageBlock from './DescriptionPageBlock';
 import { routes } from '../../utils/routes';
+import PageLayout from '../../components/PageLayout';
 
 interface ParamTypes {
   teamId: string;
@@ -22,8 +22,7 @@ const TeamSpecificPage: React.FC = () => {
   if (isLoading || !data) return <LoadingIndicator />;
 
   return (
-    <>
-      <PageTitle title={`Team ${data.teamName}`} previousPages={[{ name: 'Teams', route: routes.TEAMS }]} />
+    <PageLayout title={`Team ${data.teamName}`} previousPages={[{ name: 'Teams', route: routes.TEAMS }]}>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TeamMembersPageBlock team={data} />
@@ -41,7 +40,7 @@ const TeamSpecificPage: React.FC = () => {
           <DescriptionPageBlock team={data} />
         </Grid>
       </Grid>
-    </>
+    </PageLayout>
   );
 };
 

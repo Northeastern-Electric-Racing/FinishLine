@@ -8,9 +8,9 @@ import CreateWorkPackageFormView from '../../../pages/CreateWorkPackagePage/Crea
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 
-jest.mock('../../../hooks/utils.hooks');
+vi.mock('../../../hooks/utils.hooks');
 
-jest.mock('../../../components/ReactHookTextField', () => {
+vi.mock('../../../components/ReactHookTextField', () => {
   return {
     __esModule: true,
     default: () => <p>React hook text field component</p>

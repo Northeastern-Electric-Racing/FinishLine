@@ -59,7 +59,8 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
   scopeImpact: 'Design and machine titanium spacers',
   budgetImpact: 75,
   timelineImpact: 2,
-  proposedSolutions: []
+  proposedSolutions: [],
+  requestedReviewers: []
 };
 
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
@@ -73,7 +74,8 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
   projectManager: exampleProjectManagerUser,
   startDate: new Date('03/01/21'),
   confirmDetails: true,
-  status: ChangeRequestStatus.Accepted
+  status: ChangeRequestStatus.Accepted,
+  requestedReviewers: []
 };
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
@@ -85,7 +87,8 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
   type: ChangeRequestType.StageGate,
   leftoverBudget: 26,
   confirmDone: true,
-  status: ChangeRequestStatus.Implemented
+  status: ChangeRequestStatus.Implemented,
+  requestedReviewers: []
 };
 
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
@@ -189,7 +192,8 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     }
   ],
-  proposedSolutions: []
+  proposedSolutions: [],
+  requestedReviewers: []
 };
 
 export const exampleAllChangeRequests: ChangeRequest[] = [

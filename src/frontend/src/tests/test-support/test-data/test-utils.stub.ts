@@ -6,7 +6,7 @@
 import { AxiosResponse } from 'axios';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { User } from 'shared';
-import { exampleAdminUser } from './users.stub';
+import { exampleAuthenticatedAdminUser } from './authenticated-user.stub';
 import { Auth, MUILinkItem } from '../../../utils/types';
 import HomeIcon from '@mui/icons-material/Home';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -87,8 +87,8 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
 export const mockAuth = (isLoading: boolean, user?: User) => {
   return {
     user,
-    devSignin: (u) => new Promise((res, rej) => res(exampleAdminUser)),
-    signin: (t) => new Promise((res, rej) => res(exampleAdminUser)),
+    devSignin: (u) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
+    signin: (t) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
     signout: () => {},
     isLoading
   } as Auth;
