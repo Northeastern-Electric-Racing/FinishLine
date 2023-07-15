@@ -110,6 +110,9 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
         </Grid>
         <Grid item xs={12}>
+          <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
+        </Grid>
+        <Grid item xs={12}>
           <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
         </Grid>
       </Grid>

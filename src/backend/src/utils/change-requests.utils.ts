@@ -23,9 +23,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
   }[whyType]);
 
 export const sendSlackChangeRequestNotification = async (
-  team: Team & {
-    head: User;
-  },
+  team: Team,
   message: string,
   crId: number,
   budgetImpact?: number

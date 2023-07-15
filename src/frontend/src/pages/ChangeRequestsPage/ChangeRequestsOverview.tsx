@@ -35,6 +35,7 @@ const ChangeRequestsOverview: React.FC = () => {
   const myProjects = projects.filter(
     (project: Project) =>
       (project.team && project.team.teamId === user.teamAsHeadId) ||
+      (project.team && project.team.leads.map((lead) => lead.userId).includes(user.userId)) ||
       (project.projectLead && project.projectLead.userId === user.userId) ||
       (project.projectManager && project.projectManager.userId === user.userId)
   );
