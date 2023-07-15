@@ -14,7 +14,7 @@ export const prismaProject2: Project = {
   slideDeckLink: 'https://docs.google.com/presentation/d/1',
   bomLink: 'https://docs.google.com/spreadsheets/d/1',
   taskListLink: 'https://docs.google.com/spreadsheets/d/1',
-  teamId: '1'
+  teams: prismaTeam1
 };
 
 export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
@@ -105,5 +105,6 @@ export const sharedProject1: SharedProject = {
   features: [],
   otherConstraints: [],
   workPackages: [],
-  tasks: []
+  tasks: [],
+  teams: []
 };

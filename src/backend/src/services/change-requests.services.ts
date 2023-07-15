@@ -366,7 +366,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
               }
             }
           }
@@ -374,13 +374,18 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdCR.wbsElement.workPackage?.project.team;
-    if (team) {
+    const teams = createdCR.wbsElement.workPackage?.project.teams;
+
+    if (!teams) {
+      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    }
+    
+    teams.forEach(async (team) => {
       const slackMsg =
         `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
         ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
       await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
-    }
+    });
 
     return createdCR.crId;
   }
@@ -445,7 +450,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
               }
             }
           }
@@ -453,13 +458,17 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdChangeRequest.wbsElement.workPackage?.project.team;
-    if (team) {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-        ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+    const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
+    if (!teams) {
+      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
     }
+    
+    teams.forEach(async (team) => {
+      const slackMsg =
+      `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+      ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+    await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+    });
 
     return createdChangeRequest.crId;
   }
@@ -522,10 +531,10 @@ export default class ChangeRequestsService {
       include: {
         wbsElement: {
           include: {
-            project: { include: { team: { include: { leader: true } }, wbsElement: true } },
+            project: { include: { teams: { include: { leader: true } }, wbsElement: true } },
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
               }
             }
           }
@@ -534,12 +543,19 @@ export default class ChangeRequestsService {
     });
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
-    if (project?.team) {
+    const teams = project?.teams;
+    if (!teams) {
+      throw new HttpException(400, "need a team");
+    }
+
+    teams?.forEach(async (team) => {
       const slackMsg =
         `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
         `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
-    }
+      await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+    });
+    
+    
 
     return createdCR.crId;
   }
