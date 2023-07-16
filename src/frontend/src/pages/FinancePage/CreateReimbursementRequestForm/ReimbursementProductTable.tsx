@@ -8,7 +8,6 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -66,7 +65,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   });
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table>
         <TableHead>
           <TableRow>
@@ -77,7 +76,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         <TableBody>
           {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
             return (
-              <TableRow>
+              <TableRow key={key}>
                 <TableCell>
                   <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)!.label}</Typography>
                 </TableCell>
@@ -127,7 +126,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     })}
                   </Box>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ verticalAlign: 'bottom' }}>
                   <IconButton
                     onClick={() =>
                       appendProduct({

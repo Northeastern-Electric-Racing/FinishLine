@@ -5,7 +5,7 @@
 
 import { ReimbursementProductCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException, HttpException, NotFoundException } from './errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 
 export interface ReimbursementReceiptCreateArgs {
@@ -39,7 +39,7 @@ export const removeDeletedReceiptPictures = async (
 };
 
 /**
- * validates reimbursement products before adding them to the data base
+ * Validates that the wbs elements exist and are not deleted for each reimbursement product
  * @param reimbursementProductCreateArgs the reimbursement products to add to the data base
  * @param reimbursementRequestId the id of the reimbursement request that the products belogn to
  * @returns the reimbursement products with the wbs element id added
@@ -50,6 +50,9 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
     throw new HttpException(400, 'You must have at least one product to reimburse');
   }
 
+  /**
+   * Aggregate all the wbsNums for all the reimbursement products
+   */
   const wbsNums = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsNum);
 
   const reimbursementProductsWithWbsElement: {
@@ -59,7 +62,11 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
     wbsNum: WbsNumber;
   }[] = [];
 
-  const promiseWbsElements = wbsNums.map(async (wbsNum, index) => {
+  /**
+   * Goes through each wbsNum and finds the wbs element associated with it
+   * Checks if the wbs element exists and is not deleted
+   */
+  wbsNums.map(async (wbsNum, index) => {
     const wbsElement = await prisma.wBS_Element.findFirst({
       where: {
         carNumber: wbsNum.carNumber,
@@ -68,21 +75,13 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
       }
     });
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
     reimbursementProductsWithWbsElement.push({
       ...reimbursementProductCreateArgs[index],
       wbsElementId: wbsElement.wbsElementId
     });
     return wbsElement;
   });
-
-  const wbsElements = await Promise.all(promiseWbsElements);
-
-  const deletedWbsElements = wbsElements.filter((wbsElement) => wbsElement.dateDeleted);
-
-  if (deletedWbsElements.length > 0) {
-    const deletedWbsNumbers = deletedWbsElements.map(wbsPipe).join(', ');
-    throw new HttpException(400, `The following projects or work packages have been deleted: ${deletedWbsNumbers}`);
-  }
 
   return reimbursementProductsWithWbsElement;
 };

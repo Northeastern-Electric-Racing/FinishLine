@@ -13,9 +13,10 @@ const CREDITS = `/credits`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
-const NEW_REIMBURSEMENT_REQUEST = FINANCE + `/new-reimbursement-request`;
-const REIMBURSEMENT_REQUESTS = '/reimbursement-requests';
-const REIMBURSEMENT_REQUEST_BY_ID = FINANCE + `/:id`;
+const REIMBURSEMENT_REQUESTS = FINANCE + '/reimbursement-requests';
+const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/new`;
+
+const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/:id`;
 
 /**************** Projects Section ****************/
 const PROJECTS = `/projects`;

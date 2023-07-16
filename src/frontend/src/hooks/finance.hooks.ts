@@ -12,7 +12,7 @@ import {
 } from '../apis/finance.api';
 import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, ReimbursementRequest, Vendor } from 'shared';
 
-export interface CreateReimbursementRequestArgs {
+export interface CreateReimbursementRequestPayload {
   vendorId: string;
   account: ClubAccount;
   dateOfExpense: Date;
@@ -38,13 +38,13 @@ export const useUploadSingleReceipt = () => {
 };
 
 /**
- * Uploads many receipts to a given reimbursement request
+ * Custom hook that uploads many receipts to a given reimbursement request
  *
  * @returns The created receipt information
  */
 export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
-    ['finance', 'image'],
+    ['reimbursement-requests', 'upload-receipts'],
     async (formData: { files: File[]; id: string }) => {
       const promises = formData.files.map((file) => uploadSingleReceipt(file, formData.id));
       const results = await Promise.all(promises);
@@ -59,9 +59,9 @@ export const useUploadManyReceipts = () => {
  * @returns the created reimbursement request
  */
 export const useCreateReimbursementRequest = () => {
-  return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestArgs>(
-    ['finance', 'create'],
-    async (formData: CreateReimbursementRequestArgs) => {
+  return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestPayload>(
+    ['reimbursement-requests', 'create'],
+    async (formData: CreateReimbursementRequestPayload) => {
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
@@ -74,7 +74,7 @@ export const useCreateReimbursementRequest = () => {
  * @returns all the expense types
  */
 export const useGetAllExpenseTypes = () => {
-  return useQuery<ExpenseType[], Error>(['finance', 'expense-types'], async () => {
+  return useQuery<ExpenseType[], Error>(['expense-types'], async () => {
     const { data } = await getAllExpenseTypes();
     return data;
   });
@@ -86,7 +86,7 @@ export const useGetAllExpenseTypes = () => {
  * @returns all the vendors
  */
 export const useGetAllVendors = () => {
-  return useQuery<Vendor[], Error>(['finance', 'vendors'], async () => {
+  return useQuery<Vendor[], Error>(['vendors'], async () => {
     const { data } = await getAllVendors();
     return data;
   });
