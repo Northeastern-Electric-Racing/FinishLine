@@ -379,7 +379,7 @@ export default class ChangeRequestsService {
     if (!teams) {
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
     }
-    
+
     teams.forEach(async (team) => {
       const slackMsg =
         `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
@@ -462,12 +462,12 @@ export default class ChangeRequestsService {
     if (!teams) {
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
     }
-    
+
     teams.forEach(async (team) => {
       const slackMsg =
-      `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-      ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-    await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+        `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+        ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+      await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
     });
 
     return createdChangeRequest.crId;
@@ -545,7 +545,7 @@ export default class ChangeRequestsService {
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
     if (!teams) {
-      throw new HttpException(400, "need a team");
+      throw new HttpException(400, 'need a team');
     }
 
     teams?.forEach(async (team) => {
@@ -554,8 +554,6 @@ export default class ChangeRequestsService {
         `for the ${project.wbsElement.name} project`;
       await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
     });
-    
-    
 
     return createdCR.crId;
   }

@@ -88,7 +88,7 @@ export default class ProjectsService {
       for (const teamId of teamIds) {
         const team = await prisma.team.findUnique({ where: { teamId } });
         if (!team) throw new NotFoundException('Team', teamId);
-        }
+      }
     }
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
@@ -395,11 +395,11 @@ export default class ProjectsService {
     // if everything is fine, then update the given project to assign to provided team ID
     await prisma.project.update({
       where: { projectId: project.projectId },
-      data: { 
+      data: {
         teams: {
           connect: [team]
         }
-       }
+      }
     });
 
     return;
