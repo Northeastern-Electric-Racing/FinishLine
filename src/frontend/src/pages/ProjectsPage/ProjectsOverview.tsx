@@ -10,6 +10,7 @@ import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hook
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ProjectsOverviewCards from './ProjectsOverviewCards';
 import { WbsElementStatus } from 'shared';
+import { isUserOnTeam } from '../../../../backend/src/utils/teams.utils';
 
 /**
  * Cards of all projects this user has favorited
@@ -37,10 +38,7 @@ const ProjectsOverview: React.FC = () => {
       project.projectManager?.userId === user.userId
   );
   const myTeamsProjects = projects.filter(
-    (project) =>
-      (project.status !== WbsElementStatus.Complete && user.teamAsHeadId && user.teamAsHeadId === project.team?.teamId) ||
-      project.team?.members.map((member) => member.userId).includes(user.userId) ||
-      project.team?.leads.map((lead) => lead.userId).includes(user.userId)
+    (project) => project.status !== WbsElementStatus.Complete && project.team && isUserOnTeam(project.team, user)
   );
 
   return (

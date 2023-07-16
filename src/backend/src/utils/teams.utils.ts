@@ -15,11 +15,7 @@ const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
  * @returns true or false
  */
 export const allUsersOnTeam = (team: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>, users: User[]): boolean => {
-  const members: number[] = team.members
-    .map((user) => user.userId)
-    .concat(team.headId)
-    .concat(team.leads.map((lead) => lead.userId));
-  return users.map((user) => user.userId).every((user) => members.includes(user));
+  return users.every((user) => isUserOnTeam(team, user));
 };
 
 /**
