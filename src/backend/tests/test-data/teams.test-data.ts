@@ -1,4 +1,4 @@
-import { batman, superman, wonderwoman, flash, alfred } from './users.test-data';
+import { batman, superman, wonderwoman, flash, alfred, greenlantern, aquaman, theVisitor } from './users.test-data';
 import { Prisma } from '@prisma/client';
 import { Team as SharedTeam } from 'shared/src/types/team-types';
 import teamQueryArgs from '../../src/prisma-query-args/teams.query-args';
@@ -16,8 +16,8 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   head: flash,
   headId: 4,
   projects: [],
-  members: [batman, wonderwoman, alfred],
-  leads: [superman]
+  members: [aquaman],
+  leads: [wonderwoman, alfred]
 };
 
 export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
@@ -25,7 +25,7 @@ export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   teamName,
   slackId,
   description,
-  head: alfred,
+  head: greenlantern,
   headId: 10,
   projects: [],
   members: [],
@@ -37,10 +37,10 @@ export const sharedTeam1: SharedTeam = {
   teamName,
   slackId,
   description,
-  head: flash,
+  head: superman,
   members: [],
   projects: [],
-  leads: [wonderwoman, batman]
+  leads: [alfred]
 };
 
 export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
@@ -51,6 +51,6 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   headId: 1,
   head: batman,
   projects: [],
-  members: [superman, wonderwoman],
-  leads: [batman, flash]
+  members: [aquaman, theVisitor],
+  leads: [wonderwoman]
 };

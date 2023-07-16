@@ -7,6 +7,7 @@ import { batman, flash, greenlantern, superman, theVisitor, wonderwoman } from '
 import * as userUtils from '../src/utils/users.utils';
 import { AccessDeniedException, HttpException } from '../src/utils/errors.utils';
 import teamTransformer from '../src/transformers/teams.transformer';
+import { Role } from '@prisma/client';
 
 describe('Teams', () => {
   beforeEach(() => {
@@ -155,13 +156,28 @@ describe('Teams', () => {
     test('setTeamHead new head is already a head of another team', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
-      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 1);
 
       const expectedException = new HttpException(
         403,
-        'Access Denied: The new team head must not be a head of another team'
+        'Access Denied: The new team head must not be a head or lead of another team'
+      );
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
+    test('setTeamHead new head is already a lead of another team', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, role: Role.HEAD });
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 1);
+
+      const expectedException = new HttpException(
+        403,
+        'Access Denied: The new team head must not be a head or lead of another team'
       );
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
