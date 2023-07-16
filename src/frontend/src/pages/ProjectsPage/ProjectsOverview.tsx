@@ -10,7 +10,7 @@ import { useCurrentUser, useUsersFavoriteProjects } from '../../hooks/users.hook
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ProjectsOverviewCards from './ProjectsOverviewCards';
 import { WbsElementStatus } from 'shared';
-import { isUserOnTeam } from '../../../../backend/src/utils/teams.utils';
+import { isUserOnTeam } from '../../utils/teams.utils';
 
 /**
  * Cards of all projects this user has favorited
