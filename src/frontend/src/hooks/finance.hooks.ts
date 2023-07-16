@@ -11,14 +11,14 @@ import { ReimbursementRequest } from 'shared';
  *
  */
 export const useUploadSingleReceipt = (id: string) => {
-  return useMutation<any, Error, any>(['finance', 'image'], async (formData: FormData) => {
+  return useMutation<FormData, Error, any>(['reimbursement-requests', 'upload'], async (formData: FormData) => {
     const { data } = await uploadSingleReceipt(formData, id);
     return data;
   });
 };
 
 /**
- * custom react hook to get a single reimbursement request
+ * Custom react hook to get a single reimbursement request
  * @param id Id of the reimbursement request to get
  * @returns the reimbursement request
  */
