@@ -37,7 +37,7 @@ export interface AuthenticatedUser {
   emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
-  teamAsLeadId?: string;
+  teamAsHeadId?: string;
   favoritedProjectsId: number[];
   changeRequestsToReviewId: number[];
 }

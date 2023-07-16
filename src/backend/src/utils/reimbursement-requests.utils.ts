@@ -6,7 +6,8 @@
 import { wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
-import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Receipt, Reimbursement_Product, User } from '@prisma/client';
+import { isUserOnTeam } from './teams.utils';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -201,16 +202,15 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   }
 };
 
-export type UserWithTeam = User & { teams: Team[] };
-
-export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
+export const validateUserIsPartOfFinanceTeam = async (user: User) => {
   const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true, members: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
+  if (!isUserOnTeam(financeTeam, user)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };
@@ -222,7 +222,7 @@ export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!(financeTeam.leaderId === user.userId)) {
+  if (!(financeTeam.headId === user.userId)) {
     throw new AccessDeniedException('You are not the head of the finance team!');
   }
 };

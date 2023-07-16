@@ -382,7 +382,11 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([]);
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
-      const res = await ReimbursementRequestService.getAllReimbursementRequests({ ...batman, teams: [justiceLeague] });
+      const res = await ReimbursementRequestService.getAllReimbursementRequests({
+        ...batman,
+        teamsAsMember: [justiceLeague],
+        teamsAsLead: []
+      });
 
       expect(prisma.reimbursement_Request.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([]);
@@ -487,7 +491,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       const reimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
-        { ...batman, teams: [justiceLeague] },
+        { ...batman, teamsAsMember: [justiceLeague], teamsAsLead: [] },
         GiveMeMyMoney.reimbursementRequestId
       );
 
@@ -507,7 +511,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Approve Reimbursement Request Tests', () => {
     test('Approve Reimbursement Request fails if Submitter not on Finance Team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
       await expect(
         ReimbursementRequestService.approveReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
       ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));

@@ -137,8 +137,8 @@ describe('Projects', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('set project teams'));
     });
 
-    test('setProjectTeam works if the submitter is not an admin but is the lead of the team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...prismaTeam1, leaderId: aquaman.userId });
+    test('setProjectTeam works if the submitter is not an admin but is the head of the team', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...prismaTeam1, headId: aquaman.userId });
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
       // no error, no return value
