@@ -395,7 +395,11 @@ export default class ProjectsService {
     // if everything is fine, then update the given project to assign to provided team ID
     await prisma.project.update({
       where: { projectId: project.projectId },
-      data: { teamId }
+      data: { 
+        teams: {
+          connect: [team]
+        }
+       }
     });
 
     return;
