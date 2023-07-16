@@ -29,7 +29,7 @@ export interface CreateReimbursementRequestPayload {
  */
 export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
-    ['finance', 'image'],
+    ['reimbursement-requsts', 'image'],
     async (formData: { file: File; id: string }) => {
       const { data } = await uploadSingleReceipt(formData.file, formData.id);
       return data;
@@ -94,8 +94,7 @@ export const useGetAllVendors = () => {
 
 /**
  * Custom react hook to get a single reimbursement request
- *
- * @param id id of the reimbursement request to get
+ * @param id Id of the reimbursement request to get
  * @returns the reimbursement request
  */
 export const useSingleReimbursementRequest = (id: string) => {
