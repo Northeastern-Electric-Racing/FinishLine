@@ -57,6 +57,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
             <>
               <Typography>Default Theme</Typography>
               <Select onChange={onChange} value={value}>
+                {/* There is an error on onChange*/}
                 {themeChoices.map((t) => (
                   <MenuItem key={t} value={t}>
                     {t}
