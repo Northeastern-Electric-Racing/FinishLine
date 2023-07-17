@@ -84,7 +84,7 @@ changeRequestsRouter.post(
   body('userIds').isArray(),
   intMinZero(body('userIds.*')),
   validateInputs,
-  ChangeRequestsController.requestCRAReview
+  ChangeRequestsController.requestCRReview
 );
 
 export default changeRequestsRouter;

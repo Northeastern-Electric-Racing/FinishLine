@@ -121,12 +121,12 @@ export default class ChangeRequestsController {
     }
   }
 
-  static async requestCRAReview(req: Request, res: Response, next: NextFunction) {
+  static async requestCRReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
       const crId = parseInt(req.params.crId);
       const submitter: User = await getCurrentUser(res);
-      await ChangeRequestsService.requestCRAReview(submitter, userIds, crId);
+      await ChangeRequestsService.requestCRReview(submitter, userIds, crId);
       return res.status(200).json({ message: `Successfully assigned reviewers to change request #${crId}` });
     } catch (error: unknown) {
       next(error);

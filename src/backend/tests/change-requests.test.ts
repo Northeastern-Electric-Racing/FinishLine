@@ -436,15 +436,15 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
 
-      await expect(() => ChangeRequestsService.requestCRAReview(superman, [], 1)).rejects.toThrow(
-        new AccessDeniedException(`The submitter of this request must match to CR's submitter`)
+      await expect(() => ChangeRequestsService.requestCRReview(superman, [], 1)).rejects.toThrow(
+        new AccessDeniedException(`Only the author of this change request can request a reviewer`)
       );
     });
 
     test('One or more reviewer does not exist', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
 
-      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2, 123], 1)).rejects.toThrow(
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 123], 1)).rejects.toThrow(
         new HttpException(404, 'User(s) with the following ids not found: 123')
       );
     });
@@ -452,8 +452,8 @@ describe('Change Requests', () => {
     test('One or more reviewer is not at least in leadership role', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman, wonderwoman]);
 
-      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2, 3], 1)).rejects.toThrow(
-        new AccessDeniedException('User(s) with the following ids are not at least in a leadership: 3')
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 3], 1)).rejects.toThrow(
+        new AccessDeniedException('User(s) with the following names are not at least in a leadership: Wonder Woman')
       );
     });
 
@@ -461,7 +461,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
 
-      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2], 1)).rejects.toThrow(
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
         new NotFoundException('Change Request', 1)
       );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -470,7 +470,7 @@ describe('Change Requests', () => {
     test('Change request already deleted', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
-      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2], 1)).rejects.toThrow(
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
         new DeletedException('Change Request', 1)
       );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -479,8 +479,8 @@ describe('Change Requests', () => {
     test('Change request already reviewed', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
-      await expect(() => ChangeRequestsService.requestCRAReview(batman, [1, 2], 1)).rejects.toThrow(
-        new HttpException(400, 'Cannot assign a reviewer to a reviewed change request!')
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new HttpException(400, 'Cannot request a review on an already reviewed change request')
       );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -490,7 +490,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
-      await ChangeRequestsService.requestCRAReview(batman, [1, 2], 1);
+      await ChangeRequestsService.requestCRReview(batman, [1, 2], 1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });

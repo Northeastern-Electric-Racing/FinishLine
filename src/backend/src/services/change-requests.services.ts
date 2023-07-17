@@ -22,6 +22,7 @@ import { getUserFullName, getUsers } from '../utils/users.utils';
 import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -625,35 +626,36 @@ export default class ChangeRequestsService {
   /**
    * set reviewers to the given change request
    * @param submitter The user who sets a reviewer to the change request
-   * @param userId The reviewer who reviews the change request
+   * @param userIds The requested reviewers on the change request
    * @param crId The change request that will be reviewed
    */
-  static async requestCRAReview(submitter: User, userIds: number[], crId: number) {
+  static async requestCRReview(submitter: User, userIds: number[], crId: number) {
     const reviewers = await getUsers(userIds);
 
     // check if any reviewers' role is below leadership
     const underLeads = reviewers.filter((user) => !isLeadership(user.role));
-    const underLeadsIds = underLeads.map((reviewer) => reviewer.userId);
+    const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
 
     if (underLeads.length > 0)
       throw new AccessDeniedException(
-        `User(s) with the following ids are not at least in a leadership: ${underLeadsIds.join(', ')}`
+        `User(s) with the following names are not at least in a leadership: ${underLeadsNames.join(', ')}`
       );
 
     const foundCR = await prisma.change_Request.findUnique({
-      where: { crId }
+      where: { crId },
+      ...changeRequestQueryArgs
     });
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
 
     if (foundCR.submitterId !== submitter.userId)
-      throw new AccessDeniedException(`The submitter of this request must match to CR's submitter`);
+      throw new AccessDeniedException(`Only the author of this change request can request a reviewer`);
 
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
 
-    if (foundCR.reviewerId) throw new HttpException(400, `Cannot assign a reviewer to a reviewed change request!`);
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
 
-    const reviewersIds = reviewers.map((reviewer) => {
+    const reviewerIds = reviewers.map((reviewer) => {
       return {
         userId: reviewer.userId
       };
@@ -663,9 +665,12 @@ export default class ChangeRequestsService {
       where: { crId },
       data: {
         requestedReviewers: {
-          set: reviewersIds
+          set: reviewerIds
         }
       }
     });
+
+    // send slack message to CR reviewers
+    await sendSlackRequestedReviewNotification(changeRequestTransformer(foundCR));
   }
 }
