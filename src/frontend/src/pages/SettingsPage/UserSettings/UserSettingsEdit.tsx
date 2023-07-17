@@ -13,7 +13,16 @@ import { Grid, Select, MenuItem, TextField, Typography } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
 
 interface UserSettingsEditProps {
-  currentSettings: { slackId: string; defaultTheme: ThemeName; address: string; phone: string; nuid: string };
+  currentSettings: {
+    slackId: string;
+    defaultTheme: ThemeName;
+    city: string;
+    street: string;
+    state: string;
+    zipcode: string;
+    phoneNumber: string;
+    nuid: string;
+  };
   onSubmit: (data: FormInput) => Promise<void>;
 }
 
@@ -22,10 +31,13 @@ const schema = yup.object().shape({
     .mixed<ThemeName>()
     .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
     .required('Default theme is required'),
-  slackId: yup.string().optional(),
-  address: yup.string().optional(),
-  phone: yup.string().optional(),
-  nuid: yup.string().optional()
+  slackId: yup.string().required('Slack ID is required'),
+  street: yup.string().required('Street is required'),
+  city: yup.string().required('City is required'),
+  state: yup.string().required('State is required'),
+  zipcode: yup.string().required('Zipcode is required'),
+  phone: yup.string().required('Phone number is required'),
+  nuid: yup.string().required('NUID is required')
 });
 const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
   const { handleSubmit, control } = useForm<FormInput>({
@@ -65,7 +77,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           render={({ field: { onChange, value } }) => (
             <>
               <div style={{ display: 'flex' }}>
-                <Typography>Slack Id</Typography>
+                <Typography>Slack ID</Typography>
                 <ExternalLink
                   link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
                   description="(How to find your Slack ID)"
@@ -79,16 +91,16 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
 
       <Grid item>
         <Controller
-          name="address"
+          name="street"
           control={control}
           rules={{ required: true }}
-          defaultValue={currentSettings.address}
+          defaultValue={currentSettings.street}
           render={({ field: { onChange, value } }) => (
             <>
               <div style={{ display: 'flex' }}>
-                <Typography>Address</Typography>
+                <Typography>Street</Typography>
               </div>
-              <TextField required id="address-input" autoComplete="off" onChange={onChange} value={value} />
+              <TextField required id="street-input" autoComplete="off" onChange={onChange} value={value} />
             </>
           )}
         />
@@ -96,16 +108,67 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
 
       <Grid item>
         <Controller
-          name="phone"
+          name="city"
           control={control}
           rules={{ required: true }}
-          defaultValue={currentSettings.phone}
+          defaultValue={currentSettings.city}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>City</Typography>
+              </div>
+              <TextField required id="city-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="state"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.state}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>State</Typography>
+              </div>
+              <TextField required id="state-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="zipcode"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.zipcode}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <div style={{ display: 'flex' }}>
+                <Typography>Zipcode</Typography>
+              </div>
+              <TextField required id="zipcode-input" autoComplete="off" onChange={onChange} value={value} />
+            </>
+          )}
+        />
+      </Grid>
+
+      <Grid item>
+        <Controller
+          name="phoneNumber"
+          control={control}
+          rules={{ required: true }}
+          defaultValue={currentSettings.phoneNumber}
           render={({ field: { onChange, value } }) => (
             <>
               <div style={{ display: 'flex' }}>
                 <Typography>Phone #</Typography>
               </div>
-              <TextField required id="phone-input" autoComplete="off" onChange={onChange} value={value} />
+              <TextField required id="phoneNumber-input" autoComplete="off" onChange={onChange} value={value} />
             </>
           )}
         />

@@ -30,7 +30,7 @@ const renderAddress = (settings: UserSettings) => {
     <>
       <div style={{ display: 'flex' }}>
         <Typography sx={{ fontWeight: 'bold' }}>Address: </Typography>
-        {settings.address}
+        {settings.street}, {settings.city}, {settings.state}, {settings.zipcode}
       </div>
     </>
   );
@@ -41,7 +41,7 @@ const renderPhone = (settings: UserSettings) => {
     <>
       <div style={{ display: 'flex' }}>
         <Typography sx={{ fontWeight: 'bold' }}>Phone #: </Typography>
-        {settings.phone}
+        {settings.phoneNumber}
       </div>
     </>
   );

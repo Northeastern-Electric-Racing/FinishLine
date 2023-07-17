@@ -23,8 +23,11 @@ interface UserSettingsProps {
 export interface FormInput {
   defaultTheme: ThemeName;
   slackId: string;
-  address: string;
-  phone: string;
+  city: string;
+  street: string;
+  state: string;
+  zipcode: string;
+  phoneNumber: string;
   nuid: string;
 }
 
@@ -37,9 +40,20 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   if (isError) return <ErrorPage error={error} message={error.message} />;
   if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
 
-  const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
+  const handleConfirm = async ({ defaultTheme, slackId, street, city, state, zipcode, phoneNumber, nuid }: FormInput) => {
     setEdit(false);
-    await update.mutateAsync({ id: userSettingsData.id!, defaultTheme, slackId });
+    await update.mutateAsync({
+      id: userSettingsData.id!,
+      defaultTheme,
+      slackId,
+      city,
+      street,
+      state,
+      zipcode,
+      phoneNumber,
+      nuid,
+      userSecureSettingsId: userSettingsData.userSecureSettingsId!
+    });
   };
 
   return (
