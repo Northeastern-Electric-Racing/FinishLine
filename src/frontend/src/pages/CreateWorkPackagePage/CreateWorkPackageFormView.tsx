@@ -135,6 +135,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
 
   const blockedByFormControl = (
     <FormControl fullWidth>
+      <FormLabel>Blocked By</FormLabel>
       <Controller
         name="blockedBy"
         control={control}
@@ -145,9 +146,9 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             multiple
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
-            onChange={(_, values) => onChange(values.map((v) => v.id))}
-            value={formValue.map((v: string) => {
-              const change = blockedByOptions.find((o) => o.id === v);
+            onChange={(_, values) => onChange(values.map((value) => value.id))}
+            value={formValue.map((value: string) => {
+              const change = blockedByOptions.find((option) => option.id === value);
               return change!;
             })}
             renderInput={(params) => (
