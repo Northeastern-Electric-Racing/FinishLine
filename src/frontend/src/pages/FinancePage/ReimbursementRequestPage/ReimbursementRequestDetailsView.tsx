@@ -69,7 +69,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ 
 
   const ReceiptsView = () => {
     return (
-      <Box sx={{ maxHeight: `250px`, overflow: 'auto' }}>
+      <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
