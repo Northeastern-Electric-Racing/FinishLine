@@ -25,7 +25,10 @@ import {
 import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
-import { reimbursementRequestTransformer } from '../src/transformers/reimbursement-requests.transformer';
+import {
+  reimbursementRequestTransformer,
+  reimbursementTransformer
+} from '../src/transformers/reimbursement-requests.transformer';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import { justiceLeague, primsaTeam2 } from './test-data/teams.test-data';
 
@@ -596,6 +599,7 @@ describe('Reimbursement Requests', () => {
         purchaserId: batman.userId,
         amount: reimbursementAmount,
         dateCreated: new Date(),
+        userSubmitted: batman,
         userSubmittedId: batman.userId
       };
 
@@ -613,13 +617,16 @@ describe('Reimbursement Requests', () => {
 
       const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
 
-      expect(newReimbursement).toStrictEqual(reimbursementMock);
+      expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
       expect(prisma.reimbursement.create).toHaveBeenCalledWith({
         data: {
           purchaserId: batman.userId,
           amount: reimbursementAmount,
-          dateCreated: expect.any(Date),
+          dateCreated: reimbursementMock.dateCreated,
           userSubmittedId: batman.userId
+        },
+        include: {
+          userSubmitted: true
         }
       });
     });

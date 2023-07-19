@@ -18,6 +18,10 @@ reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAl
 
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
+reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
+
+reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
