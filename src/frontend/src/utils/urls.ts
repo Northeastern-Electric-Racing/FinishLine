@@ -73,6 +73,7 @@ const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
 /**************** Finance Endpoints **************************/
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
+const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
@@ -130,6 +131,7 @@ export const apiUrls = {
 
   descriptionBulletsCheck,
 
+  financeReimbursementRequestById,
   financeEndpoints,
   financeUploadReceipt,
   financeGetUserReimbursementRequest,

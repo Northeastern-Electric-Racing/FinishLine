@@ -21,6 +21,16 @@ export const uploadSingleReceipt = (formData: FormData, id: string) => {
 };
 
 /**
+ * Gets a single reimbursement request with the given id
+ *
+ * @param id The id of the reimbursement request to get
+ * @returns The requested reimbursement request
+ */
+export const getSingleReimbursementRequest = (id: string) => {
+  return axios.get(apiUrls.financeReimbursementRequestById(id));
+};
+
+/**
  * Get the reimbursement requests for the current user
  */
 export const getCurrentUserReimbursementRequests = () => {

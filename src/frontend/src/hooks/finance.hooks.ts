@@ -7,7 +7,8 @@ import {
   getAllReimbursementRequests,
   getAllReimbursements,
   getCurrentUserReimbursementRequests,
-  getCurrentUserReimbursements
+  getCurrentUserReimbursements,
+  getSingleReimbursementRequest
 } from '../apis/finance.api';
 import { Reimbursement, ReimbursementRequest } from 'shared';
 
@@ -49,6 +50,18 @@ export const useCurrentUserReimbursements = () => {
 export const useAllReimbursements = () => {
   return useQuery<Reimbursement[], Error>(['reimbursement'], async () => {
     const { data } = await getAllReimbursements();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get a single reimbursement request
+ * @param id Id of the reimbursement request to get
+ * @returns the reimbursement request
+ */
+export const useSingleReimbursementRequest = (id: string) => {
+  return useQuery<ReimbursementRequest, Error>(['reimbursement-requests', id], async () => {
+    const { data } = await getSingleReimbursementRequest(id);
     return data;
   });
 };
