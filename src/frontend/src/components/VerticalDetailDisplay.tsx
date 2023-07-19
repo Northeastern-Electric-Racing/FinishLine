@@ -20,7 +20,7 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
     <Box
       overflow={'hidden'}
       whiteSpace={'nowrap'}
-      sx={{ backgroundColor: backgroundColor, borderRadius: '10px', justifyContent: 'center', ...boxStyle }}
+      sx={{ backgroundColor: backgroundColor, borderRadius: '10px', justifyContent: 'center', boxShadow: 1, ...boxStyle }}
     >
       <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={50}>
         {content}

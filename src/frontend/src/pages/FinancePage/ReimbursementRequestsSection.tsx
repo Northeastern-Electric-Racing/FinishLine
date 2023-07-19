@@ -1,4 +1,5 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -6,6 +7,8 @@ import { datePipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import { createReimbursementRequestRowData } from '../../utils/finance.utils';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
+import { routes } from '../../utils/routes';
+import { cleanReimbursementRequestStatus } from '../../utils/reimbursement-request.utils';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -47,13 +50,18 @@ const ReimbursementRequestTable = ({
           </TableHead>
           <TableBody>
             {rows.map((row, index) => (
-              <TableRow key={`$${row.amount}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              <TableRow
+                component={RouterLink}
+                to={`${routes.REIMBURSEMENT_REQUESTS}/${row.id}`}
+                key={`$${row.amount}-${index}`}
+                sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
+              >
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{row.amount}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{!!row.dateDelivered ? datePipe(row.dateDelivered) : '-----'}</TableCell>
-                <TableCell align="center">{row.status}</TableCell>
+                <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,4 +1,4 @@
-import { ReimbursementProduct, ReimbursementRequest, wbsPipe } from 'shared';
+import { ReimbursementProduct, ReimbursementRequest, ReimbursementStatusType, wbsPipe } from 'shared';
 
 export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
   reimbursementRequest: ReimbursementRequest
@@ -14,4 +14,21 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
     }
   });
   return uniqueWbsElementsWithProducts;
+};
+
+export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType) => {
+  switch (status) {
+    case ReimbursementStatusType.ADVISOR_APPROVED: {
+      return 'Advisor Approved';
+    }
+    case ReimbursementStatusType.PENDING_FINANCE: {
+      return 'Pending Finance Team';
+    }
+    case ReimbursementStatusType.REIMBURSED: {
+      return 'Reimbursed';
+    }
+    case ReimbursementStatusType.SABO_SUBMITTED: {
+      return 'Submitted to Sabo';
+    }
+  }
 };

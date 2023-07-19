@@ -22,7 +22,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const BasicInformationView = () => {
     return (
       <>
-        <Typography variant="h6">Basic Information</Typography>
+        <Typography variant="h5" sx={{ marginBottom: '4px' }}>
+          Details
+        </Typography>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
@@ -42,7 +44,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             container
             mt={2}
             ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px' }}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
           >
             <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
@@ -90,8 +92,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
+      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
       previousPages={[]}
+      headerRight={
+        <Typography variant="h4" fontSize={28}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
+      }
     >
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
