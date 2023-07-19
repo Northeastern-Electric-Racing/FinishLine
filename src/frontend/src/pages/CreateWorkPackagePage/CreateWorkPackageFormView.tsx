@@ -82,7 +82,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     handleSubmit,
     control,
     formState: { errors },
-    register
+    register,
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -146,7 +147,10 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             multiple
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
-            onChange={(_, values) => onChange(values.map((value) => value.id))}
+            onChange={(_, values) => {
+              onChange(values.map((value) => value.id));
+              setValue('blockedBy', [] as string[]);
+            }}
             value={formValue.map((value: string) => {
               const change = blockedByOptions.find((option) => option.id === value);
               return change!;
