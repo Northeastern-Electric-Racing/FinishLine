@@ -204,12 +204,6 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
 };
 
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
-  if (!isUserOnFinanceTeam(user)) {
-    throw new AccessDeniedException(`You are not a member of the finance team!`);
-  }
-};
-
-export const isUserOnFinanceTeam = async (user: User) => {
   const financeTeam = await prisma.team.findUnique({
     where: { teamId: process.env.FINANCE_TEAM_ID },
     include: { head: true, leads: true, members: true }
@@ -217,7 +211,9 @@ export const isUserOnFinanceTeam = async (user: User) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  return isUserOnTeam(financeTeam, user);
+  if (!isUserOnTeam(financeTeam, user)) {
+    throw new AccessDeniedException(`You are not a member of the finance team!`);
+  }
 };
 
 export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
