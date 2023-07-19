@@ -1,9 +1,5 @@
 import { ReimbursementProduct, ReimbursementRequest, wbsPipe } from 'shared';
 
-export interface ReimbursementRequestProps {
-  reimbursementRequest: ReimbursementRequest;
-}
-
 export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
   reimbursementRequest: ReimbursementRequest
 ): Map<string, ReimbursementProduct[]> => {
