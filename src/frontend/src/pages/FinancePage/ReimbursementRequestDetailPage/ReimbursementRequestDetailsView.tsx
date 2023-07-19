@@ -22,9 +22,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const BasicInformationView = () => {
     return (
       <>
-        <Typography variant="h5" sx={{ marginBottom: '4px' }}>
-          Details
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <Typography variant="h5">Details</Typography>
+          <Typography variant="h5" fontSize={24}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
+        </Box>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
@@ -91,13 +92,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   return (
-    <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
-      previousPages={[]}
-      headerRight={
-        <Typography variant="h4" fontSize={28}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
-      }
-    >
+    <PageLayout title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`} previousPages={[]}>
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
