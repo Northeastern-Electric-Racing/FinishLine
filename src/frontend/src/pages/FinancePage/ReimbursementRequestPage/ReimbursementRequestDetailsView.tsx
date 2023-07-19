@@ -9,9 +9,13 @@ import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import PageLayout from '../../../components/PageLayout';
 import ReimbursementProductsView from './ReimbursementProductsView';
-import { ReimbursementRequestProps } from '../../../utils/reimbursement-request.utils';
+import { ReimbursementRequest } from 'shared';
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ reimbursementRequest }) => {
+interface ReimbursementRequestDetailsViewProps {
+  reimbursementRequest: ReimbursementRequest;
+}
+
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
 
