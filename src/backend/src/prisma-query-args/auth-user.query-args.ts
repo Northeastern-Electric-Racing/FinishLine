@@ -4,9 +4,12 @@ import teamQueryArgs from './teams.query-args';
 const authUserQueryArgs = Prisma.validator<Prisma.UserArgs>()({
   include: {
     userSettings: true,
-    teamAsLead: true,
+    teamAsHead: true,
     favoriteProjects: true,
-    teams: {
+    teamsAsLead: {
+      ...teamQueryArgs
+    },
+    teamsAsMember: {
       ...teamQueryArgs
     },
     changeRequestsToReview: true

@@ -2,7 +2,7 @@ import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, Tab
 import { useState } from 'react';
 import { ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { datePipe, fullNamePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import { createReimbursementRequestRowData } from '../../utils/finance.utils';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
@@ -49,7 +49,7 @@ const ReimbursementRequestTable = ({
             {rows.map((row, index) => (
               <TableRow key={`$${row.amount}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
-                <TableCell align="center">{row.saboId != null ? row.saboId : '-----'}</TableCell>
+                <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{row.amount}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{!!row.dateDelivered ? datePipe(row.dateDelivered) : '-----'}</TableCell>

@@ -71,6 +71,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursements.map(getRefundRowData);
+
   const totalReceived = displayedReimbursements.reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
     0
@@ -91,40 +92,38 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
         sx={{
           backgroundColor: theme.palette.background.paper,
           width: '100%',
-          padding: '10px',
+          padding: '30px',
           borderRadius: '0 0 8px 8px'
         }}
       >
-        <Box sx={{ padding: '30px' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
-            <RefundHeader header="Total Received" data={`$${totalReceived}`} />
-            <RefundHeader header="Total Owed" data={`$${totalOwed}`} />
-          </Box>
-          <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
-          <TableContainer component={Paper}>
-            <Table aria-label="simple table">
-              <TableHead>
-                <TableRow>
-                  <ColumnHeader title="Date" />
-                  <ColumnHeader title="Amount ($)" />
-                  {tabValue === 1 && <ColumnHeader title="Recipient" />}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row, index) => (
-                  <TableRow
-                    key={`${row.date}-$${row.amount}-${index}`}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell align="center">{datePipe(row.date)}</TableCell>
-                    <TableCell align="center">{row.amount}</TableCell>
-                    {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
+          <RefundHeader header="Total Received" data={`$${totalReceived}`} />
+          <RefundHeader header="Total Owed" data={`$${totalOwed}`} />
         </Box>
+        <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
+        <TableContainer component={Paper}>
+          <Table aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <ColumnHeader title="Date" />
+                <ColumnHeader title="Amount ($)" />
+                {tabValue === 1 && <ColumnHeader title="Recipient" />}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row, index) => (
+                <TableRow
+                  key={`${row.date}-$${row.amount}-${index}`}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell align="center">{datePipe(row.date)}</TableCell>
+                  <TableCell align="center">{row.amount}</TableCell>
+                  {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </Box>
   );

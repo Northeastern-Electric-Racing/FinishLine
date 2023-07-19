@@ -8,6 +8,7 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException } from './errors.utils';
 import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
+import { isUserOnTeam } from './teams.utils';
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
@@ -202,26 +203,36 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   }
 };
 
-export type UserWithTeam = User & { teams: Team[] };
-
-export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
-  });
-
-  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
-
-  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
+export const validateUserIsPartOfFinanceTeam = async (user: User) => {
+  if (!isUserOnFinanceTeam(user)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };
 
-export const isAuthUserOnFinanceTeam = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+export const isUserOnFinanceTeam = async (user: User) => {
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true, members: true }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  return isUserOnTeam(financeTeam, user);
+};
+
+export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  if (!process.env.FINANCE_TEAM_ID) return false;
+  const financeTeamId = process.env.FINANCE_TEAM_ID;
+  const { teamAsHead, teamsAsLead, teamsAsMember } = user;
   return (
-    !!process.env.FINANCE_TEAM_ID &&
-    (user.teams.map((team: Team) => team.teamId).includes(process.env.FINANCE_TEAM_ID) ||
-      user.teamAsLead?.teamId === process.env.FINANCE_TEAM_ID)
+    teamAsHead?.teamId === financeTeamId ||
+    isTeamIdInList(financeTeamId, teamsAsLead) ||
+    isTeamIdInList(financeTeamId, teamsAsMember)
   );
+};
+
+const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
+  return teamsList.map((team) => team.teamId).includes(teamId);
 };
 
 export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
@@ -231,7 +242,7 @@ export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!(financeTeam.leaderId === user.userId)) {
+  if (!(financeTeam.headId === user.userId)) {
     throw new AccessDeniedException('You are not the head of the finance team!');
   }
 };

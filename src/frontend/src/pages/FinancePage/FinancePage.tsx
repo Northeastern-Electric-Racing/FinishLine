@@ -38,11 +38,10 @@ const FinancePage = () => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  if (user.isFinance && allReimbursementRequestsIsError)
-    return <ErrorPage message={allReimbursementRequestsError?.message} />;
+  if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
   if (
-    (user.isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
+    (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
     userReimbursementRequestIsLoading ||
     !userReimbursementRequests
   )

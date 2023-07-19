@@ -17,7 +17,7 @@ import { Reimbursement, ReimbursementRequest } from 'shared';
  *
  */
 export const useUploadSingleReceipt = (id: string) => {
-  return useMutation<any, Error, any>(['finance', 'image'], async (formData: FormData) => {
+  return useMutation<any, Error, any>(['reimbursement-requests', 'image'], async (formData: FormData) => {
     const { data } = await uploadSingleReceipt(formData, id);
     return data;
   });
@@ -28,7 +28,7 @@ export const useUploadSingleReceipt = (id: string) => {
  *
  */
 export const useCurrentUserReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement request', 'user'], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
     const { data } = await getCurrentUserReimbursementRequests();
     return data;
   });
@@ -39,7 +39,7 @@ export const useCurrentUserReimbursementRequests = () => {
  *
  */
 export const useAllReimbursementRequests = () => {
-  return useQuery<ReimbursementRequest[], Error>(['reimbursement request'], async () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
     const { data } = await getAllReimbursementRequests();
     return data;
   });

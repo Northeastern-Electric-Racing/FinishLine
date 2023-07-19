@@ -54,7 +54,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   if (isError) return <ErrorPage message={error?.message} />;
 
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const { teamAsLeadId } = user;
+  const { teamAsHeadId } = user;
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -72,7 +72,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const handleAssignToMyTeam = async () => {
     try {
-      await mutateAsyncSetProjectTeam(teamAsLeadId);
+      await mutateAsyncSetProjectTeam(teamAsHeadId);
       handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -105,7 +105,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const assignToMyTeamButton = (
-    <MenuItem disabled={project.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem disabled={project.team?.teamId === teamAsHeadId} onClick={handleAssignToMyTeam}>
       <ListItemIcon>
         <GroupIcon fontSize="small" />
       </ListItemIcon>
@@ -147,7 +147,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
-        {teamAsLeadId && assignToMyTeamButton}
+        {teamAsHeadId && assignToMyTeamButton}
         <DeleteButton />
       </Menu>
     </Box>
