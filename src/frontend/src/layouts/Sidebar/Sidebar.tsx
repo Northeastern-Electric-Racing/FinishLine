@@ -14,7 +14,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import SavingsIcon from '@mui/icons-material/Savings';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const Sidebar: React.FC = () => {
   const linkItems: MUILinkItem[] = [
@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
     },
     {
       name: 'Finance',
-      icon: SavingsIcon,
+      icon: AttachMoneyIcon,
       route: routes.FINANCE
     },
     {
