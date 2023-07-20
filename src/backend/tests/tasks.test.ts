@@ -120,7 +120,7 @@ describe('Tasks', () => {
           batman.userId,
           wonderwoman.userId
         ])
-      ).rejects.toThrow(new HttpException(400, `All assignees must be part of the project's team!`));
+      ).rejects.toThrow(new HttpException(400, `All assignees must be part of one of the project's team!`));
 
       expect(prisma.wBS_Element.findUnique).toHaveBeenCalledTimes(1);
     });
