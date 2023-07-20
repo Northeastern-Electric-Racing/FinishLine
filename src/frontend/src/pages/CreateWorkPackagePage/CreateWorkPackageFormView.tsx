@@ -148,10 +148,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
             onChange={(_, values) => onChange(values.map((value) => value.id))}
-            value={formValue.map((value: string) => {
-              const change = blockedByOptions.find((option) => option.id === value);
-              return change!;
-            })}
+            value={formValue.map((value: string) => blockedByOptions.find((option) => option.id === value)!)}
             renderInput={(params) => (
               <TextField {...params} variant="standard" placeholder="Select Blockers" error={!!errors.blockedBy} />
             )}
@@ -166,9 +163,9 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
     value: { label: string; id: string } | null
   ) => {
     if (value) {
+      setValue('blockedBy', [] as string[]);
       setWbsNum(value.id);
     }
-    setValue('blockedBy', [] as string[]);
   };
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
