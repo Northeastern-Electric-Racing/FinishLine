@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Reimbursement_Request, Reimbursement_Status_Type, User, User_Secure_Settings, User_Settings } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -102,7 +102,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: User,
+    recipient: User & { userSecureSettings: User_Secure_Settings | null; userSettings: User_Settings | null },
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
@@ -111,6 +111,8 @@ export default class ReimbursementRequestService {
     totalCost: number
   ): Promise<Reimbursement_Request> {
     if (isGuest(recipient.role)) throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
+
+    if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }

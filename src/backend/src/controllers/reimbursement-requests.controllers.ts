@@ -4,7 +4,7 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
+import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
@@ -53,7 +53,7 @@ export default class ReimbursementRequestsController {
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
-      const user = await getCurrentUser(res);
+      const user = await getCurrentUserWithUserSettings(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
