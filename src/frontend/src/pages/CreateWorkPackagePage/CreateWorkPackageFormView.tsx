@@ -147,10 +147,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             multiple
             options={blockedByOptions}
             getOptionLabel={(option) => option.label}
-            onChange={(_, values) => {
-              onChange(values.map((value) => value.id));
-              setValue('blockedBy', [] as string[]);
-            }}
+            onChange={(_, values) => onChange(values.map((value) => value.id))}
             value={formValue.map((value: string) => {
               const change = blockedByOptions.find((option) => option.id === value);
               return change!;
@@ -170,9 +167,8 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   ) => {
     if (value) {
       setWbsNum(value.id);
-    } else {
-      setWbsNum('');
     }
+    setValue('blockedBy', [] as string[]);
   };
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
