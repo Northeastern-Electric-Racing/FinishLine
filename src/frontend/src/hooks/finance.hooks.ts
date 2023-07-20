@@ -14,7 +14,14 @@ import {
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests
 } from '../apis/finance.api';
-import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, ReimbursementRequest, Vendor, Reimbursement} from 'shared';
+import {
+  ClubAccount,
+  ExpenseType,
+  ReimbursementProductCreateArgs,
+  ReimbursementRequest,
+  Vendor,
+  Reimbursement
+} from 'shared';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;

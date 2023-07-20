@@ -37,7 +37,10 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  * @returns all the expense types
  */
 export const getAllExpenseTypes = () => {
-  return axios.get(apiUrls.getAllExpenseTypes());
+  return axios.get(apiUrls.getAllExpenseTypes(), {
+    transformResponse: (data) =>
+      JSON.parse(data).map((expenseType: any) => ({ ...expenseType, id: expenseType.expenseTypeId }))
+  });
 };
 
 /**
@@ -46,7 +49,9 @@ export const getAllExpenseTypes = () => {
  * @returns all the vendors
  */
 export const getAllVendors = () => {
-  return axios.get(apiUrls.getAllVendors());
+  return axios.get(apiUrls.getAllVendors(), {
+    transformResponse: (data) => JSON.parse(data).map((vendor: any) => ({ ...vendor, id: vendor.vendorId }))
+  });
 };
 
 /**
@@ -56,7 +61,9 @@ export const getAllVendors = () => {
  * @returns the reimbursement request with the given id
  */
 export const getSingleReimbursementRequest = (id: string) => {
-  return axios.get(apiUrls.financeReimbursementRequestById(id));
+  return axios.get(apiUrls.financeReimbursementRequestById(id), {
+    transformResponse: (data) => reimbursementRequestTransformer(JSON.parse(data))
+  });
 };
 
 /**
