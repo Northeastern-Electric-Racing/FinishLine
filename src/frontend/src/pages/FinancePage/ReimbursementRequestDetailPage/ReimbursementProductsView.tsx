@@ -1,10 +1,12 @@
 import { Chip, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
-import {
-  ReimbursementRequestProps,
-  getUniqueWbsElementsWithProductsFromReimbursementRequest
-} from '../../../utils/reimbursement-request.utils';
+import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
+import { ReimbursementRequest } from 'shared';
 
-const ReimbursementProductsView: React.FC<ReimbursementRequestProps> = ({ reimbursementRequest }) => {
+interface ReimbursementRequestProductsViewProps {
+  reimbursementRequest: ReimbursementRequest;
+}
+
+const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps> = ({ reimbursementRequest }) => {
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
 
   const keys = [];

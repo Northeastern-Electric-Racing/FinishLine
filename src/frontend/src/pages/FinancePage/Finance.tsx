@@ -6,7 +6,7 @@ import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import FinancePage from './FinancePage';
 import CreateReimbursementRequestForm from './CreateReimbursementRequestForm/CreateReimbursementRequestForm';
-import ReimbursementRequestDetails from './ReimbursementRequestPage/ReimbursementRequestDetails';
+import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 
 const Finance: React.FC = () => {
   return (

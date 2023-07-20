@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { NotFoundException } from './errors.utils';
-import { UserWithTeam } from './reimbursement-requests.utils';
+import { User } from '@prisma/client';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
@@ -72,9 +72,9 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
  * @returns the user
  * @throws if no user with the userId exists
  */
-export const getCurrentUser = async (res: Response): Promise<UserWithTeam> => {
+export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
-  const user = await prisma.user.findUnique({ where: { userId }, include: { teams: true } });
+  const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };

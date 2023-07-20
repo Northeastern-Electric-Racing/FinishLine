@@ -32,8 +32,13 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
             select: {
               team: {
                 select: {
-                  leaderId: true,
+                  headId: true,
                   members: {
+                    select: {
+                      userId: true
+                    }
+                  },
+                  leads: {
                     select: {
                       userId: true
                     }
@@ -48,8 +53,13 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
                 select: {
                   team: {
                     select: {
-                      leaderId: true,
+                      headId: true,
                       members: {
+                        select: {
+                          userId: true
+                        }
+                      },
+                      leads: {
                         select: {
                           userId: true
                         }
@@ -77,11 +87,19 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   // Check if the user is one of the assignees
   if (task.assignees.map((user) => user.userId).includes(user.userId)) return true;
 
-  // Check if the user is the project leader or on the project team
-  if (task.wbsElement.project?.team?.leaderId === user.userId) return true;
+  // Check if the user is a project head, lead or on the project team
+  if (
+    task.wbsElement.project?.team?.headId === user.userId ||
+    task.wbsElement.project?.team?.leads.map((lead) => lead.userId).includes(user.userId)
+  )
+    return true;
 
   // Do the same thing, but for the work package's project
-  if (task.wbsElement.workPackage?.project?.team?.leaderId === user.userId) return true;
+  if (
+    task.wbsElement.workPackage?.project?.team?.headId === user.userId ||
+    task.wbsElement.workPackage?.project?.team?.leads.map((lead) => lead.userId).includes(user.userId)
+  )
+    return true;
 
   return false;
 };

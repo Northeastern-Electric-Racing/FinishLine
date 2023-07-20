@@ -8,9 +8,13 @@ import {
   getAllExpenseTypes,
   getAllVendors,
   uploadSingleReceipt,
-  getSingleReimbursementRequest
+  getSingleReimbursementRequest,
+  getAllReimbursements,
+  getCurrentUserReimbursements,
+  getAllReimbursementRequests,
+  getCurrentUserReimbursementRequests
 } from '../apis/finance.api';
-import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, ReimbursementRequest, Vendor } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementProductCreateArgs, ReimbursementRequest, Vendor, Reimbursement} from 'shared';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -81,6 +85,17 @@ export const useGetAllExpenseTypes = () => {
 };
 
 /**
+ * Custom React Hook to get the reimbursement requests for the current user
+ *
+ */
+export const useCurrentUserReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUserReimbursementRequests();
+    return data;
+  });
+};
+
+/**
  * Custom react hook to get all the vendors
  *
  * @returns all the vendors
@@ -88,6 +103,36 @@ export const useGetAllExpenseTypes = () => {
 export const useGetAllVendors = () => {
   return useQuery<Vendor[], Error>(['vendors'], async () => {
     const { data } = await getAllVendors();
+    return data;
+  });
+};
+/**
+ * Custom React Hook to get all the reimbursement requests
+ *
+ */
+export const useAllReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
+    const { data } = await getAllReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursements for the current user
+ */
+export const useCurrentUserReimbursements = () => {
+  return useQuery<Reimbursement[], Error>(['reimbursement', 'user'], async () => {
+    const { data } = await getCurrentUserReimbursements();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all the reimbursements
+ */
+export const useAllReimbursements = () => {
+  return useQuery<Reimbursement[], Error>(['reimbursement'], async () => {
+    const { data } = await getAllReimbursements();
     return data;
   });
 };

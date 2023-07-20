@@ -9,16 +9,23 @@ import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import PageLayout from '../../../components/PageLayout';
 import ReimbursementProductsView from './ReimbursementProductsView';
-import { ReimbursementRequestProps } from '../../../utils/reimbursement-request.utils';
+import { ReimbursementRequest } from 'shared';
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ reimbursementRequest }) => {
+interface ReimbursementRequestDetailsViewProps {
+  reimbursementRequest: ReimbursementRequest;
+}
+
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
 
   const BasicInformationView = () => {
     return (
       <>
-        <Typography variant="h6">Basic Information</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <Typography variant="h5">Details</Typography>
+          <Typography variant="h5" fontSize={24}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
+        </Box>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
@@ -38,7 +45,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ 
             container
             mt={2}
             ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px' }}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
           >
             <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
@@ -69,7 +76,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ 
 
   const ReceiptsView = () => {
     return (
-      <Box sx={{ maxHeight: `250px`, overflow: 'auto' }}>
+      <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
@@ -85,10 +92,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestProps> = ({ 
   };
 
   return (
-    <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
-      previousPages={[]}
-    >
+    <PageLayout title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`} previousPages={[]}>
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />

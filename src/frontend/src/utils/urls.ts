@@ -78,6 +78,10 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
+const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
+const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -136,6 +140,11 @@ export const apiUrls = {
   financeReimbursementRequestById,
   getAllExpenseTypes,
   getAllVendors,
+  financeEndpoints,
+  financeUploadReceipt,
+  financeGetUserReimbursementRequest,
+  financeGetUserReimbursements,
+  financeGetAllReimbursements,
 
   version
 };

@@ -15,7 +15,6 @@ const CREDITS = `/credits`;
 const FINANCE = `/finance`;
 const REIMBURSEMENT_REQUESTS = FINANCE + '/reimbursement-requests';
 const NEW_REIMBURSEMENT_REQUEST = REIMBURSEMENT_REQUESTS + `/new`;
-
 const REIMBURSEMENT_REQUEST_BY_ID = REIMBURSEMENT_REQUESTS + `/:id`;
 
 /**************** Projects Section ****************/

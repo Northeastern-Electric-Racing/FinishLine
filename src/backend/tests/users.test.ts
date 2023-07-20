@@ -1,5 +1,13 @@
 import prisma from '../src/prisma/prisma';
-import { batman, batmanSettings, flash, superman, batmanSecureSettings, sharedBatman } from './test-data/users.test-data';
+import {
+  batman,
+  batmanSettings,
+  flash,
+  superman,
+  batmanSecureSettings,
+  sharedBatman,
+  theVisitor
+} from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
@@ -44,7 +52,7 @@ describe('Users', () => {
 
   describe('updateUserRole', () => {
     test('cannot update user to higher role', async () => {
-      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(theVisitor);
       await expect(() => UsersService.updateUserRole(1, superman, 'APP_ADMIN')).rejects.toThrow(
         new AccessDeniedException('Cannot promote user to a higher role than yourself')
       );
