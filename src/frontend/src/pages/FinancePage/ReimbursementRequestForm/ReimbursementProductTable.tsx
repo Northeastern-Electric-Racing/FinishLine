@@ -4,11 +4,10 @@
  */
 import {
   Autocomplete,
-  Chip,
-  Grid,
+  Button,
+  FormLabel,
   IconButton,
   InputAdornment,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -18,7 +17,9 @@ import {
   TextField,
   Typography,
   styled,
-  Box
+  Box,
+  Chip,
+  Grid
 } from '@mui/material';
 import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
@@ -68,18 +69,22 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   });
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell width={'40%'}>WBS Element</TableCell>
-            <TableCell width={'60%'}>Products</TableCell>
+            <TableCell width={'40%'}>
+              <FormLabel>WBS Element</FormLabel>
+            </TableCell>
+            <TableCell width={'60%'}>
+              <FormLabel>Products</FormLabel>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {Array.from(uniqueWbsElementsWithProducts.keys()).map((key) => {
             return (
-              <TableRow>
+              <TableRow key={key}>
                 <TableCell>
                   <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)!.label}</Typography>
                 </TableCell>
@@ -135,9 +140,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       );
                     })}
                   </Box>
-                </TableCell>
-                <TableCell>
-                  <IconButton
+                  <Button
+                    sx={{ margin: '4px' }}
+                    startIcon={<Add />}
                     onClick={() =>
                       appendProduct({
                         wbsNum: validateWBS(key),
@@ -146,19 +151,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       })
                     }
                   >
-                    <Add />
-                  </IconButton>
+                    Add Product
+                  </Button>
                 </TableCell>
               </TableRow>
             );
           })}
           <TableRow>
-            <TableCell colSpan={2}>
+            <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
               <Autocomplete
                 fullWidth
                 sx={{ my: 1 }}
                 options={wbsElementAutocompleteOptions}
-                onChange={(event, value) => {
+                onChange={(_event, value) => {
                   if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
                 }}
                 id={'append-product-autocomplete'}

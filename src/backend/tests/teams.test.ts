@@ -3,10 +3,11 @@ import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
 import { prismaTeam1, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
-import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, flash, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
 import { AccessDeniedException, HttpException } from '../src/utils/errors.utils';
 import teamTransformer from '../src/transformers/teams.transformer';
+import { Role } from '@prisma/client';
 
 describe('Teams', () => {
   beforeEach(() => {
@@ -65,18 +66,18 @@ describe('Teams', () => {
     test('setTeamMembers works', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
-      vi.spyOn(userUtils, 'getUsers').mockResolvedValue([superman, wonderwoman]);
+      vi.spyOn(userUtils, 'getUsers').mockResolvedValue([greenlantern, theVisitor]);
 
       const teamId = 'id1';
       const userIds = [
         {
-          userId: 2
+          userId: 5
         },
         {
-          userId: 3
+          userId: 7
         }
       ];
-      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [2, 3]);
+      const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [5, 7]);
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.team.update).toHaveBeenCalledTimes(1);
@@ -111,7 +112,7 @@ describe('Teams', () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(justiceLeague);
 
       await expect(() => TeamsService.editDescription(wonderwoman, '1', 'Hello!')).rejects.toThrow(
-        new AccessDeniedException('you must be an admin or the team lead to update the members!')
+        new AccessDeniedException('you must be an admin or the team head to update the members!')
       );
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
@@ -147,7 +148,22 @@ describe('Teams', () => {
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 3);
 
-      const expectedException = new HttpException(403, 'Access Denied: The team head must be at least an head');
+      const expectedException = new HttpException(403, 'Access Denied: The team head must be at least a head');
+
+      await expect(callSetTeamHead).rejects.toThrow(expectedException);
+    });
+
+    test('setTeamHead new head is already a head of another team', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+
+      const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 1);
+
+      const expectedException = new HttpException(
+        403,
+        'Access Denied: The new team head must not be a head or lead of another team'
+      );
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
     });
@@ -155,13 +171,13 @@ describe('Teams', () => {
     test('setTeamHead new head is already a lead of another team', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
-      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, role: Role.HEAD });
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 1);
 
       const expectedException = new HttpException(
         403,
-        'Access Denied: The new team head must not be a leader of another team'
+        'Access Denied: The new team head must not be a head or lead of another team'
       );
 
       await expect(callSetTeamHead).rejects.toThrow(expectedException);
@@ -181,7 +197,7 @@ describe('Teams', () => {
       expect(prisma.team.update).toHaveBeenCalledWith({
         where: { teamId },
         data: {
-          leader: {
+          head: {
             connect: {
               userId: 2
             }

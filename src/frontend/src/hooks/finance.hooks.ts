@@ -9,19 +9,24 @@ import {
   getAllVendors,
   uploadSingleReceipt,
   getSingleReimbursementRequest,
-  editReimbursementRequest
+  editReimbursementRequest,
+  getAllReimbursements,
+  getCurrentUserReimbursements,
+  getAllReimbursementRequests,
+  getCurrentUserReimbursementRequests
 } from '../apis/finance.api';
 import {
   ClubAccount,
   ExpenseType,
   ReimbursementProductCreateArgs,
-  ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
-  Vendor
+  Vendor,
+  Reimbursement,
+  ReimbursementReceiptCreateArgs
 } from 'shared';
 import { downloadImage } from '../utils/reimbursement-request.utils';
 
-export interface ReimbursementRequestCreateArgs {
+export interface CreateReimbursementRequestPayload {
   vendorId: string;
   account: ClubAccount;
   dateOfExpense: Date;
@@ -30,7 +35,7 @@ export interface ReimbursementRequestCreateArgs {
   totalCost: number;
 }
 
-export interface ReimbursementRequestEditArgs extends ReimbursementRequestCreateArgs {
+export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
   receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
@@ -39,7 +44,7 @@ export interface ReimbursementRequestEditArgs extends ReimbursementRequestCreate
  */
 export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
-    ['finance', 'image'],
+    ['reimbursement-requsts', 'edit'],
     async (formData: { file: File; id: string }) => {
       const { data } = await uploadSingleReceipt(formData.file, formData.id);
       return data;
@@ -48,13 +53,13 @@ export const useUploadSingleReceipt = () => {
 };
 
 /**
- * Uploads many receipts to a given reimbursement request
+ * Custom hook that uploads many receipts to a given reimbursement request
  *
  * @returns The created receipt information
  */
 export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
-    ['finance', 'image'],
+    ['reimbursement-requests', 'edit'],
     async (formData: { files: File[]; id: string }) => {
       const promises = formData.files.map((file) => uploadSingleReceipt(file, formData.id));
       const results = await Promise.all(promises);
@@ -69,9 +74,9 @@ export const useUploadManyReceipts = () => {
  * @returns the created reimbursement request
  */
 export const useCreateReimbursementRequest = () => {
-  return useMutation<ReimbursementRequest, Error, ReimbursementRequestCreateArgs>(
-    ['finance', 'create'],
-    async (formData: ReimbursementRequestCreateArgs) => {
+  return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestPayload>(
+    ['reimbursement-requests', 'create'],
+    async (formData: CreateReimbursementRequestPayload) => {
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
@@ -85,9 +90,9 @@ export const useCreateReimbursementRequest = () => {
  * @returns the edited reimbursement request
  */
 export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
-  return useMutation<ReimbursementRequest, Error, ReimbursementRequestEditArgs>(
+  return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
     ['finance', 'edit'],
-    async (formData: ReimbursementRequestEditArgs) => {
+    async (formData: EditReimbursementRequestPayload) => {
       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
       return data;
     }
@@ -100,8 +105,18 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
  * @returns all the expense types
  */
 export const useGetAllExpenseTypes = () => {
-  return useQuery<ExpenseType[], Error>(['finance', 'expense-types'], async () => {
+  return useQuery<ExpenseType[], Error>(['expense-types'], async () => {
     const { data } = await getAllExpenseTypes();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursement requests for the current user
+ */
+export const useCurrentUserReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
+    const { data } = await getCurrentUserReimbursementRequests();
     return data;
   });
 };
@@ -112,8 +127,37 @@ export const useGetAllExpenseTypes = () => {
  * @returns all the vendors
  */
 export const useGetAllVendors = () => {
-  return useQuery<Vendor[], Error>(['finance', 'vendors'], async () => {
+  return useQuery<Vendor[], Error>(['vendors'], async () => {
     const { data } = await getAllVendors();
+    return data;
+  });
+};
+/**
+ * Custom React Hook to get all the reimbursement requests
+ */
+export const useAllReimbursementRequests = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
+    const { data } = await getAllReimbursementRequests();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get the reimbursements for the current user
+ */
+export const useCurrentUserReimbursements = () => {
+  return useQuery<Reimbursement[], Error>(['reimbursement', 'user'], async () => {
+    const { data } = await getCurrentUserReimbursements();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all the reimbursements
+ */
+export const useAllReimbursements = () => {
+  return useQuery<Reimbursement[], Error>(['reimbursement'], async () => {
+    const { data } = await getAllReimbursements();
     return data;
   });
 };
@@ -121,7 +165,7 @@ export const useGetAllVendors = () => {
 /**
  * Custom react hook to get a single reimbursement request
  *
- * @param id id of the reimbursement request to get
+ * @param id Id of the reimbursement request to get
  * @returns the reimbursement request
  */
 export const useSingleReimbursementRequest = (id: string) => {
@@ -131,6 +175,12 @@ export const useSingleReimbursementRequest = (id: string) => {
   });
 };
 
+/**
+ * Custom react hook to download images from google drive
+ *
+ * @param fileIds The google file ids to fetch the images for
+ * @returns the downloaded images
+ */
 export const useDownloadImages = (fileIds: string[]) => {
   return useQuery<File[], Error>(['reimbursement-requests', 'download-images', fileIds], async () => {
     const promises = fileIds.map((fileId) => downloadImage(fileId));

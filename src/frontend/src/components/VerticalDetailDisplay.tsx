@@ -5,23 +5,22 @@
 
 import { useTheme } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { Box } from '@mui/system';
+import { Box, SxProps, Theme } from '@mui/system';
 
 interface VerticalDetailDisplayProps {
   label: string;
   content: string;
-  paddingRight?: number;
+  boxStyle?: SxProps<Theme>;
 }
 
-const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, content, paddingRight = 0 }) => {
+const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, content, boxStyle }) => {
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   return (
     <Box
-      paddingRight={paddingRight}
       overflow={'hidden'}
       whiteSpace={'nowrap'}
-      sx={{ backgroundColor: backgroundColor, borderRadius: '10px', justifyContent: 'center' }}
+      sx={{ backgroundColor: backgroundColor, borderRadius: '10px', justifyContent: 'center', boxShadow: 1, ...boxStyle }}
     >
       <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={50}>
         {content}

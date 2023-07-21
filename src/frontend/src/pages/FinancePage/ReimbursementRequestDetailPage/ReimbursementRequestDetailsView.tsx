@@ -2,22 +2,9 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import {
-  Chip,
-  Grid,
-  ListItemIcon,
-  MenuItem,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-  useTheme
-} from '@mui/material';
+
+import { Grid, ListItemIcon, MenuItem, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { ReimbursementProduct, ReimbursementRequest, wbsPipe } from 'shared';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { Edit } from '@mui/icons-material';
@@ -26,6 +13,8 @@ import { routes } from '../../../utils/routes';
 import ActionsMenu from '../../../components/ActionsMenu';
 import { useHistory } from 'react-router-dom';
 import PageLayout from '../../../components/PageLayout';
+import ReimbursementProductsView from './ReimbursementProductsView';
+import { ReimbursementRequest } from 'shared';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -40,7 +29,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const BasicInformationView = () => {
     return (
       <>
-        <Typography variant="h6">Basic Information</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <Typography variant="h5">Details</Typography>
+          <Typography variant="h5" fontSize={24}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
+        </Box>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
@@ -60,12 +52,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             container
             mt={2}
             ml={2}
-            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px' }}
+            sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
           >
-            <Grid item xs={6} textAlign={'center'}>
+            <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
-            <Grid xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography fontSize={50}>{`$${reimbursementRequest.totalCost}`}</Typography>
             </Grid>
           </Grid>
@@ -74,55 +66,24 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
-  const ReimbursementProductsView = () => {
-    const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
-    reimbursementRequest.reimbursementProducts.forEach((product) => {
-      const wbs = wbsPipe(product.wbsNum);
-      if (uniqueWbsElementsWithProducts.has(wbs)) {
-        const products = uniqueWbsElementsWithProducts.get(wbs);
-        products?.push(product);
-      } else {
-        uniqueWbsElementsWithProducts.set(wbs, [product]);
-      }
-    });
-
-    const keys: string[] = [];
-    for (const key of uniqueWbsElementsWithProducts.keys()) {
-      keys.push(key);
-    }
-
+  const GridDivider = () => {
     return (
-      <>
-        <Typography variant="h5">Products</Typography>
-        <Table component={Paper}>
-          <TableHead>
-            <TableRow>
-              <TableCell>WBS Element</TableCell>
-              <TableCell>Products</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {keys.map((key) => {
-              return (
-                <TableRow>
-                  <TableCell>{key}</TableCell>
-                  <TableCell>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
-                      return <Chip label={`${product.name} $${product.cost}`} />;
-                    })}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </>
+      <Box
+        sx={{
+          height: '100%',
+          borderColor: theme.palette.divider,
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          width: '0px',
+          textAlign: 'center'
+        }}
+      />
     );
   };
 
   const ReceiptsView = () => {
     return (
-      <Box sx={{ maxHeight: `250px`, overflow: 'auto' }}>
+      <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
@@ -156,7 +117,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   return (
     <Box>
       <PageLayout
-        title={`${fullNamePipe(reimbursementRequest.recipient)} - ${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}
+        title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
         previousPages={[]}
         headerRight={<ActionsMenu buttons={[<EditButton />]} />}
       />
@@ -164,25 +125,15 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
         </Grid>
-        {/*Divider*/}
         <Grid item lg={1} xs={0} justifyContent={'center'} display={'flex'}>
-          <Box
-            sx={{
-              height: '100%',
-              borderColor: theme.palette.divider,
-              borderWidth: '2px',
-              borderStyle: 'solid',
-              width: '0px',
-              textAlign: 'center'
-            }}
-          />
+          <GridDivider />
         </Grid>
-        <Grid item lg={4} xs={12} rowSpacing={5} container>
+        <Grid item lg={5} xs={12} rowSpacing={5} container>
           <Grid item xs={12}>
             <ReceiptsView />
           </Grid>
           <Grid item xs={12}>
-            <ReimbursementProductsView />
+            <ReimbursementProductsView reimbursementRequest={reimbursementRequest} />
           </Grid>
         </Grid>
       </Grid>

@@ -7,7 +7,7 @@ import { routes } from '../../utils/routes';
 import FinancePage from './FinancePage';
 import CreateReimbursementRequestPage from './CreateReimbursementRequest';
 import EditReimbursementRequestPage from './EditReimbursementRequest';
-import ReimbursementRequestDetails from './ReimbursementRequestPage/ReimbursementRequestDetails';
+import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
 
 const Finance: React.FC = () => {
   return (

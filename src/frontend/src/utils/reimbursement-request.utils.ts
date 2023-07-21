@@ -1,11 +1,34 @@
-export const downloadImage = async (fileId: string): Promise<File> => {
-  const url = `https://drive.google.com/file/d/${fileId}/?alt=media`;
-  const response = await fetch(url, { mode: 'no-cors' });
-  const blob = await response.blob();
+import { ReimbursementProduct, ReimbursementRequest, ReimbursementStatusType, wbsPipe } from 'shared';
 
-  const fileName = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '');
+export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
+  reimbursementRequest: ReimbursementRequest
+): Map<string, ReimbursementProduct[]> => {
+  const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
+  reimbursementRequest.reimbursementProducts.forEach((product) => {
+    const wbs = wbsPipe(product.wbsNum);
+    if (uniqueWbsElementsWithProducts.has(wbs)) {
+      const products = uniqueWbsElementsWithProducts.get(wbs);
+      products?.push(product);
+    } else {
+      uniqueWbsElementsWithProducts.set(wbs, [product]);
+    }
+  });
+  return uniqueWbsElementsWithProducts;
+};
 
-  const mimeType = blob.type;
-  const file = new File([blob], fileName!, { type: mimeType });
-  return file;
+export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType) => {
+  switch (status) {
+    case ReimbursementStatusType.ADVISOR_APPROVED: {
+      return 'Advisor Approved';
+    }
+    case ReimbursementStatusType.PENDING_FINANCE: {
+      return 'Pending Finance Team';
+    }
+    case ReimbursementStatusType.REIMBURSED: {
+      return 'Reimbursed';
+    }
+    case ReimbursementStatusType.SABO_SUBMITTED: {
+      return 'Submitted to Sabo';
+    }
+  }
 };

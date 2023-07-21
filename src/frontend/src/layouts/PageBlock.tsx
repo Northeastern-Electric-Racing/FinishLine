@@ -31,7 +31,6 @@ interface PageBlockProps {
 const PageBlock: React.FC<PageBlockProps> = ({ title, headerRight, children, style, defaultClosed }) => {
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState(defaultClosed);
-
   return (
     <Card sx={{ my: 2, background: theme.palette.background.paper, ...style }} variant="outlined">
       <CardContent

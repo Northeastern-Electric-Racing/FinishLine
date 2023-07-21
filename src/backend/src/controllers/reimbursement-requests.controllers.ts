@@ -4,7 +4,7 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
+import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
@@ -16,6 +16,26 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
       res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserReimbursements(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(user);
+      res.status(200).json(userReimbursements);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursements(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const reimbursements = await ReimbursementRequestService.getAllReimbursements(user);
+      res.status(200).json(reimbursements);
     } catch (error: unknown) {
       next(error);
     }
@@ -33,7 +53,7 @@ export default class ReimbursementRequestsController {
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
-      const user = await getCurrentUser(res);
+      const user = await getCurrentUserWithUserSettings(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,

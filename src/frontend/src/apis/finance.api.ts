@@ -2,9 +2,14 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { ReimbursementRequestCreateArgs, ReimbursementRequestEditArgs } from '../hooks/finance.hooks';
+import { CreateReimbursementRequestPayload, ReimbursementRequestEditArgs } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import {
+  reimbursementRequestTransformer,
+  reimbursementTransformer,
+  vendorTransformer
+} from './transformers/reimbursement-requests.transformer';
 
 /**
  * Upload a picture of a receipt
@@ -23,7 +28,7 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  * @param formData the data to create a new reimbursement request
  * @returns the created reimbursement request
  */
-export const createReimbursementRequest = (formData: ReimbursementRequestCreateArgs) => {
+export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
   return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
 };
 
@@ -44,7 +49,10 @@ export const editReimbursementRequest = (id: string, formData: ReimbursementRequ
  * @returns all the expense types
  */
 export const getAllExpenseTypes = () => {
-  return axios.get(apiUrls.getAllExpenseTypes());
+  return axios.get(apiUrls.getAllExpenseTypes(), {
+    transformResponse: (data) =>
+      JSON.parse(data).map((expenseType: any) => ({ ...expenseType, id: expenseType.expenseTypeId }))
+  });
 };
 
 /**
@@ -53,7 +61,9 @@ export const getAllExpenseTypes = () => {
  * @returns all the vendors
  */
 export const getAllVendors = () => {
-  return axios.get(apiUrls.getAllVendors());
+  return axios.get(apiUrls.getAllVendors(), {
+    transformResponse: (data) => JSON.parse(data).map(vendorTransformer)
+  });
 };
 
 /**
@@ -63,5 +73,61 @@ export const getAllVendors = () => {
  * @returns the reimbursement request with the given id
  */
 export const getSingleReimbursementRequest = (id: string) => {
-  return axios.get(apiUrls.financeReimbursementRequestById(id));
+  return axios.get(apiUrls.financeReimbursementRequestById(id), {
+    transformResponse: (data) => reimbursementRequestTransformer(JSON.parse(data))
+  });
+};
+
+/**
+ * Get the reimbursement requests for the current user
+ */
+export const getCurrentUserReimbursementRequests = () => {
+  return axios.get(apiUrls.financeGetUserReimbursementRequest(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Gets all the reimbursement requests
+ */
+export const getAllReimbursementRequests = () => {
+  return axios.get(apiUrls.financeEndpoints(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Gets all the reimbursements for a user
+ */
+export const getCurrentUserReimbursements = () => {
+  return axios.get(apiUrls.financeGetUserReimbursements(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementTransformer)
+  });
+};
+
+/**
+ * Gets all reimbursements
+ */
+export const getAllReimbursements = () => {
+  return axios.get(apiUrls.financeGetAllReimbursements(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementTransformer)
+  });
+};
+
+/**
+ * Downloads a given fileId from google drive 
+ * 
+ * @param fileId the id of the file to download
+ * @returns the downloaded file
+ */
+export const downloadImage = async (fileId: string): Promise<File> => {
+  const url = `https://drive.google.com/file/d/${fileId}/?alt=media`;
+  const response = await fetch(url, { mode: 'no-cors' });
+  const blob = await response.blob();
+
+  const fileName = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '');
+
+  const mimeType = blob.type;
+  const file = new File([blob], fileName!, { type: mimeType });
+  return file;
 };

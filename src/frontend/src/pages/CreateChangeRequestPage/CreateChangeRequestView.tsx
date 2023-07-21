@@ -17,7 +17,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import CreateProposedSolutionsList from './CreateProposedSolutionsList';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { FormControl, FormLabel, IconButton, MenuItem, NativeSelect } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteRenderInputParams,
+  FormControl,
+  FormLabel,
+  IconButton,
+  MenuItem,
+  Select
+} from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -26,6 +34,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { wbsTester } from '../../utils/form';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
+import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
 
 interface CreateChangeRequestViewProps {
@@ -72,7 +81,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     handleSubmit,
     control,
     formState: { errors },
-    register
+    register,
+    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -82,6 +92,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
+
   const { isLoading, isError, error, data: projects } = useAllProjects();
 
   const permittedTypes = Object.values(ChangeRequestType).filter(
@@ -91,15 +102,21 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   if (isLoading || !projects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const projectOptions: { label: string; id: string }[] = [];
   const wbsDropdownOptions: { label: string; id: string }[] = [];
+
   projects.forEach((project: Project) => {
     wbsDropdownOptions.push({
-      label: `${wbsPipe(project.wbsNum)} - ${project.name}`,
+      label: `${wbsNamePipe(project)}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    projectOptions.push({
+      label: `${wbsNamePipe(project)}`,
       id: wbsPipe(project.wbsNum)
     });
     project.workPackages.forEach((workPackage: WorkPackage) => {
       wbsDropdownOptions.push({
-        label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`,
+        label: `${wbsNamePipe(workPackage)}`,
         id: wbsPipe(workPackage.wbsNum)
       });
     });
@@ -114,6 +131,39 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     } else {
       setWbsNum('');
     }
+  };
+
+  const renderReasonInput = (index: number) => {
+    const typeValue = watch(`why.${index}.type`);
+    return typeValue === `${ChangeRequestReason.OtherProject}` ? (
+      <Controller
+        key={index}
+        name={`why.${index}.explain`}
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <Autocomplete
+            id="other-project-autocomplete"
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            options={projectOptions}
+            size="small"
+            value={projectOptions.find((element) => element.id === value)}
+            sx={{ mx: 1, flex: 1, '.MuiInputBase-input': { height: '39px' } }}
+            renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} placeholder="Select a Project" />}
+            onChange={(event, value) => (value ? onChange(value?.id) : null)}
+          />
+        )}
+      />
+    ) : (
+      <ReactHookTextField
+        required
+        multiline
+        control={control}
+        label="Explain"
+        sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
+        {...register(`why.${index}.explain`)}
+        errorMessage={errors.why?.[index]?.explain}
+      />
+    );
   };
 
   return (
@@ -131,7 +181,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       >
         <PageBlock title="Details">
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <FormLabel>WBS</FormLabel>
               <NERAutocomplete
                 id="wbs-autocomplete"
@@ -140,11 +190,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 size="small"
                 placeholder="Select a project or work package"
                 value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-                sx={{ width: 1 / 2 }}
               />
             </Grid>
-            <Grid item xs={12}>
-              <FormControl>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
                 <FormLabel>Type</FormLabel>
                 <Controller
                   name="type"
@@ -163,7 +212,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <FormControl>
+              <FormControl fullWidth>
                 <FormLabel>What</FormLabel>
                 <ReactHookTextField
                   name="what"
@@ -172,40 +221,36 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   rows={4}
                   errorMessage={errors.what}
                   placeholder="What is the situation?"
-                  sx={{ width: 300 }}
                 />
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
                 <FormLabel>Why</FormLabel>
                 <Box>
-                  {whys.map((_element, index) => (
+                  {whys.map((element, index) => (
                     <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                      <NativeSelect {...register(`why.${index}.type`)}>
+                      <Select
+                        {...register(`why.${index}.type`)}
+                        sx={{ width: 200 }}
+                        defaultValue={element.type}
+                        key={element.id}
+                      >
                         {Object.values(ChangeRequestReason).map((type) => (
-                          <option key={type} value={type}>
+                          <MenuItem key={type} value={type}>
                             {type}
-                          </option>
+                          </MenuItem>
                         ))}
-                      </NativeSelect>
-                      <ReactHookTextField
-                        required
-                        multiline
-                        control={control}
-                        label="Explain"
-                        sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
-                        {...register(`why.${index}.explain`)}
-                        errorMessage={errors.why?.[index]?.explain}
-                      />
+                      </Select>
+                      {renderReasonInput(index)}
                       <IconButton type="button" onClick={() => removeWhy(index)}>
                         <DeleteIcon />
                       </IconButton>
                     </Box>
                   ))}
                 </Box>
+                <FormHelperText>{errors.why?.message}</FormHelperText>
               </FormControl>
-              <FormHelperText>{errors.why?.message}</FormHelperText>
             </Grid>
             <Grid xs={12}>
               <Button

@@ -31,7 +31,10 @@ import { writeFileSync } from 'fs';
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
-  const thomasEmrax = await prisma.user.create({ data: dbSeedAllUsers.thomasEmrax });
+  const thomasEmrax = await prisma.user.create({
+    data: dbSeedAllUsers.thomasEmrax,
+    include: { userSettings: true, userSecureSettings: true }
+  });
   const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
   const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
   const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });

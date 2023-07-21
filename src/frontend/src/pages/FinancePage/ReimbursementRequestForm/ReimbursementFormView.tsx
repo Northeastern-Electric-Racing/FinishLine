@@ -73,11 +73,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   }));
 
   const ReceiptFileInput = () => (
-    <>
+    <FormControl>
       <FormLabel>Receipts</FormLabel>
       <ul>
         {receiptFiles.map((receiptFile, index) => (
-          <li>
+          <li key={`${receiptFile.file.name}-${index}`}>
             <Stack key={receiptFile.file.name} direction="row" justifyContent="space-between">
               <Typography>{receiptFile.name}</Typography>
               <IconButton onClick={() => receiptRemove(index)}>
@@ -87,7 +87,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </li>
         ))}
       </ul>
-    </>
+    </FormControl>
   );
 
   return (
