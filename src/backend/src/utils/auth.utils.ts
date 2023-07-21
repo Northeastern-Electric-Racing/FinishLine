@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { NotFoundException } from './errors.utils';
-import { User } from '@prisma/client';
+import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
@@ -75,6 +75,27 @@ export const requireJwtDev = (req: Request, res: Response, next: any) => {
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({ where: { userId } });
+  if (!user) throw new NotFoundException('User', userId);
+  return user;
+};
+
+export type UserWithSettings = User & {
+  userSettings: User_Settings | null;
+  userSecureSettings: User_Secure_Settings | null;
+};
+
+/**
+ * Gets the user making the request and includes their user settings
+ * @param res - we use the response because that's where we stored the userId data during jwt validation
+ * @returns the user with their user settings
+ * @throws if no user with the userId exists
+ */
+export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSettings> => {
+  const { userId } = res.locals;
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    include: { userSettings: true, userSecureSettings: true }
+  });
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };

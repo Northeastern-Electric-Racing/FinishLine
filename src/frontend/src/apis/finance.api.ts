@@ -2,11 +2,13 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+import { CreateReimbursementRequestPayload } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
   reimbursementRequestTransformer,
-  reimbursementTransformer
+  reimbursementTransformer,
+  vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 
 /**
@@ -14,20 +16,55 @@ import {
  *
  * @param payload Payload containing the image data
  */
-export const uploadSingleReceipt = (formData: FormData, id: string) => {
-  return axios.post(apiUrls.financeUploadReceipt(id), formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+export const uploadSingleReceipt = (file: File, id: string) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return axios.post(apiUrls.financeUploadRceipt(id), formData);
+};
+
+/**
+ * Creates a new reimbursement request
+ *
+ * @param formData the data to create a new reimbursement request
+ * @returns the created reimbursement request
+ */
+export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
+  return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
+};
+
+/**
+ * Gets all the expense types
+ *
+ * @returns all the expense types
+ */
+export const getAllExpenseTypes = () => {
+  return axios.get(apiUrls.getAllExpenseTypes(), {
+    transformResponse: (data) =>
+      JSON.parse(data).map((expenseType: any) => ({ ...expenseType, id: expenseType.expenseTypeId }))
   });
 };
 
 /**
- * Gets a single reimbursement request with the given id
+ * Gets all the vendors
  *
- * @param id The id of the reimbursement request to get
- * @returns The requested reimbursement request
+ * @returns all the vendors
+ */
+export const getAllVendors = () => {
+  return axios.get(apiUrls.getAllVendors(), {
+    transformResponse: (data) => JSON.parse(data).map(vendorTransformer)
+  });
+};
+
+/**
+ * Gets a single reimbursement request
+ *
+ * @param id the id of the reimbursement request to get
+ * @returns the reimbursement request with the given id
  */
 export const getSingleReimbursementRequest = (id: string) => {
-  return axios.get(apiUrls.financeReimbursementRequestById(id));
+  return axios.get(apiUrls.financeReimbursementRequestById(id), {
+    transformResponse: (data) => reimbursementRequestTransformer(JSON.parse(data))
+  });
 };
 
 /**

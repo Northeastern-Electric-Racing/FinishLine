@@ -67,6 +67,13 @@ export interface ExpenseType {
   allowed: boolean;
 }
 
+export interface ReimbursementProductCreateArgs {
+  id?: string;
+  name: string;
+  cost: number;
+  wbsNum: WbsNumber;
+}
+
 export interface Reimbursement {
   reimbursementId: string;
   dateCreated: Date;

@@ -8,6 +8,7 @@ import {
   ClubAccount,
   ExpenseType,
   Reimbursement,
+  ReimbursementProductCreateArgs,
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
@@ -16,7 +17,6 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
@@ -42,6 +42,7 @@ import {
   reimbursementTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import { UserWithSettings } from '../utils/auth.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -102,7 +103,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: User,
+    recipient: UserWithSettings,
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
@@ -111,6 +112,8 @@ export default class ReimbursementRequestService {
     totalCost: number
   ): Promise<Reimbursement_Request> {
     if (isGuest(recipient.role)) throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
+
+    if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
@@ -124,7 +127,7 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
-    await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -142,7 +145,7 @@ export default class ReimbursementRequestService {
         },
         reimbursementProducts: {
           createMany: {
-            data: reimbursementProducts.map((reimbursementProductInfo) => {
+            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
               return {
                 name: reimbursementProductInfo.name,
                 cost: reimbursementProductInfo.cost,

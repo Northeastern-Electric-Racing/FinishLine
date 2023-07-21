@@ -287,7 +287,11 @@ describe('Reimbursement Requests', () => {
               id: '1',
               name: 'test',
               cost: 1,
-              wbsElementId: 1
+              wbsNum: {
+                carNumber: 1,
+                projectNumber: 1,
+                workPackageNumber: 1
+              }
             }
           ],
           [],
@@ -317,7 +321,11 @@ describe('Reimbursement Requests', () => {
             id: '1',
             name: 'test',
             cost: 1,
-            wbsElementId: 1
+            wbsNum: {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 1
+            }
           }
         ],
         [],
