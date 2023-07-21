@@ -7,7 +7,8 @@ import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
   reimbursementRequestTransformer,
-  reimbursementTransformer
+  reimbursementTransformer,
+  vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 
 /**
@@ -50,7 +51,7 @@ export const getAllExpenseTypes = () => {
  */
 export const getAllVendors = () => {
   return axios.get(apiUrls.getAllVendors(), {
-    transformResponse: (data) => JSON.parse(data).map((vendor: any) => ({ ...vendor, id: vendor.vendorId }))
+    transformResponse: (data) => JSON.parse(data).map(vendorTransformer)
   });
 };
 

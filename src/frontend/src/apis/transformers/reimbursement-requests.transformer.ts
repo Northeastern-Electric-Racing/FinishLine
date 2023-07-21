@@ -12,9 +12,10 @@ const reimbursementStatusTransformer = (status: ReimbursementStatus) => {
   };
 };
 
-const vendorTransformer = (vendor: Vendor) => {
+export const vendorTransformer = (vendor: Vendor) => {
   return {
     ...vendor,
+    id: vendor.vendorId,
     dateCreated: new Date(vendor.dateCreated)
   };
 };

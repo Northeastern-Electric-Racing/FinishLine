@@ -79,15 +79,18 @@ export const getCurrentUser = async (res: Response): Promise<User> => {
   return user;
 };
 
+export type UserWithSettings = User & {
+  userSettings: User_Settings | null;
+  userSecureSettings: User_Secure_Settings | null;
+};
+
 /**
  * Gets the user making the request and includes their user settings
  * @param res - we use the response because that's where we stored the userId data during jwt validation
  * @returns the user with their user settings
  * @throws if no user with the userId exists
  */
-export const getCurrentUserWithUserSettings = async (
-  res: Response
-): Promise<User & { userSettings: User_Settings | null; userSecureSettings: User_Secure_Settings | null }> => {
+export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSettings> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({
     where: { userId },

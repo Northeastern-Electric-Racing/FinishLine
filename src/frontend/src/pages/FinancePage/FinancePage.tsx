@@ -17,9 +17,12 @@ import { useAllReimbursementRequests, useCurrentUserReimbursementRequests } from
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 const FinancePage = () => {
   const user = useCurrentUser();
+  const history = useHistory();
 
   const {
     data: userReimbursementRequests,
@@ -66,7 +69,7 @@ const FinancePage = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => {}}>
+        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)}>
           <ListItemIcon>
             <NoteAddIcon fontSize="small" />
           </ListItemIcon>

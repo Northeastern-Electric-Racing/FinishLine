@@ -42,6 +42,7 @@ import {
   reimbursementTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import { UserWithSettings } from '../utils/auth.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -102,7 +103,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: User & { userSecureSettings: User_Secure_Settings | null; userSettings: User_Settings | null },
+    recipient: UserWithSettings,
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,

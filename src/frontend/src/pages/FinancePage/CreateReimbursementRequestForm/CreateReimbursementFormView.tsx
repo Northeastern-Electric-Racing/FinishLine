@@ -20,6 +20,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { routes } from '../../../utils/routes';
 import { CreateReimbursementRequestFormInput } from './CreateReimbursementRequestForm';
 import PageLayout from '../../../components/PageLayout';
+import { useState } from 'react';
 
 interface CreateReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -59,6 +60,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
   errors,
   totalCost
 }) => {
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
@@ -69,7 +71,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
       <FormLabel>Receipts</FormLabel>
       <ul>
         {receiptFiles.map((receiptFile, index) => (
-          <li key={index}>
+          <li key={`${receiptFile.file.name}-${index}`}>
             <Stack key={receiptFile.file.name} direction="row" justifyContent="space-between">
               <Typography>{receiptFile.file.name}</Typography>
               <IconButton onClick={() => receiptRemove(index)}>
@@ -144,11 +146,20 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
                   render={({ field: { onChange, value } }) => (
                     <DatePicker
                       value={value}
+                      open={datePickerOpen}
+                      onClose={() => setDatePickerOpen(false)}
+                      onOpen={() => setDatePickerOpen(true)}
                       onChange={(newValue) => {
                         onChange(newValue ?? new Date());
                       }}
                       renderInput={(params) => (
-                        <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
+                        <TextField
+                          {...params}
+                          inputProps={{ ...params.inputProps, readOnly: true }}
+                          error={!!errors.dateOfExpense}
+                          helperText={errors.dateOfExpense?.message}
+                          onClick={(e) => setDatePickerOpen(true)}
+                        />
                       )}
                     />
                   )}
@@ -203,7 +214,7 @@ const CreateReimbursementRequestFormView: React.FC<CreateReimbursementRequestFor
               <FormHelperText>{errors.receiptFiles?.message}</FormHelperText>
             </Grid>
           </Grid>
-          <Grid item md={6} xs={12}>
+          <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
             <ReimbursementProductTable
               reimbursementProducts={reimbursementProducts}
               appendProduct={reimbursementProductAppend}

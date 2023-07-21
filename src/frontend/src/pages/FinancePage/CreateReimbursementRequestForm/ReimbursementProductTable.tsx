@@ -4,8 +4,8 @@
  */
 import {
   Autocomplete,
-  Chip,
-  Grid,
+  Button,
+  FormLabel,
   IconButton,
   InputAdornment,
   Table,
@@ -69,8 +69,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell width={'40%'}>WBS Element</TableCell>
-            <TableCell width={'60%'}>Products</TableCell>
+            <TableCell width={'40%'}>
+              <FormLabel>WBS Element</FormLabel>
+            </TableCell>
+            <TableCell width={'60%'}>
+              <FormLabel>Products</FormLabel>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -82,52 +86,51 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => {
-                      return product.name.length > 0 && product.cost > 0 ? (
-                        <ListItem key={product.index}>
-                          <Chip label={`${product.name} - $${product.cost}`} onDelete={() => removeProduct(index)} />
-                        </ListItem>
-                      ) : (
-                        <ListItem key={product.index}>
-                          <Grid container spacing={1}>
-                            <Grid item md={6} xs={12}>
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.name`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField {...field} label={'Description'} size={'small'} variant={'outlined'} />
-                                )}
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                      <ListItem key={product.index}>
+                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                          <Controller
+                            name={`reimbursementProducts.${product.index}.name`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label={'Description'}
+                                autoComplete="off"
+                                size={'small'}
+                                variant={'outlined'}
+                                sx={{ width: '50%', marginRight: '4px' }}
                               />
-                            </Grid>
-                            <Grid item md={6} xs={12} display={'flex'}>
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.cost`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    label={'Cost'}
-                                    size={'small'}
-                                    variant={'outlined'}
-                                    type="number"
-                                    InputProps={{
-                                      startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                    }}
-                                  />
-                                )}
+                            )}
+                          />
+                          <Controller
+                            name={`reimbursementProducts.${product.index}.cost`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label={'Cost'}
+                                size={'small'}
+                                variant={'outlined'}
+                                type="number"
+                                autoComplete="off"
+                                InputProps={{
+                                  startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                }}
+                                sx={{ width: '50%' }}
                               />
-                              <IconButton onClick={() => removeProduct(product.index)}>
-                                <Delete />
-                              </IconButton>
-                            </Grid>
-                          </Grid>
-                        </ListItem>
-                      );
-                    })}
+                            )}
+                          />
+                          <IconButton onClick={() => removeProduct(product.index)}>
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      </ListItem>
+                    ))}
                   </Box>
-                </TableCell>
-                <TableCell sx={{ verticalAlign: 'bottom' }}>
-                  <IconButton
+                  <Button
+                    sx={{ margin: '4px' }}
+                    startIcon={<Add />}
                     onClick={() =>
                       appendProduct({
                         wbsNum: validateWBS(key),
@@ -136,19 +139,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       })
                     }
                   >
-                    <Add />
-                  </IconButton>
+                    Add Product
+                  </Button>
                 </TableCell>
               </TableRow>
             );
           })}
           <TableRow>
-            <TableCell colSpan={2}>
+            <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
               <Autocomplete
                 fullWidth
                 sx={{ my: 1 }}
                 options={wbsElementAutocompleteOptions}
-                onChange={(event, value) => {
+                onChange={(_event, value) => {
                   if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
                 }}
                 id={'append-product-autocomplete'}
