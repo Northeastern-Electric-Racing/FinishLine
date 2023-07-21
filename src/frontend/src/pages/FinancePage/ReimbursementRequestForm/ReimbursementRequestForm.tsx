@@ -134,9 +134,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
+      const totalCost = data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0);
       const reimbursementRequestId = await submitData({
         ...data,
-        totalCost: totalCost
+        totalCost
       });
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
     } catch (e: unknown) {
