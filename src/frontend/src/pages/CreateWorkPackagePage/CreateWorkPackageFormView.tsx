@@ -30,6 +30,10 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useSingleProject } from '../../hooks/projects.hooks';
 
+const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
+  return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
+};
+
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   crId: yup
@@ -58,10 +62,6 @@ interface CreateWorkPackageFormViewProps {
   wbsNum: string;
   setWbsNum: (val: string) => void;
 }
-
-const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
-  return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
-};
 
 const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
   wbsNum,
