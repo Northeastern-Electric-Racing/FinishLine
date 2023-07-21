@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, ListItemIcon, MenuItem, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { Edit } from '@mui/icons-material';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
-import ActionsMenu from '../../../components/ActionsMenu';
+import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import { useHistory } from 'react-router-dom';
 import PageLayout from '../../../components/PageLayout';
 import ReimbursementProductsView from './ReimbursementProductsView';
@@ -100,27 +100,26 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const allowEdit = user.userId === reimbursementRequest.recipient.userId;
 
-  const EditButton = () => {
-    return (
-      <MenuItem
-        onClick={() => history.push(`${routes.FINANCE}/${reimbursementRequest.reimbursementRequestId}/edit`)}
-        disabled={!allowEdit}
-      >
-        <ListItemIcon>
-          <Edit fontSize="small" />
-        </ListItemIcon>
-        Edit
-      </MenuItem>
-    );
-  };
+  const buttons: ButtonInfo[] = [
+    {
+      title: 'Edit',
+      onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
+      icon: <Edit />,
+      disabled: !allowEdit
+    }
+  ];
 
   return (
-    <Box>
-      <PageLayout
-        title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
-        previousPages={[]}
-        headerRight={<ActionsMenu buttons={[<EditButton />]} />}
-      />
+    <PageLayout
+      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      previousPages={[
+        {
+          name: 'Finance',
+          route: routes.FINANCE
+        }
+      ]}
+      headerRight={<ActionsMenu buttons={buttons} />}
+    >
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
@@ -137,7 +136,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
-    </Box>
+    </PageLayout>
   );
 };
 

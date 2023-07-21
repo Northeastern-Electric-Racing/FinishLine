@@ -5,7 +5,7 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
 ): Map<string, ReimbursementProduct[]> => {
   const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
   reimbursementRequest.reimbursementProducts.forEach((product) => {
-    const wbs = wbsPipe(product.wbsNum);
+    const wbs = `${wbsPipe(product.wbsNum)} - ${product.wbsName}`;
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);

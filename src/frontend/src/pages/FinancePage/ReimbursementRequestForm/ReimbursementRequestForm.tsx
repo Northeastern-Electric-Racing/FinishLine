@@ -30,7 +30,7 @@ export interface ReimbursementRequestDataSubmission extends ReimbursementRequest
 }
 
 interface ReimbursementRequestFormProps {
-  submitText: string;
+  submitText: 'Save' | 'Submit';
   submitData: (data: ReimbursementRequestDataSubmission) => Promise<string>;
   defaultValues?: ReimbursementRequestFormInput;
   previousPage: string;

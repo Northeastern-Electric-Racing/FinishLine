@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { CreateReimbursementRequestPayload, ReimbursementRequestEditArgs } from '../hooks/finance.hooks';
+import { CreateReimbursementRequestPayload, EditReimbursementRequestPayload } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
@@ -39,7 +39,7 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  * @param formData the data to edit the reimbursement request with
  * @returns the edited reimbursement request
  */
-export const editReimbursementRequest = (id: string, formData: ReimbursementRequestEditArgs) => {
+export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
   return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
 };
 
@@ -115,8 +115,8 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Downloads a given fileId from google drive 
- * 
+ * Downloads a given fileId from google drive
+ *
  * @param fileId the id of the file to download
  * @returns the downloaded file
  */

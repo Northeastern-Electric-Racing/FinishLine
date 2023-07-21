@@ -13,7 +13,8 @@ import {
   getAllReimbursements,
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests
+  getCurrentUserReimbursementRequests,
+  downloadImage
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -24,7 +25,6 @@ import {
   Reimbursement,
   ReimbursementReceiptCreateArgs
 } from 'shared';
-import { downloadImage } from '../utils/reimbursement-request.utils';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -44,7 +44,7 @@ export interface EditReimbursementRequestPayload extends CreateReimbursementRequ
  */
 export const useUploadSingleReceipt = () => {
   return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
-    ['reimbursement-requsts', 'edit'],
+    ['reimbursement-requsts', 'upload-receipt'],
     async (formData: { file: File; id: string }) => {
       const { data } = await uploadSingleReceipt(formData.file, formData.id);
       return data;
@@ -59,7 +59,7 @@ export const useUploadSingleReceipt = () => {
  */
 export const useUploadManyReceipts = () => {
   return useMutation<{ googleFileId: string; name: string }[], Error, { files: File[]; id: string }>(
-    ['reimbursement-requests', 'edit'],
+    ['reimbursement-requests', 'upload-receipts'],
     async (formData: { files: File[]; id: string }) => {
       const promises = formData.files.map((file) => uploadSingleReceipt(file, formData.id));
       const results = await Promise.all(promises);
@@ -91,7 +91,7 @@ export const useCreateReimbursementRequest = () => {
  */
 export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
   return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
-    ['finance', 'edit'],
+    ['reimbursement-requests', 'edit'],
     async (formData: EditReimbursementRequestPayload) => {
       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
       return data;
