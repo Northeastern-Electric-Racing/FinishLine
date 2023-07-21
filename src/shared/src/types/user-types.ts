@@ -37,12 +37,19 @@ export interface AuthenticatedUser {
   emailId: string | null;
   role: Role;
   defaultTheme?: ThemeName;
-  teamAsLeadId?: string;
-  favoritedProjectsId?: number[];
+  isFinance?: boolean;
+  teamAsHeadId?: string;
+  favoritedProjectsId: number[];
+  changeRequestsToReviewId: number[];
 }
 
 export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;
   slackId: string;
+}
+
+export interface UpdateUserRolePayload {
+  userId: number;
+  role: string;
 }

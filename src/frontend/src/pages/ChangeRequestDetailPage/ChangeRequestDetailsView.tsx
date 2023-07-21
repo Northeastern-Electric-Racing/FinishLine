@@ -20,7 +20,6 @@ import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
 import ReviewChangeRequest from './ReviewChangeRequest';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
@@ -34,6 +33,7 @@ import PostAddIcon from '@mui/icons-material/PostAdd';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import PageLayout from '../../components/PageLayout';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -187,17 +187,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     </div>
   );
 
-  let actionDropdown = <></>;
-  if (changeRequest.accepted === undefined) actionDropdown = unreviewedActionsDropdown;
-  if (changeRequest.accepted!) actionDropdown = implementCrDropdown;
+  const actionDropdown = changeRequest.accepted ? implementCrDropdown : unreviewedActionsDropdown;
 
   return (
-    <>
-      <PageTitle
-        title={`Change Request #${changeRequest.crId}`}
-        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-        actionButton={actionDropdown}
-      />
+    <PageLayout
+      title={`Change Request #${changeRequest.crId}`}
+      previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
+      headerRight={actionDropdown}
+    >
       <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
         <Grid container spacing={1}>
           <Grid item xs={2}>
@@ -243,7 +240,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       {deleteModalShow && (
         <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
       )}
-    </>
+    </PageLayout>
   );
 };
 

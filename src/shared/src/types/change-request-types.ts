@@ -20,6 +20,7 @@ export interface ChangeRequest {
   dateImplemented?: Date;
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
+  requestedReviewers: User[];
 }
 
 export const ChangeRequestType = {
@@ -30,7 +31,7 @@ export const ChangeRequestType = {
   Activation: 'ACTIVATION'
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ChangeRequestType = typeof ChangeRequestType[keyof typeof ChangeRequestType];
+export type ChangeRequestType = (typeof ChangeRequestType)[keyof typeof ChangeRequestType];
 
 export interface StandardChangeRequest extends ChangeRequest {
   what: string;

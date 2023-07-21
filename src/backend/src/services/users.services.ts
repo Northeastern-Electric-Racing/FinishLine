@@ -1,6 +1,6 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, isAdmin, Role, ThemeName, User, rankUserRole, Project } from 'shared';
+import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, RoleEnum, isHead } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
@@ -197,21 +197,69 @@ export default class UsersService {
     const userRole = rankUserRole(user.role);
     const targetUserRole = rankUserRole(targetUser.role);
 
-    if (!isAdmin(user.role)) {
-      throw new AccessDeniedException('Only admins can update user roles!');
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Guests, members, and leadership cannot update user roles!');
     }
-
-    if (rankUserRole(role) > userRole) throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
 
     if (targetUserRole >= userRole) {
       throw new AccessDeniedException('Cannot change the role of a user with an equal or higher role than you');
     }
 
-    targetUser = await prisma.user.update({
-      where: { userId: targetUserId },
-      data: { role }
-    });
+    if (user.role === RoleEnum.HEAD && rankUserRole(role) >= userRole) {
+      throw new AccessDeniedException('Heads can only promote to leadership or below');
+    } else {
+      if (rankUserRole(role) > userRole) {
+        throw new AccessDeniedException('Cannot promote user to a higher role than yourself');
+      }
+      targetUser = await prisma.user.update({
+        where: { userId: targetUserId },
+        data: { role }
+      });
+    }
 
     return userTransformer(targetUser);
+  }
+
+  /**
+   * Sets the user's secure settings
+   * @param user the user to set the secure settings for
+   * @param nuid the users nuid
+   * @param street the users street address
+   * @param city the users city
+   * @param state the users state
+   * @param zipcode the users zipcode
+   * @returns the id of the user's secure settings
+   */
+  static async setUserSecureSettings(
+    user: User,
+    nuid: string,
+    street: string,
+    city: string,
+    state: string,
+    zipcode: string,
+    phoneNumber: string
+  ): Promise<string> {
+    const newUserSecureSettings = await prisma.user_Secure_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      },
+      create: {
+        userId: user.userId,
+        nuid,
+        street,
+        city,
+        state,
+        zipcode,
+        phoneNumber
+      }
+    });
+
+    return newUserSecureSettings.userSecureSettingsId;
   }
 }

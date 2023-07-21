@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { AuthenticatedUser } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
+import { isAuthUserOnFinance } from '../utils/reimbursement-requests.utils';
 
 const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>): AuthenticatedUser => {
   return {
@@ -11,8 +12,10 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     emailId: user.emailId,
     role: user.role,
     defaultTheme: user.userSettings?.defaultTheme,
-    teamAsLeadId: user.teamAsLead?.teamId,
-    favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId)
+    teamAsHeadId: user.teamAsHead?.teamId,
+    favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
+    isFinance: isAuthUserOnFinance(user),
+    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
   };
 };
 

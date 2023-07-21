@@ -23,7 +23,7 @@ import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
-  const { tasks, status, addTask, onAddCancel, project } = props;
+  const { tasks, status, addTask, onAddCancel, project, setDisabled } = props;
   const [modalShow, setModalShow] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const TABLE_ROW_COUNT = 'tl-table-row-count';
@@ -177,6 +177,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         moveToDone={moveToDone}
         moveToInProgress={moveToInProgress}
         deleteRow={deleteRow}
+        editTask={handleEditTask}
+        setDisabled={setDisabled}
       />
       {modalShow && (
         <TaskListNotesModal

@@ -11,11 +11,11 @@ import StageGateWorkPackageModal from '../../../../pages/WorkPackageDetailPage/S
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
  */
-const mockHandleSubmit = jest.fn();
+const mockHandleSubmit = vi.fn();
 /**
  * Mock function for hiding the modal, use if there is additional functionality added while canceling
  */
-const mockHandleHide = jest.fn();
+const mockHandleHide = vi.fn();
 
 /**
  * Sets up the component under test with the desired values and renders it.

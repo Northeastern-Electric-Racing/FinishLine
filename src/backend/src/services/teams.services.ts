@@ -1,4 +1,4 @@
-import { isAdmin, Team } from 'shared';
+import { isAdmin, isHead, Team } from 'shared';
 import { User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
@@ -52,14 +52,17 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (!isAdmin(submitter.role) && submitter.userId !== team.leaderId)
-      throw new AccessDeniedException('you must be an admin or the team lead to update the members!');
+    if (!isAdmin(submitter.role) && submitter.userId !== team.headId)
+      throw new AccessDeniedException('you must be an admin or the team head to update the members!');
 
     // this throws if any of the users aren't found
     const users = await getUsers(userIds);
 
-    if (users.map((user) => user.userId).includes(team.leader.userId))
-      throw new HttpException(400, 'team leader cannot be a member!');
+    if (users.map((user) => user.userId).includes(team.headId))
+      throw new HttpException(400, 'team head cannot be a member!');
+
+    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId)))
+      throw new HttpException(400, 'team leads cannot be members!');
 
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
@@ -99,13 +102,57 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (!(isAdmin(user.role) || user.userId === team.leaderId))
-      throw new AccessDeniedException('you must be an admin or the team lead to update the members!');
+    if (!(isAdmin(user.role) || user.userId === team.headId))
+      throw new AccessDeniedException('you must be an admin or the team head to update the members!');
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
         description: newDescription
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Update the team's head of the given team to the given user
+   * @param submitter The submitter of this request
+   * @param teamId The id for the team that is being edited
+   * @param userId The user to be the new team's head
+   * @returns The team with the new head
+   */
+  static async setTeamHead(submitter: User, teamId: string, userId: number): Promise<Team> {
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (!isAdmin(submitter.role) && submitter.userId !== team.headId)
+      throw new AccessDeniedException('You must be an admin or the head to update the head!');
+
+    const newHead = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!newHead) throw new NotFoundException('User', userId);
+    if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
+
+    // checking to see if any teams have the new head as their current head or lead
+    const newHeadTeam = await prisma.team.findFirst({
+      where: { OR: [{ headId: userId }, { leads: { some: { userId } } }] }
+    });
+
+    if (newHeadTeam) throw new AccessDeniedException('The new team head must not be a head or lead of another team');
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        head: {
+          connect: { userId }
+        }
       },
       ...teamQueryArgs
     });

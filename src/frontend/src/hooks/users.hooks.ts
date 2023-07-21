@@ -14,7 +14,7 @@ import {
   updateUserRole,
   getUsersFavoriteProjects
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings, Project } from 'shared';
+import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -118,9 +118,9 @@ export const useUpdateUserSettings = () => {
 export const useUpdateUserRole = () => {
   const auth = useAuth();
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, UpdateUserRolePayload>(
     ['users', 'change-role'],
-    async (updateUserPayload: any) => {
+    async (updateUserPayload: UpdateUserRolePayload) => {
       if (!auth.user) throw new Error('Update role not allowed when not logged in');
       const { data } = await updateUserRole(updateUserPayload.userId, updateUserPayload.role);
       return data;

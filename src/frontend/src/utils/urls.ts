@@ -7,7 +7,7 @@
  * This file centralizes URLs used to query the API.
  */
 
-const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
@@ -47,6 +47,7 @@ const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
+const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
 
 /**************** Change Requests Endpoints ****************/
@@ -69,6 +70,18 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
+
+/**************** Finance Endpoints **************************/
+const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
+const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
+const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
+const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
+const getAllVendors = () => `${financeEndpoints()}/vendors`;
+const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
+const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -102,6 +115,7 @@ export const apiUrls = {
   workPackagesCreate,
   workPackagesEdit,
   workPackagesDelete,
+  workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
 
   changeRequests,
@@ -120,6 +134,17 @@ export const apiUrls = {
   teamsSetDescription,
 
   descriptionBulletsCheck,
+
+  financeUploadRceipt,
+  financeCreateReimbursementRequest,
+  financeReimbursementRequestById,
+  getAllExpenseTypes,
+  getAllVendors,
+  financeEndpoints,
+  financeUploadReceipt,
+  financeGetUserReimbursementRequest,
+  financeGetUserReimbursements,
+  financeGetAllReimbursements,
 
   version
 };

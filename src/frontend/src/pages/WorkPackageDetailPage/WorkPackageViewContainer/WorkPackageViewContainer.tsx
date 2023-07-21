@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
@@ -12,13 +11,11 @@ import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContai
 import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem } from '@mui/material';
-import { useAuth } from '../../../hooks/auth.hooks';
+import { Menu, MenuItem, Link } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,6 +24,11 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
+import { Link as RouterLink } from 'react-router-dom';
+import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
+import ErrorPage from '../../ErrorPage';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import PageLayout from '../../../components/PageLayout';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -47,16 +49,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
 
-  if (!auth.user) return <LoadingIndicator />;
+  if (!dependencies || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(auth.user.role);
+  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -120,7 +124,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   );
   const createCRButton = (
     <MenuItem
-      component={Link}
+      component={RouterLink}
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
       disabled={!allowRequestChange}
       onClick={handleDropdownClose}
@@ -154,20 +158,21 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <>
-      <PageTitle
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        actionButton={projectActionsDropdown}
-      />
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      headerRight={projectActionsDropdown}
+    >
       <WorkPackageDetails workPackage={workPackage} />
       <HorizontalList
         title={'Blocked By'}
-        items={workPackage.blockedBy.map((dep) => (
-          <strong>{wbsPipe(dep)}</strong>
+        items={dependencies.map((dep) => (
+          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
+            {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
+          </Link>
         ))}
       />
       <CheckList
@@ -210,7 +215,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           handleClose={() => setShowDeleteModal(false)}
         />
       )}
-    </>
+    </PageLayout>
   );
 };
 
