@@ -64,7 +64,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   const {
     handleSubmit,
     control,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -154,6 +155,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   return (
     <CreateReimbursementRequestFormView
+      watch={watch}
       errors={errors}
       allVendors={allVendors}
       allExpenseTypes={allExpenseTypes}

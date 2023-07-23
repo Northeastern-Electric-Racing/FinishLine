@@ -11,7 +11,7 @@ import {
   Typography
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
 import {
   ClubAccount,
   ExpenseType,
@@ -26,7 +26,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -45,6 +45,7 @@ interface ReimbursementRequestFormViewProps {
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
+  watch: UseFormWatch<ReimbursementRequestFormInput>;
   totalCost: number;
   submitText: string;
   previousPage: string;
@@ -64,11 +65,15 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   onSubmit,
   handleSubmit,
   errors,
+  watch,
   totalCost,
   submitText,
   previousPage
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const products = watch(`reimbursementProducts`);
+  const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0);
+
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
@@ -198,7 +203,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             </Grid>
             <Grid item xs={12}>
               <FormLabel>Total Cost</FormLabel>
-              <Typography variant="h6">${totalCost}</Typography>
+              <Typography variant="h6">${calculatedTotalCost}</Typography>
             </Grid>
           </Grid>
           <Grid item xs={6}>
