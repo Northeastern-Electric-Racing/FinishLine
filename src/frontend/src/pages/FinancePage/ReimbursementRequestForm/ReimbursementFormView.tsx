@@ -26,7 +26,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
