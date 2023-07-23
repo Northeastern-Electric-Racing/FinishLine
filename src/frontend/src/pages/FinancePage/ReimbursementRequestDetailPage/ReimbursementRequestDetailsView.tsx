@@ -103,7 +103,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
-  const allowEdit = user.userId === reimbursementRequest.recipient.userId;
+  const allowEdit =
+    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestApproved(reimbursementRequest);
 
   const buttons: ButtonInfo[] = [
     {
@@ -116,7 +117,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Delete',
       onClick: () => {},
       icon: <DeleteIcon />,
-      disabled: user.userId !== reimbursementRequest.recipient.userId || isReimbursementRequestApproved(reimbursementRequest)
+      disabled: !allowEdit
     },
     {
       title: 'Mark Delivered',
