@@ -15,6 +15,11 @@ import { useHistory } from 'react-router-dom';
 import PageLayout from '../../../components/PageLayout';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import { ReimbursementRequest } from 'shared';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import CheckIcon from '@mui/icons-material/Check';
+import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -106,6 +111,30 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
       icon: <Edit />,
       disabled: !allowEdit
+    },
+    {
+      title: 'Delete',
+      onClick: () => {},
+      icon: <DeleteIcon />,
+      disabled: user.userId !== reimbursementRequest.recipient.userId || isReimbursementRequestApproved(reimbursementRequest)
+    },
+    {
+      title: 'Mark Delivered',
+      onClick: () => {},
+      icon: <LocalShippingIcon />,
+      disabled: !!reimbursementRequest.dateDelivered
+    },
+    {
+      title: 'Add Sabo #',
+      onClick: () => {},
+      icon: <ConfirmationNumberIcon />,
+      disabled: !user.isFinance
+    },
+    {
+      title: 'Approve',
+      onClick: () => {},
+      icon: <CheckIcon />,
+      disabled: !user.isFinance
     }
   ];
 

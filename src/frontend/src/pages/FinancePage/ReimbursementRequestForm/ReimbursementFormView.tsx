@@ -26,6 +26,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { useState } from 'react';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -67,6 +68,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   submitText,
   previousPage
 }) => {
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
@@ -115,8 +117,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
+              <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
-            <FormHelperText>{errors.vendorId?.message}</FormHelperText>
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
@@ -138,8 +140,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   </Select>
                 )}
               />
+              <FormHelperText error>{errors.account?.message}</FormHelperText>
             </FormControl>
-            <FormHelperText>{errors.account?.message}</FormHelperText>
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
@@ -150,11 +152,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 render={({ field: { onChange, value } }) => (
                   <DatePicker
                     value={value}
+                    open={datePickerOpen}
+                    onClose={() => setDatePickerOpen(false)}
+                    onOpen={() => setDatePickerOpen(true)}
                     onChange={(newValue) => {
                       onChange(newValue ?? new Date());
                     }}
                     renderInput={(params) => (
-                      <TextField {...params} error={!!errors.dateOfExpense} helperText={errors.dateOfExpense?.message} />
+                      <TextField
+                        {...params}
+                        inputProps={{ ...params.inputProps, readOnly: true }}
+                        error={!!errors.dateOfExpense}
+                        helperText={errors.dateOfExpense?.message}
+                        onClick={(e) => setDatePickerOpen(true)}
+                      />
                     )}
                   />
                 )}
@@ -182,8 +193,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     </Select>
                   )}
                 />
+                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
               </FormControl>
-              <FormHelperText>{errors.expenseTypeId?.message}</FormHelperText>
             </Grid>
             <Grid item xs={12}>
               <FormLabel>Total Cost</FormLabel>
@@ -207,20 +218,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 accept="image/*"
                 name="receiptFiles"
               />
+              <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
-            <FormHelperText>{errors.receiptFiles?.message}</FormHelperText>
           </Grid>
         </Grid>
-        <Grid item md={6} xs={12}>
-          <ReimbursementProductTable
-            errors={errors}
-            reimbursementProducts={reimbursementProducts}
-            appendProduct={reimbursementProductAppend}
-            removeProduct={reimbursementProductRemove}
-            wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
-            control={control}
-          />
-          <FormHelperText>{errors.reimbursementProducts?.message}</FormHelperText>
+        <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
+          <FormControl fullWidth>
+            <ReimbursementProductTable
+              errors={errors}
+              reimbursementProducts={reimbursementProducts}
+              appendProduct={reimbursementProductAppend}
+              removeProduct={reimbursementProductRemove}
+              wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
+              control={control}
+            />
+            <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
+          </FormControl>
         </Grid>
       </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>

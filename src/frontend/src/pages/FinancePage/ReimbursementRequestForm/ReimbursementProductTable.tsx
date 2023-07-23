@@ -17,9 +17,7 @@ import {
   TextField,
   Typography,
   styled,
-  Box,
-  Chip,
-  Grid
+  Box
 } from '@mui/material';
 import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
@@ -90,55 +88,49 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => {
-                      return product.name.length > 0 && product.cost > 0 ? (
-                        <ListItem key={product.index}>
-                          <Chip label={`${product.name} - $${product.cost}`} onDelete={() => removeProduct(index)} />
-                        </ListItem>
-                      ) : (
-                        <ListItem key={product.index}>
-                          <Grid container spacing={1}>
-                            <Grid item md={6} xs={12}>
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.name`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    label={'Description'}
-                                    size={'small'}
-                                    variant={'outlined'}
-                                    error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                  />
-                                )}
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                      <ListItem key={product.index}>
+                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                          <Controller
+                            name={`reimbursementProducts.${product.index}.name`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label={'Description'}
+                                autoComplete="off"
+                                size={'small'}
+                                variant={'outlined'}
+                                sx={{ width: '50%', marginRight: '4px' }}
+                                error={!!errors.reimbursementProducts?.[product.index]?.name}
                               />
-                            </Grid>
-                            <Grid item md={6} xs={12} display={'flex'}>
-                              <Controller
-                                name={`reimbursementProducts.${product.index}.cost`}
-                                control={control}
-                                render={({ field }) => (
-                                  <TextField
-                                    {...field}
-                                    label={'Cost'}
-                                    size={'small'}
-                                    variant={'outlined'}
-                                    type="number"
-                                    InputProps={{
-                                      startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                    }}
-                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                  />
-                                )}
+                            )}
+                          />
+                          <Controller
+                            name={`reimbursementProducts.${product.index}.cost`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label={'Cost'}
+                                size={'small'}
+                                variant={'outlined'}
+                                type="number"
+                                autoComplete="off"
+                                InputProps={{
+                                  startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                }}
+                                sx={{ width: '50%' }}
+                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
-                              <IconButton onClick={() => removeProduct(product.index)}>
-                                <Delete />
-                              </IconButton>
-                            </Grid>
-                          </Grid>
-                        </ListItem>
-                      );
-                    })}
+                            )}
+                          />
+                          <IconButton onClick={() => removeProduct(product.index)}>
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      </ListItem>
+                    ))}
                   </Box>
                   <Button
                     sx={{ margin: '4px' }}
