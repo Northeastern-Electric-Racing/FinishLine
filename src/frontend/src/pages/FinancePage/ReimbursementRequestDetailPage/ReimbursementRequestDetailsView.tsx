@@ -7,9 +7,19 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
+import { Edit } from '@mui/icons-material';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { routes } from '../../../utils/routes';
+import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
+import { useHistory } from 'react-router-dom';
 import PageLayout from '../../../components/PageLayout';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import { ReimbursementRequest } from 'shared';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import CheckIcon from '@mui/icons-material/Check';
+import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -18,6 +28,8 @@ interface ReimbursementRequestDetailsViewProps {
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
+  const user = useCurrentUser();
+  const history = useHistory();
 
   const BasicInformationView = () => {
     return (
@@ -91,8 +103,53 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
+  const allowEdit =
+    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestApproved(reimbursementRequest);
+
+  const buttons: ButtonInfo[] = [
+    {
+      title: 'Edit',
+      onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
+      icon: <Edit />,
+      disabled: !allowEdit
+    },
+    {
+      title: 'Delete',
+      onClick: () => {},
+      icon: <DeleteIcon />,
+      disabled: !allowEdit
+    },
+    {
+      title: 'Mark Delivered',
+      onClick: () => {},
+      icon: <LocalShippingIcon />,
+      disabled: !!reimbursementRequest.dateDelivered
+    },
+    {
+      title: 'Add Sabo #',
+      onClick: () => {},
+      icon: <ConfirmationNumberIcon />,
+      disabled: !user.isFinance
+    },
+    {
+      title: 'Approve',
+      onClick: () => {},
+      icon: <CheckIcon />,
+      disabled: !user.isFinance
+    }
+  ];
+
   return (
-    <PageLayout title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`} previousPages={[]}>
+    <PageLayout
+      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      previousPages={[
+        {
+          name: 'Finance',
+          route: routes.FINANCE
+        }
+      ]}
+      headerRight={<ActionsMenu buttons={buttons} />}
+    >
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />

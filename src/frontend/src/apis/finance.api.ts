@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { CreateReimbursementRequestPayload } from '../hooks/finance.hooks';
+import { CreateReimbursementRequestPayload, EditReimbursementRequestPayload } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
@@ -30,6 +30,17 @@ export const uploadSingleReceipt = (file: File, id: string) => {
  */
 export const createReimbursementRequest = (formData: CreateReimbursementRequestPayload) => {
   return axios.post(apiUrls.financeCreateReimbursementRequest(), formData);
+};
+
+/**
+ * Edits a reimbursment request
+ *
+ * @param id the id of the reimbursement request to edit
+ * @param formData the data to edit the reimbursement request with
+ * @returns the edited reimbursement request
+ */
+export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
+  return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
 };
 
 /**
@@ -101,4 +112,22 @@ export const getAllReimbursements = () => {
   return axios.get(apiUrls.financeGetAllReimbursements(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementTransformer)
   });
+};
+
+/**
+ * Downloads a given fileId from google drive
+ *
+ * @param fileId the id of the file to download
+ * @returns the downloaded file
+ */
+export const downloadImage = async (fileId: string): Promise<File> => {
+  const url = `https://drive.google.com/file/d/${fileId}/?alt=media`;
+  const response = await fetch(url, { mode: 'no-cors' });
+  const blob = await response.blob();
+
+  const fileName = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '');
+
+  const mimeType = blob.type;
+  const file = new File([blob], fileName!, { type: mimeType });
+  return file;
 };

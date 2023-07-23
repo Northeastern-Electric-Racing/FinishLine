@@ -74,6 +74,15 @@ export interface ReimbursementProductCreateArgs {
   wbsNum: WbsNumber;
 }
 
+export interface ReimbursementReceiptCreateArgs {
+  googleFileId: string;
+  name: string;
+}
+
+export interface ReimbursementReceiptUploadArgs extends ReimbursementReceiptCreateArgs {
+  file: File;
+}
+
 export interface Reimbursement {
   reimbursementId: string;
   dateCreated: Date;

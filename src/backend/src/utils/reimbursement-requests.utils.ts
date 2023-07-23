@@ -3,17 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
-
-export interface ReimbursementReceiptCreateArgs {
-  name: string;
-  googleFileId: string;
-}
 
 /**
  * This function removes any deleted receipts and adds any new receipts
@@ -47,7 +42,16 @@ export const removeDeletedReceiptPictures = async (
  * @returns the reimbursement products with the wbs element id added
  * @throws if any of the wbs elements are deleted or dont exist
  */
-export const validateReimbursementProducts = async (reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]) => {
+export const validateReimbursementProducts = async (
+  reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]
+): Promise<
+  {
+    name: string;
+    cost: number;
+    wbsElementId: number;
+    wbsNum: WbsNumber;
+  }[]
+> => {
   if (reimbursementProductCreateArgs.length === 0) {
     throw new HttpException(400, 'You must have at least one product to reimburse');
   }
@@ -57,18 +61,16 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
    */
   const wbsNums = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsNum);
 
-  const reimbursementProductsWithWbsElement: {
-    name: string;
-    cost: number;
-    wbsElementId: number;
-    wbsNum: WbsNumber;
-  }[] = [];
-
   /**
    * Goes through each wbsNum and finds the wbs element associated with it
    * Checks if the wbs element exists and is not deleted
    */
-  wbsNums.map(async (wbsNum, index) => {
+  const reimbursementProductsWithWbsElement: Promise<{
+    name: string;
+    cost: number;
+    wbsElementId: number;
+    wbsNum: WbsNumber;
+  }>[] = wbsNums.map(async (wbsNum, index) => {
     const wbsElement = await prisma.wBS_Element.findFirst({
       where: {
         carNumber: wbsNum.carNumber,
@@ -78,14 +80,14 @@ export const validateReimbursementProducts = async (reimbursementProductCreateAr
     });
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
-    reimbursementProductsWithWbsElement.push({
+
+    return {
       ...reimbursementProductCreateArgs[index],
       wbsElementId: wbsElement.wbsElementId
-    });
-    return wbsElement;
+    };
   });
 
-  return reimbursementProductsWithWbsElement;
+  return Promise.all(reimbursementProductsWithWbsElement);
 };
 
 /**

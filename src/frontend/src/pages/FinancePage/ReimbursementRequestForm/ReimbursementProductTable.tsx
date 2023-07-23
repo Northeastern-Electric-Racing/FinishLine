@@ -16,13 +16,13 @@ import {
   TableRow,
   TextField,
   Typography,
-  styled
+  styled,
+  Box
 } from '@mui/material';
 import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
-import { Box } from '@mui/system';
-import { Control, Controller } from 'react-hook-form';
-import { CreateReimbursementRequestFormInput } from './CreateReimbursementRequestForm';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -32,7 +32,8 @@ interface ReimbursementProductTableProps {
     label: string;
     id: string;
   }[];
-  control: Control<CreateReimbursementRequestFormInput, any>;
+  errors: FieldErrors<ReimbursementRequestFormInput>;
+  control: Control<ReimbursementRequestFormInput, any>;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -44,7 +45,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   removeProduct,
   appendProduct,
   wbsElementAutocompleteOptions,
-  control
+  control,
+  errors
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -100,6 +102,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 size={'small'}
                                 variant={'outlined'}
                                 sx={{ width: '50%', marginRight: '4px' }}
+                                error={!!errors.reimbursementProducts?.[product.index]?.name}
                               />
                             )}
                           />
@@ -118,6 +121,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
                                 sx={{ width: '50%' }}
+                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
                             )}
                           />

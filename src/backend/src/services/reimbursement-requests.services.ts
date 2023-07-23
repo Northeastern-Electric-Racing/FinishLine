@@ -9,6 +9,7 @@ import {
   ExpenseType,
   Reimbursement,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
@@ -17,7 +18,6 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  ReimbursementReceiptCreateArgs,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
