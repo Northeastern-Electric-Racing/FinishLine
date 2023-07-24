@@ -9,19 +9,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { WbsNumber } from 'shared';
 import { FormInput } from './StageGateWorkPackageModalContainer';
 import { wbsPipe } from '../../../utils/pipes';
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Typography
-} from '@mui/material';
-import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
-import NERModal from '../../../components/NERModal';
+import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import NERFormModal from '../../../components/NERFormModal';
 
 interface StageGateWorkPackageModalProps {
   wbsNum: WbsNumber;
@@ -40,14 +29,14 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
   });
 
   return (
-    <NERModal
+    <NERFormModal
       open={modalShow}
       onHide={onHide}
       title={`Stage Gate #${wbsPipe(wbsNum)}`}
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      form="stage-gate-work-package-form"
+      formId="stage-gate-work-package-form"
     >
       <div className={'px-4'}>
         <Controller
@@ -86,7 +75,7 @@ const StageGateWorkPackageModal: React.FC<StageGateWorkPackageModalProps> = ({ w
           )}
         />
       </div>
-    </NERModal>
+    </NERFormModal>
   );
 };
 

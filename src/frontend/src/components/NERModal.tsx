@@ -1,46 +1,61 @@
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
-import { UseFormHandleSubmit, UseFormReset } from 'react-hook-form/dist/types';
 import { ReactNode } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 
 const background = '#ef4345';
 
 interface NERModalProps {
   open: boolean;
-  formId: string;
+  formId?: string;
   title: string;
-  reset: UseFormReset<any>;
-  handleUseFormSubmit: UseFormHandleSubmit<any, undefined>;
-  onFormSubmit: (data: any) => void;
+  onSubmit?: (data: any) => void;
   onHide: () => void;
   children?: ReactNode;
+  cancelText: string;
+  submitText: string;
+  disabled?: boolean;
+  showCloseButton?: boolean;
 }
 
-const NERModal = ({ open, onHide, formId, title, reset, handleUseFormSubmit, onFormSubmit, children }: NERModalProps) => {
-  /**
-   * Wrapper function for onSubmit so that form data is reset after submit
-   */
-  const onSubmitWrapper = async (data: any) => {
-    await onFormSubmit(data);
-    reset({ confirmDone: false });
-  };
-
+const NERModal = ({
+  open,
+  onHide,
+  formId,
+  title,
+  onSubmit,
+  children,
+  cancelText,
+  submitText,
+  disabled = false,
+  showCloseButton = false
+}: NERModalProps) => {
   return (
     <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px' } }}>
       <DialogTitle sx={{ backgroundColor: background }}>{title}</DialogTitle>
-      <DialogContent sx={{ '&.MuiDialogContent-root': { paddingTop: '20px' } }}>
-        <form id={formId} onSubmit={handleUseFormSubmit(onSubmitWrapper)}>
-          {children}
-        </form>
-      </DialogContent>
+      {showCloseButton && (
+        <IconButton
+          aria-label="close"
+          onClick={onHide}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: 12,
+            color: (theme) => theme.palette.text.primary
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      )}
+      <DialogContent sx={{ '&.MuiDialogContent-root': { paddingTop: '20px' } }}>{children}</DialogContent>
       <DialogActions>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <NERFailButton sx={{ mx: 1, mb: 1 }} form={formId} onClick={onHide}>
-            Cancel
+            {cancelText}
           </NERFailButton>
-          <NERSuccessButton sx={{ mx: 1, mb: 1 }} type="submit" form={formId}>
-            Submit
+          <NERSuccessButton sx={{ mx: 1, mb: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
+            {submitText}
           </NERSuccessButton>
         </Box>
       </DialogActions>
