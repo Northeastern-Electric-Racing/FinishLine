@@ -6,15 +6,15 @@ import CloseIcon from '@mui/icons-material/Close';
 
 const background = '#ef4345';
 
-interface NERModalProps {
+export interface NERModalProps {
   open: boolean;
   formId?: string;
   title: string;
-  onSubmit?: (data: any) => void;
+  onSubmit?: () => void;
   onHide: () => void;
   children?: ReactNode;
-  cancelText: string;
-  submitText: string;
+  cancelText?: string;
+  submitText?: string;
   disabled?: boolean;
   showCloseButton?: boolean;
 }
@@ -52,10 +52,10 @@ const NERModal = ({
       <DialogActions>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <NERFailButton sx={{ mx: 1, mb: 1 }} form={formId} onClick={onHide}>
-            {cancelText}
+            {cancelText || 'Cancel'}
           </NERFailButton>
           <NERSuccessButton sx={{ mx: 1, mb: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
-            {submitText}
+            {submitText || 'Submit'}
           </NERSuccessButton>
         </Box>
       </DialogActions>

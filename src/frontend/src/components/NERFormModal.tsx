@@ -1,20 +1,12 @@
 import { ReactNode } from 'react';
-import { UseFormHandleSubmit, UseFormReset } from 'react-hook-form';
-import NERModal from './NERModal';
+import { FieldValues, UseFormHandleSubmit, UseFormReset } from 'react-hook-form';
+import NERModal, { NERModalProps } from './NERModal';
 
-interface NERFormModalProps {
-  open: boolean;
-  formId: string;
-  title: string;
-  reset: UseFormReset<any>;
-  handleUseFormSubmit: UseFormHandleSubmit<any, undefined>;
-  onFormSubmit: (data: any) => void;
-  onHide: () => void;
-  disabled?: boolean;
-  submitText?: string;
-  cancelText?: string;
+interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
+  reset: UseFormReset<T>;
+  handleUseFormSubmit: UseFormHandleSubmit<T, undefined>;
+  onFormSubmit: (data: T) => void;
   children?: ReactNode;
-  showCloseButton?: boolean;
 }
 
 const NERFormModal = ({
@@ -30,7 +22,7 @@ const NERFormModal = ({
   disabled,
   children,
   showCloseButton
-}: NERFormModalProps) => {
+}: NERFormModalProps<any>) => {
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
