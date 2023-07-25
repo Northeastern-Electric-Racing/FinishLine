@@ -50,11 +50,11 @@ const NERModal = ({
       )}
       <DialogContent sx={{ '&.MuiDialogContent-root': { paddingTop: '20px' } }}>{children}</DialogContent>
       <DialogActions>
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-          <NERFailButton sx={{ mx: 1, mb: 1 }} form={formId} onClick={onHide}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
+          <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
             {cancelText || 'Cancel'}
           </NERFailButton>
-          <NERSuccessButton sx={{ mx: 1, mb: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
+          <NERSuccessButton sx={{ mx: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
             {submitText || 'Submit'}
           </NERSuccessButton>
         </Box>
