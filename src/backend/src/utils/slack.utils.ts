@@ -38,11 +38,8 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   await sendMessage(LEAD_CHANNEL_SLACK_ID, fullMsg);
 };
 
-export const sendSlackRequestedReviewNotification = async (changeRequest: ChangeRequest): Promise<void> => {
+export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-
-  const { LEAD_CHANNEL_SLACK_ID } = process.env;
-  if (!LEAD_CHANNEL_SLACK_ID) return;
 
   const requestedReviewers = changeRequest.requestedReviewers;
   const slackIds = requestedReviewers.map(async (reviewer) => await getUserSlackId(reviewer.userId));
@@ -53,9 +50,9 @@ export const sendSlackRequestedReviewNotification = async (changeRequest: Change
     );
     const reviewersMessage = reviewerStrings.reduce((message, currentUserString) => message + currentUserString + ' ', '');
 
-    const crString = `<https://finishlinebyner.com/change-requests/${changeRequest.wbsNum}>`;
+    const crString = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
 
     const fullMsg = `${reviewersMessage}${crString}: You are assigned as a reviewer on this change request.`;
-    await sendMessage(LEAD_CHANNEL_SLACK_ID, fullMsg);
+    await sendMessage(slackId, fullMsg);
   });
 };

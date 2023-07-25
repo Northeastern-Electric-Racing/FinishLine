@@ -18,7 +18,7 @@ import {
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
-import { getUserFullName, getUsers } from '../utils/users.utils';
+import { getUserFullName, getUsersSettings } from '../utils/users.utils';
 import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -630,7 +630,7 @@ export default class ChangeRequestsService {
    * @param crId The change request that will be reviewed
    */
   static async requestCRReview(submitter: User, userIds: number[], crId: number) {
-    const reviewers = await getUsers(userIds);
+    const reviewers = await getUsersSettings(userIds);
 
     // check if any reviewers' role is below leadership
     const underLeads = reviewers.filter((user) => !isLeadership(user.role));
@@ -671,6 +671,8 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
-    await sendSlackRequestedReviewNotification(changeRequestTransformer(foundCR));
+    reviewers.forEach(async (user) => {
+      await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
+    });
   }
 }

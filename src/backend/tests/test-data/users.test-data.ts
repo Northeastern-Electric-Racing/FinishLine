@@ -109,3 +109,10 @@ export const alfred: PrismaUser & { teams: Team[] } = {
   googleAuthId: 'u',
   teams: [prismaTeam1]
 };
+
+export const batmanWithSlackId: PrismaUser & { userSettings: { slackId: String } } = {
+  ...batman,
+  userSettings: {
+    slackId: 'slack'
+  }
+};

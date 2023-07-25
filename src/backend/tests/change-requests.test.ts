@@ -1,5 +1,13 @@
 import prisma from '../src/prisma/prisma';
-import { aquaman, batman, batmanSettings, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanSettings,
+  greenlantern,
+  superman,
+  wonderwoman,
+  batmanWithSlackId
+} from './test-data/users.test-data';
 import {
   prismaProposedSolution1,
   whipExpectedActivites,
@@ -486,11 +494,11 @@ describe('Change Requests', () => {
     });
 
     test('Change request successfully assigned reviewers', async () => {
-      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithSlackId]);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
-      await ChangeRequestsService.requestCRReview(batman, [1, 2], 1);
+      await ChangeRequestsService.requestCRReview(batmanWithSlackId, [1], 1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
