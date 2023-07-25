@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
-import { createReimbursementRequestRowData } from '../../utils/finance.utils';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
-import { cleanReimbursementRequestStatus } from '../../utils/reimbursement-request.utils';
+import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];

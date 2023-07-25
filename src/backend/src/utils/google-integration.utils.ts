@@ -105,7 +105,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
     return { id, name };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new HttpException(500, error.message);
+      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);
   }

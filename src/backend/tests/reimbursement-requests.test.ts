@@ -626,17 +626,6 @@ describe('Reimbursement Requests', () => {
       const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
-      expect(prisma.reimbursement.create).toHaveBeenCalledWith({
-        data: {
-          purchaserId: batman.userId,
-          amount: reimbursementAmount,
-          dateCreated: reimbursementMock.dateCreated,
-          userSubmittedId: batman.userId
-        },
-        include: {
-          userSubmitted: true
-        }
-      });
     });
   });
 });

@@ -1,20 +1,41 @@
-import { Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Checkbox,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography
+} from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
-import { useGetAllVendors } from '../../hooks/finance.hooks';
+import { useGetAllExpenseTypes, useGetAllVendors } from '../../hooks/finance.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { datePipe } from '../../utils/pipes';
-import { DataGrid, GridColDef, GridRowProps, GridRowsProp } from '@mui/x-data-grid';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
+  const {
+    data: expenseTypes,
+    isLoading: expenseTypesIsLoading,
+    isError: expenseTypesIsError,
+    error: expenseTypesError
+  } = useGetAllExpenseTypes();
 
-  if (!vendors || vendorIsLoading) {
+  if (!vendors || !expenseTypes || expenseTypesIsLoading || vendorIsLoading) {
     return <LoadingIndicator />;
   }
 
   if (vendorIsError) {
     return <ErrorPage message={vendorError.message} />;
+  }
+
+  if (expenseTypesIsError) {
+    return <ErrorPage message={expenseTypesError.message} />;
   }
 
   const vendorTableRows = vendors.map((vendor) => (
@@ -26,27 +47,28 @@ const AdminToolsFinanceConfig: React.FC = () => {
     </TableRow>
   ));
 
-  const accountCodesColumns: GridColDef[] = [
-    { field: 'name', headerName: 'Account Name', flex: 0.5 },
-    {
-      field: 'code',
-      headerName: 'Account Code',
-      editable: true,
-      type: 'number',
-      flex: 0.3,
-      headerAlign: 'left',
-      align: 'left'
-    },
-    { field: 'allowed', headerName: 'Allowed', type: 'boolean', editable: true, flex: 0.2 }
-  ];
+  const newVendorRow = (
+    <TableRow>
+      <TableCell sx={{ border: '1px solid black' }} align="center">
+        {datePipe(new Date())}
+      </TableCell>
+      <TableCell sx={{ border: '1px solid black' }}>
+        <TextField placeholder="Enter New Vendor Name" fullWidth size="small"></TextField>
+      </TableCell>
+    </TableRow>
+  );
 
-  const accountCodesRows: GridRowsProp = [
-    { id: 0, name: 'Subscriptions', code: 0, allowed: true },
-    { id: 1, name: 'General Supplies / Small Tools', code: 1, allowed: true },
-    { id: 2, name: 'Advertising Agencies', code: 2, allowed: true },
-    { id: 3, name: 'Memberships and Dues', code: 3, allowed: true },
-    { id: 4, name: 'Equipment > 1500', code: 4, allowed: true }
-  ];
+  const accountCodesTableRows = expenseTypes.map((expenseType) => (
+    <TableRow>
+      <TableCell sx={{ border: '1px solid black' }}>{expenseType.name}</TableCell>
+      <TableCell contentEditable sx={{ border: '1px solid black' }}>
+        {expenseType.code}
+      </TableCell>
+      <TableCell align="center" sx={{ border: '1px solid black' }}>
+        <Checkbox defaultChecked={expenseType.allowed} />
+      </TableCell>
+    </TableRow>
+  ));
 
   const registeredVendors = (
     <Grid item direction="column" textAlign="left" xs={6}>
@@ -55,7 +77,11 @@ const AdminToolsFinanceConfig: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black', width: '25%' }}>
+              <TableCell
+                align="center"
+                sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black', width: '25%' }}
+                itemType="date"
+              >
                 Date Registered
               </TableCell>
               <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black' }}>
@@ -63,22 +89,57 @@ const AdminToolsFinanceConfig: React.FC = () => {
               </TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>{vendorTableRows}</TableBody>
+          <TableBody>
+            {vendorTableRows}
+            {newVendorRow}
+          </TableBody>
         </Table>
       </TableContainer>
     </Grid>
   );
 
   const accountCodes = (
-    <Grid item direction="column" textAlign="right" xs={6}>
-      <Typography variant="subtitle1">Account Codes</Typography>
-      <DataGrid editMode="cell" rows={accountCodesRows} columns={accountCodesColumns} hideFooter autoHeight />
+    <Grid item direction="column" alignSelf="right" xs={6}>
+      <Typography variant="subtitle1" textAlign="left">
+        Account Codes
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableCell
+              align="left"
+              sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black' }}
+              itemType="date"
+              width="50%"
+            >
+              Account Name
+            </TableCell>
+            <TableCell
+              align="left"
+              sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black' }}
+              itemType="date"
+              width="30%"
+            >
+              Account Code
+            </TableCell>
+            <TableCell
+              align="center"
+              sx={{ fontSize: '16px', fontWeight: 600, border: '1px solid black' }}
+              itemType="date"
+              width="20%"
+            >
+              Allowed
+            </TableCell>
+          </TableHead>
+          <TableBody>{accountCodesTableRows}</TableBody>
+        </Table>
+      </TableContainer>
     </Grid>
   );
 
   return (
     <PageBlock title="Finance Config">
-      <Grid container xs={12}>
+      <Grid container spacing="3%">
         {registeredVendors}
         {accountCodes}
       </Grid>

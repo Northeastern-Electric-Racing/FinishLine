@@ -19,9 +19,9 @@ import { Reimbursement, ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
-import { getRefundRowData } from '../../utils/finance.utils';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
+import { getRefundRowData } from '../../utils/reimbursement-request.utils';
 
 const RefundHeader = ({ header, data }: { header: string; data: string }) => {
   return (

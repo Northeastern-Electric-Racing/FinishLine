@@ -9,10 +9,12 @@ import {
   getAllVendors,
   uploadSingleReceipt,
   getSingleReimbursementRequest,
+  editReimbursementRequest,
   getAllReimbursements,
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests
+  getCurrentUserReimbursementRequests,
+  downloadImage
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -20,7 +22,8 @@ import {
   ReimbursementProductCreateArgs,
   ReimbursementRequest,
   Vendor,
-  Reimbursement
+  Reimbursement,
+  ReimbursementReceiptCreateArgs
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
@@ -29,10 +32,11 @@ export interface CreateReimbursementRequestPayload {
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptFiles: {
-    file: File;
-  }[];
   totalCost: number;
+}
+
+export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
+  receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
 /**
@@ -80,6 +84,22 @@ export const useCreateReimbursementRequest = () => {
 };
 
 /**
+ * Custom React Hook to edit a reimbursement request.
+ *
+ * @param reimbursementRequestId The id of the reimbursement request being edited
+ * @returns the edited reimbursement request
+ */
+export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: EditReimbursementRequestPayload) => {
+      const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
+      return data;
+    }
+  );
+};
+
+/**
  * Custom react hook to get all expense types
  *
  * @returns all the expense types
@@ -93,7 +113,6 @@ export const useGetAllExpenseTypes = () => {
 
 /**
  * Custom React Hook to get the reimbursement requests for the current user
- *
  */
 export const useCurrentUserReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'user'], async () => {
@@ -115,7 +134,6 @@ export const useGetAllVendors = () => {
 };
 /**
  * Custom React Hook to get all the reimbursement requests
- *
  */
 export const useAllReimbursementRequests = () => {
   return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests'], async () => {
@@ -146,6 +164,7 @@ export const useAllReimbursements = () => {
 
 /**
  * Custom react hook to get a single reimbursement request
+ *
  * @param id Id of the reimbursement request to get
  * @returns the reimbursement request
  */
@@ -153,5 +172,19 @@ export const useSingleReimbursementRequest = (id: string) => {
   return useQuery<ReimbursementRequest, Error>(['reimbursement-requests', id], async () => {
     const { data } = await getSingleReimbursementRequest(id);
     return data;
+  });
+};
+
+/**
+ * Custom react hook to download images from google drive
+ *
+ * @param fileIds The google file ids to fetch the images for
+ * @returns the downloaded images
+ */
+export const useDownloadImages = (fileIds: string[]) => {
+  return useQuery<File[], Error>(['reimbursement-requests', 'edit', fileIds], async () => {
+    const promises = fileIds.map((fileId) => downloadImage(fileId));
+    const files = await Promise.all(promises);
+    return files;
   });
 };
