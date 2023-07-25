@@ -41,7 +41,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
 export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const requestedReviewers = changeRequest.requestedReviewers;
+  const { requestedReviewers } = changeRequest;
   const slackIds = requestedReviewers.map(async (reviewer) => await getUserSlackId(reviewer.userId));
 
   Promise.all(slackIds).then(async (slackIds) => {
