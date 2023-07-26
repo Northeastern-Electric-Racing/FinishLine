@@ -29,7 +29,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   console.log(projects);
   const decodedTeam = decodeURIComponent(ganttFilters.selectedTeam);
   const car0Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 0
+    return project.wbsNum.carNumber !== 0;
   };
   const car1Check = (project: Project) => {
     return project.wbsNum.carNumber !== 1;

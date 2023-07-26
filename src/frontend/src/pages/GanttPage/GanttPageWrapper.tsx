@@ -88,7 +88,7 @@ const GanttPageWrapper: FC = () => {
     );
     const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
-    console.log(tasks)
+    console.log(tasks);
 
     setGanttTasks(tasks);
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
