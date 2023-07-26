@@ -25,6 +25,7 @@ export const exampleProject1: Project = {
   summary: 'Make an impact attenuator',
   budget: 124,
   rules: ['EV3.5.2'],
+  teams: [],
   goals: [
     {
       id: 15,
@@ -98,7 +99,8 @@ export const exampleProject2: Project = {
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  tasks: []
+  tasks: [],
+  teams: []
 };
 
 export const exampleProject3: Project = {
@@ -142,7 +144,7 @@ export const exampleProject3: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
-  team: exampleTeam,
+  teams: [exampleTeam],
   tasks: [exampleTask1]
 };
 
@@ -161,6 +163,7 @@ export const exampleProject4: Project = {
   summary: 'Integrate the motor controller',
   budget: 0,
   rules: [],
+  teams: [],
   goals: [
     {
       id: 18,
@@ -199,6 +202,7 @@ export const exampleProject5: Project = {
   summary: 'Harness the wiring',
   budget: 234,
   rules: ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
+  teams: [],
   goals: [
     {
       id: 19,

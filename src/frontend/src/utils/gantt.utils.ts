@@ -26,9 +26,10 @@ export interface GanttTask extends Task {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
+  console.log(projects);
   const decodedTeam = decodeURIComponent(ganttFilters.selectedTeam);
   const car0Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 0;
+    return project.wbsNum.carNumber !== 0
   };
   const car1Check = (project: Project) => {
     return project.wbsNum.carNumber !== 1;
@@ -40,7 +41,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return project.team === undefined ? decodedTeam === NO_TEAM : project.team?.teamName === decodedTeam;
+    return getProjectTeamsName(project) === decodedTeam;
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
@@ -105,8 +106,12 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
   };
 };
 
+export const getProjectTeamsName = (project: Project): string => {
+  return project.teams.length === 0 ? NO_TEAM : project.teams.map((team) => team.teamName).join(', ');
+};
+
 export const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
-  const teamName = project.team?.teamName || NO_TEAM;
+  const teamName = getProjectTeamsName(project);
 
   const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),

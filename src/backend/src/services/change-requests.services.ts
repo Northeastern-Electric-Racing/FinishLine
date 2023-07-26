@@ -548,7 +548,7 @@ export default class ChangeRequestsService {
       throw new HttpException(400, 'need a team');
     }
 
-    teams?.forEach(async (team) => {
+    teams.forEach(async (team) => {
       const slackMsg =
         `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
         `for the ${project.wbsElement.name} project`;

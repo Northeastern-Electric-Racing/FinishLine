@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, TeamPreview, User } from 'shared';
+import { isGuest, TeamPreview } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -33,11 +33,11 @@ import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
-import { makeTeamList } from '../../../../utils/teams.utils';
+import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
 
 interface TaskListNotesModalProps {
   task: Task;
-  team?: TeamPreview;
+  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
@@ -63,7 +63,7 @@ const schema = yup.object().shape({
 
 const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   task,
-  team,
+  teams,
   modalShow,
   onHide,
   onSubmit,
@@ -89,15 +89,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   });
   if (!auth.user) return <LoadingIndicator />;
 
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-  };
-
-  const options = team
-    ? makeTeamList(team)
-        .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-        .map(userToAutocompleteOption)
-    : [];
+  const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(userToAutocompleteOption);
 
   const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
@@ -288,7 +280,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                     render={({ field: { onChange, value } }) => (
                       <DatePicker
                         inputFormat="yyyy-MM-dd"
-                        onChange={onChange}
+                        onChange={(event) => onChange(event ?? new Date())}
                         className={'padding: 10'}
                         value={value}
                         renderInput={(params) => <TextField autoComplete="off" {...params} error={!!errors.deadline} />}
