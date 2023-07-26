@@ -379,6 +379,9 @@ export default class ProjectsService {
           projectNumber: wbsNumber.projectNumber,
           workPackageNumber: wbsNumber.workPackageNumber
         }
+      },
+      include: {
+        teams: true
       }
     });
 
@@ -392,17 +395,30 @@ export default class ProjectsService {
       throw new AccessDeniedAdminOnlyException('set project teams');
     }
 
-    // if everything is fine, then update the given project to assign to provided team ID
-    await prisma.project.update({
-      where: { projectId: project.projectId },
-      data: {
-        teams: {
-          connect: [team]
+    // check if the team is already assigned to the project if it is we remove it, otherwise we add it. We do this to toggle the team
+    if (project.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
         }
-      }
-    });
-
-    return;
+      });
+    } else {
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          teams: {
+            connect: {
+              teamId
+            }
+          }
+        }
+      });
+    }
   }
 
   /**

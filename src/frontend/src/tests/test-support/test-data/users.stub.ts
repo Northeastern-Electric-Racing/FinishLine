@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, RoleEnum } from 'shared';
+import { User, RoleEnum, AuthenticatedUser } from 'shared';
 
 export const exampleAppAdminUser: User = {
   userId: 1,
@@ -14,13 +14,15 @@ export const exampleAppAdminUser: User = {
   role: RoleEnum.APP_ADMIN
 };
 
-export const exampleAdminUser: User = {
+export const exampleAdminUser: AuthenticatedUser = {
   userId: 2,
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
   emailId: 'shmoe.j',
-  role: RoleEnum.ADMIN
+  role: RoleEnum.ADMIN,
+  favoritedProjectsId: [],
+  changeRequestsToReviewId: []
 };
 
 export const exampleAdminUser2: User = {
@@ -68,13 +70,15 @@ export const exampleMemberUser: User = {
   role: RoleEnum.HEAD
 };
 
-export const exampleGuestUser: User = {
+export const exampleGuestUser: AuthenticatedUser = {
   userId: 7,
   firstName: 'Jackson',
   lastName: 'James',
   email: 'james.j@husky.neu.edu',
   emailId: 'james.j',
-  role: RoleEnum.GUEST
+  role: RoleEnum.GUEST,
+  favoritedProjectsId: [],
+  changeRequestsToReviewId: []
 };
 
 export const exampleGuestUser2: User = {

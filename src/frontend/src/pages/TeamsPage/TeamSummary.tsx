@@ -9,6 +9,7 @@ import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
 import React from 'react';
+
 interface TeamSummaryProps {
   team: Team;
 }

@@ -72,7 +72,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const handleAssignToMyTeam = async () => {
     try {
-      await mutateAsyncSetProjectTeam(teamAsLeadId);
+      const successMessage = await mutateAsyncSetProjectTeam(teamAsLeadId);
+      toast.success(successMessage.message);
       handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -104,12 +105,16 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
+  const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsLeadId || '')
+    ? 'Unassign from My Team'
+    : 'Assign to My Team';
+
   const assignToMyTeamButton = (
-    <MenuItem disabled={project.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem onClick={handleAssignToMyTeam}>
       <ListItemIcon>
         <GroupIcon fontSize="small" />
       </ListItemIcon>
-      Assign to My Team
+      {assignToTeamText}
     </MenuItem>
   );
 

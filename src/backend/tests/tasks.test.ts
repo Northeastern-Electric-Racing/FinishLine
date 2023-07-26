@@ -28,7 +28,7 @@ describe('Tasks', () => {
     projectNumber: 2,
     workPackageNumber: 0
   };
-  const mockProjectWithTeam = { ...prismaProject1, team: { ...prismaTeam1 } };
+  const mockProjectWithTeam = { ...prismaProject1, teams: [{ ...prismaTeam1 }] };
   const mockWBSElementWithProject = { ...prismaWbsElement1, project: { ...mockProjectWithTeam } };
 
   afterEach(() => {
@@ -235,7 +235,7 @@ describe('Tasks', () => {
     test('edit task assignee succeeds', async () => {
       vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({
         ...taskSaveTheDayPrisma,
-        wbsElement: { project: { team: {} } }
+        wbsElement: { project: { teams: [{}] } }
       } as any);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
