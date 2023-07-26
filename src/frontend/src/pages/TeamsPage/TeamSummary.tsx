@@ -30,10 +30,10 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         <Typography variant="h5">{team.teamName}</Typography>
         <Typography sx={{ mb: 1.5 }} color="text.secondary">
           {team.projects.length} Project{team.projects.length === 1 ? '' : 's'} | {team.members.length} Member
-          {team.members.length === 1 ? '' : 's'}
+          {team.members.length === 1 ? '' : 's'} | {team.leads.length} Lead{team.leads.length === 1 ? '' : 's'}
         </Typography>
         <Typography variant="body2">
-          <b>Lead:</b> {fullNamePipe(team.leader)}
+          <b>Head:</b> {fullNamePipe(team.head)}
         </Typography>
         <Typography noWrap variant="body2">
           <b>Projects:</b> {projectsList}

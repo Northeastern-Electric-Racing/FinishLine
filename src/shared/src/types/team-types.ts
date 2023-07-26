@@ -9,11 +9,12 @@ import { User } from './user-types';
 export interface Team {
   teamId: string;
   teamName: string;
-  leader: User;
+  head: User;
   slackId: string;
   description: string;
   members: User[];
   projects: ProjectPreview[];
+  leads: User[];
 }
 
-export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'leader'>;
+export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads'>;

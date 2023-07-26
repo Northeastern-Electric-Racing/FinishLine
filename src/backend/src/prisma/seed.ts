@@ -26,11 +26,15 @@ import DescriptionBulletsService from '../services/description-bullets.services'
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
+import { writeFileSync } from 'fs';
 
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
-  const thomasEmrax = await prisma.user.create({ data: dbSeedAllUsers.thomasEmrax });
+  const thomasEmrax = await prisma.user.create({
+    data: dbSeedAllUsers.thomasEmrax,
+    include: { userSettings: true, userSecureSettings: true }
+  });
   const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
   const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
   const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
@@ -118,6 +122,21 @@ const performSeed: () => Promise<void> = async () => {
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+
+  /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
+  const financeTeamId = justiceLeague.teamId;
+  /** Gets the current content of the .env file */
+  const currentEnv = require('dotenv').config().parsed;
+  /** If the .env file exists, set the FINANCE_TEAM_ID */
+  if (currentEnv) {
+    currentEnv.FINANCE_TEAM_ID = financeTeamId;
+    /** Write the new .env file */
+    let stringifiedEnv = '';
+    Object.keys(currentEnv).forEach((key) => {
+      stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+    });
+    writeFileSync('.env', stringifiedEnv);
+  }
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
@@ -636,7 +655,11 @@ const performSeed: () => Promise<void> = async () => {
     [
       {
         name: 'GLUE',
-        wbsElementId: 1,
+        wbsNum: {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 1
+        },
         cost: 200000
       }
     ],

@@ -66,3 +66,26 @@ export interface ExpenseType {
   code: number;
   allowed: boolean;
 }
+
+export interface ReimbursementProductCreateArgs {
+  id?: string;
+  name: string;
+  cost: number;
+  wbsNum: WbsNumber;
+}
+
+export interface ReimbursementReceiptCreateArgs {
+  googleFileId: string;
+  name: string;
+}
+
+export interface ReimbursementReceiptUploadArgs extends ReimbursementReceiptCreateArgs {
+  file: File;
+}
+
+export interface Reimbursement {
+  reimbursementId: string;
+  dateCreated: Date;
+  amount: number;
+  userSubmitted: User;
+}

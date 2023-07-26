@@ -366,7 +366,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -450,7 +450,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -531,10 +531,10 @@ export default class ChangeRequestsService {
       include: {
         wbsElement: {
           include: {
-            project: { include: { teams: { include: { leader: true } }, wbsElement: true } },
+            project: { include: { teams: true, wbsElement: true } },
             workPackage: {
               include: {
-                project: { include: { teams: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
