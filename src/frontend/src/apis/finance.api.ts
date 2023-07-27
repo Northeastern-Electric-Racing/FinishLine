@@ -131,3 +131,13 @@ export const downloadImage = async (fileId: string): Promise<File> => {
   const file = new File([blob], fileName!, { type: mimeType });
   return file;
 };
+
+export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+  return axios.post(
+    apiUrls.financeSetSaboNumber(requestId),
+    {
+      saboNumber
+    },
+    { transformResponse: (data) => reimbursementRequestTransformer(JSON.parse(data)) }
+  );
+};

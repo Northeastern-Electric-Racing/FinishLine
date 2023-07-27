@@ -14,7 +14,8 @@ import {
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
-  downloadImage
+  downloadImage,
+  setSaboNumber
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -187,4 +188,14 @@ export const useDownloadImages = (fileIds: string[]) => {
     const files = await Promise.all(promises);
     return files;
   });
+};
+
+export const useSetSaboNumber = (reimbursementRequestId: string) => {
+  return useMutation<ReimbursementRequest, Error, { saboNumber: number }>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: { saboNumber: number }) => {
+      const { data } = await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      return data;
+    }
+  );
 };

@@ -22,6 +22,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
 import AddSABONumber from '../AddSABONumber';
 import { useState } from 'react';
+import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -33,6 +34,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
+  const { mutateAsync: mutateAsyncSetSaboNumber } = useSetSaboNumber(reimbursementRequest.reimbursementRequestId);
 
   const BasicInformationView = () => {
     return (
@@ -132,7 +134,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Add Sabo #',
       onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />
-      disabled: !user.isFinance
+      // disabled: !user.isFinance
     },
     {
       title: 'Approve',
