@@ -20,6 +20,8 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import AddSABONumber from '../AddSABONumber';
+import { useState } from 'react';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -30,6 +32,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
+  const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
 
   const BasicInformationView = () => {
     return (
@@ -127,8 +130,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Add Sabo #',
-      onClick: () => {},
-      icon: <ConfirmationNumberIcon />,
+      onClick: () => setAddSaboNumberModalShow(true),
+      icon: <ConfirmationNumberIcon />
       disabled: !user.isFinance
     },
     {
@@ -166,6 +169,15 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
+      {addSaboNumberModalShow && (
+        <AddSABONumber
+          modalShow={addSaboNumberModalShow}
+          onHide={() => setAddSaboNumberModalShow(false)}
+          onSubmit={async (data) => {
+            console.log(data);
+          }}
+        />
+      )}
     </PageLayout>
   );
 };
