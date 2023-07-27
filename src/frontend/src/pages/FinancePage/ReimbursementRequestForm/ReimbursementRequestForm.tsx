@@ -169,7 +169,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
       allWbsElements={allWbsElements}
-      totalCost={totalCost}
       submitText={submitText}
       previousPage={previousPage}
     />

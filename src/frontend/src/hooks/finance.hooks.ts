@@ -14,7 +14,9 @@ import {
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
-  downloadImage
+  downloadImage,
+  downloadGoogleImage,
+  blobsToPdf
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -186,5 +188,15 @@ export const useDownloadImages = (fileIds: string[]) => {
     const promises = fileIds.map((fileId) => downloadImage(fileId));
     const files = await Promise.all(promises);
     return files;
+  });
+};
+
+export const useDownloadPDFOfImages = () => {
+  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
+    const promises = formData.fileIds.map((fileId) => {
+      return downloadGoogleImage(fileId);
+    });
+    const blobs = await Promise.all(promises);
+    await blobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
 };

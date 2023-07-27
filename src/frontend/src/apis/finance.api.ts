@@ -10,6 +10,8 @@ import {
   reimbursementTransformer,
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
+import { saveAs } from 'file-saver';
+import { PDFDocument } from 'pdf-lib';
 
 /**
  * Upload a picture of a receipt
@@ -131,3 +133,48 @@ export const downloadImage = async (fileId: string): Promise<File> => {
   const file = new File([blob], fileName!, { type: mimeType });
   return file;
 };
+
+export const downloadGoogleImage = async (fileId: string) => {
+  const response = await axios.get(apiUrls.financeImageById(fileId), {
+    responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
+  });
+  const imageBuffer = new Uint8Array(response.data);
+  const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
+  return imageBlob;
+};
+
+export async function blobsToPdf(blobData: Blob[], filename: string) {
+  const pdfDoc = await PDFDocument.create();
+
+  // Embed the image in the PDF document
+  const promises = blobData.map(async (blob: Blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    let image;
+    if (blob.type === 'image/jpeg') {
+      image = await pdfDoc.embedJpg(arrayBuffer);
+    } else if (blob.type === 'image/png') {
+      image = await pdfDoc.embedPng(arrayBuffer);
+    } else {
+      throw new Error(blob.type + ' type not supported');
+    }
+    const page = pdfDoc.addPage([image.width, image.height]);
+    const { width, height } = page.getSize();
+    page.drawImage(image, {
+      x: 0,
+      y: 0,
+      width,
+      height
+    });
+  });
+
+  await Promise.all(promises);
+
+  // Save the PDF as an ArrayBuffer
+  const pdfBytes = await pdfDoc.save();
+
+  // Convert the ArrayBuffer to a Blob
+  const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+  // Save the Blob as a file using file-saver
+  saveAs(pdfBlob, filename);
+}

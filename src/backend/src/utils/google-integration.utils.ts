@@ -2,7 +2,8 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
-import stream from 'stream';
+import stream, { Readable } from 'stream';
+import concat from 'concat-stream';
 
 const { OAuth2 } = google.auth;
 const {
@@ -108,5 +109,36 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);
+  }
+};
+
+async function readableToBuffer(readable: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const concatStream = concat((data: Buffer) => {
+      resolve(data);
+    });
+
+    readable.on('error', reject);
+    readable.pipe(concatStream);
+  });
+}
+
+export const downloadImage = async (fileId: string) => {
+  oauth2Client.setCredentials({
+    refresh_token: DRIVE_REFRESH_TOKEN
+  });
+  try {
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    const res = await drive.files.get(
+      {
+        fileId,
+        alt: 'media'
+      },
+      { responseType: 'stream' }
+    );
+    const bufferData = await readableToBuffer(res.data);
+    return { buffer: bufferData, type: res.headers['content-type'] };
+  } catch (error: unknown) {
+    console.log(error);
   }
 };

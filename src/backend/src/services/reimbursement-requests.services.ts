@@ -33,7 +33,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+import { downloadImage, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
@@ -632,5 +632,11 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  static async downloadImage(fileId: string) {
+    const fileData = await downloadImage(fileId);
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 }

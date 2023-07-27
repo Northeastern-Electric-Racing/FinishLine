@@ -120,4 +120,6 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
+reimbursementRequestsRouter.get('/image/:fileId', ReimbursementRequestController.downloadImage);
+
 export default reimbursementRequestsRouter;
