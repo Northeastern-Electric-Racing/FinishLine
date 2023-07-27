@@ -61,9 +61,7 @@ const AdminToolsFinanceConfig: React.FC = () => {
   const accountCodesTableRows = expenseTypes.map((expenseType) => (
     <TableRow>
       <TableCell sx={{ border: '1px solid black' }}>{expenseType.name}</TableCell>
-      <TableCell contentEditable sx={{ border: '1px solid black' }}>
-        {expenseType.code}
-      </TableCell>
+      <TableCell sx={{ border: '1px solid black' }}>{expenseType.code}</TableCell>
       <TableCell align="center" sx={{ border: '1px solid black' }}>
         <Checkbox defaultChecked={expenseType.allowed} />
       </TableCell>
