@@ -30,7 +30,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </Helmet>
       <NavTopBar />
       <Sidebar />
-      <Box sx={{ mt: '4rem', ml: '85px' }}>
+      <Box sx={{ mt: '4rem', ml: '200px' }}>
         <Container maxWidth={false} sx={{ p: 1 }}>
           {!hidePageTitle && title && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
           {children}

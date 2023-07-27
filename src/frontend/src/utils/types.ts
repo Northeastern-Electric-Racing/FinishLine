@@ -4,7 +4,6 @@
  */
 
 import { AuthenticatedUser } from 'shared';
-import { SvgIcon } from '@mui/material';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -18,7 +17,7 @@ export const themeChoices = ['DARK', 'LIGHT'];
 
 export interface MUILinkItem {
   name: string;
-  icon?: typeof SvgIcon;
+  icon?: JSX.Element;
   route: string;
 }
 
