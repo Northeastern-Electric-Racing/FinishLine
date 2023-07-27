@@ -133,8 +133,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       title: 'Add Sabo #',
       onClick: () => setAddSaboNumberModalShow(true),
-      icon: <ConfirmationNumberIcon />
-      // disabled: !user.isFinance
+      icon: <ConfirmationNumberIcon />,
+      disabled: !user.isFinance
     },
     {
       title: 'Approve',
@@ -176,7 +176,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
           onSubmit={async (data) => {
-            console.log(data);
+            await mutateAsyncSetSaboNumber(data);
+            setAddSaboNumberModalShow(false);
           }}
         />
       )}

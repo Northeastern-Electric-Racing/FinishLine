@@ -2,30 +2,30 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMutation, useQuery } from 'react-query';
-import {
-  createReimbursementRequest,
-  getAllExpenseTypes,
-  getAllVendors,
-  uploadSingleReceipt,
-  getSingleReimbursementRequest,
-  editReimbursementRequest,
-  getAllReimbursements,
-  getCurrentUserReimbursements,
-  getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests,
-  downloadImage,
-  setSaboNumber
-} from '../apis/finance.api';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   ClubAccount,
   ExpenseType,
-  ReimbursementProductCreateArgs,
-  ReimbursementRequest,
-  Vendor,
   Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  ReimbursementRequest,
+  Vendor
 } from 'shared';
+import {
+  createReimbursementRequest,
+  downloadImage,
+  editReimbursementRequest,
+  getAllExpenseTypes,
+  getAllReimbursementRequests,
+  getAllReimbursements,
+  getAllVendors,
+  getCurrentUserReimbursementRequests,
+  getCurrentUserReimbursements,
+  getSingleReimbursementRequest,
+  setSaboNumber,
+  uploadSingleReceipt
+} from '../apis/finance.api';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -191,11 +191,12 @@ export const useDownloadImages = (fileIds: string[]) => {
 };
 
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
-  return useMutation<ReimbursementRequest, Error, { saboNumber: number }>(
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { saboNumber: number }>(
     ['reimbursement-requests', 'edit'],
     async (formData: { saboNumber: number }) => {
-      const { data } = await setSaboNumber(reimbursementRequestId, formData.saboNumber);
-      return data;
+      await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
     }
   );
 };
