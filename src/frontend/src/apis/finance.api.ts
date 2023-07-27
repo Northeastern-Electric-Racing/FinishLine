@@ -117,24 +117,12 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Downloads a given fileId from google drive
+ * Downloads a given fileId from google drive into a blob
  *
- * @param fileId the id of the file to download
- * @returns the downloaded file
+ * @param fileId the google id of the file to download
+ * @returns the downloaded file as a Blob
  */
-export const downloadImage = async (fileId: string): Promise<File> => {
-  const url = `https://drive.google.com/file/d/${fileId}/?alt=media`;
-  const response = await fetch(url, { mode: 'no-cors' });
-  const blob = await response.blob();
-
-  const fileName = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '');
-
-  const mimeType = blob.type;
-  const file = new File([blob], fileName!, { type: mimeType });
-  return file;
-};
-
-export const downloadGoogleImage = async (fileId: string) => {
+export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   const response = await axios.get(apiUrls.financeImageById(fileId), {
     responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
   });
@@ -143,7 +131,13 @@ export const downloadGoogleImage = async (fileId: string) => {
   return imageBlob;
 };
 
-export async function blobsToPdf(blobData: Blob[], filename: string) {
+/**
+ * Download blobs of image data into a pdf
+ *
+ * @param blobData an array of blob image data
+ * @param filename the name of the created pdf
+ */
+export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => {
   const pdfDoc = await PDFDocument.create();
 
   // Embed the image in the PDF document
@@ -177,4 +171,4 @@ export async function blobsToPdf(blobData: Blob[], filename: string) {
 
   // Save the Blob as a file using file-saver
   saveAs(pdfBlob, filename);
-}
+};

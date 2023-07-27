@@ -65,7 +65,7 @@ const FinancePage = () => {
 
   const schema = yup.object().shape({
     startDate: yup.date().required('Start Date is required'),
-    endDate: yup.date().required('End Date is required')
+    endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required')
   });
 
   const {
@@ -80,8 +80,12 @@ const FinancePage = () => {
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
     const filteredRequests = allReimbursementRequests
-      ?.filter((val: ReimbursementRequest) => val.dateCreated >= data.startDate)
-      .filter((val: ReimbursementRequest) => val.dateCreated <= data.endDate)
+      .filter(
+        (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
+      )
+      .filter(
+        (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
+      )
       .filter((val: ReimbursementRequest) => !val.dateDeleted);
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
     try {

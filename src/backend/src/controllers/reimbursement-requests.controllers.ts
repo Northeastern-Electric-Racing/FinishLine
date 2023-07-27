@@ -245,10 +245,11 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async downloadImage(req: Request, res: Response, next: NextFunction) {
+  static async downloadReceiptImage(req: Request, res: Response, next: NextFunction) {
     try {
       const { fileId } = req.params;
-      const imageData = await ReimbursementRequestService.downloadImage(fileId);
+      const user = await getCurrentUser(res);
+      const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, user);
 
       // Set the appropriate headers for the HTTP response
       res.setHeader('content-type', String(imageData.type));

@@ -33,7 +33,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { downloadImage, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
@@ -634,8 +634,18 @@ export default class ReimbursementRequestService {
     return reimbursementStatusTransformer(reimbursementStatus);
   }
 
-  static async downloadImage(fileId: string) {
-    const fileData = await downloadImage(fileId);
+  /**
+   * Downloads the receipt image file with the given google file id
+   *
+   * @param fileId the google file id of the receipt image
+   * @param submitter the user who is downloading the receipt image
+   * @returns a buffer of the image data and the image type
+   */
+  static async downloadReceiptImage(fileId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const fileData = await downloadImageFile(fileId);
+
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;
   }

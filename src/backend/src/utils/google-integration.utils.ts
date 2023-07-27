@@ -112,7 +112,8 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   }
 };
 
-async function readableToBuffer(readable: Readable): Promise<Buffer> {
+//converts a Readable to a Buffer
+const readableToBuffer = async (readable: Readable): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const concatStream = concat((data: Buffer) => {
       resolve(data);
@@ -121,9 +122,10 @@ async function readableToBuffer(readable: Readable): Promise<Buffer> {
     readable.on('error', reject);
     readable.pipe(concatStream);
   });
-}
+};
 
-export const downloadImage = async (fileId: string) => {
+//given the google file id, downloads the image data and return it as a Buffer along with the image type
+export const downloadImageFile = async (fileId: string) => {
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
@@ -139,6 +141,8 @@ export const downloadImage = async (fileId: string) => {
     const bufferData = await readableToBuffer(res.data);
     return { buffer: bufferData, type: res.headers['content-type'] };
   } catch (error: unknown) {
-    console.log(error);
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
+    }
   }
 };
