@@ -38,21 +38,16 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   await sendMessage(LEAD_CHANNEL_SLACK_ID, fullMsg);
 };
 
+/**
+ * Send CR requested review notification to reviewer in Slack
+ * @param slackId the slack id of the reviewer
+ * @param changeRequest the requested change request to be reviewed
+ */
 export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const { requestedReviewers } = changeRequest;
-  const slackIds = requestedReviewers.map(async (reviewer) => await getUserSlackId(reviewer.userId));
+  const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
 
-  Promise.all(slackIds).then(async (slackIds) => {
-    const reviewerStrings = slackIds.map((reviewerSlackId, index) =>
-      buildUserString(requestedReviewers[index], reviewerSlackId)
-    );
-    const reviewersMessage = reviewerStrings.reduce((message, currentUserString) => message + currentUserString + ' ', '');
-
-    const crString = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
-
-    const fullMsg = `${reviewersMessage}${crString}: You are assigned as a reviewer on this change request.`;
-    await sendMessage(slackId, fullMsg);
-  });
+  const fullMsg = `You have been assigned to review CR #${changeRequest.crId}: ${changeRequestLink}.`;
+  await sendMessage(slackId, fullMsg);
 };

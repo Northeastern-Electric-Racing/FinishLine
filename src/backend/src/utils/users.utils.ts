@@ -31,18 +31,18 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
     where: { userId: { in: userIds } }
   });
 
-  areUsersAndIdsMatch(users, userIds);
+  validateFoundUsers(users, userIds);
 
   return users;
 };
 
 /**
  * Gets the users for the given Ids with their user settings
- * @param userIds array of userIds as an array of integers
+ * @param userIds the userIds to get as users
  * @returns the found users with their user settings
  * @throws if any user does not exist
  */
-export const getUsersSettings = async (userIds: number[]): Promise<UserWithSettings> => {
+export const getUserWithSettings = async (userIds: number[]): Promise<UserWithSettings> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } },
     include: {
@@ -50,18 +50,18 @@ export const getUsersSettings = async (userIds: number[]): Promise<UserWithSetti
     }
   });
 
-  areUsersAndIdsMatch(users, userIds);
+  validateFoundUsers(users, userIds);
 
   return users;
 };
 
 /**
- * Throws Http exception if number of users doesn't match to number of userIds
- * @param users array of User
- * @param userIds array of UserIds
+ * Validates that the users found in the database match the given userIds
+ * @param users the users found in the database
+ * @param userIds the requested usersIds to retrieve
  * @returns
  */
-const areUsersAndIdsMatch = (users: User[], userIds: number[]) => {
+const validateFoundUsers = (users: User[], userIds: number[]) => {
   if (users.length !== userIds.length) {
     const prismaUserIds = users.map((user) => user.userId);
     const missingUserIds = userIds.filter((id) => !prismaUserIds.includes(id));
