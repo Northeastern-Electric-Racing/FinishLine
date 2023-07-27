@@ -4,9 +4,9 @@
  */
 
 import { routes } from '../../utils/routes';
-import { MUILinkItem } from '../../utils/types';
+import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, useTheme, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -15,9 +15,15 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import NavPageLink from './NavPageLink';
+import DrawerHeader from '../../components/DrawerHeader';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import NERDrawer from '../../components/NERDrawer';
+import { SideBarProps } from '../LayoutProps';
 
-const Sidebar: React.FC = () => {
-  const linkItems: MUILinkItem[] = [
+const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
+  const theme = useTheme();
+
+  const linkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
@@ -47,22 +53,27 @@ const Sidebar: React.FC = () => {
       name: 'Teams',
       icon: <GroupIcon />,
       route: routes.TEAMS
+    },
+    {
+      name: 'Info',
+      icon: <QuestionMarkIcon />,
+      route: routes.INFO
     }
   ];
 
-  linkItems.push({
-    name: 'Info',
-    icon: <QuestionMarkIcon />,
-    route: routes.INFO
-  });
-
   return (
-    <Box sx={{ position: 'fixed', height: '100%', backgroundColor: '#181818', width: '200px' }}>
-      {linkItems.map((linkItem) => (
-        <NavPageLink {...linkItem} />
-      ))}
-      <Typography className={styles.versionNumber}>3.8.0</Typography>
-    </Box>
+    <NERDrawer open={open} variant="permanent">
+      <DrawerHeader>
+        <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
+      </DrawerHeader>
+      <Divider />
+      <Box overflow={'auto'}>
+        {linkItems.map((linkItem) => (
+          <NavPageLink {...linkItem} open={open} />
+        ))}
+        <Typography className={styles.versionNumber}>3.8.0</Typography>
+      </Box>
+    </NERDrawer>
   );
 };
 

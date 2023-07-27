@@ -15,10 +15,14 @@ export interface Auth {
 
 export const themeChoices = ['DARK', 'LIGHT'];
 
-export interface MUILinkItem {
+export interface LinkItem {
   name: string;
   icon?: JSX.Element;
   route: string;
+}
+
+export interface NavPageLinkItemProps extends LinkItem {
+  open?: boolean;
 }
 
 export interface VersionObject {

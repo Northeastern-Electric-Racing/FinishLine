@@ -1,15 +1,19 @@
-import { Box, Container } from '@mui/material';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { CssBaseline } from '@mui/material';
 import { Helmet } from 'react-helmet';
-import NavTopBar from '../layouts/NavTopBar/NavTopBar';
-import Sidebar from '../layouts/Sidebar/Sidebar';
-import React, { ReactNode, ReactElement, Fragment } from 'react';
+import React, { ReactNode, ReactElement } from 'react';
 import PageTitle from '../layouts/PageTitle/PageTitle';
-import { MUILinkItem } from '../utils/types';
+import { LinkItem } from '../utils/types';
+import { Box } from '@mui/system';
 
 interface PageLayoutProps {
   title?: string;
   hidePageTitle?: boolean;
-  previousPages?: MUILinkItem[];
+  previousPages?: LinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
 }
@@ -23,20 +27,15 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   tabs
 }) => {
   return (
-    <Fragment>
+    <Box>
+      <CssBaseline />
       <Helmet>
         <title>{`FinishLine ${title && `| ${title}`}`}</title>
         <meta name="description" content="FinishLine Project Management Dashboard" />
       </Helmet>
-      <NavTopBar />
-      <Sidebar />
-      <Box sx={{ mt: '4rem', ml: '200px' }}>
-        <Container maxWidth={false} sx={{ p: 1 }}>
-          {!hidePageTitle && title && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
-          {children}
-        </Container>
-      </Box>
-    </Fragment>
+      {!hidePageTitle && title && <PageTitle {...{ title, previousPages, headerRight, tabs }} />}
+      {children}
+    </Box>
   );
 };
 

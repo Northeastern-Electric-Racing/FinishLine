@@ -4,11 +4,11 @@
  */
 
 import { NavLink } from 'react-router-dom';
-import { MUILinkItem } from '../../utils/types';
+import { NavPageLinkItemProps } from '../../utils/types';
 import { routes } from '../../utils/routes';
 import { Typography } from '@mui/material';
 
-const NavPageLink: React.FC<MUILinkItem> = ({ name, route, icon }) => {
+const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }) => {
   return (
     <NavLink
       key={name}
@@ -21,6 +21,7 @@ const NavPageLink: React.FC<MUILinkItem> = ({ name, route, icon }) => {
           backgroundColor: isActive ? 'white' : 'transparent',
           display: 'flex',
           flexDirection: 'row',
+          justifyContent: open ? 'flex-start' : 'center',
           gap: '8px',
           borderRadius: '8px',
           padding: '8px',
@@ -29,7 +30,7 @@ const NavPageLink: React.FC<MUILinkItem> = ({ name, route, icon }) => {
       }}
     >
       {icon}
-      <Typography>{name}</Typography>
+      {open && <Typography>{name}</Typography>}
     </NavLink>
   );
 };

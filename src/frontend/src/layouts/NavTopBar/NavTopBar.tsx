@@ -3,52 +3,67 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import { useAuth } from '../../hooks/auth.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
+import NERAppBar from '../../components/NERAppBar';
+import { NavTopBarProps } from '../LayoutProps';
+import { IconButton } from '@mui/material';
+import { GridMenuIcon } from '@mui/x-data-grid';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 const textColor = 'white';
 const background = '#ef4345';
 
-const NavTopBar: React.FC = () => {
-  const auth = useAuth();
+const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
+  const user = useCurrentUser();
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="fixed">
-        <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
-          <Box sx={{ flexGrow: 1 }}>
-            <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                <Box
-                  component="img"
-                  sx={{ height: 60 }}
-                  alt="Northeastern Electric Racing Logo"
-                  src="/NER-Logo-App-Icon.png"
-                />
-                <Typography
-                  variant="h4"
-                  fontSize={30}
-                  component="div"
-                  sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}
-                >
-                  FinishLine by NER
-                </Typography>
-              </Box>
-            </Link>
-          </Box>
-          <Typography variant="body1" component="div" sx={{ color: textColor }}>
-            {fullNamePipe(auth.user)}
-          </Typography>
-          <NavUserMenu />
-        </Toolbar>
-      </AppBar>
-    </Box>
+    <NERAppBar position="fixed" open={open}>
+      <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          onClick={handleDrawerOpen}
+          sx={{
+            marginRight: 5,
+            ...(open && { display: 'none' })
+          }}
+        >
+          <GridMenuIcon />
+        </IconButton>
+        <Box sx={{ flexGrow: 1 }}>
+          <Link to={routes.HOME} style={{ textDecoration: 'none' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+              <Box
+                component="img"
+                sx={{ height: 60 }}
+                alt="Northeastern Electric Racing Logo"
+                src="/NER-Logo-App-Icon.png"
+              />
+              <Typography variant="h4" fontSize={30} component="div" sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}>
+                FinishLine by NER
+              </Typography>
+            </Box>
+          </Link>
+        </Box>
+        <Typography
+          variant="body1"
+          sx={{
+            color: textColor,
+            '@media (max-width: 600px)': {
+              display: 'none' // Hide the text on screens with width less than 600 pixels
+            }
+          }}
+        >
+          {fullNamePipe(user)}
+        </Typography>
+        <NavUserMenu />
+      </Toolbar>
+    </NERAppBar>
   );
 };
 

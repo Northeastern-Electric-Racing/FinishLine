@@ -21,6 +21,11 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
+import { useState } from 'react';
+import NavTopBar from '../layouts/NavTopBar/NavTopBar';
+import Sidebar from '../layouts/Sidebar/Sidebar';
+import { Box } from '@mui/system';
+import DrawerHeader from '../components/DrawerHeader';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -28,26 +33,42 @@ interface AppAuthenticatedProps {
 
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleDrawerOpen = () => {
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return userSettingsData.slackId ? (
     <AppContextUser>
-      <Switch>
-        <Route path={routes.PROJECTS} component={Projects} />
-        <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
-        <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-        <Route path={routes.GANTT} component={GanttPageWrapper} />
-        <Route path={routes.TEAMS} component={Teams} />
-        <Route path={routes.SETTINGS} component={Settings} />
-        <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
-        <Route path={routes.INFO} component={InfoPage} />
-        <Route path={routes.CREDITS} component={Credits} />
-        <Route path={routes.FINANCE} component={Finance} />
-        <Route exact path={routes.HOME} component={Home} />
-        <Route path="*" component={PageNotFound} />
-      </Switch>
+      <NavTopBar handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
+      <Box display={'flex'}>
+        <Sidebar handleDrawerClose={handleDrawerClose} open={drawerOpen} />
+        <Box ml={2} flexGrow={1}>
+          <DrawerHeader />
+          <Switch>
+            <Route path={routes.PROJECTS} component={Projects} />
+            <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
+            <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
+            <Route path={routes.GANTT} component={GanttPageWrapper} />
+            <Route path={routes.TEAMS} component={Teams} />
+            <Route path={routes.SETTINGS} component={Settings} />
+            <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
+            <Route path={routes.INFO} component={InfoPage} />
+            <Route path={routes.CREDITS} component={Credits} />
+            <Route path={routes.FINANCE} component={Finance} />
+            <Route exact path={routes.HOME} component={Home} />
+            <Route path="*" component={PageNotFound} />
+          </Switch>
+        </Box>
+      </Box>
     </AppContextUser>
   ) : (
     <SetUserPreferences userSettings={userSettingsData} />
