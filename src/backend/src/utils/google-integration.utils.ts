@@ -47,7 +47,7 @@ const createTransporter = async () => {
     return transporter;
   } catch (err) {
     console.log('ERROR: ' + err);
-    return err;
+    if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
   }
 };
 
@@ -65,7 +65,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
     console.log('Error: ' + err);
-    throw new HttpException(500, 'Failed to send Email');
+    if (err instanceof Error) throw new HttpException(500, 'Failed to send Email ' + err.message);
   }
 };
 
@@ -80,7 +80,6 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
 
   try {
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
     const response = await drive.files.create({
       media: {
         mimeType: fileObject.mimetype,
@@ -104,8 +103,10 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
     });
     const { id, name } = response.data;
     return { id, name };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
+    }
     console.log('error' + error);
-    throw new HttpException(500, 'Failed to upload picture');
   }
 };

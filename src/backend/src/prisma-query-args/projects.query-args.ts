@@ -11,7 +11,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
       }
     },
-    team: { include: { members: true, leader: true } },
+    team: { include: { members: true, head: true, leads: true } },
     goals: { where: { dateDeleted: null } },
     features: { where: { dateDeleted: null } },
     otherConstraints: { where: { dateDeleted: null } },

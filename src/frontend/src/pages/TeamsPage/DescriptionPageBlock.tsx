@@ -42,7 +42,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     setIsEditingDescription(false);
     setIsPreview(false);
   };
-  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.leader.userId);
+  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
   const editButtons = (
     <div style={{ display: 'flex' }}>

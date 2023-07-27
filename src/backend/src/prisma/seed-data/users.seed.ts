@@ -17,6 +17,16 @@ const thomasEmrax: Prisma.UserCreateInput = {
       defaultTheme: Theme.DARK,
       slackId: 'emrax'
     }
+  },
+  userSecureSettings: {
+    create: {
+      phoneNumber: '1234567890',
+      nuid: '12345678',
+      city: 'Boston',
+      state: 'MA',
+      street: '1234 Street',
+      zipcode: '12345'
+    }
   }
 };
 

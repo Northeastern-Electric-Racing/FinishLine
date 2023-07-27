@@ -3,28 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedException, HttpException } from './errors.utils';
-import { Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
-
-export interface ReimbursementProductCreateArgs {
-  id?: string;
-  name: string;
-  cost: number;
-  wbsElementId: number;
-}
-
-export interface ReimbursementReceiptCreateArgs {
-  name: string;
-  googleFileId: string;
-}
-
-export interface ReimbursementProductCreateArgs {
-  name: string;
-  cost: number;
-  wbsElementId: number;
-}
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
+import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
+import { isUserOnTeam } from './teams.utils';
 
 /**
  * This function removes any deleted receipts and adds any new receipts
@@ -52,41 +36,58 @@ export const removeDeletedReceiptPictures = async (
 };
 
 /**
- * Adds a reimbursement product to the database
+ * Validates that the wbs elements exist and are not deleted for each reimbursement product
  * @param reimbursementProductCreateArgs the reimbursement products to add to the data base
  * @param reimbursementRequestId the id of the reimbursement request that the products belogn to
+ * @returns the reimbursement products with the wbs element id added
  * @throws if any of the wbs elements are deleted or dont exist
  */
-export const validateReimbursementProducts = async (reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]) => {
+export const validateReimbursementProducts = async (
+  reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]
+): Promise<
+  {
+    name: string;
+    cost: number;
+    wbsElementId: number;
+    wbsNum: WbsNumber;
+  }[]
+> => {
   if (reimbursementProductCreateArgs.length === 0) {
     throw new HttpException(400, 'You must have at least one product to reimburse');
   }
 
-  const wbsElementIds = reimbursementProductCreateArgs.map(
-    (reimbursementProductInfo) => reimbursementProductInfo.wbsElementId
-  );
-  const wbsElements = await prisma.wBS_Element.findMany({
-    where: {
-      wbsElementId: {
-        in: wbsElementIds
+  /**
+   * Aggregate all the wbsNums for all the reimbursement products
+   */
+  const wbsNums = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsNum);
+
+  /**
+   * Goes through each wbsNum and finds the wbs element associated with it
+   * Checks if the wbs element exists and is not deleted
+   */
+  const reimbursementProductsWithWbsElement: Promise<{
+    name: string;
+    cost: number;
+    wbsElementId: number;
+    wbsNum: WbsNumber;
+  }>[] = wbsNums.map(async (wbsNum, index) => {
+    const wbsElement = await prisma.wBS_Element.findFirst({
+      where: {
+        carNumber: wbsNum.carNumber,
+        projectNumber: wbsNum.projectNumber,
+        workPackageNumber: wbsNum.workPackageNumber
       }
-    }
+    });
+    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+
+    return {
+      ...reimbursementProductCreateArgs[index],
+      wbsElementId: wbsElement.wbsElementId
+    };
   });
 
-  const deletedWbsElements = wbsElements.filter((wbsElement) => wbsElement.dateDeleted);
-
-  if (deletedWbsElements.length > 0) {
-    const deletedWbsNumbers = deletedWbsElements.map(wbsPipe).join(', ');
-    throw new HttpException(400, `The following projects or work packages have been deleted: ${deletedWbsNumbers}`);
-  }
-
-  if (wbsElements.length < reimbursementProductCreateArgs.length) {
-    const prismaWbsElementIds = reimbursementProductCreateArgs.map((productInfo) => productInfo.wbsElementId);
-    const missingWbsNumbers = wbsElements
-      .filter((wbsElement) => prismaWbsElementIds.includes(wbsElement.wbsElementId))
-      .map(wbsPipe);
-    throw new HttpException(400, `The following projects or work packages do not exist: ${missingWbsNumbers.join(', ')}`);
-  }
+  return Promise.all(reimbursementProductsWithWbsElement);
 };
 
 /**
@@ -189,9 +190,9 @@ const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
 const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
   //create the new reimbursement products
   if (products.length !== 0) {
-    await validateReimbursementProducts(products);
+    const validatedReimbursementProudcts = await validateReimbursementProducts(products);
     await prisma.reimbursement_Product.createMany({
-      data: products.map((product) => ({
+      data: validatedReimbursementProudcts.map((product) => ({
         name: product.name,
         cost: product.cost,
         wbsElementId: product.wbsElementId,
@@ -201,18 +202,32 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   }
 };
 
-export type UserWithTeam = User & { teams: Team[] };
-
-export const validateUserIsPartOfFinanceTeam = async (user: UserWithTeam) => {
+export const validateUserIsPartOfFinanceTeam = async (user: User) => {
   const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true, members: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!user.teams.some((team) => team.teamId === process.env.FINANCE_TEAM_ID) && !(financeTeam.leaderId === user.userId)) {
+  if (!isUserOnTeam(financeTeam, user)) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
+};
+
+export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  if (!process.env.FINANCE_TEAM_ID) return false;
+  const financeTeamId = process.env.FINANCE_TEAM_ID;
+  const { teamAsHead, teamsAsLead, teamsAsMember } = user;
+  return (
+    teamAsHead?.teamId === financeTeamId ||
+    isTeamIdInList(financeTeamId, teamsAsLead) ||
+    isTeamIdInList(financeTeamId, teamsAsMember)
+  );
+};
+
+const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
+  return teamsList.map((team) => team.teamId).includes(teamId);
 };
 
 export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
@@ -222,7 +237,7 @@ export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  if (!(financeTeam.leaderId === user.userId)) {
+  if (!(financeTeam.headId === user.userId)) {
     throw new AccessDeniedException('You are not the head of the finance team!');
   }
 };
