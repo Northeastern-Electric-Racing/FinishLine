@@ -44,7 +44,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
  * @param changeRequest the requested change request to be reviewed
  */
 export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
-  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
 

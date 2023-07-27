@@ -461,7 +461,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman, wonderwoman]);
 
       await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 3], 1)).rejects.toThrow(
-        new AccessDeniedException('User(s) with the following names are not at least in a leadership: Wonder Woman')
+        new AccessDeniedException('The following user(s) are not leadership: Wonder Woman')
       );
     });
 
