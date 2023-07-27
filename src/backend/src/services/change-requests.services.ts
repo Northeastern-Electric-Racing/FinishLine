@@ -624,8 +624,8 @@ export default class ChangeRequestsService {
   }
 
   /**
-   * set reviewers to the given change request
-   * @param submitter The user who sets a reviewer to the change request
+   * Sets reviewers to the given change request and pings them on slack
+   * @param submitter The user requesting the review
    * @param userIds The requested reviewers on the change request
    * @param crId The change request that will be reviewed
    */
@@ -634,12 +634,11 @@ export default class ChangeRequestsService {
 
     // check if any reviewers' role is below leadership
     const underLeads = reviewers.filter((user) => !isLeadership(user.role));
-    const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
 
-    if (underLeads.length > 0)
-      throw new AccessDeniedException(
-        `User(s) with the following names are not at least in a leadership: ${underLeadsNames.join(', ')}`
-      );
+    if (underLeads.length > 0) {
+      const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
+      throw new AccessDeniedException(`The following user(s) are not leadership: ${underLeadsNames.join(', ')}`);
+    }
 
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
