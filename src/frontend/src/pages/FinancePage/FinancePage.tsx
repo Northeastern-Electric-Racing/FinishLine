@@ -16,7 +16,6 @@ import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
-  useDownloadImages,
   useDownloadPDFOfImages
 } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';

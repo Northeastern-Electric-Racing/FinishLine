@@ -117,7 +117,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const toast = useToast();
   const history = useHistory();
-  const totalCost = reimbursementProducts.reduce((acc, curr) => Number(acc) + Number(curr.cost), 0);
 
   if (allVendorsIsError) return <ErrorPage message={allVendorsError?.message} />;
   if (allExpenseTypesIsError) return <ErrorPage message={allExpenseTypesError?.message} />;
