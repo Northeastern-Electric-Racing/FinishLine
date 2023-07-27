@@ -31,7 +31,7 @@ const AddSABONumber = ({ modalShow, onHide, onSubmit }: AddSABONumberProps) => {
     <NERFormModal
       open={modalShow}
       onHide={onHide}
-      title="Add SABO #"
+      title="Add SABO Number"
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
