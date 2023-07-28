@@ -95,7 +95,7 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
 export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   const { value, teams, assignees, setAssignees } = params;
 
-  if (!teams) return <ErrorPage message="Teams Not Configured Correctly" />;
+  if (!teams || teams.length === 0) return <ErrorPage message="Teams Not Configured Correctly" />;
 
   const teamMembers = getTaskAssigneeOptions(teams);
 
@@ -121,10 +121,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   return (
     <Autocomplete
       fullWidth
-      isOptionEqualToValue={(option, value) => {
-        console.log(value);
-        return option.id === value.id;
-      }}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
       filterSelectedOptions
       multiple
       id="tags-standard"

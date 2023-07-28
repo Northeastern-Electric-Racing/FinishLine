@@ -376,16 +376,14 @@ export default class ChangeRequestsService {
 
     const teams = createdCR.wbsElement.workPackage?.project.teams;
 
-    if (!teams) {
-      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
+          ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
-
-    teams.forEach(async (team) => {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
-        ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
-    });
 
     return createdCR.crId;
   }
@@ -459,16 +457,14 @@ export default class ChangeRequestsService {
     });
 
     const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
-    if (!teams) {
-      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+          ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+      });
     }
-
-    teams.forEach(async (team) => {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-        ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
-    });
 
     return createdChangeRequest.crId;
   }
@@ -544,16 +540,14 @@ export default class ChangeRequestsService {
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
-    if (!teams) {
-      throw new HttpException(400, 'need a team');
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
+          `for the ${project.wbsElement.name} project`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
-
-    teams.forEach(async (team) => {
-      const slackMsg =
-        `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
-        `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
-    });
 
     return createdCR.crId;
   }

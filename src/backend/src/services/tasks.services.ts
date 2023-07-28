@@ -7,7 +7,7 @@ import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
-import { allUsersOnTeam, isUserOnTeam } from '../utils/teams.utils';
+import { areUsersPartOfProjectTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
@@ -45,23 +45,21 @@ export default class TasksService {
     if (!project) throw new HttpException(400, "This task's wbs element is not linked to a project!");
 
     const { teams } = project;
-    if (!teams) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (!teams || teams.length === 0)
+      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (
-      !isLeadership(createdBy.role) &&
-      !isProjectLeadOrManager &&
-      teams.map((team) => !isUserOnTeam(team, createdBy)).includes(true)
-    ) {
+    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !teams.some((team) => isUserOnTeam(team, createdBy))) {
       throw new AccessDeniedException(
-        'Only admins, app-admins, and project leads, project managers, or current team users can create tasks'
+        'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
       );
     }
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
-    if (teams.map((team) => !allUsersOnTeam(team, users)).includes(true))
+
+    if (!areUsersPartOfProjectTeams(teams, users))
       throw new HttpException(400, `All assignees must be part of one of the project's team!`);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
@@ -167,11 +165,12 @@ export default class TasksService {
     const assigneeUsers = await getUsers(assignees);
 
     const teams = originalTask.wbsElement?.project?.teams;
-    if (!teams) throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
+    if (!teams || teams.length === 0)
+      throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     // checks if there is a user that does not belong on any team of the project
-    if (assigneeUsers.map((user) => teams.map((team) => isUserOnTeam(team, user)).includes(true)).includes(false)) {
-      throw new HttpException(400, 'All assignees must be part of one of the projects teams');
+    if (!areUsersPartOfProjectTeams(teams, assigneeUsers)) {
+      throw new HttpException(400, "All assignees must be part of one of the project's teams");
     }
 
     // retrieve userId for every assignee to update task's assignees in the database

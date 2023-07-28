@@ -26,7 +26,6 @@ export interface GanttTask extends Task {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
-  console.log(projects);
   const decodedTeam = decodeURIComponent(ganttFilters.selectedTeam);
   const car0Check = (project: Project) => {
     return project.wbsNum.carNumber !== 0;
@@ -41,7 +40,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return getProjectTeamsName(project) === decodedTeam;
+    return getProjectTeamsName(project).includes(decodedTeam);
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;

@@ -68,7 +68,7 @@ export default class ProjectsService {
    * @param carNumber the car number of the new project
    * @param name the name of the new project
    * @param summary the summary of the new project
-   * @param teamId the teamId of the new project
+   * @param teamIds the ids of the teams that the new project will be assigned to
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -85,10 +85,10 @@ export default class ProjectsService {
     await validateChangeRequestAccepted(crId);
 
     if (teamIds.length > 0) {
-      for (const teamId of teamIds) {
+      teamIds.forEach(async (teamId) => {
         const team = await prisma.team.findUnique({ where: { teamId } });
         if (!team) throw new NotFoundException('Team', teamId);
-      }
+      });
     }
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
@@ -100,7 +100,14 @@ export default class ProjectsService {
         projectNumber: maxProjectNumber + 1,
         workPackageNumber: 0,
         name,
-        project: { create: { summary } },
+        project: {
+          create: {
+            summary,
+            teams: {
+              connect: teamIds.map((teamId) => ({ teamId }))
+            }
+          }
+        },
         changes: {
           create: {
             changeRequestId: crId,
@@ -362,7 +369,8 @@ export default class ProjectsService {
   }
 
   /**
-   * Sets the given project's team to be the given project.
+   * Adds or removes the given team to the projects teams depending if it is already assigned to the project or not.
+   *
    * @param user the user doing the setting
    * @param wbsNumber the wbsNumber of the project
    * @param teamId the teamId to assign the project to
