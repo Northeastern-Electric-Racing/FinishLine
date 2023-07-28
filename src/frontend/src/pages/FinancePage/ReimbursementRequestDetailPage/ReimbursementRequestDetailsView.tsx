@@ -23,6 +23,7 @@ import { isReimbursementRequestApproved } from '../../../utils/reimbursement-req
 import AddSABONumberModal from './AddSABONumberModal';
 import { useState } from 'react';
 import { useSetSaboNumber } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -30,11 +31,23 @@ interface ReimbursementRequestDetailsViewProps {
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
+  const toast = useToast();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
-  const { mutateAsync: mutateAsyncSetSaboNumber } = useSetSaboNumber(reimbursementRequest.reimbursementRequestId);
+  const { mutateAsync: setSaboNumber } = useSetSaboNumber(reimbursementRequest.reimbursementRequestId);
+
+  const onSaboFormSubmit = async (data: { saboNumber: number }) => {
+    try {
+      await setSaboNumber(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+    setAddSaboNumberModalShow(false);
+  };
 
   const BasicInformationView = () => {
     return (
@@ -175,10 +188,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <AddSABONumberModal
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
-          onSubmit={async (data) => {
-            await mutateAsyncSetSaboNumber(data);
-            setAddSaboNumberModalShow(false);
-          }}
+          onSubmit={onSaboFormSubmit}
         />
       )}
     </PageLayout>
