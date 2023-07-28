@@ -33,6 +33,8 @@ vi.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => {
 
 vi.mock('../../../../hooks/users.hooks');
 
+vi.mock('../../../../hooks/toasts.hooks');
+
 const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<UseQueryResult<UserSettings>>;
 
 const mockUserSettingsHook = (isLoading: boolean, isError: boolean, data?: UserSettings, error?: Error) => {
