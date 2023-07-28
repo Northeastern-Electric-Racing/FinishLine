@@ -146,8 +146,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       title: 'Add Sabo #',
       onClick: () => setAddSaboNumberModalShow(true),
-      icon: <ConfirmationNumberIcon />
-      // disabled: !user.isFinance
+      icon: <ConfirmationNumberIcon />,
+      disabled: !user.isFinance
     },
     {
       title: 'Approve',
