@@ -20,7 +20,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
-import AddSABONumberModal from '../AddSABONumberModal';
+import AddSABONumberModal from './AddSABONumberModal';
 import { useState } from 'react';
 import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 

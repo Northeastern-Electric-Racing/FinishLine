@@ -2,8 +2,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import NERFormModal from '../../components/NERFormModal';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 interface AddSABONumberModalProps {
   modalShow: boolean;
@@ -12,7 +12,13 @@ interface AddSABONumberModalProps {
 }
 
 const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalProps) => {
-  const schema = yup.object().shape({ saboNumber: yup.number().required() });
+  const schema = yup.object().shape({
+    saboNumber: yup
+      .number()
+      .typeError('The SABO number should be a valid number')
+      .required()
+      .test('length', 'The SABO number must be exactly 5 digits', (num) => String(num).length === 5)
+  });
 
   const {
     handleSubmit,
