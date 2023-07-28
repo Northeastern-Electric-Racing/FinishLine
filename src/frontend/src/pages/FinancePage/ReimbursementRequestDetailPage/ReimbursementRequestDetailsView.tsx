@@ -36,12 +36,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const history = useHistory();
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showMarkDelivered, setShowMarkDelivered] = useState(false);  
+  const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
   const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
-  
 
   const handleDelete = () => {
     try {
@@ -52,7 +51,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         toast.error(e.message, 3000);
       }
     }
-  };      
+  };
 
   const handleMarkDelivered = () => {
     try {
@@ -79,7 +78,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       </NERModal>
     );
   };
-  
+
   const MarkDeliveredModal = () => (
     <NERModal
       open={showMarkDelivered}
