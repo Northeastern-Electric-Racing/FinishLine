@@ -26,6 +26,7 @@ import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import DrawerHeader from '../components/DrawerHeader';
+import { Container } from '@mui/material';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -51,7 +52,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
       <NavTopBar handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
       <Box display={'flex'}>
         <Sidebar handleDrawerClose={handleDrawerClose} open={drawerOpen} />
-        <Box ml={2} flexGrow={1}>
+        <Container maxWidth={false}>
           <DrawerHeader />
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
@@ -67,7 +68,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
             <Route exact path={routes.HOME} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>
-        </Box>
+        </Container>
       </Box>
     </AppContextUser>
   ) : (
