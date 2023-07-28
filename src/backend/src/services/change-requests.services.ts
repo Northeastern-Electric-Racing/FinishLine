@@ -640,6 +640,16 @@ export default class ChangeRequestsService {
       throw new AccessDeniedException(`The following user(s) are not leadership: ${underLeadsNames.join(', ')}`);
     }
 
+    // check if all reviewers have slackId
+    const missingReviewersSettings = reviewers.filter((reviewer) => reviewer.userSettings == null);
+
+    if (missingReviewersSettings.length > 0) {
+      const missingReviewerSettingsNames = missingReviewersSettings.map(
+        (reviewer) => reviewer.firstName + ' ' + reviewer.lastName
+      );
+      throw new AccessDeniedException(`The following user(s) have no slackId: ${missingReviewerSettingsNames.join(', ')}`);
+    }
+
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
       ...changeRequestQueryArgs

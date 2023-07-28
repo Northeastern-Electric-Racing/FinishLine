@@ -32,6 +32,13 @@ export const superman: PrismaUser = {
   googleAuthId: 's'
 };
 
+export const supermanSettings: User_Settings = {
+  id: 'sm',
+  userId: 2,
+  defaultTheme: Theme.LIGHT,
+  slackId: 'slackSM'
+};
+
 export const wonderwoman: PrismaUser = {
   userId: 3,
   firstName: 'Wonder',
@@ -111,9 +118,16 @@ export const alfred: PrismaUser & { teamsAsMember: Team[]; teamsAsLead: Team[] }
   teamsAsLead: []
 };
 
-export const batmanWithSlackId: PrismaUser & { userSettings: { slackId: String } } = {
+export const batmanWithUserSettings: PrismaUser & { userSettings: User_Settings } = {
   ...batman,
   userSettings: {
-    slackId: 'slack'
+    ...batmanSettings
+  }
+};
+
+export const supermanWithUserSettings: PrismaUser & { userSettings: User_Settings } = {
+  ...superman,
+  userSettings: {
+    ...supermanSettings
   }
 };

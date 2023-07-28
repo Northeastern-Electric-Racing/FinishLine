@@ -2,9 +2,9 @@ import { User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
 
-type UserWithSettings = ({
+type UsersWithSettings = {
   userSettings: User_Settings | null;
-} & User)[];
+} & User;
 
 export const getUserFullName = async (userId: number | null) => {
   if (!userId) return 'no one';
@@ -42,7 +42,7 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
  * @returns the found users with their user settings
  * @throws if any user does not exist
  */
-export const getUserWithSettings = async (userIds: number[]): Promise<UserWithSettings> => {
+export const getUserWithSettings = async (userIds: number[]): Promise<UsersWithSettings[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } },
     include: {
@@ -59,7 +59,6 @@ export const getUserWithSettings = async (userIds: number[]): Promise<UserWithSe
  * Validates that the users found in the database match the given userIds
  * @param users the users found in the database
  * @param userIds the requested usersIds to retrieve
- * @returns
  */
 const validateFoundUsers = (users: User[], userIds: number[]) => {
   if (users.length !== userIds.length) {
