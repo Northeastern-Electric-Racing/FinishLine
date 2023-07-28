@@ -11,13 +11,17 @@ import { routes } from '../../utils/routes';
 import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
 import NERAppBar from '../../components/NERAppBar';
-import { NavTopBarProps } from '../LayoutProps';
+import { LayoutProps } from '../LayoutProps';
 import { IconButton } from '@mui/material';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 const textColor = 'white';
 const background = '#ef4345';
+
+interface NavTopBarProps extends LayoutProps {
+  handleDrawerOpen: () => void;
+}
 
 const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
   const user = useCurrentUser();

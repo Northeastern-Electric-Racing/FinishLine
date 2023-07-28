@@ -4,11 +4,16 @@
  */
 
 import { NavLink } from 'react-router-dom';
-import { NavPageLinkItemProps } from '../../utils/types';
+import { LinkItem } from '../../utils/types';
 import { routes } from '../../utils/routes';
-import { Typography } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
+
+export interface NavPageLinkItemProps extends LinkItem {
+  open?: boolean;
+}
 
 const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }) => {
+  const theme = useTheme();
   return (
     <NavLink
       key={name}
@@ -17,7 +22,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }
       style={(isActive) => {
         return {
           textDecoration: 'none',
-          color: isActive ? '#ef4345' : 'white',
+          color: isActive ? '#ef4345' : theme.palette.text.primary,
           backgroundColor: isActive ? 'white' : 'transparent',
           display: 'flex',
           flexDirection: 'row',

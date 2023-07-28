@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CssBaseline } from '@mui/material';
 import { Helmet } from 'react-helmet';
 import React, { ReactNode, ReactElement } from 'react';
 import PageTitle from '../layouts/PageTitle/PageTitle';
@@ -28,7 +27,6 @@ const PageLayout: React.FC<PageLayoutProps> = ({
 }) => {
   return (
     <Box>
-      <CssBaseline />
       <Helmet>
         <title>{`FinishLine ${title && `| ${title}`}`}</title>
         <meta name="description" content="FinishLine Project Management Dashboard" />

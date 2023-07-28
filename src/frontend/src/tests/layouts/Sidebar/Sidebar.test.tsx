@@ -15,7 +15,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <Sidebar />
+      <Sidebar open={true} handleDrawerClose={() => {}} />
     </RouterWrapper>
   );
 };

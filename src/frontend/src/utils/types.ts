@@ -21,10 +21,6 @@ export interface LinkItem {
   route: string;
 }
 
-export interface NavPageLinkItemProps extends LinkItem {
-  open?: boolean;
-}
-
 export interface VersionObject {
   tag_name: string;
 }

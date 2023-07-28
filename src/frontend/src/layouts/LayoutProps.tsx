@@ -6,11 +6,3 @@
 export interface LayoutProps {
   open?: boolean;
 }
-
-export interface NavTopBarProps extends LayoutProps {
-  handleDrawerOpen: () => void;
-}
-
-export interface SideBarProps extends LayoutProps {
-  handleDrawerClose: () => void;
-}

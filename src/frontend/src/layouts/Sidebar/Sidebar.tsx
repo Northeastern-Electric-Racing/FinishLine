@@ -18,7 +18,11 @@ import NavPageLink from './NavPageLink';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
-import { SideBarProps } from '../LayoutProps';
+import { LayoutProps } from '../LayoutProps';
+
+export interface SideBarProps extends LayoutProps {
+  handleDrawerClose: () => void;
+}
 
 const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
   const theme = useTheme();
