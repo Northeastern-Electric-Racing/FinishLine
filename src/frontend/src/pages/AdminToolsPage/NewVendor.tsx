@@ -1,4 +1,3 @@
-import { Vendor } from 'shared';
 import NewVendorView from './NewVendorView';
 
 interface NewVendorProps {

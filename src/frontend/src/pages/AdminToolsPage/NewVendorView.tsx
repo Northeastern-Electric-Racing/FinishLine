@@ -1,6 +1,4 @@
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import schema from 'yup/lib/schema';
 import NERFormModal from '../../components/NERFormModal';
 import { FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';

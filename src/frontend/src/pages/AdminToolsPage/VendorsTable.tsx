@@ -5,7 +5,6 @@ import { datePipe } from '../../utils/pipes';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
-import NewVendorView from './NewVendorView';
 import NewVendor from './NewVendor';
 
 const VendorsTable = () => {

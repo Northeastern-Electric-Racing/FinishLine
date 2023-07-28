@@ -15,7 +15,6 @@ import { useGetAllExpenseTypes } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
-import NewAccountCodeView from './NewAccountCodeView';
 import NewAccountCode from './NewAccountCode';
 
 const AccountCodesTable = () => {
