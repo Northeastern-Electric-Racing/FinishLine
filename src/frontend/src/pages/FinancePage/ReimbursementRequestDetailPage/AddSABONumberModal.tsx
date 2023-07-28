@@ -17,7 +17,7 @@ const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalP
       .number()
       .typeError('The SABO number should be a valid number')
       .required()
-      .test('length', 'The SABO number must be exactly 5 digits', (num) => String(num).length === 5)
+      .test('length', 'The SABO number must be at least 5 digits', (num) => String(num).length >= 5)
   });
 
   const {
