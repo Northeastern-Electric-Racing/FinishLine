@@ -9,8 +9,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
 import { FormInput } from './UserSettings';
 import { themeChoices } from '../../../utils/types';
-import { Grid, Select, MenuItem, TextField, Typography } from '@mui/material';
+import { Grid, Select, MenuItem, TextField, FormControl, FormLabel } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
+import { Box } from '@mui/system';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 interface UserSettingsEditProps {
   currentSettings: {
@@ -36,159 +38,125 @@ const schema = yup.object().shape({
   city: yup.string().required('City is required'),
   state: yup.string().required('State is required'),
   zipcode: yup.string().required('Zipcode is required'),
-  phone: yup.string().required('Phone number is required'),
+  phoneNumber: yup.string().required('Phone number is required'),
   nuid: yup.string().required('NUID is required')
 });
 const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
-  const { handleSubmit, control } = useForm<FormInput>({
+  const {
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<FormInput>({
     defaultValues: currentSettings,
     resolver: yupResolver(schema)
   });
 
   return (
-    <form id={'update-user-settings'} onSubmit={handleSubmit(async (data: FormInput) => await onSubmit(data))}>
-      <Grid item sx={{ mb: 1 }}>
-        <Controller
-          name="defaultTheme"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.defaultTheme}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <Typography>Default Theme</Typography>
-              <Select onChange={(event) => onChange(event.target.value as ThemeName)} value={value}>
-                {themeChoices.map((t) => (
-                  <MenuItem key={t} value={t}>
-                    {t}
-                  </MenuItem>
-                ))}
-              </Select>
-            </>
-          )}
-        />
-      </Grid>
+    <form id={'update-user-settings'} onSubmit={handleSubmit(onSubmit)}>
+      <Grid container spacing={2}>
+        <Grid item sx={{ mb: 1 }} xs={12} sm={6}>
+          <FormControl fullWidth>
+            <Controller
+              name="defaultTheme"
+              control={control}
+              rules={{ required: true }}
+              defaultValue={currentSettings.defaultTheme}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <FormLabel>Default Theme</FormLabel>
+                  <Select
+                    onChange={(event) => onChange(event.target.value as ThemeName)}
+                    value={value}
+                    error={!!errors.defaultTheme}
+                  >
+                    {themeChoices.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </>
+              )}
+            />
+          </FormControl>
+        </Grid>
 
-      <Grid item>
-        <Controller
-          name="slackId"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.slackId}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>Slack ID</Typography>
-                <ExternalLink
-                  link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
-                  description="(How to find your Slack ID)"
-                />
-              </div>
-              <TextField required id="slackid-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <Controller
+              name="slackId"
+              control={control}
+              rules={{ required: true }}
+              defaultValue={currentSettings.slackId}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Box style={{ display: 'flex' }}>
+                    <FormLabel>Slack ID</FormLabel>
+                    <ExternalLink
+                      link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
+                      description="(Find your Slack ID)"
+                      sx={{ whiteSpace: 'nowrap' }}
+                    />
+                  </Box>
+                  <TextField
+                    required
+                    id="slackid-input"
+                    autoComplete="off"
+                    onChange={onChange}
+                    value={value}
+                    error={!!errors.slackId}
+                    helperText={errors.slackId?.message}
+                  />
+                </>
+              )}
+            />
+          </FormControl>
+        </Grid>
 
-      <Grid item>
-        <Controller
-          name="street"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.street}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>Street</Typography>
-              </div>
-              <TextField required id="street-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
+        <Grid item xs={12} md={8}>
+          <FormControl fullWidth>
+            <FormLabel>Address</FormLabel>
+            <ReactHookTextField name="street" control={control} rules={{ required: true }} errorMessage={errors.street} />
+          </FormControl>
+        </Grid>
 
-      <Grid item>
-        <Controller
-          name="city"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.city}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>City</Typography>
-              </div>
-              <TextField required id="city-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth>
+            <FormLabel>City</FormLabel>
+            <ReactHookTextField name="city" control={control} rules={{ required: true }} errorMessage={errors.city} />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <FormLabel>State</FormLabel>
+            <ReactHookTextField name="state" control={control} rules={{ required: true }} errorMessage={errors.state} />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <FormLabel>Zipcode</FormLabel>
+            <ReactHookTextField name="zipcode" control={control} rules={{ required: true }} errorMessage={errors.zipcode} />
+          </FormControl>
+        </Grid>
 
-      <Grid item>
-        <Controller
-          name="state"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.state}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>State</Typography>
-              </div>
-              <TextField required id="state-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <FormLabel>Phone Number</FormLabel>
+            <ReactHookTextField
+              name="phoneNumber"
+              control={control}
+              rules={{ required: true }}
+              errorMessage={errors.phoneNumber}
+            />
+          </FormControl>
+        </Grid>
 
-      <Grid item>
-        <Controller
-          name="zipcode"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.zipcode}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>Zipcode</Typography>
-              </div>
-              <TextField required id="zipcode-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
-
-      <Grid item>
-        <Controller
-          name="phoneNumber"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.phoneNumber}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>Phone #</Typography>
-              </div>
-              <TextField required id="phoneNumber-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
-      </Grid>
-
-      <Grid item>
-        <Controller
-          name="nuid"
-          control={control}
-          rules={{ required: true }}
-          defaultValue={currentSettings.nuid}
-          render={({ field: { onChange, value } }) => (
-            <>
-              <div style={{ display: 'flex' }}>
-                <Typography>NUID</Typography>
-              </div>
-              <TextField required id="nuid-input" autoComplete="off" onChange={onChange} value={value} />
-            </>
-          )}
-        />
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <FormLabel>NUID</FormLabel>
+            <ReactHookTextField name="nuid" control={control} rules={{ required: true }} errorMessage={errors.nuid} />
+          </FormControl>
+        </Grid>
       </Grid>
     </form>
   );

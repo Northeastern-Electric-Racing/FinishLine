@@ -53,11 +53,22 @@ export default class UsersService {
       create: { userId }
     });
 
-    const secureSettings = await prisma.user_Secure_Settings.upsert({
-      where: { userId },
-      update: {},
-      create: { userId, nuid: `${userId}`, street: '', city: '', state: '', zipcode: '', phoneNumber: `${userId}` }
+    let secureSettings = await prisma.user_Secure_Settings.findUnique({
+      where: { userId }
     });
+
+    if (!secureSettings) {
+      secureSettings = {
+        userSecureSettingsId: '',
+        userId,
+        nuid: '',
+        street: '',
+        city: '',
+        phoneNumber: '',
+        state: '',
+        zipcode: ''
+      };
+    }
 
     if (!settings) throw new NotFoundException('User Settings', userId);
 

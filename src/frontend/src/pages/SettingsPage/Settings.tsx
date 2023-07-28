@@ -103,7 +103,7 @@ const Settings: React.FC = () => {
         </Grid>
       </PageBlock>
       <PageBlock title="User Details">
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item md={4} lg={2}>
             <DetailDisplay label="First Name" content={auth.user?.firstName} />
           </Grid>

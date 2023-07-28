@@ -76,10 +76,7 @@ export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: 1,
   defaultTheme: Theme.DARK,
-  slackId: 'slack',
-  address: '123 Gotham St.',
-  phone: '1234567890',
-  nuid: '001234567'
+  slackId: 'slack'
 };
 
 export const sharedBatman: SharedUser = {
@@ -111,4 +108,9 @@ export const alfred: PrismaUser & { teams: Team[] } = {
   role: PrismaRole.APP_ADMIN,
   googleAuthId: 'u',
   teams: [prismaTeam1]
+};
+
+export const batmanTotalSettings: User_Secure_Settings & User_Settings = {
+  ...batmanSecureSettings,
+  ...batmanSettings
 };

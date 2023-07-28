@@ -86,8 +86,8 @@ export const updateUserSettings = (id: number, settings: UserSettings) => {
 /**
  * Update the given user's secure settings by UserId
  */
-export const updateUserSecureSettings = (id: number, settings: UserSettings) => {
-  return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
+export const updateUserSecureSettings = (settings: UserSettings) => {
+  return axios.post<{ message: string }>(apiUrls.userSecureSettings(), settings);
 };
 
 export const updateUserRole = (id: number, role: string) => {

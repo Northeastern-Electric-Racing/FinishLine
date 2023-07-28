@@ -6,7 +6,8 @@ import {
   superman,
   batmanSecureSettings,
   sharedBatman,
-  theVisitor
+  theVisitor,
+  batmanTotalSettings
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
@@ -87,11 +88,13 @@ describe('Users', () => {
     test('getUserSettings runs', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
       vi.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
+      vi.spyOn(prisma.user_Secure_Settings, 'findUnique').mockResolvedValue(batmanSecureSettings);
+
       const res = await UsersService.getUserSettings(1);
 
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.upsert).toHaveBeenCalledTimes(1);
-      expect(res).toStrictEqual(batmanSettings);
+      expect(res).toEqual({ ...batmanTotalSettings, userId: undefined });
     });
   });
 

@@ -15,6 +15,7 @@ import UserSettingsView from './UserSettingsView';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { Grid, IconButton } from '@mui/material';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface UserSettingsProps {
   userId: number;
@@ -34,26 +35,38 @@ export interface FormInput {
 const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
   const [edit, setEdit] = useState(false);
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
-  const update = useUpdateUserSettings();
+  const {
+    mutateAsync: updateUserSettings,
+    isLoading: updateUserSettingsIsLoading,
+    isError: updateUserSettingsIsError,
+    error: updateUserSettingsError
+  } = useUpdateUserSettings();
+  const toast = useToast();
 
-  if (isLoading || !userSettingsData || update.isLoading) return <LoadingIndicator />;
+  if (isLoading || !userSettingsData || updateUserSettingsIsLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
-  if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
+  if (updateUserSettingsIsError) return <ErrorPage error={updateUserSettingsError!} />;
 
   const handleConfirm = async ({ defaultTheme, slackId, street, city, state, zipcode, phoneNumber, nuid }: FormInput) => {
     setEdit(false);
-    await update.mutateAsync({
-      id: userSettingsData.id!,
-      defaultTheme,
-      slackId,
-      city,
-      street,
-      state,
-      zipcode,
-      phoneNumber,
-      nuid,
-      userSecureSettingsId: userSettingsData.userSecureSettingsId!
-    });
+    try {
+      await updateUserSettings({
+        id: userSettingsData.id!,
+        defaultTheme,
+        slackId,
+        city,
+        street,
+        state,
+        zipcode,
+        phoneNumber,
+        nuid,
+        userSecureSettingsId: userSettingsData.userSecureSettingsId!
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   return (

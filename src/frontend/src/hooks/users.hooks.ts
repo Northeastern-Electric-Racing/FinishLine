@@ -111,19 +111,18 @@ export const useUsersFavoriteProjects = (id: number) => {
  * Custom React Hook to update a user's settings.
  */
 export const useUpdateUserSettings = () => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, UserSettings>(
-    ['users', auth.user?.userId!, 'settings', 'update'],
+    ['users', user.userId, 'settings', 'update'],
     async (settings: UserSettings) => {
-      if (!auth.user) throw new Error('Update settings not allowed when not logged in');
-      const { data: userSettingsData } = await updateUserSettings(auth.user.userId, settings);
-      const { data: userSecureSettings } = await updateUserSecureSettings(auth.user.userId, settings);
+      const { data: userSettingsData } = await updateUserSettings(user.userId, settings);
+      const { data: userSecureSettings } = await updateUserSecureSettings(settings);
       return { message: userSettingsData.message + userSecureSettings.message };
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['users', auth.user?.userId, 'settings']);
+        queryClient.invalidateQueries(['users', user.userId, 'settings']);
       }
     }
   );
