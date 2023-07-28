@@ -20,6 +20,10 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import { useState } from 'react';
+import NERModal from '../../../components/NERModal';
+import { useDeleteReimbursementRequest } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -30,6 +34,22 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
+  const toast = useToast();
+  const [showDelete, setShowDelete] = useState(false);
+  const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
+    reimbursementRequest.reimbursementRequestId
+  );
+
+  const handleDelete = () => {
+    try {
+      deleteReimbursementRequest();
+      history.push(routes.FINANCE);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
 
   const BasicInformationView = () => {
     return (
@@ -115,7 +135,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Delete',
-      onClick: () => {},
+      onClick: () => setShowDelete(true),
       icon: <DeleteIcon />,
       disabled: !allowEdit
     },
@@ -150,6 +170,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       ]}
       headerRight={<ActionsMenu buttons={buttons} />}
     >
+      <NERModal
+        open={showDelete}
+        onHide={() => setShowDelete(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDelete}
+      >
+        <Typography>Are you sure you want to delete this reimbursement request?</Typography>
+      </NERModal>
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
