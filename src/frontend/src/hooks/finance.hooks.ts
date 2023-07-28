@@ -15,7 +15,8 @@ import {
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
   downloadImage,
-  deleteReimbursementRequest
+  deleteReimbursementRequest,
+  markReimbursementRequestAsDelivered
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -161,6 +162,28 @@ export const useAllReimbursements = () => {
     const { data } = await getAllReimbursements();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to mark a reimbursement request as delivered
+ *
+ * @param id of the reimbursement request
+ * @returns the updated reimbursement request
+ */
+export const useMarkReimbursementRequestAsDelivered = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
 };
 
 /**
