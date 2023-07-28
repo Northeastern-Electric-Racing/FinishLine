@@ -35,6 +35,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
 };
 
 /**
+ * Mark a Reimbursement Request as Delivered
+ *
+ * @param id id of the reimbursement request being marked as delivered
+ * @returns the updated reimbursement request
+ */
+export const markReimbursementRequestAsDelivered = (id: string) => {
+  return axios.post(apiUrls.financeMarkAsDelivered(id));
+};
+
+/**
  * Edits a reimbursment request
  *
  * @param id the id of the reimbursement request to edit
@@ -43,6 +53,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  */
 export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
   return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
+};
+
+/**
+ * Deletes a reimbursement request
+ *
+ * @param id the id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const deleteReimbursementRequest = (id: string) => {
+  return axios.delete(apiUrls.financeDeleteReimbursement(id));
 };
 
 /**

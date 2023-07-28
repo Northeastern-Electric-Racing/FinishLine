@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   createReimbursementRequest,
   getAllExpenseTypes,
@@ -15,7 +15,9 @@ import {
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
   downloadGoogleImage,
-  downloadBlobsToPdf
+  downloadBlobsToPdf,
+  deleteReimbursementRequest,
+  markReimbursementRequestAsDelivered
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -164,6 +166,28 @@ export const useAllReimbursements = () => {
 };
 
 /**
+ * Custom React Hook to mark a reimbursement request as delivered
+ *
+ * @param id of the reimbursement request
+ * @returns the updated reimbursement request
+ */
+export const useMarkReimbursementRequestAsDelivered = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to get a single reimbursement request
  *
  * @param id Id of the reimbursement request to get
@@ -174,6 +198,28 @@ export const useSingleReimbursementRequest = (id: string) => {
     const { data } = await getSingleReimbursementRequest(id);
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a single reimbursement request
+ *
+ * @param id id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const useDeleteReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'delete'],
+    async () => {
+      const { data } = await deleteReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
 };
 
 /**
