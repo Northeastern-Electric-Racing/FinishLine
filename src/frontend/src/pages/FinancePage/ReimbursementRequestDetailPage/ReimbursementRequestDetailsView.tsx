@@ -35,7 +35,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const user = useCurrentUser();
   const history = useHistory();
   const toast = useToast();
-  const [showDelete, setShowDelete] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -49,6 +49,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         toast.error(e.message, 3000);
       }
     }
+  };
+
+  const DeleteModal = () => {
+    return (
+      <NERModal
+        open={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDelete}
+      >
+        <Typography>Are you sure you want to delete this reimbursement request?</Typography>
+      </NERModal>
+    );
   };
 
   const BasicInformationView = () => {
@@ -135,7 +150,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Delete',
-      onClick: () => setShowDelete(true),
+      onClick: () => setShowDeleteModal(true),
       icon: <DeleteIcon />,
       disabled: !allowEdit
     },
@@ -170,16 +185,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       ]}
       headerRight={<ActionsMenu buttons={buttons} />}
     >
-      <NERModal
-        open={showDelete}
-        onHide={() => setShowDelete(false)}
-        title="Warning!"
-        cancelText="No"
-        submitText="Yes"
-        onSubmit={handleDelete}
-      >
-        <Typography>Are you sure you want to delete this reimbursement request?</Typography>
-      </NERModal>
+      <DeleteModal />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
