@@ -83,6 +83,7 @@ const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
+const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 
 /**************** Other Endpoints ****************/
@@ -148,6 +149,7 @@ export const apiUrls = {
   financeGetUserReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
+  financeDeleteReimbursement,
   financeMarkAsDelivered,
 
   version

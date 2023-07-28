@@ -15,6 +15,7 @@ import {
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
   downloadImage,
+  deleteReimbursementRequest,
   markReimbursementRequestAsDelivered
 } from '../apis/finance.api';
 import {
@@ -196,6 +197,28 @@ export const useSingleReimbursementRequest = (id: string) => {
     const { data } = await getSingleReimbursementRequest(id);
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a single reimbursement request
+ *
+ * @param id id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const useDeleteReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'delete'],
+    async () => {
+      const { data } = await deleteReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
 };
 
 /**

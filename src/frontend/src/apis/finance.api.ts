@@ -54,6 +54,16 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
 };
 
 /**
+ * Deletes a reimbursement request
+ *
+ * @param id the id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const deleteReimbursementRequest = (id: string) => {
+  return axios.delete(apiUrls.financeDeleteReimbursement(id));
+};
+
+/**
  * Gets all the expense types
  *
  * @returns all the expense types
