@@ -190,6 +190,11 @@ export const useDownloadImages = (fileIds: string[]) => {
   });
 };
 
+/**
+ * Custom react hook to update a reimbursement request's SABO number
+ *
+ * @param reimbursementRequestId the request ID
+ */
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, { saboNumber: number }>(

@@ -38,11 +38,7 @@ const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalP
       disabled={!isValid}
       formId="add-sabo-number"
     >
-      {/* <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography> */}
       <FormControl>
-        {/* <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          To confirm deletion, please type in the ID number of this Change Request.
-        </FormLabel> */}
         <ReactHookTextField
           control={control}
           name="saboNumber"

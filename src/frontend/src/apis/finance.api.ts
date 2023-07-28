@@ -132,8 +132,14 @@ export const downloadImage = async (fileId: string): Promise<File> => {
   return file;
 };
 
+/**
+ * Set a reimbursement request's SABO number
+ *
+ * @param requestId the request ID
+ * @param saboNumber the SABO number to set
+ */
 export const setSaboNumber = async (requestId: string, saboNumber: number) => {
-  return axios.post(apiUrls.financeSetSaboNumber(requestId), {
+  axios.post(apiUrls.financeSetSaboNumber(requestId), {
     saboNumber
   });
 };
