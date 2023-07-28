@@ -1,36 +1,26 @@
-import { FormControl, FormLabel } from '@mui/material';
+import { Box, FormControl, InputAdornment } from '@mui/material';
 import NERFormModal from '../../components/NERFormModal';
 import ReactHookTextField from '../../components/ReactHookTextField';
+import { useForm } from 'react-hook-form';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
 
 interface ReportRefundViewProps {
   modalShow: boolean;
   onHide: () => void;
-  onSubmit: (data: ReportRefundInputs) => Promise<void>;
+  onSubmit: (data: number) => Promise<void>;
 }
 
 const ReportRefundView: React.FC<ReportRefundViewProps> = ({ modalShow, onHide, onSubmit }) => {
-  //const projectWbsNumTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(project);
-
-  /*const schema = yup.object().shape({
-    wbsNum: yup.string().required().test('project-wbs-test', 'Project WBS does not match', projectWbsNumTester)
-  });*/
-
   const {
     handleSubmit,
     control,
     formState: { errors, isValid },
     reset
   } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      wbsNum: ''
-    },
     mode: 'onChange'
   });
-
-  const onSubmitWrapper = async (data: ReportRefundInputs) => {
-    await onSubmit(data);
-  };
 
   return (
     <NERFormModal
@@ -40,16 +30,34 @@ const ReportRefundView: React.FC<ReportRefundViewProps> = ({ modalShow, onHide, 
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId=""
+      formId="reimbursement-form"
       disabled={!isValid}
-      showCloseButton
     >
       <FormControl>
-        <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          To confirm deletion, please type in the ID number of this Change Request.
-        </FormLabel>
-        <ReactHookTextField control={control} errorMessage={errors.crId} sx={{ width: 1 }} type="number" name={''} />
+        <ReactHookTextField
+          control={control}
+          errorMessage={errors}
+          sx={{ width: 1 }}
+          type="number"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <AttachMoneyIcon />
+              </InputAdornment>
+            )
+          }}
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
+          <NERSuccessButton sx={{ mx: 1 }} type="submit" form="reimbursement-form" onClick={onSubmit}>
+            Submit
+          </NERSuccessButton>
+          <NERFailButton sx={{ mx: 1 }} form="reimbursement-form" onClick={onHide} disabled={!isValid}>
+            Cancel
+          </NERFailButton>
+        </Box>
       </FormControl>
     </NERFormModal>
   );
 };
+
+export default ReportRefundView;
