@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { FormControl, FormLabel, Typography } from '@mui/material';
+import { FormControl } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import NERFormModal from '../../components/NERFormModal';
