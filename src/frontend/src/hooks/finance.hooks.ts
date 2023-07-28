@@ -14,7 +14,8 @@ import {
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
-  downloadImage,
+  downloadGoogleImage,
+  downloadBlobsToPdf,
   deleteReimbursementRequest,
   markReimbursementRequestAsDelivered
 } from '../apis/finance.api';
@@ -222,15 +223,16 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to download images from google drive
+ * Custom react hook to download images from google drive into a pdf
  *
  * @param fileIds The google file ids to fetch the images for
- * @returns the downloaded images
  */
-export const useDownloadImages = (fileIds: string[]) => {
-  return useQuery<File[], Error>(['reimbursement-requests', 'edit', fileIds], async () => {
-    const promises = fileIds.map((fileId) => downloadImage(fileId));
-    const files = await Promise.all(promises);
-    return files;
+export const useDownloadPDFOfImages = () => {
+  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
+    const promises = formData.fileIds.map((fileId) => {
+      return downloadGoogleImage(fileId);
+    });
+    const blobs = await Promise.all(promises);
+    await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
 };
