@@ -20,7 +20,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
-import AddSABONumber from '../AddSABONumber';
+import AddSABONumberModal from '../AddSABONumberModal';
 import { useState } from 'react';
 import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 
@@ -172,7 +172,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         </Grid>
       </Grid>
       {addSaboNumberModalShow && (
-        <AddSABONumber
+        <AddSABONumberModal
           modalShow={addSaboNumberModalShow}
           onHide={() => setAddSaboNumberModalShow(false)}
           onSubmit={async (data) => {

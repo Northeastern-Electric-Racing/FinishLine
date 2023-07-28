@@ -5,13 +5,13 @@ import * as yup from 'yup';
 import NERFormModal from '../../components/NERFormModal';
 import ReactHookTextField from '../../components/ReactHookTextField';
 
-interface AddSABONumberProps {
+interface AddSABONumberModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: any) => Promise<void>;
 }
 
-const AddSABONumber = ({ modalShow, onHide, onSubmit }: AddSABONumberProps) => {
+const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalProps) => {
   const schema = yup.object().shape({ saboNumber: yup.number().required() });
 
   const {
@@ -56,4 +56,4 @@ const AddSABONumber = ({ modalShow, onHide, onSubmit }: AddSABONumberProps) => {
   );
 };
 
-export default AddSABONumber;
+export default AddSABONumberModal;
