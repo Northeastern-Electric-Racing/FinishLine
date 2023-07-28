@@ -33,6 +33,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
 };
 
 /**
+ * Mark a Reimbursement Request as Delivered
+ *
+ * @param id id of the reimbursement request being marked as delivered
+ * @returns the updated reimbursement request
+ */
+export const markReimbursementRequestAsDelivered = (id: string) => {
+  return axios.post(apiUrls.financeMarkAsDelivered(id));
+};
+
+/**
  * Edits a reimbursment request
  *
  * @param id the id of the reimbursement request to edit

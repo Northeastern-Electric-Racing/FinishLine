@@ -20,6 +20,10 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import { useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import NERModal from '../../../components/NERModal';
+import { useState } from 'react';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -30,6 +34,33 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
+  const toast = useToast();
+  const [showMarkDelivered, setShowMarkDelivered] = useState(false);
+  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
+
+  const handleMarkDelivered = () => {
+    try {
+      markDelivered();
+      setShowMarkDelivered(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const MarkDeliveredModal = () => (
+    <NERModal
+      open={showMarkDelivered}
+      onHide={() => setShowMarkDelivered(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkDelivered}
+    >
+      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+    </NERModal>
+  );
 
   const BasicInformationView = () => {
     return (
@@ -121,7 +152,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Mark Delivered',
-      onClick: () => {},
+      onClick: () => setShowMarkDelivered(true),
       icon: <LocalShippingIcon />,
       disabled: !!reimbursementRequest.dateDelivered
     },
@@ -150,6 +181,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       ]}
       headerRight={<ActionsMenu buttons={buttons} />}
     >
+      <MarkDeliveredModal />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
