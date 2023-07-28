@@ -11,6 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { DeleteChangeRequestInputs } from './DeleteChangeRequest';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERFormModal from '../../components/NERFormModal';
+import NERModal from '../../components/NERModal';
 
 interface DeleteChangeRequestViewProps {
   changeRequest: ChangeRequest;
@@ -40,13 +41,11 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
   });
 
   return (
-    <NERFormModal
+    <NERModal
       open={modalShow}
       onHide={onHide}
       title={`Delete Change Request #${changeRequest.crId}`}
-      reset={reset}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
+      onSubmit={() => onSubmit}
       formId="delete-cr-form"
       disabled={!isValid}
       showCloseButton
@@ -68,7 +67,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
           type="number"
         />
       </FormControl>
-    </NERFormModal>
+    </NERModal>
   );
 };
 
