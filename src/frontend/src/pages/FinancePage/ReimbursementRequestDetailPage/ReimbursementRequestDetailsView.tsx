@@ -49,6 +49,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
+  const MarkDeliveredModal = () => (
+    <NERModal
+      open={showMarkDelivered}
+      onHide={() => setShowMarkDelivered(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkDelivered}
+    >
+      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+    </NERModal>
+  );
+
   const BasicInformationView = () => {
     return (
       <>
@@ -168,16 +181,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       ]}
       headerRight={<ActionsMenu buttons={buttons} />}
     >
-      <NERModal
-        open={showMarkDelivered}
-        onHide={() => setShowMarkDelivered(false)}
-        title="Warning!"
-        cancelText="No"
-        submitText="Yes"
-        onSubmit={handleMarkDelivered}
-      >
-        <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
-      </NERModal>
+      <MarkDeliveredModal />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
