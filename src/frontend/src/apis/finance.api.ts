@@ -50,7 +50,6 @@ export const editReimbursementRequest = (id: string, formData: EditReimbursement
  * @returns the deleted reimbursement request
  */
 export const deleteReimbursementRequest = (id: string) => {
-  console.log(id);
   return axios.delete(apiUrls.financeDeleteReimbursement(id));
 };
 
