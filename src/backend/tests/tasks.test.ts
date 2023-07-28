@@ -19,7 +19,7 @@ import {
 import { aquaman, batman, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
-import { prismaTeam1 } from './test-data/teams.test-data';
+import { justiceLeague, prismaTeam1 } from './test-data/teams.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
@@ -54,7 +54,7 @@ describe('Tasks', () => {
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app-admins, and project leads, project managers, or current team users can create tasks'
+          'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
         )
       );
 
@@ -112,7 +112,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when assignees are not on the project team', async () => {
-      vi.spyOn(teamUtils, 'allUsersOnTeam').mockReturnValue(false);
+      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(false);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([]);
 
       await expect(() =>
@@ -126,6 +126,7 @@ describe('Tasks', () => {
     });
 
     test('create task succeeds', async () => {
+      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(true);
       vi.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
@@ -235,12 +236,13 @@ describe('Tasks', () => {
     test('edit task assignee succeeds', async () => {
       vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({
         ...taskSaveTheDayPrisma,
-        wbsElement: { project: { teams: [{}] } }
+        wbsElement: { project: { teams: [justiceLeague] } }
       } as any);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
+      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(true);
 
       const taskId = '1';
       const userIds = [

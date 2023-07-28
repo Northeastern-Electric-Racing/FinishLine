@@ -85,10 +85,10 @@ export default class ProjectsService {
     await validateChangeRequestAccepted(crId);
 
     if (teamIds.length > 0) {
-      teamIds.forEach(async (teamId) => {
+      for (const teamId of teamIds) {
         const team = await prisma.team.findUnique({ where: { teamId } });
         if (!team) throw new NotFoundException('Team', teamId);
-      });
+      }
     }
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
