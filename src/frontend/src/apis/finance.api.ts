@@ -131,3 +131,12 @@ export const downloadImage = async (fileId: string): Promise<File> => {
   const file = new File([blob], fileName!, { type: mimeType });
   return file;
 };
+
+/**
+ * Edits the reimbursement expense type's account code
+ * @param id the id of reimbursement to be edited
+ * @param accountCodeData the new accoutn code to be updated
+ */
+export const editAccountCode = async (id: string, accountCodeData: { code: number }) => {
+  return axios.post(apiUrls.financeEditExpenseTypeCode(id), accountCodeData);
+};

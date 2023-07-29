@@ -14,7 +14,8 @@ import {
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
-  downloadImage
+  downloadImage,
+  editAccountCode
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -187,4 +188,19 @@ export const useDownloadImages = (fileIds: string[]) => {
     const files = await Promise.all(promises);
     return files;
   });
+};
+
+/**
+ * Custom React Hook to edit a reimbursement request expense type code.
+ *
+ * @param reimbursementRequestId The id of the reimbursement request being edited
+ */
+export const useEditAccountCode = (reimbursementRequestId: string) => {
+  return useMutation<{ message: string }, Error, any>(
+    ['reimbursement-requests', 'edit'],
+    async (accountCodeData: { code: number }) => {
+      const { data } = await editAccountCode(reimbursementRequestId, accountCodeData);
+      return data;
+    }
+  );
 };
