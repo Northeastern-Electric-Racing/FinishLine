@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User } from 'shared';
+import { Project, TotalUserSettings, User, UserSecureSettings } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -62,7 +62,7 @@ export const logUserInDev = (userId: number) => {
  * @param id User ID of the requested user's settings.
  */
 export const getSingleUserSettings = (id: number) => {
-  return axios.get<UserSettings>(apiUrls.userSettingsByUserId(`${id}`));
+  return axios.get<TotalUserSettings>(apiUrls.userSettingsByUserId(`${id}`));
 };
 
 /**
@@ -86,7 +86,7 @@ export const updateUserSettings = (id: number, settings: UserSettings) => {
 /**
  * Update the given user's secure settings by UserId
  */
-export const updateUserSecureSettings = (settings: UserSettings) => {
+export const updateUserSecureSettings = (settings: UserSecureSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSecureSettings(), settings);
 };
 

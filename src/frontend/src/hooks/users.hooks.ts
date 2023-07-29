@@ -15,7 +15,15 @@ import {
   getUsersFavoriteProjects,
   updateUserSecureSettings
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project } from 'shared';
+import {
+  User,
+  AuthenticatedUser,
+  UserSettings,
+  UpdateUserRolePayload,
+  Project,
+  UserSecureSettings,
+  TotalUserSettings
+} from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -77,7 +85,7 @@ export const useLogUserInDev = () => {
  * @param id User ID of the requested user's settings.
  */
 export const useSingleUserSettings = (id: number) => {
-  return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
+  return useQuery<TotalUserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
     return data;
   });
@@ -116,9 +124,8 @@ export const useUpdateUserSettings = () => {
   return useMutation<{ message: string }, Error, UserSettings>(
     ['users', user.userId, 'settings', 'update'],
     async (settings: UserSettings) => {
-      const { data: userSettingsData } = await updateUserSettings(user.userId, settings);
-      const { data: userSecureSettings } = await updateUserSecureSettings(settings);
-      return { message: userSettingsData.message + userSecureSettings.message };
+      const { data } = await updateUserSettings(user.userId, settings);
+      return data;
     },
     {
       onSuccess: () => {
@@ -128,6 +135,31 @@ export const useUpdateUserSettings = () => {
   );
 };
 
+/**
+ * Custom Hook to update a user's secure settings
+ *
+ * @returns The mutation to update a user's secure settings
+ */
+export const useUpdateUserSecureSettings = () => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, UserSecureSettings>(
+    ['users', user.userId, 'secure settings', 'update'],
+    async (settings: UserSecureSettings) => {
+      const { data } = await updateUserSecureSettings(settings);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', user.userId, 'settings']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to update a user's role.
+ */
 export const useUpdateUserRole = () => {
   const auth = useAuth();
   const queryClient = useQueryClient();

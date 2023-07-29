@@ -61,7 +61,15 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = () => {
   mockUseLogUserInHook(false, false);
   mockUseUpdateUserSettingsHook(false, false);
-  return render(<UserSettingsComponent userId={1} />);
+  return render(
+    <UserSettingsComponent
+      currentSettings={{
+        id: '1',
+        defaultTheme: 'LIGHT',
+        slackId: '1234'
+      }}
+    />
+  );
 };
 
 describe('user settings component', () => {

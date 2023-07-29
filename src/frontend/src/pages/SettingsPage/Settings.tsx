@@ -12,6 +12,9 @@ import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { GoogleLogout } from 'react-google-login';
 import PageLayout from '../../components/PageLayout';
+import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
+import ErrorPage from '../ErrorPage';
+import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -63,9 +66,12 @@ const NERSwitch = styled((props: SwitchProps) => (
 
 const Settings: React.FC = () => {
   const auth = useAuth();
+  const user = useCurrentUser();
   const [showAlert, setShowAlert] = useState(false);
+  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
-  if (auth.isLoading || !auth.user) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (auth.isLoading || !auth.user || isLoading || !userSettingsData) return <LoadingIndicator />;
 
   const logout = () => {
     setShowAlert(true);
@@ -121,7 +127,8 @@ const Settings: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-      <UserSettings userId={auth.user.userId} />
+      <UserSettings currentSettings={userSettingsData} />
+      <UserSecureSettings currentSettings={userSettingsData} />
     </PageLayout>
   );
 };

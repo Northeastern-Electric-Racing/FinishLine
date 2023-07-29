@@ -7,25 +7,15 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { ThemeName } from 'shared';
-import { FormInput } from './UserSettings';
 import { themeChoices } from '../../../utils/types';
 import { Grid, Select, MenuItem, TextField, FormControl, FormLabel } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
 import { Box } from '@mui/system';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import { SettingsFormInput } from './UserSettings';
 
 interface UserSettingsEditProps {
-  currentSettings: {
-    slackId: string;
-    defaultTheme: ThemeName;
-    city: string;
-    street: string;
-    state: string;
-    zipcode: string;
-    phoneNumber: string;
-    nuid: string;
-  };
-  onSubmit: (data: FormInput) => Promise<void>;
+  currentSettings: SettingsFormInput;
+  onSubmit: (data: SettingsFormInput) => Promise<void>;
 }
 
 const schema = yup.object().shape({
@@ -33,20 +23,14 @@ const schema = yup.object().shape({
     .mixed<ThemeName>()
     .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
     .required('Default theme is required'),
-  slackId: yup.string().required('Slack ID is required'),
-  street: yup.string().required('Street is required'),
-  city: yup.string().required('City is required'),
-  state: yup.string().required('State is required'),
-  zipcode: yup.string().required('Zipcode is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-  nuid: yup.string().required('NUID is required')
+  slackId: yup.string().required('Slack ID is required')
 });
 const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, onSubmit }) => {
   const {
     handleSubmit,
     control,
     formState: { errors }
-  } = useForm<FormInput>({
+  } = useForm<SettingsFormInput>({
     defaultValues: currentSettings,
     resolver: yupResolver(schema)
   });
@@ -80,7 +64,6 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
             />
           </FormControl>
         </Grid>
-
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <Controller
@@ -91,7 +74,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
               render={({ field: { onChange, value } }) => (
                 <>
                   <Box style={{ display: 'flex' }}>
-                    <FormLabel>Slack ID</FormLabel>
+                    <FormLabel sx={{ whiteSpace: 'nowrap' }}>Slack ID</FormLabel>
                     <ExternalLink
                       link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
                       description="(Find your Slack ID)"
@@ -110,51 +93,6 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
                 </>
               )}
             />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <FormControl fullWidth>
-            <FormLabel>Address</FormLabel>
-            <ReactHookTextField name="street" control={control} rules={{ required: true }} errorMessage={errors.street} />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth>
-            <FormLabel>City</FormLabel>
-            <ReactHookTextField name="city" control={control} rules={{ required: true }} errorMessage={errors.city} />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <FormLabel>State</FormLabel>
-            <ReactHookTextField name="state" control={control} rules={{ required: true }} errorMessage={errors.state} />
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <FormLabel>Zipcode</FormLabel>
-            <ReactHookTextField name="zipcode" control={control} rules={{ required: true }} errorMessage={errors.zipcode} />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <FormLabel>Phone Number</FormLabel>
-            <ReactHookTextField
-              name="phoneNumber"
-              control={control}
-              rules={{ required: true }}
-              errorMessage={errors.phoneNumber}
-            />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <FormLabel>NUID</FormLabel>
-            <ReactHookTextField name="nuid" control={control} rules={{ required: true }} errorMessage={errors.nuid} />
           </FormControl>
         </Grid>
       </Grid>

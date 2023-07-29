@@ -42,7 +42,7 @@ export interface AuthenticatedUser {
   changeRequestsToReviewId: number[];
 }
 
-export interface UserSettings extends UserSecureSettings {
+export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;
   slackId: string;
@@ -62,3 +62,5 @@ export interface UpdateUserRolePayload {
   userId: number;
   role: string;
 }
+
+export interface TotalUserSettings extends UserSettings, UserSecureSettings {}

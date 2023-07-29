@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
-import { UserSettings } from 'shared';
+import { TotalUserSettings } from 'shared';
 
 const userSettingsTransformer = (
   UserSettings: Prisma.User_SettingsGetPayload<null>,
   userSecureSettings: Prisma.User_Secure_SettingsGetPayload<null>
-): UserSettings => {
+): TotalUserSettings => {
   return {
     id: UserSettings.id,
     userSecureSettingsId: userSecureSettings.userSecureSettingsId,
