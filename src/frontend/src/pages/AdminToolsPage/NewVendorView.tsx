@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../components/NERFormModal';
-import { FormControl, FormLabel } from '@mui/material';
+import { FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 
 interface NewVendorViewProps {
