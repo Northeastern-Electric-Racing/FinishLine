@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User } from 'shared';
+import { Project, User, userSecureSettings } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -74,6 +74,16 @@ export const getUsersFavoriteProjects = (id: number) => {
   return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`), {
     transformResponse: (data) => JSON.parse(data).map(projectTransformer)
   });
+};
+
+/**
+ * Fetch a user's secure settings
+ *
+ * @param id User ID of the requested user's secure settings
+ * @returns the secure settings
+ */
+export const getUserSecureSettings = (id: number) => {
+  return axios.get<userSecureSettings>(apiUrls.userSecureSettings(`${id}`));
 };
 
 /**

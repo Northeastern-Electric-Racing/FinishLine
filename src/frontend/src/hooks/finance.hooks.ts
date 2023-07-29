@@ -17,7 +17,8 @@ import {
   downloadGoogleImage,
   downloadBlobsToPdf,
   deleteReimbursementRequest,
-  markReimbursementRequestAsDelivered
+  markReimbursementRequestAsDelivered,
+  approveReimbursementRequest
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -26,7 +27,8 @@ import {
   ReimbursementRequest,
   Vendor,
   Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementReceiptCreateArgs,
+  ReimbursementStatus
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
@@ -217,6 +219,28 @@ export const useDeleteReimbursementRequest = (id: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to approve a reimbursement request for the finance team
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useApproveReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await approveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
       }
     }
   );

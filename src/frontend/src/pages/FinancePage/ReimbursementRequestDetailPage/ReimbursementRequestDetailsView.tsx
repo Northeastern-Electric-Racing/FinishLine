@@ -19,11 +19,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
-import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import {
+  isReimbursementRequestAdvisorApproved,
+  isReimbursementRequestSaboSubmitted
+} from '../../../utils/reimbursement-request.utils';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
 import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import SubmitToSaboModal from './SubmitToSaboModal';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -37,6 +41,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
+  const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -165,7 +170,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   const allowEdit =
-    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestApproved(reimbursementRequest);
+    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestAdvisorApproved(reimbursementRequest);
 
   const buttons: ButtonInfo[] = [
     {
@@ -194,9 +199,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Approve',
-      onClick: () => {},
+      onClick: () => setShowSubmitToSaboModal(true),
       icon: <CheckIcon />,
-      disabled: !user.isFinance
+      disabled: !user.isFinance || isReimbursementRequestSaboSubmitted(reimbursementRequest)
     }
   ];
 
@@ -213,6 +218,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     >
       <DeleteModal />
       <MarkDeliveredModal />
+      <SubmitToSaboModal
+        open={showSubmitToSaboModal}
+        setOpen={setShowSubmitToSaboModal}
+        reimbursementRequest={reimbursementRequest}
+      />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />

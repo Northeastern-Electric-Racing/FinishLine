@@ -17,6 +17,7 @@ const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
+const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -86,6 +87,7 @@ const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -98,6 +100,7 @@ export const apiUrls = {
   userSettingsByUserId,
   userRoleByUserId,
   userFavoriteProjects,
+  userSecureSettings,
 
   projects,
   projectsByWbsNum,
@@ -153,6 +156,7 @@ export const apiUrls = {
   financeImageById,
   financeDeleteReimbursement,
   financeMarkAsDelivered,
+  financeApproveReimbursementRequest,
 
   version
 };

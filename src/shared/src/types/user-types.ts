@@ -49,6 +49,17 @@ export interface UserSettings {
   slackId: string;
 }
 
+export interface userSecureSettings {
+  userSecureSettingsId: string;
+  nuid: string;
+  userId: number;
+  street: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  phoneNumber: string;
+}
+
 export interface UpdateUserRolePayload {
   userId: number;
   role: string;

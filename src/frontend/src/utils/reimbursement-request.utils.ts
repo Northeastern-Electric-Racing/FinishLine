@@ -66,9 +66,15 @@ export const getCurrentReimbursementStatus = (statuses: ReimbursementStatus[]) =
   return statuses.sort((a: ReimbursementStatus, b: ReimbursementStatus) => (a.dateCreated > b.dateCreated ? -1 : 1))[0];
 };
 
-export const isReimbursementRequestApproved = (reimbursementRequest: ReimbursementRequest) => {
+export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: ReimbursementRequest) => {
   return reimbursementRequest.reimbursementStatuses.some(
     (status: ReimbursementStatus) => status.type === ReimbursementStatusType.ADVISOR_APPROVED
+  );
+};
+
+export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: ReimbursementRequest) => {
+  return reimbursementRequest.reimbursementStatuses.some(
+    (status: ReimbursementStatus) => status.type === ReimbursementStatusType.SABO_SUBMITTED
   );
 };
 
