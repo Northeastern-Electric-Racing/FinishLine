@@ -90,7 +90,7 @@ export const useSingleUserSettings = (id: number) => {
  * @returns the user's secure settings
  */
 export const useUserSecureSettings = (id: number) => {
-  return useQuery<userSecureSettings, Error>(['users', id, 'settings'], async () => {
+  return useQuery<userSecureSettings, Error>(['users', id, 'secure-settings'], async () => {
     const { data } = await getUserSecureSettings(id);
     return data;
   });

@@ -1,10 +1,12 @@
 import NERModal from '../../../components/NERModal';
-import { Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, wbsPipe } from 'shared';
 import { useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { datePipe } from '../../../utils/pipes';
+import DetailDisplay from '../../../components/DetailDisplay';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -14,11 +16,18 @@ interface SubmitToSaboModalProps {
 
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
   const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { recipient } = reimbursementRequest;
+  const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
+    reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
 
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  const productsNames = reimbursementProducts
+    .filter((product) => !product.dateDeleted)
+    .map((product) => wbsPipe(product.wbsNum) + ' - ' + product.wbsName);
+
+  const businessPurpose = productsNames.reduce((acc, currVal) => acc + ' ' + currVal, '');
 
   const handleSubmitToSabo = () => {
     submitToSabo();
@@ -34,54 +43,71 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       submitText="Submit to Sabo"
       onSubmit={() => handleSubmitToSabo()}
     >
-      <Grid container>
-        <Grid item xs={3}>
-          <Typography>First Name</Typography>
+      <Grid container spacing={1}>
+        <Grid item xs={4}>
+          <DetailDisplay label="First Name" content={recipient.firstName}></DetailDisplay>
         </Grid>
-        <Grid item xs={3}>
-          Last Name
+        <Grid item xs={4}>
+          <DetailDisplay label="Phone #" content={userInfo.nuid} />
         </Grid>
-        <Grid item xs={3}>
-          NUID
+        <Grid item xs={4}>
+          <DetailDisplay label="NUID" content={userInfo.nuid} />
         </Grid>
-        <Grid item xs={3}>
-          Email
+        <Grid item xs={4}>
+          <DetailDisplay label="Last Name" content={recipient.lastName} />
         </Grid>
-        <Grid item xs={3}>
-          Phone #
-        </Grid>
-        <Grid item xs={3}>
-          Street Address
-        </Grid>
-        <Grid item xs={3}>
-          City
-        </Grid>
-        <Grid item xs={3}>
-          State
-        </Grid>
-        <Grid item xs={3}>
-          Zip Code
-        </Grid>
-        <Grid item xs={3}>
-          Date of Expense
-        </Grid>
-        <Grid item xs={3}>
-          Total Expenses
-        </Grid>
-        <Grid item xs={3}>
-          Expense Description: Purchased From[Total Cost]
-        </Grid>
-        <Grid item xs={3}>
-          Business Purpose: the list of WBS#s provided in the Products table
-        </Grid>
-        <Grid item xs={3}>
-          SABO Form Index: 800462
-        </Grid>
-        <Grid item xs={3}>
-          Expense Type: Account Code, Title
+        <Grid item xs={8}>
+          <DetailDisplay label="Email" content={recipient.email} />
         </Grid>
       </Grid>
-      Receipts
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={6}>
+          <DetailDisplay label="Street Address" content={userInfo.street} />
+        </Grid>
+        <Grid item xs={3}>
+          <DetailDisplay label="City" content={userInfo.city} />
+        </Grid>
+        <Grid item xs={3}>
+          <DetailDisplay label="State" content={userInfo.state} />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplay label="Zip Code" content={userInfo.zipcode} />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={5}>
+          <DetailDisplay label="Date Of Expense" content={datePipe(dateOfExpense)} />
+        </Grid>
+        <Grid item xs={7}>
+          <DetailDisplay label="Total Expense" content={`$${totalCost}`} />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplay label="Expense Description" content={`${vendor.name}[${totalCost}]`} />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={12}>
+          <DetailDisplay label="Business Purpose" content={businessPurpose} />
+        </Grid>
+        <Grid item xs={6}>
+          <DetailDisplay label="SABO Form Index" content="800462" />
+        </Grid>
+        <Grid item xs={6}>
+          <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
+        </Grid>
+      </Grid>
+      <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
+        <Typography variant="h5">Receipts</Typography>
+        {receiptPictures.map((receipt) => {
+          return (
+            <iframe
+              style={{ height: `200px`, width: '50%' }}
+              src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
+              title={receipt.name}
+            />
+          );
+        })}
+      </Box>
     </NERModal>
   );
 };
