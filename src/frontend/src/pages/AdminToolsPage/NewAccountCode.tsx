@@ -5,9 +5,11 @@ interface NewAccountCodeProps {
   handleClose: () => void;
 }
 
-const handleSubmit = async () => {};
-
 const NewAccountCode: React.FC<NewAccountCodeProps> = ({ showModal, handleClose }: NewAccountCodeProps) => {
+  const handleSubmit = async () => {
+    handleClose();
+  };
+
   return <NewAccountCodeView showModal onHide={handleClose} onSubmit={handleSubmit} />;
 };
 

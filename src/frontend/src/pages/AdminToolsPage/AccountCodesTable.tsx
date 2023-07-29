@@ -16,6 +16,8 @@ import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import NewAccountCode from './NewAccountCode';
+import { ExpenseType } from 'shared';
+import EditAccountCode from './EditAccountCode';
 
 const AccountCodesTable = () => {
   const {
@@ -25,7 +27,10 @@ const AccountCodesTable = () => {
     error: expenseTypesError
   } = useGetAllExpenseTypes();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const handleModalClose = () => setShowCreateModal(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [clickedAccountCode, setClickedAccountCode] = useState<ExpenseType>();
+  const handleCreateModalClose = () => setShowCreateModal(false);
+  const handleEditModalClose = () => setShowEditModal(false);
 
   if (!expenseTypes || expenseTypesIsLoading) {
     return <LoadingIndicator />;
@@ -37,9 +42,32 @@ const AccountCodesTable = () => {
 
   const accountCodesTableRows = expenseTypes.map((expenseType) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedAccountCode(expenseType);
+          setShowEditModal(true);
+        }}
+      >
+        {expenseType.name}
+      </TableCell>
+      <TableCell
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedAccountCode(expenseType);
+          setShowEditModal(true);
+        }}
+      >
+        {expenseType.code}
+      </TableCell>
+      <TableCell
+        align="center"
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedAccountCode(expenseType);
+          setShowEditModal(true);
+        }}
+      >
         <Checkbox defaultChecked={expenseType.allowed} disabled />
       </TableCell>
     </TableRow>
@@ -91,7 +119,10 @@ const AccountCodesTable = () => {
           New Account Code
         </NERButton>
       </Grid>
-      {showCreateModal && <NewAccountCode showModal={showCreateModal} handleClose={handleModalClose} />}
+      {showCreateModal && <NewAccountCode showModal={showCreateModal} handleClose={handleCreateModalClose} />}
+      {showEditModal && clickedAccountCode && (
+        <EditAccountCode showModal={showEditModal} handleClose={handleEditModalClose} accountCode={clickedAccountCode} />
+      )}
     </>
   );
 };

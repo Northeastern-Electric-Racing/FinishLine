@@ -1,15 +1,17 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../components/NERFormModal';
-import { FormControl, FormLabel } from '@mui/material';
+import { Vendor } from 'shared';
+import { FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 
-interface NewVendorViewProps {
+interface EditVendorViewProps {
   showModal: boolean;
   onHide: () => void;
   onSubmit: () => Promise<void>;
+  vendor: Vendor;
 }
 
-const NewVendorView: React.FC<NewVendorViewProps> = ({ showModal, onHide, onSubmit }: NewVendorViewProps) => {
+const EditVendorView: React.FC<EditVendorViewProps> = ({ showModal, onHide, onSubmit, vendor }: EditVendorViewProps) => {
   const {
     handleSubmit,
     control,
@@ -18,7 +20,7 @@ const NewVendorView: React.FC<NewVendorViewProps> = ({ showModal, onHide, onSubm
   } = useForm({
     mode: 'onChange',
     defaultValues: {
-      vendorName: ''
+      name: vendor.name
     }
   });
 
@@ -26,18 +28,18 @@ const NewVendorView: React.FC<NewVendorViewProps> = ({ showModal, onHide, onSubm
     <NERFormModal
       open={showModal}
       onHide={onHide}
-      title="New Vendor"
+      title={`Edit Vendor`}
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId="new-vendor-form"
+      formId="edit-vendor-form"
       disabled={!isValid}
       showCloseButton
     >
-      <FormLabel>Vendor Name</FormLabel>
-      <ReactHookTextField name="vendorName" control={control} sx={{ width: 1 }}></ReactHookTextField>
+      <FormLabel>New Name</FormLabel>
+      <ReactHookTextField name="name" control={control} fullWidth></ReactHookTextField>
     </NERFormModal>
   );
 };
 
-export default NewVendorView;
+export default EditVendorView;

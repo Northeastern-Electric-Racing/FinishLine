@@ -6,11 +6,16 @@ import ErrorPage from '../ErrorPage';
 import { NERButton } from '../../components/NERButton';
 import { useState } from 'react';
 import NewVendor from './NewVendor';
+import EditVendor from './EditVendor';
+import { Vendor } from 'shared';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const handleModalClose = () => setCreateModalShow(false);
+  const handleCreateModalClose = () => setCreateModalShow(false);
+  const [editModalShow, setEditModalShow] = useState<boolean>(false);
+  const handleEditModalClose = () => setEditModalShow(false);
+  const [clickedVendor, setClickedVendor] = useState<Vendor>();
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -21,10 +26,25 @@ const VendorsTable = () => {
 
   const vendorTableRows = vendors.map((vendor) => (
     <TableRow>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell
+        align="center"
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedVendor(vendor);
+          setEditModalShow(true);
+        }}
+      >
         {datePipe(vendor.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{vendor.name}</TableCell>
+      <TableCell
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedVendor(vendor);
+          setEditModalShow(true);
+        }}
+      >
+        {vendor.name}
+      </TableCell>
     </TableRow>
   ));
 
@@ -66,7 +86,10 @@ const VendorsTable = () => {
         </NERButton>
       </Grid>
 
-      {createModalShow && <NewVendor showModal={createModalShow} handleClose={handleModalClose} />}
+      {createModalShow && <NewVendor showModal={createModalShow} handleClose={handleCreateModalClose} />}
+      {editModalShow && clickedVendor && (
+        <EditVendor showModal={editModalShow} handleClose={handleEditModalClose} vendor={clickedVendor} />
+      )}
     </>
   );
 };

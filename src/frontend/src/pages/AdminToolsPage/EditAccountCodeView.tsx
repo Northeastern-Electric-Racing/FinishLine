@@ -1,15 +1,22 @@
-import { Controller, useForm } from 'react-hook-form';
+import { ExpenseType } from 'shared';
 import NERFormModal from '../../components/NERFormModal';
-import { Checkbox, FormLabel } from '@mui/material';
+import { Controller, useForm } from 'react-hook-form';
 import ReactHookTextField from '../../components/ReactHookTextField';
+import { Checkbox, FormLabel } from '@mui/material';
 
-interface NewAccountCodeViewProps {
+interface EditAccountCodeViewProps {
   showModal: boolean;
   onHide: () => void;
   onSubmit: () => Promise<void>;
+  accountCode: ExpenseType;
 }
 
-const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHide, onSubmit }: NewAccountCodeViewProps) => {
+const EditAccountCodeView: React.FC<EditAccountCodeViewProps> = ({
+  showModal,
+  onHide,
+  onSubmit,
+  accountCode
+}: EditAccountCodeViewProps) => {
   const {
     handleSubmit,
     control,
@@ -18,9 +25,9 @@ const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHi
   } = useForm({
     mode: 'onChange',
     defaultValues: {
-      accountName: '',
-      accountCode: null,
-      allowed: true
+      name: accountCode.name,
+      code: accountCode.code,
+      allowed: accountCode.allowed
     }
   });
 
@@ -28,18 +35,18 @@ const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHi
     <NERFormModal
       open={showModal}
       onHide={onHide}
-      title="New Account Code"
+      title={'Edit Account Code'}
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId="new-account-code-form"
+      formId="edit-vendor-form"
       disabled={!isValid}
       showCloseButton
     >
       <FormLabel>Account Name</FormLabel>
-      <ReactHookTextField name="accountName" control={control} fullWidth />
+      <ReactHookTextField name="name" control={control} fullWidth></ReactHookTextField>
       <FormLabel>Account Code</FormLabel>
-      <ReactHookTextField name="accountCode" control={control} fullWidth type="number" />
+      <ReactHookTextField name="code" control={control} fullWidth></ReactHookTextField>
       <FormLabel>Allowed?</FormLabel>
       <Controller
         name="allowed"
@@ -53,4 +60,4 @@ const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHi
   );
 };
 
-export default NewAccountCodeView;
+export default EditAccountCodeView;
