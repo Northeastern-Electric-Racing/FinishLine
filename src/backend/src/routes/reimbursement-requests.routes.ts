@@ -120,4 +120,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
+reimbursementRequestsRouter.post(
+  '/:requestId/expense-types/edit-code',
+  intMinZero(body('code')),
+  validateInputs,
+  ReimbursementRequestController.editExpenseTypeCode
+);
+
 export default reimbursementRequestsRouter;

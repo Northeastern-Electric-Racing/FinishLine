@@ -633,4 +633,38 @@ export default class ReimbursementRequestService {
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
+
+  /**
+   * Sets the given reimbursement request's expense type with expense type code number
+   * @param reimbursementRequestId the requested reimbursement request to be edited
+   * @param requestIdnewCode the expense type code number to be replaced
+   * @param submitter the person editing expense type code number
+   * @returns the updated expense type code number
+   */
+  static async setExpenseTypeCode(reimbursementRequestId: string, requestIdNewCode: number, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    const reimbursementRequestWithExpenseTypeCode = await prisma.reimbursement_Request.update({
+      where: { reimbursementRequestId },
+      data: {
+        expenseType: {
+          update: {
+            code: requestIdNewCode
+          }
+        }
+      }
+    });
+
+    return reimbursementRequestWithExpenseTypeCode;
+  }
 }

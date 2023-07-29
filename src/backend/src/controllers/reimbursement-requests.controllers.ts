@@ -244,4 +244,16 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const { code } = req.body;
+      const submitter = await getCurrentUser(res);
+      await ReimbursementRequestService.setExpenseTypeCode(requestId, code, submitter);
+      res.status(200).json({ message: 'Successfully set expense type code' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
