@@ -184,13 +184,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
-      {addSaboNumberModalShow && (
-        <AddSABONumberModal
-          modalShow={addSaboNumberModalShow}
-          onHide={() => setAddSaboNumberModalShow(false)}
-          onSubmit={onSaboFormSubmit}
-        />
-      )}
+      <AddSABONumberModal
+        modalShow={addSaboNumberModalShow}
+        onHide={() => setAddSaboNumberModalShow(false)}
+        onSubmit={onSaboFormSubmit}
+      />
     </PageLayout>
   );
 };
