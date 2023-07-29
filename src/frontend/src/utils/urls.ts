@@ -76,6 +76,7 @@ const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
 const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
+const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
 const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
@@ -84,6 +85,8 @@ const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
+const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
+const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -149,6 +152,9 @@ export const apiUrls = {
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeSetSaboNumber,
+  financeImageById,
+  financeDeleteReimbursement,
+  financeMarkAsDelivered,
 
   version
 };

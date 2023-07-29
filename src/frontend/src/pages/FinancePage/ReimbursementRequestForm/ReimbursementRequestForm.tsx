@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber } from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -22,7 +22,7 @@ export interface ReimbursementRequestFormInput {
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptFiles: ReimbursementReceiptUploadArgs[];
+  receiptFiles: ReimbursementReceiptCreateArgs[];
 }
 
 export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
@@ -74,7 +74,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
-      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
+      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptCreateArgs[])
     }
   });
 
@@ -117,7 +117,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const toast = useToast();
   const history = useHistory();
-  const totalCost = reimbursementProducts.reduce((acc, curr) => Number(acc) + Number(curr.cost), 0);
 
   if (allVendorsIsError) return <ErrorPage message={allVendorsError?.message} />;
   if (allExpenseTypesIsError) return <ErrorPage message={allExpenseTypesError?.message} />;
@@ -169,7 +168,6 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
       allWbsElements={allWbsElements}
-      totalCost={totalCost}
       submitText={submitText}
       previousPage={previousPage}
     />

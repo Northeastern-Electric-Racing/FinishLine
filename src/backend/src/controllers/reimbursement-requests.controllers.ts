@@ -244,4 +244,21 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async downloadReceiptImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId } = req.params;
+      const user = await getCurrentUser(res);
+      const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, user);
+
+      // Set the appropriate headers for the HTTP response
+      res.setHeader('content-type', String(imageData.type));
+      res.setHeader('content-length', imageData.buffer.length);
+
+      // Send the Buffer as the response body
+      res.send(imageData.buffer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

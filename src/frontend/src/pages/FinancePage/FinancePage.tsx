@@ -19,10 +19,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
+  const [showGenerateReceipts, setShowGenerateReceipts] = useState(false);
 
   const {
     data: userReimbursementRequests,
@@ -87,7 +89,7 @@ const FinancePage = () => {
           </ListItemIcon>
           Pending Advisor List
         </MenuItem>
-        <MenuItem onClick={() => {}} disabled={!isFinance}>
+        <MenuItem onClick={() => setShowGenerateReceipts(true)} disabled={!isFinance}>
           <ListItemIcon>
             <ReceiptIcon fontSize="small" />
           </ListItemIcon>
@@ -96,8 +98,14 @@ const FinancePage = () => {
       </Menu>
     </>
   );
+
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
+      <GenerateReceiptsModal
+        open={showGenerateReceipts}
+        setOpen={setShowGenerateReceipts}
+        allReimbursementRequests={allReimbursementRequests}
+      />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>
           <Refunds
