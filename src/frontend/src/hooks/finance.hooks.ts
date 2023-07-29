@@ -17,7 +17,9 @@ import {
   downloadGoogleImage,
   downloadBlobsToPdf,
   deleteReimbursementRequest,
-  markReimbursementRequestAsDelivered
+  markReimbursementRequestAsDelivered,
+  getPendingAdvisorList,
+  sendPendingAdvisorList
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -235,4 +237,31 @@ export const useDownloadPDFOfImages = () => {
     const blobs = await Promise.all(promises);
     await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
+};
+
+/**
+ * Custom react hook to get the list of Reimbursement Requests that are pending Advisor Approval
+ *
+ * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
+ */
+export const useGetPendingAdvisorList = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
+    const { data } = await getPendingAdvisorList();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to send the pending sabo #s to our advisor
+ *
+ * @returns the mutation to send the pending advisor list
+ */
+export const useSendPendingAdvisorList = () => {
+  return useMutation<{ message: string }, Error, number[]>(
+    ['reimbursement-requests', 'send-pending-advisor'],
+    async (saboNumbers: number[]) => {
+      const { data } = await sendPendingAdvisorList(saboNumbers);
+      return data;
+    }
+  );
 };

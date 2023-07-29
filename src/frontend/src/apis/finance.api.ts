@@ -192,3 +192,24 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
   // Save the Blob as a file using file-saver
   saveAs(pdfBlob, filename);
 };
+
+/**
+ * API call to get the list of Reimbursement Requests that are pending advisor approval
+ *
+ * @returns The list of Reimbursement Requests that are pending advisor approval
+ */
+export const getPendingAdvisorList = () => {
+  return axios.get(apiUrls.financeGetPendingAdvisorList());
+};
+
+/**
+ * API Call to send the list of Reimbursement Requests that are pending advisor approval
+ *
+ * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
+ * @returns the response from the backend
+ */
+export const sendPendingAdvisorList = (saboNumbers: number[]) => {
+  return axios.post(apiUrls.financeSendPendingAdvisorList(), {
+    saboNumbers
+  });
+};
