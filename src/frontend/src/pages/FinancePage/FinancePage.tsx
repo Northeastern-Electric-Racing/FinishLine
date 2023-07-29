@@ -76,6 +76,8 @@ const FinancePage = () => {
     setAnchorEl(null);
   };
 
+  console.log(allPendingAdvisorList);
+
   const financeActionsDropdown = (
     <>
       <NERButton

@@ -87,4 +87,3 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     submitter: reimbursementRequest.recipient
   };
 };
-
