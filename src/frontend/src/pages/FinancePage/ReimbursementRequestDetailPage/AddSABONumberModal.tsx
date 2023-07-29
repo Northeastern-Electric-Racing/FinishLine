@@ -4,14 +4,18 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useSetSaboNumber } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface AddSABONumberModalProps {
   modalShow: boolean;
   onHide: () => void;
-  onSubmit: (data: any) => Promise<void>;
+  reimbursementRequestId: string;
 }
 
-const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalProps) => {
+const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSABONumberModalProps) => {
+  const toast = useToast();
+  const { mutateAsync: setSaboNumber } = useSetSaboNumber(reimbursementRequestId);
   const schema = yup.object().shape({
     saboNumber: yup
       .number()
@@ -32,6 +36,17 @@ const AddSABONumberModal = ({ modalShow, onHide, onSubmit }: AddSABONumberModalP
     },
     mode: 'onChange'
   });
+
+  const onSubmit = async (data: { saboNumber: number }) => {
+    try {
+      await setSaboNumber(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+    onHide();
+  };
 
   return (
     <NERFormModal
