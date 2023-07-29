@@ -13,10 +13,13 @@ const NewVendorView: React.FC<NewVendorViewProps> = ({ showModal, onHide, onSubm
   const {
     handleSubmit,
     control,
-    formState: { errors, isValid },
+    formState: { isValid },
     reset
   } = useForm({
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      vendorName: ''
+    }
   });
 
   return (
@@ -32,7 +35,7 @@ const NewVendorView: React.FC<NewVendorViewProps> = ({ showModal, onHide, onSubm
       showCloseButton
     >
       <FormLabel>Vendor Name</FormLabel>
-      <ReactHookTextField name="vendor-name" control={control} sx={{ width: 1 }}></ReactHookTextField>
+      <ReactHookTextField name="vendorName" control={control} sx={{ width: 1 }}></ReactHookTextField>
     </NERFormModal>
   );
 };

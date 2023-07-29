@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form';
 import NERFormModal from '../../components/NERFormModal';
 import { Checkbox, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import ReactHookEditableList from '../../components/ReactHookEditableList';
 
 interface NewAccountCodeViewProps {
   showModal: boolean;
@@ -14,10 +13,15 @@ const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHi
   const {
     handleSubmit,
     control,
-    formState: { errors, isValid },
+    formState: { isValid },
     reset
   } = useForm({
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      accountName: '',
+      accountCode: null,
+      allowed: false
+    }
   });
 
   return (
@@ -37,7 +41,7 @@ const NewAccountCodeView: React.FC<NewAccountCodeViewProps> = ({ showModal, onHi
       <FormLabel>Account Code</FormLabel>
       <ReactHookTextField name="accountCode" control={control} fullWidth />
       <FormLabel>Allowed?</FormLabel>
-      <Checkbox />
+      <Checkbox name="allowed" />
     </NERFormModal>
   );
 };
