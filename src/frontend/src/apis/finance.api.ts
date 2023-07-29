@@ -131,3 +131,10 @@ export const downloadImage = async (fileId: string): Promise<File> => {
   const file = new File([blob], fileName!, { type: mimeType });
   return file;
 };
+
+/**
+ * Reports a given dollar amount representing a new account credit
+ */
+export const reportRefund = (id: string, formData: number) => {
+  return axios.post(apiUrls.financeReportRefund(id), formData);
+};

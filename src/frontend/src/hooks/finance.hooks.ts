@@ -14,7 +14,8 @@ import {
   getCurrentUserReimbursements,
   getAllReimbursementRequests,
   getCurrentUserReimbursementRequests,
-  downloadImage
+  downloadImage,
+  reportRefund
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -186,5 +187,17 @@ export const useDownloadImages = (fileIds: string[]) => {
     const promises = fileIds.map((fileId) => downloadImage(fileId));
     const files = await Promise.all(promises);
     return files;
+  });
+};
+
+/**
+ * Custom react hook to report a dollar amount representing a new account credit
+ *
+ * @param id Id of the user being reimbursed
+ */
+export const useReportRefund = (id: string) => {
+  return useMutation<Reimbursement, Error, number>(['refund', 'report'], async (accountCreditAmount: number) => {
+    const { data } = await reportRefund(id, accountCreditAmount);
+    return data;
   });
 };

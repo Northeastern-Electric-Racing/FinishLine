@@ -19,7 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import ReportRefund from './ReportRefund';
+import ReportRefund from './ReportRefundModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -42,9 +42,7 @@ const FinancePage = () => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [AccountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
-  const handleAccountCreditClose = () => setAccountCreditModalShow(false);
-  const handleAccountCreditOpen = () => setAccountCreditModalShow(true);
+  const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -80,13 +78,11 @@ const FinancePage = () => {
           </ListItemIcon>
           Create Reimbursement Request
         </MenuItem>
-        <MenuItem onClick={handleAccountCreditOpen}>
+        <MenuItem onClick={() => setAccountCreditModalShow(true)}>
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
           </ListItemIcon>
-          {AccountCreditModalShow && (
-            <ReportRefund modalShow={AccountCreditModalShow} handleClose={handleAccountCreditClose} />
-          )}
+          <ReportRefund modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
           Report Refund
         </MenuItem>
         <MenuItem onClick={() => {}} disabled={!isFinance}>

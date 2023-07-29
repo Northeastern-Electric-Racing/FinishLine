@@ -83,6 +83,7 @@ const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
+const financeReportRefund = (id: string) => `${financeEndpoints()}/${id}/reimburse`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -147,6 +148,7 @@ export const apiUrls = {
   financeGetUserReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
+  financeReportRefund,
 
   version
 };
