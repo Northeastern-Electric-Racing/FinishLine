@@ -10,7 +10,6 @@ import * as authHooks from '../../../hooks/auth.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 
-
 vi.mock('../../../pages/SettingsPage/UserSettings/UserSettings', () => {
   return {
     __esModule: true,
