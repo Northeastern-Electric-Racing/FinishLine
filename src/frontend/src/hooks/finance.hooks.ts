@@ -4,28 +4,32 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  createReimbursementRequest,
-  getAllExpenseTypes,
-  getAllVendors,
-  uploadSingleReceipt,
-  getSingleReimbursementRequest,
-  editReimbursementRequest,
-  getAllReimbursements,
-  getCurrentUserReimbursements,
-  getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests,
-  downloadImage,
-  reportRefund
-} from '../apis/finance.api';
-import {
   ClubAccount,
   ExpenseType,
-  ReimbursementProductCreateArgs,
-  ReimbursementRequest,
-  Vendor,
   Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  ReimbursementRequest,
+  Vendor
 } from 'shared';
+import {
+  createReimbursementRequest,
+  deleteReimbursementRequest,
+  downloadBlobsToPdf,
+  downloadGoogleImage,
+  editReimbursementRequest,
+  getAllExpenseTypes,
+  getAllReimbursementRequests,
+  getAllReimbursements,
+  getAllVendors,
+  getCurrentUserReimbursementRequests,
+  getCurrentUserReimbursements,
+  getSingleReimbursementRequest,
+  markReimbursementRequestAsDelivered,
+  reportRefund,
+  setSaboNumber,
+  uploadSingleReceipt
+} from '../apis/finance.api';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -164,6 +168,28 @@ export const useAllReimbursements = () => {
 };
 
 /**
+ * Custom React Hook to mark a reimbursement request as delivered
+ *
+ * @param id of the reimbursement request
+ * @returns the updated reimbursement request
+ */
+export const useMarkReimbursementRequestAsDelivered = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to get a single reimbursement request
  *
  * @param id Id of the reimbursement request to get
@@ -177,16 +203,39 @@ export const useSingleReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to download images from google drive
+ * Custom react hook to delete a single reimbursement request
+ *
+ * @param id id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const useDeleteReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'delete'],
+    async () => {
+      const { data } = await deleteReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to download images from google drive into a pdf
  *
  * @param fileIds The google file ids to fetch the images for
- * @returns the downloaded images
  */
-export const useDownloadImages = (fileIds: string[]) => {
-  return useQuery<File[], Error>(['reimbursement-requests', 'edit', fileIds], async () => {
-    const promises = fileIds.map((fileId) => downloadImage(fileId));
-    const files = await Promise.all(promises);
-    return files;
+export const useDownloadPDFOfImages = () => {
+  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
+    const promises = formData.fileIds.map((fileId) => {
+      return downloadGoogleImage(fileId);
+    });
+    const blobs = await Promise.all(promises);
+    await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
 };
 
@@ -201,6 +250,22 @@ export const useReportRefund = () => {
       const { data } = await reportRefund(formData.refundAmount);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to update a reimbursement request's SABO number
+ *
+ * @param reimbursementRequestId the request ID
+ */
+export const useSetSaboNumber = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { saboNumber: number }>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: { saboNumber: number }) => {
+      await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
     }
   );
 };

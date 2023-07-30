@@ -3,23 +3,28 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Typography, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { Edit } from '@mui/icons-material';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import { routes } from '../../../utils/routes';
-import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { useHistory } from 'react-router-dom';
-import PageLayout from '../../../components/PageLayout';
-import ReimbursementProductsView from './ReimbursementProductsView';
-import { ReimbursementRequest } from 'shared';
+import CheckIcon from '@mui/icons-material/Check';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import CheckIcon from '@mui/icons-material/Check';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { Box } from '@mui/system';
+import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { ReimbursementRequest } from 'shared';
+import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
+import NERModal from '../../../components/NERModal';
+import PageLayout from '../../../components/PageLayout';
+import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
+import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import { routes } from '../../../utils/routes';
+import AddSABONumberModal from './AddSABONumberModal';
+import ReimbursementProductsView from './ReimbursementProductsView';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -30,6 +35,64 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
+  const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
+  const toast = useToast();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMarkDelivered, setShowMarkDelivered] = useState(false);
+  const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
+    reimbursementRequest.reimbursementRequestId
+  );
+  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
+
+  const handleDelete = () => {
+    try {
+      deleteReimbursementRequest();
+      history.push(routes.FINANCE);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleMarkDelivered = () => {
+    try {
+      markDelivered();
+      setShowMarkDelivered(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const DeleteModal = () => {
+    return (
+      <NERModal
+        open={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDelete}
+      >
+        <Typography>Are you sure you want to delete this reimbursement request?</Typography>
+      </NERModal>
+    );
+  };
+
+  const MarkDeliveredModal = () => (
+    <NERModal
+      open={showMarkDelivered}
+      onHide={() => setShowMarkDelivered(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkDelivered}
+    >
+      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+    </NERModal>
+  );
 
   const BasicInformationView = () => {
     return (
@@ -115,19 +178,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Delete',
-      onClick: () => {},
+      onClick: () => setShowDeleteModal(true),
       icon: <DeleteIcon />,
       disabled: !allowEdit
     },
     {
       title: 'Mark Delivered',
-      onClick: () => {},
+      onClick: () => setShowMarkDelivered(true),
       icon: <LocalShippingIcon />,
       disabled: !!reimbursementRequest.dateDelivered
     },
     {
       title: 'Add Sabo #',
-      onClick: () => {},
+      onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
       disabled: !user.isFinance
     },
@@ -150,6 +213,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       ]}
       headerRight={<ActionsMenu buttons={buttons} />}
     >
+      <DeleteModal />
+      <MarkDeliveredModal />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
@@ -166,6 +231,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
+      <AddSABONumberModal
+        modalShow={addSaboNumberModalShow}
+        onHide={() => setAddSaboNumberModalShow(false)}
+        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+      />
     </PageLayout>
   );
 };
