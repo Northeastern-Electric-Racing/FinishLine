@@ -2,7 +2,7 @@ import { User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
 
-type UsersWithSettings = {
+type UserWithSettings = {
   userSettings: User_Settings | null;
 } & User;
 
@@ -42,7 +42,7 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
  * @returns the found users with their user settings
  * @throws if any user does not exist
  */
-export const getUserWithSettings = async (userIds: number[]): Promise<UsersWithSettings[]> => {
+export const getUserWithSettings = async (userIds: number[]): Promise<UserWithSettings[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } },
     include: {

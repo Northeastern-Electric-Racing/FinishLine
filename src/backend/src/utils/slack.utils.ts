@@ -48,6 +48,6 @@ export const sendSlackRequestedReviewNotification = async (slackId: string, chan
 
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
 
-  const fullMsg = `You have been assigned to review CR #${changeRequest.crId}: ${changeRequestLink}.`;
+  const fullMsg = `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
   await sendMessage(slackId, fullMsg);
 };

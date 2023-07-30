@@ -127,7 +127,7 @@ export default class ChangeRequestsController {
       const crId = parseInt(req.params.crId);
       const submitter: User = await getCurrentUser(res);
       await ChangeRequestsService.requestCRReview(submitter, userIds, crId);
-      return res.status(200).json({ message: `Successfully assigned reviewers to change request #${crId}` });
+      return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
       next(error);
     }
