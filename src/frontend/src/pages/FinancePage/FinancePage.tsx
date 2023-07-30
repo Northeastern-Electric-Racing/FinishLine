@@ -13,7 +13,11 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import Refunds from './RefundsSection';
 import ReimbursementRequestTable from './ReimbursementRequestsSection';
-import { useAllReimbursementRequests, useCurrentUserReimbursementRequests } from '../../hooks/finance.hooks';
+import {
+  useAllReimbursementRequests,
+  useCurrentUserReimbursementRequests,
+  useGetPendingAdvisorList
+} from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
@@ -21,6 +25,7 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
+import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -39,21 +44,31 @@ const FinancePage = () => {
     isError: allReimbursementRequestsIsError,
     error: allReimbursementRequestsError
   } = useAllReimbursementRequests();
+  const {
+    data: allPendingAdvisorList,
+    isLoading: allPendingAdvisorListIsLoading,
+    isError: allPendingAdvisorListIsError,
+    error: allPendingAdvisorListError
+  } = useGetPendingAdvisorList();
 
-  const isFinance = user.isFinance;
+  const { isFinance, isHeadOfFinance } = user;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
+  if (isHeadOfFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
   if (
     (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
     userReimbursementRequestIsLoading ||
     !userReimbursementRequests
   )
     return <LoadingIndicator />;
+
+  if (isHeadOfFinance && (!allPendingAdvisorList || allPendingAdvisorListIsLoading)) return <LoadingIndicator />;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -91,7 +106,13 @@ const FinancePage = () => {
           </ListItemIcon>
           Report Refund
         </MenuItem>
-        <MenuItem onClick={() => {}} disabled={!isFinance}>
+        <MenuItem
+          onClick={() => {
+            handleDropdownClose();
+            setShowPendingAdvisorListModal(true);
+          }}
+          disabled={!isHeadOfFinance}
+        >
           <ListItemIcon>
             <ListAltIcon fontSize="small" />
           </ListItemIcon>
@@ -109,6 +130,12 @@ const FinancePage = () => {
 
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
+      <PendingAdvisorModal
+        open={showPendingAdvisorListModal && (isHeadOfFinance ?? false)}
+        saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
+        onHide={() => setShowPendingAdvisorListModal(false)}
+      />
+
       <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}

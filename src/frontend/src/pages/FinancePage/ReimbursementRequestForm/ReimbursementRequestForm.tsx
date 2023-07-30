@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -22,7 +22,7 @@ export interface ReimbursementRequestFormInput {
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptFiles: ReimbursementReceiptCreateArgs[];
+  receiptFiles: ReimbursementReceiptUploadArgs[];
 }
 
 export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
@@ -74,7 +74,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
-      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptCreateArgs[])
+      receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
   });
 

@@ -27,10 +27,6 @@ const createTransporter = async () => {
     let accessToken: string | null | undefined;
 
     await oauth2Client.getAccessToken((err, token) => {
-      if (err) {
-        console.log('*ERR: ', err);
-        throw err;
-      }
       accessToken = token;
     });
 

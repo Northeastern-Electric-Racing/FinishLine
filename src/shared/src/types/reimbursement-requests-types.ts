@@ -79,6 +79,10 @@ export interface ReimbursementReceiptCreateArgs {
   name: string;
 }
 
+export interface ReimbursementReceiptUploadArgs extends ReimbursementReceiptCreateArgs {
+  file: File;
+}
+
 export interface Reimbursement {
   reimbursementId: string;
   dateCreated: Date;
