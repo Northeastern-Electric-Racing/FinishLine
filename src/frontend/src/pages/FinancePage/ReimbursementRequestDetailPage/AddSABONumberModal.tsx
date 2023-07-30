@@ -7,6 +7,14 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useSetSaboNumber } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 
+const schema = yup.object().shape({
+  saboNumber: yup
+    .number()
+    .typeError('The SABO number should be a valid number')
+    .required()
+    .test('length', 'The SABO number must be at least 5 digits', (num) => String(num).length >= 5)
+});
+
 interface AddSABONumberModalProps {
   modalShow: boolean;
   onHide: () => void;
@@ -16,13 +24,6 @@ interface AddSABONumberModalProps {
 const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSABONumberModalProps) => {
   const toast = useToast();
   const { mutateAsync: setSaboNumber } = useSetSaboNumber(reimbursementRequestId);
-  const schema = yup.object().shape({
-    saboNumber: yup
-      .number()
-      .typeError('The SABO number should be a valid number')
-      .required()
-      .test('length', 'The SABO number must be at least 5 digits', (num) => String(num).length >= 5)
-  });
 
   const {
     handleSubmit,

@@ -26,6 +26,7 @@ import {
   getCurrentUserReimbursements,
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
+  reportRefund,
   setSaboNumber,
   uploadSingleReceipt
 } from '../apis/finance.api';
@@ -236,6 +237,21 @@ export const useDownloadPDFOfImages = () => {
     const blobs = await Promise.all(promises);
     await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
+};
+
+/**
+ * Custom react hook to report a dollar amount representing a new account credit
+ */
+export const useReportRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Reimbursement, Error, { refundAmount: number }>(
+    ['reimbursement'],
+    async (formData: { refundAmount: number }) => {
+      const { data } = await reportRefund(formData.refundAmount);
+      queryClient.invalidateQueries(['reimbursement']);
+      return data;
+    }
+  );
 };
 
 /**

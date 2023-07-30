@@ -19,6 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 
 const FinancePage = () => {
@@ -42,6 +43,8 @@ const FinancePage = () => {
   const isFinance = user.isFinance;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -77,7 +80,12 @@ const FinancePage = () => {
           </ListItemIcon>
           Create Reimbursement Request
         </MenuItem>
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            setAccountCreditModalShow(true);
+            handleDropdownClose();
+          }}
+        >
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
           </ListItemIcon>
@@ -101,6 +109,7 @@ const FinancePage = () => {
 
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
+      <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
