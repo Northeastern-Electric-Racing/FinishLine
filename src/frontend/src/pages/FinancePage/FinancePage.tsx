@@ -99,7 +99,13 @@ const FinancePage = () => {
           </ListItemIcon>
           Report Refund
         </MenuItem>
-        <MenuItem onClick={() => setShowPendingAdvisorListModal(true)} disabled={!isHeadOfFinance}>
+        <MenuItem
+          onClick={() => {
+            handleDropdownClose();
+            setShowPendingAdvisorListModal(true);
+          }}
+          disabled={!isHeadOfFinance}
+        >
           <ListItemIcon>
             <ListAltIcon fontSize="small" />
           </ListItemIcon>

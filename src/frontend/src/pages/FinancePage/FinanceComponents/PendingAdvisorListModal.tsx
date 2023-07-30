@@ -7,6 +7,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { TextField } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 // Custom input component for the TextField
 const CommaSeparatedNumbersInput = ({
@@ -96,15 +97,19 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
       cancelText="Cancel"
       disabled={sendPendingAdvisorListIsLoading}
     >
-      <Box sx={{ border: 'black' }}>
-        <Controller
-          control={control}
-          name="saboNumbers"
-          render={({ field }) => (
-            <CommaSeparatedNumbersInput value={field.value} onChange={field.onChange} error={errors.saboNumbers} />
-          )}
-        />
-      </Box>
+      {sendPendingAdvisorListIsLoading ? (
+        <LoadingIndicator />
+      ) : (
+        <Box sx={{ border: 'black' }}>
+          <Controller
+            control={control}
+            name="saboNumbers"
+            render={({ field }) => (
+              <CommaSeparatedNumbersInput value={field.value} onChange={field.onChange} error={errors.saboNumbers} />
+            )}
+          />
+        </Box>
+      )}
     </NERFormModal>
   );
 };
