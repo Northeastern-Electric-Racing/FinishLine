@@ -14,7 +14,8 @@ import {
   ReimbursementStatusType,
   Vendor,
   isAdmin,
-  isGuest
+  isGuest,
+  isHead
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -651,36 +652,33 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Sets the given reimbursement request's expense type with expense type code number
-   * @param reimbursementRequestId the requested reimbursement request to be edited
-   * @param requestIdnewCode the expense type code number to be replaced
+   * Updates the expense type with expense type code number and name
+   * @param expenseTypeId the requested expense type to be edited
+   * @param expenseTypeCode the new expense type code number
+   * @param expenseTypeName the new expense type code name
    * @param submitter the person editing expense type code number
-   * @returns the updated expense type code number
+   * @returns the updated expense type
    */
-  static async setExpenseTypeCode(reimbursementRequestId: string, requestIdNewCode: number, submitter: User) {
+  static async setExpenseTypeCode(expenseTypeId: string, expenseTypeCode: number, expenseTypeName: string, submitter: User) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
-    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId }
+    if (!isHead(submitter.role))
+      throw new AccessDeniedException('Only the head or admin can update account code number and name');
+
+    const expenseType = await prisma.expense_Type.findUnique({
+      where: { expenseTypeId }
     });
 
-    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
-    if (reimbursementRequest.dateDeleted) {
-      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
-    }
-
-    const reimbursementRequestWithExpenseTypeCode = await prisma.reimbursement_Request.update({
-      where: { reimbursementRequestId },
+    const expenseTypeUpdated = await prisma.expense_Type.update({
+      where: { expenseTypeId },
       data: {
-        expenseType: {
-          update: {
-            code: requestIdNewCode
-          }
-        }
+        name: expenseTypeName,
+        code: expenseTypeCode
       }
     });
 
-    return reimbursementRequestWithExpenseTypeCode;
+    return expenseTypeUpdated;
   }
 }

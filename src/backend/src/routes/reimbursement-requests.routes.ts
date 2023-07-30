@@ -123,7 +123,8 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
 
 reimbursementRequestsRouter.post(
-  '/:requestId/expense-types/edit-code',
+  '/expense-types/:expenseTypeId/edit-code',
+  nonEmptyString(body('name')),
   intMinZero(body('code')),
   validateInputs,
   ReimbursementRequestController.editExpenseTypeCode

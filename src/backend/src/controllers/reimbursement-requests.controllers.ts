@@ -264,11 +264,11 @@ export default class ReimbursementRequestsController {
 
   static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const { requestId } = req.params;
-      const { code } = req.body;
+      const { expenseTypeId } = req.params;
+      const { name, code } = req.body;
       const submitter = await getCurrentUser(res);
-      await ReimbursementRequestService.setExpenseTypeCode(requestId, code, submitter);
-      res.status(200).json({ message: 'Successfully set expense type code' });
+      const expenseTypeUpdated = await ReimbursementRequestService.setExpenseTypeCode(expenseTypeId, code, name, submitter);
+      res.status(200).json(expenseTypeUpdated);
     } catch (error: unknown) {
       next(error);
     }
