@@ -192,3 +192,15 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
   // Save the Blob as a file using file-saver
   saveAs(pdfBlob, filename);
 };
+
+/**
+ * Set a reimbursement request's SABO number
+ *
+ * @param requestId the request ID
+ * @param saboNumber the SABO number to set
+ */
+export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+  axios.post(apiUrls.financeSetSaboNumber(requestId), {
+    saboNumber
+  });
+};

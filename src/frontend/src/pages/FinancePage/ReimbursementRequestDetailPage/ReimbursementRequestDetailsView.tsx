@@ -3,27 +3,28 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Typography, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
-import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { Edit } from '@mui/icons-material';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import { routes } from '../../../utils/routes';
-import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
-import { useHistory } from 'react-router-dom';
-import PageLayout from '../../../components/PageLayout';
-import ReimbursementProductsView from './ReimbursementProductsView';
-import { ReimbursementRequest } from 'shared';
+import CheckIcon from '@mui/icons-material/Check';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import CheckIcon from '@mui/icons-material/Check';
-import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { Box } from '@mui/system';
 import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { ReimbursementRequest } from 'shared';
+import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
+import PageLayout from '../../../components/PageLayout';
+import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { datePipe, fullNamePipe } from '../../../utils/pipes';
+import { isReimbursementRequestApproved } from '../../../utils/reimbursement-request.utils';
+import { routes } from '../../../utils/routes';
+import AddSABONumberModal from './AddSABONumberModal';
+import ReimbursementProductsView from './ReimbursementProductsView';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -34,6 +35,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
   const history = useHistory();
+  const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
@@ -188,7 +190,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     },
     {
       title: 'Add Sabo #',
-      onClick: () => {},
+      onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
       disabled: !user.isFinance
     },
@@ -229,6 +231,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
+      <AddSABONumberModal
+        modalShow={addSaboNumberModalShow}
+        onHide={() => setAddSaboNumberModalShow(false)}
+        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+      />
     </PageLayout>
   );
 };

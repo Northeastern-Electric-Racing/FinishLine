@@ -4,30 +4,31 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
-  createReimbursementRequest,
-  getAllExpenseTypes,
-  getAllVendors,
-  uploadSingleReceipt,
-  getSingleReimbursementRequest,
-  editReimbursementRequest,
-  getAllReimbursements,
-  getCurrentUserReimbursements,
-  getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests,
-  downloadGoogleImage,
-  downloadBlobsToPdf,
-  deleteReimbursementRequest,
-  markReimbursementRequestAsDelivered
-} from '../apis/finance.api';
-import {
   ClubAccount,
   ExpenseType,
-  ReimbursementProductCreateArgs,
-  ReimbursementRequest,
-  Vendor,
   Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  ReimbursementRequest,
+  Vendor
 } from 'shared';
+import {
+  createReimbursementRequest,
+  deleteReimbursementRequest,
+  downloadBlobsToPdf,
+  downloadGoogleImage,
+  editReimbursementRequest,
+  getAllExpenseTypes,
+  getAllReimbursementRequests,
+  getAllReimbursements,
+  getAllVendors,
+  getCurrentUserReimbursementRequests,
+  getCurrentUserReimbursements,
+  getSingleReimbursementRequest,
+  markReimbursementRequestAsDelivered,
+  setSaboNumber,
+  uploadSingleReceipt
+} from '../apis/finance.api';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -235,4 +236,20 @@ export const useDownloadPDFOfImages = () => {
     const blobs = await Promise.all(promises);
     await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
+};
+
+/**
+ * Custom react hook to update a reimbursement request's SABO number
+ *
+ * @param reimbursementRequestId the request ID
+ */
+export const useSetSaboNumber = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { saboNumber: number }>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: { saboNumber: number }) => {
+      await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+    }
+  );
 };
