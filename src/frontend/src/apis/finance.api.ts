@@ -209,7 +209,7 @@ export const setSaboNumber = async (requestId: string, saboNumber: number) => {
  * Reports a given dollar amount representing a new account credit
  *
  * @param amount the dollar amount being reimbursed
- * @returns a reimbursement with the given user and dollar amount
+ * @returns a reimbursement with the given dollar amount
  */
 export const reportRefund = (amount: number) => {
   return axios.post(apiUrls.financeReportRefund(), { amount });
