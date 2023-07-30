@@ -1,6 +1,16 @@
 import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
-import { AuthenticatedUser, Role, ThemeName, User, rankUserRole, Project, RoleEnum, isHead, UserSettings } from 'shared';
+import {
+  AuthenticatedUser,
+  Role,
+  ThemeName,
+  User,
+  rankUserRole,
+  Project,
+  RoleEnum,
+  isHead,
+  TotalUserSettings
+} from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
@@ -42,25 +52,22 @@ export default class UsersService {
    * @returns the user settings object
    * @throws if the given user doesn't exist, or the given user's settings don't exist
    */
-  static async getUserSettings(userId: number): Promise<UserSettings> {
-    const requestedUser = await prisma.user.findUnique({ where: { userId } });
-
-    if (!requestedUser) throw new NotFoundException('User', userId);
-
+  static async getUserSettings(user: User): Promise<TotalUserSettings> {
     const settings = await prisma.user_Settings.upsert({
-      where: { userId },
+      where: { userId: user.userId },
       update: {},
-      create: { userId }
+      create: { userId: user.userId }
     });
 
+    // Attempt to find the user's secure settings if they do not exist, create an empty object to return to the frontend
     let secureSettings = await prisma.user_Secure_Settings.findUnique({
-      where: { userId }
+      where: { userId: user.userId }
     });
 
     if (!secureSettings) {
       secureSettings = {
         userSecureSettingsId: '',
-        userId,
+        userId: user.userId,
         nuid: '',
         street: '',
         city: '',
@@ -69,8 +76,6 @@ export default class UsersService {
         zipcode: ''
       };
     }
-
-    if (!settings) throw new NotFoundException('User Settings', userId);
 
     return userSettingsTransformer(settings, secureSettings);
   }

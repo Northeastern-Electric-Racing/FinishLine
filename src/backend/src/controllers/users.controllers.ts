@@ -27,8 +27,8 @@ export default class UsersController {
 
   static async getUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
-      const settings = await UsersService.getUserSettings(userId);
+      const user = await getCurrentUser(res);
+      const settings = await UsersService.getUserSettings(user);
 
       res.status(200).json(settings);
     } catch (error: unknown) {
@@ -114,17 +114,9 @@ export default class UsersController {
       const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
       const user = await getCurrentUser(res);
 
-      const secureSettingsId = await UsersService.setUserSecureSettings(
-        user,
-        nuid,
-        street,
-        city,
-        state,
-        zipcode,
-        phoneNumber
-      );
+      await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
 
-      res.status(200).json(secureSettingsId);
+      res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
     } catch (error: unknown) {
       next(error);
     }

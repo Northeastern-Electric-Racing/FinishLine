@@ -111,19 +111,19 @@ const Settings: React.FC = () => {
       <PageBlock title="User Details">
         <Grid container spacing={2}>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="First Name" content={auth.user?.firstName} />
+            <DetailDisplay label="First Name" content={user.firstName} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Last Name" content={auth.user?.lastName} />
+            <DetailDisplay label="Last Name" content={user.lastName} />
           </Grid>
           <Grid item md={4} lg={3}>
-            <DetailDisplay label="Email" content={auth.user?.email} />
+            <DetailDisplay label="Email" content={user.email} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Email ID" content={String(auth.user?.emailId)} />
+            <DetailDisplay label="Email ID" content={String(user.emailId)} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Role" content={auth.user?.role} />
+            <DetailDisplay label="Role" content={user.role} />
           </Grid>
         </Grid>
       </PageBlock>

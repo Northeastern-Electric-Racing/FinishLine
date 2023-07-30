@@ -6,15 +6,15 @@
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
-import { ThemeName } from 'shared';
+import { ThemeName, UserSettings } from 'shared';
 import { themeChoices } from '../../../utils/types';
-import { Grid, Select, MenuItem, TextField, FormControl, FormLabel } from '@mui/material';
+import { Grid, Select, MenuItem, TextField, FormControl, FormLabel, Typography } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
 import { Box } from '@mui/system';
 import { SettingsFormInput } from './UserSettings';
 
 interface UserSettingsEditProps {
-  currentSettings: SettingsFormInput;
+  currentSettings: UserSettings;
   onSubmit: (data: SettingsFormInput) => Promise<void>;
 }
 
@@ -74,12 +74,14 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
               render={({ field: { onChange, value } }) => (
                 <>
                   <Box style={{ display: 'flex' }}>
-                    <FormLabel sx={{ whiteSpace: 'nowrap' }}>Slack ID</FormLabel>
-                    <ExternalLink
-                      link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
-                      description="(Find your Slack ID)"
-                      sx={{ whiteSpace: 'nowrap' }}
-                    />
+                    <FormLabel sx={{ display: 'flex' }}>
+                      <Typography sx={{ whiteSpace: 'nowrap' }}>Slack ID</Typography>
+                      <ExternalLink
+                        link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
+                        description="(Find your Slack ID)"
+                        sx={{ whiteSpace: 'nowrap' }}
+                      />
+                    </FormLabel>
                   </Box>
                   <TextField
                     required

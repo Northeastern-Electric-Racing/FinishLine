@@ -19,9 +19,18 @@ const schema = yup.object().shape({
   street: yup.string().required('Street is required'),
   city: yup.string().required('City is required'),
   state: yup.string().required('State is required'),
-  zipcode: yup.string().required('Zipcode is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-  nuid: yup.string().required('NUID is required')
+  zipcode: yup
+    .string()
+    .required('Zipcode is required')
+    .matches(/^\d{5}$/, 'Zipcode must be 5 digits'),
+  phoneNumber: yup
+    .string()
+    .required('Phone number is required')
+    .matches(/^\d{10}$/, 'Phone number must be 10 digits'),
+  nuid: yup
+    .string()
+    .required('NUID is required')
+    .matches(/^\d{8}$/, 'NUID must be 8 digits')
 });
 
 const UserSecureSettingsEdit: React.FC<UserSecureSettingsEditProps> = ({ currentSettings, onSubmit }) => {

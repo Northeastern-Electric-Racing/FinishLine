@@ -96,18 +96,6 @@ export const useSingleUserSettings = (id: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const useSingleUserSecureSettings = (id: number) => {
-  return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
-    const { data } = await getSingleUserSettings(id);
-    return data;
-  });
-};
-
-/**
- * Custom React Hook to supply a single user's settings.
- *
- * @param id User ID of the requested user's settings.
- */
 export const useUsersFavoriteProjects = (id: number) => {
   return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
