@@ -11,7 +11,7 @@ import {
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
-import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
+import { AccessDeniedException } from '../src/utils/errors.utils';
 import userTransformer from '../src/transformers/user.transformer';
 
 describe('Users', () => {
@@ -80,19 +80,13 @@ describe('Users', () => {
   });
 
   describe('getUserSettings', () => {
-    test('getUserSettings for undefined request user', async () => {
-      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
-      await expect(() => UsersService.getUserSettings(420)).rejects.toThrow(new NotFoundException('User', 420));
-    });
-
     test('getUserSettings runs', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
       vi.spyOn(prisma.user_Settings, 'upsert').mockResolvedValue(batmanSettings);
       vi.spyOn(prisma.user_Secure_Settings, 'findUnique').mockResolvedValue(batmanSecureSettings);
 
-      const res = await UsersService.getUserSettings(1);
+      const res = await UsersService.getUserSettings(batman);
 
-      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.upsert).toHaveBeenCalledTimes(1);
       expect(res).toEqual({ ...batmanTotalSettings, userId: undefined });
     });
