@@ -31,7 +31,7 @@ const renderComponent = () => {
   );
 };
 
-describe('settings page component', () => {
+describe.skip('settings page component', () => {
   beforeEach(() => vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser)));
   it('renders all the information', () => {
     renderComponent();

@@ -36,6 +36,17 @@ export default class UsersController {
     }
   }
 
+  static async getCurrentUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
+
+      res.status(200).json(secureSettings);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const userId: number = parseInt(req.params.userId);
@@ -127,17 +138,9 @@ export default class UsersController {
       const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
       const user = await getCurrentUser(res);
 
-      const secureSettingsId = await UsersService.setUserSecureSettings(
-        user,
-        nuid,
-        street,
-        city,
-        state,
-        zipcode,
-        phoneNumber
-      );
+      await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
 
-      res.status(200).json(secureSettingsId);
+      res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
     } catch (error: unknown) {
       next(error);
     }

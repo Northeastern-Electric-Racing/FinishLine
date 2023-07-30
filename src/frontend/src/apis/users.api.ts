@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, userSecureSettings } from 'shared';
+import { Project, User, UserSecureSettings } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -66,6 +66,13 @@ export const getSingleUserSettings = (id: number) => {
 };
 
 /**
+ * Fetch the secure settings for the current user
+ */
+export const getCurrentUserSecureSettings = () => {
+  return axios.get<UserSecureSettings>(apiUrls.currentUserSecureSettings());
+};
+
+/**
  * Fetch a user's favorite projects
  *
  * @param id User ID of the requested user's favorite projects.
@@ -83,7 +90,7 @@ export const getUsersFavoriteProjects = (id: number) => {
  * @returns the secure settings
  */
 export const getUserSecureSettings = (id: number) => {
-  return axios.get<userSecureSettings>(apiUrls.userSecureSettings(`${id}`));
+  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(`${id}`));
 };
 
 /**
@@ -91,6 +98,13 @@ export const getUserSecureSettings = (id: number) => {
  */
 export const updateUserSettings = (id: number, settings: UserSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
+};
+
+/**
+ * Update the given user's secure settings by UserId
+ */
+export const updateUserSecureSettings = (settings: UserSecureSettings) => {
+  return axios.post<{ message: string }>(apiUrls.userSecureSettingsSet(), settings);
 };
 
 export const updateUserRole = (id: number, role: string) => {

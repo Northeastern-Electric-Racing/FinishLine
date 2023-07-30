@@ -64,7 +64,8 @@ const FinancePage = () => {
   if (
     (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
     userReimbursementRequestIsLoading ||
-    !userReimbursementRequests
+    !userReimbursementRequests ||
+    (isHeadOfFinance && !allPendingAdvisorList)
   )
     return <LoadingIndicator />;
 
@@ -130,12 +131,13 @@ const FinancePage = () => {
 
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
-      <PendingAdvisorModal
-        open={showPendingAdvisorListModal && (isHeadOfFinance ?? false)}
-        saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
-        onHide={() => setShowPendingAdvisorListModal(false)}
-      />
-
+      {isHeadOfFinance && (
+        <PendingAdvisorModal
+          open={showPendingAdvisorListModal}
+          saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
+          onHide={() => setShowPendingAdvisorListModal(false)}
+        />
+      )}
       <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}

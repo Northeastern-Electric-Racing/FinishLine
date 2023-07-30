@@ -50,10 +50,9 @@ export interface UserSettings {
   slackId: string;
 }
 
-export interface userSecureSettings {
+export interface UserSecureSettings {
   userSecureSettingsId: string;
   nuid: string;
-  userId: number;
   street: string;
   city: string;
   state: string;

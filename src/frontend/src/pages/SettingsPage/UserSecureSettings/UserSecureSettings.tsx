@@ -5,47 +5,55 @@
 
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { ThemeName, UserSettings as UserSettingsType } from 'shared';
-import { useUpdateUserSettings } from '../../../hooks/users.hooks';
+import { useUpdateUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
-import UserSettingsEdit from './UserSettingsEdit';
-import UserSettingsView from './UserSettingsView';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { Grid, IconButton } from '@mui/material';
 import { useToast } from '../../../hooks/toasts.hooks';
+import UserSecureSettingsView from './UserSecureSettingsView';
+import UserSecureSettingsEdit from './UserSecureSettingsEdit';
+import { UserSecureSettings as UserSecureSettingsType } from 'shared';
 
-interface UserSettingsProps {
-  currentSettings: UserSettingsType;
+interface SecureSettingsProps {
+  currentSettings: UserSecureSettingsType;
 }
 
-export interface SettingsFormInput {
-  defaultTheme: ThemeName;
-  slackId: string;
+export interface SecureSettingsFormInput {
+  city: string;
+  street: string;
+  state: string;
+  zipcode: string;
+  phoneNumber: string;
+  nuid: string;
 }
 
-const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
+const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) => {
   const [edit, setEdit] = useState(false);
   const {
-    mutateAsync: updateUserSettings,
+    mutateAsync: updateSecureUserSettings,
     isLoading: updateUserSettingsIsLoading,
     isError: updateUserSettingsIsError,
     error: updateUserSettingsError
-  } = useUpdateUserSettings();
+  } = useUpdateUserSecureSettings();
   const toast = useToast();
 
   if (updateUserSettingsIsLoading) return <LoadingIndicator />;
   if (updateUserSettingsIsError) return <ErrorPage error={updateUserSettingsError!} />;
 
-  const handleConfirm = async ({ defaultTheme, slackId }: SettingsFormInput) => {
+  const handleConfirm = async ({ street, city, state, zipcode, phoneNumber, nuid }: SecureSettingsFormInput) => {
     setEdit(false);
     try {
-      await updateUserSettings({
-        id: currentSettings.id,
-        defaultTheme,
-        slackId
+      await updateSecureUserSettings({
+        city,
+        street,
+        state,
+        zipcode,
+        phoneNumber,
+        nuid,
+        userSecureSettingsId: currentSettings.userSecureSettingsId
       });
     } catch (e) {
       if (e instanceof Error) {
@@ -56,7 +64,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
 
   return (
     <PageBlock
-      title="User Settings"
+      title="User Secure Settings"
       headerRight={
         !edit ? (
           <IconButton onClick={() => setEdit(true)}>
@@ -74,13 +82,13 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
     >
       <Grid container>
         {!edit ? (
-          <UserSettingsView settings={currentSettings} />
+          <UserSecureSettingsView settings={currentSettings} />
         ) : (
-          <UserSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
+          <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
     </PageBlock>
   );
 };
 
-export default UserSettings;
+export default UserSecureSettings;

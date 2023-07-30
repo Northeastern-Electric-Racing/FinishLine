@@ -9,7 +9,7 @@ import CreateWorkPackageForm from '../../../pages/CreateWorkPackagePage/CreateWo
 import { useQuery } from '../../../hooks/utils.hooks';
 import { BrowserRouter } from 'react-router-dom';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { User } from 'shared';
+import { AuthenticatedUser } from 'shared';
 
 vi.mock('../../../hooks/auth.hooks');
 vi.mock('../../../hooks/utils.hooks');
@@ -22,7 +22,7 @@ vi.mock('../../../components/ReactHookTextField', () => {
   };
 });
 
-const mockedUseCurrentUser = useCurrentUser as jest.Mock<User>;
+const mockedUseCurrentUser = useCurrentUser as jest.Mock<AuthenticatedUser>;
 const mockedUseQuery = useQuery as jest.Mock<URLSearchParams>;
 
 const mockCurrentUser = (user = exampleAdminUser) => {
