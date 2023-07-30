@@ -42,7 +42,7 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
  * @returns the found users with their user settings
  * @throws if any user does not exist
  */
-export const getUserWithSettings = async (userIds: number[]): Promise<UserWithSettings[]> => {
+export const getUsersWithSettings = async (userIds: number[]): Promise<UserWithSettings[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } },
     include: {

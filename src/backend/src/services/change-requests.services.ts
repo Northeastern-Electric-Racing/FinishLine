@@ -18,7 +18,7 @@ import {
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
-import { getUserFullName, getUserWithSettings } from '../utils/users.utils';
+import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -630,7 +630,7 @@ export default class ChangeRequestsService {
    * @param crId The change request that will be reviewed
    */
   static async requestCRReview(submitter: User, userIds: number[], crId: number) {
-    const reviewers = await getUserWithSettings(userIds);
+    const reviewers = await getUsersWithSettings(userIds);
 
     // check if any reviewers' role is below leadership
     const underLeads = reviewers.filter((user) => !isLeadership(user.role));
