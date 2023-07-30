@@ -16,7 +16,13 @@ const upload = multer();
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
+
+reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementRequestController.getCurrentUserReimbursements);
+
+reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(
   '/create',
@@ -26,7 +32,9 @@ reimbursementRequestsRouter.post(
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
-  intMinZero(body('reimbursementProducts.*.wbsElementId')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
   validateInputs,
@@ -49,7 +57,9 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('reimbursementProducts.*.id').optional()),
   nonEmptyString(body('reimbursementProducts.*.name')),
   intMinZero(body('reimbursementProducts.*.cost')),
-  intMinZero(body('reimbursementProducts.*.wbsElementId')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
+  intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
   validateInputs,
@@ -90,7 +100,7 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/:userId/reimburse',
+  '/reimburse',
   intMinZero(body('amount')),
   validateInputs,
   ReimbursementRequestController.reimburseUser
@@ -104,11 +114,12 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
 reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
-reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
 
 reimbursementRequestsRouter.post(
   '/:requestId/delivered',
   ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
+
+reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
 
 export default reimbursementRequestsRouter;

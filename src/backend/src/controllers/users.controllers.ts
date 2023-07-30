@@ -120,6 +120,19 @@ export default class UsersController {
     }
   }
 
+  static async getUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+      const submitter = await getCurrentUser(res);
+
+      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter);
+
+      res.status(200).json(userSecureSettings);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { nuid, street, city, state, zipcode, phoneNumber } = req.body;

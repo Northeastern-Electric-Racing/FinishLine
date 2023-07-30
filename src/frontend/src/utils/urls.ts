@@ -19,6 +19,7 @@ const currentUserSecureSettings = () => `${users()}/secure-settings/current-user
 const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
+const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -76,6 +77,23 @@ const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 /**************** Finance Endpoints **************************/
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
 const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
+const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
+const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
+const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
+const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
+const getAllVendors = () => `${financeEndpoints()}/vendors`;
+const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
+const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
+const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
+const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
+const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
+const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
+const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -90,6 +108,7 @@ export const apiUrls = {
   currentUserSecureSettings,
   userRoleByUserId,
   userFavoriteProjects,
+  userSecureSettings,
 
   projects,
   projectsByWbsNum,
@@ -132,6 +151,24 @@ export const apiUrls = {
   descriptionBulletsCheck,
 
   financeUploadRceipt,
+  financeCreateReimbursementRequest,
+  financeEditReimbursementRequest,
+  financeReimbursementRequestById,
+  getAllExpenseTypes,
+  getAllVendors,
+  financeEndpoints,
+  financeUploadReceipt,
+  financeGetUserReimbursementRequest,
+  financeGetUserReimbursements,
+  financeGetAllReimbursements,
+  financeReportRefund,
+  financeSetSaboNumber,
+  financeImageById,
+  financeDeleteReimbursement,
+  financeMarkAsDelivered,
+  financeApproveReimbursementRequest,
+  financeGetPendingAdvisorList,
+  financeSendPendingAdvisorList,
 
   version
 };

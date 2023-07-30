@@ -112,3 +112,7 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
 export const wbsNamePipe = (wbsElement: WbsElement) => {
   return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
+
+export const undefinedPipe = (element: any) => {
+  return element != null ? element : '-----';
+};

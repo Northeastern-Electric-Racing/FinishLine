@@ -2,7 +2,8 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
-import stream from 'stream';
+import stream, { Readable } from 'stream';
+import concat from 'concat-stream';
 
 const { OAuth2 } = google.auth;
 const {
@@ -26,10 +27,6 @@ const createTransporter = async () => {
     let accessToken: string | null | undefined;
 
     await oauth2Client.getAccessToken((err, token) => {
-      if (err) {
-        console.log('*ERR: ', err);
-        throw err;
-      }
       accessToken = token;
     });
 
@@ -47,7 +44,7 @@ const createTransporter = async () => {
     return transporter;
   } catch (err) {
     console.log('ERROR: ' + err);
-    return err;
+    if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
   }
 };
 
@@ -65,7 +62,7 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
     await emailTransporter.sendMail(mailOptions);
   } catch (err) {
     console.log('Error: ' + err);
-    throw new HttpException(500, 'Failed to send Email');
+    if (err instanceof Error) throw new HttpException(500, 'Failed to send Email ' + err.message);
   }
 };
 
@@ -80,7 +77,6 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
 
   try {
     const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
     const response = await drive.files.create({
       media: {
         mimeType: fileObject.mimetype,
@@ -104,8 +100,45 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
     });
     const { id, name } = response.data;
     return { id, name };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
+    }
     console.log('error' + error);
-    throw new HttpException(500, 'Failed to upload picture');
+  }
+};
+
+//converts a Readable to a Buffer
+const readableToBuffer = async (readable: Readable): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
+    const concatStream = concat((data: Buffer) => {
+      resolve(data);
+    });
+
+    readable.on('error', reject);
+    readable.pipe(concatStream);
+  });
+};
+
+//given the google file id, downloads the image data and return it as a Buffer along with the image type
+export const downloadImageFile = async (fileId: string) => {
+  oauth2Client.setCredentials({
+    refresh_token: DRIVE_REFRESH_TOKEN
+  });
+  try {
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    const res = await drive.files.get(
+      {
+        fileId,
+        alt: 'media'
+      },
+      { responseType: 'stream' }
+    );
+    const bufferData = await readableToBuffer(res.data);
+    return { buffer: bufferData, type: res.headers['content-type'] };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
+    }
   }
 };

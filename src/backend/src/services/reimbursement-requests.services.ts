@@ -3,13 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
-import { ClubAccount, ExpenseType, ReimbursementRequest, ReimbursementStatusType, Vendor, isAdmin, isGuest } from 'shared';
-import prisma from '../prisma/prisma';
+import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
+  ClubAccount,
+  ExpenseType,
+  Reimbursement,
   ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
-  UserWithTeam,
+  ReimbursementRequest,
+  ReimbursementStatusType,
+  Vendor,
+  isAdmin,
+  isGuest
+} from 'shared';
+import prisma from '../prisma/prisma';
+import {
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -25,13 +33,16 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
-  reimbursementStatusTransformer
+  reimbursementStatusTransformer,
+  reimbursementTransformer
 } from '../transformers/reimbursement-requests.transformer';
+import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import { UserWithSettings } from '../utils/auth.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -44,6 +55,31 @@ export default class ReimbursementRequestService {
       ...reimbursementRequestQueryArgs
     });
     return userReimbursementRequests.map(reimbursementRequestTransformer);
+  }
+
+  /**
+   * Returns all reimbursements in the database that are created by the given user.
+   * @param user ther user retrieving the reimbursements
+   * @returns all reimbursements for the given user
+   */
+  static async getUserReimbursements(user: User): Promise<Reimbursement[]> {
+    const userReimbursements = await prisma.reimbursement.findMany({
+      where: { userSubmittedId: user.userId },
+      ...reimbursementQueryArgs
+    });
+    return userReimbursements.map(reimbursementTransformer);
+  }
+
+  /**
+   * Returns all the reimbursements in the database
+   * @param user the user retrieving all the reimbursements
+   * @returns all the reimbursements in the database
+   */
+  static async getAllReimbursements(user: User): Promise<Reimbursement[]> {
+    await validateUserIsPartOfFinanceTeam(user);
+
+    const reimbursements = await prisma.reimbursement.findMany({ ...reimbursementQueryArgs });
+    return reimbursements.map(reimbursementTransformer);
   }
 
   /**
@@ -67,7 +103,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: User,
+    recipient: UserWithSettings,
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
@@ -76,6 +112,8 @@ export default class ReimbursementRequestService {
     totalCost: number
   ): Promise<Reimbursement_Request> {
     if (isGuest(recipient.role)) throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
+
+    if (!recipient.userSecureSettings) throw new HttpException(500, 'User does not have their finance settings set up');
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
@@ -89,7 +127,7 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
-    await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -107,7 +145,7 @@ export default class ReimbursementRequestService {
         },
         reimbursementProducts: {
           createMany: {
-            data: reimbursementProducts.map((reimbursementProductInfo) => {
+            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
               return {
                 name: reimbursementProductInfo.name,
                 cost: reimbursementProductInfo.cost,
@@ -160,10 +198,11 @@ export default class ReimbursementRequestService {
         amount,
         dateCreated: new Date(),
         userSubmittedId: submitter.userId
-      }
+      },
+      ...reimbursementQueryArgs
     });
 
-    return newReimbursement;
+    return reimbursementTransformer(newReimbursement);
   }
 
   /**
@@ -308,7 +347,7 @@ export default class ReimbursementRequestService {
    * @param sender the person sending the pending advisor list
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    */
-  static async sendPendingAdvisorList(sender: UserWithTeam, saboNumbers: number[]) {
+  static async sendPendingAdvisorList(sender: User, saboNumbers: number[]) {
     await validateUserIsHeadOfFinanceTeam(sender);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
@@ -366,7 +405,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person adding the sabo number
    * @returns the reimbursement request with the sabo number
    */
-  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: UserWithTeam) {
+  static async setSaboNumber(reimbursementRequestId: string, saboNumber: number, submitter: User) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -455,7 +494,7 @@ export default class ReimbursementRequestService {
 
     const imageData = await uploadFile(file);
 
-    if (!imageData.name) {
+    if (!imageData?.name) {
       throw new HttpException(500, 'Image Name not found');
     }
 
@@ -485,7 +524,7 @@ export default class ReimbursementRequestService {
    * @param user the user getting the reimbursement requests
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
-  static async getAllReimbursementRequests(user: UserWithTeam): Promise<ReimbursementRequest[]> {
+  static async getAllReimbursementRequests(user: User): Promise<ReimbursementRequest[]> {
     await validateUserIsPartOfFinanceTeam(user);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
@@ -532,10 +571,7 @@ export default class ReimbursementRequestService {
    * @param reimbursementRequestId the id of thereimbursement request to get
    * @returns the reimbursement request with the given id
    */
-  static async getSingleReimbursementRequest(
-    user: UserWithTeam,
-    reimbursementRequestId: string
-  ): Promise<ReimbursementRequest> {
+  static async getSingleReimbursementRequest(user: User, reimbursementRequestId: string): Promise<ReimbursementRequest> {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       ...reimbursementRequestQueryArgs
@@ -562,7 +598,7 @@ export default class ReimbursementRequestService {
    * @param submitter the user who is approving the reimbursement request
    * @returns the created reimbursment status
    */
-  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: UserWithTeam) {
+  static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User) {
     await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
@@ -596,5 +632,21 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
+   * Downloads the receipt image file with the given google file id
+   *
+   * @param fileId the google file id of the receipt image
+   * @param submitter the user who is downloading the receipt image
+   * @returns a buffer of the image data and the image type
+   */
+  static async downloadReceiptImage(fileId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const fileData = await downloadImageFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 }

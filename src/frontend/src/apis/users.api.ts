@@ -84,6 +84,16 @@ export const getUsersFavoriteProjects = (id: number) => {
 };
 
 /**
+ * Fetch a user's secure settings
+ *
+ * @param id User ID of the requested user's secure settings
+ * @returns the secure settings
+ */
+export const getUserSecureSettings = (id: number) => {
+  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(`${id}`));
+};
+
+/**
  * Update the given user's settings by UserId
  */
 export const updateUserSettings = (id: number, settings: UserSettings) => {

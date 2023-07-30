@@ -110,4 +110,5 @@ type ExceptionObjectNames =
   | 'Vendor'
   | 'Expense Type'
   | 'Reimbursement Request'
-  | 'User Secure Settings';
+  | 'User Secure Settings'
+  | 'Image File';

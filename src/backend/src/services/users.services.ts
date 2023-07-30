@@ -20,6 +20,7 @@ import { generateAccessToken } from '../utils/auth.utils';
 import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
+import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
 
 export default class UsersService {
   /**
@@ -240,6 +241,21 @@ export default class UsersService {
     }
 
     return userTransformer(targetUser);
+  }
+
+  /**
+   * Gets a user's secure settings
+   * @param userId the id of user who's secure settings are being returned
+   * @param submitter the user who is requesting the user's secure settings
+   */
+  static async getUserSecureSetting(userId: number, submitter: PrismaUser): Promise<UserSecureSettings> {
+    await validateUserIsPartOfFinanceTeam(submitter);
+    const secureSettings = await prisma.user_Secure_Settings.findUnique({
+      where: { userId }
+    });
+    if (!secureSettings) throw new HttpException(404, 'User Secure Settings Not Found');
+
+    return userSecureSettingsTransformer(secureSettings);
   }
 
   /**

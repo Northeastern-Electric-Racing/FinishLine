@@ -1,8 +1,14 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { Prisma } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
   Receipt,
+  Reimbursement,
   ReimbursementProduct,
   ReimbursementRequest,
   ReimbursementStatus,
@@ -15,6 +21,7 @@ import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-sta
 import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
+import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
@@ -40,7 +47,7 @@ export const reimbursementRequestTransformer = (
     vendor: vendorTransformer(reimbursementRequest.vendor),
     account: reimbursementRequest.account as ClubAccount,
     totalCost: reimbursementRequest.totalCost,
-    receiptPictures: reimbursementRequest.receiptPictures.map(receiptTransformer),
+    receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
     expenseType: expenseTypeTransformer(reimbursementRequest.expenseType)
@@ -85,5 +92,16 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
     name: vendor.name
+  };
+};
+
+export const reimbursementTransformer = (
+  reimbursement: Prisma.ReimbursementGetPayload<typeof reimbursementQueryArgs>
+): Reimbursement => {
+  return {
+    reimbursementId: reimbursement.reimbursementId,
+    dateCreated: reimbursement.dateCreated,
+    amount: reimbursement.amount,
+    userSubmitted: userTransformer(reimbursement.userSubmitted)
   };
 };

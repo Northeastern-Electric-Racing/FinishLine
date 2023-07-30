@@ -52,10 +52,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     }
   };
 
-  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.leader.userId);
+  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
   const options = users
-    .filter((user) => user.userId !== team.leader.userId)
+    .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
@@ -79,7 +79,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     <PageBlock title={'People'} headerRight={editButtons}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
+          <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
         </Grid>
         <Grid item xs={12}>
           <Autocomplete
@@ -107,7 +107,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     >
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <DetailDisplay label="Lead" content={fullNamePipe(team.leader)} />
+          <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
         </Grid>
         <Grid item xs={12}>
           <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
