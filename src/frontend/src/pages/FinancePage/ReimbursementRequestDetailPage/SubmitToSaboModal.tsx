@@ -7,6 +7,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
+import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -23,11 +24,11 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  const productsNames = reimbursementProducts
+  const filteredProductsNames = reimbursementProducts
     .filter((product) => !product.dateDeleted)
-    .map((product) => wbsPipe(product.wbsNum) + ' - ' + product.wbsName);
-
-  const businessPurpose = productsNames.reduce((acc, currVal) => acc + ' ' + currVal, '');
+    .map((product) => wbsPipe(product.wbsNum) + ' - ' + product.wbsName)
+    .filter((product, index, self) => index === self.indexOf(product))
+    .join(', ');
 
   const handleSubmitToSabo = () => {
     submitToSabo();
@@ -48,7 +49,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="First Name" content={recipient.firstName}></DetailDisplay>
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label="Phone #" content={userInfo.nuid} />
+          <DetailDisplay label="Phone #" content={userInfo.phoneNumber} />
         </Grid>
         <Grid item xs={4}>
           <DetailDisplay label="NUID" content={userInfo.nuid} />
@@ -87,7 +88,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={12}>
-          <DetailDisplay label="Business Purpose" content={businessPurpose} />
+          <DetailDisplay label="Business Purpose" content={filteredProductsNames} />
         </Grid>
         <Grid item xs={6}>
           <DetailDisplay label="SABO Form Index" content="800462" />
@@ -102,7 +103,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           return (
             <iframe
               style={{ height: `200px`, width: '50%' }}
-              src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
+              src={imagePreviewUrl(receipt.googleFileId)}
               title={receipt.name}
             />
           );

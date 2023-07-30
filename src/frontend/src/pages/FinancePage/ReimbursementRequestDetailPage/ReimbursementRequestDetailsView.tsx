@@ -20,6 +20,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CheckIcon from '@mui/icons-material/Check';
 import {
+  imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestSaboSubmitted
 } from '../../../utils/reimbursement-request.utils';
@@ -160,7 +161,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           return (
             <iframe
               style={{ height: `200px`, width: '50%' }}
-              src={`https://drive.google.com/file/d/${receipt.googleFileId}/preview`}
+              src={imagePreviewUrl(receipt.googleFileId)}
               title={receipt.name}
             />
           );
