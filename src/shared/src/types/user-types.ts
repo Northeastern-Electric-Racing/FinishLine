@@ -41,6 +41,7 @@ export interface AuthenticatedUser {
   teamAsHeadId?: string;
   favoritedProjectsId: number[];
   changeRequestsToReviewId: number[];
+  isHeadOfFinance?: boolean;
 }
 
 export interface UserSettings {

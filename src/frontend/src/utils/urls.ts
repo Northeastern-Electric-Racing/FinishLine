@@ -85,9 +85,13 @@ const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
+const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
+const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
+const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -153,10 +157,14 @@ export const apiUrls = {
   financeGetUserReimbursementRequest,
   financeGetUserReimbursements,
   financeGetAllReimbursements,
+  financeReportRefund,
+  financeSetSaboNumber,
   financeImageById,
   financeDeleteReimbursement,
   financeMarkAsDelivered,
   financeApproveReimbursementRequest,
+  financeGetPendingAdvisorList,
+  financeSendPendingAdvisorList,
 
   version
 };
