@@ -137,6 +137,16 @@ export const getAllReimbursements = () => {
 };
 
 /**
+ * Approve Reimbursement Request (set it to Sabo Submitted)
+ *
+ * @param id of the reimbursement request being approved by finance
+ * @returns the sabo submitted reimbursement status
+ */
+export const approveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeApproveReimbursementRequest(id));
+};
+
+/**
  * Downloads a given fileId from google drive into a blob
  *
  * @param fileId the google id of the file to download

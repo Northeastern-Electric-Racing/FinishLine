@@ -17,6 +17,7 @@ const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
+const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -88,6 +89,7 @@ const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 
@@ -102,6 +104,7 @@ export const apiUrls = {
   userSettingsByUserId,
   userRoleByUserId,
   userFavoriteProjects,
+  userSecureSettings,
 
   projects,
   projectsByWbsNum,
@@ -159,6 +162,7 @@ export const apiUrls = {
   financeImageById,
   financeDeleteReimbursement,
   financeMarkAsDelivered,
+  financeApproveReimbursementRequest,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
 
