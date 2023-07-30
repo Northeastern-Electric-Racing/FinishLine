@@ -58,7 +58,7 @@ const FinancePage = () => {
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
-  if (allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
+  if (isHeadOfFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
   if (
     (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
     userReimbursementRequestIsLoading ||
@@ -75,8 +75,6 @@ const FinancePage = () => {
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
-
-  console.log(allPendingAdvisorList);
 
   const financeActionsDropdown = (
     <>
@@ -119,13 +117,11 @@ const FinancePage = () => {
 
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
-      {isHeadOfFinance && (
-        <PendingAdvisorModal
-          open={showPendingAdvisorListModal}
-          saboNumbers={allPendingAdvisorList!.map((x) => x.saboId!)}
-          onHide={() => setShowPendingAdvisorListModal(false)}
-        />
-      )}
+      <PendingAdvisorModal
+        open={showPendingAdvisorListModal && (isHeadOfFinance ?? false)}
+        saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
+        onHide={() => setShowPendingAdvisorListModal(false)}
+      />
 
       <GenerateReceiptsModal
         open={showGenerateReceipts}

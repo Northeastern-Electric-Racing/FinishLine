@@ -199,7 +199,9 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
  * @returns The list of Reimbursement Requests that are pending advisor approval
  */
 export const getPendingAdvisorList = () => {
-  return axios.get(apiUrls.financeGetPendingAdvisorList());
+  return axios.get(apiUrls.financeGetPendingAdvisorList(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
 };
 
 /**

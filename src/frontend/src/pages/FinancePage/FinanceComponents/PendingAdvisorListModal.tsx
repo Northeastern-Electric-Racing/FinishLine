@@ -1,13 +1,51 @@
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, FieldError, Merge, useForm } from 'react-hook-form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useSendPendingAdvisorList } from '../../../hooks/finance.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERFormModal from '../../../components/NERFormModal';
 import { Box } from '@mui/system';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { TextField } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
+
+// Custom input component for the TextField
+const CommaSeparatedNumbersInput = ({
+  value,
+  onChange,
+  error
+}: {
+  value: number[];
+  onChange: (saboNumbers: number[]) => void;
+  error: Merge<FieldError, (FieldError | undefined)[]> | undefined;
+}) => {
+  const [inputValue, setInputValue] = useState<string>(value.join(', '));
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const inputValue = e.target.value;
+    setInputValue(inputValue);
+
+    // Split the input string by commas and parse each number
+    const saboNumbers = inputValue
+      .split(',')
+      .map((saboNumber) => parseInt(saboNumber.trim()))
+      .filter((num) => !isNaN(num)); // Filter out NaN values
+
+    onChange(saboNumbers);
+  };
+
+  return (
+    <TextField
+      value={inputValue}
+      onChange={handleChange}
+      label="SABO Numbers"
+      multiline
+      rows={4}
+      fullWidth
+      error={!!error}
+      helperText={error?.message}
+    />
+  );
+};
 
 const schema = yup.object().shape({
   saboNumbers: yup.array().of(yup.number().required('SABO Number is required')).required('SABO Numbers are required')
@@ -35,8 +73,6 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
 
   const toast = useToast();
 
-  if (sendPendingAdvisorListIsLoading) return <LoadingIndicator />;
-
   const onSubmit = async (data: { saboNumbers: number[] }) => {
     try {
       await sendPendingAdvisorList(data.saboNumbers);
@@ -45,43 +81,6 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
         toast.error(error.message);
       }
     }
-  };
-
-  // Custom input component for the TextField
-  const CommaSeparatedNumbersInput = ({
-    value,
-    onChange
-  }: {
-    value: number[];
-    onChange: (saboNumbers: number[]) => void;
-  }) => {
-    const [inputValue, setInputValue] = useState<string>(value.join(', '));
-
-    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const inputValue = e.target.value;
-      setInputValue(inputValue);
-
-      // Split the input string by commas and parse each number
-      const saboNumbers = inputValue
-        .split(',')
-        .map((saboNumber) => parseInt(saboNumber.trim()))
-        .filter((num) => !isNaN(num)); // Filter out NaN values
-
-      onChange(saboNumbers);
-    };
-
-    return (
-      <TextField
-        value={inputValue}
-        onChange={handleChange}
-        label="SABO Numbers"
-        multiline
-        rows={4}
-        fullWidth
-        error={!!errors.saboNumbers}
-        helperText={errors.saboNumbers?.message}
-      />
-    );
   };
 
   return (
@@ -95,12 +94,15 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
       formId="pending-advisor-form"
       reset={reset}
       cancelText="Cancel"
+      disabled={sendPendingAdvisorListIsLoading}
     >
       <Box sx={{ border: 'black' }}>
         <Controller
           control={control}
           name="saboNumbers"
-          render={({ field }) => <CommaSeparatedNumbersInput value={field.value} onChange={field.onChange} />}
+          render={({ field }) => (
+            <CommaSeparatedNumbersInput value={field.value} onChange={field.onChange} error={errors.saboNumbers} />
+          )}
         />
       </Box>
     </NERFormModal>
