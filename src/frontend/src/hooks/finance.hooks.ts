@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   createReimbursementRequest,
   getAllExpenseTypes,
@@ -192,12 +192,15 @@ export const useDownloadImages = (fileIds: string[]) => {
 
 /**
  * Custom react hook to report a dollar amount representing a new account credit
- *
- * @param id Id of the user being reimbursed
  */
-export const useReportRefund = (id: string) => {
-  return useMutation<Reimbursement, Error, number>(['refund', 'report'], async (accountCreditAmount: number) => {
-    const { data } = await reportRefund(id, accountCreditAmount);
-    return data;
-  });
+export const useReportRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Reimbursement, Error, { refundAmount: number }>(
+    ['reimbursement'],
+    async (formData: { refundAmount: number }) => {
+      const { data } = await reportRefund(formData.refundAmount);
+      queryClient.invalidateQueries(['reimbursement']);
+      return data;
+    }
+  );
 };

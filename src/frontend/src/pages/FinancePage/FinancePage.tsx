@@ -19,7 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import ReportRefundModal from './ReportRefundModal';
+import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -78,11 +78,15 @@ const FinancePage = () => {
           </ListItemIcon>
           Create Reimbursement Request
         </MenuItem>
-        <MenuItem onClick={() => setAccountCreditModalShow(true)}>
+        <MenuItem
+          onClick={() => {
+            setAccountCreditModalShow(true);
+            handleDropdownClose();
+          }}
+        >
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
           </ListItemIcon>
-          <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
           Report Refund
         </MenuItem>
         <MenuItem onClick={() => {}} disabled={!isFinance}>
@@ -102,6 +106,7 @@ const FinancePage = () => {
   );
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
+      <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>
           <Refunds
