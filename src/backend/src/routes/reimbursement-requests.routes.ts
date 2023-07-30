@@ -120,6 +120,8 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
+reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
+
 reimbursementRequestsRouter.post(
   '/:requestId/expense-types/edit-code',
   intMinZero(body('code')),

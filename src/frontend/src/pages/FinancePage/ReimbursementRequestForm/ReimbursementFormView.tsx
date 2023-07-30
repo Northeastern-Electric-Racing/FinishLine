@@ -46,7 +46,6 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
-  totalCost: number;
   submitText: string;
   previousPage: string;
 }
@@ -66,7 +65,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   watch,
-  totalCost,
   submitText,
   previousPage
 }) => {
@@ -220,7 +218,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   }
                 }}
                 type="file"
-                accept="image/*"
+                accept="image/png, image/jpeg"
                 name="receiptFiles"
               />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
