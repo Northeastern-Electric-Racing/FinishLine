@@ -10,7 +10,6 @@ import { ThemeName, UserSettings } from 'shared';
 import { themeChoices } from '../../../utils/types';
 import { Grid, Select, MenuItem, TextField, FormControl, FormLabel, Typography } from '@mui/material';
 import ExternalLink from '../../../components/ExternalLink';
-import { Box } from '@mui/system';
 import { SettingsFormInput } from './UserSettings';
 
 interface UserSettingsEditProps {
@@ -66,33 +65,29 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
         </Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
+            <FormLabel sx={{ display: 'flex' }}>
+              <Typography sx={{ whiteSpace: 'nowrap' }}>Slack ID</Typography>
+              <ExternalLink
+                link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
+                description="(Find your Slack ID)"
+                sx={{ whiteSpace: 'nowrap' }}
+              />
+            </FormLabel>
             <Controller
               name="slackId"
               control={control}
               rules={{ required: true }}
               defaultValue={currentSettings.slackId}
               render={({ field: { onChange, value } }) => (
-                <>
-                  <Box style={{ display: 'flex' }}>
-                    <FormLabel sx={{ display: 'flex' }}>
-                      <Typography sx={{ whiteSpace: 'nowrap' }}>Slack ID</Typography>
-                      <ExternalLink
-                        link="https://www.workast.com/help/article/how-to-find-a-slack-user-id/"
-                        description="(Find your Slack ID)"
-                        sx={{ whiteSpace: 'nowrap' }}
-                      />
-                    </FormLabel>
-                  </Box>
-                  <TextField
-                    required
-                    id="slackid-input"
-                    autoComplete="off"
-                    onChange={onChange}
-                    value={value}
-                    error={!!errors.slackId}
-                    helperText={errors.slackId?.message}
-                  />
-                </>
+                <TextField
+                  required
+                  id="slackid-input"
+                  autoComplete="off"
+                  onChange={onChange}
+                  value={value}
+                  error={!!errors.slackId}
+                  helperText={errors.slackId?.message}
+                />
               )}
             />
           </FormControl>

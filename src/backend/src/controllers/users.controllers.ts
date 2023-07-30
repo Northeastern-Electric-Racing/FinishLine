@@ -27,10 +27,21 @@ export default class UsersController {
 
   static async getUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const settings = await UsersService.getUserSettings(user);
+      const userId: number = parseInt(req.params.userId);
+      const settings = await UsersService.getUserSettings(userId);
 
       res.status(200).json(settings);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
+
+      res.status(200).json(secureSettings);
     } catch (error: unknown) {
       next(error);
     }

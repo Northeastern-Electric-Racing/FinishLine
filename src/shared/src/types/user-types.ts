@@ -62,5 +62,3 @@ export interface UpdateUserRolePayload {
   userId: number;
   role: string;
 }
-
-export interface TotalUserSettings extends UserSettings, UserSecureSettings {}

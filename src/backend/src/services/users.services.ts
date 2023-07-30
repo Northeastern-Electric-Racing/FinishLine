@@ -9,17 +9,17 @@ import {
   Project,
   RoleEnum,
   isHead,
-  TotalUserSettings
+  UserSecureSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import userTransformer from '../transformers/user.transformer';
-import { AccessDeniedException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
 import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import userSettingsTransformer from '../transformers/user-settings.transformer';
+import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 
 export default class UsersService {
   /**
@@ -48,36 +48,35 @@ export default class UsersService {
 
   /**
    * Gets the user settings for a specified user
-   * @param userId the id of the user's settings
+   * @param userId the id of the user who's settings are requested
    * @returns the user settings object
    * @throws if the given user doesn't exist, or the given user's settings don't exist
    */
-  static async getUserSettings(user: User): Promise<TotalUserSettings> {
+  static async getUserSettings(userId: number): Promise<User_Settings> {
+    const requestedUser = await prisma.user.findUnique({ where: { userId } });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
     const settings = await prisma.user_Settings.upsert({
-      where: { userId: user.userId },
+      where: { userId },
       update: {},
-      create: { userId: user.userId }
+      create: { userId }
     });
 
-    // Attempt to find the user's secure settings if they do not exist, create an empty object to return to the frontend
-    let secureSettings = await prisma.user_Secure_Settings.findUnique({
+    return settings;
+  }
+
+  /**
+   * Gets the user secure settings for the current usr
+   * @param user the id of the user who's secure settings are requested
+   * @returns the user's secure settings object
+   */
+  static async getCurrentUserSecureSettings(user: PrismaUser): Promise<UserSecureSettings> {
+    const secureSettings = await prisma.user_Secure_Settings.findUnique({
       where: { userId: user.userId }
     });
+    if (!secureSettings) throw new HttpException(404, 'User Secure Settings Not Found');
 
-    if (!secureSettings) {
-      secureSettings = {
-        userSecureSettingsId: '',
-        userId: user.userId,
-        nuid: '',
-        street: '',
-        city: '',
-        phoneNumber: '',
-        state: '',
-        zipcode: ''
-      };
-    }
-
-    return userSettingsTransformer(settings, secureSettings);
+    return userSecureSettingsTransformer(secureSettings);
   }
 
   /**

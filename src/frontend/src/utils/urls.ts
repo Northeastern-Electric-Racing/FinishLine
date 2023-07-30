@@ -15,7 +15,8 @@ const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
-const userSecureSettings = () => `${users()}/secure-settings/set`;
+const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
+const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 
@@ -85,7 +86,8 @@ export const apiUrls = {
   usersLogin,
   usersLoginDev,
   userSettingsByUserId,
-  userSecureSettings,
+  userSecureSettingsSet,
+  currentUserSecureSettings,
   userRoleByUserId,
   userFavoriteProjects,
 

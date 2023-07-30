@@ -12,7 +12,7 @@ import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { GoogleLogout } from 'react-google-login';
 import PageLayout from '../../components/PageLayout';
-import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
+import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 
@@ -68,10 +68,30 @@ const Settings: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
   const [showAlert, setShowAlert] = useState(false);
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const {
+    isLoading: settingsIsLoading,
+    isError: settingsIsError,
+    error: settingsError,
+    data: userSettingsData
+  } = useSingleUserSettings(user.userId);
+  const {
+    isLoading: secureSettingsIsLoading,
+    isError: secureSettingsIsError,
+    error: secureSettingsError,
+    data: userSecureSettings
+  } = useCurrentUserSecureSettings();
 
-  if (isError) return <ErrorPage error={error} message={error.message} />;
-  if (auth.isLoading || !auth.user || isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
+  if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
+  if (
+    auth.isLoading ||
+    !auth.user ||
+    settingsIsLoading ||
+    !userSettingsData ||
+    secureSettingsIsLoading ||
+    !userSecureSettings
+  )
+    return <LoadingIndicator />;
 
   const logout = () => {
     setShowAlert(true);
@@ -128,7 +148,7 @@ const Settings: React.FC = () => {
         </Grid>
       </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
-      <UserSecureSettings currentSettings={userSettingsData} />
+      <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
 };

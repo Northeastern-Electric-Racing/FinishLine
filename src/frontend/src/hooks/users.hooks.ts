@@ -13,17 +13,10 @@ import {
   updateUserSettings,
   updateUserRole,
   getUsersFavoriteProjects,
-  updateUserSecureSettings
+  updateUserSecureSettings,
+  getCurrentUserSecureSettings
 } from '../apis/users.api';
-import {
-  User,
-  AuthenticatedUser,
-  UserSettings,
-  UpdateUserRolePayload,
-  Project,
-  UserSecureSettings,
-  TotalUserSettings
-} from 'shared';
+import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project, UserSecureSettings } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -85,9 +78,23 @@ export const useLogUserInDev = () => {
  * @param id User ID of the requested user's settings.
  */
 export const useSingleUserSettings = (id: number) => {
-  return useQuery<TotalUserSettings, Error>(['users', id, 'settings'], async () => {
+  return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
     return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply the current user's secure settings
+ */
+export const useCurrentUserSecureSettings = () => {
+  return useQuery<UserSecureSettings, Error>(['users', 'secure-settings'], async () => {
+    try {
+      const { data } = await getCurrentUserSecureSettings();
+      return data;
+    } catch (error: unknown) {
+      return { userSecureSettingsId: '', nuid: '', street: '', city: '', state: '', zipcode: '', phoneNumber: '' };
+    }
   });
 };
 
@@ -107,18 +114,15 @@ export const useUsersFavoriteProjects = (id: number) => {
  * Custom React Hook to update a user's settings.
  */
 export const useUpdateUserSettings = () => {
-  const user = useCurrentUser();
+  const auth = useAuth();
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, UserSettings>(
-    ['users', user.userId, 'settings', 'update'],
+    ['users', auth.user?.userId!, 'settings', 'update'],
     async (settings: UserSettings) => {
-      const { data } = await updateUserSettings(user.userId, settings);
+      if (!auth.user) throw new Error('Update settings not allowed when not logged in');
+      const { data } = await updateUserSettings(auth.user.userId, settings);
+      queryClient.invalidateQueries(['users', auth.user.userId, 'settings']);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['users', user.userId, 'settings']);
-      }
     }
   );
 };
@@ -129,17 +133,16 @@ export const useUpdateUserSettings = () => {
  * @returns The mutation to update a user's secure settings
  */
 export const useUpdateUserSecureSettings = () => {
-  const user = useCurrentUser();
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, UserSecureSettings>(
-    ['users', user.userId, 'secure settings', 'update'],
+    ['users', 'secure-settings', 'update'],
     async (settings: UserSecureSettings) => {
       const { data } = await updateUserSecureSettings(settings);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['users', user.userId, 'settings']);
+        queryClient.invalidateQueries(['users', 'secure-settings']);
       }
     }
   );
