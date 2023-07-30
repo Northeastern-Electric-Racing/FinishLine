@@ -9,46 +9,6 @@ import ErrorPage from '../ErrorPage';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useReportRefund } from '../../hooks/finance.hooks';
 
-interface ReportRefundViewProps {
-  modalShow: boolean;
-  onHide: () => void;
-  onSubmit: (data: ReportRefundInputs) => Promise<void>;
-}
-
-const ReportRefundView: React.FC<ReportRefundViewProps> = ({ modalShow, onHide, onSubmit }) => {
-  const {
-    handleSubmit,
-    control,
-    formState: { isValid },
-    reset
-  } = useForm({
-    mode: 'onChange'
-  });
-
-  return (
-    <NERFormModal
-      open={modalShow}
-      onHide={onHide}
-      title={'Report New Account Credit'}
-      reset={reset}
-      handleUseFormSubmit={handleSubmit}
-      onFormSubmit={onSubmit}
-      formId="reimbursement-form"
-      disabled={!isValid}
-    >
-      <FormControl>
-        <ReactHookTextField
-          name="newAccountCreditAmount"
-          control={control}
-          sx={{ width: 1 }}
-          type="number"
-          startAdornment={<AttachMoneyIcon />}
-        />
-      </FormControl>
-    </NERFormModal>
-  );
-};
-
 interface ReportRefundProps {
   modalShow: boolean;
   handleClose: () => void;
@@ -58,11 +18,20 @@ export interface ReportRefundInputs {
   newAccountCreditAmount: number;
 }
 
-const ReportRefund: React.FC<ReportRefundProps> = ({ modalShow, handleClose }: ReportRefundProps) => {
+const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose }: ReportRefundProps) => {
   const history = useHistory();
   const toast = useToast();
   const id = useParams<{ id: string }>().id;
   const { isLoading, isError, error, mutateAsync } = useReportRefund(id);
+
+  const {
+    handleSubmit,
+    control,
+    formState: { isValid },
+    reset
+  } = useForm({
+    mode: 'onChange'
+  });
 
   const handleConfirm = async ({ newAccountCreditAmount }: ReportRefundInputs) => {
     handleClose();
@@ -79,7 +48,28 @@ const ReportRefund: React.FC<ReportRefundProps> = ({ modalShow, handleClose }: R
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <ReportRefundView modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+  return (
+    <NERFormModal
+      open={modalShow}
+      onHide={handleClose}
+      title={'Report New Account Credit'}
+      reset={reset}
+      handleUseFormSubmit={handleSubmit}
+      onFormSubmit={handleConfirm}
+      formId="reimbursement-form"
+      disabled={!isValid}
+    >
+      <FormControl>
+        <ReactHookTextField
+          name="newAccountCreditAmount"
+          control={control}
+          sx={{ width: 1 }}
+          type="number"
+          startAdornment={<AttachMoneyIcon />}
+        />
+      </FormControl>
+    </NERFormModal>
+  );
 };
 
-export default ReportRefund;
+export default ReportRefundModal;

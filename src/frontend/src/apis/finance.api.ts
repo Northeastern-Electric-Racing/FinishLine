@@ -134,7 +134,11 @@ export const downloadImage = async (fileId: string): Promise<File> => {
 
 /**
  * Reports a given dollar amount representing a new account credit
+ *
+ * @param id the id of the user who is being reimbursed
+ * @param formData the dollar amount being reimbursed
+ * @returns a reimbursement with the given user and dollar amount
  */
-export const reportRefund = (id: string, formData: number) => {
-  return axios.post(apiUrls.financeReportRefund(id), formData);
+export const reportRefund = (id: string, refundAmount: number) => {
+  return axios.post(apiUrls.financeReportRefund(id), refundAmount);
 };

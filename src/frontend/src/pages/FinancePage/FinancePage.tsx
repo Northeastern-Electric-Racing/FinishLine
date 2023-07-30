@@ -19,7 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import ReportRefund from './ReportRefundModal';
+import ReportRefundModal from './ReportRefundModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -82,7 +82,7 @@ const FinancePage = () => {
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
           </ListItemIcon>
-          <ReportRefund modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
+          <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
           Report Refund
         </MenuItem>
         <MenuItem onClick={() => {}} disabled={!isFinance}>
