@@ -205,6 +205,18 @@ export const getPendingAdvisorList = () => {
 };
 
 /**
+ * Set a reimbursement request's SABO number
+ *
+ * @param requestId the request ID
+ * @param saboNumber the SABO number to set
+ */
+export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+  axios.post(apiUrls.financeSetSaboNumber(requestId), {
+    saboNumber
+  });
+};
+
+/**
  * API Call to send the list of Reimbursement Requests that are pending advisor approval
  *
  * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
@@ -214,4 +226,14 @@ export const sendPendingAdvisorList = (saboNumbers: number[]) => {
   return axios.post(apiUrls.financeSendPendingAdvisorList(), {
     saboNumbers
   });
+};
+
+/**
+ * Reports a given dollar amount representing a new account credit
+ *
+ * @param amount the dollar amount being reimbursed
+ * @returns a reimbursement with the given dollar amount
+ */
+export const reportRefund = (amount: number) => {
+  return axios.post(apiUrls.financeReportRefund(), { amount });
 };

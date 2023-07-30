@@ -23,6 +23,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 
@@ -55,6 +56,7 @@ const FinancePage = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
+  const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -93,7 +95,12 @@ const FinancePage = () => {
           </ListItemIcon>
           Create Reimbursement Request
         </MenuItem>
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            setAccountCreditModalShow(true);
+            handleDropdownClose();
+          }}
+        >
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
           </ListItemIcon>
@@ -129,6 +136,7 @@ const FinancePage = () => {
         onHide={() => setShowPendingAdvisorListModal(false)}
       />
 
+      <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
