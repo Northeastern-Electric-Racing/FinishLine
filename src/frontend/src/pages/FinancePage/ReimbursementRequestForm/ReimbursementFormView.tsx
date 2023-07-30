@@ -16,6 +16,7 @@ import {
   ClubAccount,
   ExpenseType,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
   Vendor,
   WbsNumber,
@@ -31,7 +32,7 @@ import { useState } from 'react';
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allExpenseTypes: ExpenseType[];
-  receiptFiles: ReimbursementReceiptUploadArgs[];
+  receiptFiles: ReimbursementReceiptCreateArgs[];
   allWbsElements: {
     wbsNum: WbsNumber;
     wbsName: string;

@@ -41,12 +41,24 @@ export interface AuthenticatedUser {
   teamAsHeadId?: string;
   favoritedProjectsId: number[];
   changeRequestsToReviewId: number[];
+  isHeadOfFinance?: boolean;
 }
 
 export interface UserSettings {
   id: string;
   defaultTheme: ThemeName;
   slackId: string;
+}
+
+export interface userSecureSettings {
+  userSecureSettingsId: string;
+  nuid: string;
+  userId: number;
+  street: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  phoneNumber: string;
 }
 
 export interface UpdateUserRolePayload {

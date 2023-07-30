@@ -100,7 +100,7 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/:userId/reimburse',
+  '/reimburse',
   intMinZero(body('amount')),
   validateInputs,
   ReimbursementRequestController.reimburseUser

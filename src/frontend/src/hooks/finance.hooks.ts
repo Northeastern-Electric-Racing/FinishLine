@@ -4,30 +4,36 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
+  approveReimbursementRequest,
   createReimbursementRequest,
-  getAllExpenseTypes,
-  getAllVendors,
-  uploadSingleReceipt,
-  getSingleReimbursementRequest,
-  editReimbursementRequest,
-  getAllReimbursements,
-  getCurrentUserReimbursements,
-  getAllReimbursementRequests,
-  getCurrentUserReimbursementRequests,
-  downloadGoogleImage,
-  downloadBlobsToPdf,
   deleteReimbursementRequest,
+  downloadBlobsToPdf,
+  downloadGoogleImage,
+  editReimbursementRequest,
+  getAllExpenseTypes,
+  getAllReimbursementRequests,
+  getAllReimbursements,
+  getAllVendors,
+  getCurrentUserReimbursementRequests,
+  getCurrentUserReimbursements,
+  getPendingAdvisorList,
+  getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
+  reportRefund,
+  sendPendingAdvisorList,
+  setSaboNumber,
+  uploadSingleReceipt,
   editAccountCode
 } from '../apis/finance.api';
 import {
   ClubAccount,
   ExpenseType,
+  Reimbursement,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   Vendor,
-  Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementStatus
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
@@ -224,6 +230,28 @@ export const useDeleteReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Custom react hook to approve a reimbursement request for the finance team
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useApproveReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await approveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to download images from google drive into a pdf
  *
  * @param fileIds The google file ids to fetch the images for
@@ -236,6 +264,64 @@ export const useDownloadPDFOfImages = () => {
     const blobs = await Promise.all(promises);
     await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
   });
+};
+
+/**
+ * Custom react hook to get the list of Reimbursement Requests that are pending Advisor Approval
+ *
+ * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
+ */
+export const useGetPendingAdvisorList = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
+    const { data } = await getPendingAdvisorList();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to send the pending sabo #s to our advisor
+ *
+ * @returns the mutation to send the pending advisor list
+ */
+export const useSendPendingAdvisorList = () => {
+  return useMutation<{ message: string }, Error, number[]>(
+    ['reimbursement-requests', 'send-pending-advisor'],
+    async (saboNumbers: number[]) => {
+      const { data } = await sendPendingAdvisorList(saboNumbers);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to report a dollar amount representing a new account credit
+ */
+export const useReportRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Reimbursement, Error, { refundAmount: number }>(
+    ['reimbursement'],
+    async (formData: { refundAmount: number }) => {
+      const { data } = await reportRefund(formData.refundAmount);
+      queryClient.invalidateQueries(['reimbursement']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to update a reimbursement request's SABO number
+ *
+ * @param reimbursementRequestId the request ID
+ */
+export const useSetSaboNumber = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { saboNumber: number }>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: { saboNumber: number }) => {
+      await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+    }
+  );
 };
 
 /**

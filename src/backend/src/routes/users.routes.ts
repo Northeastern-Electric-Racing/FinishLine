@@ -31,5 +31,6 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 
 export default userRouter;

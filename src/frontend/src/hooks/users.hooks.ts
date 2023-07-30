@@ -12,9 +12,10 @@ import {
   logUserInDev,
   updateUserSettings,
   updateUserRole,
-  getUsersFavoriteProjects
+  getUsersFavoriteProjects,
+  getUserSecureSettings
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project } from 'shared';
+import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project, userSecureSettings } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -78,6 +79,19 @@ export const useLogUserInDev = () => {
 export const useSingleUserSettings = (id: number) => {
   return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply a single user's secure settings
+ *
+ * @param id User ID of the requested user's secure settings
+ * @returns the user's secure settings
+ */
+export const useUserSecureSettings = (id: number) => {
+  return useQuery<userSecureSettings, Error>(['users', id, 'secure-settings'], async () => {
+    const { data } = await getUserSecureSettings(id);
     return data;
   });
 };

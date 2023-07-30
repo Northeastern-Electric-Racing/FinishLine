@@ -66,11 +66,19 @@ export const getCurrentReimbursementStatus = (statuses: ReimbursementStatus[]) =
   return statuses.sort((a: ReimbursementStatus, b: ReimbursementStatus) => (a.dateCreated > b.dateCreated ? -1 : 1))[0];
 };
 
-export const isReimbursementRequestApproved = (reimbursementRequest: ReimbursementRequest) => {
-  return reimbursementRequest.reimbursementStatuses.some(
-    (status: ReimbursementStatus) => status.type === ReimbursementStatusType.ADVISOR_APPROVED
-  );
+export const isReimbursementRequestAdvisorApproved = (reimbursementRequest: ReimbursementRequest) => {
+  return reimbursementRequest.reimbursementStatuses
+    .map((status) => status.type)
+    .includes(ReimbursementStatusType.ADVISOR_APPROVED);
 };
+
+export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: ReimbursementRequest) => {
+  return reimbursementRequest.reimbursementStatuses
+    .map((status) => status.type)
+    .includes(ReimbursementStatusType.SABO_SUBMITTED);
+};
+
+export const imagePreviewUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}/preview`;
 
 export const getRefundRowData = (refund: Reimbursement) => {
   return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
