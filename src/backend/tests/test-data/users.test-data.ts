@@ -109,8 +109,3 @@ export const alfred: PrismaUser & { teams: Team[] } = {
   googleAuthId: 'u',
   teams: [prismaTeam1]
 };
-
-export const batmanTotalSettings: User_Secure_Settings & User_Settings = {
-  ...batmanSecureSettings,
-  ...batmanSettings
-};
