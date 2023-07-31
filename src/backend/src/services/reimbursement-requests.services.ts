@@ -478,8 +478,6 @@ export default class ReimbursementRequestService {
    * @returns the updated expense type
    */
   static async editExpenseType(expenseTypeId: string, code: number, name: string, allowed: boolean, submitter: User) {
-    await validateUserIsPartOfFinanceTeam(submitter);
-
     if (!isHead(submitter.role))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
 
