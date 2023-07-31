@@ -59,7 +59,7 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Returns all reimbursements in the database that are created by the given user.
+   * Returns all reimbursements in the database that are created by the given user
    * @param user ther user retrieving the reimbursements
    * @returns all reimbursements for the given user
    */
