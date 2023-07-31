@@ -1,10 +1,10 @@
 import { ExpenseType } from 'shared';
-import { ExpenseTypePayload } from '../../hooks/finance.hooks';
+import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
-import NERFormModal from '../../components/NERFormModal';
+import NERFormModal from '../../../components/NERFormModal';
 import { Checkbox, FormControl, FormLabel } from '@mui/material';
-import ReactHookTextField from '../../components/ReactHookTextField';
-import { useToast } from '../../hooks/toasts.hooks';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 

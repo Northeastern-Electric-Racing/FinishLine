@@ -1,8 +1,8 @@
 import { TableRow, TableCell, Paper, Table, TableBody, TableContainer, TableHead, Typography, Box } from '@mui/material';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import { useGetAllExpenseTypes } from '../../hooks/finance.hooks';
-import ErrorPage from '../ErrorPage';
-import { NERButton } from '../../components/NERButton';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
+import ErrorPage from '../../ErrorPage';
+import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
 import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';

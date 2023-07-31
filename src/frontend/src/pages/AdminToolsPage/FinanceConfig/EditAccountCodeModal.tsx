@@ -1,8 +1,8 @@
 import { ExpenseType } from 'shared';
 import AccountCodeFormModal from './AccountCodeFormModal';
-import { useEditAccountCode } from '../../hooks/finance.hooks';
-import ErrorPage from '../ErrorPage';
-import LoadingIndicator from '../../components/LoadingIndicator';
+import { useEditAccountCode } from '../../../hooks/finance.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface EditAccountCodeModalProps {
   showModal: boolean;

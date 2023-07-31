@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
-import VendorsTable from './VendorsTable';
-import AccountCodesTable from './AccountCodesTable';
+import VendorsTable from './FinanceConfig/VendorsTable';
+import AccountCodesTable from './FinanceConfig/AccountCodesTable';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
