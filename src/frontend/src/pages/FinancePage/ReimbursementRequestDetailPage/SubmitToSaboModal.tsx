@@ -2,7 +2,7 @@ import NERModal from '../../../components/NERModal';
 import { Box, Grid, Typography } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { ReimbursementRequest, wbsPipe } from 'shared';
-import { useUserSecureSettings } from '../../../hooks/users.hooks';
+import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { datePipe } from '../../../utils/pipes';
@@ -16,11 +16,13 @@ interface SubmitToSaboModalProps {
 }
 
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
+  const user = useCurrentUser();
   const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
   const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
 
+  if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 

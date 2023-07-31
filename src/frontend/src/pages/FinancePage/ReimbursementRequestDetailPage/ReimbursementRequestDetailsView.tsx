@@ -226,6 +226,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         setOpen={setShowSubmitToSaboModal}
         reimbursementRequest={reimbursementRequest}
       />
+      <AddSABONumberModal
+        modalShow={addSaboNumberModalShow}
+        onHide={() => setAddSaboNumberModalShow(false)}
+        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+      />
       <Grid container spacing={2} mt={2}>
         <Grid item lg={6} xs={12}>
           <BasicInformationView />
@@ -242,11 +247,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           </Grid>
         </Grid>
       </Grid>
-      <AddSABONumberModal
-        modalShow={addSaboNumberModalShow}
-        onHide={() => setAddSaboNumberModalShow(false)}
-        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
-      />
     </PageLayout>
   );
 };
