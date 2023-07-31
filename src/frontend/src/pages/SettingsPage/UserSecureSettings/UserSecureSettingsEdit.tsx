@@ -30,7 +30,7 @@ const schema = yup.object().shape({
   nuid: yup
     .string()
     .required('NUID is required')
-    .matches(/^\d{8}$/, 'NUID must be 8 digits')
+    .matches(/^\d{9}$/, 'NUID must be 9 digits')
 });
 
 const UserSecureSettingsEdit: React.FC<UserSecureSettingsEditProps> = ({ currentSettings, onSubmit }) => {
