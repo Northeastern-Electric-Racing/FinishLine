@@ -94,6 +94,9 @@ const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/deli
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
+const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
+const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
+const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -169,6 +172,9 @@ export const apiUrls = {
   financeApproveReimbursementRequest,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
+  financeEditExpenseType,
+  financeCreateExpenseType,
+  financeCreateVendor,
 
   version
 };

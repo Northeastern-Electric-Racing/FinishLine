@@ -2,7 +2,11 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { CreateReimbursementRequestPayload, EditReimbursementRequestPayload } from '../hooks/finance.hooks';
+import {
+  CreateReimbursementRequestPayload,
+  EditReimbursementRequestPayload,
+  ExpenseTypePayload
+} from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
@@ -246,4 +250,32 @@ export const sendPendingAdvisorList = (saboNumbers: number[]) => {
  */
 export const reportRefund = (amount: number) => {
   return axios.post(apiUrls.financeReportRefund(), { amount });
+};
+
+/**
+ * Edits an expense type in the database
+ * @param id id of the expense type
+ * @param accountCodeData the edited data of the expense type
+ * @returns the updated expense type
+ */
+export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
+  return axios.post(apiUrls.financeEditExpenseType(id), accountCodeData);
+};
+
+/**
+ * Creates an expense type in the database
+ * @param accountCodeData the data for the expense type
+ * @returns the new expense type
+ */
+export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
+  return axios.post(apiUrls.financeCreateExpenseType(), accountCodeData);
+};
+
+/**
+ * Creates a vendor in the database
+ * @param vendorData the data for the vendor
+ * @returns the new vendor
+ */
+export const createVendor = async (vendorData: { name: string }) => {
+  return axios.post(apiUrls.financeCreateVendor(), vendorData);
 };
