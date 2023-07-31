@@ -23,7 +23,9 @@ import {
   sendPendingAdvisorList,
   setSaboNumber,
   uploadSingleReceipt,
-  editAccountCode
+  editAccountCode,
+  createAccountCode,
+  createVendor
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -47,6 +49,12 @@ export interface CreateReimbursementRequestPayload {
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
   receiptPictures: ReimbursementReceiptCreateArgs[];
+}
+
+export interface ExpenseTypePayload {
+  code: number;
+  name: string;
+  allowed: boolean;
 }
 
 /**
@@ -325,16 +333,45 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
 };
 
 /**
- * Custom React Hook to edit a reimbursement request expense type code.
+ * Custom React Hook to edit an expense type.
  *
- * @param reimbursementRequestId The id of the reimbursement request being edited
+ * @param expenseId The id of the expense type
  */
-export const useEditAccountCode = (reimbursementRequestId: string) => {
+export const useEditAccountCode = (expenseTypeId: string) => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
-    ['reimbursement-requests', 'edit'],
-    async (accountCodeData: { code: number }) => {
-      const { data } = await editAccountCode(reimbursementRequestId, accountCodeData);
+    ['expense-types', 'edit'],
+    async (accountCodeData: ExpenseTypePayload) => {
+      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+      queryClient.invalidateQueries(['expense-types']);
       return data;
     }
   );
+};
+
+/**
+ * Custom React Hook to create an expense type.
+ */
+export const useCreateAccountCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['expense-types', 'create'],
+    async (accountCodeData: ExpenseTypePayload) => {
+      const { data } = await createAccountCode(accountCodeData);
+      queryClient.invalidateQueries(['expense-types']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a vendor
+ */
+export const useCreateVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(['vendors', 'create'], async (vendorData: { name: string }) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
 };

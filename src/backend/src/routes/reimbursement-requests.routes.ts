@@ -100,6 +100,15 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
+  '/:expenseTypeId/expense-types/edit',
+  nonEmptyString(body('name')),
+  intMinZero(body('code')),
+  body('allowed').isBoolean(),
+  validateInputs,
+  ReimbursementRequestController.editExpenseTypeCode
+);
+
+reimbursementRequestsRouter.post(
   '/reimburse',
   intMinZero(body('amount')),
   validateInputs,
@@ -121,13 +130,5 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
-
-reimbursementRequestsRouter.post(
-  '/expense-types/:expenseTypeId/edit-code',
-  nonEmptyString(body('name')),
-  intMinZero(body('code')),
-  validateInputs,
-  ReimbursementRequestController.editExpenseTypeCode
-);
 
 export default reimbursementRequestsRouter;

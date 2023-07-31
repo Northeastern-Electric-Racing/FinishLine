@@ -449,6 +449,7 @@ export default class ReimbursementRequestService {
 
   /**
    * Service function to create an expense type in our database
+   * @param submitter user who is creating the expense type
    * @param name The name of the expense type
    * @param code the expense type's SABO code
    * @param allowed whether or not this expense type is allowed
@@ -465,6 +466,39 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Edits an expense type
+   * @param expenseTypeId the requested expense type to be edited
+   * @param code the new expense type code number
+   * @param name the new expense type code name
+   * @param allowed the new expense type allowed value
+   * @param submitter the person editing expense type code number
+   * @returns the updated expense type
+   */
+  static async editExpenseType(expenseTypeId: string, code: number, name: string, allowed: boolean, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    if (!isHead(submitter.role))
+      throw new AccessDeniedException('Only the head or admin can update account code number and name');
+
+    const expenseType = await prisma.expense_Type.findUnique({
+      where: { expenseTypeId }
+    });
+
+    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+
+    const expenseTypeUpdated = await prisma.expense_Type.update({
+      where: { expenseTypeId },
+      data: {
+        name,
+        code,
+        allowed
+      }
+    });
+
+    return expenseTypeUpdated;
   }
 
   /**
@@ -649,36 +683,5 @@ export default class ReimbursementRequestService {
 
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;
-  }
-
-  /**
-   * Updates the expense type with expense type code number and name
-   * @param expenseTypeId the requested expense type to be edited
-   * @param expenseTypeCode the new expense type code number
-   * @param expenseTypeName the new expense type code name
-   * @param submitter the person editing expense type code number
-   * @returns the updated expense type
-   */
-  static async setExpenseTypeCode(expenseTypeId: string, expenseTypeCode: number, expenseTypeName: string, submitter: User) {
-    await validateUserIsPartOfFinanceTeam(submitter);
-
-    if (!isHead(submitter.role))
-      throw new AccessDeniedException('Only the head or admin can update account code number and name');
-
-    const expenseType = await prisma.expense_Type.findUnique({
-      where: { expenseTypeId }
-    });
-
-    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
-
-    const expenseTypeUpdated = await prisma.expense_Type.update({
-      where: { expenseTypeId },
-      data: {
-        name: expenseTypeName,
-        code: expenseTypeCode
-      }
-    });
-
-    return expenseTypeUpdated;
   }
 }
