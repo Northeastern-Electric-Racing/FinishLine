@@ -348,6 +348,13 @@ export default class ChangeRequestsService {
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
+    const { changeRequests } = wbsElement;
+    for (let i = 0; i < changeRequests.length; i++) {
+      if (changeRequests[i].dateReviewed === undefined) {
+        throw new HttpException(400, 'please resolve all related change requests before proceeding');
+      }
+    }
+
     const createdCR = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
