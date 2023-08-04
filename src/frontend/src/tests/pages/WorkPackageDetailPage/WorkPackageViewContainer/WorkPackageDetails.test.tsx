@@ -22,8 +22,8 @@ import { UseQueryResult } from 'react-query';
 import { exampleAdminUser, exampleAppAdminUser, exampleLeadershipUser } from '../../../test-support/test-data/users.stub';
 import { Auth } from '../../../../utils/types';
 
-jest.mock('../../../../hooks/users.hooks');
-jest.mock('../../../../hooks/auth.hooks');
+vi.mock('../../../../hooks/users.hooks');
+vi.mock('../../../../hooks/auth.hooks');
 
 const mockedUseAllUsers = useAllUsers as jest.Mock<UseQueryResult<User[]>>;
 const mockedUseAuth = useAuth as jest.Mock<Auth>;

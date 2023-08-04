@@ -9,6 +9,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { User, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { fullNamePipe } from '../../../../utils/pipes';
+import { makeTeamList } from '../../../../utils/teams.utils';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;
@@ -101,8 +102,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
     return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
   };
 
-  const options = team.members
-    .concat(team.leader)
+  const options = makeTeamList(team)
     .sort((a: any, b: any) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
@@ -113,7 +113,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
       id: number;
     }[]
   ) => {
-    const teamMembers = team.members.concat(team.leader);
+    const teamMembers = makeTeamList(team);
     const users = newValue.map((user) => teamMembers.find((o: any) => o.userId === user.id)!);
     setAssignees(users);
   };

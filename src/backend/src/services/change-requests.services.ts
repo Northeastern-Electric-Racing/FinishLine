@@ -1,4 +1,4 @@
-import { ChangeRequest, isAdmin, isGuest, isNotLeadership, wbsPipe } from 'shared';
+import { ChangeRequest, isAdmin, isGuest, isLeadership, isNotLeadership, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
@@ -21,6 +21,7 @@ import { getUserFullName } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from '../utils/changes.utils';
+import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -379,7 +380,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { team: true, wbsElement: true } }
               }
             }
           }
@@ -458,7 +459,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { team: true, wbsElement: true } }
               }
             }
           }
@@ -535,10 +536,10 @@ export default class ChangeRequestsService {
       include: {
         wbsElement: {
           include: {
-            project: { include: { team: { include: { leader: true } }, wbsElement: true } },
+            project: { include: { team: true, wbsElement: true } },
             workPackage: {
               include: {
-                project: { include: { team: { include: { leader: true } }, wbsElement: true } }
+                project: { include: { team: true, wbsElement: true } }
               }
             }
           }
@@ -632,6 +633,68 @@ export default class ChangeRequestsService {
     await prisma.change_Request.update({
       where: { crId },
       data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
+    });
+  }
+
+  /**
+   * Sets reviewers to the given change request and pings them on slack
+   * @param submitter The user requesting the review
+   * @param userIds The requested reviewers on the change request
+   * @param crId The change request that will be reviewed
+   */
+  static async requestCRReview(submitter: User, userIds: number[], crId: number) {
+    const reviewers = await getUsersWithSettings(userIds);
+
+    // check if any reviewers' role is below leadership
+    const underLeads = reviewers.filter((user) => !isLeadership(user.role));
+
+    if (underLeads.length > 0) {
+      const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
+      throw new AccessDeniedException(`The following user(s) are not leadership: ${underLeadsNames.join(', ')}`);
+    }
+
+    // check if all reviewers have slackId
+    const missingReviewersSettings = reviewers.filter((reviewer) => reviewer.userSettings == null);
+
+    if (missingReviewersSettings.length > 0) {
+      const missingReviewerSettingsNames = missingReviewersSettings.map(
+        (reviewer) => reviewer.firstName + ' ' + reviewer.lastName
+      );
+      throw new AccessDeniedException(`The following user(s) have no slackId: ${missingReviewerSettingsNames.join(', ')}`);
+    }
+
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId },
+      ...changeRequestQueryArgs
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    if (foundCR.submitterId !== submitter.userId)
+      throw new AccessDeniedException(`Only the author of this change request can request a reviewer`);
+
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
+
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
+
+    const reviewerIds = reviewers.map((reviewer) => {
+      return {
+        userId: reviewer.userId
+      };
+    });
+
+    await prisma.change_Request.update({
+      where: { crId },
+      data: {
+        requestedReviewers: {
+          set: reviewerIds
+        }
+      }
+    });
+
+    // send slack message to CR reviewers
+    reviewers.forEach(async (user) => {
+      await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
     });
   }
 }

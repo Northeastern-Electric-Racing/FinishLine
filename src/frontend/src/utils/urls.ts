@@ -7,7 +7,7 @@
  * This file centralizes URLs used to query the API.
  */
 
-const API_URL: string = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const API_URL: string = import.meta.env.VITE_REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 /**************** Users Endpoints ****************/
 const users = () => `${API_URL}/users`;
@@ -15,8 +15,11 @@ const usersById = (id: string) => `${users()}/${id}`;
 const usersLogin = () => `${users()}/auth/login`;
 const usersLoginDev = () => `${users()}/auth/login/dev`;
 const userSettingsByUserId = (id: string) => `${usersById(id)}/settings`;
+const currentUserSecureSettings = () => `${users()}/secure-settings/current-user`;
+const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
+const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -72,6 +75,30 @@ const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
 
+/**************** Finance Endpoints **************************/
+const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
+const financeUploadRceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
+const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
+const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
+const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
+const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
+const getAllVendors = () => `${financeEndpoints()}/vendors`;
+const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
+const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
+const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
+const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
+const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
+const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
+const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
+const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
+const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
+const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
+const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
+const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -81,8 +108,11 @@ export const apiUrls = {
   usersLogin,
   usersLoginDev,
   userSettingsByUserId,
+  userSecureSettingsSet,
+  currentUserSecureSettings,
   userRoleByUserId,
   userFavoriteProjects,
+  userSecureSettings,
 
   projects,
   projectsByWbsNum,
@@ -124,6 +154,29 @@ export const apiUrls = {
   teamsSetDescription,
 
   descriptionBulletsCheck,
+
+  financeUploadRceipt,
+  financeCreateReimbursementRequest,
+  financeEditReimbursementRequest,
+  financeReimbursementRequestById,
+  getAllExpenseTypes,
+  getAllVendors,
+  financeEndpoints,
+  financeUploadReceipt,
+  financeGetUserReimbursementRequest,
+  financeGetUserReimbursements,
+  financeGetAllReimbursements,
+  financeReportRefund,
+  financeSetSaboNumber,
+  financeImageById,
+  financeDeleteReimbursement,
+  financeMarkAsDelivered,
+  financeApproveReimbursementRequest,
+  financeGetPendingAdvisorList,
+  financeSendPendingAdvisorList,
+  financeEditExpenseType,
+  financeCreateExpenseType,
+  financeCreateVendor,
 
   version
 };

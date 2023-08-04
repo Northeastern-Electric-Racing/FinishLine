@@ -389,7 +389,7 @@ export default class ProjectsService {
     if (!team) throw new NotFoundException('Team', teamId);
 
     // check for user and user permission (admin, app admin, or leader of the team)
-    if (!isAdmin(user.role) && user.userId !== team.leaderId) {
+    if (!isAdmin(user.role) && user.userId !== team.headId) {
       throw new AccessDeniedAdminOnlyException('set project teams');
     }
 

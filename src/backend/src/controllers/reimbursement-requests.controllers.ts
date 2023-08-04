@@ -4,10 +4,11 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
+import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(_req: Request, res: Response, next: NextFunction) {
@@ -15,6 +16,26 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user);
       res.status(200).json(userReimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUserReimbursements(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const userReimbursements = await ReimbursementRequestService.getUserReimbursements(user);
+      res.status(200).json(userReimbursements);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllReimbursements(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const reimbursements = await ReimbursementRequestService.getAllReimbursements(user);
+      res.status(200).json(reimbursements);
     } catch (error: unknown) {
       next(error);
     }
@@ -31,20 +52,30 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, receiptPictures, reimbursementProducts, expenseTypeId, totalCost } =
-        req.body;
-      const user = await getCurrentUser(res);
+      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
+      const user = await getCurrentUserWithUserSettings(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        receiptPictures,
         reimbursementProducts,
         expenseTypeId,
         totalCost
       );
       res.status(200).json(createdReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async reimburseUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { amount } = req.body;
+
+      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, user);
+      res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
     }
@@ -68,6 +99,28 @@ export default class ReimbursementRequestsController {
         user
       );
       res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(requestId, user);
+      res.status(200).json(deletedReimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getPendingAdvisorList(_req: Request, res: Response, next: NextFunction) {
+    const user = await getCurrentUser(res);
+
+    try {
+      const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(user);
+      return res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
       next(error);
     }
@@ -118,10 +171,110 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async uploadReceipt(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      const { requestId } = req.params;
+
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+
+      const user = await getCurrentUser(res);
+
+      const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
+
+      res.status(200).json(receipt);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
+      res.status(200).json(expenseTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests();
+      const user = await getCurrentUser(res);
+      const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
+        user
+      );
       res.status(200).json(reimbursementRequests);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getSingleReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
+        user,
+        requestId
+      );
+      res.status(200).json(reimbursementRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async downloadReceiptImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId } = req.params;
+      const user = await getCurrentUser(res);
+      const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, user);
+
+      // Set the appropriate headers for the HTTP response
+      res.setHeader('content-type', String(imageData.type));
+      res.setHeader('content-length', imageData.buffer.length);
+
+      // Send the Buffer as the response body
+      res.send(imageData.buffer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { expenseTypeId } = req.params;
+      const { name, code, allowed } = req.body;
+      const submitter = await getCurrentUser(res);
+      const expenseTypeUpdated = await ReimbursementRequestService.editExpenseType(
+        expenseTypeId,
+        code,
+        name,
+        allowed,
+        submitter
+      );
+      res.status(200).json(expenseTypeUpdated);
     } catch (error: unknown) {
       next(error);
     }

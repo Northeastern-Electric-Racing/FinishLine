@@ -7,35 +7,31 @@ import { Grid, Typography } from '@mui/material';
 import { UserSettings } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 import DetailDisplay from '../../../components/DetailDisplay';
+import { Box } from '@mui/system';
 
-interface UserSettingsViewProps {
+export interface UserSettingsViewProps {
   settings: UserSettings;
 }
-const renderSlackId = (settings: UserSettings) => {
+const SlackId: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
-    <>
-      <div style={{ display: 'flex' }}>
-        <Typography sx={{ fontWeight: 'bold' }}>Slack ID:</Typography>
-        <ExternalLink
-          link={'https://nu-electric-racing.slack.com/team/' + settings.slackId}
-          description={settings.slackId}
-        />
-      </div>
-    </>
+    <Box style={{ display: 'flex' }}>
+      <Typography sx={{ fontWeight: 'bold' }}>Slack ID:</Typography>
+      <ExternalLink link={'https://nu-electric-racing.slack.com/team/' + settings.slackId} description={settings.slackId} />
+    </Box>
   );
 };
 
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
-    <>
-      <Grid item xs={6}>
+    <Grid container spacing={2}>
+      <Grid item xs={12} sm={6}>
         <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
       </Grid>
-      <Grid item xs={6}>
-        {renderSlackId(settings)}
+      <Grid item xs={12} sm={6}>
+        <SlackId settings={settings} />
       </Grid>
-    </>
+    </Grid>
   );
 };
 

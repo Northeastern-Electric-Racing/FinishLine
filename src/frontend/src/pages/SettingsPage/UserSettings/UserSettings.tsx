@@ -5,8 +5,8 @@
 
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { ThemeName } from 'shared';
-import { useSingleUserSettings, useUpdateUserSettings } from '../../../hooks/users.hooks';
+import { ThemeName, UserSettings as UserSettingsType } from 'shared';
+import { useUpdateUserSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
@@ -15,28 +15,43 @@ import UserSettingsView from './UserSettingsView';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { Grid, IconButton } from '@mui/material';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface UserSettingsProps {
-  userId: number;
+  currentSettings: UserSettingsType;
 }
 
-export interface FormInput {
+export interface SettingsFormInput {
   defaultTheme: ThemeName;
   slackId: string;
 }
 
-const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
+const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
   const [edit, setEdit] = useState(false);
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
-  const update = useUpdateUserSettings();
+  const {
+    mutateAsync: updateUserSettings,
+    isLoading: updateUserSettingsIsLoading,
+    isError: updateUserSettingsIsError,
+    error: updateUserSettingsError
+  } = useUpdateUserSettings();
+  const toast = useToast();
 
-  if (isLoading || !userSettingsData || update.isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
-  if (update.isError) return <ErrorPage error={update.error!} message={update.error?.message!} />;
+  if (updateUserSettingsIsLoading) return <LoadingIndicator />;
+  if (updateUserSettingsIsError) return <ErrorPage error={updateUserSettingsError!} />;
 
-  const handleConfirm = async ({ defaultTheme, slackId }: FormInput) => {
+  const handleConfirm = async ({ defaultTheme, slackId }: SettingsFormInput) => {
     setEdit(false);
-    await update.mutateAsync({ id: userSettingsData.id!, defaultTheme, slackId });
+    try {
+      await updateUserSettings({
+        id: currentSettings.id,
+        defaultTheme,
+        slackId
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   return (
@@ -59,9 +74,9 @@ const UserSettings: React.FC<UserSettingsProps> = ({ userId }) => {
     >
       <Grid container>
         {!edit ? (
-          <UserSettingsView settings={userSettingsData} />
+          <UserSettingsView settings={currentSettings} />
         ) : (
-          <UserSettingsEdit currentSettings={userSettingsData} onSubmit={handleConfirm} />
+          <UserSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
     </PageBlock>

@@ -21,5 +21,6 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
+teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
 
 export default teamsRouter;

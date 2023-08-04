@@ -1,5 +1,14 @@
 import prisma from '../src/prisma/prisma';
-import { aquaman, batman, batmanSettings, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanSettings,
+  greenlantern,
+  superman,
+  wonderwoman,
+  supermanWithUserSettings,
+  batmanWithUserSettings
+} from './test-data/users.test-data';
 import {
   prismaProposedSolution1,
   whipExpectedActivites,
@@ -27,24 +36,24 @@ import * as changeRequestUtils from '../src/utils/change-requests.utils';
 
 describe('Change Requests', () => {
   beforeEach(() => {
-    jest.spyOn(changeRequestTransformer, 'default').mockReturnValue(sharedChangeRequest);
-    jest.spyOn(changeRequestUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
+    vi.spyOn(changeRequestTransformer, 'default').mockReturnValue(sharedChangeRequest);
+    vi.spyOn(changeRequestUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
       return undefined;
     });
-    jest.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
+    vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return undefined;
     });
-    jest.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
-    jest.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
+    vi.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
+    vi.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getChangeRequestByID', () => {
     test('it works when the change request exists', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const res = await ChangeRequestsService.getChangeRequestByID(1);
 
@@ -52,7 +61,7 @@ describe('Change Requests', () => {
     });
 
     test('it errors if the change request is not found', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
 
       const crId = 1;
 
@@ -64,7 +73,7 @@ describe('Change Requests', () => {
 
   describe('getAllChangeRequests', () => {
     test('it works when there are change requests', async () => {
-      jest.spyOn(prisma.change_Request, 'findMany').mockResolvedValue([]);
+      vi.spyOn(prisma.change_Request, 'findMany').mockResolvedValue([]);
 
       const res = await ChangeRequestsService.getAllChangeRequests();
 
@@ -91,7 +100,7 @@ describe('Change Requests', () => {
     });
 
     test('change request not found errors', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(null);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(batman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new NotFoundException('Change Request', crId));
@@ -99,7 +108,7 @@ describe('Change Requests', () => {
     });
 
     test('change request already reviewed', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...changeRequest, accepted: true });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce({ ...changeRequest, accepted: true });
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new HttpException(400, 'This change request is already approved!'));
@@ -107,7 +116,7 @@ describe('Change Requests', () => {
     });
 
     test('change request reviewer is creator', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(batman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new AccessDeniedException());
@@ -115,7 +124,7 @@ describe('Change Requests', () => {
     });
 
     test('did not select proposed solution', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, null)
       ).rejects.toThrow(new HttpException(400, 'No proposed solution selected for scope change request'));
@@ -123,8 +132,8 @@ describe('Change Requests', () => {
     });
 
     test('proposed solution id not found', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(changeRequest);
+      vi.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(null);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new HttpException(404, 'Proposed Solution with id: 1 not found!'));
@@ -140,11 +149,11 @@ describe('Change Requests', () => {
         wbsElement: invalidWBSElement,
         accepted: false
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(invalidCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(invalidCR);
+      vi.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
       const updatedSolution = { ...prismaProposedSolution1, accepted: true };
-      jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
+      vi.spyOn(prisma.project, 'findUnique').mockResolvedValueOnce(null);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
       ).rejects.toThrow(new NotFoundException('Project', 100));
@@ -158,13 +167,13 @@ describe('Change Requests', () => {
         ...changeRequest,
         wbsElement: { ...prismaWbsElement1, workPackage: prismaWorkPackage1 }
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(validWPCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(validWPCR);
+      vi.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
       const updatedSolution = { ...prismaProposedSolution1, accepted: true };
-      jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
-      jest.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
-      jest.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
-      jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
+      vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
@@ -220,12 +229,12 @@ describe('Change Requests', () => {
         wbsElement: myWBSElement,
         accepted: false
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(newCR);
-      jest.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValueOnce(newCR);
+      vi.spyOn(prisma.proposed_Solution, 'findUnique').mockResolvedValueOnce(prismaProposedSolution1);
       const updatedSolution = { ...prismaProposedSolution1, accepted: true };
-      jest.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
-      jest.spyOn(prisma.project, 'update').mockResolvedValueOnce(prismaProject1);
-      jest.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
+      vi.spyOn(prisma.project, 'update').mockResolvedValueOnce(prismaProject1);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -269,7 +278,7 @@ describe('Change Requests', () => {
         accepted: false,
         type: CR_Type.STAGE_GATE
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedExpectedActivitiesCR);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedExpectedActivitiesCR);
 
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
@@ -278,7 +287,7 @@ describe('Change Requests', () => {
     });
 
     test('Stage Gate CR has unchecked deliverables', async () => {
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
       const uncheckedDeliverables = {
         ...whipDeliverables,
         userCheckedId: null,
@@ -296,7 +305,7 @@ describe('Change Requests', () => {
         accepted: false,
         type: CR_Type.STAGE_GATE
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedDeliverablesCR);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(uncheckedDeliverablesCR);
 
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1')
@@ -317,9 +326,9 @@ describe('Change Requests', () => {
         accepted: false,
         type: CR_Type.STAGE_GATE
       };
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(validSGCR);
-      jest.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
-      jest.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(validSGCR);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
       await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, null);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
@@ -336,7 +345,7 @@ describe('Change Requests', () => {
     const description = 'Change Color from Orange to Black';
 
     test('change request not found error', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         ChangeRequestsService.addProposedSolution(superman, crId, budgetImpact, description, timelineImpact, scopeImpact)
       ).rejects.toThrow(new NotFoundException('Change Request', crId));
@@ -350,9 +359,10 @@ describe('Change Requests', () => {
     });
 
     test('change request deleted', async () => {
-      jest
-        .spyOn(prisma.change_Request, 'findUnique')
-        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date('1/1/2023') });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({
+        ...prismaChangeRequest1,
+        dateDeleted: new Date('1/1/2023')
+      });
       await expect(() =>
         ChangeRequestsService.addProposedSolution(greenlantern, crId, budgetImpact, description, timelineImpact, scopeImpact)
       ).rejects.toThrow(new DeletedException('Change Request', crId));
@@ -360,7 +370,7 @@ describe('Change Requests', () => {
     });
 
     test('already accepted change request', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
       await expect(() =>
         ChangeRequestsService.addProposedSolution(aquaman, crId, budgetImpact, description, timelineImpact, scopeImpact)
       ).rejects.toThrow(new HttpException(400, 'Cannot create proposed solutions on a reviewed change request!'));
@@ -368,8 +378,8 @@ describe('Change Requests', () => {
     });
 
     test('scope CR not found', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         ChangeRequestsService.addProposedSolution(aquaman, crId, budgetImpact, description, timelineImpact, scopeImpact)
       ).rejects.toThrow(new NotFoundException('Change Request', crId));
@@ -378,9 +388,9 @@ describe('Change Requests', () => {
     });
 
     test('accepted new Proposed Solution', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
-      jest.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
+      vi.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
       const response = await ChangeRequestsService.addProposedSolution(aquaman, crId, 1000, description, 10, 'huge');
       expect(response).toStrictEqual(prismaProposedSolution1.proposedSolutionId);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -397,7 +407,7 @@ describe('Change Requests', () => {
     });
 
     test('Change Request does not exist', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
       await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
         new NotFoundException('Change Request', 1)
       );
@@ -405,9 +415,7 @@ describe('Change Requests', () => {
     });
 
     test('Change request already deleted', async () => {
-      jest
-        .spyOn(prisma.change_Request, 'findUnique')
-        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
       await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
         new DeletedException('Change Request', 1)
       );
@@ -415,7 +423,7 @@ describe('Change Requests', () => {
     });
 
     test('Change request already reviewed', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
       await expect(() => ChangeRequestsService.deleteChangeRequest(superman, 1)).rejects.toThrow(
         new HttpException(400, 'Cannot delete a reviewed change request!')
       );
@@ -423,11 +431,86 @@ describe('Change Requests', () => {
     });
 
     test('Change request successfully deleted', async () => {
-      jest.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
-      jest
-        .spyOn(prisma.change_Request, 'update')
-        .mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date(), deletedByUserId: superman.userId });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValue({
+        ...prismaChangeRequest1,
+        dateDeleted: new Date(),
+        deletedByUserId: superman.userId
+      });
       await ChangeRequestsService.deleteChangeRequest(superman, 1);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Request reviewers to change request', () => {
+    test('The submitter of the request does not match to cr submitter', async () => {
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(superman, [], 1)).rejects.toThrow(
+        new AccessDeniedException(`Only the author of this change request can request a reviewer`)
+      );
+    });
+
+    test('One or more reviewer does not exist', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 123], 1)).rejects.toThrow(
+        new HttpException(404, 'User(s) with the following ids not found: 123')
+      );
+    });
+
+    test('One or more reviewer is not at least in leadership role', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman, wonderwoman]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 3], 1)).rejects.toThrow(
+        new AccessDeniedException('The following user(s) are not leadership: Wonder Woman')
+      );
+    });
+
+    test('One or more reviewer has no user settings', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batmanWithUserSettings]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new AccessDeniedException('The following user(s) have no slackId: Clark Kent')
+      );
+    });
+
+    test('Change Request does not exist', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new NotFoundException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already deleted', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new DeletedException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already reviewed', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new HttpException(400, 'Cannot request a review on an already reviewed change request')
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request successfully assigned reviewers', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
+
+      await ChangeRequestsService.requestCRReview(batman, [1], 1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });

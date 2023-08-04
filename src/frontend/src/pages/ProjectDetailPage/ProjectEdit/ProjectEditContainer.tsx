@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -28,6 +27,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import LinkEditView from '../../../components/LinkEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
+import PageLayout from '../../../components/PageLayout';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -170,95 +170,94 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <form
-      id="project-edit-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
+    <PageLayout
+      title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
+      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
     >
-      <PageTitle
-        title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
-        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-        actionButton={
-          <ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />
-        }
-      />
-      <ProjectEditDetails
-        users={users}
-        control={control}
-        errors={errors}
-        projectLead={projectLeadId}
-        projectManager={projectManagerId}
-        setProjectLead={setProjectLeadId}
-        setProjectManager={setprojectManagerId}
-      />
-      <PageBlock title="Project Summary">
-        <Grid item sx={{ mt: 2 }}>
-          <ReactHookTextField
-            name="summary"
-            control={control}
-            sx={{ width: '50%' }}
-            label="Summary"
-            multiline={true}
-            rows={5}
-            errorMessage={errors.summary}
+      <form
+        id="project-edit-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
+        }}
+      >
+        <ProjectEditDetails
+          users={users}
+          control={control}
+          errors={errors}
+          projectLead={projectLeadId}
+          projectManager={projectManagerId}
+          setProjectLead={setProjectLeadId}
+          setProjectManager={setprojectManagerId}
+        />
+        <PageBlock title="Project Summary">
+          <Grid item sx={{ mt: 2 }}>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              sx={{ width: '50%' }}
+              label="Summary"
+              multiline={true}
+              rows={5}
+              errorMessage={errors.summary}
+            />
+          </Grid>
+        </PageBlock>
+        <PageBlock title="Links">
+          <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
+        </PageBlock>
+        <PageBlock title="Goals">
+          <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
+        </PageBlock>
+        <PageBlock title="Features">
+          <ReactHookEditableList
+            name="features"
+            register={register}
+            ls={features}
+            append={appendFeature}
+            remove={removeFeature}
           />
-        </Grid>
-      </PageBlock>
-      <PageBlock title="Links">
-        <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
-      </PageBlock>
-      <PageBlock title="Goals">
-        <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
-      </PageBlock>
-      <PageBlock title="Features">
-        <ReactHookEditableList
-          name="features"
-          register={register}
-          ls={features}
-          append={appendFeature}
-          remove={removeFeature}
-        />
-      </PageBlock>
-      <PageBlock title="Other Constraints">
-        <ReactHookEditableList
-          name="constraints"
-          register={register}
-          ls={constraints}
-          append={appendConstraint}
-          remove={removeConstraint}
-        />
-      </PageBlock>
-      <PageBlock title="Rules">
-        {rules.map((_rule, i) => {
-          return (
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-              <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
-              <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          );
-        })}
-        <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
-          + ADD NEW RULE
-        </Button>
-      </PageBlock>
+        </PageBlock>
+        <PageBlock title="Other Constraints">
+          <ReactHookEditableList
+            name="constraints"
+            register={register}
+            ls={constraints}
+            append={appendConstraint}
+            remove={removeConstraint}
+          />
+        </PageBlock>
+        <PageBlock title="Rules">
+          {rules.map((_rule, i) => {
+            return (
+              <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
+                <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            );
+          })}
+          <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
+            + ADD NEW RULE
+          </Button>
+        </PageBlock>
 
-      <Box textAlign="right" sx={{ my: 2 }}>
-        <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-          Submit
-        </NERSuccessButton>
-      </Box>
-    </form>
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      </form>
+    </PageLayout>
   );
 };
 

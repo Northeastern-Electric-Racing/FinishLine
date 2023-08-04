@@ -6,7 +6,6 @@
 import Box from '@mui/material/Box';
 import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
-import PageTitle from '../../layouts/PageTitle/PageTitle';
 import { routes } from '../../utils/routes';
 import { FormControl, FormLabel, MenuItem, TextField } from '@mui/material';
 import * as yup from 'yup';
@@ -20,6 +19,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { MouseEventHandler } from 'react';
+import PageLayout from '../../components/PageLayout';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -66,98 +66,99 @@ const CreateProjectFormView: React.FC<CreateProjectFormViewProps> = ({ allowSubm
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
-    <form
-      id={'create-project-form'}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-      onKeyPress={(e) => {
-        e.key === 'Enter' && e.preventDefault();
-      }}
-    >
-      <PageTitle title={'New Project'} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
-      <PageBlock title={''}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} md={3}>
-            <FormControl fullWidth>
-              <FormLabel>Change Request ID</FormLabel>
-              <ReactHookTextField
-                name="crId"
-                control={control}
-                placeholder="Enter change request ID..."
-                errorMessage={errors.crId}
-                type="number"
-              />
-            </FormControl>
+    <PageLayout title="New Project" previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}>
+      <form
+        id={'create-project-form'}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
+        }}
+      >
+        <PageBlock title={''}>
+          <Grid container spacing={2}>
+            <Grid item xs={6} md={3}>
+              <FormControl fullWidth>
+                <FormLabel>Change Request ID</FormLabel>
+                <ReactHookTextField
+                  name="crId"
+                  control={control}
+                  placeholder="Enter change request ID..."
+                  errorMessage={errors.crId}
+                  type="number"
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={3}>
+              <FormControl fullWidth>
+                <FormLabel>Car Number</FormLabel>
+                <ReactHookTextField
+                  name="carNumber"
+                  control={control}
+                  placeholder="Enter car number..."
+                  errorMessage={errors.carNumber}
+                  type="number"
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <FormLabel>Team</FormLabel>
+                <Controller
+                  name="teamId"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { onChange, value } }) => (
+                    <TextField select onChange={onChange} value={value}>
+                      {teams.map((t) => (
+                        <MenuItem key={t.teamName} value={t.teamId}>
+                          {t.teamName}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormControl fullWidth>
+                <FormLabel>Project Name</FormLabel>
+                <ReactHookTextField
+                  name="name"
+                  control={control}
+                  placeholder="Enter project name..."
+                  errorMessage={errors.name}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormControl fullWidth>
+                <FormLabel>Project Summary</FormLabel>
+                <ReactHookTextField
+                  name="summary"
+                  control={control}
+                  placeholder="Enter summary..."
+                  errorMessage={errors.summary}
+                  multiline
+                  rows={5}
+                />
+              </FormControl>
+            </Grid>
           </Grid>
-          <Grid item xs={6} md={3}>
-            <FormControl fullWidth>
-              <FormLabel>Car Number</FormLabel>
-              <ReactHookTextField
-                name="carNumber"
-                control={control}
-                placeholder="Enter car number..."
-                errorMessage={errors.carNumber}
-                type="number"
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <FormLabel>Team</FormLabel>
-              <Controller
-                name="teamId"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <TextField select onChange={onChange} value={value}>
-                    {teams.map((t) => (
-                      <MenuItem key={t.teamName} value={t.teamId}>
-                        {t.teamName}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <FormControl fullWidth>
-              <FormLabel>Project Name</FormLabel>
-              <ReactHookTextField
-                name="name"
-                control={control}
-                placeholder="Enter project name..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <FormControl fullWidth>
-              <FormLabel>Project Summary</FormLabel>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Enter summary..."
-                errorMessage={errors.summary}
-                multiline
-                rows={5}
-              />
-            </FormControl>
-          </Grid>
-        </Grid>
-        <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
-          <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
-            Create
-          </NERSuccessButton>
-        </Box>
-      </PageBlock>
-    </form>
+          <Box justifyContent="flex-end" display="flex" sx={{ mt: 2 }}>
+            <NERFailButton variant="contained" onClick={onCancel} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" disabled={!allowSubmit} sx={{ mx: 1 }}>
+              Create
+            </NERSuccessButton>
+          </Box>
+        </PageBlock>
+      </form>
+    </PageLayout>
   );
 };
 

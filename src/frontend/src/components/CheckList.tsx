@@ -13,10 +13,7 @@ import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { useAuth } from '../hooks/auth.hooks';
 import { Tooltip } from '@mui/material';
 import { User } from 'shared';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
+import NERModal from './NERModal';
 
 export type CheckListItem = {
   id: number;
@@ -99,24 +96,16 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
           />
         ))}
       </FormControl>
-      <Dialog open={showConfirm} onClose={() => setShowConfirm(false)}>
-        <DialogTitle>Are you sure you want to mark this completed task as NOT completed?</DialogTitle>
-        <DialogActions className="justify-content-around">
-          <Button
-            onClick={() => handleUncheck(currIdx)}
-            type="submit"
-            className="mb-3"
-            autoFocus
-            variant="contained"
-            color="success"
-          >
-            Yes
-          </Button>
-          <Button onClick={() => setShowConfirm(false)} className="mb-3" variant="contained" color="error">
-            No
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <NERModal
+        open={showConfirm}
+        onHide={() => setShowConfirm(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={() => handleUncheck(currIdx)}
+      >
+        <Typography>Are you sure you want to mark this completed task as NOT completed?</Typography>
+      </NERModal>
     </PageBlock>
   );
 };

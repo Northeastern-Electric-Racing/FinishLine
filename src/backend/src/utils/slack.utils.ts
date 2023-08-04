@@ -1,4 +1,4 @@
-import { daysBetween, User, wbsPipe, WorkPackage } from 'shared';
+import { ChangeRequest, daysBetween, User, wbsPipe, WorkPackage } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 
@@ -36,4 +36,18 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   const fullMsg = `${userString} ${wbsString}: ${workPackage.projectName} - ${workPackage.name} ${dueString}`;
 
   await sendMessage(LEAD_CHANNEL_SLACK_ID, fullMsg);
+};
+
+/**
+ * Send CR requested review notification to reviewer in Slack
+ * @param slackId the slack id of the reviewer
+ * @param changeRequest the requested change request to be reviewed
+ */
+export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
+
+  const fullMsg = `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
+  await sendMessage(slackId, fullMsg);
 };

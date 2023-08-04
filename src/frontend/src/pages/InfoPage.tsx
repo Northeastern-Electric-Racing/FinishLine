@@ -10,13 +10,12 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CodeIcon from '@mui/icons-material/Code';
 import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
-import PageTitle from '../layouts/PageTitle/PageTitle';
 import PageBlock from '../layouts/PageBlock';
+import PageLayout from '../components/PageLayout';
 
 const InfoPage: React.FC = () => {
   return (
-    <>
-      <PageTitle title="Information" previousPages={[]} />
+    <PageLayout title="Information">
       <PageBlock title="Resources">
         <Box>
           <Typography>Check out these helpful resources:</Typography>
@@ -55,7 +54,7 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-    </>
+    </PageLayout>
   );
 };
 
