@@ -341,6 +341,9 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
+      },
+      include: {
+        changeRequests: true
       }
     });
 
@@ -424,7 +427,7 @@ export default class ChangeRequestsService {
           workPackageNumber
         }
       },
-      include: { workPackage: { include: { expectedActivities: true, deliverables: true } } }
+      include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, changeRequests: true }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -434,6 +437,13 @@ export default class ChangeRequestsService {
 
     if (wbsElement.workPackage) {
       throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    }
+
+    const { changeRequests } = wbsElement;
+    for (let i = 0; i < changeRequests.length; i++) {
+      if (changeRequests[i].dateReviewed === undefined) {
+        throw new HttpException(400, 'please resolve all related change requests before proceeding');
+      }
     }
 
     const createdChangeRequest = await prisma.change_Request.create({
