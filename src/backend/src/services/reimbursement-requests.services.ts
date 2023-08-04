@@ -19,7 +19,6 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  ReimbursementProductCreateArgs,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -35,7 +34,6 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { UserWithTeam } from '../utils/auth.utils';
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
