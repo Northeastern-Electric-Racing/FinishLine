@@ -1,5 +1,5 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma } from '@prisma/client';
+import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { buildChangeDetail } from './utils';
 import { sendMessage } from '../integrations/slack';
@@ -164,4 +164,18 @@ export const calculateChangeRequestStatus = (
     return ChangeRequestStatus.Denied;
   }
   return ChangeRequestStatus.Open;
+};
+
+/**
+ * Determines whether all the change requests for a work package have been resolved or not
+ * @param wbsElement represents the given work package
+ * @returns true if all the change requests have been resolved, and false otherwise
+ */
+export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
+  for (let i = 0; i < changeRequests.length; i++) {
+    if (!changeRequests[i].dateReviewed) {
+      return false;
+    }
+  }
+  return true;
 };

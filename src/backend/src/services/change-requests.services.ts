@@ -14,7 +14,8 @@ import changeRequestTransformer from '../transformers/change-requests.transforme
 import {
   updateBlocking,
   sendSlackChangeRequestNotification,
-  sendSlackCRReviewedNotification
+  sendSlackCRReviewedNotification,
+  allChangeRequestsReviewed
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { buildChangeDetail } from '../utils/utils';
@@ -352,10 +353,8 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { changeRequests } = wbsElement;
-    for (let i = 0; i < changeRequests.length; i++) {
-      if (changeRequests[i].dateReviewed === undefined) {
-        throw new HttpException(400, 'please resolve all related change requests before proceeding');
-      }
+    if (!allChangeRequestsReviewed(changeRequests)) {
+      throw new HttpException(400, 'Please resolve all related change requests before proceeding');
     }
 
     const createdCR = await prisma.change_Request.create({
@@ -440,10 +439,8 @@ export default class ChangeRequestsService {
     }
 
     const { changeRequests } = wbsElement;
-    for (let i = 0; i < changeRequests.length; i++) {
-      if (changeRequests[i].dateReviewed === undefined) {
-        throw new HttpException(400, 'please resolve all related change requests before proceeding');
-      }
+    if (!allChangeRequestsReviewed(changeRequests)) {
+      throw new HttpException(400, 'Please resolve all related change requests before proceeding');
     }
 
     const createdChangeRequest = await prisma.change_Request.create({
