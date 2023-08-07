@@ -86,17 +86,15 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const projectLinkTypeNames = projectLinks.map((link) => link.linkTypeName);
 
-  projectLinks.concat(
-    requiredLinkTypeNames
-      .filter((name) => !projectLinkTypeNames.includes(name))
-      .map((name) => {
-        return {
-          linkId: '-1',
-          url: '',
-          linkTypeName: name
-        };
-      })
-  );
+  requiredLinkTypeNames
+    .filter((name) => !projectLinkTypeNames.includes(name))
+    .forEach((name) => {
+      projectLinks.push({
+        linkId: '-1',
+        url: '',
+        linkTypeName: name
+      });
+    });
 
   const {
     register,
@@ -114,7 +112,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       rules: project.rules.map((rule) => {
         return { rule };
       }),
-      links: projectLinks,
+      links: projectLinks.map((link) => {
+        return {
+          linkId: link.linkId,
+          url: link.url,
+          linkTypeName: link.linkTypeName
+        };
+      }),
       goals: bulletsToObject(project.goals),
       features: bulletsToObject(project.features),
       constraints: bulletsToObject(project.otherConstraints)
