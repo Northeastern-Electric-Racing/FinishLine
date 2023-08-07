@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { LinkCreateArgs, Project, RequiredLinkType } from 'shared';
+import { LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -24,7 +24,7 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LinkEditView from '../../../components/LinkEditView';
+import LinksEditView from '../../../components/LinkEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
@@ -43,6 +43,7 @@ const schema = yup.object().shape({
 
 interface ProjectEditContainerProps {
   project: Project;
+  requiredLinkTypeNames: string[];
   exitEditMode: () => void;
 }
 
@@ -69,7 +70,7 @@ export interface ProjectEditFormInput {
   }[];
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
+const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode, requiredLinkTypeNames }) => {
   const query = useQuery();
   const allUsers = useAllUsers();
   const toast = useToast();
@@ -83,13 +84,19 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   });
 
-  const linkTypes = projectLinks.map((link) => link.linkTypeName);
+  const projectLinkTypeNames = projectLinks.map((link) => link.linkTypeName);
 
-  Object.values(RequiredLinkType).forEach((linkType) => {
-    if (!linkTypes.includes(linkType)) {
-      projectLinks.push({ linkId: '-1', url: '', linkTypeName: linkType });
-    }
-  });
+  projectLinks.concat(
+    requiredLinkTypeNames
+      .filter((name) => !projectLinkTypeNames.includes(name))
+      .map((name) => {
+        return {
+          linkId: '-1',
+          url: '',
+          linkTypeName: name
+        };
+      })
+  );
 
   const {
     register,
@@ -106,13 +113,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       rules: project.rules.map((rule) => {
         return { rule };
       }),
-      links: projectLinks.map((link) => {
-        return {
-          linkId: link.linkId,
-          linkTypeName: link.linkTypeName,
-          url: link.url
-        };
-      }),
+      links: projectLinks,
       goals: bulletsToObject(project.goals),
       features: bulletsToObject(project.features),
       constraints: bulletsToObject(project.otherConstraints)
@@ -209,7 +210,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           </Grid>
         </PageBlock>
         <PageBlock title="Links">
-          <LinkEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
+          <LinksEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
         </PageBlock>
         <PageBlock title="Goals">
           <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />

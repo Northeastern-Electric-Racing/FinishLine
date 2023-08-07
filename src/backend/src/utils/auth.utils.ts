@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { NotFoundException } from './errors.utils';
-import { Team, User, User_Secure_Settings, User_Settings } from '@prisma/client';
+import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
@@ -99,5 +99,3 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
   if (!user) throw new NotFoundException('User', userId);
   return user;
 };
-
-export type UserWithTeam = User & { teams: Team[] };

@@ -2,7 +2,6 @@ import { User } from 'shared';
 import { FormControl, FormLabel, Grid } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
@@ -54,7 +53,6 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
               control={control}
               type="number"
               placeholder="Enter budget..."
-              icon={<AttachMoneyIcon />}
               errorMessage={errors.budget}
             />
           </FormControl>

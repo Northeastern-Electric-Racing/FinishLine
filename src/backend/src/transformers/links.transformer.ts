@@ -18,6 +18,7 @@ export const linkTypeTransformer = (linkType: Prisma.LinkTypeGetPayload<typeof l
     name: linkType.name,
     creator: linkType.creator,
     dateCreated: linkType.dateCreated,
+    required: linkType.required,
     iconName: linkType.iconName
   };
 };

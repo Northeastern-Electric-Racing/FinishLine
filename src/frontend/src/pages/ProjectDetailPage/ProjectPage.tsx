@@ -5,13 +5,14 @@
 
 import { useState } from 'react';
 import { WbsNumber } from 'shared';
-import { useSingleProject } from '../../hooks/projects.hooks';
+import { useAllLinkTypes, useSingleProject } from '../../hooks/projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
 import ProjectEditContainer from './ProjectEdit/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
+import { getRequiredLinkTypeNames } from '../../utils/project.utils';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;
@@ -20,24 +21,40 @@ interface ProjectPageProps {
 const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
   const history = useHistory();
   const query = useQuery();
-  const { isLoading, isError, data, error } = useSingleProject(wbsNum);
   const [editMode, setEditMode] = useState<boolean>(query.get('edit') === 'true');
+  const {
+    isLoading: projectIsLoading,
+    isError: projectIsError,
+    data: project,
+    error: projectError
+  } = useSingleProject(wbsNum);
+  const {
+    data: allLinkTypes,
+    isLoading: allLinkTypesIsLoading,
+    isError: allLinkTypesIsError,
+    error: allLinkTypesError
+  } = useAllLinkTypes();
 
-  if (isLoading || !data) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (projectIsError) return <ErrorPage message={projectError.message} />;
+  if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
+
+  if (projectIsLoading || !project || !allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
+
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
   if (editMode) {
     return (
       <ProjectEditContainer
-        project={data}
+        project={project}
         exitEditMode={() => {
           setEditMode(false);
           history.push(`${history.location.pathname}`);
         }}
+        requiredLinkTypeNames={requiredLinkTypeNames}
       />
     );
   }
-  return <ProjectViewContainer project={data} enterEditMode={() => setEditMode(true)} />;
+  return <ProjectViewContainer project={project} enterEditMode={() => setEditMode(true)} />;
 };
 
 export default ProjectPage;

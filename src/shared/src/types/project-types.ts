@@ -77,6 +77,7 @@ export interface LinkType {
   name: string;
   dateCreated: Date;
   creator: UserPreview;
+  required: boolean;
   iconName: string;
 }
 
@@ -92,10 +93,4 @@ export interface LinkCreateArgs {
   linkId: string;
   linkTypeName: string;
   url: string;
-}
-
-export enum RequiredLinkType {
-  Confluence = 'Confluence',
-  BillOfMaterials = 'Bill of Materials',
-  GoogleDrive = 'Google Drive'
 }

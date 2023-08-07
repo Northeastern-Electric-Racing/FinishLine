@@ -292,6 +292,7 @@ model LinkType {
   dateCreated DateTime @default(now())
   creatorId   Int
   iconName    String
+  required    Boolean
   creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
   links       Link[]   @relation(name: "linkTypes")
 }

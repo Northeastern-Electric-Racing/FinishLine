@@ -1,12 +1,13 @@
 import { useAllLinkTypes } from '../hooks/projects.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
-import { Button, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { Button, Grid, IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LinkCreateArgs } from 'shared';
+import { getRequiredLinkTypeNames } from '../utils/project.utils';
 
-const LinkEditView: React.FC<{
+const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
   register: UseFormRegister<{
     name: string;
@@ -23,28 +24,34 @@ const LinkEditView: React.FC<{
   remove: UseFieldArrayRemove;
   links: LinkCreateArgs[];
 }> = ({ ls, register, append, remove, links }) => {
-  const { isLoading, isError, error, data } = useAllLinkTypes();
-  if (isLoading || !data) return <LoadingIndicator />;
+  const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
+  if (isLoading || !linkTypes) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(linkTypes);
+
+  const currentLinkTypeNames = links.map((link) => link.linkTypeName);
 
   return (
     <>
       {ls.map((_element, i) => {
         return (
           <Grid item sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
-            <TextField
+            <Select
               {...register(`links.${i}.linkTypeName`, { required: true })}
               sx={{ minWidth: '200px', mr: '5px' }}
-              select
               defaultValue={links[i].linkTypeName}
-              disabled={i < 3}
+              disabled={
+                requiredLinkTypeNames.includes(links[i].linkTypeName) &&
+                !currentLinkTypeNames.includes(links[i].linkTypeName)
+              }
             >
-              {data.map((linkType) => (
+              {linkTypes.map((linkType) => (
                 <MenuItem key={linkType.name} value={linkType.name}>
                   {linkType.name}
                 </MenuItem>
               ))}
-            </TextField>
+            </Select>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
             {i > 2 && (
               <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
@@ -54,7 +61,6 @@ const LinkEditView: React.FC<{
           </Grid>
         );
       })}
-
       <Button
         variant="contained"
         color="success"
@@ -67,4 +73,4 @@ const LinkEditView: React.FC<{
   );
 };
 
-export default LinkEditView;
+export default LinksEditView;
