@@ -8,9 +8,12 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   ActivationChangeRequest,
   ChangeRequest,
+  ChangeRequestStatus,
   ChangeRequestType,
   StageGateChangeRequest,
   StandardChangeRequest,
+  User,
+  isLeadership,
   isProject
 } from 'shared';
 import { routes } from '../../utils/routes';
@@ -25,7 +28,20 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link, Divider, ListItemIcon } from '@mui/material';
+import {
+  Grid,
+  Menu,
+  MenuItem,
+  Typography,
+  Link,
+  Divider,
+  ListItemIcon,
+  Autocomplete,
+  Checkbox,
+  TextField
+} from '@mui/material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteChangeRequest from './DeleteChangeRequest';
 import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
@@ -34,6 +50,9 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
+import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
+import { useRequestCRReview } from '../../hooks/change-requests.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -93,9 +112,15 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     projectNumber: changeRequest.wbsNum.projectNumber,
     workPackageNumber: 0
   });
+  const [reviewerIds, setReviewerIds] = useState<number[]>([]);
+  const { data: users } = useAllUsers();
+  const requestCRReview = useRequestCRReview(changeRequest.crId.toString());
   if (isError) return <ErrorPage message={error?.message} />;
   if (!project || isLoading) return <LoadingIndicator />;
+  if (!users) return <LoadingIndicator />;
   const { name: projectName } = project;
+  const toast = useToast();
+  const currentUser = useCurrentUser();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -104,6 +129,83 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
+
+  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId.toString() };
+  };
+
+  const handleRequestReviewerClick = async () => {
+    if (reviewerIds.length == 0) return;
+    try {
+      await requestCRReview.mutateAsync({ userIds: reviewerIds });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
+  const isRequestDisabled = changeRequest.submitter.userId != currentUser.userId;
+
+  const openedACtionsDropdown = (
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="unreviewed-cr-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          Review
+        </MenuItem>
+        <Divider />
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
+        </MenuItem>
+      </Menu>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={8}>
+          <Autocomplete
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            limitTags={1}
+            disableCloseOnSelect
+            multiple
+            options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
+            getOptionLabel={(option) => option.label}
+            onChange={(_, values) => setReviewerIds(values.map((value) => parseInt(value.id)))}
+            renderOption={(props, option, { selected }) => (
+              <li {...props}>
+                <Checkbox
+                  icon={<CheckBoxOutlineBlankIcon />}
+                  checkedIcon={<CheckBoxIcon />}
+                  style={{ marginRight: 8 }}
+                  checked={selected}
+                />
+                {option.label}
+              </li>
+            )}
+            renderTags={() => null}
+            renderInput={(params) => (
+              <TextField {...params} variant="standard" label="Add Reviewers" placeholder="Select Reviewers" />
+            )}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <NERButton
+            sx={{ mt: '20px', float: 'right' }}
+            variant="contained"
+            disabled={isRequestDisabled}
+            onClick={handleRequestReviewerClick}
+          >
+            Confirm
+          </NERButton>
+        </Grid>
+      </Grid>
+    </div>
+  );
 
   const unreviewedActionsDropdown = (
     <div>
@@ -187,7 +289,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     </div>
   );
 
-  const actionDropdown = changeRequest.accepted ? implementCrDropdown : unreviewedActionsDropdown;
+  const actionDropdown =
+    changeRequest.status == ChangeRequestStatus.Open
+      ? openedACtionsDropdown
+      : changeRequest.accepted
+      ? implementCrDropdown
+      : unreviewedActionsDropdown;
 
   return (
     <PageLayout

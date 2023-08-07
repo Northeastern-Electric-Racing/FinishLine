@@ -7,7 +7,7 @@ import axios from '../utils/axios';
 import { ChangeRequest, WbsNumber, ChangeRequestType } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { changeRequestTransformer } from './transformers/change-requests.transformers';
-import { CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
+import { CRReviewPayload, CreateStandardChangeRequestPayload } from '../hooks/change-requests.hooks';
 
 /**
  * Fetches all change requests.
@@ -140,4 +140,13 @@ export const addProposedSolution = (
     timelineImpact,
     budgetImpact
   });
+};
+
+/**
+ * Request reviewers in change request
+ * @param crId The ID of the associated change request.
+ * @param crReviewData The data to request reviewers
+ */
+export const requestCRReview = (crId: string, crReviewData: CRReviewPayload) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestRequestReviewer(crId), crReviewData);
 };
