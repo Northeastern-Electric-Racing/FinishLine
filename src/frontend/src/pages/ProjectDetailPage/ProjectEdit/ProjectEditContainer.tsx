@@ -24,7 +24,7 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LinksEditView from '../../../components/LinkEditView';
+import LinksEditView from '../../../components/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
@@ -102,6 +102,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -210,7 +211,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           </Grid>
         </PageBlock>
         <PageBlock title="Links">
-          <LinksEditView ls={links} register={register} append={appendLink} remove={removeLink} links={links} />
+          <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
         <PageBlock title="Goals">
           <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />

@@ -4,6 +4,7 @@ CREATE TABLE "LinkType" (
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "creatorId" INTEGER NOT NULL,
     "iconName" TEXT NOT NULL,
+    "required" BOOLEAN NOT NULL,
     CONSTRAINT "LinkType_pkey" PRIMARY KEY ("name")
 );
 -- CreateTable
