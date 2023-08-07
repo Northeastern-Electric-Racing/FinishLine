@@ -115,12 +115,12 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
   const { data: users } = useAllUsers();
   const requestCRReview = useRequestCRReview(changeRequest.crId.toString());
+  const toast = useToast();
+  const currentUser = useCurrentUser();
   if (isError) return <ErrorPage message={error?.message} />;
   if (!project || isLoading) return <LoadingIndicator />;
   if (!users) return <LoadingIndicator />;
   const { name: projectName } = project;
-  const toast = useToast();
-  const currentUser = useCurrentUser();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -135,7 +135,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   };
 
   const handleRequestReviewerClick = async () => {
-    if (reviewerIds.length == 0) return;
+    if (reviewerIds.length === 0) return;
     try {
       await requestCRReview.mutateAsync({ userIds: reviewerIds });
     } catch (e) {
@@ -145,7 +145,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     }
   };
 
-  const isRequestDisabled = changeRequest.submitter.userId != currentUser.userId;
+  const isRequestDisabled = changeRequest.submitter.userId !== currentUser.userId;
 
   const openedACtionsDropdown = (
     <div>
@@ -290,7 +290,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   );
 
   const actionDropdown =
-    changeRequest.status == ChangeRequestStatus.Open
+    changeRequest.status === ChangeRequestStatus.Open
       ? openedACtionsDropdown
       : changeRequest.accepted
       ? implementCrDropdown
