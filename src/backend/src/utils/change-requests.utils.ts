@@ -172,10 +172,5 @@ export const calculateChangeRequestStatus = (
  * @returns true if all the change requests have been resolved, and false otherwise
  */
 export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
-  for (let i = 0; i < changeRequests.length; i++) {
-    if (!changeRequests[i].dateReviewed) {
-      return false;
-    }
-  }
-  return true;
+  return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };
