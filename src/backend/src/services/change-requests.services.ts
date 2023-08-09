@@ -353,6 +353,7 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { changeRequests } = wbsElement;
+    changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
     if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(400, 'Please resolve all related change requests before proceeding');
     }
@@ -439,6 +440,7 @@ export default class ChangeRequestsService {
     }
 
     const { changeRequests } = wbsElement;
+    changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
     if (!allChangeRequestsReviewed(changeRequests)) {
       throw new HttpException(400, 'Please resolve all related change requests before proceeding');
     }

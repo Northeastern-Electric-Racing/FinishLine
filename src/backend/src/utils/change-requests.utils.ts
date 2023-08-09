@@ -167,9 +167,9 @@ export const calculateChangeRequestStatus = (
 };
 
 /**
- * Determines whether all the change requests for a work package have been resolved or not
- * @param wbsElement represents the given work package
- * @returns true if all the change requests have been resolved, and false otherwise
+ * Determines whether all the change requests in an array of change requests have been reviewed
+ * @param changeRequests the given array of change requests
+ * @returns true if all the change requests have been reviewed, and false otherwise
  */
 export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
