@@ -1,11 +1,12 @@
 import { useAllLinkTypes } from '../hooks/projects.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
-import { Button, Grid, IconButton, MenuItem, Select, TextField } from '@mui/material';
+import { Button, IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getRequiredLinkTypeNames } from '../utils/project.utils';
+import { getRequiredLinkTypeNames } from '../utils/link.utils';
 import { ProjectEditFormInput } from '../pages/ProjectDetailPage/ProjectEdit/ProjectEditContainer';
+import { Box } from '@mui/system';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
@@ -24,6 +25,7 @@ const LinksEditView: React.FC<{
 
   const currentLinkTypeNames = links.map((link) => link.linkTypeName);
 
+  /* Checks whether the link at the given index is of a required type and does not already exist  */
   const isRequired = (index: number) => {
     const link = watch(`links.${index}`);
     const { linkTypeName } = link;
@@ -33,11 +35,13 @@ const LinksEditView: React.FC<{
     );
   };
 
+  const availableOptions = linkTypes.filter((linkType) => !currentLinkTypeNames.includes(linkType.name));
+
   return (
     <>
       {ls.map((_element, i) => {
         return (
-          <Grid item sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
             <Select
               {...register(`links.${i}.linkTypeName`, { required: true })}
               sx={{ minWidth: '200px', mr: '5px' }}
@@ -45,7 +49,7 @@ const LinksEditView: React.FC<{
               disabled={isRequired(i)}
             >
               {linkTypes.map((linkType) => (
-                <MenuItem key={linkType.name} value={linkType.name}>
+                <MenuItem key={linkType.name} value={linkType.name} disabled={!availableOptions.includes(linkType)}>
                   {linkType.name}
                 </MenuItem>
               ))}
@@ -63,17 +67,19 @@ const LinksEditView: React.FC<{
                 <DeleteIcon />
               </IconButton>
             )}
-          </Grid>
+          </Box>
         );
       })}
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
-        sx={{ my: 2, width: 'max-content' }}
-      >
-        + Add New Bullet
-      </Button>
+      {true && (
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
+          sx={{ my: 2, width: 'max-content' }}
+        >
+          + Add New Link
+        </Button>
+      )}
     </>
   );
 };

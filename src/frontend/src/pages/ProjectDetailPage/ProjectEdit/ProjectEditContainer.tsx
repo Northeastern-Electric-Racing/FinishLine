@@ -15,7 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Button, Box, TextField, IconButton } from '@mui/material';
+import { Grid, Button, Box, TextField, IconButton, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
@@ -203,15 +203,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         />
         <PageBlock title="Project Summary">
           <Grid item sx={{ mt: 2 }}>
-            <ReactHookTextField
-              name="summary"
-              control={control}
-              sx={{ width: '50%' }}
-              label="Summary"
-              multiline={true}
-              rows={5}
-              errorMessage={errors.summary}
-            />
+            <FormControl fullWidth>
+              <ReactHookTextField
+                name="summary"
+                control={control}
+                label="Summary"
+                multiline={true}
+                rows={5}
+                errorMessage={errors.summary}
+              />
+            </FormControl>
           </Grid>
         </PageBlock>
         <PageBlock title="Links">

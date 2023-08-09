@@ -12,7 +12,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-import { getRequiredLinkTypeNames } from '../../utils/project.utils';
+import { getRequiredLinkTypeNames } from '../../utils/link.utils';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;

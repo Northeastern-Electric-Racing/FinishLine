@@ -251,6 +251,7 @@ model WBS_Element {
   blocking              Work_Package[]          @relation("blockedBy")
   tasks                 Task[]
   reimbursementProducts Reimbursement_Product[]
+  links                 Link[]                  @relation(name: "links")
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -261,7 +262,6 @@ model Project {
   wbsElement       WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
   budget           Int                  @default(0)
   summary          String
-  links            Link[]               @relation(name: "links")
   rules            String[]
   goals            Description_Bullet[] @relation(name: "projectGoals")
   features         Description_Bullet[] @relation(name: "projectFeatures")
@@ -298,15 +298,15 @@ model LinkType {
 }
 
 model Link {
-  linkId       String   @id @default(uuid())
+  linkId       String      @id @default(uuid())
   url          String
   creatorId    Int
-  creator      User     @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated  DateTime @default(now())
+  creator      User        @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated  DateTime    @default(now())
   linkTypeName String
-  linkType     LinkType @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
-  projectId    Int
-  project      Project  @relation(name: "links", fields: [projectId], references: [projectId])
+  linkType     LinkType    @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  wbsElementId Int
+  wbsElment    WBS_Element @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
 }
 
 model Description_Bullet {
