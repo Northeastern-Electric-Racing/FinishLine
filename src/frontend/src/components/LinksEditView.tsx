@@ -56,14 +56,7 @@ const LinksEditView: React.FC<{
             </Select>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
             {!isRequired(i) && (
-              <IconButton
-                type="button"
-                onClick={() => {
-                  console.log(i);
-                  remove(i);
-                }}
-                sx={{ mx: 1, my: 0 }}
-              >
+              <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
                 <DeleteIcon />
               </IconButton>
             )}
