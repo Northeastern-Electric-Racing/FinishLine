@@ -45,8 +45,8 @@ const LinksEditView: React.FC<{
             <Select
               {...register(`links.${i}.linkTypeName`, { required: true })}
               sx={{ minWidth: '200px', mr: '5px' }}
-              defaultValue={links[i].linkTypeName}
               disabled={isRequired(i)}
+              value={watch(`links.${i}.linkTypeName`)}
             >
               {linkTypes.map((linkType) => (
                 <MenuItem key={linkType.name} value={linkType.name} disabled={!availableOptions.includes(linkType)}>
@@ -70,7 +70,7 @@ const LinksEditView: React.FC<{
           </Box>
         );
       })}
-      {true && (
+      {availableOptions.length > 0 && (
         <Button
           variant="contained"
           color="success"
