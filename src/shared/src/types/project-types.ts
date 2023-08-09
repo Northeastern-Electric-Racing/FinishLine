@@ -23,6 +23,7 @@ export interface WbsElement {
   status: WbsElementStatus;
   projectLead?: User;
   projectManager?: User;
+  links: Link[];
   changes: ImplementedChange[];
 }
 
@@ -35,7 +36,6 @@ export enum WbsElementStatus {
 export interface Project extends WbsElement {
   summary: string;
   budget: number;
-  links: Link[];
   rules: string[];
   endDate?: Date;
   duration: number;

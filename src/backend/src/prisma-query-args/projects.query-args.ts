@@ -9,6 +9,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         projectLead: true,
         projectManager: true,
         tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
+        links: { ...linkQueryArgs },
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
       }
     },
@@ -27,6 +28,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
           include: {
             projectLead: true,
             projectManager: true,
+            links: { ...linkQueryArgs },
             changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
           }
         },
@@ -35,10 +37,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         deliverables: { where: { dateDeleted: null } }
       }
     },
-    favoritedBy: true,
-    links: {
-      ...linkQueryArgs
-    }
+    favoritedBy: true
   }
 });
 

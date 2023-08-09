@@ -15,7 +15,7 @@ export const updateLinks = async (
     editedElements: LinkCreateArgs[];
     changes: ChangeCreateArgs[];
   },
-  projectId: number,
+  wbsElementId: number,
   userId: number
 ) => {
   await linkChanges.addedElements.forEach(async (link) => {
@@ -24,7 +24,7 @@ export const updateLinks = async (
         url: link.url,
         linkTypeName: link.linkTypeName,
         creatorId: userId,
-        projectId
+        wbsElementId
       }
     });
   });

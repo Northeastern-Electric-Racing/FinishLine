@@ -166,13 +166,16 @@ export default class ProjectsService {
         projectId
       },
       include: {
-        wbsElement: true,
+        wbsElement: {
+          include: {
+            links: {
+              ...linkQueryArgs
+            }
+          }
+        },
         goals: true,
         features: true,
-        otherConstraints: true,
-        links: {
-          ...linkQueryArgs
-        }
+        otherConstraints: true
       }
     });
 
@@ -276,7 +279,7 @@ export default class ProjectsService {
     );
 
     const linkChanges = createListChanges(
-      originalProject.links.map(linkToChangeListValue),
+      originalProject.wbsElement.links.map(linkToChangeListValue),
       linkCreateArgs.map(linkToChangeListValue),
       crId,
       userId,

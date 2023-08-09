@@ -43,7 +43,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     team: project.team ? project.team : undefined,
     summary: project.summary,
     budget: project.budget,
-    links: project.links.map(linkTransformer),
+    links: project.wbsElement.links.map(linkTransformer),
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
@@ -66,6 +66,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         wbsNum: wbsNumOf(workPackage.wbsElement),
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
+        links: workPackage.wbsElement.links.map(linkTransformer),
         status: workPackage.wbsElement.status as WbsElementStatus,
         projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
         projectManager: workPackage.wbsElement.projectManager

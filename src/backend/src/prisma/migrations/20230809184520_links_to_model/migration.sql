@@ -1,3 +1,4 @@
+
 -- CreateTable
 CREATE TABLE "LinkType" (
     "name" TEXT NOT NULL,
@@ -5,8 +6,10 @@ CREATE TABLE "LinkType" (
     "creatorId" INTEGER NOT NULL,
     "iconName" TEXT NOT NULL,
     "required" BOOLEAN NOT NULL,
+
     CONSTRAINT "LinkType_pkey" PRIMARY KEY ("name")
 );
+
 -- CreateTable
 CREATE TABLE "Link" (
     "linkId" TEXT NOT NULL,
@@ -14,19 +17,25 @@ CREATE TABLE "Link" (
     "creatorId" INTEGER NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "linkTypeName" TEXT NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "wbsElementId" INTEGER NOT NULL,
+
     CONSTRAINT "Link_pkey" PRIMARY KEY ("linkId")
 );
+
 -- CreateIndex
 CREATE UNIQUE INDEX "LinkType_name_key" ON "LinkType"("name");
+
 -- AddForeignKey
 ALTER TABLE "LinkType" ADD CONSTRAINT "LinkType_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Link" ADD CONSTRAINT "Link_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Link" ADD CONSTRAINT "Link_linkTypeName_fkey" FOREIGN KEY ("linkTypeName") REFERENCES "LinkType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
-ALTER TABLE "Link" ADD CONSTRAINT "Link_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Link" ADD CONSTRAINT "Link_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 /*
   Adds a no-op user to the database
@@ -46,17 +55,18 @@ INSERT INTO "LinkType" ("name", "creatorId", "required", "iconName") VALUES ('Bi
   Transfer over all the slide deck links to conflunce links
 */
 -- Insert
-INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(), "slideDeckLink", 0, 'Confluence', "projectId" FROM "Project" WHERE "slideDeckLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "wbsElementId") SELECT gen_random_uuid(), "slideDeckLink", 0, 'Confluence', "wbsElementId" FROM "Project" WHERE "slideDeckLink" IS NOT NULL;
 /*
   Transfer over all the Google Drive Folder links to Google Drive links
 */
 -- Insert
-INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(),"googleDriveFolderLink", 0, 'Google Drive', "projectId" FROM "Project" WHERE "googleDriveFolderLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "wbsElementId") SELECT gen_random_uuid(),"googleDriveFolderLink", 0, 'Google Drive', "wbsElementId" FROM "Project" WHERE "googleDriveFolderLink" IS NOT NULL;
 /*
   Transfer over all the BOM links to BOM links
 */
 -- Insert
-INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "projectId") SELECT gen_random_uuid(), "bomLink", 0, 'Bill of Materials', "projectId" FROM "Project" WHERE "bomLink" IS NOT NULL;
+INSERT INTO "Link" ("linkId", "url", "creatorId", "linkTypeName", "wbsElementId") SELECT gen_random_uuid(), "bomLink", 0, 'Bill of Materials', "wbsElementId" FROM "Project" WHERE "bomLink" IS NOT NULL;
+
 /*
   Warnings:
   - You are about to drop the column `bomLink` on the `Project` table. All the data in the column will be lost.
