@@ -258,6 +258,7 @@ export default class ReimbursementRequestService {
     });
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+    if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
