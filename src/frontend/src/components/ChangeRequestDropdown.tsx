@@ -1,9 +1,10 @@
+import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
-import { subDays, isWithinInterval } from 'date-fns';
 import { wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
-import NERAutocomplete from './NERAutocomplete';
 import LoadingIndicator from './LoadingIndicator';
+import { useCurrentUser } from '../hooks/users.hooks';
 
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
@@ -17,29 +18,54 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const today = new Date();
   const fiveDaysAgo = subDays(today, 5);
 
+  const filteredRequests = changeRequests?.filter(
+    (cr) => !!cr.dateReviewed && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
+  );
+  // The current user's CRs should be at the top
+  const user = useCurrentUser();
+  filteredRequests.sort((a, b) => {
+    const isSubmitterAUser = a.submitter.firstName === user.firstName && a.submitter.lastName === user.lastName;
+    const isSubmitterBUser = b.submitter.firstName === user.firstName && b.submitter.lastName === user.lastName;
+
+    if (isSubmitterAUser && isSubmitterBUser) return 0;
+    if (isSubmitterAUser) return -1;
+    if (isSubmitterBUser) return 1;
+
+    return a.crId - b.crId;
+  });
+
   const options =
-    changeRequests
-      ?.filter((cr) => !!cr.dateReviewed && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today }))
-      .map((cr) => ({
-        label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName}`,
-        id: `${cr.crId}`
-      })) ?? [];
+    filteredRequests.map((cr) => ({
+      label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
+      value: cr.crId
+    })) ?? [];
 
   return (
     <Controller
       control={control}
       name={name}
       render={({ field: { onChange, value } }) => (
-        <NERAutocomplete
+        <Select
           id="cr-autocomplete"
-          options={options}
-          value={options.find((option) => option.id === value)}
-          onChange={(_event, value) => {
-            if (value) onChange(value.id);
+          displayEmpty
+          renderValue={(value) => (value ? value : 'Change Request Id')}
+          value={value}
+          onChange={(event: SelectChangeEvent<number>) => {
+            const {
+              target: { value }
+            } = event;
+            if (value) onChange(value);
           }}
           size={'small'}
           placeholder={'Change Request Id'}
-        />
+          sx={{ width: 200 }}
+        >
+          {options.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
       )}
     />
   );
