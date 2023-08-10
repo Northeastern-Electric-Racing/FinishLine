@@ -1,4 +1,4 @@
-import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { MenuItem, Select, SelectChangeEvent, dividerClasses } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { wbsPipe } from 'shared';
@@ -58,7 +58,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
           }}
           size={'small'}
           placeholder={'Change Request Id'}
-          sx={{ width: 200 }}
+          sx={{ width: 200, textAlign: 'left' }}
         >
           {options.map((option) => (
             <MenuItem key={option.value} value={option.value}>
