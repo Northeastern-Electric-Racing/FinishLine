@@ -1,4 +1,4 @@
-import { MenuItem, Select, SelectChangeEvent, dividerClasses } from '@mui/material';
+import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { wbsPipe } from 'shared';
@@ -12,6 +12,7 @@ interface ChangeRequestDropdownProps {
 }
 
 const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
+  const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
 
@@ -21,8 +22,8 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const filteredRequests = changeRequests?.filter(
     (cr) => !!cr.dateReviewed && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
   );
+
   // The current user's CRs should be at the top
-  const user = useCurrentUser();
   filteredRequests.sort((a, b) => {
     const isSubmitterAUser = a.submitter.firstName === user.firstName && a.submitter.lastName === user.lastName;
     const isSubmitterBUser = b.submitter.firstName === user.firstName && b.submitter.lastName === user.lastName;
