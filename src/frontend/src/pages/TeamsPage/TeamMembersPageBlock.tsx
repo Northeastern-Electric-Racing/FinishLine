@@ -17,14 +17,11 @@ import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
+import { userToAutocompleteOption } from '../../utils/users';
 
 interface TeamMembersPageBlockProps {
   team: Team;
 }
-
-const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-  return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-};
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();

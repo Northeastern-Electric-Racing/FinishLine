@@ -34,6 +34,7 @@ import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
 import { makeTeamList } from '../../../../utils/teams.utils';
+import { userToAutocompleteOption } from '../../../../utils/users';
 
 interface TaskListNotesModalProps {
   task: Task;
@@ -88,10 +89,6 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
     }
   });
   if (!auth.user) return <LoadingIndicator />;
-
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-  };
 
   const options = team
     ? makeTeamList(team)

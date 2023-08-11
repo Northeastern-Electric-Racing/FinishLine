@@ -53,6 +53,7 @@ import PageLayout from '../../components/PageLayout';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
+import { userToAutocompleteOption } from '../../utils/users';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -113,13 +114,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     workPackageNumber: 0
   });
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
-  const { data: users } = useAllUsers();
+  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   const requestCRReview = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
   const currentUser = useCurrentUser();
   if (isError) return <ErrorPage message={error?.message} />;
   if (!project || isLoading) return <LoadingIndicator />;
-  if (!users) return <LoadingIndicator />;
+
+  if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
+  if (isLoadingAllUsers || !users) return <LoadingIndicator />;
+
   const { name: projectName } = project;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -128,10 +132,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
-  };
-
-  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
-    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId.toString() };
   };
 
   const handleRequestReviewerClick = async () => {
@@ -145,89 +145,92 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     }
   };
 
-  const isRequestDisabled = changeRequest.submitter.userId !== currentUser.userId;
+  const isRequestAllowed = changeRequest.submitter.userId === currentUser.userId;
 
-  const openedACtionsDropdown = (
-    <div>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="unreviewed-cr-actions-dropdown"
-        onClick={handleClick}
-      >
-        Actions
-      </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
-          Review
-        </MenuItem>
-        <Divider />
-        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
-          Delete
-        </MenuItem>
-      </Menu>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={8}>
-          <Autocomplete
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            limitTags={1}
-            disableCloseOnSelect
-            multiple
-            options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
-            getOptionLabel={(option) => option.label}
-            onChange={(_, values) => setReviewerIds(values.map((value) => parseInt(value.id)))}
-            renderOption={(props, option, { selected }) => (
-              <li {...props}>
-                <Checkbox
-                  icon={<CheckBoxOutlineBlankIcon />}
-                  checkedIcon={<CheckBoxIcon />}
-                  style={{ marginRight: 8 }}
-                  checked={selected}
-                />
-                {option.label}
-              </li>
-            )}
-            renderTags={() => null}
-            renderInput={(params) => (
-              <TextField {...params} variant="standard" label="Add Reviewers" placeholder="Select Reviewers" />
-            )}
-          />
-        </Grid>
-        <Grid item xs={12} md={4}>
+  const unreviewedActionsDropdown = () => {
+    if (isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open) {
+      return (
+        <div>
           <NERButton
-            sx={{ mt: '20px', float: 'right' }}
+            endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
             variant="contained"
-            disabled={isRequestDisabled}
-            onClick={handleRequestReviewerClick}
+            id="unreviewed-cr-actions-dropdown"
+            onClick={handleClick}
           >
-            Confirm
+            Actions
           </NERButton>
-        </Grid>
-      </Grid>
-    </div>
-  );
-
-  const unreviewedActionsDropdown = (
-    <div>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="unreviewed-cr-actions-dropdown"
-        onClick={handleClick}
-      >
-        Actions
-      </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
-          Review
-        </MenuItem>
-        <Divider />
-        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
-          Delete
-        </MenuItem>
-      </Menu>
-    </div>
-  );
+          <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+            <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+              Review
+            </MenuItem>
+            <Divider />
+            <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+              Delete
+            </MenuItem>
+          </Menu>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <Autocomplete
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                limitTags={1}
+                disableCloseOnSelect
+                multiple
+                options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
+                getOptionLabel={(option) => option.label}
+                onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
+                renderOption={(props, option, { selected }) => (
+                  <li {...props}>
+                    <Checkbox
+                      icon={<CheckBoxOutlineBlankIcon />}
+                      checkedIcon={<CheckBoxIcon />}
+                      style={{ marginRight: 8 }}
+                      checked={selected}
+                    />
+                    {option.label}
+                  </li>
+                )}
+                renderTags={() => null}
+                renderInput={(params) => (
+                  <TextField {...params} variant="standard" label="Add Reviewers" placeholder="Select Reviewers" />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <NERButton
+                sx={{ mt: '20px', float: 'right' }}
+                variant="contained"
+                disabled={!isRequestAllowed}
+                onClick={handleRequestReviewerClick}
+              >
+                Request Review
+              </NERButton>
+            </Grid>
+          </Grid>
+        </div>
+      );
+    }
+    return (
+      <div>
+        <NERButton
+          endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+          variant="contained"
+          id="unreviewed-cr-actions-dropdown"
+          onClick={handleClick}
+        >
+          Actions
+        </NERButton>
+        <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+          <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+            Review
+          </MenuItem>
+          <Divider />
+          <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+            Delete
+          </MenuItem>
+        </Menu>
+      </div>
+    );
+  };
 
   const implementCrDropdown = (
     <div>
@@ -289,12 +292,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     </div>
   );
 
-  const actionDropdown =
-    changeRequest.status === ChangeRequestStatus.Open
-      ? openedACtionsDropdown
-      : changeRequest.accepted
-      ? implementCrDropdown
-      : unreviewedActionsDropdown;
+  const actionDropdown = changeRequest.accepted ? implementCrDropdown : unreviewedActionsDropdown();
 
   return (
     <PageLayout

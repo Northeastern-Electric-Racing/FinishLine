@@ -10,6 +10,7 @@ import { User, UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { fullNamePipe } from '../../../../utils/pipes';
 import { makeTeamList } from '../../../../utils/teams.utils';
+import { userToAutocompleteOption } from '../../../../utils/users';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;
@@ -97,10 +98,6 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   const { value, team, assignees, setAssignees } = params;
 
   if (!team) return <LoadingIndicator />;
-
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-  };
 
   const options = makeTeamList(team)
     .sort((a: any, b: any) => (a.firstName > b.firstName ? 1 : -1))
