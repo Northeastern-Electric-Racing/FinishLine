@@ -12,7 +12,6 @@ import {
   ChangeRequestType,
   StageGateChangeRequest,
   StandardChangeRequest,
-  User,
   isLeadership,
   isProject
 } from 'shared';

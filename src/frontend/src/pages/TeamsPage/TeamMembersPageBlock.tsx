@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSetTeamMembers } from '../../hooks/teams.hooks';
-import { isAdmin, Team, User } from 'shared';
+import { isAdmin, Team } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, TeamPreview, User } from 'shared';
+import { isGuest, TeamPreview } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';

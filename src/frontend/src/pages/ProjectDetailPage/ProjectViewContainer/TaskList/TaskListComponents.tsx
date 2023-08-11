@@ -6,9 +6,8 @@
 import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers';
-import { User, UserPreview } from 'shared';
+import { UserPreview } from 'shared';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { fullNamePipe } from '../../../../utils/pipes';
 import { makeTeamList } from '../../../../utils/teams.utils';
 import { userToAutocompleteOption } from '../../../../utils/users';
 
