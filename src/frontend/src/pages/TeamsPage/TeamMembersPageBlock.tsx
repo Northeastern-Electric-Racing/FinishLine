@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSetTeamMembers } from '../../hooks/teams.hooks';
-import { isAdmin, Team, User } from 'shared';
+import { isAdmin, isHead, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -17,6 +17,7 @@ import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
+import NERAutocomplete from '../../components/NERAutocomplete';
 
 interface TeamMembersPageBlockProps {
   team: Team;
@@ -30,6 +31,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
+  const [head, setHead] = useState({
+    label: userToAutocompleteOption(team.head).label,
+    id: userToAutocompleteOption(team.head).id
+  });
 
   const { isLoading, isError, error, data: users } = useAllUsers();
   const {
@@ -54,8 +59,13 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
-  const options = users
+  const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
+    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .map(userToAutocompleteOption);
+
+  const headOptions = users
+    .filter((user) => memberOptions.some((option) => option.id === user.userId) && isHead(user.role))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
@@ -79,7 +89,16 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     <PageBlock title={'People'} headerRight={editButtons}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
+          <NERAutocomplete
+            id="head-autocomplete"
+            options={headOptions.map((option) => ({ id: `${option.id}`, label: option.label }))}
+            onChange={(_event, newValue) =>
+              newValue ? setHead({ id: +newValue.id, label: newValue.label }) : console.log('uh oh')
+            }
+            filterSelectedOptions
+            size="small"
+            placeholder="Select a sddsuser"
+          />
         </Grid>
         <Grid item xs={12}>
           <Autocomplete
@@ -87,7 +106,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
             filterSelectedOptions
             multiple
             id="tags-standard"
-            options={options}
+            options={memberOptions}
             value={members}
             onChange={(_event, newValue) => setMembers(newValue)}
             getOptionLabel={(option) => option.label}
