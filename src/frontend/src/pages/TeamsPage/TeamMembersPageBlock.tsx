@@ -100,12 +100,11 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           <NERAutocomplete
             id="head-autocomplete"
             options={headOptions.map((option) => ({ id: `${option.id}`, label: option.label }))}
-            onChange={(_event, newValue) =>
-              newValue ? setHead({ id: +newValue.id, label: newValue.label }) : console.log('uh oh')
-            }
+            onChange={(_event, newValue) => newValue && setHead({ id: +newValue.id, label: newValue.label })}
             filterSelectedOptions
             size="small"
             placeholder="Select a User"
+            value={{ id: `${head.id}`, label: head.label }}
           />
         </Grid>
         <Grid item xs={12}>
