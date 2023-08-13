@@ -7,7 +7,7 @@ import { Autocomplete, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { useSetTeamMembers } from '../../hooks/teams.hooks';
+import { useSetTeamHead, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Edit } from '@mui/icons-material';
@@ -36,21 +36,29 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     id: userToAutocompleteOption(team.head).id
   });
 
-  const { isLoading, isError, error, data: users } = useAllUsers();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const {
-    isLoading: setTeamMemberIsLoading,
-    isError: setTeamMemberIsError,
-    error: setTeamMemberError,
-    mutateAsync
+    isLoading: setTeamMembersIsLoading,
+    isError: setTeamMembersIsError,
+    error: setTeamMembersError,
+    mutateAsync: setTeamMembersMutateAsync
   } = useSetTeamMembers(team.teamId);
+  const {
+    isLoading: setTeamHeadIsLoading,
+    isError: setTeamHeadIsError,
+    error: setTeamHeadError,
+    mutateAsync: setTeamHeadMutateAsync
+  } = useSetTeamHead(team.teamId);
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (setTeamMemberIsError) return <ErrorPage message={setTeamMemberError?.message} />;
-  if (isLoading || setTeamMemberIsLoading || !users) return <LoadingIndicator />;
+  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
+  if (setTeamMembersIsError) return <ErrorPage message={setTeamMembersError?.message} />;
+  if (setTeamHeadIsError) return <ErrorPage message={setTeamHeadError?.message} />;
+  if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || !users) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
     try {
-      await mutateAsync(members.map((member) => member.id));
+      await setTeamMembersMutateAsync(members.map((member) => member.id));
+      await setTeamHeadMutateAsync(head.id);
       setIsEditingMembers(false);
     } catch (error) {
       alert(error);
@@ -97,7 +105,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
             }
             filterSelectedOptions
             size="small"
-            placeholder="Select a sddsuser"
+            placeholder="Select a User"
           />
         </Grid>
         <Grid item xs={12}>
