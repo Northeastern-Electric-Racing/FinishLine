@@ -1,7 +1,7 @@
 import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
-import { wbsPipe } from 'shared';
+import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import { useCurrentUser } from '../hooks/users.hooks';
@@ -16,24 +16,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
 
-  const today = new Date();
-  const fiveDaysAgo = subDays(today, 5);
-
-  const filteredRequests = changeRequests?.filter(
-    (cr) => cr.dateReviewed && cr.accepted && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
-  );
-
-  // The current user's CRs should be at the top
-  filteredRequests.sort((a, b) => {
-    const isSubmitterAUser = a.submitter.firstName === user.firstName && a.submitter.lastName === user.lastName;
-    const isSubmitterBUser = b.submitter.firstName === user.firstName && b.submitter.lastName === user.lastName;
-
-    if (isSubmitterAUser && isSubmitterBUser) return 0;
-    if (isSubmitterAUser) return -1;
-    if (isSubmitterBUser) return 1;
-
-    return a.crId - b.crId;
-  });
+  const filteredRequests = getChangeRequests(changeRequests, user);
 
   const approvedChangeRequestOptions =
     filteredRequests.map((cr) => ({
@@ -71,5 +54,29 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
     />
   );
 };
+
+// Filter and sort change requests to display in the dropdown
+function getChangeRequests(changeRequests: ChangeRequest[], user: AuthenticatedUser): ChangeRequest[] {
+  const today = new Date();
+  const fiveDaysAgo = subDays(today, 5);
+
+  const filteredRequests = changeRequests.filter(
+    (cr) => cr.dateReviewed && cr.accepted && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
+  );
+
+  // The current user's CRs should be at the top
+  filteredRequests.sort((a, b) => {
+    const isSubmitterAUser = a.submitter.firstName === user.firstName && a.submitter.lastName === user.lastName;
+    const isSubmitterBUser = b.submitter.firstName === user.firstName && b.submitter.lastName === user.lastName;
+
+    if (isSubmitterAUser && isSubmitterBUser) return 0;
+    if (isSubmitterAUser) return -1;
+    if (isSubmitterBUser) return 1;
+
+    return a.crId - b.crId;
+  });
+
+  return filteredRequests;
+}
 
 export default ChangeRequestDropdown;
