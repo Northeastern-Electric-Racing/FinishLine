@@ -20,7 +20,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const fiveDaysAgo = subDays(today, 5);
 
   const filteredRequests = changeRequests?.filter(
-    (cr) => !!cr.dateReviewed && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
+    (cr) => cr.dateReviewed && cr.accepted && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
   );
 
   // The current user's CRs should be at the top
@@ -35,7 +35,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
     return a.crId - b.crId;
   });
 
-  const options =
+  const approvedChangeRequestOptions =
     filteredRequests.map((cr) => ({
       label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
       value: cr.crId
@@ -61,7 +61,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
           placeholder={'Change Request Id'}
           sx={{ width: 200, textAlign: 'left' }}
         >
-          {options.map((option) => (
+          {approvedChangeRequestOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>
