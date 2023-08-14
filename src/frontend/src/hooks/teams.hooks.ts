@@ -38,7 +38,7 @@ export const useSetTeamMembers = (teamId: string) => {
 
 export const useSetTeamHead = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, number>(
     ['teams', 'edit'],
     async (userId: number) => {
       const { data } = await setTeamHead(teamId, userId);

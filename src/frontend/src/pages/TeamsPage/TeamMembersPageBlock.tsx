@@ -32,8 +32,8 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
   const [head, setHead] = useState({
-    label: userToAutocompleteOption(team.head).label,
-    id: userToAutocompleteOption(team.head).id
+    id: `${userToAutocompleteOption(team.head).id}`,
+    label: userToAutocompleteOption(team.head).label
   });
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
@@ -58,7 +58,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const handleSubmit = async () => {
     try {
       await setTeamMembersMutateAsync(members.map((member) => member.id));
-      await setTeamHeadMutateAsync(head.id);
+      await setTeamHeadMutateAsync(+head.id);
       setIsEditingMembers(false);
     } catch (error) {
       alert(error);
@@ -75,7 +75,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const headOptions = users
     .filter((user) => memberOptions.some((option) => option.id === user.userId) && isHead(user.role))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-    .map(userToAutocompleteOption);
+    .map((user) => ({ id: `${userToAutocompleteOption(user).id}`, label: userToAutocompleteOption(user).label }));
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
@@ -100,12 +100,12 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           <FormLabel>Head</FormLabel>
           <NERAutocomplete
             id="head-autocomplete"
-            options={headOptions.map((option) => ({ id: `${option.id}`, label: option.label }))}
-            onChange={(_event, newValue) => newValue && setHead({ id: +newValue.id, label: newValue.label })}
+            options={headOptions}
+            onChange={(_event, newValue) => newValue && setHead(newValue)}
             filterSelectedOptions
             size="small"
             placeholder="Select a User"
-            value={{ id: `${head.id}`, label: head.label }}
+            value={head}
           />
         </Grid>
         <Grid item xs={12}>
