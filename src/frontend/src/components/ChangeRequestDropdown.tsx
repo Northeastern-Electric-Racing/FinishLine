@@ -1,4 +1,4 @@
-import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
@@ -52,22 +52,25 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
       control={control}
       name={name}
       render={({ field: { onChange, value } }) => (
-        <Select
-          id="cr-autocomplete"
-          displayEmpty
-          renderValue={(value) => (value ? value : 'Change Request Id')}
-          value={value}
-          onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
-          size={'small'}
-          placeholder={'Change Request Id'}
-          sx={{ width: 200, textAlign: 'left' }}
-        >
-          {approvedChangeRequestOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
+        <>
+          <FormLabel>Change Request ID</FormLabel>
+          <Select
+            id="cr-autocomplete"
+            displayEmpty
+            renderValue={(value) => value}
+            value={value}
+            onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
+            size={'small'}
+            placeholder={'Change Request Id'}
+            sx={{ width: 200, textAlign: 'left' }}
+          >
+            {approvedChangeRequestOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </>
       )}
     />
   );
