@@ -355,7 +355,10 @@ export default class ChangeRequestsService {
     const { changeRequests } = wbsElement;
     const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
     if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
-      throw new HttpException(400, 'Please resolve all related change requests before proceeding');
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${carNumber}.${projectNumber}.${workPackageNumber} - ${wbsElement.name} before proceeding`
+      );
     }
 
     const createdCR = await prisma.change_Request.create({
@@ -442,7 +445,10 @@ export default class ChangeRequestsService {
     const { changeRequests } = wbsElement;
     const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
     if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
-      throw new HttpException(400, 'Please resolve all related change requests before proceeding');
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${carNumber}.${projectNumber}.${workPackageNumber} - ${wbsElement.name} before proceeding`
+      );
     }
 
     const createdChangeRequest = await prisma.change_Request.create({
