@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, FormLabel, Grid, IconButton, TextField } from '@mui/material';
+import { Autocomplete, FormControl, FormLabel, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -97,16 +97,18 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     <PageBlock title={'People'} headerRight={editButtons}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <FormLabel>Head</FormLabel>
-          <NERAutocomplete
-            id="head-autocomplete"
-            options={headOptions}
-            onChange={(_event, newValue) => newValue && setHead(newValue)}
-            filterSelectedOptions
-            size="small"
-            placeholder="Select a User"
-            value={head}
-          />
+          <FormControl fullWidth>
+            <FormLabel>Head</FormLabel>
+            <NERAutocomplete
+              id="head-autocomplete"
+              options={headOptions}
+              onChange={(_event, newValue) => newValue && setHead(newValue)}
+              filterSelectedOptions
+              size="small"
+              placeholder="Select a User"
+              value={head}
+            />
+          </FormControl>
         </Grid>
         <Grid item xs={12}>
           <Autocomplete
