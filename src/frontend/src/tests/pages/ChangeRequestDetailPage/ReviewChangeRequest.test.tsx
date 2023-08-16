@@ -7,6 +7,7 @@ import { render, screen, routerWrapperBuilder } from '../../test-support/test-ut
 import { routes } from '../../../utils/routes';
 import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ReviewChangeRequest from '../../../pages/ChangeRequestDetailPage/ReviewChangeRequest';
+import { ChangeRequestStatus } from 'shared';
 
 const renderComponent = (modalShow: boolean, route: string) => {
   const RouterWrapper = routerWrapperBuilder({ path: routes.CHANGE_REQUESTS_BY_ID, route });
@@ -31,7 +32,10 @@ const renderComponent = (modalShow: boolean, route: string) => {
             workPackageNumber: 0
           },
           dateSubmitted: new Date(),
-          type: 'ISSUE'
+          type: 'ISSUE',
+          wbsName: 'a',
+          status: ChangeRequestStatus.Open,
+          requestedReviewers: []
         }}
         modalShow={modalShow}
         handleClose={() => null}
@@ -40,7 +44,7 @@ const renderComponent = (modalShow: boolean, route: string) => {
   );
 };
 
-describe.skip('review change request', () => {
+describe('review change request', () => {
   const route = `${routes.CHANGE_REQUESTS}/${exampleStandardChangeRequest.crId}`;
   it('renders change request review modal', () => {
     renderComponent(true, route);
