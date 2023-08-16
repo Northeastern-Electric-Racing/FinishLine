@@ -41,9 +41,12 @@ export const updateLinks = async (
   });
 
   await linkChanges.deletedElements.forEach(async (link) => {
-    await prisma.link.delete({
+    await prisma.link.update({
       where: {
         linkId: link.linkId
+      },
+      data: {
+        dateDeleted: new Date()
       }
     });
   });

@@ -16,6 +16,7 @@ CREATE TABLE "Link" (
     "url" TEXT NOT NULL,
     "creatorId" INTEGER NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateDeleted" TIMESTAMP(3),
     "linkTypeName" TEXT NOT NULL,
     "wbsElementId" INTEGER NOT NULL,
 

@@ -6,6 +6,7 @@ import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
+import { AttachMoney } from '@mui/icons-material';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -50,6 +51,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
               name="budget"
+              startAdornment={<AttachMoney />}
               control={control}
               type="number"
               placeholder="Enter budget..."

@@ -12,7 +12,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import WorkPackageSummary from './WorkPackageSummary';
 import DetailDisplay from '../../../components/DetailDisplay';
-import LinkView from '../../../components/LinkView';
+import LinkView from '../../../components/Link/LinkView';
 
 interface ProjectDetailsProps {
   project: Project;

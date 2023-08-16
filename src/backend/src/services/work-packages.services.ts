@@ -361,6 +361,7 @@ export default class WorkPackagesService {
     );
     const durationChangeJson = createChange('duration', originalWorkPackage.duration, duration, crId, userId, wbsElementId!);
     const blockedByChangeJson = createListChanges(
+      'blocked by',
       originalWorkPackage.blockedBy.map((element) => {
         return {
           element,
@@ -377,24 +378,24 @@ export default class WorkPackagesService {
       }),
       crId,
       userId,
-      wbsElementId!,
-      'blocked by'
+      wbsElementId!
     );
     const expectedActivitiesChangeJson = createListChanges(
+      'expected activity',
       descriptionBulletsToChangeListValues(originalWorkPackage.expectedActivities.filter((ele) => !ele.dateDeleted)),
       expectedActivities.map(descriptionBulletToChangeListValue),
       crId,
       userId,
-      wbsElementId!,
-      'expected activity'
+      wbsElementId!
     );
     const deliverablesChangeJson = createListChanges(
+      'deliverable',
+
       descriptionBulletsToChangeListValues(originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted)),
       deliverables.map(descriptionBulletToChangeListValue),
       crId,
       userId,
-      wbsElementId!,
-      'deliverable'
+      wbsElementId!
     );
 
     // add to changes if not undefined
@@ -469,18 +470,21 @@ export default class WorkPackagesService {
       });
     }
 
+    // Add the expected activities to the workpackage
     await addDescriptionBullets(
       expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackage.workPackageId,
       'workPackageIdExpectedActivities'
     );
 
+    // Add the deliverables to the workpackage
     await addDescriptionBullets(
       deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackage.workPackageId,
       'workPackageIdDeliverables'
     );
 
+    // edit the expected changes and deliverables
     await editDescriptionBullets(expectedActivitiesChangeJson.editedElements.concat(deliverablesChangeJson.editedElements));
 
     // create the changes in prisma

@@ -1,9 +1,8 @@
 import prisma from '../prisma/prisma';
-import { isLeadership } from 'shared';
+import { DescriptionBullet, isLeadership } from 'shared';
 import { Work_Package, Description_Bullet } from '@prisma/client';
 import { HttpException } from './errors.utils';
 import { ChangeListValue } from './changes.utils';
-import { descBulletConverter } from './utils';
 
 export interface DescriptionBulletPreview {
   id: number;
@@ -77,3 +76,10 @@ export const descriptionBulletsToChangeListValues = (
     .filter((constraint) => !constraint.dateDeleted)
     .map((constraint) => descriptionBulletToChangeListValue(descBulletConverter(constraint)));
 };
+
+export const descBulletConverter = (descBullet: Description_Bullet): DescriptionBullet => ({
+  id: descBullet.descriptionId,
+  detail: descBullet.detail,
+  dateAdded: descBullet.dateAdded,
+  dateDeleted: descBullet.dateDeleted ?? undefined
+});

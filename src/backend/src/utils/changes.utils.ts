@@ -68,12 +68,12 @@ export const createChange = (
  * @returns an object of {deletedElements[], addedElements[] changes[]}
  */
 export const createListChanges = <T>(
+  nameOfField: string,
   oldArray: ChangeListValue<T>[],
   newArray: ChangeListValue<T>[],
   crId: number,
   implementerId: number,
-  wbsElementId: number,
-  nameOfField: string
+  wbsElementId: number
 ): {
   deletedElements: T[];
   addedElements: T[];

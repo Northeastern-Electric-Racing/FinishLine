@@ -14,7 +14,7 @@ import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
 import TaskIcon from '@mui/icons-material/Task';
 import DoneIcon from '@mui/icons-material/Done';
-import LinkView from './LinkView';
+import LinkView from './Link/LinkView';
 
 interface ProjectDetailCardProps {
   project: Project;

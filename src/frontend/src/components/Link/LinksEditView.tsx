@@ -1,11 +1,11 @@
-import { useAllLinkTypes } from '../hooks/projects.hooks';
-import LoadingIndicator from './LoadingIndicator';
-import ErrorPage from '../pages/ErrorPage';
+import { useAllLinkTypes } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../LoadingIndicator';
+import ErrorPage from '../../pages/ErrorPage';
 import { Button, IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getRequiredLinkTypeNames } from '../utils/link.utils';
-import { ProjectEditFormInput } from '../pages/ProjectDetailPage/ProjectEdit/ProjectEditContainer';
+import { getRequiredLinkTypeNames } from '../../utils/link.utils';
+import { ProjectEditFormInput } from '../../pages/ProjectDetailPage/ProjectEdit/ProjectEditContainer';
 import { Box } from '@mui/system';
 
 const LinksEditView: React.FC<{
@@ -55,11 +55,13 @@ const LinksEditView: React.FC<{
               ))}
             </Select>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
-            {!isRequired(i) && (
-              <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
-                <DeleteIcon />
-              </IconButton>
-            )}
+            <Box sx={{ minWidth: '56px', height: '40px' }}>
+              {!isRequired(i) && (
+                <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Box>
           </Box>
         );
       })}

@@ -303,6 +303,7 @@ model Link {
   creatorId    Int
   creator      User        @relation(name: "linkCreator", fields: [creatorId], references: [userId])
   dateCreated  DateTime    @default(now())
+  dateDeleted  DateTime?
   linkTypeName String
   linkType     LinkType    @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
   wbsElementId Int

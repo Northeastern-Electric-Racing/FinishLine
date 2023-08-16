@@ -231,6 +231,7 @@ export default class ProjectsService {
 
     // Dealing with lists
     const rulesChangeJson = createListChanges(
+      'rules',
       originalProject.rules.map((rule) => {
         return {
           element: rule,
@@ -247,44 +248,43 @@ export default class ProjectsService {
       }),
       crId,
       userId,
-      wbsElementId,
-      'rules'
+      wbsElementId
     );
 
     const goalsChangeJson = createListChanges(
+      'goals',
       descriptionBulletsToChangeListValues(originalProject.goals),
       goals.map((goal) => descriptionBulletToChangeListValue(goal)),
       crId,
       userId,
-      wbsElementId,
-      'goals'
+      wbsElementId
     );
 
     const featuresChangeJson = createListChanges(
+      'features',
       descriptionBulletsToChangeListValues(originalProject.features),
       features.map((feature) => descriptionBulletToChangeListValue(feature)),
       crId,
       userId,
-      wbsElementId,
-      'features'
+      wbsElementId
     );
 
     const otherConstraintsChangeJson = createListChanges(
+      'other constraints',
       descriptionBulletsToChangeListValues(originalProject.otherConstraints),
       otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
       crId,
       userId,
-      wbsElementId,
-      'other constraint'
+      wbsElementId
     );
 
     const linkChanges = createListChanges(
+      'link',
       originalProject.wbsElement.links.map(linkToChangeListValue),
       linkCreateArgs.map(linkToChangeListValue),
       crId,
       userId,
-      wbsElementId,
-      'link'
+      wbsElementId
     );
 
     // add the changes for each of blockers, expected activities, and deliverables
@@ -333,28 +333,33 @@ export default class ProjectsService {
       });
     }
 
+    // Add the new goals
     await addDescriptionBullets(
       goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedProject.projectId,
       'projectIdGoals'
     );
+    // Add the new features
     await addDescriptionBullets(
       featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedProject.projectId,
       'projectIdFeatures'
     );
+    // Add the new other constraints
     await addDescriptionBullets(
       otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedProject.projectId,
       'projectIdOtherConstraints'
     );
+    // Edit the existing description bullets
     await editDescriptionBullets(
       goalsChangeJson.editedElements
         .concat(featuresChangeJson.editedElements)
         .concat(otherConstraintsChangeJson.editedElements)
     );
 
-    await updateLinks(linkChanges, updatedProject.projectId, userId);
+    // Update the links
+    await updateLinks(linkChanges, updatedProject.wbsElementId, userId);
 
     // create the changes in prisma
     await prisma.change.createMany({

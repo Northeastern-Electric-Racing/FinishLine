@@ -24,7 +24,7 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LinksEditView from '../../../components/LinksEditView';
+import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
@@ -35,7 +35,7 @@ const schema = yup.object().shape({
   links: yup.array().of(
     yup.object().shape({
       linkTypeName: yup.string().required('Link Type is required!'),
-      url: yup.string().required('URL is required!')
+      url: yup.string().required('URL is required!').url('Invalid URL')
     })
   ),
   summary: yup.string().required('Summary is required!')
@@ -112,13 +112,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       rules: project.rules.map((rule) => {
         return { rule };
       }),
-      links: projectLinks.map((link) => {
-        return {
-          linkId: link.linkId,
-          url: link.url,
-          linkTypeName: link.linkTypeName
-        };
-      }),
+      links: projectLinks,
       goals: bulletsToObject(project.goals),
       features: bulletsToObject(project.features),
       constraints: bulletsToObject(project.otherConstraints)
@@ -207,7 +201,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
               <ReactHookTextField
                 name="summary"
                 control={control}
-                label="Summary"
+                placeholder="Summary"
                 multiline={true}
                 rows={5}
                 errorMessage={errors.summary}
@@ -254,7 +248,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             + ADD NEW RULE
           </Button>
         </PageBlock>
-
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
             Cancel
