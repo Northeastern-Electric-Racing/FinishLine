@@ -357,7 +357,9 @@ export default class ChangeRequestsService {
     if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
       throw new HttpException(
         400,
-        `Please resolve all change requests related to ${carNumber}.${projectNumber}.${workPackageNumber} - ${wbsElement.name} before proceeding`
+        `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
+          wbsElement.name
+        } before proceeding`
       );
     }
 
