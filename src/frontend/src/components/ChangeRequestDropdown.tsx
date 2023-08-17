@@ -1,4 +1,4 @@
-import { FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
@@ -48,31 +48,33 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   }));
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field: { onChange, value } }) => (
-        <>
-          <FormLabel>Change Request ID</FormLabel>
-          <Select
-            id="cr-autocomplete"
-            displayEmpty
-            renderValue={(value) => value}
-            value={value}
-            onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
-            size={'small'}
-            placeholder={'Change Request Id'}
-            sx={{ width: 200, textAlign: 'left' }}
-          >
-            {approvedChangeRequestOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </>
-      )}
-    />
+    <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field: { onChange, value } }) => (
+          <Box sx={{ width: 200, display: 'flex', flexDirection: 'column', justifyContent: 'start' }}>
+            <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
+            <Select
+              id="cr-autocomplete"
+              displayEmpty
+              renderValue={(value) => value}
+              value={value}
+              onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
+              size={'small'}
+              placeholder={'Change Request Id'}
+              sx={{ width: '100%', textAlign: 'left' }}
+            >
+              {approvedChangeRequestOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        )}
+      />
+    </Box>
   );
 };
 
