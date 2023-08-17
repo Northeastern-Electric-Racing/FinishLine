@@ -2,13 +2,14 @@ import { createListChanges } from '../src/utils/changes.utils';
 
 describe('CreateRulesChangesJson', () => {
   test('createRulesChangesJson with empty old + new lists', () => {
-    const rulesChanges = createListChanges([], [], 1, 2, 3, 'test');
+    const rulesChanges = createListChanges('test', [], [], 1, 2, 3);
     expect(rulesChanges.changes.length).toEqual(0);
   });
 
   test('createRulesChangesJson with empty new list and non-empty old list', () => {
     const rules = ['rule1', 'rule2', 'rule3'];
     const rulesChanges = createListChanges(
+      'test',
       rules.map((str) => {
         return {
           element: str,
@@ -19,8 +20,7 @@ describe('CreateRulesChangesJson', () => {
       [],
       1,
       2,
-      3,
-      'test'
+      3
     );
     expect(rulesChanges.changes.length).toEqual(3);
     rulesChanges.changes.forEach((r, i) => {
@@ -34,6 +34,7 @@ describe('CreateRulesChangesJson', () => {
   test('createRulesChangesJson with empty old list and non-empty new list', () => {
     const rules = ['rule1', 'rule2', 'rule3'];
     const rulesChanges = createListChanges(
+      'test',
       [],
       rules.map((str) => {
         return {
@@ -44,8 +45,7 @@ describe('CreateRulesChangesJson', () => {
       }),
       1,
       2,
-      3,
-      'test'
+      3
     );
     expect(rulesChanges.changes.length).toEqual(3);
     rulesChanges.changes.forEach((r, i) => {
@@ -60,6 +60,7 @@ describe('CreateRulesChangesJson', () => {
     const oldRules = ['rule1', 'rule2', 'rule3'];
     const newRules = ['rule4', 'rule5', 'rule6'];
     const rulesChanges = createListChanges(
+      'test',
       oldRules.map((str) => {
         return {
           element: str,
@@ -76,8 +77,7 @@ describe('CreateRulesChangesJson', () => {
       }),
       1,
       2,
-      3,
-      'test'
+      3
     );
     expect(rulesChanges.changes.length).toEqual(6);
     rulesChanges.changes.slice(0, 3).forEach((r, i) => {
