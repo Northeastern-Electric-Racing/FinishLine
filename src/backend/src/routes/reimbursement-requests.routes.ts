@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
+import { floatMinZero, intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer from 'multer';
@@ -31,12 +31,12 @@ reimbursementRequestsRouter.post(
   isAccount(body('account')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
-  intMinZero(body('reimbursementProducts.*.cost')),
+  floatMinZero(body('reimbursementProducts.*.cost')),
   intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
   intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
   intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
-  intMinZero(body('totalCost')),
+  floatMinZero(body('totalCost')),
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
 );
