@@ -31,12 +31,12 @@ reimbursementRequestsRouter.post(
   isAccount(body('account')),
   body('reimbursementProducts').isArray(),
   nonEmptyString(body('reimbursementProducts.*.name')),
-  floatMinZero(body('reimbursementProducts.*.cost')),
+  intMinZero(body('reimbursementProducts.*.cost')),
   intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
   intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
   intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
-  floatMinZero(body('totalCost')),
+  intMinZero(body('totalCost')),
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
 );

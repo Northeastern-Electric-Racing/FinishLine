@@ -375,7 +375,7 @@ model Reimbursement_Request {
   vendorId               String
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
   account                Club_Accounts
-  totalCost              Float
+  totalCost              Int
   receiptPictures        Receipt[]
   reimbursementProducts  Reimbursement_Product[]
   dateDelivered          DateTime?
@@ -387,7 +387,7 @@ model Reimbursement_Product {
   reimbursementProductId String                @id @default(uuid())
   name                   String
   dateDeleted            DateTime?
-  cost                   Float
+  cost                   Int
   wbsElementId           Int
   wbsElement             WBS_Element           @relation(fields: [wbsElementId], references: [wbsElementId])
   reimbursementRequestId String
