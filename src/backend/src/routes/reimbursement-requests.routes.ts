@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { body } from 'express-validator';
-import { floatMinZero, intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer from 'multer';

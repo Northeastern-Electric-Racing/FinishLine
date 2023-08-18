@@ -17,7 +17,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { Reimbursement, ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { datePipe, fullNamePipe } from '../../utils/pipes';
+import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
@@ -97,8 +97,8 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
-          <RefundHeader header="Total Received" data={`$${totalReceived}`} />
-          <RefundHeader header="Total Owed" data={`$${totalOwed}`} />
+          <RefundHeader header="Total Received" data={`$${centsToDollar(totalReceived)}`} />
+          <RefundHeader header="Total Owed" data={`$${centsToDollar(totalOwed)}`} />
         </Box>
         <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
         <TableContainer component={Paper}>
@@ -117,7 +117,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell align="center">{datePipe(row.date)}</TableCell>
-                  <TableCell align="center">{row.amount}</TableCell>
+                  <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                   {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
                 </TableRow>
               ))}

@@ -20,7 +20,7 @@ import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { datePipe, fullNamePipe } from '../../../utils/pipes';
+import { centsToDollar, datePipe, fullNamePipe } from '../../../utils/pipes';
 import {
   imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
@@ -132,7 +132,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
               <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
             <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography fontSize={50}>{`$${reimbursementRequest.totalCost}`}</Typography>
+              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
             </Grid>
           </Grid>
         </Grid>
