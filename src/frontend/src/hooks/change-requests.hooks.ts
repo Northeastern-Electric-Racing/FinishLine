@@ -17,10 +17,6 @@ import {
   requestCRReview
 } from '../apis/change-requests.api';
 
-export interface CRReviewPayload {
-  userIds: number[];
-}
-
 /**
  * Custom React Hook to supply all change requests.
  */
@@ -166,7 +162,7 @@ export const useRequestCRReview = (crId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['change requests', 'review'],
-    async (crReviewPayload: CRReviewPayload) => {
+    async (crReviewPayload: { userIds: number[] }) => {
       const { data } = await requestCRReview(crId, crReviewPayload);
       return data;
     },

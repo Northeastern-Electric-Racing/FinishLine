@@ -53,6 +53,8 @@ import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { userToAutocompleteOption } from '../../utils/users';
+import ActionsMenu from '../../components/ActionsMenu';
+import { useForm } from 'react-hook-form';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -113,15 +115,23 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     workPackageNumber: 0
   });
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
+  // const {
+  //   handleSubmit,
+  //   control,
+  //   formState: { isValid },
+  //   reset
+  // } = useForm({
+  //   defaultValues: {
+  //     reviewerIds: []
+  //   }
+  // })
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
-  const requestCRReview = useRequestCRReview(changeRequest.crId.toString());
+  const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
   const currentUser = useCurrentUser();
   if (isError) return <ErrorPage message={error?.message} />;
-  if (!project || isLoading) return <LoadingIndicator />;
-
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
-  if (isLoadingAllUsers || !users) return <LoadingIndicator />;
+  if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
 
   const { name: projectName } = project;
 
@@ -136,7 +146,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleRequestReviewerClick = async () => {
     if (reviewerIds.length === 0) return;
     try {
-      await requestCRReview.mutateAsync({ userIds: reviewerIds });
+      await requestCRReview({ userIds: reviewerIds });
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -146,90 +156,85 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const isRequestAllowed = changeRequest.submitter.userId === currentUser.userId;
 
-  const unreviewedActionsDropdown = () => {
-    if (isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open) {
-      return (
-        <div>
-          <NERButton
-            endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-            variant="contained"
-            id="unreviewed-cr-actions-dropdown"
-            onClick={handleClick}
-          >
-            Actions
-          </NERButton>
-          <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-            <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
-              Review
-            </MenuItem>
-            <Divider />
-            <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
-              Delete
-            </MenuItem>
-          </Menu>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={8}>
-              <Autocomplete
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                limitTags={1}
-                disableCloseOnSelect
-                multiple
-                options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
-                getOptionLabel={(option) => option.label}
-                onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon />}
-                      checkedIcon={<CheckBoxIcon />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.label}
-                  </li>
-                )}
-                renderTags={() => null}
-                renderInput={(params) => (
-                  <TextField {...params} variant="standard" label="Add Reviewers" placeholder="Select Reviewers" />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <NERButton
-                sx={{ mt: '20px', float: 'right' }}
-                variant="contained"
-                disabled={!isRequestAllowed}
-                onClick={handleRequestReviewerClick}
-              >
-                Request Review
-              </NERButton>
-            </Grid>
-          </Grid>
-        </div>
-      );
-    }
-    return (
-      <div>
-        <NERButton
-          endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-          variant="contained"
-          id="unreviewed-cr-actions-dropdown"
-          onClick={handleClick}
-        >
-          Actions
-        </NERButton>
-        <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-          <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
-            Review
-          </MenuItem>
-          <Divider />
-          <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
-            Delete
-          </MenuItem>
-        </Menu>
-      </div>
-    );
-  };
+  const openedActionsDropdown = (
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="unreviewed-cr-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          Review
+        </MenuItem>
+        <Divider />
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
+        </MenuItem>
+      </Menu>
+
+      <Autocomplete
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        limitTags={1}
+        disableCloseOnSelect
+        multiple
+        options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
+        getOptionLabel={(option) => option.label}
+        onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
+            <Checkbox
+              icon={<CheckBoxOutlineBlankIcon />}
+              checkedIcon={<CheckBoxIcon />}
+              style={{ marginRight: 8 }}
+              checked={selected}
+            />
+            {option.label}
+          </li>
+        )}
+        renderInput={(params) => <TextField {...params} variant="standard" placeholder="Choose a user(s)" />}
+      />
+
+      <NERButton
+        sx={{ mt: '20px', float: 'right' }}
+        variant="contained"
+        disabled={!isRequestAllowed}
+        onClick={handleRequestReviewerClick}
+      >
+        Request Review
+      </NERButton>
+    </div>
+  );
+
+  const unreviewedActionsDropdown = (
+    <div>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="unreviewed-cr-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+        <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          Review
+        </MenuItem>
+        <Divider />
+        <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          Delete
+        </MenuItem>
+      </Menu>
+    </div>
+  );
+
+  const renderUnreviewedActionsDropdown =
+    isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open
+      ? openedActionsDropdown
+      : unreviewedActionsDropdown;
 
   const implementCrDropdown = (
     <div>
@@ -241,7 +246,30 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       >
         Implement Change Request
       </NERButton>
-      <Menu
+
+      <ActionsMenu
+        buttons={[
+          {
+            title: 'Create New Project',
+            onClick: handleDropdownClose,
+            disabled: !isUserAllowedToImplement,
+            icon: <CreateNewFolderIcon fontSize="small" />
+          },
+          {
+            title: 'Create New Work Package',
+            onClick: handleDropdownClose,
+            disabled: !isUserAllowedToImplement,
+            icon: <PostAddIcon fontSize="small" />
+          },
+          {
+            title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
+            onClick: handleDropdownClose,
+            disabled: !isUserAllowedToImplement,
+            icon: <EditIcon fontSize="small" />
+          }
+        ]}
+      ></ActionsMenu>
+      {/* <Menu
         open={dropdownOpen}
         anchorEl={anchorEl}
         onClose={handleDropdownClose}
@@ -287,11 +315,11 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </ListItemIcon>
           Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
         </MenuItem>
-      </Menu>
+      </Menu> */}
     </div>
   );
 
-  const actionDropdown = changeRequest.accepted ? implementCrDropdown : unreviewedActionsDropdown();
+  const actionDropdown = changeRequest.accepted ? implementCrDropdown : renderUnreviewedActionsDropdown;
 
   return (
     <PageLayout
