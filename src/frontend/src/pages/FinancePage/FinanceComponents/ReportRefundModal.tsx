@@ -75,12 +75,7 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
           <ReactHookTextField
             name="refundAmount"
             control={control}
-            sx={{
-              width: 1,
-              '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                display: 'none'
-              }
-            }}
+            sx={{ width: 1 }}
             startAdornment={<AttachMoneyIcon />}
             errorMessage={errors.refundAmount}
           />
