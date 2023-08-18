@@ -18,50 +18,40 @@ import DetailDisplay from '../../components/DetailDisplay';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import NERFailButton from '../../components/NERFailButton';
 import NERAutocomplete from '../../components/NERAutocomplete';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface TeamMembersPageBlockProps {
   team: Team;
 }
 
-const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-  return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
+const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+  return { label: `${fullNamePipe(user)} (${user.email})`, id: `${user.userId}` };
 };
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
-  const [head, setHead] = useState({
-    id: `${userToAutocompleteOption(team.head).id}`,
-    label: userToAutocompleteOption(team.head).label
-  });
+  const [head, setHead] = useState(userToAutocompleteOption(team.head));
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-  const {
-    isLoading: setTeamMembersIsLoading,
-    isError: setTeamMembersIsError,
-    error: setTeamMembersError,
-    mutateAsync: setTeamMembersMutateAsync
-  } = useSetTeamMembers(team.teamId);
-  const {
-    isLoading: setTeamHeadIsLoading,
-    isError: setTeamHeadIsError,
-    error: setTeamHeadError,
-    mutateAsync: setTeamHeadMutateAsync
-  } = useSetTeamHead(team.teamId);
+  const { isLoading: setTeamMembersIsLoading, mutateAsync: setTeamMembersMutateAsync } = useSetTeamMembers(team.teamId);
+  const { isLoading: setTeamHeadIsLoading, mutateAsync: setTeamHeadMutateAsync } = useSetTeamHead(team.teamId);
+
+  const toast = useToast();
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-  if (setTeamMembersIsError) return <ErrorPage message={setTeamMembersError?.message} />;
-  if (setTeamHeadIsError) return <ErrorPage message={setTeamHeadError?.message} />;
   if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || !users) return <LoadingIndicator />;
 
   const handleSubmit = async () => {
     try {
-      await setTeamMembersMutateAsync(members.map((member) => member.id));
-      await setTeamHeadMutateAsync(+head.id);
+      await setTeamMembersMutateAsync(members.map((member) => parseInt(member.id)));
+      await setTeamHeadMutateAsync(parseInt(head.id));
       setIsEditingMembers(false);
     } catch (error) {
-      alert(error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
   };
 
@@ -73,9 +63,9 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     .map(userToAutocompleteOption);
 
   const headOptions = users
-    .filter((user) => memberOptions.some((option) => option.id === user.userId) && isHead(user.role))
+    .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isHead(user.role))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-    .map((user) => ({ id: `${userToAutocompleteOption(user).id}`, label: userToAutocompleteOption(user).label }));
+    .map(userToAutocompleteOption);
 
   const editButtons = (
     <div style={{ display: 'flex' }}>
