@@ -137,12 +137,15 @@ export default class TeamsService {
       where: { userId }
     });
 
+    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
+      throw new HttpException(400, 'team head cannot be a member!');
+
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
 
-    // checking to see if any teams have the new head as their current head or lead
+    // checking to see if any other teams have the new head as their current head or lead
     const newHeadTeam = await prisma.team.findFirst({
-      where: { OR: [{ headId: userId }, { leads: { some: { userId } } }] }
+      where: { AND: [{ OR: [{ headId: userId }, { leads: { some: { userId } } }] }, { NOT: { teamId: team.teamId } }] }
     });
 
     if (newHeadTeam) throw new AccessDeniedException('The new team head must not be a head or lead of another team');
