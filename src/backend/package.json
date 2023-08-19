@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "yarn nodemon index.ts",
     "test": "vitest",
-    "build": "NODE_OPTIONS='--max-old-space-size=9216' tsc --noEmit false",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit false",
     "start": "node -r dotenv/config dist/backend/index.js",
     "prisma:manual": "ts-node ./src/prisma/manual.ts"
   },
