@@ -33,7 +33,8 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
           aria-label="open drawer"
           onClick={handleDrawerOpen}
           sx={{
-            marginRight: 5,
+            marginRight: 4,
+            ml: '3px',
             ...(open && { display: 'none' })
           }}
         >
