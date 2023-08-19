@@ -13,7 +13,7 @@ import { fireEvent, render, screen } from '../../../test-support/test-utils';
 import UserSettingsComponent from '../../../../pages/SettingsPage/UserSettings/UserSettings';
 import { mockLogUserInReturnValue, mockLogUserInDevReturnValue } from '../../../test-support/mock-hooks';
 
-jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsView', () => {
+vi.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsView', () => {
   return {
     __esModule: true,
     default: () => {
@@ -22,7 +22,7 @@ jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsView', () => 
   };
 });
 
-jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => {
+vi.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => {
   return {
     __esModule: true,
     default: () => {
@@ -31,7 +31,9 @@ jest.mock('../../../../pages/SettingsPage/UserSettings/UserSettingsEdit', () => 
   };
 });
 
-jest.mock('../../../../hooks/users.hooks');
+vi.mock('../../../../hooks/users.hooks');
+
+vi.mock('../../../../hooks/toasts.hooks');
 
 const mockedUseSingleUserSettings = useSingleUserSettings as jest.Mock<UseQueryResult<UserSettings>>;
 
@@ -59,13 +61,21 @@ const mockUseLogUserInHook = (isLoading: boolean, isError: boolean, error?: Erro
 const renderComponent = () => {
   mockUseLogUserInHook(false, false);
   mockUseUpdateUserSettingsHook(false, false);
-  return render(<UserSettingsComponent userId={1} />);
+  return render(
+    <UserSettingsComponent
+      currentSettings={{
+        id: '1',
+        defaultTheme: 'LIGHT',
+        slackId: '1234'
+      }}
+    />
+  );
 };
 
 describe('user settings component', () => {
   beforeEach(() => {
-    jest.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
-    jest.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
+    vi.spyOn(userHooks, 'useLogUserIn').mockReturnValue(mockLogUserInReturnValue);
+    vi.spyOn(userHooks, 'useLogUserInDev').mockReturnValue(mockLogUserInDevReturnValue);
   });
 
   it('renders everything', () => {

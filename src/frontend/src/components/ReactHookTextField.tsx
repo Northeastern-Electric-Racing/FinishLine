@@ -15,7 +15,7 @@ interface ReactHookTextFieldProps {
   size?: 'small' | 'medium';
   sx?: SxProps<Theme>;
   type?: string;
-  icon?: SvgIconProps;
+  startAdornment?: SvgIconProps;
   multiline?: boolean;
   rows?: number;
   endAdornment?: React.ReactElement;
@@ -32,7 +32,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   size,
   sx,
   type,
-  icon,
+  startAdornment,
   multiline,
   rows,
   endAdornment,
@@ -44,8 +44,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   if (type === 'number') {
     inputProps = { inputProps: { min: 0 } };
   }
-  if (icon) {
-    inputProps = { ...inputProps, startAdornment: <InputAdornment position="start">{icon}</InputAdornment> };
+  if (startAdornment) {
+    inputProps = { ...inputProps, startAdornment: <InputAdornment position="start">{startAdornment}</InputAdornment> };
   }
   if (endAdornment) {
     inputProps = { ...inputProps, endAdornment };

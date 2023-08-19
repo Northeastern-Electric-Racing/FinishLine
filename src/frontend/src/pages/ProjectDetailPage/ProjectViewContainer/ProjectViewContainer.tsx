@@ -13,7 +13,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EditIcon from '@mui/icons-material/Edit';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -28,8 +28,8 @@ import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
+import PageLayout from '../../../components/PageLayout';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -54,7 +54,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   if (isError) return <ErrorPage message={error?.message} />;
 
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const { teamAsLeadId } = user;
+  const { teamAsHeadId } = user;
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -72,7 +72,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const handleAssignToMyTeam = async () => {
     try {
-      await mutateAsyncSetProjectTeam(teamAsLeadId);
+      await mutateAsyncSetProjectTeam(teamAsHeadId);
       handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -105,7 +105,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const assignToMyTeamButton = (
-    <MenuItem disabled={project.team?.teamId === teamAsLeadId} onClick={handleAssignToMyTeam}>
+    <MenuItem disabled={project.team?.teamId === teamAsHeadId} onClick={handleAssignToMyTeam}>
       <ListItemIcon>
         <GroupIcon fontSize="small" />
       </ListItemIcon>
@@ -123,50 +123,52 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   );
 
   const projectActionsDropdown = (
-    <Grid container>
-      <Grid item></Grid>
-      <Grid item>
-        <NERButton
-          endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-          variant="contained"
-          id="project-actions-dropdown"
-          onClick={handleClick}
-        >
-          Actions
-        </NERButton>
-      </Grid>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+    <Box ml={2}>
+      <NERButton
+        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
+        variant="contained"
+        id="project-actions-dropdown"
+        onClick={handleClick}
+      >
+        Actions
+      </NERButton>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+      >
         <EditButton />
         <CreateChangeRequestButton />
-        {teamAsLeadId && assignToMyTeamButton}
+        {teamAsHeadId && assignToMyTeamButton}
         <DeleteButton />
       </Menu>
-    </Grid>
+    </Box>
   );
 
   const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
+  const headerRight = (
+    <Box display="flex" justifyContent="flex-end">
+      <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
+      {projectActionsDropdown}
+    </Box>
+  );
+
   return (
-    <>
-      <>
-        <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={[{ name: 'Projects', route: routes.PROJECTS }]} />
-        <Grid container alignItems="center" sx={{ mb: 2 }}>
-          <Grid item>
-            <Typography variant="h4" fontSize={30}>
-              {pageTitle}
-            </Typography>
-          </Grid>
-          <Grid item>
-            <FavoriteProjectButton wbsNum={project.wbsNum} projectIsFavorited={projectIsFavorited} />
-          </Grid>
-          <Grid item sx={{ mx: 0 }} xs>
-            <Grid container direction="row-reverse">
-              <Grid item>{projectActionsDropdown}</Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-      </>
-      <ProjectDetailTabs project={project} setTab={setTab} />
+    <PageLayout
+      title={pageTitle}
+      headerRight={headerRight}
+      tabs={<ProjectDetailTabs project={project} setTab={setTab} />}
+      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+    >
       {tab === 0 ? (
         <ProjectDetails project={project} />
       ) : tab === 1 ? (
@@ -181,7 +183,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
       )}
-    </>
+    </PageLayout>
   );
 };
 

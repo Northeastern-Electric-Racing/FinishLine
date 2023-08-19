@@ -1,5 +1,5 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma } from '@prisma/client';
+import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { buildChangeDetail } from './utils';
 import { sendMessage } from '../integrations/slack';
@@ -23,9 +23,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
   }[whyType]);
 
 export const sendSlackChangeRequestNotification = async (
-  team: Team & {
-    leader: User;
-  },
+  team: Team,
   message: string,
   crId: number,
   budgetImpact?: number
@@ -166,4 +164,13 @@ export const calculateChangeRequestStatus = (
     return ChangeRequestStatus.Denied;
   }
   return ChangeRequestStatus.Open;
+};
+
+/**
+ * Determines whether all the change requests in an array of change requests have been reviewed
+ * @param changeRequests the given array of change requests
+ * @returns true if all the change requests have been reviewed, and false otherwise
+ */
+export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
+  return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };

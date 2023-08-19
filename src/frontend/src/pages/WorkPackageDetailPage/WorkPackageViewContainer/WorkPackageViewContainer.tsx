@@ -11,7 +11,6 @@ import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
-import PageTitle from '../../../layouts/PageTitle/PageTitle';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
@@ -25,6 +24,8 @@ import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
+import PageLayout from '../../../components/PageLayout';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -50,6 +51,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
   const tabUrlValues = useMemo(() => ['overview', 'scope', 'changes'], []);
 
@@ -170,15 +172,14 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <>
-      <PageTitle
-        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-        previousPages={[
-          { name: 'Projects', route: routes.PROJECTS },
-          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-        ]}
-        actionButton={projectActionsDropdown}
-      />
+    <PageLayout
+      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      previousPages={[
+        { name: 'Projects', route: routes.PROJECTS },
+        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+      ]}
+      headerRight={projectActionsDropdown}
+    >
       <Tabs
         sx={{ borderBottom: 1, borderColor: 'divider' }}
         value={tabValue}
@@ -251,7 +252,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           handleClose={() => setShowDeleteModal(false)}
         />
       )}
-    </>
+    </PageLayout>
   );
 };
 

@@ -1,19 +1,37 @@
 import { User } from 'shared';
-import { Controller, Control, FieldErrorsImpl } from 'react-hook-form';
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { fullNamePipe } from '../../../utils/pipes';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
+import { Control, FieldErrorsImpl } from 'react-hook-form';
 
 interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectEditFormInput>;
   errors: FieldErrorsImpl<ProjectEditFormInput>;
+  projectManager?: string;
+  projectLead?: string;
+  setProjectManager: (projectManager?: string) => void;
+  setProjectLead: (projectLead?: string) => void;
 }
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control, errors }) => {
+const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
+  if (!user) return { label: '', id: '' };
+  return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
+};
+
+const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
+  users,
+  control,
+  errors,
+  projectManager,
+  projectLead,
+  setProjectLead,
+  setProjectManager
+}) => {
   return (
     <PageBlock title="Project Details">
       <Grid container xs={12} sx={{ my: 1 }}>
@@ -41,55 +59,38 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({ users, control,
             />
           </FormControl>
         </Grid>
-        <Grid item sx={{ my: 1 }}>
-          <FormControl>
-            <FormLabel>Project Lead</FormLabel>
-            <Controller
-              name="projectLeadId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ mr: 4, minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Lead</FormLabel>
+          <NERAutocomplete
+            sx={{ width: '90%' }}
+            id="users-autocomplete"
+            onChange={(_event, value) => setProjectLead(value?.id)}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+          />
         </Grid>
-        <Grid item sx={{ my: 1 }}>
-          <FormControl>
-            <FormLabel>Project Manager</FormLabel>
-            <Controller
-              name="projectManagerId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <>
-                  <TextField select onChange={onChange} value={value} sx={{ minWidth: '8%' }}>
-                    {users.map((t) => (
-                      <MenuItem key={t.userId} value={t.userId}>
-                        {fullNamePipe(t)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-            />
-          </FormControl>
+        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
+            sx={{ width: '90%' }}
+            id="users-autocomplete"
+            onChange={(_event, value) => setProjectManager(value?.id)}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+          />
         </Grid>
         <Grid item xs={12} sx={{ my: 1 }}>
           <FormControl sx={{ width: '80%' }}>
-            <FormLabel>Slide Deck Link</FormLabel>
+            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
+            <FormLabel>Confluence Link</FormLabel>
             <ReactHookTextField
               name="slideDeckLink"
               control={control}
-              placeholder="Enter slide deck link..."
+              placeholder="Enter confluence link..."
               errorMessage={errors.slideDeckLink}
             />
           </FormControl>

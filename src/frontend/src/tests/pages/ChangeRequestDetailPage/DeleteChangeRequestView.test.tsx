@@ -7,16 +7,16 @@ import { exampleStandardChangeRequest } from '../../test-support/test-data/chang
 import { render, screen, routerWrapperBuilder } from '../../test-support/test-utils';
 import DeleteChangeRequestsView from '../../../pages/ChangeRequestDetailPage/DeleteChangeRequestView';
 
-jest.mock('../../../hooks/toasts.hooks');
+vi.mock('../../../hooks/toasts.hooks');
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
  */
-const mockHandleSubmit = jest.fn();
+const mockHandleSubmit = vi.fn();
 /**
  * Mock function for hiding the modal, use if there is additional functionality added while canceling
  */
-const mockHandleHide = jest.fn();
+const mockHandleHide = vi.fn();
 
 /**
  * Sets up the component under test with the desired values and renders it.
