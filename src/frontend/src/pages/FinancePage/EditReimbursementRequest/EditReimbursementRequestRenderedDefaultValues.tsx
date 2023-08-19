@@ -4,7 +4,7 @@ import ReimbursementRequestForm, {
 } from '../ReimbursementRequestForm/ReimbursementRequestForm';
 import PageLayout from '../../../components/PageLayout';
 import { routes } from '../../../utils/routes';
-import { fullNamePipe } from '../../../utils/pipes';
+import { centsToDollar, fullNamePipe } from '../../../utils/pipes';
 
 const EditReimbursementRequestRenderedDefaultValues: React.FC<{
   reimbursementRequest: ReimbursementRequest;
@@ -37,7 +37,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
             wbsNum: product.wbsNum,
             name: product.name,
-            cost: product.cost
+            cost: Number(centsToDollar(product.cost))
           })),
           receiptFiles: reimbursementRequest.receiptPictures.map((receipt, index) => ({
             name: receipt.name,

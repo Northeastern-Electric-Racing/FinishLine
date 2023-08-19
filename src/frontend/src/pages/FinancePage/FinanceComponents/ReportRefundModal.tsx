@@ -10,7 +10,14 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 const schema = yup.object().shape({
-  refundAmount: yup.number().typeError('The refund amount should be a valid number').required()
+  refundAmount: yup
+    .number()
+    .required()
+    .test('two decimals', 'Refund must be formatted as a dollar amount with at most two decimals', (value) => {
+      if (!value) return false;
+      return Math.floor(value * 100) === value * 100;
+    })
+    .typeError('The refund amount should be a valid number')
 });
 
 interface ReportRefundProps {
@@ -29,7 +36,7 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   const {
     handleSubmit,
     control,
-    formState: { isValid },
+    formState: { errors },
     reset
   } = useForm({
     resolver: yupResolver(schema),
@@ -42,7 +49,7 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   const handleConfirm = async (data: { refundAmount: number }) => {
     handleClose();
     try {
-      await mutateAsync(data);
+      await mutateAsync({ refundAmount: data.refundAmount * 100 });
       toast.success(`New Account Credit Amount #${data.refundAmount} Reported Successfully`);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -60,7 +67,6 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleConfirm}
       formId="reimbursement-form"
-      disabled={!isValid}
     >
       {isLoading ? (
         <LoadingIndicator />
@@ -70,8 +76,8 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
             name="refundAmount"
             control={control}
             sx={{ width: 1 }}
-            type="number"
             startAdornment={<AttachMoneyIcon />}
+            errorMessage={errors.refundAmount}
           />
         </FormControl>
       )}
