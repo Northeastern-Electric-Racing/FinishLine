@@ -136,9 +136,9 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
       //total cost is tracked in cents
-      const totalCost = data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100;
+      const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
       const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductCreateArgs) => {
-        return { ...product, cost: product.cost * 100 };
+        return { ...product, cost: Math.round(product.cost * 100) };
       });
       const reimbursementRequestId = await submitData({
         ...data,
