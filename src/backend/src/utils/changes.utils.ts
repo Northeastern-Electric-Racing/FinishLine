@@ -91,7 +91,6 @@ export const createListChanges = <T>(
 
   oldArray.forEach((changeListValue) => {
     if (!seenNew.has(changeListValue.comparator)) {
-      console.log('removed ', changeListValue);
       changes.push({ changeListValue, type: ChangeType.REMOVED });
     }
   });
