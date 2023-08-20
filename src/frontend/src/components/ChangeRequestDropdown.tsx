@@ -1,10 +1,10 @@
-import { Box, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
-import LoadingIndicator from './LoadingIndicator';
 import { useCurrentUser } from '../hooks/users.hooks';
+import LoadingIndicator from './LoadingIndicator';
 
 // Filter and sort change requests to display in the dropdown
 const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: AuthenticatedUser): ChangeRequest[] => {
@@ -64,6 +64,16 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
               size={'small'}
               placeholder={'Change Request Id'}
               sx={{ width: 200, textAlign: 'left' }}
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'right'
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'right'
+                }
+              }}
             >
               {approvedChangeRequestOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
