@@ -49,12 +49,12 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <Controller
-        control={control}
-        name={name}
-        render={({ field: { onChange, value } }) => (
-          <Box sx={{ width: 200, display: 'flex', flexDirection: 'column', justifyContent: 'start' }}>
-            <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
+      <FormControl>
+        <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
+        <Controller
+          control={control}
+          name={name}
+          render={({ field: { onChange, value } }) => (
             <Select
               id="cr-autocomplete"
               displayEmpty
@@ -63,7 +63,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ width: '100%', textAlign: 'left' }}
+              sx={{ width: 200, textAlign: 'left' }}
             >
               {approvedChangeRequestOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -71,9 +71,9 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
                 </MenuItem>
               ))}
             </Select>
-          </Box>
-        )}
-      />
+          )}
+        />
+      </FormControl>
     </Box>
   );
 };
