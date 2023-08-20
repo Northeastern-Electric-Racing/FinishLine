@@ -71,7 +71,7 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
         <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
       </DrawerHeader>
       <Divider />
-      <Box overflow={'auto'}>
+      <Box overflow={'auto'} sx={{ overflowX: 'hidden' }}>
         {linkItems.map((linkItem) => (
           <NavPageLink {...linkItem} open={open} />
         ))}
