@@ -69,6 +69,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
               size="small"
               placeholder="Select a Project Lead"
               value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+              listboxProps={{ style: { maxHeight: '180px' } }}
             />
           </FormControl>
         </Grid>
@@ -82,6 +83,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
               size="small"
               placeholder="Select a Project Manager"
               value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+              listboxProps={{ style: { maxHeight: '180px' } }}
             />
           </FormControl>
         </Grid>
