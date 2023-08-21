@@ -14,7 +14,8 @@ import changeRequestTransformer from '../transformers/change-requests.transforme
 import {
   updateBlocking,
   sendSlackChangeRequestNotification,
-  sendSlackCRReviewedNotification
+  sendSlackCRReviewedNotification,
+  allChangeRequestsReviewed
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -354,12 +355,26 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
+      },
+      include: {
+        changeRequests: true
       }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+
+    const { changeRequests } = wbsElement;
+    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
+          wbsElement.name
+        } before proceeding`
+      );
+    }
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -430,7 +445,7 @@ export default class ChangeRequestsService {
           workPackageNumber
         }
       },
-      include: { workPackage: { include: { expectedActivities: true, deliverables: true } } }
+      include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, changeRequests: true }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -440,6 +455,17 @@ export default class ChangeRequestsService {
 
     if (wbsElement.workPackage) {
       throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    }
+
+    const { changeRequests } = wbsElement;
+    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
+          wbsElement.name
+        } before proceeding`
+      );
     }
 
     const createdChangeRequest = await prisma.change_Request.create({

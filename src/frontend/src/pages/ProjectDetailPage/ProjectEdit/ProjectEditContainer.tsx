@@ -28,6 +28,7 @@ import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
+import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -173,7 +174,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     <PageLayout
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
+      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
     >
       <form
         id="project-edit-form"

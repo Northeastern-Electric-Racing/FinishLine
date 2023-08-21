@@ -65,7 +65,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     handleSubmit,
     control,
     formState: { errors },
-    watch
+    watch,
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -134,9 +135,14 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const onSubmitWrapper = async (data: ReimbursementRequestFormInput) => {
     try {
-      const totalCost = data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0);
+      //total cost is tracked in cents
+      const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
+      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductCreateArgs) => {
+        return { ...product, cost: Math.round(product.cost * 100) };
+      });
       const reimbursementRequestId = await submitData({
         ...data,
+        reimbursementProducts,
         totalCost
       });
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
@@ -170,6 +176,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       allWbsElements={allWbsElements}
       submitText={submitText}
       previousPage={previousPage}
+      setValue={setValue}
     />
   );
 };
