@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from './tasks.query-args';
+import linkQueryArgs from './links.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -8,6 +9,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         projectLead: true,
         projectManager: true,
         tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
+        links: { ...linkQueryArgs },
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
       }
     },
@@ -26,6 +28,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
           include: {
             projectLead: true,
             projectManager: true,
+            links: { ...linkQueryArgs },
             changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
           }
         },

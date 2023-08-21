@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser } from 'shared';
+import { AuthenticatedUser, LinkCreateArgs } from 'shared';
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
@@ -35,10 +35,7 @@ export interface EditSingleProjectPayload {
   goals: { id: number; detail: string }[];
   features: { id: number; detail: string }[];
   otherConstraints: { id: number; detail: string }[];
-  googleDriveFolderLink: string;
-  slideDeckLink: string;
-  bomLink: string;
-  taskListLink: string;
+  links: LinkCreateArgs[];
   projectLeadId?: number;
   projectManagerId?: number;
 }

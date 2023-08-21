@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project } from 'shared';
+import { LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
@@ -15,7 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Button, Box, TextField, IconButton } from '@mui/material';
+import { Grid, Button, Box, TextField, IconButton, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
@@ -24,23 +24,27 @@ import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
+import LinksEditView from '../../../components/Link/LinksEditView';
+import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
-/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
   budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-  slideDeckLink: yup.string().required('Confluence link is required!').url('Invalid URL'),
-  googleDriveFolderLink: yup.string().required('Google Drive folder link is required!').url('Invalid URL'),
-  bomLink: yup.string().url('Invalid URL').required('Bom link is required!'),
-  taskListLink: yup.string().required('Task list link is required!').url('Invalid URL'),
+  links: yup.array().of(
+    yup.object().shape({
+      linkTypeName: yup.string().required('Link Type is required!'),
+      url: yup.string().required('URL is required!').url('Invalid URL')
+    })
+  ),
   summary: yup.string().required('Summary is required!')
 });
 
 interface ProjectEditContainerProps {
   project: Project;
+  requiredLinkTypeNames: string[];
   exitEditMode: () => void;
 }
 
@@ -48,10 +52,7 @@ export interface ProjectEditFormInput {
   name: string;
   budget: number;
   summary: string;
-  bomLink: string | undefined;
-  googleDriveFolderLink: string | undefined;
-  taskListLink: string | undefined;
-  slideDeckLink: string | undefined;
+  links: LinkCreateArgs[];
   crId: string;
   goals: {
     bulletId: number;
@@ -70,30 +71,49 @@ export interface ProjectEditFormInput {
   }[];
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
+const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode, requiredLinkTypeNames }) => {
   const query = useQuery();
   const allUsers = useAllUsers();
   const toast = useToast();
-  const { slideDeckLink, bomLink, gDriveLink, taskListLink, name, budget, summary } = project;
+  const { name, budget, summary } = project;
+
+  const projectLinks = project.links.map((link) => {
+    return {
+      linkId: link.linkId,
+      url: link.url,
+      linkTypeName: link.linkType.name
+    };
+  });
+
+  const projectLinkTypeNames = projectLinks.map((link) => link.linkTypeName);
+
+  requiredLinkTypeNames
+    .filter((name) => !projectLinkTypeNames.includes(name))
+    .forEach((name) => {
+      projectLinks.push({
+        linkId: '-1',
+        url: '',
+        linkTypeName: name
+      });
+    });
+
   const {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name,
       budget,
-      slideDeckLink,
-      bomLink,
-      taskListLink,
-      googleDriveFolderLink: gDriveLink,
       summary,
       crId: query.get('crId') || '',
       rules: project.rules.map((rule) => {
         return { rule };
       }),
+      links: projectLinks,
       goals: bulletsToObject(project.goals),
       features: bulletsToObject(project.features),
       constraints: bulletsToObject(project.otherConstraints)
@@ -107,6 +127,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     append: appendConstraint,
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
+  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
   const [projectManagerId, setprojectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
@@ -118,7 +139,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
   const onSubmit = async (data: ProjectEditFormInput) => {
-    const { name, budget, summary, bomLink = '', googleDriveFolderLink = '', taskListLink = '', slideDeckLink = '' } = data;
+    const { name, budget, summary, links } = data;
     const rules = data.rules.map((rule) => rule.rule);
 
     const goals = mapBulletsToPayload(data.goals);
@@ -126,14 +147,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
     try {
-      const payload = {
+      const payload: EditSingleProjectPayload = {
         name,
         budget: budget,
         summary,
-        bomLink,
-        googleDriveFolderLink,
-        taskListLink,
-        slideDeckLink,
+        links,
         projectId: project.id,
         crId: parseInt(data.crId),
         rules,
@@ -180,16 +198,20 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         />
         <PageBlock title="Project Summary">
           <Grid item sx={{ mt: 2 }}>
-            <ReactHookTextField
-              name="summary"
-              control={control}
-              sx={{ width: '50%' }}
-              label="Summary"
-              multiline={true}
-              rows={5}
-              errorMessage={errors.summary}
-            />
+            <FormControl fullWidth>
+              <ReactHookTextField
+                name="summary"
+                control={control}
+                placeholder="Summary"
+                multiline={true}
+                rows={5}
+                errorMessage={errors.summary}
+              />
+            </FormControl>
           </Grid>
+        </PageBlock>
+        <PageBlock title="Links">
+          <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
         <PageBlock title="Goals">
           <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
@@ -227,7 +249,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             + ADD NEW RULE
           </Button>
         </PageBlock>
-
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
             Cancel

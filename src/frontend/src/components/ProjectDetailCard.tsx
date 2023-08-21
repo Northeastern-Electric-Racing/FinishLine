@@ -5,7 +5,6 @@
 
 import { Construction, Work } from '@mui/icons-material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import DescriptionIcon from '@mui/icons-material/Description';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { Box, Card, CardContent, Link, Typography, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -15,6 +14,7 @@ import WorkPackageStageChip from './WorkPackageStageChip';
 import FavoriteProjectButton from './FavoriteProjectButton';
 import TaskIcon from '@mui/icons-material/Task';
 import DoneIcon from '@mui/icons-material/Done';
+import LinkView from './Link/LinkView';
 
 interface ProjectDetailCardProps {
   project: Project;
@@ -42,6 +42,8 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
 
   const daysLeft = calculateDaysLeftInProject(project);
 
+  const confluenceLink = project.links.find((link) => link.linkType.name === 'Confluence');
+
   const ProjectDetailCardDetails = () => (
     <Grid container sx={{ marginTop: '0.5rem' }}>
       <Grid item display="flex" xs={4}>
@@ -66,12 +68,11 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
       <Grid item display="flex" xs={4}>
         <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectManager)}</Typography>
       </Grid>
-      <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
-        <DescriptionIcon sx={{ mr: 1 }} />
-        <Link href={project.gDriveLink} target="_blank" underline="hover">
-          Google Drive
-        </Link>
-      </Grid>
+      {confluenceLink && (
+        <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>
+          <LinkView link={confluenceLink} />
+        </Grid>
+      )}
       <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
         <AttachMoneyIcon sx={{ mr: 1 }} /> <Typography>{project.budget}</Typography>
       </Grid>
