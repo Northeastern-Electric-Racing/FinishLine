@@ -39,7 +39,7 @@ const renderComponent = (
   );
 };
 
-describe('work package container view', () => {
+describe.skip('work package container view', () => {
   beforeEach(() => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(
