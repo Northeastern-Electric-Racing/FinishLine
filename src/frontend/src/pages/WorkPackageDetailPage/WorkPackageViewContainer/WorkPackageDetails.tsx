@@ -6,7 +6,7 @@
 import { WorkPackage, wbsPipe } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
-import { Box, Divider, Grid, Stack, Typography } from '@mui/material';
+import { Box, Divider, Grid, Link, Stack, Typography } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 import { timelinePipe } from '../../../utils/pipes';
@@ -14,12 +14,15 @@ import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
+  dependencies: WorkPackage[];
 }
 
-const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) => {
+const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   return (
     <>
       <Grid container columnSpacing={2} justifyContent="flex-start" sx={{ mb: 2, mt: 1 }}>
@@ -90,13 +93,13 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage }) 
       </Typography>
 
       <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
-        {workPackage.blockedBy.length === 0 ? (
+        {dependencies.length === 0 ? (
           <Typography>No Blockers</Typography>
         ) : (
-          workPackage.blockedBy.map((dep, idx) => (
-            <Typography sx={{ fontWeight: 'bold' }} key={idx}>
-              {wbsPipe(dep)}
-            </Typography>
+          dependencies.map((dep) => (
+            <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
+              {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
+            </Link>
           ))
         )}
       </Stack>

@@ -54,7 +54,7 @@ const calculatePercentExpectedProgress = (start: Date, weeks: number, status: St
   const elapsedTime = currentDate.getTime() - start.getTime();
   const elapsedDays = elapsedTime / (1000 * 60 * 60 * 24);
   const percentProgress = (elapsedDays * 100) / (weeks * 7);
-  return Math.min(Math.round(percentProgress), 100);
+  return Math.max(Math.min(Math.round(percentProgress), 100), 0);
 };
 
 /**

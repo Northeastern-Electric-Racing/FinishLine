@@ -5,14 +5,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation, useRouteMatch } from 'react-router-dom';
-import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
+import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem, Tab, Tabs } from '@mui/material';
@@ -23,9 +22,11 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import PageLayout from '../../../components/PageLayout';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import ScopeTab from './ScopeTab';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -46,7 +47,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -65,16 +65,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
 
   // Change tab when the browser forward/back button is pressed
   const { pathname } = useLocation();
+
   useEffect(() => {
     const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
     setTabValue(newTabValue);
   }, [pathname, setTabValue, tabUrlValues, tabValueString]);
 
+  if (!dependencies || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setTabValue(newValue);
   };
-
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -169,6 +171,32 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     </div>
   );
 
+  const tabs = (
+    <Tabs
+      sx={{ borderBottom: 1, borderColor: 'divider' }}
+      value={tabValue}
+      onChange={handleTabChange}
+      variant="standard"
+      aria-label="work-package-details"
+    >
+      <Tab
+        label="overview"
+        aria-label="overview"
+        value={0}
+        component={RouterLink}
+        to={`${routes.PROJECTS}/${wbsNum}/overview`}
+      />
+      <Tab label="scope" aria-label="scope" value={1} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/scope`} />
+      <Tab
+        label="changes"
+        aria-label="changes"
+        value={2}
+        component={RouterLink}
+        to={`${routes.PROJECTS}/${wbsNum}/changes`}
+      />
+    </Tabs>
+  );
+
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
@@ -179,55 +207,12 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
       headerRight={projectActionsDropdown}
+      tabs={tabs}
     >
-      <Tabs
-        sx={{ borderBottom: 1, borderColor: 'divider' }}
-        value={tabValue}
-        onChange={handleTabChange}
-        variant="fullWidth"
-        aria-label="task-list-tabs"
-      >
-        <Tab
-          label="overview"
-          aria-label="overview"
-          value={0}
-          component={RouterLink}
-          to={`${routes.PROJECTS}/${wbsNum}/overview`}
-        />
-        <Tab label="scope" aria-label="scope" value={1} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/scope`} />
-        <Tab
-          label="changes"
-          aria-label="changes"
-          value={2}
-          component={RouterLink}
-          to={`${routes.PROJECTS}/${wbsNum}/changes`}
-        />
-      </Tabs>
       {tabValue === 0 ? (
-        <>
-          <WorkPackageDetails workPackage={workPackage} />
-        </>
+        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
       ) : tabValue === 1 ? (
-        <>
-          <CheckList
-            title={'Expected Activities'}
-            items={workPackage.expectedActivities
-              .filter((ea) => !ea.dateDeleted)
-              .map((ea) => {
-                return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
-              })}
-            isDisabled={checkListDisabled}
-          />
-          <CheckList
-            title={'Deliverables'}
-            items={workPackage.deliverables
-              .filter((del) => !del.dateDeleted)
-              .map((del) => {
-                return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
-              })}
-            isDisabled={checkListDisabled}
-          />
-        </>
+        <ScopeTab workPackage={workPackage} />
       ) : (
         <ChangesList changes={workPackage.changes} />
       )}
