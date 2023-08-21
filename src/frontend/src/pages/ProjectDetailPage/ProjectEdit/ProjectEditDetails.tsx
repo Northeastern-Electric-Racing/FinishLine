@@ -60,32 +60,26 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <FormLabel>Project Lead</FormLabel>
-            <NERAutocomplete
-              id="users-autocomplete"
-              onChange={(_event, value) => setProjectLead(value?.id)}
-              options={users.map(userToAutocompleteOption)}
-              size="small"
-              placeholder="Select a Project Lead"
-              value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
-              listboxProps={{ style: { maxHeight: '180px' } }}
-            />
-          </FormControl>
+          <FormLabel>Project Lead</FormLabel>
+          <NERAutocomplete
+            id="users-autocomplete"
+            onChange={(_event, value) => setProjectLead(value?.id)}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+          />
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <FormLabel>Project Manager</FormLabel>
-            <NERAutocomplete
-              id="users-autocomplete"
-              onChange={(_event, value) => setProjectManager(value?.id)}
-              options={users.map(userToAutocompleteOption)}
-              size="small"
-              placeholder="Select a Project Manager"
-              value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
-              listboxProps={{ style: { maxHeight: '180px' } }}
-            />
-          </FormControl>
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
+            id="users-autocomplete"
+            onChange={(_event, value) => setProjectManager(value?.id)}
+            options={users.map(userToAutocompleteOption)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+          />
         </Grid>
       </Grid>
     </PageBlock>
