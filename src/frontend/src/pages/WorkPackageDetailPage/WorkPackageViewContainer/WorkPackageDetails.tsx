@@ -25,20 +25,11 @@ interface WorkPackageDetailsProps {
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   return (
     <>
-      <Grid container columnSpacing={2} justifyContent="flex-start" sx={{ mb: 2, mt: 1 }}>
-        <Grid item display="flex" alignItems="center">
-          <Typography variant="h5">Work Package Details</Typography>
-        </Grid>
-        <Grid item display="flex" alignItems="center">
-          <Box>{workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}</Box>
-        </Grid>
-
-        <Grid item display="flex" alignItems="center">
-          <Box>
-            <WbsStatus status={workPackage.status} />
-          </Box>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', mb: 2, mt: 1 }}>
+        <Typography variant="h5">Work Package Details</Typography>
+        <Box>{workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}</Box>
+        <WbsStatus status={workPackage.status} />
+      </Box>
 
       <Grid container spacing={2}>
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>

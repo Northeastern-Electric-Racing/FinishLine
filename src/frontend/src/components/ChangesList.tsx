@@ -28,7 +28,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
       <ul style={styles.bulletList}>
         {changes.map((ic, idx) => (
           <li key={idx}>
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <Box style={{ display: 'flex', flexDirection: 'row' }}>
               <div style={{ marginRight: '4px' }}>
                 [
                 <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${ic.changeRequestId}`}>
@@ -39,7 +39,7 @@ const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
               <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
                 <Typography component="span">{ic.detail}</Typography>
               </DynamicTooltip>
-            </div>
+            </Box>
           </li>
         ))}
       </ul>
