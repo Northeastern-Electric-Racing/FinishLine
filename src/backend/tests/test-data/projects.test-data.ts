@@ -9,11 +9,7 @@ export const prismaProject2: Project = {
   wbsElementId: 3,
   budget: 3,
   summary: 'ajsjdfk',
-  rules: ['a'],
-  googleDriveFolderLink: 'https://drive.google.com/drive/folders/1',
-  slideDeckLink: 'https://docs.google.com/presentation/d/1',
-  bomLink: 'https://docs.google.com/spreadsheets/d/1',
-  taskListLink: 'https://docs.google.com/spreadsheets/d/1'
+  rules: ['a']
 };
 
 export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
@@ -62,7 +58,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
         projectLead: null,
         projectManagerId: null,
         projectManager: null,
-        changes: []
+        changes: [],
+        links: []
       },
       blockedBy: [],
       expectedActivities: [],

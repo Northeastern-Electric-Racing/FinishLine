@@ -6,7 +6,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { act } from 'react-dom/test-utils';
 import { AxiosResponse } from 'axios';
-import { User } from 'shared';
+import { AuthenticatedUser, User } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
 import { exampleAllUsers, exampleAdminUser } from '../test-support/test-data/users.stub';
@@ -35,8 +35,8 @@ describe('user hooks', () => {
   });
 
   it('handles logging in a user', async () => {
-    const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<User>>>;
-    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
+    const mockedLogUserIn = logUserIn as jest.Mock<Promise<AxiosResponse<AuthenticatedUser>>>;
+    mockedLogUserIn.mockReturnValue(mockPromiseAxiosResponse<AuthenticatedUser>(exampleAdminUser));
 
     const { result, waitFor } = renderHook(() => useLogUserIn(), {
       wrapper

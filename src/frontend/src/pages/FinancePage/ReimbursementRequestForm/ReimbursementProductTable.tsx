@@ -68,8 +68,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   });
 
-  const onCostBlurHandler = (value: number, name: string) => {
-    setValue(name, value.toFixed(2));
+  const onCostBlurHandler = (value: number, name: `reimbursementProducts.${number}.cost`) => {
+    setValue(name, parseInt(value.toFixed(2)));
   };
 
   return (
