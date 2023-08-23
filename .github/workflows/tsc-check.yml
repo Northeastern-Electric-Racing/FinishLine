@@ -1,6 +1,15 @@
 name: TypeScript Check
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
 
 jobs:
   build:
@@ -16,7 +25,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install && yarn prisma:generate
 
       - name: Run tsc check
         run: npm run tsc-check # You need to define this script in your package.json
