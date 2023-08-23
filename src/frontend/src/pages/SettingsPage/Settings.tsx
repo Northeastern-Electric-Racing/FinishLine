@@ -12,6 +12,9 @@ import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { GoogleLogout } from 'react-google-login';
 import PageLayout from '../../components/PageLayout';
+import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
+import ErrorPage from '../ErrorPage';
+import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -63,9 +66,32 @@ const NERSwitch = styled((props: SwitchProps) => (
 
 const Settings: React.FC = () => {
   const auth = useAuth();
+  const user = useCurrentUser();
   const [showAlert, setShowAlert] = useState(false);
+  const {
+    isLoading: settingsIsLoading,
+    isError: settingsIsError,
+    error: settingsError,
+    data: userSettingsData
+  } = useSingleUserSettings(user.userId);
+  const {
+    isLoading: secureSettingsIsLoading,
+    isError: secureSettingsIsError,
+    error: secureSettingsError,
+    data: userSecureSettings
+  } = useCurrentUserSecureSettings();
 
-  if (auth.isLoading || !auth.user) return <LoadingIndicator />;
+  if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
+  if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
+  if (
+    auth.isLoading ||
+    !auth.user ||
+    settingsIsLoading ||
+    !userSettingsData ||
+    secureSettingsIsLoading ||
+    !userSecureSettings
+  )
+    return <LoadingIndicator />;
 
   const logout = () => {
     setShowAlert(true);
@@ -103,25 +129,26 @@ const Settings: React.FC = () => {
         </Grid>
       </PageBlock>
       <PageBlock title="User Details">
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="First Name" content={auth.user?.firstName} />
+            <DetailDisplay label="First Name" content={user.firstName} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Last Name" content={auth.user?.lastName} />
+            <DetailDisplay label="Last Name" content={user.lastName} />
           </Grid>
           <Grid item md={4} lg={3}>
-            <DetailDisplay label="Email" content={auth.user?.email} />
+            <DetailDisplay label="Email" content={user.email} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Email ID" content={String(auth.user?.emailId)} />
+            <DetailDisplay label="Email ID" content={String(user.emailId)} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Role" content={auth.user?.role} />
+            <DetailDisplay label="Role" content={user.role} />
           </Grid>
         </Grid>
       </PageBlock>
-      <UserSettings userId={auth.user.userId} />
+      <UserSettings currentSettings={userSettingsData} />
+      <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
 };

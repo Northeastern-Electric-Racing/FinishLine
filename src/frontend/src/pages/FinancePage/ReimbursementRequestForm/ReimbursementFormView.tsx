@@ -11,11 +11,12 @@ import {
   Typography
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import {
   ClubAccount,
   ExpenseType,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
   Vendor,
   WbsNumber,
@@ -31,7 +32,7 @@ import { useState } from 'react';
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
   allExpenseTypes: ExpenseType[];
-  receiptFiles: ReimbursementReceiptUploadArgs[];
+  receiptFiles: ReimbursementReceiptCreateArgs[];
   allWbsElements: {
     wbsNum: WbsNumber;
     wbsName: string;
@@ -46,9 +47,9 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
-  totalCost: number;
   submitText: string;
   previousPage: string;
+  setValue: UseFormSetValue<ReimbursementRequestFormInput>;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -66,13 +67,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   handleSubmit,
   errors,
   watch,
-  totalCost,
   submitText,
-  previousPage
+  previousPage,
+  setValue
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const products = watch(`reimbursementProducts`);
-  const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0);
+  const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -220,7 +221,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   }
                 }}
                 type="file"
-                accept="image/*"
+                accept="image/png, image/jpeg"
                 name="receiptFiles"
               />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
@@ -236,6 +237,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               removeProduct={reimbursementProductRemove}
               wbsElementAutocompleteOptions={wbsElementAutocompleteOptions}
               control={control}
+              setValue={setValue}
             />
             <FormHelperText error>{errors.reimbursementProducts?.message}</FormHelperText>
           </FormControl>

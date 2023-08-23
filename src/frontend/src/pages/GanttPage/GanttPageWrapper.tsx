@@ -179,7 +179,7 @@ const GanttPageWrapper: FC = () => {
     if (!tasks) return <></>;
 
     return (
-      <Box key={teamName} sx={{ my: 3 }}>
+      <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
         <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
           <Typography variant="h5" sx={{ flexGrow: 1 }}>
             {teamName}

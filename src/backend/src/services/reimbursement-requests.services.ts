@@ -14,7 +14,8 @@ import {
   ReimbursementStatusType,
   Vendor,
   isAdmin,
-  isGuest
+  isGuest,
+  isHead
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -33,7 +34,7 @@ import {
   NotFoundException
 } from '../utils/errors.utils';
 import vendorTransformer from '../transformers/vendor.transformer';
-import { sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
+import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
@@ -58,7 +59,7 @@ export default class ReimbursementRequestService {
   }
 
   /**
-   * Returns all reimbursements in the database that are created by the given user.
+   * Returns all reimbursements in the database that are created by the given user
    * @param user ther user retrieving the reimbursements
    * @returns all reimbursements for the given user
    */
@@ -257,6 +258,7 @@ export default class ReimbursementRequestService {
     });
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+    if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
@@ -448,6 +450,7 @@ export default class ReimbursementRequestService {
 
   /**
    * Service function to create an expense type in our database
+   * @param submitter user who is creating the expense type
    * @param name The name of the expense type
    * @param code the expense type's SABO code
    * @param allowed whether or not this expense type is allowed
@@ -464,6 +467,37 @@ export default class ReimbursementRequestService {
     });
 
     return expense;
+  }
+
+  /**
+   * Edits an expense type
+   * @param expenseTypeId the requested expense type to be edited
+   * @param code the new expense type code number
+   * @param name the new expense type code name
+   * @param allowed the new expense type allowed value
+   * @param submitter the person editing expense type code number
+   * @returns the updated expense type
+   */
+  static async editExpenseType(expenseTypeId: string, code: number, name: string, allowed: boolean, submitter: User) {
+    if (!isHead(submitter.role))
+      throw new AccessDeniedException('Only the head or admin can update account code number and name');
+
+    const expenseType = await prisma.expense_Type.findUnique({
+      where: { expenseTypeId }
+    });
+
+    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+
+    const expenseTypeUpdated = await prisma.expense_Type.update({
+      where: { expenseTypeId },
+      data: {
+        name,
+        code,
+        allowed
+      }
+    });
+
+    return expenseTypeUpdated;
   }
 
   /**
@@ -632,5 +666,21 @@ export default class ReimbursementRequestService {
     });
 
     return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
+   * Downloads the receipt image file with the given google file id
+   *
+   * @param fileId the google file id of the receipt image
+   * @param submitter the user who is downloading the receipt image
+   * @returns a buffer of the image data and the image type
+   */
+  static async downloadReceiptImage(fileId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const fileData = await downloadImageFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 }

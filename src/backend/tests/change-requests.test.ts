@@ -1,5 +1,14 @@
 import prisma from '../src/prisma/prisma';
-import { aquaman, batman, batmanSettings, greenlantern, superman, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanSettings,
+  greenlantern,
+  superman,
+  wonderwoman,
+  supermanWithUserSettings,
+  batmanWithUserSettings
+} from './test-data/users.test-data';
 import {
   prismaProposedSolution1,
   whipExpectedActivites,
@@ -181,7 +190,8 @@ describe('Change Requests', () => {
                 create: {
                   changeRequestId: 2,
                   detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2
+                  implementerId: 2,
+                  wbsElementId: 65
                 }
               }
             }
@@ -196,7 +206,8 @@ describe('Change Requests', () => {
                       create: {
                         changeRequestId: 2,
                         detail: 'Changed Duration from "10" to "20"',
-                        implementerId: 2
+                        implementerId: 2,
+                        wbsElementId: 65
                       }
                     }
                   }
@@ -238,7 +249,8 @@ describe('Change Requests', () => {
                 create: {
                   changeRequestId: 2,
                   detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2
+                  implementerId: 2,
+                  wbsElementId: 65
                 }
               }
             }
@@ -426,6 +438,79 @@ describe('Change Requests', () => {
         deletedByUserId: superman.userId
       });
       await ChangeRequestsService.deleteChangeRequest(superman, 1);
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Request reviewers to change request', () => {
+    test('The submitter of the request does not match to cr submitter', async () => {
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(superman, [], 1)).rejects.toThrow(
+        new AccessDeniedException(`Only the author of this change request can request a reviewer`)
+      );
+    });
+
+    test('One or more reviewer does not exist', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 123], 1)).rejects.toThrow(
+        new HttpException(404, 'User(s) with the following ids not found: 123')
+      );
+    });
+
+    test('One or more reviewer is not at least in leadership role', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batman, wonderwoman]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2, 3], 1)).rejects.toThrow(
+        new AccessDeniedException('The following user(s) are not leadership: Wonder Woman')
+      );
+    });
+
+    test('One or more reviewer has no user settings', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([superman, batmanWithUserSettings]);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new AccessDeniedException('The following user(s) have no slackId: Clark Kent')
+      );
+    });
+
+    test('Change Request does not exist', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new NotFoundException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already deleted', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, dateDeleted: new Date() });
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new DeletedException('Change Request', 1)
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request already reviewed', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([supermanWithUserSettings, batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, reviewerId: 1 });
+      await expect(() => ChangeRequestsService.requestCRReview(batman, [1, 2], 1)).rejects.toThrow(
+        new HttpException(400, 'Cannot request a review on an already reviewed change request')
+      );
+      expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
+    });
+
+    test('Change request successfully assigned reviewers', async () => {
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
+
+      await ChangeRequestsService.requestCRReview(batman, [1], 1);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });

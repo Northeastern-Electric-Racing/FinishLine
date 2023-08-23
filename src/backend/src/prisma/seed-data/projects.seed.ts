@@ -4,7 +4,7 @@
  */
 
 import { User } from '@prisma/client';
-import { WbsNumber } from 'shared';
+import { LinkCreateArgs, WbsNumber } from 'shared';
 import projectQueryArgs from '../../prisma-query-args/projects.query-args';
 import ProjectsService from '../../services/projects.services';
 import prisma from '../prisma';
@@ -27,10 +27,7 @@ export const seedProject = async (
   goals: string[],
   features: string[],
   otherConstraints: string[],
-  googleDriveFolderLink: string,
-  slideDeckLink: string,
-  bomLink: string,
-  taskListLink: string,
+  links: LinkCreateArgs[],
   projectLeadId: number | null,
   projectManagerId: number | null
 ): Promise<{ projectWbsNumber: WbsNumber; projectId: number }> => {
@@ -64,10 +61,7 @@ export const seedProject = async (
     otherConstraints.map((element) => {
       return { id: -1, detail: element };
     }),
-    googleDriveFolderLink,
-    slideDeckLink,
-    bomLink,
-    taskListLink,
+    links,
     projectLeadId,
     projectManagerId
   );

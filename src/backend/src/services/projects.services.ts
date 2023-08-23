@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
-import { isAdmin, isGuest, isProject, Project, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -13,15 +13,22 @@ import {
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
-  createChangeJsonNonList,
-  createRulesChangesJson,
   editDescriptionBullets,
   getHighestProjectNumber,
   getUserFullName
 } from '../utils/projects.utils';
-import { descBulletConverter, wbsNumOf } from '../utils/utils';
-import { createDescriptionBulletChangesJson } from '../utils/work-packages.utils';
+import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
+import { createChange, createListChanges } from '../utils/changes.utils';
+import {
+  DescriptionBulletPreview,
+  descriptionBulletsToChangeListValues,
+  descriptionBulletToChangeListValue
+} from '../utils/description-bullets.utils';
+import linkQueryArgs from '../prisma-query-args/links.query-args';
+import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import { linkTypeTransformer } from '../transformers/links.transformer';
+import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 
 export default class ProjectsService {
   /**
@@ -153,10 +160,7 @@ export default class ProjectsService {
     goals: { id: number; detail: string }[],
     features: { id: number; detail: string }[],
     otherConstraints: { id: number; detail: string }[],
-    googleDriveFolderLink: string | null,
-    slideDeckLink: string | null,
-    bomLink: string | null,
-    taskListLink: string | null,
+    linkCreateArgs: LinkCreateArgs[],
     projectLeadId: number | null,
     projectManagerId: number | null
   ): Promise<Project> {
@@ -171,7 +175,13 @@ export default class ProjectsService {
         projectId
       },
       include: {
-        wbsElement: true,
+        wbsElement: {
+          include: {
+            links: {
+              ...linkQueryArgs
+            }
+          }
+        },
         goals: true,
         features: true,
         otherConstraints: true
@@ -185,50 +195,15 @@ export default class ProjectsService {
     const { wbsElementId } = originalProject;
 
     let changes = [];
+
     // get the changes or undefined for each field and add it to changes
-    const nameChangeJson = createChangeJsonNonList(
-      'name',
-      originalProject.wbsElement.name,
-      name,
-      crId,
-      userId,
-      wbsElementId
-    );
-    const budgetChangeJson = createChangeJsonNonList('budget', originalProject.budget, budget, crId, userId, wbsElementId);
-    const summaryChangeJson = createChangeJsonNonList(
-      'summary',
-      originalProject.summary,
-      summary,
-      crId,
-      userId,
-      wbsElementId
-    );
-    const driveChangeJson = createChangeJsonNonList(
-      'google drive folder link',
-      originalProject.googleDriveFolderLink,
-      googleDriveFolderLink,
-      crId,
-      userId,
-      wbsElementId
-    );
-    const slideChangeJson = createChangeJsonNonList(
-      'slide deck link',
-      originalProject.slideDeckLink,
-      slideDeckLink,
-      crId,
-      userId,
-      wbsElementId
-    );
-    const bomChangeJson = createChangeJsonNonList('bom link', originalProject.bomLink, bomLink, crId, userId, wbsElementId);
-    const taskChangeJson = createChangeJsonNonList(
-      'task list link',
-      originalProject.taskListLink,
-      taskListLink,
-      crId,
-      userId,
-      wbsElementId
-    );
-    const projectManagerChangeJson = createChangeJsonNonList(
+    const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
+
+    const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, userId, wbsElementId);
+
+    const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, userId, wbsElementId);
+
+    const projectManagerChangeJson = createChange(
       'project manager',
       await getUserFullName(originalProject.wbsElement.projectManagerId),
       await getUserFullName(projectManagerId),
@@ -236,7 +211,8 @@ export default class ProjectsService {
       userId,
       wbsElementId
     );
-    const projectLeadChangeJson = createChangeJsonNonList(
+
+    const projectLeadChangeJson = createChange(
       'project lead',
       await getUserFullName(originalProject.wbsElement.projectLeadId),
       await getUserFullName(projectLeadId),
@@ -255,18 +231,6 @@ export default class ProjectsService {
     if (summaryChangeJson !== undefined) {
       changes.push(summaryChangeJson);
     }
-    if (driveChangeJson !== undefined) {
-      changes.push(driveChangeJson);
-    }
-    if (slideChangeJson !== undefined) {
-      changes.push(slideChangeJson);
-    }
-    if (bomChangeJson !== undefined) {
-      changes.push(bomChangeJson);
-    }
-    if (taskChangeJson !== undefined) {
-      changes.push(taskChangeJson);
-    }
     if (projectManagerChangeJson !== undefined) {
       changes.push(projectManagerChangeJson);
     }
@@ -275,39 +239,70 @@ export default class ProjectsService {
     }
 
     // Dealing with lists
-    const rulesChangeJson = createRulesChangesJson('rules', originalProject.rules, rules, crId, userId, wbsElementId);
-    const goalsChangeJson = createDescriptionBulletChangesJson(
-      originalProject.goals.filter((element) => !element.dateDeleted).map((element) => descBulletConverter(element)),
-      goals,
+    const rulesChangeJson = createListChanges(
+      'rules',
+      originalProject.rules.map((rule) => {
+        return {
+          element: rule,
+          comparator: rule,
+          displayValue: rule
+        };
+      }),
+      rules.map((rule) => {
+        return {
+          element: rule,
+          comparator: rule,
+          displayValue: rule
+        };
+      }),
       crId,
       userId,
-      wbsElementId,
-      'goals'
+      wbsElementId
     );
-    const featuresChangeJson = createDescriptionBulletChangesJson(
-      originalProject.features.filter((element) => !element.dateDeleted).map((element) => descBulletConverter(element)),
-      features,
+
+    const goalsChangeJson = createListChanges(
+      'goals',
+      descriptionBulletsToChangeListValues(originalProject.goals),
+      goals.map((goal) => descriptionBulletToChangeListValue(goal)),
       crId,
       userId,
-      wbsElementId,
-      'features'
+      wbsElementId
     );
-    const otherConstraintsChangeJson = createDescriptionBulletChangesJson(
-      originalProject.otherConstraints
-        .filter((element) => !element.dateDeleted)
-        .map((element) => descBulletConverter(element)),
-      otherConstraints,
+
+    const featuresChangeJson = createListChanges(
+      'features',
+      descriptionBulletsToChangeListValues(originalProject.features),
+      features.map((feature) => descriptionBulletToChangeListValue(feature)),
       crId,
       userId,
-      wbsElementId,
-      'other constraints'
+      wbsElementId
     );
+
+    const otherConstraintsChangeJson = createListChanges(
+      'other constraints',
+      descriptionBulletsToChangeListValues(originalProject.otherConstraints),
+      otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const linkChanges = createListChanges(
+      'link',
+      originalProject.wbsElement.links.map(linkToChangeListValue),
+      linkCreateArgs.map(linkToChangeListValue),
+      crId,
+      userId,
+      wbsElementId
+    );
+
     // add the changes for each of blockers, expected activities, and deliverables
     changes = changes
-      .concat(rulesChangeJson)
+      .concat(rulesChangeJson.changes)
       .concat(goalsChangeJson.changes)
       .concat(featuresChangeJson.changes)
-      .concat(otherConstraintsChangeJson.changes);
+      .concat(otherConstraintsChangeJson.changes)
+      .concat(linkChanges.changes);
 
     // update the project with the input fields
     const updatedProject = await prisma.project.update({
@@ -317,10 +312,6 @@ export default class ProjectsService {
       data: {
         budget,
         summary,
-        googleDriveFolderLink,
-        slideDeckLink,
-        bomLink,
-        taskListLink,
         rules,
         wbsElement: {
           update: {
@@ -334,14 +325,15 @@ export default class ProjectsService {
     });
 
     // Update any deleted description bullets to have their date deleted as right now
-    const deletedIds = goalsChangeJson.deletedIds
-      .concat(featuresChangeJson.deletedIds)
-      .concat(otherConstraintsChangeJson.deletedIds);
-    if (deletedIds.length > 0) {
+    const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
+      .concat(featuresChangeJson.deletedElements)
+      .concat(otherConstraintsChangeJson.deletedElements);
+
+    if (deletedDescriptionBullets.length > 0) {
       await prisma.description_Bullet.updateMany({
         where: {
           descriptionId: {
-            in: deletedIds
+            in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
           }
         },
         data: {
@@ -350,14 +342,33 @@ export default class ProjectsService {
       });
     }
 
-    addDescriptionBullets(goalsChangeJson.addedDetails, updatedProject.projectId, 'projectIdGoals');
-    addDescriptionBullets(featuresChangeJson.addedDetails, updatedProject.projectId, 'projectIdFeatures');
-    addDescriptionBullets(otherConstraintsChangeJson.addedDetails, updatedProject.projectId, 'projectIdOtherConstraints');
-    editDescriptionBullets(
-      goalsChangeJson.editedIdsAndDetails
-        .concat(featuresChangeJson.editedIdsAndDetails)
-        .concat(otherConstraintsChangeJson.editedIdsAndDetails)
+    // Add the new goals
+    await addDescriptionBullets(
+      goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      updatedProject.projectId,
+      'projectIdGoals'
     );
+    // Add the new features
+    await addDescriptionBullets(
+      featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      updatedProject.projectId,
+      'projectIdFeatures'
+    );
+    // Add the new other constraints
+    await addDescriptionBullets(
+      otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      updatedProject.projectId,
+      'projectIdOtherConstraints'
+    );
+    // Edit the existing description bullets
+    await editDescriptionBullets(
+      goalsChangeJson.editedElements
+        .concat(featuresChangeJson.editedElements)
+        .concat(otherConstraintsChangeJson.editedElements)
+    );
+
+    // Update the links
+    await updateLinks(linkChanges, updatedProject.wbsElementId, userId);
 
     // create the changes in prisma
     await prisma.change.createMany({
@@ -582,5 +593,13 @@ export default class ProjectsService {
         });
 
     return projectTransformer(project);
+  }
+
+  static async getAllLinkTypes(): Promise<LinkType[]> {
+    return (
+      await prisma.linkType.findMany({
+        ...linkTypeQueryArgs
+      })
+    ).map(linkTypeTransformer);
   }
 }

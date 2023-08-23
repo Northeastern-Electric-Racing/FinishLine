@@ -2,7 +2,11 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { CreateReimbursementRequestPayload, EditReimbursementRequestPayload } from '../hooks/finance.hooks';
+import {
+  CreateReimbursementRequestPayload,
+  EditReimbursementRequestPayload,
+  ExpenseTypePayload
+} from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import {
@@ -10,6 +14,8 @@ import {
   reimbursementTransformer,
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
+import { saveAs } from 'file-saver';
+import { PDFDocument } from 'pdf-lib';
 
 /**
  * Upload a picture of a receipt
@@ -33,6 +39,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
 };
 
 /**
+ * Mark a Reimbursement Request as Delivered
+ *
+ * @param id id of the reimbursement request being marked as delivered
+ * @returns the updated reimbursement request
+ */
+export const markReimbursementRequestAsDelivered = (id: string) => {
+  return axios.post(apiUrls.financeMarkAsDelivered(id));
+};
+
+/**
  * Edits a reimbursment request
  *
  * @param id the id of the reimbursement request to edit
@@ -41,6 +57,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  */
 export const editReimbursementRequest = (id: string, formData: EditReimbursementRequestPayload) => {
   return axios.post(apiUrls.financeEditReimbursementRequest(id), formData);
+};
+
+/**
+ * Deletes a reimbursement request
+ *
+ * @param id the id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const deleteReimbursementRequest = (id: string) => {
+  return axios.delete(apiUrls.financeDeleteReimbursement(id));
 };
 
 /**
@@ -115,19 +141,141 @@ export const getAllReimbursements = () => {
 };
 
 /**
- * Downloads a given fileId from google drive
+ * Approve Reimbursement Request (set it to Sabo Submitted)
  *
- * @param fileId the id of the file to download
- * @returns the downloaded file
+ * @param id of the reimbursement request being approved by finance
+ * @returns the sabo submitted reimbursement status
  */
-export const downloadImage = async (fileId: string): Promise<File> => {
-  const url = `https://drive.google.com/file/d/${fileId}/?alt=media`;
-  const response = await fetch(url, { mode: 'no-cors' });
-  const blob = await response.blob();
+export const approveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeApproveReimbursementRequest(id));
+};
 
-  const fileName = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '');
+/**
+ * Downloads a given fileId from google drive into a blob
+ *
+ * @param fileId the google id of the file to download
+ * @returns the downloaded file as a Blob
+ */
+export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
+  const response = await axios.get(apiUrls.financeImageById(fileId), {
+    responseType: 'arraybuffer' // Set the response type to 'arraybuffer' to receive the image as a Buffer
+  });
+  const imageBuffer = new Uint8Array(response.data);
+  const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
+  return imageBlob;
+};
 
-  const mimeType = blob.type;
-  const file = new File([blob], fileName!, { type: mimeType });
-  return file;
+/**
+ * Download blobs of image data into a pdf
+ *
+ * @param blobData an array of blob image data
+ * @param filename the name of the created pdf
+ */
+export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => {
+  const pdfDoc = await PDFDocument.create();
+
+  // Embed the image in the PDF document
+  const promises = blobData.map(async (blob: Blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    let image;
+    if (blob.type === 'image/jpeg') {
+      image = await pdfDoc.embedJpg(arrayBuffer);
+    } else if (blob.type === 'image/png') {
+      image = await pdfDoc.embedPng(arrayBuffer);
+    } else {
+      throw new Error(blob.type + ' type not supported');
+    }
+    const page = pdfDoc.addPage([image.width, image.height]);
+    const { width, height } = page.getSize();
+    page.drawImage(image, {
+      x: 0,
+      y: 0,
+      width,
+      height
+    });
+  });
+
+  await Promise.all(promises);
+
+  // Save the PDF as an ArrayBuffer
+  const pdfBytes = await pdfDoc.save();
+
+  // Convert the ArrayBuffer to a Blob
+  const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+  // Save the Blob as a file using file-saver
+  saveAs(pdfBlob, filename);
+};
+
+/**
+ * API call to get the list of Reimbursement Requests that are pending advisor approval
+ *
+ * @returns The list of Reimbursement Requests that are pending advisor approval
+ */
+export const getPendingAdvisorList = () => {
+  return axios.get(apiUrls.financeGetPendingAdvisorList(), {
+    transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
+  });
+};
+
+/**
+ * Set a reimbursement request's SABO number
+ *
+ * @param requestId the request ID
+ * @param saboNumber the SABO number to set
+ */
+export const setSaboNumber = async (requestId: string, saboNumber: number) => {
+  axios.post(apiUrls.financeSetSaboNumber(requestId), {
+    saboNumber
+  });
+};
+
+/**
+ * API Call to send the list of Reimbursement Requests that are pending advisor approval
+ *
+ * @param saboNumbers The sabo numbers of the reimbursement requests to request approval for
+ * @returns the response from the backend
+ */
+export const sendPendingAdvisorList = (saboNumbers: number[]) => {
+  return axios.post(apiUrls.financeSendPendingAdvisorList(), {
+    saboNumbers
+  });
+};
+
+/**
+ * Reports a given dollar amount representing a new account credit
+ *
+ * @param amount the dollar amount being reimbursed
+ * @returns a reimbursement with the given dollar amount
+ */
+export const reportRefund = (amount: number) => {
+  return axios.post(apiUrls.financeReportRefund(), { amount });
+};
+
+/**
+ * Edits an expense type in the database
+ * @param id id of the expense type
+ * @param accountCodeData the edited data of the expense type
+ * @returns the updated expense type
+ */
+export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
+  return axios.post(apiUrls.financeEditExpenseType(id), accountCodeData);
+};
+
+/**
+ * Creates an expense type in the database
+ * @param accountCodeData the data for the expense type
+ * @returns the new expense type
+ */
+export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
+  return axios.post(apiUrls.financeCreateExpenseType(), accountCodeData);
+};
+
+/**
+ * Creates a vendor in the database
+ * @param vendorData the data for the vendor
+ * @returns the new vendor
+ */
+export const createVendor = async (vendorData: { name: string }) => {
+  return axios.post(apiUrls.financeCreateVendor(), vendorData);
 };

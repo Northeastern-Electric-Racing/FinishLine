@@ -10,12 +10,14 @@ import {
   calculateProjectStartDate,
   WorkPackageStage
 } from 'shared';
-import { descBulletConverter, wbsNumOf } from '../utils/utils';
+import { wbsNumOf } from '../utils/utils';
 import taskTransformer from './tasks.transformer';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from '../transformers/user.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
+import { linkTransformer } from './links.transformer';
+import { descBulletConverter } from '../utils/description-bullets.utils';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -42,10 +44,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     teams: project.teams,
     summary: project.summary,
     budget: project.budget,
-    gDriveLink: project.googleDriveFolderLink ?? undefined,
-    taskListLink: project.taskListLink ?? undefined,
-    slideDeckLink: project.slideDeckLink ?? undefined,
-    bomLink: project.bomLink ?? undefined,
+    links: project.wbsElement.links.map(linkTransformer),
     rules: project.rules,
     duration: calculateDuration(project.workPackages),
     startDate: calculateProjectStartDate(project.workPackages),
@@ -68,6 +67,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         wbsNum: wbsNumOf(workPackage.wbsElement),
         dateCreated: workPackage.wbsElement.dateCreated,
         name: workPackage.wbsElement.name,
+        links: workPackage.wbsElement.links.map(linkTransformer),
         status: workPackage.wbsElement.status as WbsElementStatus,
         projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
         projectManager: workPackage.wbsElement.projectManager

@@ -40,7 +40,14 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons }) => {
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {buttons.map((button, index) => (
-          <MenuItem key={index} onClick={button.onClick} disabled={button.disabled}>
+          <MenuItem
+            key={index}
+            onClick={() => {
+              handleDropdownClose();
+              button.onClick();
+            }}
+            disabled={button.disabled}
+          >
             <ListItemIcon>{button.icon}</ListItemIcon>
             {button.title}
           </MenuItem>

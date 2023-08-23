@@ -11,7 +11,9 @@
   "dependencies": {
     "@prisma/client": "^4.4.0",
     "@slack/web-api": "^6.7.2",
+    "@types/concat-stream": "^2.0.0",
     "body-parser": "^1.19.0",
+    "concat-stream": "^2.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
@@ -33,7 +35,7 @@
     "@types/express-pino-logger": "4.0.2",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/multer": "^1.4.7",
-    "@types/node": "^14.0.9",
+    "@types/node": "18.17.1",
     "@types/supertest": "^2.0.12",
     "nodemon": "^2.0.16",
     "prisma": "^4.4.0",

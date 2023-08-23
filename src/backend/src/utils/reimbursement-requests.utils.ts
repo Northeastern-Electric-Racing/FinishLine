@@ -226,6 +226,10 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQ
   );
 };
 
+export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  return user.teamAsHead?.teamId === process.env.FINANCE_TEAM_ID;
+};
+
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
 };

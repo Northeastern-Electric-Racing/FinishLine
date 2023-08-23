@@ -2,28 +2,40 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
+  approveReimbursementRequest,
   createReimbursementRequest,
-  getAllExpenseTypes,
-  getAllVendors,
-  uploadSingleReceipt,
-  getSingleReimbursementRequest,
+  deleteReimbursementRequest,
+  downloadBlobsToPdf,
+  downloadGoogleImage,
   editReimbursementRequest,
-  getAllReimbursements,
-  getCurrentUserReimbursements,
+  getAllExpenseTypes,
   getAllReimbursementRequests,
+  getAllReimbursements,
+  getAllVendors,
   getCurrentUserReimbursementRequests,
-  downloadImage
+  getCurrentUserReimbursements,
+  getPendingAdvisorList,
+  getSingleReimbursementRequest,
+  markReimbursementRequestAsDelivered,
+  reportRefund,
+  sendPendingAdvisorList,
+  setSaboNumber,
+  uploadSingleReceipt,
+  editAccountCode,
+  createAccountCode,
+  createVendor
 } from '../apis/finance.api';
 import {
   ClubAccount,
   ExpenseType,
+  Reimbursement,
   ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   Vendor,
-  Reimbursement,
-  ReimbursementReceiptCreateArgs
+  ReimbursementStatus
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
@@ -37,6 +49,12 @@ export interface CreateReimbursementRequestPayload {
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
   receiptPictures: ReimbursementReceiptCreateArgs[];
+}
+
+export interface ExpenseTypePayload {
+  code: number;
+  name: string;
+  allowed: boolean;
 }
 
 /**
@@ -163,6 +181,28 @@ export const useAllReimbursements = () => {
 };
 
 /**
+ * Custom React Hook to mark a reimbursement request as delivered
+ *
+ * @param id of the reimbursement request
+ * @returns the updated reimbursement request
+ */
+export const useMarkReimbursementRequestAsDelivered = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to get a single reimbursement request
  *
  * @param id Id of the reimbursement request to get
@@ -176,15 +216,162 @@ export const useSingleReimbursementRequest = (id: string) => {
 };
 
 /**
- * Custom react hook to download images from google drive
+ * Custom react hook to delete a single reimbursement request
+ *
+ * @param id id of the reimbursement request to delete
+ * @returns the deleted reimbursement request
+ */
+export const useDeleteReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementRequest, Error>(
+    ['reimbursement-requests', 'delete'],
+    async () => {
+      const { data } = await deleteReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to approve a reimbursement request for the finance team
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created sabo submitted reimbursement status
+ */
+export const useApproveReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await approveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to download images from google drive into a pdf
  *
  * @param fileIds The google file ids to fetch the images for
- * @returns the downloaded images
  */
-export const useDownloadImages = (fileIds: string[]) => {
-  return useQuery<File[], Error>(['reimbursement-requests', 'edit', fileIds], async () => {
-    const promises = fileIds.map((fileId) => downloadImage(fileId));
-    const files = await Promise.all(promises);
-    return files;
+export const useDownloadPDFOfImages = () => {
+  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
+    const promises = formData.fileIds.map((fileId) => {
+      return downloadGoogleImage(fileId);
+    });
+    const blobs = await Promise.all(promises);
+    await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
+  });
+};
+
+/**
+ * Custom react hook to get the list of Reimbursement Requests that are pending Advisor Approval
+ *
+ * @returns the list of Reimbursement Reqeusts that are pending Advisor Approval
+ */
+export const useGetPendingAdvisorList = () => {
+  return useQuery<ReimbursementRequest[], Error>(['reimbursement-requests', 'pending-advisors'], async () => {
+    const { data } = await getPendingAdvisorList();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to send the pending sabo #s to our advisor
+ *
+ * @returns the mutation to send the pending advisor list
+ */
+export const useSendPendingAdvisorList = () => {
+  return useMutation<{ message: string }, Error, number[]>(
+    ['reimbursement-requests', 'send-pending-advisor'],
+    async (saboNumbers: number[]) => {
+      const { data } = await sendPendingAdvisorList(saboNumbers);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to report a dollar amount representing a new account credit
+ */
+export const useReportRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Reimbursement, Error, { refundAmount: number }>(
+    ['reimbursement'],
+    async (formData: { refundAmount: number }) => {
+      const { data } = await reportRefund(formData.refundAmount);
+      queryClient.invalidateQueries(['reimbursement']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to update a reimbursement request's SABO number
+ *
+ * @param reimbursementRequestId the request ID
+ */
+export const useSetSaboNumber = (reimbursementRequestId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { saboNumber: number }>(
+    ['reimbursement-requests', 'edit'],
+    async (formData: { saboNumber: number }) => {
+      await setSaboNumber(reimbursementRequestId, formData.saboNumber);
+      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit an expense type.
+ *
+ * @param expenseId The id of the expense type
+ */
+export const useEditAccountCode = (expenseTypeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['expense-types', 'edit'],
+    async (accountCodeData: ExpenseTypePayload) => {
+      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+      queryClient.invalidateQueries(['expense-types']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create an expense type.
+ */
+export const useCreateAccountCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['expense-types', 'create'],
+    async (accountCodeData: ExpenseTypePayload) => {
+      const { data } = await createAccountCode(accountCodeData);
+      queryClient.invalidateQueries(['expense-types']);
+      return data;
+    }
+  );
+};
+
+/**
+ * Custom React Hook to create a vendor
+ */
+export const useCreateVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(['vendors', 'create'], async (vendorData: { name: string }) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
   });
 };

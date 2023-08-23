@@ -1,4 +1,4 @@
-import { ChangeRequest, isAdmin, isGuest, isNotLeadership, wbsPipe } from 'shared';
+import { ChangeRequest, isAdmin, isGuest, isLeadership, isNotLeadership, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
@@ -14,14 +14,15 @@ import changeRequestTransformer from '../transformers/change-requests.transforme
 import {
   updateBlocking,
   sendSlackChangeRequestNotification,
-  sendSlackCRReviewedNotification
+  sendSlackCRReviewedNotification,
+  allChangeRequestsReviewed
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
-import { buildChangeDetail } from '../utils/utils';
-import { getUserFullName } from '../utils/users.utils';
-import { createChange } from '../utils/work-packages.utils';
+import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { buildChangeDetail, createChange } from '../utils/changes.utils';
+import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -106,7 +107,14 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = createChange('Budget', foundCR.wbsElement.project.budget, newBudget, crId, reviewer.userId);
+        const change = createChange(
+          'Budget',
+          foundCR.wbsElement.project.budget,
+          newBudget,
+          crId,
+          reviewer.userId,
+          foundCR.wbsElementId
+        );
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -134,8 +142,15 @@ export default class ChangeRequestsService {
 
         // create changes that reflect the new budget and duration
         const changes = [
-          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
-          createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
+          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId, foundCR.wbsElementId),
+          createChange(
+            'Duration',
+            foundCR.wbsElement.workPackage.duration,
+            updatedDuration,
+            crId,
+            reviewer.userId,
+            foundCR.wbsElementId
+          )
         ];
 
         // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
@@ -340,12 +355,26 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
+      },
+      include: {
+        changeRequests: true
       }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+
+    const { changeRequests } = wbsElement;
+    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
+          wbsElement.name
+        } before proceeding`
+      );
+    }
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -419,7 +448,7 @@ export default class ChangeRequestsService {
           workPackageNumber
         }
       },
-      include: { workPackage: { include: { expectedActivities: true, deliverables: true } } }
+      include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, changeRequests: true }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -429,6 +458,17 @@ export default class ChangeRequestsService {
 
     if (wbsElement.workPackage) {
       throwIfUncheckedDescriptionBullets(wbsElement.workPackage);
+    }
+
+    const { changeRequests } = wbsElement;
+    const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
+    if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
+      throw new HttpException(
+        400,
+        `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
+          wbsElement.name
+        } before proceeding`
+      );
     }
 
     const createdChangeRequest = await prisma.change_Request.create({
@@ -627,6 +667,68 @@ export default class ChangeRequestsService {
     await prisma.change_Request.update({
       where: { crId },
       data: { dateDeleted: new Date(), deletedBy: { connect: { userId: submitter.userId } } }
+    });
+  }
+
+  /**
+   * Sets reviewers to the given change request and pings them on slack
+   * @param submitter The user requesting the review
+   * @param userIds The requested reviewers on the change request
+   * @param crId The change request that will be reviewed
+   */
+  static async requestCRReview(submitter: User, userIds: number[], crId: number) {
+    const reviewers = await getUsersWithSettings(userIds);
+
+    // check if any reviewers' role is below leadership
+    const underLeads = reviewers.filter((user) => !isLeadership(user.role));
+
+    if (underLeads.length > 0) {
+      const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
+      throw new AccessDeniedException(`The following user(s) are not leadership: ${underLeadsNames.join(', ')}`);
+    }
+
+    // check if all reviewers have slackId
+    const missingReviewersSettings = reviewers.filter((reviewer) => reviewer.userSettings == null);
+
+    if (missingReviewersSettings.length > 0) {
+      const missingReviewerSettingsNames = missingReviewersSettings.map(
+        (reviewer) => reviewer.firstName + ' ' + reviewer.lastName
+      );
+      throw new AccessDeniedException(`The following user(s) have no slackId: ${missingReviewerSettingsNames.join(', ')}`);
+    }
+
+    const foundCR = await prisma.change_Request.findUnique({
+      where: { crId },
+      ...changeRequestQueryArgs
+    });
+
+    if (!foundCR) throw new NotFoundException('Change Request', crId);
+
+    if (foundCR.submitterId !== submitter.userId)
+      throw new AccessDeniedException(`Only the author of this change request can request a reviewer`);
+
+    if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
+
+    if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
+
+    const reviewerIds = reviewers.map((reviewer) => {
+      return {
+        userId: reviewer.userId
+      };
+    });
+
+    await prisma.change_Request.update({
+      where: { crId },
+      data: {
+        requestedReviewers: {
+          set: reviewerIds
+        }
+      }
+    });
+
+    // send slack message to CR reviewers
+    reviewers.forEach(async (user) => {
+      await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
     });
   }
 }
