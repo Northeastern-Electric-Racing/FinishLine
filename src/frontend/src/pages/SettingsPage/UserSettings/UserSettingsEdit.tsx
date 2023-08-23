@@ -41,7 +41,7 @@ const UserSettingsEdit: React.FC<UserSettingsEditProps> = ({ currentSettings, on
           render={({ field: { onChange, value } }) => (
             <>
               <Typography>Default Theme</Typography>
-              <Select onChange={(event) => onChange(event.target.value as ThemeName)} value={value}>
+              <Select onChange={onChange} value={value}>
                 {themeChoices.map((t) => (
                   <MenuItem key={t} value={t}>
                     {t}

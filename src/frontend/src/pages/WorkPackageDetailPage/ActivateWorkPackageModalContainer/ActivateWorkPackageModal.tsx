@@ -128,7 +128,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                     <>
                       <DatePicker
                         inputFormat="yyyy-MM-dd"
-                        onChange={(date) => onChange(date || new Date().toLocaleDateString())}
+                        onChange={onChange}
                         className={'padding: 10'}
                         value={value}
                         renderInput={(params) => <TextField autoComplete="off" {...params} />}
