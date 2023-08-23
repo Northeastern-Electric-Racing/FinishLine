@@ -88,7 +88,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
                 <>
                   <DatePicker
                     inputFormat="yyyy-MM-dd"
-                    onChange={onChange}
+                    onChange={(date) => onChange(date || new Date())}
                     className={'padding: 10'}
                     value={value}
                     shouldDisableDate={disableStartDate}

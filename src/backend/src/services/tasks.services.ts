@@ -7,7 +7,7 @@ import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask } from '../utils/tasks.utils';
-import { areUsersPartOfProjectTeams, isUserOnTeam } from '../utils/teams.utils';
+import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
@@ -59,7 +59,7 @@ export default class TasksService {
 
     const users = await getUsers(assignees); // this throws if any of the users aren't found
 
-    if (!areUsersPartOfProjectTeams(teams, users))
+    if (!areUsersPartOfTeams(teams, users))
       throw new HttpException(400, `All assignees must be part of one of the project's team!`);
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
@@ -169,7 +169,7 @@ export default class TasksService {
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     // checks if there is a user that does not belong on any team of the project
-    if (!areUsersPartOfProjectTeams(teams, assigneeUsers)) {
+    if (!areUsersPartOfTeams(teams, assigneeUsers)) {
       throw new HttpException(400, "All assignees must be part of one of the project's teams");
     }
 

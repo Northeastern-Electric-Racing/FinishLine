@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
+    "noEmit": true,
     "jsx": "react-jsx",
     "types": ["vite/client", "vitest/globals"]
   }

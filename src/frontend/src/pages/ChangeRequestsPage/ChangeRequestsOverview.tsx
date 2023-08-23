@@ -13,6 +13,7 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { makeTeamList } from '../../utils/teams.utils';
 
 const ChangeRequestsOverview: React.FC = () => {
   const theme = useTheme();
@@ -32,13 +33,16 @@ const ChangeRequestsOverview: React.FC = () => {
   if (wpIsError) return <ErrorPage message={wpError?.message} />;
 
   // projects whose change requests the user would have to review
-  const myProjects = projects.filter(
-    (project: Project) =>
-      (project.team && project.team.teamId === user.teamAsHeadId) ||
-      (project.team && project.team.leads.map((lead) => lead.userId).includes(user.userId)) ||
+  const myProjects = projects.filter((project: Project) => {
+    const projectTeamsIds = project.teams.map((team) => team.teamId);
+    const projectMemberIds = project.teams.flatMap((team) => makeTeamList(team)).map((user) => user.userId);
+    return (
+      (user.teamAsHeadId && projectTeamsIds.includes(user.teamAsHeadId)) ||
+      projectMemberIds.includes(user.userId) ||
       (project.projectLead && project.projectLead.userId === user.userId) ||
       (project.projectManager && project.projectManager.userId === user.userId)
-  );
+    );
+  });
 
   // work packages whose change requests the user would have to review
   const myWorkPackages = workPackages.filter(

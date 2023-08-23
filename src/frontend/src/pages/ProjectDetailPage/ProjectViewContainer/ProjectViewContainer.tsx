@@ -105,18 +105,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId || '')
-    ? 'Unassign from My Team'
-    : 'Assign to My Team';
+  const AssignToMyTeamButton = () => {
+    const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
+      ? 'Unassign from My Team'
+      : 'Assign to My Team';
 
-  const assignToMyTeamButton = (
-    <MenuItem onClick={handleAssignToMyTeam}>
-      <ListItemIcon>
-        <GroupIcon fontSize="small" />
-      </ListItemIcon>
-      {assignToTeamText}
-    </MenuItem>
-  );
+    return (
+      <MenuItem onClick={handleAssignToMyTeam}>
+        <ListItemIcon>
+          <GroupIcon fontSize="small" />
+        </ListItemIcon>
+        {assignToTeamText}
+      </MenuItem>
+    );
+  };
 
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
@@ -152,7 +154,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
-        {teamAsHeadId && assignToMyTeamButton}
+        {teamAsHeadId && <AssignToMyTeamButton />}
         <DeleteButton />
       </Menu>
     </Box>

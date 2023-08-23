@@ -112,7 +112,7 @@ describe('Tasks', () => {
     });
 
     test('create task fails when assignees are not on the project team', async () => {
-      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(false);
+      vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(false);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([]);
 
       await expect(() =>
@@ -126,7 +126,7 @@ describe('Tasks', () => {
     });
 
     test('create task succeeds', async () => {
-      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(true);
+      vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
       vi.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
 
@@ -242,7 +242,7 @@ describe('Tasks', () => {
       vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
-      vi.spyOn(teamUtils, 'areUsersPartOfProjectTeams').mockReturnValue(true);
+      vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
 
       const taskId = '1';
       const userIds = [
