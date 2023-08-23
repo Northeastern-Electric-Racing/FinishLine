@@ -6,7 +6,7 @@
       "type": "process",
       "command": "./node_modules/.bin/tsc",
       "isBackground": true,
-      "args": ["--watch", "--noEmit", "--project", "tsconfig.build.json"],
+      "args": ["--watch", "--noEmit", "--project", "./tsconfig.build.json"],
       "group": {
         "kind": "build",
         "isDefault": true
