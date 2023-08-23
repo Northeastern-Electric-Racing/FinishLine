@@ -1,15 +1,6 @@
 name: TypeScript Check
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
-      - 'feature/**'
+on: [push, pull_request]
 
 jobs:
   build:
