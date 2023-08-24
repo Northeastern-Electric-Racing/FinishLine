@@ -221,7 +221,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   }
                 }}
                 type="file"
-                accept="image/png, image/jpeg"
+                accept="image/png, image/jpeg, .pdf"
                 name="receiptFiles"
               />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
