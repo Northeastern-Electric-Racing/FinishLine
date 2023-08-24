@@ -3,20 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, FormControl, FormLabel, Grid, IconButton, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, FormLabel, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
-import { Edit } from '@mui/icons-material';
+import { Cancel, Edit, Save } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
-import NERSuccessButton from '../../components/NERSuccessButton';
-import NERFailButton from '../../components/NERFailButton';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
 
@@ -31,6 +29,7 @@ const userToAutocompleteOption = (user: User): { label: string; id: string } => 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
+  const [isEditingHead, setIsEditingHead] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
   const [head, setHead] = useState(userToAutocompleteOption(team.head));
 
@@ -42,18 +41,6 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || !users) return <LoadingIndicator />;
-
-  const handleSubmit = async () => {
-    try {
-      await setTeamMembersMutateAsync(members.map((member) => parseInt(member.id)));
-      await setTeamHeadMutateAsync(parseInt(head.id));
-      setIsEditingMembers(false);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
 
   const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
@@ -67,77 +54,110 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
-  const editButtons = (
-    <div style={{ display: 'flex' }}>
-      <NERFailButton
-        onClick={() => {
-          setIsEditingMembers(false);
-          setMembers(team.members.map(userToAutocompleteOption));
-        }}
-      >
-        Cancel
-      </NERFailButton>
-      <NERSuccessButton sx={{ ml: 2 }} onClick={handleSubmit}>
-        Save
-      </NERSuccessButton>
-    </div>
+  const submitHead = async () => {
+    try {
+      await setTeamHeadMutateAsync(parseInt(head.id));
+      setIsEditingHead(false);
+    } catch (error) {
+      error instanceof Error && toast.error(error.message);
+    }
+  };
+
+  const submitMembers = async () => {
+    try {
+      await setTeamMembersMutateAsync(members.map((member) => parseInt(member.id)));
+      setIsEditingMembers(false);
+    } catch (error) {
+      error instanceof Error && toast.error(error.message);
+    }
+  };
+
+  const editingHeadView = (
+    <Grid container direction={'row'} pt={2} pl={1}>
+      <Grid item xs={8} md={10} lg={11}>
+        <NERAutocomplete
+          id="head-autocomplete"
+          options={headOptions}
+          onChange={(_event, newValue) => newValue && setHead(newValue)}
+          filterSelectedOptions
+          size="small"
+          placeholder="Select a User"
+          value={head}
+          label={'Head'}
+        />
+      </Grid>
+      <Grid container direction={'row'} xs={4} md={2} lg={1}>
+        <Grid item>
+          <IconButton children={<Save />} onClick={submitHead} />
+        </Grid>
+        <Grid item>
+          <IconButton children={<Cancel />} onClick={() => setIsEditingHead(false)} />
+        </Grid>
+      </Grid>
+    </Grid>
   );
 
-  const editingView = (
-    <PageBlock title={'People'} headerRight={editButtons}>
-      <Grid container spacing={1}>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <FormLabel>Head</FormLabel>
-            <NERAutocomplete
-              id="head-autocomplete"
-              options={headOptions}
-              onChange={(_event, newValue) => newValue && setHead(newValue)}
-              filterSelectedOptions
-              size="small"
-              placeholder="Select a User"
-              value={head}
-            />
-          </FormControl>
+  const editingMembersView = (
+    <Grid container direction={'row'} pl={1}>
+      <Grid item xs={8} md={10} lg={11}>
+        <Autocomplete
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          filterSelectedOptions
+          multiple
+          id="tags-standard"
+          options={memberOptions}
+          value={members}
+          onChange={(_event, newValue) => setMembers(newValue)}
+          getOptionLabel={(option) => option.label}
+          renderInput={(params) => <TextField {...params} variant="standard" label="Members" placeholder="Select A User" />}
+        />
+      </Grid>
+      <Grid container xs={4} md={2} lg={1}>
+        <Grid item>
+          <IconButton children={<Save />} onClick={submitMembers} />
         </Grid>
-        <Grid item xs={12}>
-          <Autocomplete
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            filterSelectedOptions
-            multiple
-            id="tags-standard"
-            options={memberOptions}
-            value={members}
-            onChange={(_event, newValue) => setMembers(newValue)}
-            getOptionLabel={(option) => option.label}
-            renderInput={(params) => (
-              <TextField {...params} variant="standard" label="Members" placeholder="Select A User" />
-            )}
-          />
+        <Grid item>
+          <IconButton children={<Cancel />} onClick={() => setIsEditingMembers(false)} />
         </Grid>
+      </Grid>
+    </Grid>
+  );
+
+  const nonEditingHeadView = (
+    <Grid container flexDirection={'row'} pl={1} xs={12}>
+      <Grid item pt={1}>
+        <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
+      </Grid>
+      <Grid item>{hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingHead(true)} />}</Grid>
+    </Grid>
+  );
+
+  const nonEditingLeadsView = (
+    <Grid item xs={12}>
+      <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
+    </Grid>
+  );
+
+  const nonEditingMembersView = (
+    <Grid container direction={'row'} pl={1} xs={12}>
+      <Grid item pt={1} xs={11}>
+        <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
+      </Grid>
+      <Grid item xs={1}>
+        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
+      </Grid>
+    </Grid>
+  );
+
+  return (
+    <PageBlock title={'People'}>
+      <Grid container direction={'column'} spacing={1}>
+        {isEditingHead ? editingHeadView : nonEditingHeadView}
+        {nonEditingLeadsView}
+        {isEditingMembers ? editingMembersView : nonEditingMembersView}
       </Grid>
     </PageBlock>
   );
-
-  const nonEditingView = (
-    <PageBlock
-      title={'People'}
-      headerRight={hasPerms ? <IconButton onClick={() => setIsEditingMembers(true)} children={<Edit />} /> : null}
-    >
-      <Grid container spacing={1}>
-        <Grid item xs={12}>
-          <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
-        </Grid>
-      </Grid>
-    </PageBlock>
-  );
-  return isEditingMembers ? editingView : nonEditingView;
 };
 
 export default TeamMembersPageBlock;
