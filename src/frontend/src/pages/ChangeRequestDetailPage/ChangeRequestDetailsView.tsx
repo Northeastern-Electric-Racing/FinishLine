@@ -115,16 +115,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     workPackageNumber: 0
   });
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
-  // const {
-  //   handleSubmit,
-  //   control,
-  //   formState: { isValid },
-  //   reset
-  // } = useForm({
-  //   defaultValues: {
-  //     reviewerIds: []
-  //   }
-  // })
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
@@ -184,6 +174,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
         getOptionLabel={(option) => option.label}
         onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
+        renderTags={() => null}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
             <Checkbox
@@ -195,7 +186,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             {option.label}
           </li>
         )}
-        renderInput={(params) => <TextField {...params} variant="standard" placeholder="Choose a user(s)" />}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={`${reviewerIds.length} Reviewers Selected`}
+            variant="standard"
+            placeholder="Choose a user(s)"
+          />
+        )}
       />
 
       <NERButton
@@ -238,15 +236,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const implementCrDropdown = (
     <div>
-      <NERButton
-        endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
-        variant="contained"
-        id="implement-cr-dropdown"
-        onClick={handleClick}
-      >
-        Implement Change Request
-      </NERButton>
-
       <ActionsMenu
         buttons={[
           {
@@ -268,54 +257,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             icon: <EditIcon fontSize="small" />
           }
         ]}
+        title="Implement Change Request"
       ></ActionsMenu>
-      {/* <Menu
-        open={dropdownOpen}
-        anchorEl={anchorEl}
-        onClose={handleDropdownClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-      >
-        <MenuItem
-          to={`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
-          component={RouterLink}
-          onClick={handleDropdownClose}
-          disabled={!isUserAllowedToImplement}
-        >
-          <ListItemIcon>
-            <CreateNewFolderIcon fontSize="small" />
-          </ListItemIcon>
-          Create New Project
-        </MenuItem>
-        <MenuItem
-          component={RouterLink}
-          to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
-          disabled={!isUserAllowedToImplement}
-          onClick={handleDropdownClose}
-        >
-          <ListItemIcon>
-            <PostAddIcon fontSize="small" />
-          </ListItemIcon>
-          Create New Work Package
-        </MenuItem>
-        <MenuItem
-          component={RouterLink}
-          to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`}
-          disabled={!isUserAllowedToImplement}
-          onClick={handleDropdownClose}
-        >
-          <ListItemIcon>
-            <EditIcon fontSize="small" />
-          </ListItemIcon>
-          Edit {changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}
-        </MenuItem>
-      </Menu> */}
     </div>
   );
 

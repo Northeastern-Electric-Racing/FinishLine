@@ -13,9 +13,10 @@ export type ButtonInfo = {
 
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
+  title?: string;
 }
 
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons }) => {
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,7 +37,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons }) => {
         id="reimbursement-request-actions-dropdown"
         onClick={handleClick}
       >
-        Actions
+        {title}
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {buttons.map((button, index) => (
