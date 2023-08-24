@@ -15,7 +15,7 @@ import {
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
-import { PDFDocument, degrees } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 
 /**
  * Upload a picture of a receipt
