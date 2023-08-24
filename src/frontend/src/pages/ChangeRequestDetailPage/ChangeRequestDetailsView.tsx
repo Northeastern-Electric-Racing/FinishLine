@@ -16,7 +16,7 @@ import {
   isProject
 } from 'shared';
 import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -27,18 +27,7 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import {
-  Grid,
-  Menu,
-  MenuItem,
-  Typography,
-  Link,
-  Divider,
-  ListItemIcon,
-  Autocomplete,
-  Checkbox,
-  TextField
-} from '@mui/material';
+import { Grid, Menu, MenuItem, Typography, Link, Divider, Autocomplete, Checkbox, TextField } from '@mui/material';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteChangeRequest from './DeleteChangeRequest';
@@ -54,7 +43,6 @@ import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { userToAutocompleteOption } from '../../utils/users';
 import ActionsMenu from '../../components/ActionsMenu';
-import { useForm } from 'react-hook-form';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
