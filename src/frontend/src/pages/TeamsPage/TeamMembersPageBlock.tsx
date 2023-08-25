@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Button, FormControl, FormLabel, Grid, IconButton, TextField } from '@mui/material';
+import { Autocomplete, Grid, IconButton, TextField } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
