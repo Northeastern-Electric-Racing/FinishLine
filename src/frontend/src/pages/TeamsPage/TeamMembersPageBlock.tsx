@@ -140,10 +140,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const nonEditingMembersView = (
     <Grid container direction={'row'} pl={1} xs={12}>
-      <Grid item pt={1} xs={11}>
+      <Grid item pt={1} xs={11} lg="auto">
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
-      <Grid item xs={1}>
+      <Grid item xs={1} justifySelf={'left'}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
       </Grid>
     </Grid>
