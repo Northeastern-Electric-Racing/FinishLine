@@ -72,7 +72,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const handleAssignToMyTeam = async () => {
     try {
-      await mutateAsyncSetProjectTeam(teamAsHeadId);
+      const successMessage = await mutateAsyncSetProjectTeam(teamAsHeadId);
+      toast.success(successMessage.message);
       handleDropdownClose();
     } catch (e) {
       if (e instanceof Error) {
@@ -104,14 +105,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const assignToMyTeamButton = (
-    <MenuItem disabled={project.team?.teamId === teamAsHeadId} onClick={handleAssignToMyTeam}>
-      <ListItemIcon>
-        <GroupIcon fontSize="small" />
-      </ListItemIcon>
-      Assign to My Team
-    </MenuItem>
-  );
+  const AssignToMyTeamButton = () => {
+    const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
+      ? 'Unassign from My Team'
+      : 'Assign to My Team';
+
+    return (
+      <MenuItem onClick={handleAssignToMyTeam}>
+        <ListItemIcon>
+          <GroupIcon fontSize="small" />
+        </ListItemIcon>
+        {assignToTeamText}
+      </MenuItem>
+    );
+  };
 
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
@@ -147,7 +154,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
-        {teamAsHeadId && assignToMyTeamButton}
+        {teamAsHeadId && <AssignToMyTeamButton />}
         <DeleteButton />
       </Menu>
     </Box>

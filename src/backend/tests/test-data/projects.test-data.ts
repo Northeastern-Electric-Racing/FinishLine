@@ -13,8 +13,7 @@ export const prismaProject2: Project = {
   googleDriveFolderLink: 'https://drive.google.com/drive/folders/1',
   slideDeckLink: 'https://docs.google.com/presentation/d/1',
   bomLink: 'https://docs.google.com/spreadsheets/d/1',
-  taskListLink: 'https://docs.google.com/spreadsheets/d/1',
-  teamId: '1'
+  taskListLink: 'https://docs.google.com/spreadsheets/d/1'
 };
 
 export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> = {
@@ -23,8 +22,6 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
   budget: 3,
   summary: 'ajsjdfk',
   rules: ['a'],
-  links: [],
-  teamId: '1',
   wbsElement: {
     wbsElementId: 65,
     dateCreated: new Date('10/18/2022'),
@@ -40,7 +37,8 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     dateDeleted: null,
     deletedByUserId: null,
     changes: [],
-    tasks: []
+    tasks: [],
+    links: []
   },
   workPackages: [
     {
@@ -75,7 +73,7 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
   goals: [],
   features: [],
   otherConstraints: [],
-  team: prismaTeam1,
+  teams: [prismaTeam1],
   favoritedBy: []
 };
 
@@ -99,5 +97,6 @@ export const sharedProject1: SharedProject = {
   features: [],
   otherConstraints: [],
   workPackages: [],
-  tasks: []
+  tasks: [],
+  teams: []
 };

@@ -87,7 +87,7 @@ export default class ProjectsController {
 
       await ProjectsService.setProjectTeam(user, wbsNumber, teamId);
 
-      return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)} successfully assigned to team ${teamId}.` });
+      return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
       next(error);
     }

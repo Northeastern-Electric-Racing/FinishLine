@@ -79,14 +79,14 @@ describe('TaskList component', () => {
     });
 
     it('disables New Task button if there is no associated team', () => {
-      renderComponent({ ...exampleProject3, team: undefined });
+      renderComponent({ ...exampleProject3, teams: [] });
       expect(screen.getByText('New Task')).toBeDisabled();
     });
   });
 
   describe('Tab Contents', () => {
     it('renders message if there is no associated team', () => {
-      renderComponent({ ...exampleProject3, team: undefined });
+      renderComponent({ ...exampleProject3, teams: [] });
       expect(screen.getByText('A project can only have tasks if it is assigned to a team!')).toBeInTheDocument();
     });
 

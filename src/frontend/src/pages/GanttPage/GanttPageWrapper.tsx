@@ -17,10 +17,10 @@ import {
   filterGanttProjects,
   buildGanttSearchParams,
   GanttFilters,
-  NO_TEAM,
   sortTeamNames,
   GanttTask,
-  transformProjectToGanttTask
+  transformProjectToGanttTask,
+  getProjectTeamsName
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -69,7 +69,7 @@ const GanttPageWrapper: FC = () => {
   useEffect(() => {
     if (!projects) return;
 
-    setTeamList(Array.from(new Set(projects.map((p) => p.team?.teamName || NO_TEAM))));
+    setTeamList(Array.from(new Set(projects.map(getProjectTeamsName))));
 
     const ganttFilters: GanttFilters = {
       showCar0,

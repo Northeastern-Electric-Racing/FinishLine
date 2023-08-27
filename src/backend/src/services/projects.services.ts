@@ -75,7 +75,7 @@ export default class ProjectsService {
    * @param carNumber the car number of the new project
    * @param name the name of the new project
    * @param summary the summary of the new project
-   * @param teamId the teamId of the new project
+   * @param teamIds the ids of the teams that the new project will be assigned to
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -85,15 +85,17 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamId: string | undefined
+    teamIds: string[]
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
     await validateChangeRequestAccepted(crId);
 
-    if (teamId) {
-      const team = await prisma.team.findUnique({ where: { teamId } });
-      if (!team) throw new NotFoundException('Team', teamId);
+    if (teamIds.length > 0) {
+      for (const teamId of teamIds) {
+        const team = await prisma.team.findUnique({ where: { teamId } });
+        if (!team) throw new NotFoundException('Team', teamId);
+      }
     }
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
@@ -105,7 +107,14 @@ export default class ProjectsService {
         projectNumber: maxProjectNumber + 1,
         workPackageNumber: 0,
         name,
-        project: { create: { summary, teamId } },
+        project: {
+          create: {
+            summary,
+            teams: {
+              connect: teamIds.map((teamId) => ({ teamId }))
+            }
+          }
+        },
         changes: {
           create: {
             changeRequestId: crId,
@@ -371,7 +380,8 @@ export default class ProjectsService {
   }
 
   /**
-   * Sets the given project's team to be the given project.
+   * Adds or removes the given team to the projects teams depending if it is already assigned to the project or not.
+   *
    * @param user the user doing the setting
    * @param wbsNumber the wbsNumber of the project
    * @param teamId the teamId to assign the project to
@@ -388,6 +398,9 @@ export default class ProjectsService {
           projectNumber: wbsNumber.projectNumber,
           workPackageNumber: wbsNumber.workPackageNumber
         }
+      },
+      include: {
+        teams: true
       }
     });
 
@@ -401,13 +414,30 @@ export default class ProjectsService {
       throw new AccessDeniedAdminOnlyException('set project teams');
     }
 
-    // if everything is fine, then update the given project to assign to provided team ID
-    await prisma.project.update({
-      where: { projectId: project.projectId },
-      data: { teamId }
-    });
-
-    return;
+    // check if the team is already assigned to the project if it is we remove it, otherwise we add it. We do this to toggle the team
+    if (project.teams.some((currTeam) => currTeam.teamId === teamId)) {
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          teams: {
+            disconnect: {
+              teamId
+            }
+          }
+        }
+      });
+    } else {
+      await prisma.project.update({
+        where: { projectId: project.projectId },
+        data: {
+          teams: {
+            connect: {
+              teamId
+            }
+          }
+        }
+      });
+    }
   }
 
   /**

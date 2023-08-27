@@ -395,7 +395,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -403,12 +403,15 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdCR.wbsElement.workPackage?.project.team;
-    if (team) {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
-        ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+    const teams = createdCR.wbsElement.workPackage?.project.teams;
+
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
+          ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
 
     return createdCR.crId;
@@ -485,7 +488,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -493,12 +496,14 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdChangeRequest.wbsElement.workPackage?.project.team;
-    if (team) {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-        ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+    const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+          ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+      });
     }
 
     return createdChangeRequest.crId;
@@ -562,10 +567,10 @@ export default class ChangeRequestsService {
       include: {
         wbsElement: {
           include: {
-            project: { include: { team: true, wbsElement: true } },
+            project: { include: { teams: true, wbsElement: true } },
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -574,11 +579,14 @@ export default class ChangeRequestsService {
     });
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
-    if (project?.team) {
-      const slackMsg =
-        `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
-        `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
+    const teams = project?.teams;
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
+          `for the ${project.wbsElement.name} project`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
 
     return createdCR.crId;

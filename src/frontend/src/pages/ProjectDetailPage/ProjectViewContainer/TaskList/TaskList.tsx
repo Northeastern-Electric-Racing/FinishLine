@@ -60,7 +60,6 @@ const TaskList = ({ project }: TaskListProps) => {
   const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    console.log(newValue);
     setValue(newValue);
   };
 
@@ -71,13 +70,13 @@ const TaskList = ({ project }: TaskListProps) => {
     isLeadership(user.role) ||
     project.projectLead?.userId === user.userId ||
     project.projectManager?.userId === user.userId ||
-    project.team?.head.userId === user.userId ||
-    project.team?.leads.map((lead) => lead.userId).includes(user.userId);
+    project.teams.some((team) => team.head.userId === user.userId) ||
+    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId));
 
   const addTaskButton: JSX.Element = (
     <Button
       variant="outlined"
-      disabled={!createTaskPermissions || !project.team || disabled}
+      disabled={!createTaskPermissions || project.teams.length === 0 || disabled}
       startIcon={<AddTask />}
       sx={{
         height: 32,

@@ -117,7 +117,7 @@ model Team {
   teamName    String
   slackId     String
   description String    @default("")
-  projects    Project[]
+  projects    Project[] @relation(name: "assignedBy")
   members     User[]    @relation(name: "teamsAsMember")
   leads       User[]    @relation(name: "teamsAsLead")
   headId      Int       @unique
@@ -267,8 +267,7 @@ model Project {
   features         Description_Bullet[] @relation(name: "projectFeatures")
   otherConstraints Description_Bullet[] @relation(name: "projectOtherConstraints")
   workPackages     Work_Package[]
-  teamId           String?
-  team             Team?                @relation(fields: [teamId], references: [teamId])
+  teams            Team[]               @relation(name: "assignedBy")
   favoritedBy      User[]               @relation(name: "favoritedBy")
 }
 
