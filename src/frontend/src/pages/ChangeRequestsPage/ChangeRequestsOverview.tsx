@@ -34,10 +34,8 @@ const ChangeRequestsOverview: React.FC = () => {
 
   // projects whose change requests the user would have to review
   const myProjects = projects.filter((project: Project) => {
-    const projectTeamsIds = project.teams.map((team) => team.teamId);
     const projectMemberIds = project.teams.flatMap((team) => makeTeamList(team)).map((user) => user.userId);
     return (
-      (user.teamAsHeadId && projectTeamsIds.includes(user.teamAsHeadId)) ||
       projectMemberIds.includes(user.userId) ||
       (project.projectLead && project.projectLead.userId === user.userId) ||
       (project.projectManager && project.projectManager.userId === user.userId)
