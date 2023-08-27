@@ -188,15 +188,14 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
   // Embed the image in the PDF document
   const promises = blobData.map(async (blob: Blob) => {
     const arrayBuffer = await blob.arrayBuffer();
-    let image;
     switch (blob.type) {
       case 'image/jpeg': {
-        image = await pdfDoc.embedJpg(arrayBuffer);
+        const image = await pdfDoc.embedJpg(arrayBuffer);
         addImage(image);
         break;
       }
       case 'image/png': {
-        image = await pdfDoc.embedPng(arrayBuffer);
+        const image = await pdfDoc.embedPng(arrayBuffer);
         addImage(image);
         break;
       }
