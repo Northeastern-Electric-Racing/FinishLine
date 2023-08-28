@@ -90,7 +90,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
     data: project,
     isLoading,
@@ -112,10 +111,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
 
   const { name: projectName } = project;
-
-  const handleDropdownClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleRequestReviewerClick = async () => {
     if (reviewerIds.length === 0) return;
@@ -208,30 +203,24 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       buttons={[
         {
           title: 'Create New Project',
-          onClick: () => {
-            handleDropdownClose();
-            history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`);
-          },
+          onClick: () =>
+            history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`),
           disabled: !isUserAllowedToImplement,
           icon: <CreateNewFolderIcon fontSize="small" />
         },
         {
           title: 'Create New Work Package',
-          onClick: () => {
-            handleDropdownClose();
+          onClick: () =>
             history.push(
               `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`
-            );
-          },
+            ),
           disabled: !isUserAllowedToImplement,
           icon: <PostAddIcon fontSize="small" />
         },
         {
           title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
-          onClick: () => {
-            handleDropdownClose();
-            history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`);
-          },
+          onClick: () =>
+            history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`),
           disabled: !isUserAllowedToImplement,
           icon: <EditIcon fontSize="small" />
         }
