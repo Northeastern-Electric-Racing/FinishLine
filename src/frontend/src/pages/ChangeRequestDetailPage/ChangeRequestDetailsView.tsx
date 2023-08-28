@@ -26,13 +26,13 @@ import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { NERButton } from '../../components/NERButton';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Grid, Menu, MenuItem, Typography, Link, Divider, Autocomplete, Checkbox, TextField } from '@mui/material';
+import { Grid, Typography, Link, Autocomplete, Checkbox, TextField } from '@mui/material';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteChangeRequest from './DeleteChangeRequest';
 import EditIcon from '@mui/icons-material/Edit';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -84,8 +84,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   isUserAllowedToDelete,
   changeRequest
 }: ChangeRequestDetailsProps) => {
-  const currentUser = useCurrentUser();
-  const history = useHistory();
   const [reviewModalShow, setReviewModalShow] = useState<boolean>(false);
   const handleReviewClose = () => setReviewModalShow(false);
   const handleReviewOpen = () => setReviewModalShow(true);
@@ -107,7 +105,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
-  // const toast = useToast();
+  const toast = useToast();
+  const currentUser = useCurrentUser();
+  const history = useHistory();
   if (isError) return <ErrorPage message={error?.message} />;
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
@@ -124,7 +124,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       await requestCRReview({ userIds: reviewerIds });
     } catch (e) {
       if (e instanceof Error) {
-        // toast.error(e.message);
+        toast.error(e.message);
       }
     }
   };
@@ -133,17 +133,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const unreviewedActionsDropdown = (
     <ActionsMenu
-      marginTop="10px"
+      style={{ mt: '10px', float: 'right' }}
       buttons={[
         {
           title: 'Review',
           onClick: handleReviewOpen,
-          disabled: !isUserAllowedToReview
+          disabled: !isUserAllowedToReview,
+          icon: <EditIcon fontSize="small" />
         },
         {
           title: 'Delete',
           onClick: handleDeleteOpen,
-          disabled: !isUserAllowedToDelete
+          disabled: !isUserAllowedToDelete,
+          icon: <DeleteIcon fontSize="small" />
         }
       ]}
     />

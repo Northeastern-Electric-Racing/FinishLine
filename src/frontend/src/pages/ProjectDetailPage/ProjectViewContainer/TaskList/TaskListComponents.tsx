@@ -11,7 +11,6 @@ import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../ut
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { makeTeamList } from '../../../../utils/teams.utils';
-import { userToAutocompleteOption } from '../../../../utils/users';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;

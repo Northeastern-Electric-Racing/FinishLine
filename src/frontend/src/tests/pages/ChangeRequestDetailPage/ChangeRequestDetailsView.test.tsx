@@ -44,7 +44,7 @@ describe('Implement change request permission tests', () => {
     mockSingleProjectHook(false, false, exampleProject1);
     renderComponent(exampleStandardChangeRequest);
     act(() => {
-      fireEvent.click(screen.getByText(actionBtnText));
+      fireEvent.click(screen.getByText('Actions'));
     });
     expect(screen.getByText(newPrjBtnText)).toHaveAttribute('aria-disabled');
     expect(screen.getByText(newWPBtnText)).toHaveAttribute('aria-disabled');

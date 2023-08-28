@@ -34,7 +34,6 @@ import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
 import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
-import { userToAutocompleteOption } from '../../../../utils/users';
 
 interface TaskListNotesModalProps {
   task: Task;
