@@ -17,6 +17,12 @@ import {
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
 
+enum AllowedFileType {
+  JPEG = 'image/jpeg',
+  PNG = 'image/png',
+  PDF = 'application/pdf'
+}
+
 /**
  * Upload a picture of a receipt
  *
@@ -189,17 +195,17 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
   const promises = blobData.map(async (blob: Blob) => {
     const arrayBuffer = await blob.arrayBuffer();
     switch (blob.type) {
-      case 'image/jpeg': {
+      case AllowedFileType.JPEG: {
         const image = await pdfDoc.embedJpg(arrayBuffer);
         addImage(image);
         break;
       }
-      case 'image/png': {
+      case AllowedFileType.PNG: {
         const image = await pdfDoc.embedPng(arrayBuffer);
         addImage(image);
         break;
       }
-      case 'application/pdf': {
+      case AllowedFileType.PDF: {
         const newPdf = await PDFDocument.load(arrayBuffer);
         const newPages = await pdfDoc.copyPages(newPdf, newPdf.getPageIndices());
         // Add the pages to the main PDF
