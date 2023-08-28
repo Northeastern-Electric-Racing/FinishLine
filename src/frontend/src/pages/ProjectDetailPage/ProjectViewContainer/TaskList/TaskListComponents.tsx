@@ -9,8 +9,6 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { UserPreview } from 'shared';
 import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { makeTeamList } from '../../../../utils/teams.utils';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;
@@ -97,7 +95,6 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
 export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   const { value, teams, assignees, setAssignees } = params;
 
-  if (!team) return <LoadingIndicator />;
   if (!teams || teams.length === 0) return <ErrorPage message="Teams Not Configured Correctly" />;
 
   const teamMembers = getTaskAssigneeOptions(teams);

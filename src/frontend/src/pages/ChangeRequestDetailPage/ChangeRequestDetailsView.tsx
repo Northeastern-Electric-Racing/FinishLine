@@ -91,7 +91,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const dropdownOpen = Boolean(anchorEl);
   const {
     data: project,
     isLoading,

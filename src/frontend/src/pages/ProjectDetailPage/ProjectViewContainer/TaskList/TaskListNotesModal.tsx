@@ -89,12 +89,6 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   });
   if (!auth.user) return <LoadingIndicator />;
 
-  const teamOptions = team
-    ? makeTeamList(team)
-        .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
-        .map(userToAutocompleteOption)
-    : [];
-
   const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(userToAutocompleteOption);
 
   const dialogWidth: Breakpoint = 'md';
@@ -264,10 +258,10 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         filterSelectedOptions
                         multiple
                         id="tags-standard"
-                        options={teamOptions}
+                        options={options}
                         getOptionLabel={(option) => option.label}
                         onChange={(_, value) => onChange(value.map((v) => v.id))}
-                        value={value.map((v) => teamOptions.find((o) => o.id === v)!)}
+                        value={value.map((v) => options.find((o) => o.id === v)!)}
                         renderInput={(params) => (
                           <TextField {...params} variant="standard" placeholder="Select A User" error={!!errors.assignees} />
                         )}
