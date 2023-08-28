@@ -33,12 +33,12 @@ import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
-import { makeTeamList } from '../../../../utils/teams.utils';
+import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
 import { userToAutocompleteOption } from '../../../../utils/users';
 
 interface TaskListNotesModalProps {
   task: Task;
-  team?: TeamPreview;
+  teams: TeamPreview[];
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: FormInput) => Promise<void>;
@@ -64,7 +64,7 @@ const schema = yup.object().shape({
 
 const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   task,
-  team,
+  teams,
   modalShow,
   onHide,
   onSubmit,
@@ -90,11 +90,13 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   });
   if (!auth.user) return <LoadingIndicator />;
 
-  const options = team
+  const teamOptions = team
     ? makeTeamList(team)
         .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
         .map(userToAutocompleteOption)
     : [];
+
+  const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(userToAutocompleteOption);
 
   const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
@@ -263,10 +265,10 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                         filterSelectedOptions
                         multiple
                         id="tags-standard"
-                        options={options}
+                        options={teamOptions}
                         getOptionLabel={(option) => option.label}
                         onChange={(_, value) => onChange(value.map((v) => v.id))}
-                        value={value.map((v) => options.find((o) => o.id === v)!)}
+                        value={value.map((v) => teamOptions.find((o) => o.id === v)!)}
                         renderInput={(params) => (
                           <TextField {...params} variant="standard" placeholder="Select A User" error={!!errors.assignees} />
                         )}
@@ -285,7 +287,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                     render={({ field: { onChange, value } }) => (
                       <DatePicker
                         inputFormat="yyyy-MM-dd"
-                        onChange={onChange}
+                        onChange={(event) => onChange(event ?? new Date())}
                         className={'padding: 10'}
                         value={value}
                         renderInput={(params) => <TextField autoComplete="off" {...params} error={!!errors.deadline} />}

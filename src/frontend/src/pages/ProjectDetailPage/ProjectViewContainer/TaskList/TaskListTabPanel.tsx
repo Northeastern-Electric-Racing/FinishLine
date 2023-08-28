@@ -40,10 +40,10 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const auth = useAuth();
   const toast = useToast();
-  const team = project.team;
+  const { teams } = project;
 
   if (isLoading || assigneeIsLoading || !auth.user) return <LoadingIndicator />;
-  if (!team)
+  if (teams.length === 0)
     return (
       <Typography sx={{ py: '25px', textAlign: 'center' }}>
         A project can only have tasks if it is assigned to a team!
@@ -163,7 +163,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   return (
     <Box flex={1}>
       <TaskListDataGrid
-        team={team}
+        teams={teams}
         status={status}
         tasks={tasks}
         editTaskPermissions={editTaskPermissions}
@@ -186,7 +186,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
           onHide={handleClose}
           onSubmit={handleEditTask}
           task={selectedTask!}
-          team={team}
+          teams={teams}
           hasEditPermissions={editTaskPermissions(selectedTask!)}
         />
       )}

@@ -1,8 +1,8 @@
-import { Box } from '@mui/system';
+import { Box, SxProps, margin } from '@mui/system';
 import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
-import { ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { ListItemIcon, Menu, MenuItem, Theme } from '@mui/material';
 
 export type ButtonInfo = {
   title: string;
@@ -14,9 +14,10 @@ export type ButtonInfo = {
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
   title?: string;
+  marginTop?: string;
 }
 
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' }) => {
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', marginTop = '0px' }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,6 +37,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
         variant="contained"
         id="reimbursement-request-actions-dropdown"
         onClick={handleClick}
+        sx={{ mt: marginTop }}
       >
         {title}
       </NERButton>

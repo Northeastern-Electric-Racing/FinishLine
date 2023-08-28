@@ -4,10 +4,9 @@
  */
 
 import { routes } from '../../utils/routes';
-import { MUILinkItem } from '../../utils/types';
-import NavPageLinks from './NavPageLinks';
+import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography } from '@mui/material';
+import { Typography, Box, useTheme, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -15,52 +14,70 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import NavPageLink from './NavPageLink';
+import DrawerHeader from '../../components/DrawerHeader';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import NERDrawer from '../../components/NERDrawer';
+import { LayoutProps } from '../LayoutProps';
 
-const Sidebar: React.FC = () => {
-  const linkItems: MUILinkItem[] = [
+export interface SideBarProps extends LayoutProps {
+  handleDrawerClose: () => void;
+}
+
+const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
+  const theme = useTheme();
+
+  const linkItems: LinkItem[] = [
     {
       name: 'Home',
-      icon: HomeIcon,
+      icon: <HomeIcon />,
       route: routes.HOME
     },
     {
       name: 'Gantt',
-      icon: AlignHorizontalLeftIcon,
+      icon: <AlignHorizontalLeftIcon />,
       route: routes.GANTT
     },
     {
       name: 'Projects',
-      icon: FolderIcon,
+      icon: <FolderIcon />,
       route: routes.PROJECTS
     },
     {
       name: 'Change Requests',
-      icon: SyncAltIcon,
+      icon: <SyncAltIcon />,
       route: routes.CHANGE_REQUESTS
     },
     {
       name: 'Finance',
-      icon: AttachMoneyIcon,
+      icon: <AttachMoneyIcon />,
       route: routes.FINANCE
     },
     {
       name: 'Teams',
-      icon: GroupIcon,
+      icon: <GroupIcon />,
       route: routes.TEAMS
+    },
+    {
+      name: 'Info',
+      icon: <QuestionMarkIcon />,
+      route: routes.INFO
     }
   ];
 
-  linkItems.push({
-    name: 'Info',
-    icon: QuestionMarkIcon,
-    route: routes.INFO
-  });
-
   return (
-    <div className={styles.sidebar}>
-      <NavPageLinks linkItems={linkItems} />
-      <Typography className={styles.versionNumber}>3.8.0</Typography>
-    </div>
+    <NERDrawer open={open} variant="permanent">
+      <DrawerHeader>
+        <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
+      </DrawerHeader>
+      <Divider />
+      <Box overflow={'auto'} sx={{ overflowX: 'hidden' }}>
+        {linkItems.map((linkItem) => (
+          <NavPageLink {...linkItem} open={open} />
+        ))}
+        <Typography className={styles.versionNumber}>3.8.0</Typography>
+      </Box>
+    </NERDrawer>
   );
 };
 

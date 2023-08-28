@@ -190,7 +190,8 @@ describe('Change Requests', () => {
                 create: {
                   changeRequestId: 2,
                   detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2
+                  implementerId: 2,
+                  wbsElementId: 65
                 }
               }
             }
@@ -205,7 +206,8 @@ describe('Change Requests', () => {
                       create: {
                         changeRequestId: 2,
                         detail: 'Changed Duration from "10" to "20"',
-                        implementerId: 2
+                        implementerId: 2,
+                        wbsElementId: 65
                       }
                     }
                   }
@@ -247,7 +249,8 @@ describe('Change Requests', () => {
                 create: {
                   changeRequestId: 2,
                   detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2
+                  implementerId: 2,
+                  wbsElementId: 65
                 }
               }
             }

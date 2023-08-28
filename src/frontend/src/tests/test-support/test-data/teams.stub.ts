@@ -5,7 +5,7 @@
 
 import { Team } from 'shared';
 import { exampleProject1, exampleProject2, exampleProject3 } from './projects.stub';
-import { exampleAllUsers, exampleAppAdminUser, exampleLeadershipUser } from './users.stub';
+import { exampleAdminUser, exampleAllUsers, exampleAppAdminUser, exampleLeadershipUser } from './users.stub';
 
 export const exampleTeam: Team = {
   teamId: 'a',
@@ -15,5 +15,5 @@ export const exampleTeam: Team = {
   description: 'Are you winning, team?',
   members: exampleAllUsers,
   projects: [exampleProject1, exampleProject2, exampleProject3],
-  leads: [exampleLeadershipUser]
+  leads: [exampleLeadershipUser, exampleAdminUser]
 };
