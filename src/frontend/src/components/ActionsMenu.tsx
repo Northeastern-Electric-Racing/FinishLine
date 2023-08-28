@@ -14,7 +14,6 @@ export type ButtonInfo = {
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
   title?: string;
-  marginTop?: string;
   style?: any;
 }
 
