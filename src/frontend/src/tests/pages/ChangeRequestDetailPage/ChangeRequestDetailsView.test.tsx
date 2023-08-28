@@ -9,8 +9,12 @@ import { exampleStandardChangeRequest } from '../../test-support/test-data/chang
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
 import { useSingleProject } from '../../../hooks/projects.hooks';
 import { UseQueryResult } from 'react-query';
-import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
+import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { ToastProvider } from '../../../components/Toast/ToastProvider';
+import * as authHooks from '../../../hooks/auth.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import AppContextUser from '../../../app/AppContextUser';
 
 vi.mock('../../../hooks/projects.hooks');
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
@@ -24,18 +28,26 @@ const mockSingleProjectHook = (isLoading: boolean, isError: boolean, data?: Proj
 const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <RouterWrapper>
-      <ChangeRequestDetailsView
-        changeRequest={cr}
-        isUserAllowedToReview={allowed}
-        isUserAllowedToImplement={allowed}
-        isUserAllowedToDelete={allowed}
-      />
-    </RouterWrapper>
+    <AppContextUser>
+      <ToastProvider>
+        <RouterWrapper>
+          <ChangeRequestDetailsView
+            changeRequest={cr}
+            isUserAllowedToReview={allowed}
+            isUserAllowedToImplement={allowed}
+            isUserAllowedToDelete={allowed}
+          />
+        </RouterWrapper>
+      </ToastProvider>
+    </AppContextUser>
   );
 };
 
 describe('Implement change request permission tests', () => {
+  beforeEach(() => {
+    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+  });
+
   const actionBtnText = 'Implement Change Request';
   const newPrjBtnText = 'Create New Project';
   const newWPBtnText = 'Create New Work Package';
