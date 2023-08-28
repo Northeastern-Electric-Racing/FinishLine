@@ -21,6 +21,5 @@
     "editor.defaultFormatter": "Prisma.prisma"
   },
   "editor.formatOnSave": true,
-  "jest.autoRun": {},
   "typescript.tsdk": "node_modules/typescript/lib"
 }
