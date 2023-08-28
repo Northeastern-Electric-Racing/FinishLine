@@ -17,7 +17,6 @@ import { Box, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -30,6 +29,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
+import NERTabs from '../../../components/Tabs';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -162,11 +162,22 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </Box>
   );
 
+  const wbsNum = wbsPipe(project.wbsNum);
+
   return (
     <PageLayout
       title={pageTitle}
       headerRight={headerRight}
-      tabs={<ProjectDetailTabs project={project} setTab={setTab} />}
+      tabs={
+        <NERTabs
+          setTab={setTab}
+          tabUrlValues={['overview', 'tasks', 'scope', 'gantt', 'changes']}
+          tabNames={['overview', 'tasks', 'scope', 'gantt', 'changes']}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="project-detail-tabs"
+        />
+      }
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
     >
       {tab === 0 ? (

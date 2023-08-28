@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink, useLocation, useRouteMatch } from 'react-router-dom';
+import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
@@ -14,7 +14,7 @@ import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem, Tab, Tabs } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -27,6 +27,7 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
+import NERTabs from '../../../components/Tabs';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -53,30 +54,12 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
   const dropdownOpen = Boolean(anchorEl);
-  const tabUrlValues = useMemo(() => ['overview', 'scope', 'changes'], []);
-
-  const match = useRouteMatch<{ wbsNum: string; tabValueString: string }>(`${routes.PROJECTS}/:wbsNum/:tabValueString`);
-  const tabValueString = match?.params?.tabValueString;
   const wbsNum = wbsPipe(workPackage.wbsNum);
 
-  // Default to the "overview" tab
-  const initialTab: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
-  const [tabValue, setTabValue] = useState<number>(initialTab);
-
-  // Change tab when the browser forward/back button is pressed
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    const newTabValue: number = tabUrlValues.indexOf(tabValueString ?? 'overview');
-    setTabValue(newTabValue);
-  }, [pathname, setTabValue, tabUrlValues, tabValueString]);
+  const [tabValue, setTabValue] = useState<number>(0);
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
-    setTabValue(newValue);
-  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -171,32 +154,6 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
     </div>
   );
 
-  const tabs = (
-    <Tabs
-      sx={{ borderBottom: 1, borderColor: 'divider' }}
-      value={tabValue}
-      onChange={handleTabChange}
-      variant="standard"
-      aria-label="work-package-details"
-    >
-      <Tab
-        label="overview"
-        aria-label="overview"
-        value={0}
-        component={RouterLink}
-        to={`${routes.PROJECTS}/${wbsNum}/overview`}
-      />
-      <Tab label="scope" aria-label="scope" value={1} component={RouterLink} to={`${routes.PROJECTS}/${wbsNum}/scope`} />
-      <Tab
-        label="changes"
-        aria-label="changes"
-        value={2}
-        component={RouterLink}
-        to={`${routes.PROJECTS}/${wbsNum}/changes`}
-      />
-    </Tabs>
-  );
-
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
@@ -207,7 +164,16 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
       headerRight={projectActionsDropdown}
-      tabs={tabs}
+      tabs={
+        <NERTabs
+          setTab={setTabValue}
+          tabUrlValues={['overview', 'scope', 'changes']}
+          tabNames={['Overview', 'Scope', 'Changes']}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="wp-detail-tabs"
+        />
+      }
     >
       {tabValue === 0 ? (
         <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
