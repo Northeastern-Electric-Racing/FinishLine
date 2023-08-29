@@ -8,11 +8,11 @@ import { body } from 'express-validator';
 import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
-import multer from 'multer';
+import multer, { memoryStorage } from 'multer';
 
 const reimbursementRequestsRouter = express.Router();
 
-const upload = multer();
+const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
