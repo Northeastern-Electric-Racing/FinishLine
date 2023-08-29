@@ -73,13 +73,13 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   };
 
   const EditingHeadView = () => (
-    <Grid container direction={'row'} flex={'space-around'} spacing={1}>
+    <Grid container direction={'row'} spacing={1}>
       <Grid item>
         <Typography sx={{ fontWeight: 'bold' }} display="inline">
           Head:
         </Typography>
       </Grid>
-      <Grid item xs={10} mt={-1}>
+      <Grid item xs={true} mt={-1}>
         <NERAutocomplete
           id="head-autocomplete"
           options={headOptions}
@@ -90,7 +90,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           value={head}
         />
       </Grid>
-      <Grid container direction={'row'} xs={1}>
+      <Grid container direction={'row'} xs={4} md={2} lg={1}>
         <Grid item>
           <IconButton children={<Save />} onClick={submitHead} />
         </Grid>
