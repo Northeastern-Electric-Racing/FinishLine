@@ -25,7 +25,6 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
-  label?: string;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -37,8 +36,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   sx,
   value,
   listboxProps,
-  filterSelectedOptions,
-  label
+  filterSelectedOptions
 }) => {
   const theme = useTheme();
 
@@ -72,7 +70,6 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         }}
         placeholder={placeholder}
         required
-        label={label}
       />
     );
   };

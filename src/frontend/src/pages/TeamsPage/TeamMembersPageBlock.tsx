@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Grid, IconButton, TextField } from '@mui/material';
+import { Autocomplete, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -72,9 +72,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     }
   };
 
-  const editingHeadView = (
-    <Grid container direction={'row'} pt={2} pl={1}>
-      <Grid item xs={8} md={10} lg={11}>
+  const EditingHeadView = () => (
+    <Grid container direction={'row'} flex={'space-around'} spacing={1}>
+      <Grid item>
+        <Typography sx={{ fontWeight: 'bold' }} display="inline">
+          Head:
+        </Typography>
+      </Grid>
+      <Grid item xs={10} mt={-1}>
         <NERAutocomplete
           id="head-autocomplete"
           options={headOptions}
@@ -83,10 +88,9 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           size="small"
           placeholder="Select a User"
           value={head}
-          label={'Head'}
         />
       </Grid>
-      <Grid container direction={'row'} xs={4} md={2} lg={1}>
+      <Grid container direction={'row'} xs={1}>
         <Grid item>
           <IconButton children={<Save />} onClick={submitHead} />
         </Grid>
@@ -97,53 +101,58 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     </Grid>
   );
 
-  const editingMembersView = (
-    <Grid container direction={'row'} pl={1}>
-      <Grid item xs={8} md={10} lg={11}>
-        <Autocomplete
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          filterSelectedOptions
-          multiple
-          id="tags-standard"
-          options={memberOptions}
-          value={members}
-          onChange={(_event, newValue) => setMembers(newValue)}
-          getOptionLabel={(option) => option.label}
-          renderInput={(params) => <TextField {...params} variant="standard" label="Members" placeholder="Select A User" />}
-        />
-      </Grid>
-      <Grid container xs={4} md={2} lg={1}>
-        <Grid item>
-          <IconButton children={<Save />} onClick={submitMembers} />
+  const EditingMembersView = () => (
+    <Grid container direction={'column'}>
+      <Typography sx={{ fontWeight: 'bold' }} display="inline">
+        Members:
+      </Typography>
+      <Grid container direction={'row'}>
+        <Grid item xs={8} md={10} lg={11}>
+          <Autocomplete
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterSelectedOptions
+            multiple
+            id="tags-standard"
+            options={memberOptions}
+            value={members}
+            onChange={(_event, newValue) => setMembers(newValue)}
+            getOptionLabel={(option) => option.label}
+            renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+          />
         </Grid>
-        <Grid item>
-          <IconButton children={<Cancel />} onClick={() => setIsEditingMembers(false)} />
+        <Grid container xs={4} md={2} lg={1}>
+          <Grid item>
+            <IconButton children={<Save />} onClick={submitMembers} />
+          </Grid>
+          <Grid item>
+            <IconButton children={<Cancel />} onClick={() => setIsEditingMembers(false)} />
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
   );
 
-  const nonEditingHeadView = (
-    <Grid container flexDirection={'row'} pl={1} xs={12}>
-      <Grid item pt={1}>
+  const NonEditingHeadView = () => (
+    <Grid container flexDirection={'row'}>
+      <Grid item>
         <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
       </Grid>
-      <Grid item>{hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingHead(true)} />}</Grid>
+      <Grid item mt={-1}>
+        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingHead(true)} />}
+      </Grid>
     </Grid>
   );
 
-  const nonEditingLeadsView = (
-    <Grid item xs={12}>
-      <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
-    </Grid>
+  const NonEditingLeadsView = () => (
+    <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
   );
 
-  const nonEditingMembersView = (
-    <Grid container direction={'row'} pl={1} xs={12}>
-      <Grid item pt={1} xs={11} lg="auto">
+  const NonEditingMembersView = () => (
+    <Grid container direction={'row'}>
+      <Grid item xs={11} lg="auto">
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
-      <Grid item xs={1} justifySelf={'left'}>
+      <Grid item xs={1} justifySelf={'left'} mt={-1}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
       </Grid>
     </Grid>
@@ -151,11 +160,9 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   return (
     <PageBlock title={'People'}>
-      <Grid container direction={'column'} spacing={1}>
-        {isEditingHead ? editingHeadView : nonEditingHeadView}
-        {nonEditingLeadsView}
-        {isEditingMembers ? editingMembersView : nonEditingMembersView}
-      </Grid>
+      {isEditingHead ? <EditingHeadView /> : <NonEditingHeadView />}
+      <NonEditingLeadsView />
+      {isEditingMembers ? <EditingMembersView /> : <NonEditingMembersView />}
     </PageBlock>
   );
 };

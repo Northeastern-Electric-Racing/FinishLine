@@ -138,7 +138,7 @@ export default class TeamsService {
     });
 
     if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
-      throw new HttpException(400, 'team head cannot be a member!');
+      throw new HttpException(400, 'Error: Team head cannot be a member');
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
