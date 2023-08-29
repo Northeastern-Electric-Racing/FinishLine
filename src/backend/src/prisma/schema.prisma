@@ -423,11 +423,12 @@ model Vendor {
 }
 
 model Expense_Type {
-  expenseTypeId String                  @id @default(uuid())
-  name          String
-  code          Int
-  allowed       Boolean
-  requests      Reimbursement_Request[]
+  expenseTypeId        String                  @id @default(uuid())
+  name                 String
+  code                 Int
+  allowed              Boolean
+  allowedRefundSources Club_Accounts[]
+  requests             Reimbursement_Request[]
 }
 
 model Reimbursement {
