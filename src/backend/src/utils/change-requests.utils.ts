@@ -1,12 +1,12 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma } from '@prisma/client';
+import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
-import { buildChangeDetail } from './utils';
 import { sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { buildChangeDetail } from './changes.utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -164,4 +164,13 @@ export const calculateChangeRequestStatus = (
     return ChangeRequestStatus.Denied;
   }
   return ChangeRequestStatus.Open;
+};
+
+/**
+ * Determines whether all the change requests in an array of change requests have been reviewed
+ * @param changeRequests the given array of change requests
+ * @returns true if all the change requests have been reviewed, and false otherwise
+ */
+export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
+  return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };

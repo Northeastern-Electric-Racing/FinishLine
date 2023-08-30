@@ -6,22 +6,19 @@
 import { Construction, Work } from '@mui/icons-material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Folder, FormatListNumbered, CoPresent } from '@mui/icons-material';
-import Link from '@mui/material/Link';
 import { Project, WorkPackage, wbsPipe } from 'shared';
 import { datePipe, dollarsPipe, fullNamePipe, weeksPipe } from '../../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material';
 import WorkPackageSummary from './WorkPackageSummary';
 import DetailDisplay from '../../../components/DetailDisplay';
+import LinkView from '../../../components/Link/LinkView';
 
 interface ProjectDetailsProps {
   project: Project;
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
-  const theme = useTheme();
   return (
     <Grid container display="flex" flexDirection="row" sx={{ mt: '10px' }}>
       <Grid item sm={12} md={6} sx={{ mb: 2 }}>
@@ -94,29 +91,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
               Links
             </Typography>
           </Grid>
-          <Grid item xs={6} display="flex" alignItems="center">
-            <Folder sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.gDriveLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Google Drive
-            </Link>
-          </Grid>
-
-          <Grid item xs={6} display="flex" alignItems="center">
-            <CoPresent sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            {/* TODO: slide deck changed to confluence in frontend - needs to be updated in the backend */}
-            <Link href={project.slideDeckLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              Confluence
-            </Link>
-          </Grid>
-          <Grid item xs={6} display="flex" alignItems="center">
-            <FormatListNumbered sx={{ fontSize: 22, color: theme.palette.text.primary }} />
-            <Link href={project.bomLink!} target="_blank" underline="always" fontSize={19} sx={{ pl: 1 }}>
-              BOM
-            </Link>
-          </Grid>
+          {project.links.map((link) => (
+            <Grid item xs={4} key={link.linkId}>
+              <LinkView link={link} />
+            </Grid>
+          ))}
         </Grid>
       </Grid>
-
       <Grid container item display="flex">
         <Grid item xs={12}>
           <Typography

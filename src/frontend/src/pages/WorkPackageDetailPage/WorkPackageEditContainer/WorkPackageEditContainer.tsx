@@ -15,7 +15,6 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
@@ -26,6 +25,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { useSingleProject } from '../../../hooks/projects.hooks';
 import PageLayout from '../../../components/PageLayout';
+import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -162,7 +162,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       }
     }
   };
-
   const projectWbsString: string = projectWbsPipe(workPackage.wbsNum);
 
   return (
@@ -172,7 +171,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      headerRight={<ReactHookTextField name="crId" control={control} label="Change Request Id" type="number" size="small" />}
+      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
     >
       <form
         id="work-package-edit-form"

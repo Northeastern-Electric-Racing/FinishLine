@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Project, WbsNumber } from 'shared';
+import { LinkType, Project, WbsNumber } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -12,7 +12,8 @@ import {
   getSingleProject,
   setProjectTeam,
   deleteProject,
-  toggleProjectFavorite
+  toggleProjectFavorite,
+  getAllLinkTypes
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -133,4 +134,15 @@ export const useToggleProjectFavorite = (wbsNumber: WbsNumber) => {
       }
     }
   );
+};
+
+/**
+ * custom react hook to get all of the link types
+ * @returns gets all the link types from the database
+ */
+export const useAllLinkTypes = () => {
+  return useQuery<LinkType[], Error>(['linkTypes'], async () => {
+    const { data } = await getAllLinkTypes();
+    return data;
+  });
 };

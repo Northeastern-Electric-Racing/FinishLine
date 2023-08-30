@@ -13,14 +13,14 @@ import PageLayout from '../../components/PageLayout';
 const TeamsPage: React.FC = () => {
   const { isLoading, isError, data: teams, error } = useAllTeams();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !teams) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
   return (
     <PageLayout title="Teams">
       <Grid container spacing={2}>
-        {teams?.map((team) => (
+        {teams.map((team) => (
           <Grid item key={team.teamId}>
             <TeamSummary team={team} />
           </Grid>

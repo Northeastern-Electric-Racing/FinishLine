@@ -3,13 +3,60 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsElementStatus } from 'shared';
+import { Link, LinkType, Project, WbsElementStatus } from 'shared';
 import { exampleTask1 } from './tasks.stub';
 import { exampleTeam } from './teams.stub';
 import { exampleAdminUser, exampleLeadershipUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufacturingWorkPackage } from './work-packages.stub';
 
+const exampleConfluenceLinkType: LinkType = {
+  name: 'Confluence',
+  dateCreated: new Date('05/26/21'),
+  creator: exampleAdminUser,
+  iconName: 'confluence',
+  required: true
+};
+
+const exampleBomLinkType: LinkType = {
+  name: 'BOM',
+  dateCreated: new Date('05/26/21'),
+  creator: exampleAdminUser,
+  iconName: 'bom',
+  required: true
+};
+
+const exampleGDriveLinkType: LinkType = {
+  name: 'Google Drive',
+  dateCreated: new Date('05/26/21'),
+  creator: exampleAdminUser,
+  iconName: 'google-drive',
+  required: true
+};
+
+const exampleLinks: Link[] = [
+  {
+    linkId: '1',
+    linkType: exampleConfluenceLinkType,
+    url: 'https://www.google.com',
+    dateCreated: new Date('05/26/21'),
+    creator: exampleAdminUser
+  },
+  {
+    linkId: '2',
+    linkType: exampleBomLinkType,
+    url: 'https://www.google.com',
+    dateCreated: new Date('05/26/21'),
+    creator: exampleAdminUser
+  },
+  {
+    linkId: '3',
+    linkType: exampleGDriveLinkType,
+    url: 'https://www.google.com',
+    dateCreated: new Date('05/26/21'),
+    creator: exampleAdminUser
+  }
+];
 export const exampleProject1: Project = {
   id: 4,
   wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
@@ -18,13 +65,11 @@ export const exampleProject1: Project = {
   status: WbsElementStatus.Active,
   projectLead: exampleProjectLeadUser,
   projectManager: exampleLeadershipUser,
-  gDriveLink: 'https://youtu.be/dQw4w9WgXcQ',
-  taskListLink: 'https://youtu.be/dQw4w9WgXcQ',
-  slideDeckLink: 'https://youtu.be/dQw4w9WgXcQ',
-  bomLink: 'https://youtu.be/dQw4w9WgXcQ',
+  links: exampleLinks,
   summary: 'Make an impact attenuator',
   budget: 124,
   rules: ['EV3.5.2'],
+  teams: [],
   goals: [
     {
       id: 15,
@@ -71,10 +116,7 @@ export const exampleProject2: Project = {
   status: WbsElementStatus.Inactive,
   projectLead: exampleProjectLeadUser,
   projectManager: exampleProjectManagerUser,
-  gDriveLink: 'https://youtu.be/dQw4w9WgXcQ',
-  taskListLink: 'https://youtu.be/dQw4w9WgXcQ',
-  slideDeckLink: 'https://youtu.be/dQw4w9WgXcQ',
-  bomLink: 'https://youtu.be/dQw4w9WgXcQ',
+  links: exampleLinks,
   summary: 'Do some bodywork',
   budget: 50,
   rules: ['T12.3.2', 'T8.2.6'],
@@ -98,7 +140,8 @@ export const exampleProject2: Project = {
   startDate: undefined,
   endDate: undefined,
   workPackages: [],
-  tasks: []
+  tasks: [],
+  teams: []
 };
 
 export const exampleProject3: Project = {
@@ -109,10 +152,7 @@ export const exampleProject3: Project = {
   status: WbsElementStatus.Active,
   projectLead: exampleLeadershipUser,
   projectManager: exampleProjectManagerUser,
-  gDriveLink: 'https://youtu.be/dQw4w9WgXcQ',
-  taskListLink: 'https://youtu.be/dQw4w9WgXcQ',
-  slideDeckLink: 'https://youtu.be/dQw4w9WgXcQ',
-  bomLink: 'https://youtu.be/dQw4w9WgXcQ',
+  links: exampleLinks,
   summary: 'Make a box for the battery',
   budget: 5000,
   rules: ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
@@ -142,7 +182,7 @@ export const exampleProject3: Project = {
   startDate: new Date('01/01/21'),
   endDate: new Date('01/22/21'),
   workPackages: [exampleResearchWorkPackage],
-  team: exampleTeam,
+  teams: [exampleTeam],
   tasks: [exampleTask1]
 };
 
@@ -154,13 +194,11 @@ export const exampleProject4: Project = {
   status: WbsElementStatus.Inactive,
   projectLead: exampleLeadershipUser,
   projectManager: exampleAdminUser,
-  gDriveLink: 'https://youtu.be/dQw4w9WgXcQ',
-  taskListLink: 'https://youtu.be/dQw4w9WgXcQ',
-  slideDeckLink: 'https://youtu.be/dQw4w9WgXcQ',
-  bomLink: 'https://youtu.be/dQw4w9WgXcQ',
+  links: exampleLinks,
   summary: 'Integrate the motor controller',
   budget: 0,
   rules: [],
+  teams: [],
   goals: [
     {
       id: 18,
@@ -192,13 +230,11 @@ export const exampleProject5: Project = {
   status: WbsElementStatus.Complete,
   projectLead: exampleProjectLeadUser,
   projectManager: exampleProjectManagerUser,
-  gDriveLink: 'https://youtu.be/dQw4w9WgXcQ',
-  taskListLink: 'https://youtu.be/dQw4w9WgXcQ',
-  slideDeckLink: 'https://youtu.be/dQw4w9WgXcQ',
-  bomLink: 'https://youtu.be/dQw4w9WgXcQ',
+  links: exampleLinks,
   summary: 'Harness the wiring',
   budget: 234,
   rules: ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
+  teams: [],
   goals: [
     {
       id: 19,

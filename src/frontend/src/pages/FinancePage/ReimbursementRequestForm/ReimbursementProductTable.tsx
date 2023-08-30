@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
-import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
 interface ReimbursementProductTableProps {
@@ -34,6 +34,7 @@ interface ReimbursementProductTableProps {
   }[];
   errors: FieldErrors<ReimbursementRequestFormInput>;
   control: Control<ReimbursementRequestFormInput, any>;
+  setValue: UseFormSetValue<ReimbursementRequestFormInput>;
 }
 
 const ListItem = styled('li')(({ theme }) => ({
@@ -46,7 +47,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   appendProduct,
   wbsElementAutocompleteOptions,
   control,
-  errors
+  errors,
+  setValue
 }) => {
   const uniqueWbsElementsWithProducts = new Map<
     string,
@@ -65,6 +67,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       uniqueWbsElementsWithProducts.set(wbs, [{ ...product, index: index }]);
     }
   });
+
+  const onCostBlurHandler = (value: number, index: number) => {
+    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
+  };
 
   return (
     <TableContainer>
@@ -120,6 +126,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 InputProps={{
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
+                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                 sx={{ width: '50%' }}
                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />

@@ -6,10 +6,9 @@
 import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers';
-import { User, UserPreview } from 'shared';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { fullNamePipe } from '../../../../utils/pipes';
-import { makeTeamList } from '../../../../utils/teams.utils';
+import { UserPreview } from 'shared';
+import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
+import ErrorPage from '../../../ErrorPage';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;
@@ -94,27 +93,21 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
 };
 
 export const AssigneeEdit = (params: GridRenderEditCellParams) => {
-  const { value, team, assignees, setAssignees } = params;
+  const { value, teams, assignees, setAssignees } = params;
 
-  if (!team) return <LoadingIndicator />;
+  if (!teams || teams.length === 0) return <ErrorPage message="Teams Not Configured Correctly" />;
 
-  const userToAutocompleteOption = (user: User): { label: string; id: number } => {
-    return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
-  };
+  const teamMembers = getTaskAssigneeOptions(teams);
 
-  const options = makeTeamList(team)
-    .sort((a: any, b: any) => (a.firstName > b.firstName ? 1 : -1))
-    .map(userToAutocompleteOption);
+  const autocompleteOptions = teamMembers.map(userToAutocompleteOption);
 
   const handleValueChange = (
-    _: any,
     newValue: {
       label: string;
       id: number;
     }[]
   ) => {
-    const teamMembers = makeTeamList(team);
-    const users = newValue.map((user) => teamMembers.find((o: any) => o.userId === user.id)!);
+    const users = newValue.map((user) => teamMembers.find((o) => o.userId === user.id)!);
     setAssignees(users);
   };
 
@@ -132,10 +125,10 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
       filterSelectedOptions
       multiple
       id="tags-standard"
-      options={options}
+      options={autocompleteOptions}
       getOptionLabel={(option) => option.label}
-      onChange={handleValueChange}
-      value={assignees.map((u: UserPreview) => options.find((o: any) => o.id === u.userId)!)}
+      onChange={(_, value) => handleValueChange(value)}
+      value={assignees.map((u: UserPreview) => autocompleteOptions.find((o: any) => o.id === u.userId)!)}
       // TODO: make assignees an array with a custom method
       renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
       ref={handleRef}

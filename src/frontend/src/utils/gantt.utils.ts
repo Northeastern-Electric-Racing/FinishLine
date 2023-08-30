@@ -40,7 +40,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status.toString() === ganttFilters.status;
   };
   const teamCheck = (project: Project) => {
-    return project.team === undefined ? decodedTeam === NO_TEAM : project.team?.teamName === decodedTeam;
+    return getProjectTeamsName(project).includes(decodedTeam);
   };
   const startCheck = (project: Project) => {
     return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
@@ -105,8 +105,12 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
   };
 };
 
+export const getProjectTeamsName = (project: Project): string => {
+  return project.teams.length === 0 ? NO_TEAM : project.teams.map((team) => team.teamName).join(', ');
+};
+
 export const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
-  const teamName = project.team?.teamName || NO_TEAM;
+  const teamName = getProjectTeamsName(project);
 
   const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),

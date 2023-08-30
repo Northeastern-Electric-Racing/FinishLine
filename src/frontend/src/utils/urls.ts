@@ -29,6 +29,7 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
+const projectsLinkTypes = () => `${projects()}/link-types`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -121,6 +122,7 @@ export const apiUrls = {
   projectsSetTeam,
   projectsDelete,
   projectsToggleFavorite,
+  projectsLinkTypes,
 
   tasksCreate,
   tasks,

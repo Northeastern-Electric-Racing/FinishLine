@@ -116,3 +116,11 @@ export const wbsNamePipe = (wbsElement: WbsElement) => {
 export const undefinedPipe = (element: any) => {
   return element != null ? element : '-----';
 };
+
+export const dateUndefinedPipe = (date?: Date): string => {
+  return date ? datePipe(date) : '-----';
+};
+
+export const centsToDollar = (cents: number) => {
+  return (cents / 100.0).toFixed(2);
+};
