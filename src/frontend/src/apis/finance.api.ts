@@ -15,7 +15,13 @@ import {
   vendorTransformer
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFImage } from 'pdf-lib';
+
+enum AllowedFileType {
+  JPEG = 'image/jpeg',
+  PNG = 'image/png',
+  PDF = 'application/pdf'
+}
 
 /**
  * Upload a picture of a receipt
@@ -174,17 +180,7 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
 export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => {
   const pdfDoc = await PDFDocument.create();
 
-  // Embed the image in the PDF document
-  const promises = blobData.map(async (blob: Blob) => {
-    const arrayBuffer = await blob.arrayBuffer();
-    let image;
-    if (blob.type === 'image/jpeg') {
-      image = await pdfDoc.embedJpg(arrayBuffer);
-    } else if (blob.type === 'image/png') {
-      image = await pdfDoc.embedPng(arrayBuffer);
-    } else {
-      throw new Error(blob.type + ' type not supported');
-    }
+  const addImage = (image: PDFImage) => {
     const page = pdfDoc.addPage([image.width, image.height]);
     const { width, height } = page.getSize();
     page.drawImage(image, {
@@ -193,6 +189,35 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
       width,
       height
     });
+  };
+
+  // Embed the image in the PDF document
+  const promises = blobData.map(async (blob: Blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    switch (blob.type) {
+      case AllowedFileType.JPEG: {
+        const image = await pdfDoc.embedJpg(arrayBuffer);
+        addImage(image);
+        break;
+      }
+      case AllowedFileType.PNG: {
+        const image = await pdfDoc.embedPng(arrayBuffer);
+        addImage(image);
+        break;
+      }
+      case AllowedFileType.PDF: {
+        const newPdf = await PDFDocument.load(arrayBuffer);
+        const newPages = await pdfDoc.copyPages(newPdf, newPdf.getPageIndices());
+        // Add the pages to the main PDF
+        newPages.forEach((page) => {
+          pdfDoc.addPage(page);
+        });
+        break;
+      }
+      default: {
+        throw new Error(blob.type + ' type not supported');
+      }
+    }
   });
 
   await Promise.all(promises);
