@@ -3,7 +3,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { centsToDollar, datePipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
+import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
@@ -59,7 +59,7 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                <TableCell align="center">{!!row.dateDelivered ? datePipe(row.dateDelivered) : '-----'}</TableCell>
+                <TableCell align="center">{dateUndefinedPipe(row.dateDelivered)}</TableCell>
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
               </TableRow>
             ))}
