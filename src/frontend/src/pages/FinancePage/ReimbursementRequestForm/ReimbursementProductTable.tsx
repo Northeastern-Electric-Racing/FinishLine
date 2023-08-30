@@ -69,7 +69,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   });
 
   const onCostBlurHandler = (value: number, index: number) => {
-    setValue(`reimbursementProducts.${index}.cost`, parseInt(value.toFixed(2)));
+    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
 
   return (

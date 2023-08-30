@@ -224,7 +224,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       });
                     } else {
                       toast.error('File must be less than 1 MB', 5000);
-                      document.getElementById('receipt-image')!.value = '';
+                      document.getElementById('receipt-image')!.innerHTML = '';
                     }
                   }
                 }}
