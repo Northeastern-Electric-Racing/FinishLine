@@ -5,13 +5,13 @@
 
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { MUILinkItem } from '../../utils/types';
 import { Breadcrumbs } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { LinkItem } from '../../utils/types';
 
 interface PageTitleProps {
   currentPageTitle: string;
-  previousPages: MUILinkItem[];
+  previousPages: LinkItem[];
 }
 
 // Common component for adding breadcrumbs to a page
