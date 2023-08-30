@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -73,7 +73,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   };
 
   const EditingHeadView = () => (
-    <Grid container direction={'row'} spacing={1}>
+    <Grid container spacing={1}>
       <Grid item>
         <Typography sx={{ fontWeight: 'bold' }} display="inline">
           Head:
@@ -90,7 +90,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           value={head}
         />
       </Grid>
-      <Grid container direction={'row'} xs={4} md={2} lg={1}>
+      <Grid container xs={3} md={2} lg={1}>
         <Grid item>
           <IconButton children={<Save />} onClick={submitHead} />
         </Grid>
@@ -102,12 +102,12 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   );
 
   const EditingMembersView = () => (
-    <Grid container direction={'column'}>
+    <Box>
       <Typography sx={{ fontWeight: 'bold' }} display="inline">
         Members:
       </Typography>
       <Grid container direction={'row'}>
-        <Grid item xs={8} md={10} lg={11}>
+        <Grid item xs={9} md={10} lg={11}>
           <Autocomplete
             isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
@@ -120,7 +120,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
             renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
           />
         </Grid>
-        <Grid container xs={4} md={2} lg={1}>
+        <Grid container xs={3} md={2} lg={1}>
           <Grid item>
             <IconButton children={<Save />} onClick={submitMembers} />
           </Grid>
@@ -129,11 +129,11 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
           </Grid>
         </Grid>
       </Grid>
-    </Grid>
+    </Box>
   );
 
   const NonEditingHeadView = () => (
-    <Grid container flexDirection={'row'}>
+    <Grid container>
       <Grid item>
         <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
       </Grid>
@@ -148,11 +148,11 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   );
 
   const NonEditingMembersView = () => (
-    <Grid container direction={'row'}>
+    <Grid container>
       <Grid item xs={11} lg="auto">
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
-      <Grid item xs={1} justifySelf={'left'} mt={-1}>
+      <Grid item xs={1} mt={-1}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
       </Grid>
     </Grid>
