@@ -117,7 +117,7 @@ export const undefinedPipe = (element: any) => {
   return element != null ? element : '-----';
 };
 
-export const dateUndefinedPipe = (date: Date | null | undefined): string => {
+export const dateUndefinedPipe = (date?: Date): string => {
   return date ? datePipe(date) : '-----';
 };
 
