@@ -18,11 +18,10 @@ import {
   allChangeRequestsReviewed
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
-import { buildChangeDetail } from '../utils/utils';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
-import { createChange } from '../utils/work-packages.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { buildChangeDetail, createChange } from '../utils/changes.utils';
 import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
 
 export default class ChangeRequestsService {
@@ -108,7 +107,14 @@ export default class ChangeRequestsService {
       // else if cr is for a wp: update the budget and duration based off of the proposed solution
       if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
         const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
-        const change = createChange('Budget', foundCR.wbsElement.project.budget, newBudget, crId, reviewer.userId);
+        const change = createChange(
+          'Budget',
+          foundCR.wbsElement.project.budget,
+          newBudget,
+          crId,
+          reviewer.userId,
+          foundCR.wbsElementId
+        );
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
@@ -136,8 +142,15 @@ export default class ChangeRequestsService {
 
         // create changes that reflect the new budget and duration
         const changes = [
-          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId),
-          createChange('Duration', foundCR.wbsElement.workPackage.duration, updatedDuration, crId, reviewer.userId)
+          createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId, foundCR.wbsElementId),
+          createChange(
+            'Duration',
+            foundCR.wbsElement.workPackage.duration,
+            updatedDuration,
+            crId,
+            reviewer.userId,
+            foundCR.wbsElementId
+          )
         ];
 
         // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
@@ -382,7 +395,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -390,12 +403,15 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdCR.wbsElement.workPackage?.project.team;
-    if (team) {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
-        ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+    const teams = createdCR.wbsElement.workPackage?.project.teams;
+
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
+          ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
 
     return createdCR.crId;
@@ -472,7 +488,7 @@ export default class ChangeRequestsService {
           include: {
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -480,12 +496,14 @@ export default class ChangeRequestsService {
       }
     });
 
-    const team = createdChangeRequest.wbsElement.workPackage?.project.team;
-    if (team) {
-      const slackMsg =
-        `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-        ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-      await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+    const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+          ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+      });
     }
 
     return createdChangeRequest.crId;
@@ -549,10 +567,10 @@ export default class ChangeRequestsService {
       include: {
         wbsElement: {
           include: {
-            project: { include: { team: true, wbsElement: true } },
+            project: { include: { teams: true, wbsElement: true } },
             workPackage: {
               include: {
-                project: { include: { team: true, wbsElement: true } }
+                project: { include: { teams: true, wbsElement: true } }
               }
             }
           }
@@ -561,11 +579,14 @@ export default class ChangeRequestsService {
     });
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
-    if (project?.team) {
-      const slackMsg =
-        `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
-        `for the ${project.wbsElement.name} project`;
-      await sendSlackChangeRequestNotification(project.team, slackMsg, createdCR.crId);
+    const teams = project?.teams;
+    if (teams && teams.length > 0) {
+      teams.forEach(async (team) => {
+        const slackMsg =
+          `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
+          `for the ${project.wbsElement.name} project`;
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+      });
     }
 
     return createdCR.crId;

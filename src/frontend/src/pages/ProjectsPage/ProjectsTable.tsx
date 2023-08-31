@@ -12,6 +12,7 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
+import { getProjectTeamsName } from '../../utils/gantt.utils';
 
 /**
  * Table of all projects.
@@ -135,7 +136,7 @@ const ProjectsTable: React.FC = () => {
             carNumber: v.wbsNum.carNumber,
             projectLead: fullNamePipe(v.projectLead),
             projectManager: fullNamePipe(v.projectManager),
-            team: v.team?.teamName || 'No Team'
+            team: getProjectTeamsName(v)
           })) || []
         }
         columns={columns}

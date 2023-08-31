@@ -56,7 +56,7 @@ const styles = {
 };
 
 const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
-  team,
+  teams,
   tasks,
   editTaskPermissions,
   tableRowCount,
@@ -130,7 +130,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   };
 
   const renderAssigneeEdit = (params: GridRenderEditCellParams) => {
-    return <AssigneeEdit {...params} team={team} assignees={assignees} setAssignees={setAssignees} />;
+    return <AssigneeEdit {...params} teams={teams} assignees={assignees} setAssignees={setAssignees} />;
   };
 
   const renderEditPriority = (params: GridRenderEditCellParams) => {

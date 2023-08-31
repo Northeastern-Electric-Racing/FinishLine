@@ -8,8 +8,8 @@ import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
 import { WorkPackageStage } from 'shared';
 import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
 import WorkPackagesService from '../../services/work-packages.services';
-import { descBulletConverter } from '../../utils/utils';
 import prisma from '../prisma';
+import { descBulletConverter } from '../../utils/description-bullets.utils';
 
 /**
  * Creates a work package with the given data using service functions. This has to be done by:

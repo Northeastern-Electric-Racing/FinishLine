@@ -29,6 +29,7 @@ const projectsEdit = () => `${projects()}/edit`;
 const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
+const projectsLinkTypes = () => `${projects()}/link-types`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -68,6 +69,7 @@ const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/prop
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 
 /**************** Description Bullet Endpoints ****************/
@@ -120,6 +122,7 @@ export const apiUrls = {
   projectsSetTeam,
   projectsDelete,
   projectsToggleFavorite,
+  projectsLinkTypes,
 
   tasksCreate,
   tasks,
@@ -149,6 +152,7 @@ export const apiUrls = {
   teams,
   teamsById,
   teamsSetMembers,
+  teamsSetHead,
   teamsSetDescription,
 
   descriptionBulletsCheck,

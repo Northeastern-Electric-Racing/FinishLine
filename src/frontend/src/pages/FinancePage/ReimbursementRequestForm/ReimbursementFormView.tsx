@@ -28,6 +28,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -72,6 +73,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   setValue
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const toast = useToast();
   const products = watch(`reimbursementProducts`);
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
 
@@ -213,15 +215,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <input
                 onChange={(e) => {
                   if (e.target.files) {
-                    receiptAppend({
-                      file: e.target.files[0],
-                      name: e.target.files[0].name,
-                      googleFileId: ''
-                    });
+                    const file = e.target.files[0];
+                    if (file.size < 1000000) {
+                      receiptAppend({
+                        file: e.target.files[0],
+                        name: e.target.files[0].name,
+                        googleFileId: ''
+                      });
+                    } else {
+                      toast.error('File must be less than 1 MB', 5000);
+                      document.getElementById('receipt-image')!.innerHTML = '';
+                    }
                   }
                 }}
                 type="file"
-                accept="image/png, image/jpeg"
+                id="receipt-image"
+                accept="image/png, image/jpeg, .pdf"
                 name="receiptFiles"
               />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>

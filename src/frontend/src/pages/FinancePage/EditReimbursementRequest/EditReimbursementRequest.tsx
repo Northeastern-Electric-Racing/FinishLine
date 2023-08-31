@@ -31,7 +31,7 @@ const EditReimbursementRequestPage: React.FC = () => {
     await editReimbursementRequest({ ...data, receiptPictures: filesToKeep });
     await uploadReceipts({
       id: reimbursementRequest.reimbursementRequestId,
-      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file)
+      files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
     });
     return reimbursementRequest.reimbursementRequestId;
   };

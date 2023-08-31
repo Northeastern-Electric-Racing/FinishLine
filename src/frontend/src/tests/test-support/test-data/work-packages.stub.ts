@@ -38,6 +38,7 @@ export const exampleResearchWorkPackage: WorkPackage = {
   endDate: new Date('01/22/21'),
   duration: 3,
   blockedBy: [],
+  links: [],
   expectedActivities: [
     {
       id: 1,
@@ -88,6 +89,7 @@ export const exampleDesignWorkPackage: WorkPackage = {
   endDate: new Date('02/26/21'),
   duration: 5,
   blockedBy: [exampleWbsWorkPackage1],
+  links: [],
   expectedActivities: [
     {
       id: 3,
@@ -153,6 +155,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   endDate: new Date('01/15/21'),
   duration: 2,
   blockedBy: [exampleWbsProject1, exampleWbsProject2],
+  links: [],
   expectedActivities: [
     {
       id: 6,
@@ -213,6 +216,7 @@ export const exampleIntegrationWorkPackage: WorkPackage = {
   endDate: new Date('2022-02-27'),
   duration: 1,
   blockedBy: [exampleWbsWorkPackage3],
+  links: [],
   expectedActivities: [
     {
       id: 10,
@@ -267,6 +271,7 @@ export const exampleWorkPackage5: WorkPackage = {
   endDate: new Date('2022-02-28'),
   duration: 1,
   blockedBy: [],
+  links: [],
   expectedActivities: [
     {
       id: 13,

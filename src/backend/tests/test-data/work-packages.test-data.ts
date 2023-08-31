@@ -38,6 +38,7 @@ export const sharedWorkPackage: WorkPackage = {
   expectedActivities: [],
   deliverables: [],
   blockedBy: [],
+  links: [],
   projectManager: undefined,
   projectLead: undefined,
   status: WbsElementStatus.Active,

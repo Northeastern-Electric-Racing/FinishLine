@@ -4,12 +4,12 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import { testLinkItems } from '../../test-support/test-data/test-utils.stub';
-import { MUILinkItem } from '../../../utils/types';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
+import { LinkItem } from '../../../utils/types';
+import { Home } from '@mui/icons-material';
 
 // Render component under test
-const renderComponent = (title = 'test', pages: MUILinkItem[] = []) => {
+const renderComponent = (title = 'test', pages: LinkItem[] = []) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
@@ -20,7 +20,21 @@ const renderComponent = (title = 'test', pages: MUILinkItem[] = []) => {
 
 describe('page-breadcrumbs component', () => {
   it('renders provided pages', () => {
-    renderComponent('hello there', testLinkItems);
+    renderComponent('hello there', [
+      {
+        name: 'Home',
+        icon: <Home />,
+        route: '/'
+      },
+      {
+        name: 'Projects',
+        route: '/projects'
+      },
+      {
+        name: 'Change Requests',
+        route: '/change-requests'
+      }
+    ]);
 
     expect(screen.getByText('hello there')).toBeInTheDocument();
     expect(screen.getAllByText('Home').length).toEqual(1);

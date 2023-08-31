@@ -1,6 +1,8 @@
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
-import { Project, Task, TaskPriority, TaskStatus, TeamPreview, UserPreview } from 'shared';
+import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
 import { FormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskListNotesModal';
+import { fullNamePipe } from './pipes';
+import { makeTeamList } from './teams.utils';
 
 //this is needed to fix some weird bug with getActions()
 //see comment by michaldudak commented on Dec 5, 2022
@@ -36,7 +38,7 @@ export interface TaskListTabPanelProps {
 }
 
 export interface TaskListDataGridProps {
-  team: TeamPreview;
+  teams: TeamPreview[];
   tasks: Task[];
   editTaskPermissions: (task: Task) => boolean;
   tableRowCount: string;
@@ -58,4 +60,12 @@ export const transformDate = (date: Date) => {
   const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
   const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
   return `${date.getFullYear().toString()}/${month}/${day}`;
+};
+
+export const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+  return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
+};
+
+export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
+  return teams.map((team) => makeTeamList(team)).flat();
 };

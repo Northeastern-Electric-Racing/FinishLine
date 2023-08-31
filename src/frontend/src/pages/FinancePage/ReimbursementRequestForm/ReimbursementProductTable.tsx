@@ -68,8 +68,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   });
 
-  const onCostBlurHandler = (value: number, name: string) => {
-    setValue(name, value.toFixed(2));
+  const onCostBlurHandler = (value: number, index: number) => {
+    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
 
   return (
@@ -126,12 +126,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 InputProps={{
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
-                                onBlur={(e) =>
-                                  onCostBlurHandler(
-                                    parseFloat(e.target.value),
-                                    `reimbursementProducts.${product.index}.cost`
-                                  )
-                                }
+                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                 sx={{ width: '50%' }}
                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />

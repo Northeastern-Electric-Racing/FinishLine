@@ -173,17 +173,25 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
-    huskies.teamId,
+    [huskies.teamId],
     joeShmoe,
     124,
     ['EV3.5.2'],
     ['Decrease size by 90% from 247 cubic inches to 24.7 cubic inches'],
     ['Capable of absorbing 5000N in a head-on collision'],
     ['Cannot go further towards the rear of the car than the front roll hoop'],
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
     thomasEmrax.userId,
     joeBlow.userId
   );
@@ -195,17 +203,25 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Bodywork',
     'Develop rules-compliant bodywork',
-    huskies.teamId,
+    [huskies.teamId],
     thomasEmrax,
     50,
     ['T12.3.2', 'T8.2.6'],
     ['Decrease weight by 90% from 4.8 pounds to 0.48 pounds'],
     ['Provides removable section for easy access to the pedal box'],
     ['Compatible with a side-pod chassis design'],
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
     joeShmoe.userId,
     thomasEmrax.userId
   );
@@ -217,17 +233,25 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Battery Box',
     'Develop rules-compliant battery box.',
-    huskies.teamId,
+    [huskies.teamId],
     thomasEmrax,
     5000,
     ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
     ['Decrease weight by 60% from 100 pounds to 40 pounds'],
     ['Provides 50,000 Wh of energy discharge'],
     ['Maximum power consumption of 25 watts from the low voltage system'],
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
     joeShmoe.userId,
     thomasEmrax.userId
   );
@@ -239,17 +263,25 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
-    huskies.teamId,
+    [huskies.teamId],
     thomasEmrax,
     0,
     [],
     ['Power consumption stays under 10 watts from the low voltage system'],
     ['Capable of interfacing via I2C or comparable serial interface.'],
     ['Must be compatible with chain drive', 'Must be well designed and whatnot'],
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
     joeShmoe.userId,
     joeBlow.userId
   );
@@ -261,17 +293,25 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
-    huskies.teamId,
+    [huskies.teamId],
     thomasEmrax,
     234,
     ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
     ['Decrease installed component costs by 63% from $2,700 to $1000'],
     ['All wires are bundled and secured to the chassis at least every 6 inches', 'Wires are not wireless'],
     ['Utilizes 8020 frame construction'],
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
-    'https://youtu.be/dQw4w9WgXcQ',
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
     thomasEmrax.userId,
     joeBlow.userId
   );
