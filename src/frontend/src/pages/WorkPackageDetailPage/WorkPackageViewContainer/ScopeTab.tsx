@@ -1,5 +1,5 @@
 import { WbsElementStatus, WorkPackage, isGuest } from 'shared';
-import CheckList from '../../../components/CheckList';
+import CheckList, { CheckListItem } from '../../../components/CheckList';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
 const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
@@ -13,7 +13,7 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
         title={'Expected Activities'}
         items={workPackage.expectedActivities
           .filter((ea) => !ea.dateDeleted)
-          .map((ea) => {
+          .map((ea): CheckListItem => {
             return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
           })}
         isDisabled={checkListDisabled}
@@ -23,7 +23,7 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
           title={'Deliverables'}
           items={workPackage.deliverables
             .filter((del) => !del.dateDeleted)
-            .map((del) => {
+            .map((del): CheckListItem => {
               return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
             })}
           isDisabled={checkListDisabled}
