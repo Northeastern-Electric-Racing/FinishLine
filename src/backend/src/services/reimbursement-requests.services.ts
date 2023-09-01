@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -456,13 +456,20 @@ export default class ReimbursementRequestService {
    * @param allowed whether or not this expense type is allowed
    * @returns the created expense type
    */
-  static async createExpenseType(submitter: User, name: string, code: number, allowed: boolean) {
+  static async createExpenseType(
+    submitter: User,
+    name: string,
+    code: number,
+    allowed: boolean,
+    allowedRefundSources: Club_Accounts[]
+  ) {
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
     const expense = await prisma.expense_Type.create({
       data: {
         name,
         allowed,
-        code
+        code,
+        allowedRefundSources
       }
     });
 
@@ -478,7 +485,14 @@ export default class ReimbursementRequestService {
    * @param submitter the person editing expense type code number
    * @returns the updated expense type
    */
-  static async editExpenseType(expenseTypeId: string, code: number, name: string, allowed: boolean, submitter: User) {
+  static async editExpenseType(
+    expenseTypeId: string,
+    code: number,
+    name: string,
+    allowed: boolean,
+    submitter: User,
+    allowedRefundSources: Club_Accounts[]
+  ) {
     if (!isHead(submitter.role))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
 
@@ -493,7 +507,8 @@ export default class ReimbursementRequestService {
       data: {
         name,
         code,
-        allowed
+        allowed,
+        allowedRefundSources
       }
     });
 

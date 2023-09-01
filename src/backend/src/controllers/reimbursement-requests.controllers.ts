@@ -162,9 +162,15 @@ export default class ReimbursementRequestsController {
 
   static async createExpenseType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, code, allowed } = req.body;
+      const { name, code, allowed, allowedRefundSources } = req.body;
       const user = await getCurrentUser(res);
-      const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
+      const createdExpenseType = await ReimbursementRequestService.createExpenseType(
+        user,
+        name,
+        code,
+        allowed,
+        allowedRefundSources
+      );
       res.status(200).json(createdExpenseType);
     } catch (error: unknown) {
       next(error);
@@ -265,14 +271,15 @@ export default class ReimbursementRequestsController {
   static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { expenseTypeId } = req.params;
-      const { name, code, allowed } = req.body;
+      const { name, code, allowed, allowedRefundSources } = req.body;
       const submitter = await getCurrentUser(res);
       const expenseTypeUpdated = await ReimbursementRequestService.editExpenseType(
         expenseTypeId,
         code,
         name,
         allowed,
-        submitter
+        submitter,
+        allowedRefundSources
       );
       res.status(200).json(expenseTypeUpdated);
     } catch (error: unknown) {
