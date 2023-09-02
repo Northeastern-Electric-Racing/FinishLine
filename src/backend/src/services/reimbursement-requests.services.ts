@@ -128,6 +128,10 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
+    if (!expenseType.allowedRefundSources.includes(account)) {
+      throw new HttpException(400, 'Expense type is not paired with acceptable refund source account');
+    }
+
     const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
@@ -259,6 +263,9 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
     if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
+    if (!expenseType.allowedRefundSources.includes(account)) {
+      throw new HttpException(400, 'Expense type is not paired with acceptable refund source account');
+    }
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
