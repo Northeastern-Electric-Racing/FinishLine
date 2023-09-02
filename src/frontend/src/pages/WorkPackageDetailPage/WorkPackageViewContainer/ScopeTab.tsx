@@ -14,7 +14,7 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
         items={workPackage.expectedActivities
           .filter((ea) => !ea.dateDeleted)
           .map((ea): CheckListItem => {
-            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
+            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateChecked: ea.dateChecked };
           })}
         isDisabled={checkListDisabled}
       />
@@ -24,7 +24,7 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
           items={workPackage.deliverables
             .filter((del) => !del.dateDeleted)
             .map((del): CheckListItem => {
-              return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
+              return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateChecked: del.dateChecked };
             })}
           isDisabled={checkListDisabled}
         />

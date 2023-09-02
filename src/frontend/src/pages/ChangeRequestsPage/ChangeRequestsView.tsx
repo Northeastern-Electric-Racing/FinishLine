@@ -34,8 +34,10 @@ const ChangeRequestsView: React.FC = () => {
       tabs={
         <NERTabs
           setTab={setTabIndex}
-          tabUrlValues={['overview', 'all']}
-          tabNames={['Overview', 'All Change Requests']}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'all', tabName: 'All Change Requests' }
+          ]}
           baseUrl={routes.CHANGE_REQUESTS}
           defaultTab="overview"
           id="cr-tabs"

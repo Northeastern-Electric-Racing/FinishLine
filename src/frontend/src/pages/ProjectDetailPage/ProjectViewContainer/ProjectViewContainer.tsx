@@ -22,7 +22,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
-import ProjectChangesList from './ProjectChangesList';
 import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -30,6 +29,7 @@ import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
 import NERTabs from '../../../components/Tabs';
+import ChangesList from '../../../components/ChangesList';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -178,8 +178,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       tabs={
         <NERTabs
           setTab={setTab}
-          tabUrlValues={['overview', 'tasks', 'scope', 'gantt', 'changes']}
-          tabNames={['overview', 'tasks', 'scope', 'gantt', 'changes']}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'tasks', tabName: 'Tasks' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'gantt', tabName: 'Gantt' },
+            { tabUrlValue: 'changes', tabName: 'Changes' }
+          ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
           id="project-detail-tabs"
@@ -196,7 +201,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 3 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : (
-        <ProjectChangesList changes={project.changes} />
+        <ChangesList changes={project.changes} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

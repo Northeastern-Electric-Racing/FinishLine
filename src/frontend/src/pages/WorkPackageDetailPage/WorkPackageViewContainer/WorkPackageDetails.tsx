@@ -26,8 +26,10 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', mb: 2, mt: 1 }}>
-        <Typography variant="h5">Work Package Details</Typography>
-        <Box>{workPackage.stage ? <WorkPackageStageChip stage={workPackage.stage} /> : null}</Box>
+        <Typography sx={{ mr: '4px' }} variant="h5">
+          Work Package Details
+        </Typography>
+        {workPackage.stage && <WorkPackageStageChip stage={workPackage.stage} />}
         <WbsStatus status={workPackage.status} />
       </Box>
 
@@ -87,8 +89,13 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         {dependencies.length === 0 ? (
           <Typography>No Blockers</Typography>
         ) : (
-          dependencies.map((dep) => (
-            <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
+          dependencies.map((dep, idx) => (
+            <Link
+              key={`${dep.name}-${idx}`}
+              component={RouterLink}
+              to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`}
+              fontWeight="bold"
+            >
               {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
             </Link>
           ))

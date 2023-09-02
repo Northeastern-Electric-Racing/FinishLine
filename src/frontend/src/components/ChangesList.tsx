@@ -15,17 +15,10 @@ interface ChangesListProps {
   changes: ImplementedChange[];
 }
 
-const styles = {
-  bulletList: {
-    paddingLeft: '35px',
-    marginBottom: '0em'
-  }
-};
-
 const ChangesList: React.FC<ChangesListProps> = ({ changes }) => {
   return (
     <Box>
-      <ul style={styles.bulletList}>
+      <ul style={{ paddingLeft: '5px', marginBottom: '0em', listStyleType: 'none' }}>
         {changes.map((ic, idx) => (
           <li key={idx}>
             <Box style={{ display: 'flex', flexDirection: 'row' }}>

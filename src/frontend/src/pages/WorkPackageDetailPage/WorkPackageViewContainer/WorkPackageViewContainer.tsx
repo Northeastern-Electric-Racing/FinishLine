@@ -167,8 +167,11 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       tabs={
         <NERTabs
           setTab={setTabValue}
-          tabUrlValues={['overview', 'scope', 'changes']}
-          tabNames={['Overview', 'Scope', 'Changes']}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'changes', tabName: 'Changes' }
+          ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
           id="wp-detail-tabs"

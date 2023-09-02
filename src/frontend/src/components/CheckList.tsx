@@ -19,7 +19,7 @@ export type CheckListItem = {
   detail: string;
   resolved: boolean;
   user?: User;
-  dateAdded?: Date;
+  dateChecked?: Date;
 };
 
 interface CheckListProps {
@@ -79,7 +79,9 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
                 id={`check-item-${idx}`}
                 title={
                   check.resolved
-                    ? `${check.user?.firstName} ${check.user?.lastName} on ${check.dateAdded?.toLocaleDateString()}`
+                    ? `${check.user?.firstName} ${
+                        check.user?.lastName
+                      } checked on ${check.dateChecked?.toLocaleDateString()}`
                     : ''
                 }
                 placement="right"

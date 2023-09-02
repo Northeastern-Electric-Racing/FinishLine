@@ -23,8 +23,10 @@ const ProjectsPage: React.FC = () => {
       tabs={
         <NERTabs
           setTab={setTabIndex}
-          tabUrlValues={['overview', 'all']}
-          tabNames={['Overview', 'All Projects']}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'all', tabName: 'All Projects' }
+          ]}
           baseUrl={routes.PROJECTS}
           defaultTab="overview"
           id="project-tabs"
