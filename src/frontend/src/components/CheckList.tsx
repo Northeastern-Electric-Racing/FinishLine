@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/auth.hooks';
 import { Tooltip } from '@mui/material';
 import { User } from 'shared';
 import NERModal from './NERModal';
+import { fullNamePipe } from '../utils/pipes';
 
 export type CheckListItem = {
   id: number;
@@ -78,11 +79,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
               <Tooltip
                 id={`check-item-${idx}`}
                 title={
-                  check.resolved
-                    ? `${check.user?.firstName} ${
-                        check.user?.lastName
-                      } checked on ${check.dateChecked?.toLocaleDateString()}`
-                    : ''
+                  check.resolved ? `${fullNamePipe(check.user)} checked on ${check.dateChecked?.toLocaleDateString()}` : ''
                 }
                 placement="right"
                 arrow
