@@ -70,6 +70,7 @@ const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 
 /**************** Description Bullet Endpoints ****************/
@@ -153,6 +154,7 @@ export const apiUrls = {
   teams,
   teamsById,
   teamsSetMembers,
+  teamsSetHead,
   teamsSetDescription,
 
   descriptionBulletsCheck,

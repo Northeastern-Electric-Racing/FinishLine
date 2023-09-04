@@ -32,7 +32,8 @@
     "i": "yarn install && yarn prisma:generate",
     "istart": "yarn i && yarn start",
     "reset": "rimraf yarn.lock; rimraf src/frontend/node_modules; rimraf src/backend/node_modules; rimraf src/shared/node_modules; rimraf ./node_modules; ",
-    "install:hard": "yarn reset; yarn install; yarn prisma:generate"
+    "install:hard": "yarn reset; yarn install; yarn prisma:generate",
+    "tsc-check": "tsc --noEmit --project tsconfig.build.json"
   },
   "resolutions": {
     "@types/react": "17.0.1",

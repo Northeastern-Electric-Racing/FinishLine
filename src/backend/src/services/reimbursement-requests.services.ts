@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { Multer } from 'multer';
 import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,

@@ -3,34 +3,33 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../layouts/PageBlock';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
 import { useAuth } from '../hooks/auth.hooks';
 import { Tooltip } from '@mui/material';
 import { User } from 'shared';
 import NERModal from './NERModal';
+import { fullNamePipe } from '../utils/pipes';
 
 export type CheckListItem = {
   id: number;
   detail: string;
   resolved: boolean;
   user?: User;
-  dateAdded?: Date;
+  dateChecked?: Date;
 };
 
 interface CheckListProps {
   title: string;
-  headerRight?: ReactNode;
   items: CheckListItem[];
   isDisabled: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisabled }) => {
+const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
   const auth = useAuth();
   const { isLoading, mutateAsync } = useCheckDescriptionBullet();
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
@@ -54,7 +53,10 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
   });
 
   return (
-    <PageBlock title={title} headerRight={headerRight}>
+    <>
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        {title}
+      </Typography>
       <FormControl>
         {items.map((check, idx) => (
           <FormControlLabel
@@ -77,9 +79,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
               <Tooltip
                 id={`check-item-${idx}`}
                 title={
-                  check.resolved
-                    ? `${check.user?.firstName} ${check.user?.lastName} on ${check.dateAdded?.toLocaleDateString()}`
-                    : ''
+                  check.resolved ? `${fullNamePipe(check.user)} checked on ${check.dateChecked?.toLocaleDateString()}` : ''
                 }
                 placement="right"
                 arrow
@@ -106,7 +106,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, headerRight, items, isDisa
       >
         <Typography>Are you sure you want to mark this completed task as NOT completed?</Typography>
       </NERModal>
-    </PageBlock>
+    </>
   );
 };
 

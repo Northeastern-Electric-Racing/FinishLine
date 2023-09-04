@@ -25,13 +25,15 @@ export const exampleAdminUser: AuthenticatedUser = {
   changeRequestsToReviewId: []
 };
 
-export const exampleAdminUser2: User = {
+export const exampleAdminUser2: AuthenticatedUser = {
   userId: 8,
   firstName: 'Joe',
   lastName: 'Shmoseph',
   email: 'shmoseph.j@husky.neu.edu',
   emailId: 'shmoseph.j',
-  role: RoleEnum.ADMIN
+  role: RoleEnum.ADMIN,
+  favoritedProjectsId: [],
+  changeRequestsToReviewId: []
 };
 
 export const exampleLeadershipUser: User = {
@@ -61,13 +63,15 @@ export const exampleProjectManagerUser: User = {
   role: RoleEnum.MEMBER
 };
 
-export const exampleMemberUser: User = {
+export const exampleMemberUser: AuthenticatedUser = {
   userId: 6,
   firstName: 'Emily',
   lastName: 'Bendara',
   email: 'bendara.e@husky.neu.edu',
   emailId: 'bendara.e',
-  role: RoleEnum.HEAD
+  role: RoleEnum.HEAD,
+  favoritedProjectsId: [],
+  changeRequestsToReviewId: []
 };
 
 export const exampleGuestUser: AuthenticatedUser = {

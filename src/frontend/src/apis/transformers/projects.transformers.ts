@@ -18,7 +18,8 @@ export const descriptionBulletTransformer = (bullet: DescriptionBullet) => {
   return {
     ...bullet,
     dateAdded: new Date(bullet.dateAdded),
-    dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : bullet.dateDeleted
+    dateDeleted: bullet.dateDeleted ? new Date(bullet.dateDeleted) : bullet.dateDeleted,
+    dateChecked: bullet.dateChecked ? new Date(bullet.dateChecked) : bullet.dateChecked
   };
 };
 

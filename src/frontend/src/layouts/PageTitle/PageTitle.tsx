@@ -5,12 +5,12 @@
 
 import { Typography, Box, Grid } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
-import { MUILinkItem } from '../../utils/types';
+import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
 
 interface PageTitleProps {
   title: string;
-  previousPages: MUILinkItem[];
+  previousPages: LinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
 }

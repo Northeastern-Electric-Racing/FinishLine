@@ -20,7 +20,7 @@ import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, datePipe, fullNamePipe } from '../../../utils/pipes';
+import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
 import {
   imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
@@ -112,13 +112,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Sabo Number" content={`${reimbursementRequest.saboId ?? '----'}`} />
+            <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+          </Grid>
+          <Grid item sm={6} xs={12}>
+            <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
           </Grid>
           <Grid
             item

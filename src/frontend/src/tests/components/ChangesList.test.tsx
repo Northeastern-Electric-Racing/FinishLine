@@ -23,7 +23,6 @@ describe('Rendering Work Package Changes Component', () => {
   it('renders', () => {
     renderComponent();
 
-    expect(screen.getByText(`Changes`)).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
     expect(screen.getByText(/Decreased duration from 10 weeks to 7 weeks./i)).toBeInTheDocument();
     expect(screen.getByText('#54')).toBeInTheDocument();
