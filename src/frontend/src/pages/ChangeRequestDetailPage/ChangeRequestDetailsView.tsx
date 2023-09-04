@@ -4,19 +4,17 @@
  */
 
 import { ReactElement, useState } from 'react';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   ActivationChangeRequest,
   ChangeRequest,
-  ChangeRequestStatus,
   ChangeRequestType,
   StageGateChangeRequest,
   StandardChangeRequest,
-  isLeadership,
   isProject
 } from 'shared';
 import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe, projectWbsPipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
 import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
@@ -25,24 +23,14 @@ import ReviewChangeRequest from './ReviewChangeRequest';
 import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
-import { NERButton } from '../../components/NERButton';
-import { Grid, Typography, Link, Autocomplete, Checkbox, TextField } from '@mui/material';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { Grid, Typography, Link } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
-import EditIcon from '@mui/icons-material/Edit';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PostAddIcon from '@mui/icons-material/PostAdd';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
-import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
-import { useRequestCRReview } from '../../hooks/change-requests.hooks';
-import { useToast } from '../../hooks/toasts.hooks';
-import { userToAutocompleteOption } from '../../utils/users';
-import ActionsMenu from '../../components/ActionsMenu';
+import { useAllUsers } from '../../hooks/users.hooks';
+import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -101,141 +89,30 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     workPackageNumber: 0
   });
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
+  const handleReviewerIdsSelect = (Ids: number[]) => setReviewerIds(Ids);
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
-  const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
-  const toast = useToast();
-  const currentUser = useCurrentUser();
-  const history = useHistory();
   if (isError) return <ErrorPage message={error?.message} />;
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
 
   const { name: projectName } = project;
 
-  const handleRequestReviewerClick = async () => {
-    if (reviewerIds.length === 0) return;
-    try {
-      await requestCRReview({ userIds: reviewerIds });
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-  };
-
-  const isRequestAllowed = changeRequest.submitter.userId === currentUser.userId;
-
-  const unreviewedActionsDropdown = (
-    <ActionsMenu
-      style={{ mt: '10px', float: 'right' }}
-      buttons={[
-        {
-          title: 'Review',
-          onClick: handleReviewOpen,
-          disabled: !isUserAllowedToReview,
-          icon: <EditIcon fontSize="small" />
-        },
-        {
-          title: 'Delete',
-          onClick: handleDeleteOpen,
-          disabled: !isUserAllowedToDelete,
-          icon: <DeleteIcon fontSize="small" />
-        }
-      ]}
-    />
-  );
-
-  const requestReviewerDropdown = (
-    <div>
-      <Autocomplete
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        limitTags={1}
-        disableCloseOnSelect
-        multiple
-        options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
-        getOptionLabel={(option) => option.label}
-        onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
-        renderTags={() => null}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox
-              icon={<CheckBoxOutlineBlankIcon />}
-              checkedIcon={<CheckBoxIcon />}
-              style={{ marginRight: 8 }}
-              checked={selected}
-            />
-            {option.label}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField {...params} variant="standard" placeholder={`${reviewerIds.length} Reviewers Selected`} />
-        )}
-      />
-
-      <Grid container spacing={1}>
-        <Grid item xs={3}>
-          <div></div>
-        </Grid>
-        <Grid item xs={5}>
-          <NERButton
-            sx={{ mt: '10px', float: 'right' }}
-            variant="contained"
-            disabled={!isRequestAllowed}
-            onClick={handleRequestReviewerClick}
-          >
-            Request Review
-          </NERButton>
-        </Grid>
-        <Grid item xs={4}>
-          {unreviewedActionsDropdown}
-        </Grid>
-      </Grid>
-    </div>
-  );
-
-  const renderUnreviewedActionsDropdown =
-    isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open
-      ? requestReviewerDropdown
-      : unreviewedActionsDropdown;
-
-  const implementCrDropdown = (
-    <ActionsMenu
-      buttons={[
-        {
-          title: 'Create New Project',
-          onClick: () =>
-            history.push(`${routes.PROJECTS_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <CreateNewFolderIcon fontSize="small" />
-        },
-        {
-          title: 'Create New Work Package',
-          onClick: () =>
-            history.push(
-              `${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`
-            ),
-          disabled: !isUserAllowedToImplement,
-          icon: <PostAddIcon fontSize="small" />
-        },
-        {
-          title: `Edit ${changeRequest.wbsNum.workPackageNumber === 0 ? 'Project' : 'Work Package'}`,
-          onClick: () =>
-            history.push(`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}?crId=${changeRequest.crId}&edit=${true}`),
-          disabled: !isUserAllowedToImplement,
-          icon: <EditIcon fontSize="small" />
-        }
-      ]}
-      title="Implement Change Request"
-    />
-  );
-
-  const actionDropdown = changeRequest.accepted ? implementCrDropdown : renderUnreviewedActionsDropdown;
-
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      headerRight={actionDropdown}
+      headerRight={
+        <ChangeRequestActionMenu
+          isUserAllowedToReview={isUserAllowedToReview}
+          isUserAllowedToImplement={isUserAllowedToImplement}
+          isUserAllowedToDelete={isUserAllowedToDelete}
+          changeRequest={changeRequest}
+          handleReviewOpen={handleReviewOpen}
+          handleDeleteOpen={handleDeleteOpen}
+          handleReviewerIdsSelect={handleReviewerIdsSelect}
+          reviewerIds={reviewerIds}
+        />
+      }
     >
       <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
         <Grid container spacing={1}>

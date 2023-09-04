@@ -14,10 +14,16 @@ export type ButtonInfo = {
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
   title?: string;
-  style?: any;
+  divider?: ReactElement;
 }
 
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', style }) => {
+interface menuButtonProps {
+  divider?: ReactElement;
+  index: number;
+  button: ButtonInfo;
+}
+
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', divider = <></> }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -30,6 +36,25 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', s
 
   const dropdownOpen = Boolean(anchorEl);
 
+  const menuButton: React.FC<menuButtonProps> = ({ divider = <></>, index, button }): ReactElement => {
+    return (
+      <div>
+        <MenuItem
+          key={index}
+          onClick={() => {
+            handleDropdownClose();
+            button.onClick();
+          }}
+          disabled={button.disabled}
+        >
+          <ListItemIcon>{button.icon}</ListItemIcon>
+          {button.title}
+        </MenuItem>
+        {divider}
+      </div>
+    );
+  };
+
   return (
     <Box>
       <NERButton
@@ -37,24 +62,16 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', s
         variant="contained"
         id="reimbursement-request-actions-dropdown"
         onClick={handleClick}
-        sx={style}
       >
         {title}
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {buttons.map((button, index) => (
-          <MenuItem
-            key={index}
-            onClick={() => {
-              handleDropdownClose();
-              button.onClick();
-            }}
-            disabled={button.disabled}
-          >
-            <ListItemIcon>{button.icon}</ListItemIcon>
-            {button.title}
-          </MenuItem>
-        ))}
+        {buttons.map((button, index) => {
+          if (index === buttons.length - 1) {
+            return <>{menuButton({ index, button })}</>;
+          }
+          return <>{menuButton({ divider, index, button })}</>;
+        })}
       </Menu>
     </Box>
   );
