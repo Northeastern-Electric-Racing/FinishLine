@@ -146,15 +146,27 @@ export default class UsersService {
       ...authUserQueryArgs
     });
 
+    if (!payload['given_name']) {
+      throw new HttpException(400, 'First Name not Found on Google Account');
+    }
+
+    if (!payload['family_name']) {
+      throw new HttpException(400, 'Last Name not Found on Google Account');
+    }
+
+    if (!payload['email']) {
+      throw new HttpException(400, 'Email not Found on Google Account');
+    }
+
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
       const createdUser = await prisma.user.create({
         data: {
-          firstName: payload['given_name']!,
-          lastName: payload['family_name']!,
+          firstName: payload['given_name'],
+          lastName: payload['family_name'],
           googleAuthId: userId,
-          email: payload['email']!,
+          email: payload['email'],
           emailId,
           userSettings: { create: {} }
         },
