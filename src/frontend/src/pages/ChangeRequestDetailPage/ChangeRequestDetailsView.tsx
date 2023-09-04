@@ -111,6 +111,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           handleDeleteOpen={handleDeleteOpen}
           handleReviewerIdsSelect={handleReviewerIdsSelect}
           reviewerIds={reviewerIds}
+          users={users}
         />
       }
     >

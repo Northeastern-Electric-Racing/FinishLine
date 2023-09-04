@@ -1,6 +1,6 @@
-import { ChangeRequest, ChangeRequestStatus, isLeadership, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestStatus, User, isLeadership, wbsPipe } from 'shared';
 import ActionsMenu from '../../components/ActionsMenu';
-import { Autocomplete, Checkbox, TextField, Divider, Box } from '@mui/material';
+import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -8,16 +8,13 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { useHistory } from 'react-router-dom';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { NERButton } from '../../components/NERButton';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
-import { useSingleProject } from '../../hooks/projects.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { userToAutocompleteOption } from '../../utils/task.utils';
-import ErrorPage from '../ErrorPage';
 import { ReactElement } from 'react';
 
 interface ChangeRequestActionMenuProps {
@@ -29,6 +26,7 @@ interface ChangeRequestActionMenuProps {
   handleDeleteOpen: () => void;
   handleReviewerIdsSelect: (Ids: number[]) => void;
   reviewerIds: number[];
+  users: User[];
 }
 
 const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
@@ -39,27 +37,13 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   handleReviewOpen,
   handleDeleteOpen,
   handleReviewerIdsSelect,
-  reviewerIds
+  reviewerIds,
+  users
 }: ChangeRequestActionMenuProps) => {
-  const {
-    data: project,
-    isLoading,
-    isError,
-    error
-  } = useSingleProject({
-    carNumber: changeRequest.wbsNum.carNumber,
-    projectNumber: changeRequest.wbsNum.projectNumber,
-    workPackageNumber: 0
-  });
-
-  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
   const currentUser = useCurrentUser();
   const history = useHistory();
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
-  if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
 
   const handleRequestReviewerClick = async () => {
     if (reviewerIds.length === 0) {
@@ -79,10 +63,9 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
 
   const unreviewedActionsDropdown = (): ReactElement => {
     return (
-      <div>
-        <div style={{ marginTop: '10px' }}></div>
+      <div style={{ marginTop: '10px' }}>
         <ActionsMenu
-          divider={<Divider />}
+          divider={true}
           buttons={[
             {
               title: 'Review',
@@ -104,7 +87,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
 
   const requestReviewerDropdown = (): ReactElement => {
     return (
-      <div>
+      <>
         <Autocomplete
           isOptionEqualToValue={(option, value) => option.id === value.id}
           limitTags={1}
@@ -141,7 +124,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
           </NERButton>
           {unreviewedActionsDropdown()}
         </Box>
-      </div>
+      </>
     );
   };
 

@@ -2,7 +2,7 @@ import { Box } from '@mui/system';
 import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
-import { ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
 
 export type ButtonInfo = {
   title: string;
@@ -14,16 +14,16 @@ export type ButtonInfo = {
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
   title?: string;
-  divider?: ReactElement;
+  divider?: boolean;
 }
 
 interface menuButtonProps {
-  divider?: ReactElement;
+  divider?: boolean;
   index: number;
   button: ButtonInfo;
 }
 
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', divider = <></> }) => {
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', divider = false }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,24 +36,22 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', d
 
   const dropdownOpen = Boolean(anchorEl);
 
-  const menuButton: React.FC<menuButtonProps> = ({ divider = <></>, index, button }): ReactElement => {
-    return (
-      <div>
-        <MenuItem
-          key={index}
-          onClick={() => {
-            handleDropdownClose();
-            button.onClick();
-          }}
-          disabled={button.disabled}
-        >
-          <ListItemIcon>{button.icon}</ListItemIcon>
-          {button.title}
-        </MenuItem>
-        {divider}
-      </div>
-    );
-  };
+  const MenuButton: React.FC<menuButtonProps> = ({ divider = false, index, button }) => (
+    <>
+      <MenuItem
+        key={index}
+        onClick={() => {
+          handleDropdownClose();
+          button.onClick();
+        }}
+        disabled={button.disabled}
+      >
+        <ListItemIcon>{button.icon}</ListItemIcon>
+        {button.title}
+      </MenuItem>
+      {divider ? <Divider /> : <></>}
+    </>
+  );
 
   return (
     <Box>
@@ -67,10 +65,11 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', d
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {buttons.map((button, index) => {
-          if (index === buttons.length - 1) {
-            return <>{menuButton({ index, button })}</>;
-          }
-          return <>{menuButton({ divider, index, button })}</>;
+          return index === buttons.length - 1 ? (
+            <MenuButton index={index} button={button} />
+          ) : (
+            <MenuButton index={index} button={button} divider={divider} />
+          );
         })}
       </Menu>
     </Box>
