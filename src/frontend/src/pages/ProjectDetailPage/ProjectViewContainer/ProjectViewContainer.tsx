@@ -17,19 +17,19 @@ import { Box, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import ProjectDetailTabs from './ProjectDetailTabs';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
-import ProjectChangesList from './ProjectChangesList';
 import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
+import NERTabs from '../../../components/Tabs';
+import ChangesList from '../../../components/ChangesList';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -169,11 +169,27 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </Box>
   );
 
+  const wbsNum = wbsPipe(project.wbsNum);
+
   return (
     <PageLayout
       title={pageTitle}
       headerRight={headerRight}
-      tabs={<ProjectDetailTabs project={project} setTab={setTab} />}
+      tabs={
+        <NERTabs
+          setTab={setTab}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'tasks', tabName: 'Tasks' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'gantt', tabName: 'Gantt' },
+            { tabUrlValue: 'changes', tabName: 'Changes' }
+          ]}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="project-detail-tabs"
+        />
+      }
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
     >
       {tab === 0 ? (
@@ -185,7 +201,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 3 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : (
-        <ProjectChangesList changes={project.changes} />
+        <ChangesList changes={project.changes} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

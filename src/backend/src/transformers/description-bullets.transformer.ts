@@ -10,7 +10,8 @@ const descriptionBulletTransformer = (
     detail: descBullet.detail,
     dateAdded: descBullet.dateAdded,
     dateDeleted: descBullet.dateDeleted ?? undefined,
-    userChecked: descBullet.userChecked ?? undefined
+    userChecked: descBullet.userChecked ?? undefined,
+    dateChecked: descBullet.dateTimeChecked ?? undefined
   };
 };
 
