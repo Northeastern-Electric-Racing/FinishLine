@@ -176,6 +176,7 @@ export default class ChangeRequestsService {
 
         //Making associated changes
         const changePromises = changes.map(async (change) => {
+          //Checking if change is not zero so we dont make changes for zero budget or timeline impact
           if (change) {
             await prisma.change.create({ data: change });
           }
