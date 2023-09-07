@@ -167,26 +167,20 @@ export default class ChangeRequestsService {
               update: {
                 where: { workPackageId: foundCR.wbsElement.workPackage.workPackageId },
                 data: {
-                  duration: updatedDuration,
-                  wbsElement: {
-                    update: {
-                      changes: {
-                        create: changes[1]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            wbsElement: {
-              update: {
-                changes: {
-                  create: changes[0]
+                  duration: updatedDuration
                 }
               }
             }
           }
         });
+
+        const changePromises = changes.map(async (change) => {
+          if (change) {
+            await prisma.change.create({ data: change });
+          }
+        });
+
+        await Promise.all(changePromises);
       }
 
       // finally update the proposed solution
@@ -298,12 +292,6 @@ export default class ChangeRequestsService {
       });
     }
 
-    // send the creator of the cr a slack notification that their cr was reviewed
-    const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
-    if (creatorUserSettings && creatorUserSettings.slackId) {
-      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
-    }
-
     // finally we can update change request
     const updated = await prisma.change_Request.update({
       where: { crId },
@@ -315,6 +303,18 @@ export default class ChangeRequestsService {
       },
       include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
     });
+
+    // send the creator of the cr a slack notification that their cr was reviewed
+    const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
+    if (creatorUserSettings && creatorUserSettings.slackId) {
+      try {
+        await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+        }
+      }
+    }
 
     return updated.crId;
   }
