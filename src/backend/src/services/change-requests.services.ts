@@ -174,6 +174,7 @@ export default class ChangeRequestsService {
           }
         });
 
+        //Making associated changes
         const changePromises = changes.map(async (change) => {
           if (change) {
             await prisma.change.create({ data: change });

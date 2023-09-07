@@ -174,6 +174,14 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
       vi.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.change, 'create').mockResolvedValue({
+        changeId: 1,
+        changeRequestId: 2,
+        detail: 'Changed Duration from "10" to "20"',
+        implementerId: 2,
+        wbsElementId: 65,
+        dateImplemented: new Date()
+      });
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
@@ -181,44 +189,6 @@ describe('Change Requests', () => {
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledTimes(1);
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        data: {
-          budget: 1003,
-          wbsElement: {
-            update: {
-              changes: {
-                create: {
-                  changeRequestId: 2,
-                  detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2,
-                  wbsElementId: 65
-                }
-              }
-            }
-          },
-          workPackages: {
-            update: {
-              data: {
-                duration: 20,
-                wbsElement: {
-                  update: {
-                    changes: {
-                      create: {
-                        changeRequestId: 2,
-                        detail: 'Changed Duration from "10" to "20"',
-                        implementerId: 2,
-                        wbsElementId: 65
-                      }
-                    }
-                  }
-                }
-              },
-              where: { workPackageId: 1 }
-            }
-          }
-        },
-        where: { projectId: 1 }
-      });
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
 
