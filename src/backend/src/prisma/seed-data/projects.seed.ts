@@ -20,7 +20,7 @@ export const seedProject = async (
   carNumber: number,
   name: string,
   summary: string,
-  teamIds: string[],
+  teamId: string,
   editor: User,
   budget: number,
   rules: string[],
@@ -31,7 +31,7 @@ export const seedProject = async (
   projectLeadId: number | null,
   projectManagerId: number | null
 ): Promise<{ projectWbsNumber: WbsNumber; projectId: number }> => {
-  const projectWbsNumber = await ProjectsService.createProject(creator, changeRequestId, carNumber, name, summary, teamIds);
+  const projectWbsNumber = await ProjectsService.createProject(creator, changeRequestId, carNumber, name, summary, teamId);
 
   const { projectId } = await prisma.project.findFirstOrThrow({
     where: {
