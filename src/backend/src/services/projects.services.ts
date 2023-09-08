@@ -75,7 +75,7 @@ export default class ProjectsService {
    * @param carNumber the car number of the new project
    * @param name the name of the new project
    * @param summary the summary of the new project
-   * @param teamId the id of the team that the new project will be assigned to
+   * @param teamIds the ids of the teams that the new project will be assigned to
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
