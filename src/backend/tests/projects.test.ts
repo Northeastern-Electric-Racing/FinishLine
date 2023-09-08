@@ -75,9 +75,9 @@ describe('Projects', () => {
   test('createProject fails when unknown teamId provided', async () => {
     vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
-    await expect(async () => await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', 'teamId')).rejects.toThrow(
-      new NotFoundException('Team', 'teamId')
-    );
+    await expect(
+      async () => await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', ['teamId'])
+    ).rejects.toThrow(new NotFoundException('Team', 'teamId'));
   });
 
   test('createProject works', async () => {
@@ -85,7 +85,7 @@ describe('Projects', () => {
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(prismaWbsElement1);
 
-    const res = await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', '');
+    const res = await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', []);
 
     expect(res).toStrictEqual({
       carNumber: prismaWbsElement1.carNumber,

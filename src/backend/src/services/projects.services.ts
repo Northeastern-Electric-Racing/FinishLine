@@ -85,14 +85,18 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamId: string
+    teamIds: string[]
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
     await validateChangeRequestAccepted(crId);
 
-    const team = await prisma.team.findUnique({ where: { teamId } });
-    if (!team) throw new NotFoundException('Team', teamId);
+    if (teamIds.length > 0) {
+      for (const teamId of teamIds) {
+        const team = await prisma.team.findUnique({ where: { teamId } });
+        if (!team) throw new NotFoundException('Team', teamId);
+      }
+    }
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
 
@@ -107,7 +111,7 @@ export default class ProjectsService {
           create: {
             summary,
             teams: {
-              connect: { teamId }
+              connect: teamIds.map((teamId) => ({ teamId }))
             }
           }
         },
