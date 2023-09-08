@@ -75,7 +75,7 @@ export default class ProjectsService {
    * @param carNumber the car number of the new project
    * @param name the name of the new project
    * @param summary the summary of the new project
-   * @param teamIds the ids of the teams that the new project will be assigned to
+   * @param teamId the id of the team that the new project will be assigned to
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -85,18 +85,14 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamIds: string[]
+    teamId: string
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
     await validateChangeRequestAccepted(crId);
 
-    if (teamIds.length > 0) {
-      for (const teamId of teamIds) {
-        const team = await prisma.team.findUnique({ where: { teamId } });
-        if (!team) throw new NotFoundException('Team', teamId);
-      }
-    }
+    const team = await prisma.team.findUnique({ where: { teamId } });
+    if (!team) throw new NotFoundException('Team', teamId);
 
     const maxProjectNumber: number = await getHighestProjectNumber(carNumber);
 
@@ -111,7 +107,7 @@ export default class ProjectsService {
           create: {
             summary,
             teams: {
-              connect: teamIds.map((teamId) => ({ teamId }))
+              connect: { teamId }
             }
           }
         },
