@@ -88,8 +88,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     projectNumber: changeRequest.wbsNum.projectNumber,
     workPackageNumber: 0
   });
-  const [reviewerIds, setReviewerIds] = useState<number[]>([]);
-  const handleReviewerIdsSelect = (Ids: number[]) => setReviewerIds(Ids);
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   if (isError) return <ErrorPage message={error?.message} />;
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
@@ -109,8 +107,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           changeRequest={changeRequest}
           handleReviewOpen={handleReviewOpen}
           handleDeleteOpen={handleDeleteOpen}
-          handleReviewerIdsSelect={handleReviewerIdsSelect}
-          reviewerIds={reviewerIds}
           users={users}
         />
       }
