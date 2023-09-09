@@ -27,7 +27,7 @@ interface ChangeRequestActionMenuProps {
   users: User[];
 }
 
-const ChangeRequestActionMenu = ({
+const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   isUserAllowedToReview,
   isUserAllowedToImplement,
   isUserAllowedToDelete,
@@ -123,7 +123,7 @@ const ChangeRequestActionMenu = ({
 
   const RenderUnreviewedActionsDropdown = () =>
     isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open ? (
-      <RequestReviewerDropdown />
+      RequestReviewerDropdown()
     ) : (
       <UnreviewedActionsDropdown />
     );
@@ -159,7 +159,7 @@ const ChangeRequestActionMenu = ({
     />
   );
 
-  return changeRequest.accepted ? <ImplementCrDropdown /> : <RenderUnreviewedActionsDropdown />;
+  return changeRequest.accepted ? <ImplementCrDropdown /> : <>{RenderUnreviewedActionsDropdown()}</>;
 };
 
 export default ChangeRequestActionMenu;
