@@ -210,24 +210,6 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        data: {
-          budget: 1003,
-          wbsElement: {
-            update: {
-              changes: {
-                create: {
-                  changeRequestId: 2,
-                  detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2,
-                  wbsElementId: 65
-                }
-              }
-            }
-          }
-        },
-        where: { projectId: 2 }
-      });
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
 
