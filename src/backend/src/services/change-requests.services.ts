@@ -118,16 +118,11 @@ export default class ChangeRequestsService {
         await prisma.project.update({
           where: { projectId: foundCR.wbsElement.project.projectId },
           data: {
-            budget: newBudget,
-            wbsElement: {
-              update: {
-                changes: {
-                  create: change
-                }
-              }
-            }
+            budget: newBudget
           }
         });
+
+        if (change) await prisma.change.create({ data: change });
       } else if (foundCR.wbsElement.workPackage) {
         // get the project for the work package
         const wpProj = await prisma.project.findUnique({
