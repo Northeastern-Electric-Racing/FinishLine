@@ -122,6 +122,7 @@ export default class ChangeRequestsService {
           }
         });
 
+        //Make the associated budget change if there was a change
         if (change) await prisma.change.create({ data: change });
       } else if (foundCR.wbsElement.workPackage) {
         // get the project for the work package
