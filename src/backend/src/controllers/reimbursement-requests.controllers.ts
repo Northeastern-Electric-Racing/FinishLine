@@ -182,7 +182,6 @@ export default class ReimbursementRequestsController {
 
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
 
-      res.header('Access-Control-Allow-Origin', 'true');
       res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);
