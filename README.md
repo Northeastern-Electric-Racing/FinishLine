@@ -1,6 +1,6 @@
 # FinishLine by NER
 
-Also known as PM Dashboard v3. Test
+Also known as PM Dashboard v3.
 
 A project management web application built in Typescript, React, and Express.
 
