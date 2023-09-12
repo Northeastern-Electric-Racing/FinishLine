@@ -195,7 +195,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     >
                       {allExpenseTypes.map((expenseType) => (
                         <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
+                          {`${expenseType.code} - ${expenseType.name}`}
                         </MenuItem>
                       ))}
                     </Select>
