@@ -62,4 +62,16 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async setTeamLead(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.body;
+      const { teamId } = req.params;
+      const submitter = await getCurrentUser(res);
+      const team = await TeamsService.setTeamLead(submitter, teamId, userId);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
