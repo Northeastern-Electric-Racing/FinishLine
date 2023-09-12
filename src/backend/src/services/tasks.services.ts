@@ -82,10 +82,10 @@ export default class TasksService {
 
     const newTask = taskTransformer(createdTask);
 
-    assignees.forEach(async (assignee) => {
-      const settings = await prisma.user_Settings.findUnique({ where: { userId: assignee } });
+    const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: assignees } } });
 
-      if (settings && settings.slackId) {
+    assigneeSettings.forEach(async (settings) => {
+      if (settings.slackId) {
         await sendSlackTaskAssignedNotification(settings.slackId, newTask);
       }
     });
@@ -207,9 +207,9 @@ export default class TasksService {
       })
     );
 
-    newAssignees.forEach(async (assignee) => {
-      const settings = await prisma.user_Settings.findUnique({ where: { userId: assignee } });
-      if (settings && settings.slackId) {
+    const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: newAssignees } } });
+    assigneeSettings.forEach(async (settings) => {
+      if (settings.slackId) {
         await sendSlackTaskAssignedNotification(settings.slackId, updatedTask);
       }
     });
