@@ -95,6 +95,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Ethan Mouri', color: '#00bbff' },
     { name: 'Laith Taher', color: '#000080' },
+    { name: 'Griffin Cooper', color: '#02d69a' },
     { name: 'Kaiyang Zheng', color: '#FFFF00' }
   ];
 
