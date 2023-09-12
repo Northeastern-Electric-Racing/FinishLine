@@ -10,6 +10,7 @@ import { hasPermissionToEditTask } from '../utils/tasks.utils';
 import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
+import { sendSlackTaskAssignedNotification } from '../utils/slack.utils';
 
 export default class TasksService {
   /**
@@ -79,7 +80,17 @@ export default class TasksService {
       ...taskQueryArgs
     });
 
-    return taskTransformer(createdTask);
+    const newTask = taskTransformer(createdTask);
+
+    assignees.forEach(async (assignee) => {
+      const settings = await prisma.user_Settings.findUnique({ where: { userId: assignee } });
+
+      if (settings && settings.slackId) {
+        await sendSlackTaskAssignedNotification(settings.slackId, newTask);
+      }
+    });
+
+    return newTask;
   }
 
   /**
@@ -149,11 +160,15 @@ export default class TasksService {
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
       include: {
-        wbsElement: { include: { project: { ...projectQueryArgs } } }
+        wbsElement: { include: { project: { ...projectQueryArgs } } },
+        assignees: true
       }
     });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+
+    const originalAssignees = originalTask.assignees.map((user) => user.userId);
+    const newAssignees = assignees.filter((user) => !originalAssignees.includes(user));
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -180,17 +195,26 @@ export default class TasksService {
       };
     });
 
-    const updatedTask = await prisma.task.update({
-      where: { taskId },
-      data: {
-        assignees: {
-          set: transformedAssigneeUsers
-        }
-      },
-      ...taskQueryArgs
+    const updatedTask = taskTransformer(
+      await prisma.task.update({
+        where: { taskId },
+        data: {
+          assignees: {
+            set: transformedAssigneeUsers
+          }
+        },
+        ...taskQueryArgs
+      })
+    );
+
+    newAssignees.forEach(async (assignee) => {
+      const settings = await prisma.user_Settings.findUnique({ where: { userId: assignee } });
+      if (settings && settings.slackId) {
+        await sendSlackTaskAssignedNotification(settings.slackId, updatedTask);
+      }
     });
 
-    return taskTransformer(updatedTask);
+    return updatedTask;
   }
 
   /**
