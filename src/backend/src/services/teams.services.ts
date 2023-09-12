@@ -168,7 +168,7 @@ export default class TeamsService {
       where: { teamId },
       ...teamQueryArgs
     });
-    
+
     const newLead = await prisma.user.findUnique({
       where: { userId }
     });
@@ -200,7 +200,6 @@ export default class TeamsService {
       },
       ...teamQueryArgs
     });
-
 
     return teamTransformer(updateTeam);
   }
