@@ -16,7 +16,16 @@ import {
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
 } from './test-data/tasks.test-data';
-import { aquaman, batman, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanSettings,
+  greenlantern,
+  superman,
+  supermanSettings,
+  theVisitor,
+  wonderwoman
+} from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { justiceLeague, prismaTeam1 } from './test-data/teams.test-data';
@@ -129,6 +138,7 @@ describe('Tasks', () => {
       vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
       vi.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
+      vi.spyOn(prisma.user_Settings, 'findMany').mockResolvedValue([batmanSettings, supermanSettings]);
 
       const task = await TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
         batman.userId,
@@ -243,6 +253,7 @@ describe('Tasks', () => {
       vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
       vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
+      vi.spyOn(prisma.user_Settings, 'findMany').mockResolvedValue([batmanSettings, supermanSettings]);
 
       const taskId = '1';
       const userIds = [
