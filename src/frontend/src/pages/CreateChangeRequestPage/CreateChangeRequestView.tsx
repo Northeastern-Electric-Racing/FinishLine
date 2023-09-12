@@ -105,6 +105,21 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   const projectOptions: { label: string; id: string }[] = [];
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
+  const customComparator = (option1: { id: string }, option2: { id: string }) => {
+    // Extract the WBS numbers from the options and convert them to a sortable format
+    const wbsNumber1 = parseFloat(option1.id.replace(/-/g, '.'));
+    const wbsNumber2 = parseFloat(option2.id.replace(/-/g, '.'));
+
+    // Compare the WBS numbers and return -1, 0, or 1 based on the comparison
+    if (wbsNumber1 < wbsNumber2) {
+      return -1;
+    } else if (wbsNumber1 > wbsNumber2) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+
   projects.forEach((project: Project) => {
     wbsDropdownOptions.push({
       label: `${wbsNamePipe(project)}`,
@@ -121,6 +136,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       });
     });
   });
+
+  wbsDropdownOptions.sort(customComparator);
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
