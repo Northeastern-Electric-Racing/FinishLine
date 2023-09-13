@@ -1,15 +1,14 @@
-import { FormControl, TextField } from '@mui/material';
-import NERFormModal from '../../../components/NERFormModal';
-import { Controller, useForm } from 'react-hook-form';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ReactHookTextField from '../../../components/ReactHookTextField';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { useReportRefund } from '../../../hooks/finance.hooks';
-import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { FormControl, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useReportRefund } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   refundAmount: yup
@@ -53,7 +52,7 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   const handleConfirm = async (data: { refundAmount: number; dateReceived: Date }) => {
     handleClose();
     try {
-      await mutateAsync({ refundAmount: data.refundAmount * 100 });
+      await mutateAsync({ refundAmount: data.refundAmount * 100, dateReceived: data.dateReceived.toISOString() });
       toast.success(`New Account Credit Amount #${data.refundAmount} Reported Successfully`);
     } catch (error: unknown) {
       if (error instanceof Error) {
