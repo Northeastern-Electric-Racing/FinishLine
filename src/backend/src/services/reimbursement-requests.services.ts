@@ -167,10 +167,11 @@ export default class ReimbursementRequestService {
    * Function to reimburse a user for their expenses.
    *
    * @param amount the amount to be reimbursed
+   * @param dateReceived the date the amount was received
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, dateReceived: Date, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -199,7 +200,7 @@ export default class ReimbursementRequestService {
       data: {
         purchaserId: submitter.userId,
         amount,
-        dateCreated: new Date(),
+        dateCreated: dateReceived,
         userSubmittedId: submitter.userId
       },
       ...reimbursementQueryArgs

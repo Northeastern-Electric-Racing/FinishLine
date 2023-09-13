@@ -111,6 +111,7 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.post(
   '/reimburse',
   intMinZero(body('amount')),
+  isDate(body('dateReceived')),
   validateInputs,
   ReimbursementRequestController.reimburseUser
 );
