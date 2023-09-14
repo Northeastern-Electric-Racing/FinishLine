@@ -95,6 +95,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Ethan Mouri', color: '#00bbff' },
     { name: 'Laith Taher', color: '#000080' },
+    { name: 'Griffin Cooper', color: '#02d69a' },
     { name: 'Amani Scarborough', color: '#e34db6' },
     { name: 'Peter Moise', color: '#FF0000' },
     { name: 'Srihari Raman', color: '#FF2400' },
@@ -102,8 +103,9 @@ const CreditsPage: React.FC = () => {
     { name: 'Waasif Mahmood', color: '#114a13' },
     { name: 'Matthew Wang', color: '#c657f2' },
     { name: 'Sharon Yang', color: '#ed8a5f' },
-    { name: 'Kevin Polackal', color: '#800080' },
-    { name: 'Kevin Yang', color: '#0000FF' }
+    { name: 'Kevin Yang', color: '#0000FF' },
+    { name: 'Hareg Aderie', color: '#34b46c' },
+    { name: 'Kevin Polackal', color: '#800080' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
