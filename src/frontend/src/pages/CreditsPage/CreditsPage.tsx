@@ -20,7 +20,6 @@ const CreditsPage: React.FC = () => {
     color: string;
     sx?: {};
   }[] = [
-    { name: 'Kevin Yang', color: '#0000FF' },
     { name: 'Anthony Bernardi', color: '#566bd4' },
     { name: 'Reid Chandler', color: '#e53774' },
     {
@@ -104,6 +103,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Matthew Wang', color: '#c657f2' },
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Kevin Polackal', color: '#800080' }
+    { name: 'Kevin Yang', color: '#0000FF' },
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
