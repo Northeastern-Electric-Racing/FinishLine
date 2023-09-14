@@ -120,7 +120,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
           <ListItemIcon>
-            <EditIcon fontSize="small" />
+            <ContentPasteIcon fontSize="small" />
           </ListItemIcon>
           Review
         </MenuItem>
