@@ -92,18 +92,20 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
           <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
-      <Box
-        className="d-flex flex-row"
-        sx={{
-          display: { xs: 'flex', sm: 'none' },
-          marginTop: '10px'
-        }}
-      >
-        <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-        <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
-          Save
-        </NERSuccessButton>
-      </Box>
+      {edit && (
+        <Box
+          className="d-flex flex-row"
+          sx={{
+            display: { xs: 'flex', sm: 'none' },
+            marginTop: '10px'
+          }}
+        >
+          <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+          <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
+            Save
+          </NERSuccessButton>
+        </Box>
+      )}
     </PageBlock>
   );
 };

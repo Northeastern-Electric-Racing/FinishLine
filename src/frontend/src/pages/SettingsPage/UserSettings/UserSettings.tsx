@@ -84,18 +84,20 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
           <UserSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
-      <Box
-        className="d-flex flex-col"
-        sx={{
-          display: { xs: 'flex', sm: 'none' },
-          marginTop: '20px'
-        }}
-      >
-        <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-        <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
-          Save
-        </NERSuccessButton>
-      </Box>
+      {edit && (
+        <Box
+          className="d-flex flex-col"
+          sx={{
+            display: { xs: 'flex', sm: 'none' },
+            marginTop: '20px'
+          }}
+        >
+          <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+          <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
+            Save
+          </NERSuccessButton>
+        </Box>
+      )}
     </PageBlock>
   );
 };
