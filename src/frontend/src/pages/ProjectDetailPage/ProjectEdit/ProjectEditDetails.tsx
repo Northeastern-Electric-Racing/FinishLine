@@ -7,6 +7,7 @@ import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
+import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -35,7 +36,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   return (
     <PageBlock title="Project Details">
       <Grid container spacing={2}>
-        <Grid item xs={8}>
+        <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
@@ -46,7 +47,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
+          <FormControl fullWidth>
+            <ChangeRequestDropdown control={control} name="crId" />
+          </FormControl>
+        </Grid>
+        <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField

@@ -28,7 +28,6 @@ import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -174,7 +173,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     <PageLayout
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
+      headerRight={
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      }
     >
       <form
         id="project-edit-form"
@@ -249,14 +257,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             + ADD NEW RULE
           </Button>
         </PageBlock>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </form>
     </PageLayout>
   );
