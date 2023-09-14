@@ -191,7 +191,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             ''
           ) : (
             <Box display="flex" flexDirection="row-reverse">
-              <Button
+              <NERSuccessButton
                 color="success"
                 variant="contained"
                 type="submit"
@@ -199,7 +199,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
                 Add
-              </Button>
+              </NERSuccessButton>
             </Box>
           )}
         </form>
