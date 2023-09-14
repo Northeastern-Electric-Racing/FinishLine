@@ -5,6 +5,7 @@
 
 import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
