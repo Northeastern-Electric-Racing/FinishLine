@@ -104,7 +104,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Matthew Wang', color: '#c657f2' },
     { name: 'Sharon Yang', color: '#ed8a5f' },
     { name: 'Kevin Polackal', color: '#800080' },
-    { name: 'Stephanie Xu', color: '#ffcd42'},
+    { name: 'Stephanie Xu', color: '#ffcd42' },
     { name: 'Hareg Aderie', color: '#34b46c' },
   ];
 
