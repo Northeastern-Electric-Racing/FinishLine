@@ -1,7 +1,7 @@
 import TeamsService from '../src/services/teams.services';
 import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
-import { prismaTeam1, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
+import { prismaTeam1, primsaTeam2, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 import { batman, flash, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
@@ -208,4 +208,19 @@ describe('Teams', () => {
       expect(res).toStrictEqual(sharedTeam1);
     });
   });
+
+  describe('setTeamLeads', () => {
+    test('setTeamLeads leads not found', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([theVisitor]);
+
+      const callSetTeamLeads = async () => 
+        await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [theVisitor.userId, 122, 55]);
+      
+      const expectedException = new HttpException(404, 'User(s) with the following ids not found: 122, 55');
+
+      await expect(callSetTeamLeads).rejects.toThrow(expectedException);
+    });
+    
+  })
 });

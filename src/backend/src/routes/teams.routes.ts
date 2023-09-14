@@ -15,7 +15,13 @@ teamsRouter.post(
   validateInputs,
   TeamsController.setTeamMembers
 );
-teamsRouter.post('/:teamId/set-leads', intMinZero(body('userId')), validateInputs, TeamsController.setTeamLead);
+teamsRouter.post(
+  '/:teamId/set-leads',
+  body('userIds').isArray(),
+  intMinZero(body('userIds.*')),
+  validateInputs,
+  TeamsController.setTeamLeads
+);
 teamsRouter.post(
   '/:teamId/edit-description',
   body('newDescription').isString(),
