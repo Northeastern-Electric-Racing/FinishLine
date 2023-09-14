@@ -5,11 +5,30 @@
 
 import { WbsNumber } from './types/project-types';
 
+export const wbsNumComparator = (wbsNum1: { id: string }, wbsNum2: { id: string }) => {
+  // Split the WBS numbers into their components
+  const wbsParts1 = wbsNum1.id.split('.').map(Number);
+  const wbsParts2 = wbsNum2.id.split('.').map(Number);
+
+  // Compare the components individually
+  for (let i = 0; i < wbsParts1.length; i++) {
+    if (wbsParts1[i] < wbsParts2[i]) {
+      return -1;
+    } else if (wbsParts1[i] > wbsParts2[i]) {
+      return 1;
+    }
+  }
+
+  // If all components are equal, return 0
+  return 0;
+};
+
 /**
  * Ensure the provided wbsNum is a valid Work Breakdown Structure Number
  *
  * @param wbsNum WBS number to validate
  */
+
 export const validateWBS = (wbsNum: string): WbsNumber => {
   const errorMsg: string = 'WBS Invalid: ';
   if (wbsNum == null || wbsNum === undefined) {
