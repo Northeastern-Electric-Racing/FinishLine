@@ -26,7 +26,6 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
   const {
     handleSubmit,
     control,
-    formState: { isValid },
     reset
   } = useForm({
     mode: 'onChange',
@@ -58,7 +57,6 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
-      disabled={!isValid}
       showCloseButton
     >
       <FormControl fullWidth>

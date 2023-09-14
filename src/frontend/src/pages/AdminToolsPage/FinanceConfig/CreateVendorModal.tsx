@@ -36,7 +36,6 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
   const {
     handleSubmit,
     control,
-    formState: { isValid },
     reset
   } = useForm({
     mode: 'onChange',
@@ -58,7 +57,6 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-vendor-form"
-      disabled={!isValid}
       showCloseButton
     >
       <FormControl>
