@@ -34,6 +34,8 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -117,10 +119,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem onClick={handleReviewOpen} disabled={!isUserAllowedToReview}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
           Review
         </MenuItem>
         <Divider />
         <MenuItem disabled={!isUserAllowedToDelete} onClick={handleDeleteOpen}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
           Delete
         </MenuItem>
       </Menu>
