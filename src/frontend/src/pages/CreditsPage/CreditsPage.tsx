@@ -84,6 +84,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Yechan Na', color: '#C2B078' },
     { name: 'Liam Kosar', color: '#eb66ff' },
     { name: 'Daniel Yu', color: '#bdc0c7' },
+    { name: 'Jake Wu-Chen', color: '#bdc0c7' },
     { name: 'William Seward', color: '#e53774' },
     {
       name: 'Zach Norman',
