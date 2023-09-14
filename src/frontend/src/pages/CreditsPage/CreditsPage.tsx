@@ -96,6 +96,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Ethan Mouri', color: '#00bbff' },
     { name: 'Laith Taher', color: '#000080' },
+    { name: 'Teera Tesharojanasup', color: '#DC143C', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 10 } },
     { name: 'Griffin Cooper', color: '#02d69a' },
     { name: 'Amani Scarborough', color: '#e34db6' },
     { name: 'Peter Moise', color: '#FF0000' },
