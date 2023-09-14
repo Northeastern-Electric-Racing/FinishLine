@@ -41,7 +41,11 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
   };
 
   const handleCheck = async (idx: number) => {
-    await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
+    try {
+      await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
+    } catch (e) {
+      // do nothing; toasting error message will cause errors
+    }
   };
 
   items.sort((a: CheckListItem, b: CheckListItem) => {

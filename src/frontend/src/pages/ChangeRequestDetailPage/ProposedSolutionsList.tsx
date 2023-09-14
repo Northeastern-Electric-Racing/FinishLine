@@ -33,16 +33,19 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
   const addProposedSolution = async (data: ProposedSolution) => {
     setShowEditableForm(false);
     const { description, timelineImpact, scopeImpact, budgetImpact } = data;
-
-    // send the details of new proposed solution to the backend database
-    await mutateAsync({
-      submitterId: userId,
-      crId,
-      description,
-      scopeImpact,
-      timelineImpact,
-      budgetImpact
-    });
+    try {
+      // send the details of new proposed solution to the backend database
+      await mutateAsync({
+        submitterId: userId,
+        crId,
+        description,
+        scopeImpact,
+        timelineImpact,
+        budgetImpact
+      });
+    } catch (e) {
+      // do nothing; toasting error message will cause errors
+    }
   };
 
   return (
