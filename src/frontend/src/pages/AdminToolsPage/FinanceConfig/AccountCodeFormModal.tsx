@@ -23,11 +23,7 @@ interface AccountCodeFormModalProps {
 
 const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: AccountCodeFormModalProps) => {
   const toast = useToast();
-  const {
-    handleSubmit,
-    control,
-    reset
-  } = useForm({
+  const { handleSubmit, control, reset } = useForm({
     mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {

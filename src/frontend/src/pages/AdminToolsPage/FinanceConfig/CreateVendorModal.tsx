@@ -33,11 +33,7 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
     handleClose();
   };
 
-  const {
-    handleSubmit,
-    control,
-    reset
-  } = useForm({
+  const { handleSubmit, control, reset } = useForm({
     mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {
