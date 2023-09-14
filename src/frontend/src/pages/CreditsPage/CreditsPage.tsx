@@ -103,6 +103,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Waasif Mahmood', color: '#114a13' },
     { name: 'Matthew Wang', color: '#c657f2' },
     { name: 'Sharon Yang', color: '#ed8a5f' },
+    { name: 'Kevin Yang', color: '#0000FF' },
     { name: 'Hareg Aderie', color: '#34b46c' },
     { name: 'Kevin Polackal', color: '#800080' }
   ];
