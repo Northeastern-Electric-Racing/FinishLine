@@ -118,7 +118,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+            <VerticalDetailDisplay
+              label="Expense Type"
+              content={`${reimbursementRequest.expenseType.code} - ${reimbursementRequest.expenseType.name}`}
+            />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
