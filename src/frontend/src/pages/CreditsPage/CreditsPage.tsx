@@ -20,6 +20,7 @@ const CreditsPage: React.FC = () => {
     color: string;
     sx?: {};
   }[] = [
+    { name: 'Kevin Yang', color: '#0000FF' },
     { name: 'Anthony Bernardi', color: '#566bd4' },
     { name: 'Reid Chandler', color: '#e53774' },
     {
