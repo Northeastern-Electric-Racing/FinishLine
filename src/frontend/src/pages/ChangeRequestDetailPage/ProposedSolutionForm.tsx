@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
