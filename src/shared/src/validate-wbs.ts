@@ -5,16 +5,10 @@
 
 import { WbsNumber } from './types/project-types';
 
-export const wbsNumComparator = (wbsNum1: any, wbsNum2: any) => {
-  // Extract the 'id' property from the objects
-  const wbsObj1 = wbsNum1.id;
-  const wbsObj2 = wbsNum2.id;
+export const wbsNumComparator = (wbsNum1: string, wbsNum2: string) => {
+  const wbsParts1 = wbsNum1.split('.').map(Number);
+  const wbsParts2 = wbsNum2.split('.').map(Number);
 
-  // Split the WBS numbers into their components
-  const wbsParts1 = wbsObj1.split('.').map(Number);
-  const wbsParts2 = wbsObj2.split('.').map(Number);
-
-  // Compare the components individually
   for (let i = 0; i < wbsParts1.length; i++) {
     if (wbsParts1[i] < wbsParts2[i]) {
       return -1;
@@ -23,7 +17,6 @@ export const wbsNumComparator = (wbsNum1: any, wbsNum2: any) => {
     }
   }
 
-  // If all components are equal, return 0
   return 0;
 };
 
