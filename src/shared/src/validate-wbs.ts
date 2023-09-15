@@ -5,10 +5,14 @@
 
 import { WbsNumber } from './types/project-types';
 
-export const wbsNumComparator = (wbsNum1: { id: string }, wbsNum2: { id: string }) => {
+export const wbsNumComparator = (wbsNum1: any, wbsNum2: any) => {
+  // Extract the 'id' property from the objects
+  const wbsObj1 = wbsNum1.id;
+  const wbsObj2 = wbsNum2.id;
+
   // Split the WBS numbers into their components
-  const wbsParts1 = wbsNum1.id.split('.').map(Number);
-  const wbsParts2 = wbsNum2.id.split('.').map(Number);
+  const wbsParts1 = wbsObj1.split('.').map(Number);
+  const wbsParts2 = wbsObj2.split('.').map(Number);
 
   // Compare the components individually
   for (let i = 0; i < wbsParts1.length; i++) {
@@ -28,7 +32,6 @@ export const wbsNumComparator = (wbsNum1: { id: string }, wbsNum2: { id: string 
  *
  * @param wbsNum WBS number to validate
  */
-
 export const validateWBS = (wbsNum: string): WbsNumber => {
   const errorMsg: string = 'WBS Invalid: ';
   if (wbsNum == null || wbsNum === undefined) {
