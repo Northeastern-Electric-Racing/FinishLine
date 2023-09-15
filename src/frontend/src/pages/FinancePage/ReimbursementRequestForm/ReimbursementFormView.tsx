@@ -193,11 +193,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       value={value}
                       error={!!errors.expenseTypeId}
                     >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
+                      {allExpenseTypes
+                        .filter((expenseType) => expenseType.allowed)
+                        .map((expenseType) => (
+                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                            {expenseType.name}
+                          </MenuItem>
+                        ))}
                     </Select>
                   )}
                 />
