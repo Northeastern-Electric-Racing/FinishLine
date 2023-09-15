@@ -3005,6 +3005,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prisma/engines@npm:5.3.1":
+  version: 5.3.1
+  resolution: "@prisma/engines@npm:5.3.1"
+  checksum: a231adad60ac42569b560ea9782bc181818d8ad15e65283d1317bda5d7aa754e5b536a3f9365ce1eda8961e1eff4eca5978c456fa9764a867fe4339d123e7371
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-node-resolve@npm:^7.1.1":
   version: 7.1.3
   resolution: "@rollup/plugin-node-resolve@npm:7.1.3"
@@ -9583,6 +9590,7 @@ __metadata:
     eslint-config-prettier: ^8.5.0
     eslint-plugin-prettier: ^4.2.1
     prettier: ^2.0.5
+    prisma: latest
     rimraf: ^3.0.2
     ts-node: ^10.9.1
     typescript: ^4.1.5
@@ -15966,6 +15974,17 @@ __metadata:
     prisma: build/index.js
     prisma2: build/index.js
   checksum: 1d0ed616abd7f8de22441e333b976705f1cb05abcb206965df3fc6a7ea03911ef467dd484a4bc51fdc6cff72dd9857b9852be5f232967a444af0a98c49bfdb76
+  languageName: node
+  linkType: hard
+
+"prisma@npm:latest":
+  version: 5.3.1
+  resolution: "prisma@npm:5.3.1"
+  dependencies:
+    "@prisma/engines": 5.3.1
+  bin:
+    prisma: build/index.js
+  checksum: e825adbcb4eec81de276de5507fb7e5486db7788c8c9de36ba6ed73f9e87d9f56b64d0e183a31dc6b80f6737ae1fbcdb110aac44ab89299af646aeb966655bef
   languageName: node
   linkType: hard
 
