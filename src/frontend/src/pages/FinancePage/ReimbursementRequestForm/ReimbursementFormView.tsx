@@ -5,6 +5,7 @@ import {
   FormLabel,
   Grid,
   IconButton,
+  Link,
   MenuItem,
   Select,
   TextField,
@@ -27,9 +28,11 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { expenseTypePipe } from '../../../utils/pipes';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -52,6 +55,7 @@ interface ReimbursementRequestFormViewProps {
   submitText: string;
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  hasSecureSettingsSet: boolean;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -71,12 +75,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   submitText,
   previousPage,
-  setValue
+  setValue,
+  hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
   const products = watch(`reimbursementProducts`);
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
+
+  useEffect(() => {
+    if (!hasSecureSettingsSet) {
+      //<Link component={RouterLink} to={routes.SETTINGS}> </Link>
+      toast.warning('Your secure settings must be set to create a reimbursement request, you can set them here.', Infinity);
+    }
+  }, []);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -257,7 +269,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit">
+        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
           {submitText}
         </NERSuccessButton>
       </Box>

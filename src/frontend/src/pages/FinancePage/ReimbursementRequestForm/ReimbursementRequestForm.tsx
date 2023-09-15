@@ -15,6 +15,7 @@ import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
+import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
@@ -120,6 +121,10 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     data: allProjects
   } = useAllProjects();
 
+  const { data } = useCurrentUserSecureSettings();
+  const userSecureSettings = data ?? {};
+  const hasSecureSettingsSet = Object.values(userSecureSettings).every((x) => x !== '') ? true : false;
+
   const toast = useToast();
   const history = useHistory();
 
@@ -181,6 +186,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
+      hasSecureSettingsSet={hasSecureSettingsSet}
     />
   );
 };
