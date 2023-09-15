@@ -124,7 +124,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     });
   });
 
-  wbsDropdownOptions.sort(wbsNumComparator);
+  wbsDropdownOptions.sort((a, b) => wbsNumComparator(a.id, b.id));
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
