@@ -288,7 +288,7 @@ describe('Tasks', () => {
         TasksService.editTaskAssignees(aquaman, taskId, [superman.userId, wonderwoman.userId])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });

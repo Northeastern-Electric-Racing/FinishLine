@@ -158,7 +158,7 @@ export default class TasksService {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
       throw new AccessDeniedException(
-        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
       );
 
     // this throws if any of the users aren't found
