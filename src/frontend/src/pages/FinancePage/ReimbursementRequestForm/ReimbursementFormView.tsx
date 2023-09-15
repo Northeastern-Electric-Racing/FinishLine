@@ -72,6 +72,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   previousPage,
   setValue
 }) => {
+  const [expenseTypeSelected, setExpenseTypeSelected] = useState(null as ExpenseType | null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
   const products = watch(`reimbursementProducts`);
@@ -140,9 +141,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     value={value}
                     error={!!errors.account}
                   >
-                    {Object.values(ClubAccount).map((account) => (
-                      <MenuItem key={account} value={account}>
-                        {account}
+                    {expenseTypeSelected.allowedRefundSources.map((refundSource) => (
+                      <MenuItem key={refundSource} value={refundSource}>
+                        {refundSource}
                       </MenuItem>
                     ))}
                   </Select>
@@ -189,7 +190,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
+                      onChange={((newValue) => onChange(newValue.target.value), setExpenseTypeSelected(value))}
                       value={value}
                       error={!!errors.expenseTypeId}
                     >
