@@ -29,6 +29,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { refundSourceToCodeName } from '../../../utils/pipes';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -142,7 +143,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
-                        {account}
+                        {refundSourceToCodeName(account, account === ClubAccount.CASH ? 830667 : 800462)}
                       </MenuItem>
                     ))}
                   </Select>
