@@ -154,6 +154,12 @@ export default class WorkPackagesService {
       throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
     }
 
+    blockedBy.forEach((dep: WbsNumber) => {
+      if (dep.workPackageNumber === 0) {
+        throw new HttpException(400, 'A Project cannot be a Blocker');
+      }
+    });
+
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
@@ -286,6 +292,12 @@ export default class WorkPackagesService {
   ): Promise<void> {
     // verify user is allowed to edit work packages
     if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
+
+    blockedBy.forEach((dep: WbsNumber) => {
+      if (dep.workPackageNumber === 0) {
+        throw new HttpException(400, 'A Project cannot be a Blocker');
+      }
+    });
 
     const { userId } = user;
 
