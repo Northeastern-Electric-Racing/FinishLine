@@ -1,4 +1,4 @@
-import { ChangeRequest, ChangeRequestStatus, User, isLeadership, wbsPipe } from 'shared';
+import { ChangeRequest, ChangeRequestStatus, isLeadership, wbsPipe } from 'shared';
 import ActionsMenu from '../../components/ActionsMenu';
 import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
