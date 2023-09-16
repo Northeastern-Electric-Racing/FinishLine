@@ -29,7 +29,6 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
-import { useAllUsers } from '../../hooks/users.hooks';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
@@ -88,10 +87,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     projectNumber: changeRequest.wbsNum.projectNumber,
     workPackageNumber: 0
   });
-  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
   if (isError) return <ErrorPage message={error?.message} />;
-  if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
-  if (!project || isLoading || isLoadingAllUsers || !users) return <LoadingIndicator />;
+  if (!project || isLoading) return <LoadingIndicator />;
 
   const { name: projectName } = project;
 
@@ -107,7 +104,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           changeRequest={changeRequest}
           handleReviewOpen={handleReviewOpen}
           handleDeleteOpen={handleDeleteOpen}
-          users={users}
         />
       }
     >

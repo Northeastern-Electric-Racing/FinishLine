@@ -9,21 +9,15 @@ export type ButtonInfo = {
   onClick: () => void;
   disabled?: boolean;
   icon?: ReactElement;
+  dividerTop?: boolean;
 };
 
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
   title?: string;
-  divider?: boolean;
 }
 
-interface menuButtonProps {
-  divider?: boolean;
-  index: number;
-  button: ButtonInfo;
-}
-
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', divider = false }) => {
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -35,23 +29,6 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', d
   };
 
   const dropdownOpen = Boolean(anchorEl);
-
-  const MenuButton: React.FC<menuButtonProps> = ({ divider = false, index, button }) => (
-    <>
-      <MenuItem
-        key={index}
-        onClick={() => {
-          handleDropdownClose();
-          button.onClick();
-        }}
-        disabled={button.disabled}
-      >
-        <ListItemIcon>{button.icon}</ListItemIcon>
-        {button.title}
-      </MenuItem>
-      {divider ? <Divider /> : <></>}
-    </>
-  );
 
   return (
     <Box>
@@ -65,10 +42,21 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions', d
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {buttons.map((button, index) => {
-          return index === buttons.length - 1 ? (
-            <MenuButton index={index} button={button} />
-          ) : (
-            <MenuButton index={index} button={button} divider={divider} />
+          return (
+            <>
+              {button.dividerTop ? <Divider /> : <></>}
+              <MenuItem
+                key={index}
+                onClick={() => {
+                  handleDropdownClose();
+                  button.onClick();
+                }}
+                disabled={button.disabled}
+              >
+                <ListItemIcon>{button.icon}</ListItemIcon>
+                {button.title}
+              </MenuItem>
+            </>
           );
         })}
       </Menu>

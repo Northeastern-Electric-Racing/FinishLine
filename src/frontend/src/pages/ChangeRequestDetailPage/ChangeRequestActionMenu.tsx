@@ -11,11 +11,13 @@ import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useRequestCRReview } from '../../hooks/change-requests.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useCurrentUser } from '../../hooks/users.hooks';
+import { useCurrentUser, useAllUsers } from '../../hooks/users.hooks';
 import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { userToAutocompleteOption } from '../../utils/task.utils';
 import { useState } from 'react';
+import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
@@ -24,7 +26,6 @@ interface ChangeRequestActionMenuProps {
   changeRequest: ChangeRequest;
   handleReviewOpen: () => void;
   handleDeleteOpen: () => void;
-  users: User[];
 }
 
 const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
@@ -33,35 +34,36 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   isUserAllowedToDelete,
   changeRequest,
   handleReviewOpen,
-  handleDeleteOpen,
-  users
+  handleDeleteOpen
 }: ChangeRequestActionMenuProps) => {
   const { mutateAsync: requestCRReview } = useRequestCRReview(changeRequest.crId.toString());
   const toast = useToast();
   const currentUser = useCurrentUser();
   const history = useHistory();
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
-
+  const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
+  if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
+  if (isLoadingAllUsers || !users) return <LoadingIndicator />;
   const handleRequestReviewerClick = async () => {
     if (reviewerIds.length === 0) {
       toast.error('Must select at least one reviewer to request review from');
-      return;
-    }
-    try {
-      await requestCRReview({ userIds: reviewerIds });
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
+    } else {
+      try {
+        await requestCRReview({ userIds: reviewerIds });
+      } catch (e) {
+        if (e instanceof Error) {
+          toast.error(e.message);
+        }
       }
     }
   };
 
-  const isRequestAllowed = changeRequest.submitter.userId === currentUser.userId;
+  const isRequestAllowed =
+    changeRequest.submitter.userId === currentUser.userId && changeRequest.status === ChangeRequestStatus.Open;
 
   const UnreviewedActionsDropdown = () => (
     <div style={{ marginTop: '10px' }}>
       <ActionsMenu
-        divider={true}
         buttons={[
           {
             title: 'Review',
@@ -73,14 +75,15 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
             title: 'Delete',
             onClick: handleDeleteOpen,
             disabled: !isUserAllowedToDelete,
-            icon: <DeleteIcon fontSize="small" />
+            icon: <DeleteIcon fontSize="small" />,
+            dividerTop: true
           }
         ]}
       />
     </div>
   );
 
-  const RequestReviewerDropdown = () => (
+  const requestReviewerDropdown = () => (
     <>
       <Autocomplete
         isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -121,12 +124,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
     </>
   );
 
-  const RenderUnreviewedActionsDropdown = () =>
-    isRequestAllowed && changeRequest.status === ChangeRequestStatus.Open ? (
-      RequestReviewerDropdown()
-    ) : (
-      <UnreviewedActionsDropdown />
-    );
+  const renderUnreviewedActionsDropdown = () =>
+    isRequestAllowed ? requestReviewerDropdown() : <UnreviewedActionsDropdown />;
 
   const ImplementCrDropdown = () => (
     <ActionsMenu
@@ -159,7 +158,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
     />
   );
 
-  return changeRequest.accepted ? <ImplementCrDropdown /> : <>{RenderUnreviewedActionsDropdown()}</>;
+  return changeRequest.accepted ? <ImplementCrDropdown /> : <>{renderUnreviewedActionsDropdown()}</>;
 };
 
 export default ChangeRequestActionMenu;
