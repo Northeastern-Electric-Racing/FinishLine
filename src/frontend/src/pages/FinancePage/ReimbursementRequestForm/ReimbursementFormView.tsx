@@ -198,7 +198,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                           onChange(newValue.expenseTypeId);
                         }
                       }}
-                      renderInput={(params) => <TextField {...params} label="Expense Type" error={!!errors.expenseTypeId} />}
+                      renderInput={(params) => (
+                        <TextField {...params} placeholder="Expense Type" error={!!errors.expenseTypeId} />
+                      )}
                     />
                   )}
                 />
