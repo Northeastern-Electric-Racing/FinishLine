@@ -13,7 +13,8 @@ import {
   getSingleChangeRequest,
   reviewChangeRequest,
   addProposedSolution,
-  deleteChangeRequest
+  deleteChangeRequest,
+  requestCRReview
 } from '../apis/change-requests.api';
 
 /**
@@ -144,6 +145,25 @@ export const useCreateProposeSolution = () => {
         payload.timelineImpact,
         payload.budgetImpact
       );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to request cr reviewers
+ */
+export const useRequestCRReview = (crId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['change requests', 'review'],
+    async (crReviewPayload: { userIds: number[] }) => {
+      const { data } = await requestCRReview(crId, crReviewPayload);
       return data;
     },
     {
