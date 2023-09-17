@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useCreateVendor } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -33,8 +33,12 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
     handleClose();
   };
 
-  const { handleSubmit, control, reset } = useForm({
-    mode: 'onChange',
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors }
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name: ''
@@ -58,6 +62,7 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
       <FormControl>
         <FormLabel>Vendor Name</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
+        <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
   );
