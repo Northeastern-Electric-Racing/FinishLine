@@ -1,5 +1,6 @@
 import { Delete } from '@mui/icons-material';
 import {
+  Autocomplete,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -188,17 +189,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   name="expenseTypeId"
                   control={control}
                   render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <Autocomplete
+                      options={allExpenseTypes}
+                      getOptionLabel={(expenseType) => expenseType.name}
+                      value={allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value) || null}
+                      onChange={(_event, newValue) => {
+                        if (newValue) {
+                          onChange(newValue.expenseTypeId);
+                        }
+                      }}
+                      renderInput={(params) => <TextField {...params} label="Expense Type" error={!!errors.expenseTypeId} />}
+                    />
                   )}
                 />
                 <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
