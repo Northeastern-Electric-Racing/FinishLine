@@ -192,15 +192,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     <Autocomplete
                       options={allExpenseTypes}
                       getOptionLabel={(expenseType) => expenseType.name}
-                      value={allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value) || null}
+                      value={allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value)}
                       onChange={(_event, newValue) => {
                         if (newValue) {
                           onChange(newValue.expenseTypeId);
                         }
                       }}
-                      renderInput={(params) => (
-                        <TextField {...params} placeholder="Expense Type" error={!!errors.expenseTypeId} />
-                      )}
+                      renderInput={(params) => <TextField {...params} placeholder="Expense Type" />}
                     />
                   )}
                 />
