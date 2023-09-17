@@ -49,7 +49,7 @@ const CreateVendorModal = ({ showModal, handleClose }: NewVendorProps) => {
       open={showModal}
       onHide={handleClose}
       title="New Vendor"
-      reset={reset}
+      reset={() => reset({ name: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-vendor-form"

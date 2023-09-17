@@ -49,7 +49,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
-      reset={reset}
+      reset={() => reset({ name: '', code: undefined, allowed: false })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
