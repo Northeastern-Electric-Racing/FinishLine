@@ -201,7 +201,7 @@ describe('Tasks', () => {
       // Try updating from IN_PROGRESS to IN_BACKLOG
       await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -216,7 +216,7 @@ describe('Tasks', () => {
       // Aquaman is a leader, but did not create this task
       await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -288,7 +288,7 @@ describe('Tasks', () => {
         TasksService.editTaskAssignees(aquaman, taskId, [superman.userId, wonderwoman.userId])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -391,7 +391,11 @@ describe('Tasks', () => {
       vi.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(false);
       await expect(() =>
         TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
     });
 
     test('Task not found', async () => {
