@@ -28,7 +28,6 @@ const NERFormModal = ({
    */
   const onSubmitWrapper = async (data: any) => {
     await onFormSubmit(data);
-    console.log('reset');
     reset();
   };
 
