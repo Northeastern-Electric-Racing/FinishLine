@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -190,7 +191,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
             ''
           ) : (
             <Box display="flex" flexDirection="row-reverse">
-              <Button
+              <NERSuccessButton
                 color="success"
                 variant="contained"
                 type="submit"
@@ -198,7 +199,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
                 Add
-              </Button>
+              </NERSuccessButton>
             </Box>
           )}
         </form>

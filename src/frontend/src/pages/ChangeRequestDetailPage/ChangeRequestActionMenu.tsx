@@ -3,6 +3,7 @@ import ActionsMenu from '../../components/ActionsMenu';
 import { Autocomplete, Checkbox, TextField, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import PostAddIcon from '@mui/icons-material/PostAdd';
@@ -42,8 +43,10 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const history = useHistory();
   const [reviewerIds, setReviewerIds] = useState<number[]>([]);
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
+
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (isLoadingAllUsers || !users) return <LoadingIndicator />;
+
   const handleRequestReviewerClick = async () => {
     if (reviewerIds.length === 0) {
       toast.error('Must select at least one reviewer to request review from');
@@ -69,7 +72,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
             title: 'Review',
             onClick: handleReviewOpen,
             disabled: !isUserAllowedToReview,
-            icon: <EditIcon fontSize="small" />
+            icon: <ContentPasteIcon fontSize="small" />
           },
           {
             title: 'Delete',

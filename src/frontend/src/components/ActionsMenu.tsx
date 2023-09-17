@@ -41,23 +41,21 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
         {title}
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {buttons.map((button, index) => {
-          return (
-            <>
-              {button.dividerTop ? <Divider /> : <></>}
-              <MenuItem
-                key={index}
-                onClick={() => {
-                  handleDropdownClose();
-                  button.onClick();
-                }}
-                disabled={button.disabled}
-              >
-                <ListItemIcon>{button.icon}</ListItemIcon>
-                {button.title}
-              </MenuItem>
-            </>
-          );
+        {buttons.flatMap((button, index) => {
+          return [
+            button.dividerTop && <Divider key={`${index}-divider`} />,
+            <MenuItem
+              key={index}
+              onClick={() => {
+                handleDropdownClose();
+                button.onClick();
+              }}
+              disabled={button.disabled}
+            >
+              <ListItemIcon>{button.icon}</ListItemIcon>
+              {button.title}
+            </MenuItem>
+          ];
         })}
       </Menu>
     </Box>
