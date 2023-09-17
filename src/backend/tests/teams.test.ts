@@ -1,7 +1,7 @@
 import TeamsService from '../src/services/teams.services';
 import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
-import { prismaTeam1, primsaTeam2, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
+import { prismaTeam1, sharedTeam1, justiceLeague } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 import { batman, flash, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
@@ -210,17 +210,46 @@ describe('Teams', () => {
   });
 
   describe('setTeamLeads', () => {
-    test('setTeamLeads leads not found', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+    test('setTeamLeads submitter is not the head or admin', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([theVisitor]);
 
-      const callSetTeamLeads = async () => 
-        await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [theVisitor.userId, 122, 55]);
-      
-      const expectedException = new HttpException(404, 'User(s) with the following ids not found: 122, 55');
+      const callSetTeamLeads = async () =>
+        await TeamsService.setTeamLeads(wonderwoman, sharedTeam1.teamId, [theVisitor.userId]);
+
+      const expectedException = new AccessDeniedException('You must be an admin or the head to update the lead!');
 
       await expect(callSetTeamLeads).rejects.toThrow(expectedException);
     });
-    
-  })
+  });
+
+  test('setTeamLeads works', async () => {
+    vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+    vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+    vi.spyOn(userUtils, 'getUsers').mockResolvedValue([greenlantern, theVisitor]);
+
+    const teamId = 'id1';
+    const userIds = [
+      {
+        userId: 5
+      },
+      {
+        userId: 7
+      }
+    ];
+    const res = await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [5, 7]);
+
+    expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.team.update).toHaveBeenCalledTimes(1);
+    expect(prisma.team.update).toHaveBeenCalledWith({
+      where: { teamId },
+      data: {
+        leads: {
+          set: userIds
+        }
+      },
+      ...teamQueryArgs
+    });
+    expect(res).toStrictEqual(sharedTeam1);
+  });
 });
