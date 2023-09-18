@@ -13,6 +13,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAuth } from '../../hooks/auth.hooks';
 import { Button } from '@mui/material';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -24,6 +25,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
+  const toast = useToast();
 
   if (isLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -44,7 +46,9 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         budgetImpact
       });
     } catch (e) {
-      // do nothing; toasting error message will cause errors
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
     }
   };
 
