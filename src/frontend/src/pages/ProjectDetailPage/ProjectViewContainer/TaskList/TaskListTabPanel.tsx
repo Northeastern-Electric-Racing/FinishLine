@@ -123,6 +123,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       (auth.user.role === 'APP_ADMIN' ||
         auth.user.role === 'ADMIN' ||
         auth.user.role === 'LEADERSHIP' ||
+        auth.user.role === 'HEAD' ||
         project.projectLead?.userId === auth.user.userId ||
         project.projectManager?.userId === auth.user.userId ||
         task.assignees.map((u) => u.userId).includes(auth.user.userId) ||

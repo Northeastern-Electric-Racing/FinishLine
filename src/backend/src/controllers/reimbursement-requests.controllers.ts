@@ -182,7 +182,10 @@ export default class ReimbursementRequestsController {
 
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
 
-      res.header('Access-Control-Allow-Origin', 'true');
+      const isProd = process.env.NODE_ENV === 'production';
+      const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
+
+      res.header('Access-Control-Allow-Origin', origin);
       res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);

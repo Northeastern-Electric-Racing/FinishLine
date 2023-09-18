@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { expenseTypePipe } from '../../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -125,7 +126,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+            <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
