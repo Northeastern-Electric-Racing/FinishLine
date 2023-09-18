@@ -27,13 +27,9 @@ export const useProvideAuth = () => {
   };
 
   const signin = async (id_token: string) => {
-    try {
-      const user = await mutateAsync(id_token);
-      setUser(user);
-      return user;
-    } catch (e) {
-      // do nothing; toasting error message will cause errors
-    }
+    const user = await mutateAsync(id_token);
+    setUser(user);
+    return user;
   };
 
   const signout = () => {

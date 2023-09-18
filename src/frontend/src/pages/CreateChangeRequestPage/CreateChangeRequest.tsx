@@ -53,28 +53,23 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
       const crId = parseInt(cr.message);
       proposedSolutions.forEach(async (ps) => {
         const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-        try {
-          await cpsMutateAsync({
-            crId,
-            submitterId: userId,
-            description,
-            timelineImpact,
-            scopeImpact,
-            budgetImpact
-          });
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            toast.error(error.message);
-          }
-        }
+
+        await cpsMutateAsync({
+          crId,
+          submitterId: userId,
+          description,
+          timelineImpact,
+          scopeImpact,
+          budgetImpact
+        });
       });
+
+      history.push(routes.CHANGE_REQUESTS);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
       }
     }
-
-    history.push(routes.CHANGE_REQUESTS);
   };
 
   const handleCancel = () => {

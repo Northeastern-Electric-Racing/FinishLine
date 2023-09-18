@@ -20,19 +20,12 @@ const CreateReimbursementRequestPage: React.FC = () => {
   if (createReimbursementRequestIsLoading || receiptsIsLoading) return <LoadingIndicator />;
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
-    try {
-      const { reimbursementRequestId } = await createReimbursementRequest(data);
-      await uploadReceipts({
-        id: reimbursementRequestId,
-        files: data.receiptFiles.map((file) => file.file!)
-      });
-      return reimbursementRequestId;
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
-      }
-    }
-    throw new Error('Could not create reimbursement.');
+    const { reimbursementRequestId } = await createReimbursementRequest(data);
+    await uploadReceipts({
+      id: reimbursementRequestId,
+      files: data.receiptFiles.map((file) => file.file!)
+    });
+    return reimbursementRequestId;
   };
 
   return (
