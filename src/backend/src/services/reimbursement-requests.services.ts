@@ -171,7 +171,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, dateReceived: Date, submitter: User): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, dateReceived: string, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -196,6 +196,11 @@ export default class ReimbursementRequestService {
     if (amount > totalOwed - totalReimbursed) {
       throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
     }
+
+    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
+    const dateCreated = new Date(dateReceived.split('T')[0]);
+    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
+
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,
