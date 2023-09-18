@@ -169,7 +169,7 @@ export default class TeamsService {
    * @param teamId a id of team to be updated
    * @param userIds a array of user Ids that replaces team's old leads
    * @returns an updated team
-   * @throws if the team is not found, the submitter has no priviledge, or any user from the given userIds does not exist
+   * @throws if the team is not found, the submitter has no privilege, or any user from the given userIds does not exist
    */
   static async setTeamLeads(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
     const team = await prisma.team.findUnique({
@@ -188,15 +188,15 @@ export default class TeamsService {
     }
 
     if (newLeads.map((lead) => lead.userId).includes(team.headId)) {
-      throw new AccessDeniedException('The lead cannot be the head of the team!');
+      throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
     if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      throw new AccessDeniedException('The lead cannot be a member of the team!');
+      throw new HttpException(400, 'A lead cannot be a member of the team!');
     }
 
     if (teams.map((team) => team.headId).some((teamHeadId) => newLeads.map((lead) => lead.userId).includes(teamHeadId))) {
-      throw new AccessDeniedException('A teams lead must not be a head of another team!');
+      throw new HttpException(400, 'A teams lead must not be a head of another team!');
     }
 
     const transformedLeads = newLeads.map((lead) => {
