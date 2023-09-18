@@ -12,7 +12,6 @@ import { useParams } from 'react-router-dom';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import EditReimbursementRequestRenderedDefaultValues from './EditReimbursementRequestRenderedDefaultValues';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 const EditReimbursementRequestPage: React.FC = () => {
   const id = useParams<{ id: string }>().id;
@@ -21,7 +20,6 @@ const EditReimbursementRequestPage: React.FC = () => {
     useEditReimbursementRequest(id);
   const { isLoading: uploadReceiptsIsLoading, mutateAsync: uploadReceipts } = useUploadManyReceipts();
   const { isLoading: getIsLoading, isError, error, data: reimbursementRequest } = useSingleReimbursementRequest(id);
-  const toast = useToast();
 
   if (isError) return <ErrorPage error={error} />;
 
