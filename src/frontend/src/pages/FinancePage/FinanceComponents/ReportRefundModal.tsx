@@ -16,7 +16,9 @@ const schema = yup.object().shape({
     .required()
     .test('two decimals', 'Refund must be formatted as a dollar amount with at most two decimals', (value) => {
       if (!value) return false;
-      return Math.floor(value * 100) === value * 100;
+      const roundedValue = Math.round(value * 100) / 100; // 2 decimal places
+      const threshold = 0.001;
+      return Math.abs(roundedValue - value) <= threshold;
     })
     .typeError('The refund amount should be a valid number'),
   dateReceived: yup.date().required()
