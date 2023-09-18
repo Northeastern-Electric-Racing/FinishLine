@@ -126,6 +126,14 @@ export const centsToDollar = (cents: number) => {
 };
 
 /** Displays a refund source as a string "Code - Name" */
-export const codeAndRefundSourceName = (refundSource: ClubAccount, refundCode: number) => {
-  return `${refundCode}-${refundSource}`;
+export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
+  const CASH_ACCOUNT_CODE = 830667;
+  const BUDGET_ACCOUNT_CODE = 800462;
+
+  switch (refundSource) {
+    case ClubAccount.CASH:
+      return `${CASH_ACCOUNT_CODE}-${refundSource}`;
+    case ClubAccount.BUDGET:
+      return `${BUDGET_ACCOUNT_CODE}-${refundSource}`;
+  }
 };

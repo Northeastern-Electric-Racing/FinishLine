@@ -143,7 +143,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
-                        {codeAndRefundSourceName(account, account === ClubAccount.CASH ? 830667 : 800462)}
+                        {codeAndRefundSourceName(account)}
                       </MenuItem>
                     ))}
                   </Select>

@@ -12,7 +12,7 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ClubAccount, ReimbursementRequest } from 'shared';
+import { ReimbursementRequest } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
@@ -122,13 +122,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay
-              label="Refund Source"
-              content={codeAndRefundSourceName(
-                reimbursementRequest.account,
-                reimbursementRequest.account === ClubAccount.CASH ? 830667 : 800462
-              )}
-            />
+            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
