@@ -45,14 +45,15 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const { userId } = auth.user;
 
   const handleConfirm = async (data: FormInput) => {
-    const cr = await mutateAsync({
-      ...data,
-      wbsNum: validateWBS(wbsNum)
-    });
-    const crId = parseInt(cr.message);
-    proposedSolutions.forEach(async (ps) => {
-      const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-      try {
+    try {
+      const cr = await mutateAsync({
+        ...data,
+        wbsNum: validateWBS(wbsNum)
+      });
+      const crId = parseInt(cr.message);
+      proposedSolutions.forEach(async (ps) => {
+        const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
+
         await cpsMutateAsync({
           crId,
           submitterId: userId,
@@ -61,14 +62,14 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
           scopeImpact,
           budgetImpact
         });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
-      }
-    });
+      });
 
-    history.push(routes.CHANGE_REQUESTS);
+      history.push(routes.CHANGE_REQUESTS);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   const handleCancel = () => {
