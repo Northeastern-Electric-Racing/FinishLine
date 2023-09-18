@@ -16,14 +16,10 @@ export const useProvideAuth = () => {
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
 
   const devSignin = async (userId: number) => {
-    try {
-      const user = await mutateAsyncDev(userId);
-      setUser(user);
-      localStorage.setItem('devUserId', userId.toString());
-      return user;
-    } catch (e) {
-      // do nothing; toasting error message will cause errors
-    }
+    const user = await mutateAsyncDev(userId);
+    setUser(user);
+    localStorage.setItem('devUserId', userId.toString());
+    return user;
   };
 
   const signin = async (id_token: string) => {
