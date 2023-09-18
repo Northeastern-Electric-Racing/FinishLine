@@ -10,7 +10,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 const schema = yup.object().shape({
-  name: yup.string().required('Account Name is Required')
+  name: yup.string().required('Vendor Name is Required')
 });
 
 interface NewVendorProps {
