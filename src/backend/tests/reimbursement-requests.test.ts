@@ -573,7 +573,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Reimbursement User Tests', () => {
     test('Throws an error if user is a guest', async () => {
-      await expect(ReimbursementRequestService.reimburseUser(100, new Date('2023-01-01'), theVisitor)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(100, '2023-01-11T11:12:33.409Z', theVisitor)).rejects.toThrow(
         new AccessDeniedException('Guests cannot reimburse a user for their expenses.')
       );
     });
@@ -590,7 +590,7 @@ describe('Reimbursement Requests', () => {
         }
       ]);
 
-      await expect(ReimbursementRequestService.reimburseUser(200, new Date('2023-01-01'), batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(200, '2023-01-01T09:12:33.409Z', batman)).rejects.toThrow(
         new HttpException(400, 'Reimbursement is greater than the total amount owed to the user')
       );
     });
@@ -621,7 +621,7 @@ describe('Reimbursement Requests', () => {
 
       const newReimbursement = await ReimbursementRequestService.reimburseUser(
         reimbursementAmount,
-        new Date('2023-01-01'),
+        '2023-01-01T19:12:33.409Z',
         batman
       );
 
