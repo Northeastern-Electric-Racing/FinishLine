@@ -11,6 +11,7 @@ import { useSingleProject } from '../../../hooks/projects.hooks';
 import { UseQueryResult } from 'react-query';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleProject1 } from '../../test-support/test-data/projects.stub';
+import { ToastProvider } from '../../../components/Toast/ToastProvider';
 
 vi.mock('../../../hooks/projects.hooks');
 const mockedUseSingleProject = useSingleProject as jest.Mock<UseQueryResult<Project>>;
@@ -25,12 +26,14 @@ const renderComponent = (cr: ChangeRequest, allowed: boolean = false) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ChangeRequestDetailsView
-        changeRequest={cr}
-        isUserAllowedToReview={allowed}
-        isUserAllowedToImplement={allowed}
-        isUserAllowedToDelete={allowed}
-      />
+      <ToastProvider>
+        <ChangeRequestDetailsView
+          changeRequest={cr}
+          isUserAllowedToReview={allowed}
+          isUserAllowedToImplement={allowed}
+          isUserAllowedToDelete={allowed}
+        />
+      </ToastProvider>
     </RouterWrapper>
   );
 };
