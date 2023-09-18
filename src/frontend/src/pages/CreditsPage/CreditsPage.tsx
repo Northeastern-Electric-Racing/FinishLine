@@ -123,6 +123,7 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Kevin Polackal', color: '#800080' },
+    { name: 'Sindhu Balamurugan', color: '#c170fa' },
     { name: 'Lily Shiomitsu', color: '#008080' },
     { name: 'Kevin Yang', color: '#0000FF' }
   ];
