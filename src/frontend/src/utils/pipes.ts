@@ -136,8 +136,8 @@ export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
 
   switch (refundSource) {
     case ClubAccount.CASH:
-      return `${CASH_ACCOUNT_CODE}-${refundSource}`;
+      return `${CASH_ACCOUNT_CODE} - ${refundSource}`;
     case ClubAccount.BUDGET:
-      return `${BUDGET_ACCOUNT_CODE}-${refundSource}`;
+      return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
   }
 };
