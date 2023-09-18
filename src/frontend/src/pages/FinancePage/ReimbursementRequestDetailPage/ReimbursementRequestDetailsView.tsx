@@ -124,10 +124,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay
               label="Refund Source"
-              content={`${codeAndRefundSourceName(
+              content={codeAndRefundSourceName(
                 reimbursementRequest.account,
                 reimbursementRequest.account === ClubAccount.CASH ? 830667 : 800462
-              )}`}
+              )}
             />
           </Grid>
           <Grid item sm={6} xs={12}>
