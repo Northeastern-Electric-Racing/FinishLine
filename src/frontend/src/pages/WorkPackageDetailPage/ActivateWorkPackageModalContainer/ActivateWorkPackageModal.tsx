@@ -29,6 +29,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { startDateTester } from '../../../utils/form';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -39,14 +40,14 @@ interface ActivateWorkPackageModalProps {
 }
 
 const schema = yup.object().shape({
-  startDate: yup.date().required(),
+  startDate: yup
+    .date()
+    .required('Start Date is required')
+    .test('start-date-valid', 'start date is not valid', startDateTester),
   confirmDetails: yup.boolean().required()
 });
 
-const defaultValues: FormInput = {
-  startDate: new Date().toLocaleDateString(),
-  confirmDetails: false
-};
+//startDate: new Date().toLocaleDateString(),
 
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   allUsers,
@@ -55,10 +56,24 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   onHide,
   onSubmit
 }) => {
+  const startDate = new Date();
+  const today = startDate.getDay();
+  if (today !== 1) {
+    const daysUntilNextMonday = (7 - today + 1) % 7;
+    startDate.setDate(startDate.getDate() + daysUntilNextMonday);
+  }
   const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema),
-    defaultValues
+    defaultValues: {
+      confirmDetails: false,
+      startDate
+    }
   });
+
+  const defaultValues: FormInput = {
+    startDate: new Date(),
+    confirmDetails: false
+  };
 
   const [projectLeadId, setProjectLeadId] = useState<string>();
   const [projectManagerId, setProjectManagerId] = useState<string>();
@@ -83,6 +98,10 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       projectManagerId: parseInt(projectManagerId)
     });
     reset(defaultValues);
+  };
+
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
   };
 
   return (
@@ -128,9 +147,10 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                     <>
                       <DatePicker
                         inputFormat="yyyy-MM-dd"
-                        onChange={(date) => onChange(date ?? new Date().toLocaleDateString())}
+                        onChange={(date) => onChange(date ?? new Date())}
                         className={'padding: 10'}
                         value={value}
+                        shouldDisableDate={disableStartDate}
                         renderInput={(params) => <TextField autoComplete="off" {...params} />}
                       />
                     </>
