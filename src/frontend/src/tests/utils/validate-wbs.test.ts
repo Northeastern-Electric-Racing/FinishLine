@@ -6,5 +6,7 @@ describe('wbsNumComparator', () => {
     expect(wbsNumComparator('1.1.3', '1.3.4')).toBe(-1);
     expect(wbsNumComparator('1.2.1', '1.2.1')).toBe(0);
     expect(wbsNumComparator('1.3.4', '1.1.3')).toBe(1);
+    expect(wbsNumComparator('2.3.4', '1.1.3')).toBe(1);
+    expect(wbsNumComparator('1.3.4', '2.1.3')).toBe(-1);
   });
 });
