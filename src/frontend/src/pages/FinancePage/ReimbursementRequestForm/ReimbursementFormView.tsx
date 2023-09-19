@@ -30,7 +30,7 @@ import ReimbursementProductTable from './ReimbursementProductTable';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { expenseTypePipe } from '../../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -84,12 +84,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const toast = useToast();
   const products = watch(`reimbursementProducts`);
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
-
-  useEffect(() => {
-    if (!hasSecureSettingsSet) {
-      toast.warning('Your secure settings must be set to create a reimbursement request, you can set them here.', Infinity);
-    }
-  }, []);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
