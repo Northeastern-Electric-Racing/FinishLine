@@ -75,8 +75,8 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
         {linkItems.map((linkItem) => (
           <NavPageLink {...linkItem} open={open} />
         ))}
-        <Typography className={styles.versionNumber}>4.0.0</Typography>
       </Box>
+      <Typography className={styles.versionNumber}>4.0.0</Typography>
     </NERDrawer>
   );
 };
