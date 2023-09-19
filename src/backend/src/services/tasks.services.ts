@@ -167,8 +167,8 @@ export default class TasksService {
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
-    const originalAssignees = originalTask.assignees.map((user) => user.userId);
-    const newAssignees = assignees.filter((user) => !originalAssignees.includes(user));
+    const originalAssigneeIds = originalTask.assignees.map((user) => user.userId);
+    const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
@@ -207,7 +207,7 @@ export default class TasksService {
       })
     );
 
-    const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: newAssignees } } });
+    const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: newAssigneeIds } } });
     assigneeSettings.forEach(async (settings) => {
       if (settings.slackId) {
         await sendSlackTaskAssignedNotification(settings.slackId, updatedTask);
