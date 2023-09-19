@@ -32,7 +32,6 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { expenseTypePipe } from '../../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
