@@ -35,6 +35,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { expenseTypePipe } from '../../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -162,7 +163,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
-                        {account}
+                        {codeAndRefundSourceName(account)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -213,11 +214,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       value={value}
                       error={!!errors.expenseTypeId}
                     >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseTypePipe(expenseType)}
-                        </MenuItem>
-                      ))}
+                      {allExpenseTypes
+                        .filter((expenseType) => expenseType.allowed)
+                        .map((expenseType) => (
+                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                            {expenseTypePipe(expenseType)}
+                          </MenuItem>
+                        ))}
                     </Select>
                   )}
                 />
