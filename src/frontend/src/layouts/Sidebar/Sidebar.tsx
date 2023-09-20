@@ -71,7 +71,14 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
         <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
       </DrawerHeader>
       <Divider />
-      <Box overflow={'auto'} sx={{ overflowX: 'hidden' }}>
+      <Box
+        overflow={'auto'}
+        sx={{ overflowX: 'hidden' }}
+        display="flex"
+        flexDirection={'column'}
+        flex={1}
+        justifyContent={'space-between'}
+      >
         {linkItems.map((linkItem) => (
           <NavPageLink {...linkItem} open={open} />
         ))}
