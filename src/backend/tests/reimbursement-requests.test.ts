@@ -573,7 +573,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Reimbursement User Tests', () => {
     test('Throws an error if user is a guest', async () => {
-      await expect(ReimbursementRequestService.reimburseUser(100, theVisitor)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(100, '2023-01-11T11:12:33.409Z', theVisitor)).rejects.toThrow(
         new AccessDeniedException('Guests cannot reimburse a user for their expenses.')
       );
     });
@@ -590,7 +590,7 @@ describe('Reimbursement Requests', () => {
         }
       ]);
 
-      await expect(ReimbursementRequestService.reimburseUser(200, batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(200, '2023-01-01T09:12:33.409Z', batman)).rejects.toThrow(
         new HttpException(400, 'Reimbursement is greater than the total amount owed to the user')
       );
     });
@@ -602,7 +602,7 @@ describe('Reimbursement Requests', () => {
         reimbursementId: 'reimbursementMockId',
         purchaserId: batman.userId,
         amount: reimbursementAmount,
-        dateCreated: new Date(),
+        dateCreated: new Date('2023-01-01'),
         userSubmitted: batman,
         userSubmittedId: batman.userId
       };
@@ -619,7 +619,11 @@ describe('Reimbursement Requests', () => {
       ]);
       vi.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
 
-      const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
+      const newReimbursement = await ReimbursementRequestService.reimburseUser(
+        reimbursementAmount,
+        '2023-01-01T19:12:33.409Z',
+        batman
+      );
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
     });
