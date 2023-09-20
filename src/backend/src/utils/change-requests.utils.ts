@@ -134,7 +134,7 @@ export const updateBlocking = async (
  * @throws if the change request is unreviewed, denied, or deleted
  */
 export const validateChangeRequestAccepted = async (crId: number) => {
-  const changeRequest = await prisma.change_Request.findUnique({ where: { crId }});
+  const changeRequest = await prisma.change_Request.findUnique({ where: { crId } });
   const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
