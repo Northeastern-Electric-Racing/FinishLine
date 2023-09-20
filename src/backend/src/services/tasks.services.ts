@@ -160,7 +160,7 @@ export default class TasksService {
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
-    const originalAssigneeIds = originalTask.assignees.map((user) => user.userId);
+    const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
     const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
