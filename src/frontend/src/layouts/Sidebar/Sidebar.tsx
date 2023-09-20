@@ -79,11 +79,13 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
         flex={1}
         justifyContent={'space-between'}
       >
-        {linkItems.map((linkItem) => (
-          <NavPageLink {...linkItem} open={open} />
-        ))}
+        <Box>
+          {linkItems.map((linkItem) => (
+            <NavPageLink {...linkItem} open={open} />
+          ))}
+        </Box>
+        <Typography className={styles.versionNumber}>4.0.0</Typography>
       </Box>
-      <Typography className={styles.versionNumber}>4.0.0</Typography>
     </NERDrawer>
   );
 };
