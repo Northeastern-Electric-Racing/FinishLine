@@ -105,7 +105,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
           <Table aria-label="simple table">
             <TableHead>
               <TableRow>
-                <ColumnHeader title="Date" />
+                <ColumnHeader title="Date Received" />
                 <ColumnHeader title="Amount ($)" />
                 {tabValue === 1 && <ColumnHeader title="Recipient" />}
               </TableRow>

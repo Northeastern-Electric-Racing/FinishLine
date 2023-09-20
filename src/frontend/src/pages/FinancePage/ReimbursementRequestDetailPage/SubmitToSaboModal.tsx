@@ -8,6 +8,7 @@ import ErrorPage from '../../ErrorPage';
 import { datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
+  const toast = useToast();
 
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
@@ -33,7 +35,14 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     .join(', ');
 
   const handleSubmitToSabo = () => {
-    submitToSabo();
+    try {
+      submitToSabo();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+
     setOpen(false);
   };
 
