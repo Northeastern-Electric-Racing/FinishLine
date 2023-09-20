@@ -9,7 +9,6 @@ import {
   batman,
   flash,
   greenlantern,
-  sharedBatman,
   superman,
   theVisitor,
   wonderwoman
