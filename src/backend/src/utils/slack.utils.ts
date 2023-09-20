@@ -53,6 +53,11 @@ export const sendSlackRequestedReviewNotification = async (slackId: string, chan
   await sendMessage(slackId, fullMsg);
 };
 
+/**
+ * Send Task assigned notification to assignee on Slack
+ * @param slackId the slack id of the assignee
+ * @param task the task they were assigned to
+ */
 export const sendSlackTaskAssignedNotification = async (slackId: string, task: Task): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
