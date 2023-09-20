@@ -54,8 +54,11 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   const handleConfirm = async (data: { refundAmount: number; dateReceived: Date }) => {
     handleClose();
     try {
-      await mutateAsync({ refundAmount: data.refundAmount * 100, dateReceived: data.dateReceived.toISOString() });
-      toast.success(`New Account Credit Amount #${data.refundAmount} Reported Successfully`);
+      await mutateAsync({
+        refundAmount: Math.round(data.refundAmount * 100),
+        dateReceived: data.dateReceived.toISOString()
+      });
+      toast.success('New Account Credit Reported Successfully');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
