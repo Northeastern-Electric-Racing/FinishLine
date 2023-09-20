@@ -72,10 +72,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   previousPage,
   setValue
 }) => {
-  const [expenseTypeSelected, setExpenseTypeSelected] = useState(null as ExpenseType | null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
   const products = watch(`reimbursementProducts`);
+  const expenseTypeId = watch('expenseTypeId');
+  const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === expenseTypeId);
+  const refundSources = selectedExpenseType?.allowedRefundSources || [];
+
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
@@ -141,7 +144,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     value={value}
                     error={!!errors.account}
                   >
-                    {expenseTypeSelected.allowedRefundSources.map((refundSource) => (
+                    {refundSources.map((refundSource) => (
                       <MenuItem key={refundSource} value={refundSource}>
                         {refundSource}
                       </MenuItem>
@@ -190,7 +193,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <Select
-                      onChange={((newValue) => onChange(newValue.target.value), setExpenseTypeSelected(value))}
+                      onChange={(newValue) => onChange(newValue.target.value)}
                       value={value}
                       error={!!errors.expenseTypeId}
                     >

@@ -55,6 +55,7 @@ export interface ExpenseTypePayload {
   code: number;
   name: string;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 /**
