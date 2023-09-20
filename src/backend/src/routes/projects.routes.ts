@@ -9,14 +9,43 @@ const projectRouter = express.Router();
 projectRouter.get('/', ProjectsController.getAllProjects);
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
+// TODO: remove this once no longer required
+// projectRouter.post(
+//   '/create',
+//   intMinZero(body('crId')),
+//   nonEmptyString(body('name')),
+//   intMinZero(body('carNumber')),
+//   nonEmptyString(body('summary')),
+//   validateInputs,
+//   ProjectsController.createProject
+// );
 projectRouter.post(
   '/create',
-  intMinZero(body('crId')),
   nonEmptyString(body('name')),
+  intMinZero(body('crId')),
   intMinZero(body('carNumber')),
+  body('teamIds').isArray(),
+  intMinZero(body('teamIds.*')),
+  intMinZero(body('budget')),
   nonEmptyString(body('summary')),
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional()),
+  body('links').isArray(),
+  nonEmptyString(body('links.*.url')),
+  nonEmptyString(body('links.*.linkTypeName')),
+  body('goals').isArray(),
+  body('goals.*.id').isInt({ min: -1 }).not().isString(),
+  nonEmptyString(body('goals.*.detail')),
+  body('features').isArray(),
+  body('features.*.id').isInt({ min: -1 }).not().isString(),
+  nonEmptyString(body('features.*.detail')),
+  body('otherConstraints').isArray(),
+  body('otherConstraints.*.id').isInt({ min: -1 }).not().isString(),
+  nonEmptyString(body('otherConstraints.*.detail')),
+  body('rules').isArray(),
+  nonEmptyString(body('rules.*')),
   validateInputs,
-  ProjectsController.createProject
+  ProjectsController.editProject
 );
 projectRouter.post(
   '/edit',
