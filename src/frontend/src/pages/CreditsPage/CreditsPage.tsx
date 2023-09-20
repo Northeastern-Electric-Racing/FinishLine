@@ -75,6 +75,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Madeline Engle', color: '#FF2D76' },
     { name: 'Parth Kabra', color: '#e53774' },
     { name: 'Riley Platz', color: '#2d2fa6' },
+    { name: 'Martin Hema', color: '#9125cc' },
     { name: 'Shree Singhal', color: '#ff7ca4' },
     { name: 'Isaac Levine', color: '#6a3941' },
     { name: 'Andrew Tsai', color: '#3281a8' },
@@ -84,7 +85,9 @@ const CreditsPage: React.FC = () => {
     { name: 'Yechan Na', color: '#C2B078' },
     { name: 'Liam Kosar', color: '#eb66ff' },
     { name: 'Daniel Yu', color: '#bdc0c7' },
+    { name: 'Jake Wu-Chen', color: '#bdc0c7' },
     { name: 'William Seward', color: '#e53774' },
+    { name: 'Liu von Engelbrechten', color: '#2969f2' },
     {
       name: 'Zach Norman',
       color: 'transparent',
@@ -95,6 +98,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Ethan Mouri', color: '#00bbff' },
     { name: 'Laith Taher', color: '#000080' },
+    { name: 'Teera Tesharojanasup', color: '#DC143C', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 10 } },
     { name: 'Griffin Cooper', color: '#02d69a' },
     { name: 'Amani Scarborough', color: '#e34db6' },
     { name: 'Peter Moise', color: '#FF0000' },
@@ -103,10 +107,32 @@ const CreditsPage: React.FC = () => {
     { name: 'Waasif Mahmood', color: '#114a13' },
     { name: 'Matthew Wang', color: '#c657f2' },
     { name: 'Sharon Yang', color: '#ed8a5f' },
-    { name: 'Kevin Yang', color: '#0000FF' },
+    { name: 'Ha Nguyen', color: '#ff9812' },
+    { name: 'Sathvik Charugundla', color: '#ff0000' },
+    { name: 'Samantha Moy', color: '#d287fa' },
+    { name: 'Benjamin Zhu', color: '#ccccff' },
+    { name: 'Stephanie Xu', color: '#ffcd42' },
     { name: 'Hareg Aderie', color: '#34b46c' },
+    { name: 'Megan Lai', color: '#52B2BF' },
+    { name: 'Raymond Tsai', color: '#66cdaa' },
+    { name: 'Arinjay Singh', color: '#7bb5dc' },
+    { name: 'Aarav Shyamkumar', color: '#FF0000' },
+    { name: 'Raghav Mathur', color: '#009933' },
+    { name: 'Anika Sharma', color: '#ff0000' },
+    { name: 'William (Jack) Turner', color: '#ff5733' },
+    {
+      name: 'Kaan Tural',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(0,128,255,1) 100%)',
+        '-webkit-background-clip': 'text',
+        textShadow: '0 0 5px rgba(255,0,0,1), 0 0 10px rgba(0,128,255,1)'
+      }
+    },
     { name: 'Kevin Polackal', color: '#800080' },
-    { name: 'Megan Lai', color: '#52B2BF' }
+    { name: 'Lily Shiomitsu', color: '#008080' },
+    { name: 'Kevin Yang', color: '#0000FF' },
+    { name: 'Qihong Wu', color: '#87CEEB' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

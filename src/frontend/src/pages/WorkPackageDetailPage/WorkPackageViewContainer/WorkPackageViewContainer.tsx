@@ -22,7 +22,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
-import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useGetBlockingWorkPackages } from '../../../hooks/work-packages.hooks';
 import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -52,7 +52,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
+  const { data: dependencies, isError, isLoading, error } = useGetBlockingWorkPackages(workPackage.wbsNum);
   const dropdownOpen = Boolean(anchorEl);
   const wbsNum = wbsPipe(workPackage.wbsNum);
 
