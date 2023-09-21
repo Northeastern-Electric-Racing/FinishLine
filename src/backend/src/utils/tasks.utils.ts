@@ -1,6 +1,7 @@
 import { Task_Priority, Task_Status, User } from '@prisma/client';
-import { isHead, TaskPriority, TaskStatus } from 'shared';
+import { isHead, Task, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma';
+import { sendSlackTaskAssignedNotification } from './slack.utils';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({
@@ -102,4 +103,18 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
     return true;
 
   return false;
+};
+
+/**
+ * Sends a task assigned notification to the specified users on Slack
+ * @param task the task the users are assigned to
+ * @param assigneeIds the user ids of the users assigned to the task
+ */
+export const sendSlackTaskAssignedNotificationToUsers = async (task: Task, assigneeIds: number[]) => {
+  const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: assigneeIds } } });
+  assigneeSettings.forEach(async (settings) => {
+    if (settings.slackId) {
+      await sendSlackTaskAssignedNotification(settings.slackId, task);
+    }
+  });
 };
