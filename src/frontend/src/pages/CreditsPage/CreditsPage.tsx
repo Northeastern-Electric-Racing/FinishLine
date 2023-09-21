@@ -39,6 +39,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
+    { name: 'Tucker Gwertzman', color: '#25e6e2' },
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
