@@ -2,20 +2,22 @@ import { Box } from '@mui/system';
 import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
-import { ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
 
 export type ButtonInfo = {
   title: string;
   onClick: () => void;
   disabled?: boolean;
   icon?: ReactElement;
+  dividerTop?: boolean;
 };
 
 interface ActionsMenuProps {
   buttons: ButtonInfo[];
+  title?: string;
 }
 
-const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons }) => {
+const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -36,22 +38,25 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons }) => {
         id="reimbursement-request-actions-dropdown"
         onClick={handleClick}
       >
-        Actions
+        {title}
       </NERButton>
       <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        {buttons.map((button, index) => (
-          <MenuItem
-            key={index}
-            onClick={() => {
-              handleDropdownClose();
-              button.onClick();
-            }}
-            disabled={button.disabled}
-          >
-            <ListItemIcon>{button.icon}</ListItemIcon>
-            {button.title}
-          </MenuItem>
-        ))}
+        {buttons.flatMap((button, index) => {
+          return [
+            button.dividerTop && <Divider key={`${index}-divider`} />,
+            <MenuItem
+              key={index}
+              onClick={() => {
+                handleDropdownClose();
+                button.onClick();
+              }}
+              disabled={button.disabled}
+            >
+              <ListItemIcon>{button.icon}</ListItemIcon>
+              {button.title}
+            </MenuItem>
+          ];
+        })}
       </Menu>
     </Box>
   );
