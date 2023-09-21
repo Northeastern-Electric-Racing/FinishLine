@@ -14,7 +14,6 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
@@ -157,10 +156,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   };
 
-  const allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
-  }[] = getAllWbsElements(allProjects);
+  const projectDropdown = allProjects.map((proj) => {
+    return {
+      wbsNum: proj.wbsNum,
+      wbsName: proj.name
+    };
+  });
 
   return (
     <CreateReimbursementRequestFormView
@@ -177,7 +178,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={allWbsElements}
+      allWbsElements={projectDropdown}
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
