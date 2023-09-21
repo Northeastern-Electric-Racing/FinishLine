@@ -64,7 +64,6 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
           </IconButton>
         ) : (
           <Box
-            className="d-flex flex-col"
             sx={{
               display: { xs: 'none', sm: 'flex' }
             }}

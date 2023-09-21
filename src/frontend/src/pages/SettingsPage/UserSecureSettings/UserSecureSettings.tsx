@@ -94,10 +94,9 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
       </Grid>
       {edit && (
         <Box
-          className="d-flex flex-row"
           sx={{
             display: { xs: 'flex', sm: 'none' },
-            marginTop: '10px'
+            marginTop: '20px'
           }}
         >
           <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
