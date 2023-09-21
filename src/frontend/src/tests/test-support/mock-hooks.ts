@@ -83,5 +83,5 @@ export const mockUseAllWorkPackagesReturnValue = (workPackages: WorkPackage[]) =
 export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
   mockUseQueryResult<Project[]>(false, false, projects, new Error());
 
-export const mockUseManyWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
+export const mockUseGetBlockingWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
   mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());
