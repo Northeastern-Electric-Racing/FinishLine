@@ -5,6 +5,12 @@
 
 import { WbsNumber } from './types/project-types';
 
+/**
+ * Compares two wbs numbers
+ *
+ * @param wbsNum1 WBS number to compare
+ * @param wbsNum2 WBS number to compare
+ */
 export const wbsNumComparator = (wbsNum1: string, wbsNum2: string) => {
   const wbsParts1 = wbsNum1.split('.').map(Number);
   const wbsParts2 = wbsNum2.split('.').map(Number);
