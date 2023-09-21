@@ -119,7 +119,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 render={({ field: { onChange, value } }) => (
                   <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
                     {allVendors
-                      .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+                      .sort((a, b) => (a.name < b.name ? -1 : 1))
                       .map((vendor) => (
                         <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
                           {vendor.name}
