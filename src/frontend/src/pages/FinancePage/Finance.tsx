@@ -4,13 +4,13 @@
  */
 
 import React from 'react';
-import { Route, Switch, Redirect } from 'react-router-dom'; // Import Redirect to handle unauthorized access
+import { Route, Switch, Redirect } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import FinancePage from './FinancePage';
 import CreateReimbursementRequestPage from './CreateReimbursementRequest';
 import EditReimbursementRequestPage from './EditReimbursementRequest/EditReimbursementRequest';
 import ReimbursementRequestDetails from './ReimbursementRequestDetailPage/ReimbursementRequestDetails';
-import { isAdmin } from 'shared'; // Import the isAdmin function or your authentication logic
+import { isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 const Finance: React.FC = () => {
