@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, ExpenseType } from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, ClubAccount, ExpenseType } from 'shared';
 
 /**
  * Pipes:
@@ -127,4 +127,17 @@ export const dateUndefinedPipe = (date?: Date): string => {
 
 export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
+};
+
+/** Displays a refund source as a string "Code - Name" */
+export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
+  const CASH_ACCOUNT_CODE = 830667;
+  const BUDGET_ACCOUNT_CODE = 800462;
+
+  switch (refundSource) {
+    case ClubAccount.CASH:
+      return `${CASH_ACCOUNT_CODE} - ${refundSource}`;
+    case ClubAccount.BUDGET:
+      return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
+  }
 };

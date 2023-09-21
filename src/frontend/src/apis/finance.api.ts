@@ -271,10 +271,11 @@ export const sendPendingAdvisorList = (saboNumbers: number[]) => {
  * Reports a given dollar amount representing a new account credit
  *
  * @param amount the dollar amount being reimbursed
+ * @param dateReceived the date the refund was received
  * @returns a reimbursement with the given dollar amount
  */
-export const reportRefund = (amount: number) => {
-  return axios.post(apiUrls.financeReportRefund(), { amount });
+export const reportRefund = (amount: number, dateReceived: string) => {
+  return axios.post(apiUrls.financeReportRefund(), { amount, dateReceived });
 };
 
 /**
