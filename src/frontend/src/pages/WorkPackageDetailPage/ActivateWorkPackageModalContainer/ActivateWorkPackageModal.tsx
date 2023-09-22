@@ -47,6 +47,8 @@ const schema = yup.object().shape({
   confirmDetails: yup.boolean().required()
 });
 
+//startDate: new Date().toLocaleDateString(),
+
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   allUsers,
   wbsNum,
@@ -60,15 +62,18 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     const daysUntilNextMonday = (7 - today + 1) % 7;
     startDate.setDate(startDate.getDate() + daysUntilNextMonday);
   }
+  const { reset, handleSubmit, control } = useForm<FormInput>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      confirmDetails: false,
+      startDate
+    }
+  });
 
   const defaultValues: FormInput = {
-    startDate: startDate,
+    startDate: new Date(),
     confirmDetails: false
   };
-
-  const { reset, handleSubmit, control } = useForm<FormInput>({
-    resolver: yupResolver(schema)
-  });
 
   const [projectLeadId, setProjectLeadId] = useState<string>();
   const [projectManagerId, setProjectManagerId] = useState<string>();
@@ -144,7 +149,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                         inputFormat="yyyy-MM-dd"
                         onChange={(date) => onChange(date ?? new Date())}
                         className={'padding: 10'}
-                        value={startDate}
+                        value={value}
                         shouldDisableDate={disableStartDate}
                         renderInput={(params) => <TextField autoComplete="off" {...params} />}
                       />
