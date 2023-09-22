@@ -136,6 +136,8 @@ const CreditsPage: React.FC = () => {
     { name: 'Sindhu Balamurugan', color: '#c170fa' },
     { name: 'Lily Shiomitsu', color: '#008080' },
     { name: 'Kevin Yang', color: '#0000FF' },
+    { name: 'Qihong Wu', color: '#87CEEB' },
+    { name: 'Jessica Zhao', color: '#6495ED' },
     { name: 'Neel Raut', color: '#023665' },
     { name: 'Qihong Wu', color: '#87CEEB' },
     { name: 'Megan Lai', color: '#52B2BF' },
