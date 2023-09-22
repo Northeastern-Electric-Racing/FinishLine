@@ -208,4 +208,40 @@ describe('Teams', () => {
       expect(res).toStrictEqual(sharedTeam1);
     });
   });
+
+  describe('deleteTeam', () => {
+    test('deleteTeam team not found', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+
+      const callDeleteTeam = async () => await TeamsService.deleteTeam(flash, 'fakeId');
+
+      const expectedException = new HttpException(404, 'Team with id: fakeId not found!');
+
+      await expect(callDeleteTeam).rejects.toThrow(expectedException);
+    });
+
+    test('deleteTeam submitter is not admin', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      const callDeleteTeam = async () => await TeamsService.deleteTeam(greenlantern, prismaTeam1.teamId);
+
+      const expectedException = new HttpException(
+        403,
+        'Access Denied: admin and app-admin only have the ability to delete teams'
+      );
+
+      await expect(callDeleteTeam).rejects.toThrow(expectedException);
+    });
+
+    test('deleteTeam works', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'delete').mockResolvedValue(prismaTeam1);
+
+      await TeamsService.deleteTeam(batman, prismaTeam1.teamId);
+
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.team.delete).toHaveBeenCalledTimes(1);
+      expect(prisma.team.delete).toHaveBeenCalledWith({ where: { teamId: prismaTeam1.teamId } });
+    });
+  });
 });

@@ -172,7 +172,7 @@ export default class TeamsService {
     const team = await prisma.team.findUnique({ where: { teamId }, ...teamQueryArgs });
 
     if (!team) throw new NotFoundException('Team', teamId);
-    if (!isAdmin) throw new AccessDeniedAdminOnlyException('deleting teams');
+    if (!isAdmin(deleter.role)) throw new AccessDeniedAdminOnlyException('delete teams');
 
     await prisma.team.delete({ where: { teamId } });
   }
