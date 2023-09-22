@@ -7,6 +7,7 @@
 
 import {
   CR_Type,
+  Club_Accounts,
   PrismaClient,
   Scope_CR_Why_Type,
   Task_Priority,
@@ -685,7 +686,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
+  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
+    Club_Accounts.CASH,
+    Club_Accounts.BUDGET
+  ]);
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,

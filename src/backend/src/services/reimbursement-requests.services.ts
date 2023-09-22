@@ -461,6 +461,7 @@ export default class ReimbursementRequestService {
    * @param name The name of the expense type
    * @param code the expense type's SABO code
    * @param allowed whether or not this expense type is allowed
+   * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
    * @returns the created expense type
    */
   static async createExpenseType(
