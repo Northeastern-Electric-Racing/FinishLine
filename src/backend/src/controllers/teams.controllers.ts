@@ -62,4 +62,15 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async deleteTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const deleter = await getCurrentUser(res);
+      const team = await TeamsService.deleteTeam(deleter, teamId);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

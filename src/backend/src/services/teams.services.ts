@@ -162,4 +162,8 @@ export default class TeamsService {
 
     return teamTransformer(updateTeam);
   }
+
+  static async deleteTeam(deleter: User, teamId: string): Promise<Team> {
+    const team = await prisma.team.findUnique({ where: { teamId }, ...teamQueryArgs });
+  }
 }

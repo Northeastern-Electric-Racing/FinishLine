@@ -22,5 +22,6 @@ teamsRouter.post(
   TeamsController.editDescription
 );
 teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
+teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 
 export default teamsRouter;
