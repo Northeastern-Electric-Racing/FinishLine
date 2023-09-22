@@ -67,8 +67,8 @@ export default class TeamsController {
     try {
       const { teamId } = req.params;
       const deleter = await getCurrentUser(res);
-      const team = await TeamsService.deleteTeam(deleter, teamId);
-      return res.status(200).json(team);
+      await TeamsService.deleteTeam(deleter, teamId);
+      return res.status(204);
     } catch (error: unknown) {
       next(error);
     }
