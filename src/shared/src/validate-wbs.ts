@@ -6,7 +6,7 @@
 import { WbsNumber } from './types/project-types';
 
 /**
- * Compares two wbs numbers
+ * Compares two wbs numbers in ascending order
  *
  * @param wbsNum1 WBS number to compare
  * @param wbsNum2 WBS number to compare
