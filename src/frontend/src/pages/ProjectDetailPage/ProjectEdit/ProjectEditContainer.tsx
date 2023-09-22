@@ -214,7 +214,14 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
         <PageBlock title="Goals">
-          <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
+          <ReactHookEditableList
+            name="goals"
+            register={register}
+            ls={goals}
+            append={appendGoal}
+            remove={removeGoal}
+            addMessage="Add Goal"
+          />
         </PageBlock>
         <PageBlock title="Features">
           <ReactHookEditableList
@@ -223,6 +230,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={features}
             append={appendFeature}
             remove={removeFeature}
+            addMessage="Add Feature"
           />
         </PageBlock>
         <PageBlock title="Other Constraints">
@@ -232,22 +240,18 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={constraints}
             append={appendConstraint}
             remove={removeConstraint}
+            addMessage="Add Constraint"
           />
         </PageBlock>
         <PageBlock title="Rules">
-          {rules.map((_rule, i) => {
-            return (
-              <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
-                <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
-                  <DeleteIcon />
-                </IconButton>
-              </Grid>
-            );
-          })}
-          <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
-            + ADD NEW RULE
-          </Button>
+          <ReactHookEditableList
+            name="rules"
+            register={register}
+            ls={rules}
+            append={appendRule}
+            remove={removeRule}
+            addMessage="Add Rule"
+          />
         </PageBlock>
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
