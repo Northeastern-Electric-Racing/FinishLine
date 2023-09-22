@@ -83,16 +83,28 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             <Controller
               name="startDate"
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Start date is required' }}
               render={({ field: { onChange, value } }) => (
                 <>
                   <DatePicker
                     inputFormat="yyyy-MM-dd"
                     onChange={(date) => onChange(date ?? new Date())}
-                    className={'padding: 10'}
                     value={value}
                     shouldDisableDate={disableStartDate}
-                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                    renderInput={(params) => (
+                      <TextField
+                        autoComplete="off"
+                        {...params}
+                        error={!!errors.startDate}
+                        helperText={
+                          errors.startDate?.type === 'required'
+                            ? 'Start date is required'
+                            : errors.startDate
+                            ? 'Please enter a valid date (YYYY-MM-DD)'
+                            : null
+                        }
+                      />
+                    )}
                   />
                 </>
               )}
