@@ -39,6 +39,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
+    { name: 'Tucker Gwertzman', color: '#25e6e2' },
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
@@ -87,6 +88,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Daniel Yu', color: '#bdc0c7' },
     { name: 'Jake Wu-Chen', color: '#bdc0c7' },
     { name: 'William Seward', color: '#e53774' },
+    { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Liu von Engelbrechten', color: '#2969f2' },
     {
       name: 'Zach Norman',
@@ -114,6 +116,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Benjamin Zhu', color: '#ccccff' },
     { name: 'Stephanie Xu', color: '#ffcd42' },
     { name: 'Hareg Aderie', color: '#34b46c' },
+    { name: 'Motto Sereeyothin', color: '#000000' },
     { name: 'Raymond Tsai', color: '#66cdaa' },
     { name: 'Arinjay Singh', color: '#7bb5dc' },
     { name: 'Aarav Shyamkumar', color: '#FF0000' },
@@ -130,10 +133,15 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Kevin Polackal', color: '#800080' },
+    { name: 'Sindhu Balamurugan', color: '#c170fa' },
     { name: 'Lily Shiomitsu', color: '#008080' },
     { name: 'Kevin Yang', color: '#0000FF' },
     { name: 'Qihong Wu', color: '#87CEEB' },
-    { name: 'Jessica Zhao', color: '#6495ED' }
+    { name: 'Jessica Zhao', color: '#6495ED' },
+    { name: 'Neel Raut', color: '#023665' },
+    { name: 'Qihong Wu', color: '#87CEEB' },
+    { name: 'Megan Lai', color: '#52B2BF' },
+    { name: 'Eric Sun', color: '#FCCAED' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
