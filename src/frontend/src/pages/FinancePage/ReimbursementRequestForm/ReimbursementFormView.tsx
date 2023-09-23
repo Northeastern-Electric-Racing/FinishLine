@@ -132,6 +132,35 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
           </Grid>
+          <Grid item container xs={6} spacing={2}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel>Expense Type</FormLabel>
+                <Controller
+                  name="expenseTypeId"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value)}
+                      value={value}
+                      error={!!errors.expenseTypeId}
+                    >
+                      {allExpenseTypes.map((expenseType) => (
+                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                          {expenseType.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormLabel>Total Cost</FormLabel>
+              <Typography variant="h6">${calculatedTotalCost}</Typography>
+            </Grid>
+          </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
               <FormLabel>Refund Source</FormLabel>
@@ -183,35 +212,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid item container xs={6} spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Expense Type</FormLabel>
-                <Controller
-                  name="expenseTypeId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormLabel>Total Cost</FormLabel>
-              <Typography variant="h6">${calculatedTotalCost}</Typography>
-            </Grid>
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
