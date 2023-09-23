@@ -88,6 +88,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Daniel Yu', color: '#bdc0c7' },
     { name: 'Jake Wu-Chen', color: '#bdc0c7' },
     { name: 'William Seward', color: '#e53774' },
+    { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Liu von Engelbrechten', color: '#2969f2' },
     {
       name: 'Zach Norman',
@@ -136,6 +137,9 @@ const CreditsPage: React.FC = () => {
     { name: 'Lily Shiomitsu', color: '#008080' },
     { name: 'Kevin Yang', color: '#0000FF' },
     { name: 'Jack Mitchell', color: '808000' },
+    { name: 'Zoey Guo', color: '#E34949' },
+    { name: 'Qihong Wu', color: '#87CEEB' },
+    { name: 'Jessica Zhao', color: '#6495ED' },
     { name: 'Neel Raut', color: '#023665' },
     { name: 'Qihong Wu', color: '#87CEEB' },
     { name: 'Megan Lai', color: '#52B2BF' },
