@@ -85,13 +85,13 @@ describe('Projects', () => {
           'summary',
           ['teamId'],
           10,
+          [],
+          [],
+          [],
+          [],
+          [],
           1, //batman
-          2, //superman
-          [],
-          [],
-          [],
-          [],
-          []
+          2 //superman
         )
     ).rejects.toThrow(new NotFoundException('Team', 'teamId'));
   });
