@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
-import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isGuest, isProject, Link, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -85,7 +85,15 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamIds: string[]
+    teamIds: string[],
+    budget: number,
+    projectLeadId: number,
+    projectManagerId: number,
+    links: LinkCreateArgs[],
+    rules: string[],
+    goals: { id: number; detail: string }[],
+    features: { id: number; detail: string }[],
+    otherConstraints: { id: number; detail: string }[]
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
 
@@ -107,11 +115,24 @@ export default class ProjectsService {
         projectNumber: maxProjectNumber + 1,
         workPackageNumber: 0,
         name,
+        projectLeadId,
+        projectManagerId,
         project: {
           create: {
             summary,
             teams: {
               connect: teamIds.map((teamId) => ({ teamId }))
+            },
+            budget,
+            rules,
+            goals: {
+              createMany: { data: goals }
+            },
+            features: {
+              createMany: { data: features }
+            },
+            otherConstraints: {
+              createMany: { data: otherConstraints }
             }
           }
         },
