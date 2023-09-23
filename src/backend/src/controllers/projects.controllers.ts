@@ -48,7 +48,6 @@ export default class ProjectsController {
         teamIds,
         budget,
         summary,
-        teamId,
         projectLeadId,
         projectManagerId,
         links,
@@ -64,15 +63,15 @@ export default class ProjectsController {
         carNumber,
         name,
         summary,
-        teamId,
+        teamIds,
         budget,
-        projectLeadId,
-        projectManagerId,
         links,
         rules,
         goals,
         features,
-        otherConstraints
+        otherConstraints,
+        projectLeadId,
+        projectManagerId
       );
 
       return res.status(200).json(wbsPipe(createdWbsNumber));

@@ -109,17 +109,17 @@ describe('Projects', () => {
       'summary',
       [],
       10,
+      [],
+      [],
+      [],
+      [],
+      [],
       1, //batman
-      2, //superman
-      [],
-      [],
-      [],
-      [],
-      []
+      2 //superman
     );
 
     expect(res).toStrictEqual({
-      carqNumber: prismaWbsElement1.carNumber,
+      carNumber: prismaWbsElement1.carNumber,
       projectNumber: prismaWbsElement1.projectNumber,
       workPackageNumber: prismaWbsElement1.workPackageNumber
     });

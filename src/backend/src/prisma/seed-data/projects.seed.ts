@@ -31,7 +31,28 @@ export const seedProject = async (
   projectLeadId: number | null,
   projectManagerId: number | null
 ): Promise<{ projectWbsNumber: WbsNumber; projectId: number }> => {
-  const projectWbsNumber = await ProjectsService.createProject(creator, changeRequestId, carNumber, name, summary, teamIds);
+  const projectWbsNumber = await ProjectsService.createProject(
+    creator,
+    changeRequestId,
+    carNumber,
+    name,
+    summary,
+    teamIds,
+    budget,
+    links,
+    rules,
+    goals.map((element) => {
+      return { id: -1, detail: element };
+    }),
+    features.map((element) => {
+      return { id: -1, detail: element };
+    }),
+    otherConstraints.map((element) => {
+      return { id: -1, detail: element };
+    }),
+    projectLeadId,
+    projectManagerId
+  );
 
   const { projectId } = await prisma.project.findFirstOrThrow({
     where: {
