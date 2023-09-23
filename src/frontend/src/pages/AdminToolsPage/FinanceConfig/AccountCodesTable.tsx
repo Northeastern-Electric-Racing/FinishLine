@@ -40,6 +40,13 @@ const AccountCodesTable = () => {
       <TableCell align="center" sx={{ border: '2px solid black' }}>
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
+      <TableCell align="center" sx={{ border: '2px solid black' }}>
+        <Typography>
+          {expenseType.allowedRefundSources.map((source) => {
+            return source === 'CASH' ? 'CASH ' : 'BUDGET ';
+          })}
+        </Typography>
+      </TableCell>
     </TableRow>
   ));
 
@@ -63,7 +70,7 @@ const AccountCodesTable = () => {
               align="left"
               sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
               itemType="date"
-              width="50%"
+              width="25%"
             >
               Account Name
             </TableCell>
@@ -71,7 +78,7 @@ const AccountCodesTable = () => {
               align="left"
               sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
               itemType="date"
-              width="30%"
+              width="25%"
             >
               Account Code
             </TableCell>
@@ -79,9 +86,17 @@ const AccountCodesTable = () => {
               align="center"
               sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
               itemType="date"
-              width="20%"
+              width="15%"
             >
               Allowed
+            </TableCell>
+            <TableCell
+              align="center"
+              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
+              itemType="date"
+              width="35%"
+            >
+              Allowed Refund Sources
             </TableCell>
           </TableHead>
           <TableBody>{accountCodesTableRows}</TableBody>
