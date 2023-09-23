@@ -77,7 +77,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
   const [deadline, setDeadline] = useState(new Date());
   const [priority, setPriority] = useState(TaskPriority.High);
   const [assignees, setAssignees] = useState<UserPreview[]>([]);
-  const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
+  const [pageSize, setPageSize] = useState(25);
   const theme = useTheme();
   const [currentlyEditingId, setCurrentlyEditingId] = useState<GridRowId>(); //might have to change this
 
@@ -385,7 +385,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       experimentalFeatures={{ newEditingApi: true }}
       isCellEditable={isCellEditable}
       pageSize={pageSize}
-      rowsPerPageOptions={[5, 10, 15, 100]}
+      rowsPerPageOptions={[5, 10, 15, 25, 100]}
       onPageSizeChange={(newPageSize) => {
         localStorage.setItem(tableRowCount, String(newPageSize));
         setPageSize(newPageSize);
