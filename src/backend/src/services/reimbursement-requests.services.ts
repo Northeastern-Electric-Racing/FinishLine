@@ -129,7 +129,7 @@ export default class ReimbursementRequestService {
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
     if (!expenseType.allowedRefundSources.includes(account)) {
-      throw new HttpException(400, 'Expense type is not paired with acceptable refund source account');
+      throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
     const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
@@ -264,7 +264,7 @@ export default class ReimbursementRequestService {
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
     if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
     if (!expenseType.allowedRefundSources.includes(account)) {
-      throw new HttpException(400, 'Expense type is not paired with acceptable refund source account');
+      throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
     await updateReimbursementProducts(
