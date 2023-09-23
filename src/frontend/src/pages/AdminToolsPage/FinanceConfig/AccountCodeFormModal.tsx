@@ -1,8 +1,8 @@
-import { ExpenseType } from 'shared';
+import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -11,7 +11,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 const schema = yup.object().shape({
   code: yup.number().required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
-  allowed: yup.boolean().required('Allowed is Required')
+  allowed: yup.boolean().required('Allowed is Required'),
+  refundSource: yup.string().required('Refund Source is Required')
 });
 
 interface AccountCodeFormModalProps {
@@ -34,7 +35,8 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     defaultValues: {
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
-      allowed: defaultValues?.allowed ?? false
+      allowed: defaultValues?.allowed ?? false,
+      allowedRefundSources: defaultValues?.allowedRefundSources ?? ''
     }
   });
 
@@ -64,6 +66,22 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       <FormControl fullWidth>
         <FormLabel>Account Name</FormLabel>
         <ReactHookTextField name="name" control={control} fullWidth />
+      </FormControl>
+      <FormControl fullWidth>
+        <FormLabel>Refund Source</FormLabel>
+        <Controller
+          name="allowedRefundSources"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <Select onChange={(newValue) => onChange(newValue.target.value as ClubAccount)} value={value}>
+              {defaultValues?.allowedRefundSources.map((refundSource) => (
+                <MenuItem key={refundSource} value={refundSource}>
+                  {refundSource}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        />
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>
