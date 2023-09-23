@@ -117,6 +117,11 @@ export default class ProjectsService {
         name,
         projectLeadId,
         projectManagerId,
+        links: {
+          createMany: {
+            data: links.map((link) => ({ ...link, creatorId: user.userId }))
+          }
+        },
         project: {
           create: {
             summary,
