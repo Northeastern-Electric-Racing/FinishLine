@@ -7,7 +7,6 @@ import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import WBSDetails from '../WBSDetails';
 import CreateProjectForm from '../CreateProjectPage/CreateProjectForm';
-import CreateWorkPackageForm from '../CreateWorkPackagePage/CreateWorkPackageForm';
 import ProjectsPage from './ProjectsPage';
 
 const Projects: React.FC = () => {
@@ -15,7 +14,6 @@ const Projects: React.FC = () => {
     <Switch>
       <Route path={routes.PROJECTS_OVERVIEW} component={ProjectsPage} />
       <Route path={routes.PROJECTS_ALL} component={ProjectsPage} />
-      <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
       <Route path={routes.PROJECTS_NEW} component={CreateProjectForm} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
       <Route path={routes.PROJECTS} component={ProjectsPage} />
