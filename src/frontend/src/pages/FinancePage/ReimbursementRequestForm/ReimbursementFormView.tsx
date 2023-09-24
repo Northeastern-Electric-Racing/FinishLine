@@ -119,7 +119,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
           <Alert variant="filled" severity="warning">
             Your secure settings must be set to create a reimbursement request, you can set them
-            <Link component={RouterLink} to={routes.SETTINGS}>
+            <Link style={{ color: 'blue' }} component={RouterLink} to={routes.SETTINGS}>
               {' '}
               here
             </Link>
