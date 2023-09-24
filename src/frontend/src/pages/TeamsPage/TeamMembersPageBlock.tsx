@@ -7,8 +7,8 @@ import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { useSetTeamHead, useSetTeamMembers } from '../../hooks/teams.hooks';
-import { isAdmin, isHead, Team, User } from 'shared';
+import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
+import { isAdmin, isHead, isLeadership, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -30,17 +30,21 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const auth = useAuth();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [isEditingHead, setIsEditingHead] = useState(false);
+  const [isEditingLeads, setIsEditingLeads] = useState(false);
   const [members, setMembers] = useState(team.members.map(userToAutocompleteOption));
   const [head, setHead] = useState(userToAutocompleteOption(team.head));
+  const [leads, setLeads] = useState(team.leads.map(userToAutocompleteOption));
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const { isLoading: setTeamMembersIsLoading, mutateAsync: setTeamMembersMutateAsync } = useSetTeamMembers(team.teamId);
   const { isLoading: setTeamHeadIsLoading, mutateAsync: setTeamHeadMutateAsync } = useSetTeamHead(team.teamId);
+  const { isLoading: setTeamLeadsIsLoading, mutateAsync: setTeamLeadsMutateAsync } = useSetTeamLeads(team.teamId);
 
   const toast = useToast();
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-  if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || !users) return <LoadingIndicator />;
+  if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || setTeamLeadsIsLoading || !users)
+    return <LoadingIndicator />;
 
   const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
 
@@ -51,6 +55,11 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const headOptions = users
     .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isHead(user.role))
+    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .map(userToAutocompleteOption);
+
+  const leadOptions = users
+    .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isLeadership(user.role))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
@@ -67,6 +76,15 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     try {
       await setTeamMembersMutateAsync(members.map((member) => parseInt(member.id)));
       setIsEditingMembers(false);
+    } catch (error) {
+      error instanceof Error && toast.error(error.message);
+    }
+  };
+
+  const submitLeads = async () => {
+    try {
+      await setTeamLeadsMutateAsync(leads.map((lead) => parseInt(lead.id)));
+      setIsEditingLeads(false);
     } catch (error) {
       error instanceof Error && toast.error(error.message);
     }
@@ -132,6 +150,37 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     </Box>
   );
 
+  const EditingLeadsView = () => (
+    <Box>
+      <Typography sx={{ fontWeight: 'bold' }} display="inline">
+        Leads:
+      </Typography>
+      <Grid container direction={'row'}>
+        <Grid item xs={9} md={10} lg={11}>
+          <Autocomplete
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterSelectedOptions
+            multiple
+            id="tags-standard"
+            options={leadOptions}
+            value={leads}
+            onChange={(_event, newValue) => setLeads(newValue)}
+            getOptionLabel={(option) => option.label}
+            renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A Lead" />}
+          />
+        </Grid>
+        <Grid container xs={3} md={2} lg={1}>
+          <Grid item>
+            <IconButton children={<Save />} onClick={submitLeads} />
+          </Grid>
+          <Grid item>
+            <IconButton children={<Cancel />} onClick={() => setIsEditingLeads(false)} />
+          </Grid>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+
   const NonEditingHeadView = () => (
     <Grid container>
       <Grid item>
@@ -144,7 +193,14 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   );
 
   const NonEditingLeadsView = () => (
-    <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
+    <Grid container>
+      <Grid item>
+        <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
+      </Grid>
+      <Grid item mt={-1}>
+        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingLeads(true)} />}
+      </Grid>
+    </Grid>
   );
 
   const NonEditingMembersView = () => (
@@ -161,7 +217,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   return (
     <PageBlock title={'People'}>
       {isEditingHead ? <EditingHeadView /> : <NonEditingHeadView />}
-      <NonEditingLeadsView />
+      {isEditingLeads ? <EditingLeadsView /> : <NonEditingLeadsView />}
       {isEditingMembers ? <EditingMembersView /> : <NonEditingMembersView />}
     </PageBlock>
   );

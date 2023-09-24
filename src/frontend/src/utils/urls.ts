@@ -71,6 +71,7 @@ const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
+const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -154,6 +155,7 @@ export const apiUrls = {
   teamsSetMembers,
   teamsSetHead,
   teamsSetDescription,
+  teamsSetLeads,
 
   descriptionBulletsCheck,
 

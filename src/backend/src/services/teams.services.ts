@@ -187,7 +187,6 @@ export default class TeamsService {
       throw new AccessDeniedException('You must be an admin or the head to update the lead!');
     }
 
-    console.log(teams);
     if (newLeads.map((lead) => lead.userId).includes(team.headId)) {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
