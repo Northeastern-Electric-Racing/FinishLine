@@ -168,6 +168,11 @@ export default class TeamsService {
     return teamTransformer(updateTeam);
   }
 
+  /**
+   * Hard deletes the team with the given teamId
+   * @param deleter the user submitting this request
+   * @param teamId the id of the team to be deleted
+   */
   static async deleteTeam(deleter: User, teamId: string): Promise<void> {
     const team = await prisma.team.findUnique({ where: { teamId }, ...teamQueryArgs });
 
