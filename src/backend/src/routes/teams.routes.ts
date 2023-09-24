@@ -22,5 +22,17 @@ teamsRouter.post(
   TeamsController.editDescription
 );
 teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
+teamsRouter.post(
+  '/create',
+  body('teamId').isString(),
+  body('teamName').isString(),
+  intMinZero(body('head')),
+  body('slackId').isString(),
+  body('description').isString(),
+  body('members').isArray(),
+  body('projects').isArray(),
+  body('leads').isArray(),
+  TeamsController.createTeam
+);
 
 export default teamsRouter;

@@ -162,4 +162,15 @@ export default class TeamsService {
 
     return teamTransformer(updateTeam);
   }
+  /**
+   * Create a new team.
+   */
+  static async createTeam(submitter: User): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('You must be an admin or higher to create a new team!');
+    }
+    const team = await prisma.team.create({});
+
+    return team;
+  }
 }

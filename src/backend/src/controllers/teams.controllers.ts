@@ -62,4 +62,12 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async createTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+    
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
