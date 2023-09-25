@@ -44,11 +44,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     height: '40px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
-    border: '2px black',
-    borderRadius: '25px',
-    '&.Mui-focused': {
-      borderColor: 'red'
-    },
+    border: 0,
+    borderColor: 'black',
     ...sx
   };
 
