@@ -14,7 +14,6 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
