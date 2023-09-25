@@ -76,6 +76,14 @@ export default class ProjectsService {
    * @param name the name of the new project
    * @param summary the summary of the new project
    * @param teamIds the ids of the teams that the new project will be assigned to
+   * @param budget the new budget of the project
+   * @param summary the new summary of the project
+   * @param rules the new rules of the project
+   * @param goals the new goals of the project
+   * @param features the new features of the project
+   * @param otherConstraints the new otherConstraints of the project
+   * @param projectLeadId the new projectLead of the project
+   * @param projectManagerId the new projectManager of the project
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */

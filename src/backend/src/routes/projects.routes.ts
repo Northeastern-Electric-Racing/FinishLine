@@ -9,16 +9,6 @@ const projectRouter = express.Router();
 projectRouter.get('/', ProjectsController.getAllProjects);
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
-// TODO: remove this once no longer required
-// projectRouter.post(
-//   '/create',
-//   intMinZero(body('crId')),
-//   nonEmptyString(body('name')),
-//   intMinZero(body('carNumber')),
-//   nonEmptyString(body('summary')),
-//   validateInputs,
-//   ProjectsController.createProject
-// );
 projectRouter.post(
   '/create',
   nonEmptyString(body('name')),
