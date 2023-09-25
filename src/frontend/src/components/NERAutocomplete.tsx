@@ -44,13 +44,9 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     height: '40px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
+    border: '2px black',
     borderRadius: '25px',
-    border: 0,
-    '.MuiOutlinedInput-notchedOutline': {
-      borderColor: 'black',
-      borderRadius: '25px'
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    '&.Mui-focused': {
       borderColor: 'red'
     },
     ...sx
@@ -61,12 +57,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
       <TextField
         {...params}
         InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          )
+          ...params.InputProps
         }}
         placeholder={placeholder}
         required

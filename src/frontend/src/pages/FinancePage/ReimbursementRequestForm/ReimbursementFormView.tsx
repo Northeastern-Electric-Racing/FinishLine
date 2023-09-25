@@ -1,5 +1,6 @@
 import { Delete } from '@mui/icons-material';
 import {
+  Autocomplete,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -197,14 +198,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
                     return (
                       <NERAutocomplete
+                        id={'expenseType'}
+                        size="small"
                         options={mappedExpenseTypes}
                         value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
                         placeholder="Expense Type"
                         onChange={(_event, newValue) => {
                           newValue ? onChange(newValue.id) : onChange('');
                         }}
-                        id={'expenseType'}
-                        size="small"
                       />
                     );
                   }}
