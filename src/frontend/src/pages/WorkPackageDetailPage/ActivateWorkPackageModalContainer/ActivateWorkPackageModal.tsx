@@ -67,7 +67,8 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   };
 
   const { reset, handleSubmit, control } = useForm<FormInput>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues
   });
 
   const [projectLeadId, setProjectLeadId] = useState<string>();
@@ -95,7 +96,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     reset(defaultValues);
   };
 
-  const disableStartDate = (startDate: Date) => {
+  const isStartDateDisabled = (startDate: Date) => {
     return startDate.getDay() !== 1;
   };
 
@@ -138,14 +139,14 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                   name="startDate"
                   control={control}
                   rules={{ required: true }}
-                  render={({ field: { onChange, value = startDate } }) => (
+                  render={({ field: { onChange, value } }) => (
                     <>
                       <DatePicker
                         inputFormat="yyyy-MM-dd"
                         onChange={(date) => onChange(date ?? new Date())}
                         className={'padding: 10'}
                         value={value}
-                        shouldDisableDate={disableStartDate}
+                        shouldDisableDate={isStartDateDisabled}
                         renderInput={(params) => <TextField autoComplete="off" {...params} />}
                       />
                     </>
