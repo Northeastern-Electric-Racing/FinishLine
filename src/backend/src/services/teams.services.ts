@@ -194,7 +194,7 @@ export default class TeamsService {
 
     // checking to see if any other teams have the new head as their current head or lead
     const newHeadTeam = await prisma.team.findFirst({
-      where: { OR: [{ headId }, { leads: { some: { userId: headId } } }] }
+      where: { headId }
     });
 
     if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head or lead of another team');
