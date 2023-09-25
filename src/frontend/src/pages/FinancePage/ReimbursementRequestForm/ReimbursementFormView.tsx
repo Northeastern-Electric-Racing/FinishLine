@@ -194,7 +194,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   name="expenseTypeId"
                   control={control}
                   render={({ field: { onChange, value } }) => {
-                    const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value);
                     return (
                       <NERAutocomplete
                         options={allExpenseTypes.map(expenseTypesToAutocomplete)}
@@ -207,6 +206,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                         onChange={(_event, newValue) => {
                           if (newValue) {
                             onChange(newValue.label);
+                          } else {
+                            onChange('');
                           }
                         }}
                         id={'expenseType'}
