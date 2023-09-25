@@ -165,12 +165,49 @@ export default class TeamsService {
   /**
    * Create a new team.
    */
-  static async createTeam(submitter: User): Promise<Team> {
+  static async createTeam(
+    submitter: User,
+    teamName: string,
+    headId: number,
+    slackId: string,
+    description: string
+  ): Promise<Team> {
     if (!isAdmin(submitter.role)) {
       throw new AccessDeniedException('You must be an admin or higher to create a new team!');
     }
-    const team = await prisma.team.create({});
 
-    return team;
+    if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    const newHead = await prisma.user.findUnique({
+      where: { userId: headId }
+    });
+
+    if (!newHead) throw new NotFoundException('User', headId);
+    if (!isHead(newHead.role)) throw new HttpException(400, 'The team head must be at least a head');
+
+    // checking to see if any other teams have the new head as their current head or lead
+    const newHeadTeam = await prisma.team.findFirst({
+      where: { OR: [{ headId }, { leads: { some: { userId: headId } } }] }
+    });
+
+    if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head or lead of another team');
+
+    const duplicateName = await prisma.team.findFirst({
+      where: { teamName }
+    });
+
+    if (duplicateName) throw new HttpException(400, 'The new team head must not be a head or lead of another team');
+
+    const createdTeam = await prisma.team.create({
+      data: {
+        teamName,
+        slackId,
+        description,
+        head: { connect: { userId: headId } }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(createdTeam);
   }
 }
