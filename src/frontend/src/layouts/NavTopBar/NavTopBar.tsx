@@ -50,7 +50,7 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
                 src="/NER-Logo-App-Icon.png"
               />
               <Typography variant="h4" fontSize={30} component="div" sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}>
-                FinishLine by NER
+                {window.innerWidth > 550 ? 'FinishLine by NER' : 'FinishLine'}
               </Typography>
             </Box>
           </Link>
