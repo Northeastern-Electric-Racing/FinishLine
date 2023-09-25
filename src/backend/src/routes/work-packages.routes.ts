@@ -11,9 +11,6 @@ workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('projectWbsNum.carNumber')),
-  intMinZero(body('projectWbsNum.projectNumber')),
-  intMinZero(body('projectWbsNum.workPackageNumber')),
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
@@ -24,6 +21,8 @@ workPackagesRouter.post(
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
+  intMinZero(body('projectLead')),
+  intMinZero(body('projectManager')),
   validateInputs,
   WorkPackagesController.createWorkPackage
 );

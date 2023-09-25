@@ -1,6 +1,6 @@
 import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman } from './test-data/users.test-data';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { prismaWbsElement1, prismaWbsElement2 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
 import {
@@ -41,6 +41,8 @@ describe('Work Packages', () => {
   const expectedActivities = ['ayo'];
   const deliverables = ['ajdhjakfjafja'];
   const stage = WorkPackageStage.Design;
+  const projectLead = flash.userId;
+  const projectManager = superman.userId;
   const createWorkPackageArgs: [
     User,
     WbsNumber,
@@ -51,8 +53,23 @@ describe('Work Packages', () => {
     number,
     WbsNumber[],
     string[],
-    string[]
-  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, blockedBy, expectedActivities, deliverables];
+    string[],
+    number,
+    number
+  ] = [
+    batman,
+    projectWbsNum,
+    name,
+    crId,
+    stage,
+    startDate,
+    duration,
+    blockedBy,
+    expectedActivities,
+    deliverables,
+    projectLead,
+    projectManager
+  ];
   /*********************************************************/
 
   afterEach(() => {
@@ -73,16 +90,12 @@ describe('Work Packages', () => {
 
   describe('createWorkPackage', () => {
     test('createWorkPackage fails if WBS number does not represent a project', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement2);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage(
           batman,
-          {
-            carNumber: 1,
-            projectNumber: 2,
-            workPackageNumber: 2
-          },
           name,
           crId,
           stage,
@@ -90,7 +103,9 @@ describe('Work Packages', () => {
           duration,
           blockedBy,
           expectedActivities,
-          deliverables
+          deliverables,
+          projectLead,
+          projectManager
         );
       };
 
@@ -100,6 +115,7 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if any elements in the blocked by are null', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(flash);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce({
@@ -115,12 +131,12 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if user does not have access', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement2);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage(
           wonderwoman,
-          projectWbsNum,
           name,
           crId,
           stage,
@@ -128,7 +144,9 @@ describe('Work Packages', () => {
           duration,
           blockedBy,
           expectedActivities,
-          deliverables
+          deliverables,
+          projectLead,
+          projectManager
         );
       };
 
@@ -149,14 +167,16 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if the associated wbsElem returns null', async () => {
-      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
       };
 
-      await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
+      await expect(callCreateWP).rejects.toThrowError(
+        new NotFoundException('WBS Element', prismaChangeRequest1.wbsElementId.toString())
+      );
     });
 
     test('createWorkPackage fails if the associated wbsElem does not have a project object', async () => {
@@ -167,10 +187,13 @@ describe('Work Packages', () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
       };
 
-      await expect(callCreateWP).rejects.toThrowError(new NotFoundException('WBS Element', '1.2.0'));
+      await expect(callCreateWP).rejects.toThrowError(
+        new NotFoundException('WBS Element', prismaChangeRequest1.wbsElementId.toString())
+      );
     });
 
     test("fails if the blocked by include the work package's own project", async () => {
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(prismaWbsElement1);
       const argsToTest: [
         User,
         WbsNumber,
@@ -181,8 +204,23 @@ describe('Work Packages', () => {
         number,
         WbsNumber[],
         string[],
-        string[]
-      ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, [projectWbsNum], expectedActivities, deliverables];
+        string[],
+        number,
+        number
+      ] = [
+        batman,
+        projectWbsNum,
+        name,
+        crId,
+        stage,
+        startDate,
+        duration,
+        [projectWbsNum],
+        expectedActivities,
+        deliverables,
+        projectLead,
+        projectManager
+      ];
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, argsToTest);

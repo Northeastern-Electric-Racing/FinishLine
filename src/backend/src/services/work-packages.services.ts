@@ -111,7 +111,6 @@ export default class WorkPackagesService {
   /**
    * Creates a Work_Package in the database
    * @param user the user creating the work package
-   * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
    * @param stage the stage of the work package
@@ -120,12 +119,13 @@ export default class WorkPackagesService {
    * @param blockedBy the WBS elements that need to be completed before this WP
    * @param expectedActivities the expected activities descriptions for this WP
    * @param deliverables the expected deliverables descriptions for this WP
+   * @param projectLead the new lead for this work package
+   * @param projectManager the new manager for this work package
    * @returns the WBS number of the successfully created work package
    * @throws if the work package could not be created
    */
   static async createWorkPackage(
     user: User,
-    projectWbsNum: WbsNumber,
     name: string,
     crId: number,
     stage: WorkPackageStage | null,
@@ -133,21 +133,55 @@ export default class WorkPackagesService {
     duration: number,
     blockedBy: WbsNumber[],
     expectedActivities: string[],
-    deliverables: string[]
+    deliverables: string[],
+    projectLead: number,
+    projectManager: number
   ): Promise<string> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
-    await validateChangeRequestAccepted(crId);
+    const changeRequest = await validateChangeRequestAccepted(crId);
+
+    const wbsElem = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsElementId: changeRequest.wbsElementId
+      },
+      include: {
+        project: {
+          include: {
+            workPackages: { include: { wbsElement: true, blockedBy: true } }
+          }
+        }
+      }
+    });
+
+    if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
-    const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
+    const { carNumber, projectNumber, workPackageNumber } = wbsElem;
+
+    const projectWbsNum: WbsNumber = {
+      carNumber,
+      projectNumber,
+      workPackageNumber
+    };
+
+    if (wbsElem.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     if (workPackageNumber !== 0) {
       throw new HttpException(
         400,
         `Given WBS Number ${carNumber}.${projectNumber}.${workPackageNumber} is not for a project.`
       );
+    }
+
+    if ((await getUserFullName(projectLead)) === 'no one') {
+      throw new NotFoundException('User', projectLead);
+    }
+
+    if ((await getUserFullName(projectManager)) === 'no one') {
+      throw new NotFoundException('User', projectManager);
     }
 
     if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
@@ -159,27 +193,6 @@ export default class WorkPackagesService {
         throw new HttpException(400, 'A Project cannot be a Blocker');
       }
     });
-
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          carNumber,
-          projectNumber,
-          workPackageNumber
-        }
-      },
-      include: {
-        project: {
-          include: {
-            workPackages: { include: { wbsElement: true, blockedBy: true } }
-          }
-        }
-      }
-    });
-
-    if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElem.dateDeleted)
-      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { project } = wbsElem;
 
@@ -236,6 +249,8 @@ export default class WorkPackagesService {
             projectNumber,
             workPackageNumber: newWorkPackageNumber,
             name,
+            projectLeadId: projectLead,
+            projectManagerId: projectManager,
             changes: {
               create: {
                 changeRequestId: crId,
