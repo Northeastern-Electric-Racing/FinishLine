@@ -199,7 +199,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     return (
                       <NERAutocomplete
                         id={'expenseType'}
-                        size="small"
+                        size="medium"
                         options={mappedExpenseTypes}
                         value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
                         placeholder="Expense Type"
