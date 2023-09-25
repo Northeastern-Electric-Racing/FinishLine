@@ -2,9 +2,9 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
+import React from 'react';
 import { Grid, Link, useTheme } from '@mui/material';
-import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
@@ -114,6 +114,12 @@ const ProjectsTable: React.FC = () => {
     }
   ];
 
+  const defaultFilterValues = {
+    field: 'carNumber',
+    operator: '=',
+    value: undefined
+  };
+
   const theme = useTheme();
   return (
     <Grid container xs={12}>
@@ -162,7 +168,25 @@ const ProjectsTable: React.FC = () => {
             quickFilterProps: { debounceMs: 500 }
           }
         }}
+        onFilterModelChange={(filterModel: GridFilterModel) => {
+          const filterProps = filterModel.items[0];
+
+          localStorage.setItem('projectsTableFilterColumnName', filterProps.columnField);
+          localStorage.setItem('projectsTableFilterOperator', filterProps.operatorValue ?? defaultFilterValues.operator);
+          localStorage.setItem('projectsTableFilterValue', filterProps.value);
+        }}
         initialState={{
+          filter: {
+            filterModel: {
+              items: [
+                {
+                  columnField: localStorage.getItem('projectsTableFilterColumnName') ?? defaultFilterValues.field,
+                  operatorValue: localStorage.getItem('projectsTableFilterOperator') ?? defaultFilterValues.operator,
+                  value: localStorage.getItem('projectsTableFilterValue') ?? defaultFilterValues.value
+                }
+              ]
+            }
+          },
           sorting: {
             sortModel: [{ field: 'wbsNum', sort: 'asc' }]
           },
