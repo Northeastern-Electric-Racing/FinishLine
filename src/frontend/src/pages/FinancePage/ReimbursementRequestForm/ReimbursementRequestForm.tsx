@@ -14,6 +14,8 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
+import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
@@ -74,7 +76,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account ?? ClubAccount.CASH,
+      account: defaultValues?.account ?? ClubAccount.BUDGET,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
@@ -119,6 +121,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     data: allProjects
   } = useAllProjects();
 
+  // checking the data here instead of using isError since function doesn't ever return an error
+  const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();
+
+  // checks to make sure none of the secure settings fields are empty, indicating not properly set
+  const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '') ? true : false;
+
   const toast = useToast();
   const history = useHistory();
 
@@ -132,7 +140,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     allProjectsIsLoading ||
     !allVendors ||
     !allExpenseTypes ||
-    !allProjects
+    !allProjects ||
+    checkSecureSettingsIsLoading
   )
     return <LoadingIndicator />;
 
@@ -182,6 +191,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
+      hasSecureSettingsSet={hasSecureSettingsSet}
     />
   );
 };

@@ -4,11 +4,14 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
+  Link,
   IconButton,
   MenuItem,
   Select,
   TextField,
-  Typography
+  Typography,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -29,6 +32,9 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -51,6 +57,7 @@ interface ReimbursementRequestFormViewProps {
   submitText: string;
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  hasSecureSettingsSet: boolean;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -70,7 +77,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   submitText,
   previousPage,
-  setValue
+  setValue,
+  hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
@@ -107,6 +115,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         handleSubmit(onSubmit)(e);
       }}
     >
+      {!hasSecureSettingsSet && (
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
+          <Alert variant="filled" severity="warning">
+            Your secure settings must be set to create a reimbursement request, you can set them
+            <Link style={{ color: 'blue' }} component={RouterLink} to={routes.SETTINGS}>
+              {' '}
+              here
+            </Link>
+            .
+          </Alert>
+        </Snackbar>
+      )}
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
@@ -142,7 +162,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
-                        {account}
+                        {codeAndRefundSourceName(account)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -193,11 +213,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       value={value}
                       error={!!errors.expenseTypeId}
                     >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
+                      {allExpenseTypes
+                        .filter((expenseType) => expenseType.allowed)
+                        .map((expenseType) => (
+                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                            {expenseTypePipe(expenseType)}
+                          </MenuItem>
+                        ))}
                     </Select>
                   )}
                 />
@@ -256,7 +278,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit">
+        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
           {submitText}
         </NERSuccessButton>
       </Box>
