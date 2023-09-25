@@ -45,7 +45,7 @@ projectRouter.post(
   body('rules').isArray(),
   nonEmptyString(body('rules.*')),
   validateInputs,
-  ProjectsController.editProject
+  ProjectsController.createProject
 );
 projectRouter.post(
   '/edit',

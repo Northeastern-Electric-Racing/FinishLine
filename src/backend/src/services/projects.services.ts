@@ -86,7 +86,7 @@ export default class ProjectsService {
     name: string,
     summary: string,
     teamIds: string[],
-    budget: number,
+    budget: number | null,
     links: LinkCreateArgs[],
     rules: string[],
     goals: { id: number; detail: string }[],
@@ -128,7 +128,7 @@ export default class ProjectsService {
             teams: {
               connect: teamIds.map((teamId) => ({ teamId }))
             },
-            budget,
+            budget: budget ?? undefined,
             rules,
             goals: {
               createMany: { data: goals }
