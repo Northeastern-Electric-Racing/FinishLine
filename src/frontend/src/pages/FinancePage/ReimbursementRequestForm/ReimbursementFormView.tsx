@@ -1,6 +1,5 @@
 import { Delete } from '@mui/icons-material';
 import {
-  Autocomplete,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -30,6 +29,8 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { fullNamePipe } from '../../../utils/pipes';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -100,6 +101,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       </ul>
     </FormControl>
   );
+
+  const expenseTypesToAutocomplete = (expense: ExpenseType): { label: string; id: string } => {
+    return { label: expense.name, id: expense.toString() };
+  };
 
   return (
     <form
@@ -188,19 +193,27 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <Controller
                   name="expenseTypeId"
                   control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Autocomplete
-                      options={allExpenseTypes}
-                      getOptionLabel={(expenseType) => expenseType.name}
-                      value={allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value)}
-                      onChange={(_event, newValue) => {
-                        if (newValue) {
-                          onChange(newValue.expenseTypeId);
+                  render={({ field: { onChange, value } }) => {
+                    const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === value);
+                    return (
+                      <NERAutocomplete
+                        options={allExpenseTypes.map(expenseTypesToAutocomplete)}
+                        value={
+                          allExpenseTypes
+                            .map(expenseTypesToAutocomplete)
+                            .find((expenseType) => expenseType.label === value) || null
                         }
-                      }}
-                      renderInput={(params) => <TextField {...params} placeholder="Expense Type" />}
-                    />
-                  )}
+                        placeholder="Expense Type"
+                        onChange={(_event, newValue) => {
+                          if (newValue) {
+                            onChange(newValue.label);
+                          }
+                        }}
+                        id={'expenseType'}
+                        size={undefined}
+                      />
+                    );
+                  }}
                 />
                 <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
               </FormControl>
