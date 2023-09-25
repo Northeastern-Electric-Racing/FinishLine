@@ -130,7 +130,7 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
-    if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType} is not allowed!`);
+    if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType.name} is not allowed!`);
 
     const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
