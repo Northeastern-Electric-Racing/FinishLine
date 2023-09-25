@@ -84,8 +84,7 @@ export const deleteReimbursementRequest = (id: string) => {
 export const getAllExpenseTypes = () => {
   return axios.get(apiUrls.getAllExpenseTypes(), {
     transformResponse: (data) => {
-      const parsedData = JSON.parse(data) as ExpenseType[];
-      return parsedData.map((expenseType) => ({ ...expenseType, id: expenseType.expenseTypeId }));
+      return JSON.parse(data) as ExpenseType[];
     }
   });
 };
