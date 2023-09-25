@@ -339,7 +339,7 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  */
 export const useEditAccountCode = (expenseTypeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'edit'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await editAccountCode(expenseTypeId, accountCodeData);
@@ -354,7 +354,7 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'create'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await createAccountCode(accountCodeData);
@@ -369,9 +369,12 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(['vendors', 'create'], async (vendorData: { name: string }) => {
-    const { data } = await createVendor(vendorData);
-    queryClient.invalidateQueries(['vendors']);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, { name: string }>(
+    ['vendors', 'create'],
+    async (vendorData: { name: string }) => {
+      const { data } = await createVendor(vendorData);
+      queryClient.invalidateQueries(['vendors']);
+      return data;
+    }
+  );
 };
