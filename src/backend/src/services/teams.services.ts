@@ -162,8 +162,15 @@ export default class TeamsService {
 
     return teamTransformer(updateTeam);
   }
+
   /**
-   * Create a new team.
+   * Creates a new team in the database
+   * @param submitter The submitter who is trying to create a new team
+   * @param teamName the name of the new team
+   * @param headId the id of the user who will be the head on the new team
+   * @param slackId the slack id for the slack channel for the team
+   * @param description a short description of the team (must be less than 300 words)
+   * @returns The newly created team
    */
   static async createTeam(
     submitter: User,
