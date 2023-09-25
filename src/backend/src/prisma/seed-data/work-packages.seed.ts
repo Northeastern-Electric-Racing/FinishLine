@@ -37,7 +37,6 @@ export const seedWorkPackage = async (
 }> => {
   const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
     creator,
-    projectWbsNumber,
     name,
     changeRequestId,
     stage,
@@ -45,7 +44,9 @@ export const seedWorkPackage = async (
     duration,
     blockedBy,
     expectedActivities,
-    deliverables
+    deliverables,
+    projectLead,
+    projectManager
   );
 
   const workPackageWbsNumber = validateWBS(workPackage1WbsString);

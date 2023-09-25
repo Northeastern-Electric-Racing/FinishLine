@@ -387,7 +387,6 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 3 */
   const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
     thomasEmrax,
-    project5WbsNumber,
     'Manufacture Wiring Harness',
     changeRequest1Id,
     WorkPackageStage.Manufacturing,
@@ -400,7 +399,9 @@ const performSeed: () => Promise<void> = async () => {
       'Solder wiring segments together and heat shrink properly',
       'Cut all wires to length'
     ],
-    ['Completed wiring harness for the entire car']
+    ['Completed wiring harness for the entire car'],
+    joeShmoe.userId,
+    thomasEmrax.userId
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 
