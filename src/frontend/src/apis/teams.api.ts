@@ -6,6 +6,7 @@
 import axios from '../utils/axios';
 import { Team } from 'shared';
 import { apiUrls } from '../utils/urls';
+import { CreateTeamPayload } from '../hooks/teams.hooks';
 
 export const getAllTeams = () => {
   return axios.get<Team[]>(apiUrls.teams(), {
@@ -35,4 +36,8 @@ export const setTeamHead = (id: string, userId: number) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId
   });
+};
+
+export const createTeam = (payload: CreateTeamPayload) => {
+  return axios.post<Team>(apiUrls.teamsCreate(), payload);
 };
