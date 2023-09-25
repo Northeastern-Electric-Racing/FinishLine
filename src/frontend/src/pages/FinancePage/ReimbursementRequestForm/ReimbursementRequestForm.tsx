@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs } from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -156,7 +156,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   };
 
-  const projectDropdown = allProjects.map((proj) => {
+  const allProjectWbsElements = allProjects.map((proj) => {
     return {
       wbsNum: proj.wbsNum,
       wbsName: proj.name
@@ -178,7 +178,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={projectDropdown}
+      allWbsElements={allProjectWbsElements}
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
