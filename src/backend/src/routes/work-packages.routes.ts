@@ -7,6 +7,7 @@ const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
+workPackagesRouter.get('/get-many', WorkPackagesController.getManyWorkPackages);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
