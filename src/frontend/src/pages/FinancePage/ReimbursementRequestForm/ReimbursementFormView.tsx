@@ -102,8 +102,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
-  const expenseTypesToAutocomplete = (expense: ExpenseType): { label: string; id: string } => {
-    return { label: expense.name, id: expense.toString() };
+  const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
+    return { label: expenseType.name, id: expenseType.expenseTypeId };
   };
 
   return (
@@ -194,24 +194,17 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   name="expenseTypeId"
                   control={control}
                   render={({ field: { onChange, value } }) => {
+                    const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
                     return (
                       <NERAutocomplete
-                        options={allExpenseTypes.map(expenseTypesToAutocomplete)}
-                        value={
-                          allExpenseTypes
-                            .map(expenseTypesToAutocomplete)
-                            .find((expenseType) => expenseType.label === value) || null
-                        }
+                        options={mappedExpenseTypes}
+                        value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
                         placeholder="Expense Type"
                         onChange={(_event, newValue) => {
-                          if (newValue) {
-                            onChange(newValue.label);
-                          } else {
-                            onChange('');
-                          }
+                          newValue ? onChange(newValue.id) : onChange('');
                         }}
                         id={'expenseType'}
-                        size={undefined}
+                        size="small"
                       />
                     );
                   }}
