@@ -203,7 +203,7 @@ export default class TeamsService {
       where: { teamName }
     });
 
-    if (duplicateName) throw new HttpException(400, 'The new team head must not be a head or lead of another team');
+    if (duplicateName) throw new HttpException(400, 'The new team name must not be the name of another team');
 
     const createdTeam = await prisma.team.create({
       data: {
