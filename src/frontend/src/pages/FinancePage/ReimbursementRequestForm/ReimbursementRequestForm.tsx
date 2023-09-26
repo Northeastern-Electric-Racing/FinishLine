@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs } from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -14,7 +14,6 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
@@ -165,10 +164,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     }
   };
 
-  const allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
-  }[] = getAllWbsElements(allProjects);
+  const allProjectWbsElements = allProjects.map((proj) => {
+    return {
+      wbsNum: proj.wbsNum,
+      wbsName: proj.name
+    };
+  });
 
   return (
     <CreateReimbursementRequestFormView
@@ -185,7 +186,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={allWbsElements}
+      allWbsElements={allProjectWbsElements}
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
