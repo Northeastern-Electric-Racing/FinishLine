@@ -68,7 +68,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
 
   const { reset, handleSubmit, control } = useForm<FormInput>({
     resolver: yupResolver(schema),
-    defaultValues: defaultValues
+    defaultValues
   });
 
   const [projectLeadId, setProjectLeadId] = useState<string>();
