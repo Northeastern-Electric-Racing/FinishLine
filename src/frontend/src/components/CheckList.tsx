@@ -14,6 +14,7 @@ import { Tooltip } from '@mui/material';
 import { User } from 'shared';
 import NERModal from './NERModal';
 import { fullNamePipe } from '../utils/pipes';
+import { useToast } from '../hooks/toasts.hooks';
 
 export type CheckListItem = {
   id: number;
@@ -34,6 +35,7 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
   const { isLoading, mutateAsync } = useCheckDescriptionBullet();
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [currIdx, setCurrIdx] = useState<number>(-1);
+  const toast = useToast();
 
   const handleUncheck = async (idx: number) => {
     await handleCheck(idx);
@@ -41,7 +43,13 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
   };
 
   const handleCheck = async (idx: number) => {
-    await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
+    try {
+      await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   items.sort((a: CheckListItem, b: CheckListItem) => {

@@ -28,13 +28,16 @@ const NERFormModal = ({
    */
   const onSubmitWrapper = async (data: any) => {
     await onFormSubmit(data);
-    reset({ confirmDone: false });
+    reset();
   };
 
   return (
     <NERModal
       open={open}
-      onHide={onHide}
+      onHide={() => {
+        onHide();
+        reset();
+      }}
       formId={formId}
       title={title}
       cancelText={cancelText ? cancelText : 'Cancel'}
