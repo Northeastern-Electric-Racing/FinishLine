@@ -15,7 +15,7 @@ import { LayoutProps } from '../LayoutProps';
 import { IconButton } from '@mui/material';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import React from 'react';
+import { useEffect, useState } from 'react';
 
 const textColor = 'white';
 const background = '#ef4345';
@@ -26,12 +26,11 @@ interface NavTopBarProps extends LayoutProps {
 }
 
 const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
-  const [width, setWidth] = React.useState(window.innerWidth);
-  React.useEffect(() => {
-    function handleResize() {
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    window.addEventListener('resize', () => {
       setWidth(window.innerWidth);
-    }
-    window.addEventListener('resize', handleResize);
+    });
   });
   const user = useCurrentUser();
   return (
