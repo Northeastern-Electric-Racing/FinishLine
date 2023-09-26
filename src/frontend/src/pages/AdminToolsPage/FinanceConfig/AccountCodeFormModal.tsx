@@ -36,7 +36,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
       allowed: defaultValues?.allowed ?? false,
-      allowedRefundSources: defaultValues?.allowedRefundSources ?? ''
+      allowedRefundSources: Object.values(ClubAccount)
     }
   });
 
@@ -74,9 +74,9 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
           control={control}
           render={({ field: { onChange, value } }) => (
             <Select onChange={(newValue) => onChange(newValue.target.value as ClubAccount)} value={value}>
-              {defaultValues?.allowedRefundSources.map((refundSource) => (
-                <MenuItem key={refundSource} value={refundSource}>
-                  {refundSource}
+              {Object.values(ClubAccount).map((account) => (
+                <MenuItem key={account} value={account}>
+                  {account}
                 </MenuItem>
               ))}
             </Select>
