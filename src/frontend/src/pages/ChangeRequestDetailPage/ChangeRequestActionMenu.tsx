@@ -15,10 +15,10 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser, useAllUsers } from '../../hooks/users.hooks';
 import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { userToAutocompleteOption } from '../../utils/task.utils';
 import { useState } from 'react';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { taskUserToAutocompleteOption } from '../../utils/task.utils';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
@@ -93,7 +93,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
         limitTags={1}
         disableCloseOnSelect
         multiple
-        options={users.filter((user) => isLeadership(user.role)).map(userToAutocompleteOption)}
+        options={users.filter((user) => isLeadership(user.role)).map(taskUserToAutocompleteOption)}
         getOptionLabel={(option) => option.label}
         onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
         renderTags={() => null}
