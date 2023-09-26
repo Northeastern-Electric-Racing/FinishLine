@@ -192,12 +192,12 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', headId);
     if (!isHead(newHead.role)) throw new HttpException(400, 'The team head must be at least a head');
 
-    // checking to see if any other teams have the new head as their current head or lead
+    // checking to see if any other teams have the new head as their current head
     const newHeadTeam = await prisma.team.findFirst({
       where: { headId }
     });
 
-    if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head or lead of another team');
+    if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head of another team');
 
     const duplicateName = await prisma.team.findFirst({
       where: { teamName }

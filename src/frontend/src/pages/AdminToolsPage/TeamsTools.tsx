@@ -32,28 +32,13 @@ const TeamsTools = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="50%"
-            >
+            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="50%">
               Team Name
             </TableCell>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="30%"
-            >
+            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="30%">
               Head
             </TableCell>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="30%"
-            >
+            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="30%">
               Number of Members
             </TableCell>
           </TableHead>

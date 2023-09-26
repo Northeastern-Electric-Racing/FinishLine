@@ -2,7 +2,7 @@ import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
 import { validateInputs } from '../utils/utils';
-import { intMinZero } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
@@ -24,10 +24,10 @@ teamsRouter.post(
 teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post(
   '/create',
-  body('teamName').isString(),
+  nonEmptyString(body('teamName')),
   intMinZero(body('headId')),
-  body('slackId').isString(),
-  body('description').isString(),
+  nonEmptyString(body('slackId')),
+  nonEmptyString(body('description')),
   TeamsController.createTeam
 );
 

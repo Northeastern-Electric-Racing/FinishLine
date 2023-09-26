@@ -6,6 +6,7 @@
 import {
   Autocomplete,
   AutocompleteRenderInputParams,
+  FormHelperText,
   InputAdornment,
   SxProps,
   TextField,
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { HTMLAttributes } from 'react';
+import { FieldError } from 'react-hook-form';
 
 interface NERAutocompleteProps {
   id: string;
@@ -25,6 +27,7 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
+  errorMessage?: FieldError;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -36,7 +39,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   sx,
   value,
   listboxProps,
-  filterSelectedOptions
+  filterSelectedOptions,
+  errorMessage
 }) => {
   const theme = useTheme();
 
@@ -75,19 +79,22 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   };
 
   return (
-    <Autocomplete
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      disablePortal
-      id={id}
-      onChange={onChange}
-      options={options}
-      sx={autocompleteStyle}
-      size={size}
-      renderInput={autocompleteRenderInput}
-      value={value}
-      filterSelectedOptions={filterSelectedOptions}
-      ListboxProps={listboxProps}
-    />
+    <>
+      <Autocomplete
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        disablePortal
+        id={id}
+        onChange={onChange}
+        options={options}
+        sx={autocompleteStyle}
+        size={size}
+        renderInput={autocompleteRenderInput}
+        value={value}
+        filterSelectedOptions={filterSelectedOptions}
+        ListboxProps={listboxProps}
+      />
+      <FormHelperText error={!!errorMessage}>{errorMessage?.message}</FormHelperText>
+    </>
   );
 };
 

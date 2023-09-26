@@ -7,7 +7,7 @@ import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { UserPreview } from 'shared';
-import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
+import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
@@ -99,7 +99,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
 
   const teamMembers = getTaskAssigneeOptions(teams);
 
-  const autocompleteOptions = teamMembers.map(userToAutocompleteOption);
+  const autocompleteOptions = teamMembers.map(taskUserToAutocompleteOption);
 
   const handleValueChange = (
     newValue: {

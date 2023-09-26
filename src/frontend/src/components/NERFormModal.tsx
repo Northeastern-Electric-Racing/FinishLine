@@ -42,7 +42,7 @@ const NERFormModal = ({
       disabled={disabled}
       showCloseButton={showCloseButton}
     >
-      <form id={formId} onSubmit={handleUseFormSubmit(onSubmitWrapper)}>
+      <form id={formId} onSubmit={handleUseFormSubmit(onSubmitWrapper)} noValidate>
         {children}
       </form>
     </NERModal>

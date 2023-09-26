@@ -6,12 +6,12 @@ import { CreateTeamPayload, useCreateTeam } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import NERFormModal from '../../components/NERFormModal';
-import { FormControl, FormHelperText, FormLabel } from '@mui/material';
+import { FormControl, FormLabel } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { User, isHead } from 'shared';
+import { isHead } from 'shared';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { fullNamePipe } from '../../utils/pipes';
+import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 
 const schema = yup.object().shape({
   teamName: yup.string().required('Team Name is Required'),
@@ -24,10 +24,6 @@ interface CreateTeamModalProps {
   showModal: boolean;
   handleClose: () => void;
 }
-
-const userToAutocompleteOption = (user: User): { label: string; id: string } => {
-  return { label: `${fullNamePipe(user)} (${user.email})`, id: `${user.userId}` };
-};
 
 const CreateTeamModal = ({ showModal, handleClose }: CreateTeamModalProps) => {
   const { isLoading, mutateAsync } = useCreateTeam();
@@ -68,7 +64,7 @@ const CreateTeamModal = ({ showModal, handleClose }: CreateTeamModalProps) => {
 
   const headOptions = users
     .filter((user) => isHead(user.role))
-    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .sort(userComparator)
     .map(userToAutocompleteOption);
 
   return (
@@ -84,8 +80,7 @@ const CreateTeamModal = ({ showModal, handleClose }: CreateTeamModalProps) => {
     >
       <FormControl fullWidth>
         <FormLabel>Team Name</FormLabel>
-        <ReactHookTextField name="teamName" control={control} fullWidth />
-        <FormHelperText error>{errors.teamName?.message}</FormHelperText>
+        <ReactHookTextField name="teamName" control={control} fullWidth errorMessage={errors.teamName} />
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Head</FormLabel>
@@ -100,20 +95,25 @@ const CreateTeamModal = ({ showModal, handleClose }: CreateTeamModalProps) => {
               id="create-team-head"
               size="small"
               placeholder="Choose a user"
+              errorMessage={errors.headId}
             />
           )}
         />
-        <FormHelperText error>{errors.headId?.message}</FormHelperText>
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Slack Channel ID</FormLabel>
-        <ReactHookTextField name="slackId" control={control} fullWidth />
-        <FormHelperText error>{errors.slackId?.message}</FormHelperText>
+        <ReactHookTextField name="slackId" control={control} fullWidth errorMessage={errors.slackId} />
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Description</FormLabel>
-        <ReactHookTextField name="description" control={control} fullWidth multiline rows={5} />
-        <FormHelperText error>{errors.description?.message}</FormHelperText>
+        <ReactHookTextField
+          name="description"
+          control={control}
+          fullWidth
+          multiline
+          rows={5}
+          errorMessage={errors.description}
+        />
       </FormControl>
     </NERFormModal>
   );
