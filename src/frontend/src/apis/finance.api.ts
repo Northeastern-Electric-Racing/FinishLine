@@ -16,6 +16,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
+import { ExpenseType } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -82,8 +83,9 @@ export const deleteReimbursementRequest = (id: string) => {
  */
 export const getAllExpenseTypes = () => {
   return axios.get(apiUrls.getAllExpenseTypes(), {
-    transformResponse: (data) =>
-      JSON.parse(data).map((expenseType: any) => ({ ...expenseType, id: expenseType.expenseTypeId }))
+    transformResponse: (data) => {
+      return JSON.parse(data) as ExpenseType[];
+    }
   });
 };
 
