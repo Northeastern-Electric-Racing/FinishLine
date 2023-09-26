@@ -15,15 +15,24 @@ import { LayoutProps } from '../LayoutProps';
 import { IconButton } from '@mui/material';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import React from 'react';
 
 const textColor = 'white';
 const background = '#ef4345';
+const mobileWidthThreshold = 550;
 
 interface NavTopBarProps extends LayoutProps {
   handleDrawerOpen: () => void;
 }
 
 const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
+  const [width, setWidth] = React.useState(window.innerWidth);
+  React.useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+  });
   const user = useCurrentUser();
   return (
     <NERAppBar position="fixed" open={open}>
@@ -50,7 +59,7 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
                 src="/NER-Logo-App-Icon.png"
               />
               <Typography variant="h4" fontSize={30} component="div" sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}>
-                {window.innerWidth > 550 ? 'FinishLine by NER' : 'FinishLine'}
+                {width > mobileWidthThreshold ? 'FinishLine by NER' : 'FinishLine'}
               </Typography>
             </Box>
           </Link>
