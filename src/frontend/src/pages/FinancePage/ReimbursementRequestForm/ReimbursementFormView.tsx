@@ -35,6 +35,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
+import { wbsNumComparator } from 'shared/src/validate-wbs';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -89,6 +90,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
   }));
+
+  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const ReceiptFileInput = () => (
     <FormControl>
