@@ -36,3 +36,7 @@ export const setTeamHead = (id: string, userId: number) => {
     userId
   });
 };
+
+export const deleteTeam = (id: string) => {
+  return axios.post<{ message: string }>(apiUrls.teamsDelete(id));
+};

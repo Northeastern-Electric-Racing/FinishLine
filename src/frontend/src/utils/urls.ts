@@ -68,6 +68,7 @@ const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/prop
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsDelete = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
@@ -151,6 +152,7 @@ export const apiUrls = {
 
   teams,
   teamsById,
+  teamsDelete,
   teamsSetMembers,
   teamsSetHead,
   teamsSetDescription,

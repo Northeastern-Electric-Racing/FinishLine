@@ -1,12 +1,12 @@
 import { Grid } from '@mui/material';
 import { useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
-import TeamMembersPageBlock from '../TeamsPage/TeamMembersPageBlock';
+import TeamMembersPageBlock from './TeamMembersPageBlock';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
-import ActiveProjectCardView from '../TeamsPage/ProjectCardsView';
-import DescriptionPageBlock from '../TeamsPage/DescriptionPageBlock';
+import ActiveProjectCardView from './ProjectCardsView';
+import DescriptionPageBlock from './DescriptionPageBlock';
 import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
 
