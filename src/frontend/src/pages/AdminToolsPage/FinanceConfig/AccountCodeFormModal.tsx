@@ -2,7 +2,7 @@ import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, MenuItem, Select } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, ListItemText, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -36,9 +36,17 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
       allowed: defaultValues?.allowed ?? false,
-      allowedRefundSources: Object.values(ClubAccount)
+      allowedRefundSources: defaultValues?.allowedRefundSources ?? []
     }
   });
+
+  const [refundSourcesMultiSelect, setRefundSourcesMultiSelect] = React.useState<ClubAccount[]>([]);
+  const handleChange = (event: SelectChangeEvent<typeof refundSourcesMultiSelect>) => {
+    const {
+      target: { value }
+    } = event;
+    setRefundSourcesMultiSelect(typeof value === 'string' ? value.split(',') : value);
+  };
 
   const onFormSubmit = async (data: ExpenseTypePayload) => {
     try {
@@ -69,19 +77,20 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Refund Source</FormLabel>
-        <Controller
+        <Select
           name="allowedRefundSources"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <Select onChange={(newValue) => onChange(newValue.target.value as ClubAccount)} value={value}>
-              {Object.values(ClubAccount).map((account) => (
-                <MenuItem key={account} value={account}>
-                  {account}
-                </MenuItem>
-              ))}
-            </Select>
-          )}
-        />
+          multiple
+          value={refundSourcesMultiSelect}
+          onChange={handleChange}
+          renderValue={(selected) => selected.join(', ')}
+        >
+          {refundSourcesMultiSelect.map((account) => (
+            <MenuItem key={account} value={account}>
+              <Checkbox checked={refundSourcesMultiSelect.indexOf(account) > -1} />
+              <ListItemText primary={account} />
+            </MenuItem>
+          ))}
+        </Select>
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>
