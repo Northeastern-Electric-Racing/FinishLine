@@ -1,55 +1,156 @@
-import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, TableCell, TableRow } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
-import { useAllTeams } from '../../hooks/teams.hooks';
+import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
-import CreateTeamModal from './CreateTeamModal';
-import { useState } from 'react';
+import AdminToolTable from './AdminToolTable';
+import { useAllUsers } from '../../hooks/users.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
+import { Controller, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { isHead } from 'shared';
+import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import NERAutocomplete from '../../components/NERAutocomplete';
+
+const schema = yup.object().shape({
+  teamName: yup.string().required('Team Name is Required'),
+  headId: yup.string().required('You must set a Head'),
+  slackId: yup.string().required('Team Channel SlackId is required'),
+  description: yup.string().required('Description is Required')
+});
+
+interface CreateTeamFormInput {
+  teamName: string;
+  headId: string;
+  slackId: string;
+  description: string;
+}
+
+const defaultValues = {
+  teamName: '',
+  slackId: '',
+  description: '',
+  headId: ''
+};
 
 const TeamsTools = () => {
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const { data: allTeams, isLoading, isError, error } = useAllTeams();
+  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
+  const { isLoading, mutateAsync } = useCreateTeam();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const toast = useToast();
 
-  if (!allTeams || isLoading) return <LoadingIndicator />;
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-  if (isError) {
-    return <ErrorPage message={error.message} />;
+  if (!allTeams || allTeamsIsLoading || !users || allUsersIsLoading || isLoading) return <LoadingIndicator />;
+
+  if (allTeamsIsError) {
+    return <ErrorPage message={allTeamsError.message} />;
   }
+
+  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
+
+  const onFormSubmit = async (data: CreateTeamFormInput) => {
+    try {
+      await mutateAsync({ ...data, headId: Number(data.headId) });
+      reset(defaultValues);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message, 5000);
+      }
+    }
+  };
+
+  const headOptions = users
+    .filter((user) => isHead(user.role))
+    .sort(userComparator)
+    .map(userToAutocompleteOption);
 
   const teamTableRows = allTeams.map((team) => (
     <TableRow>
       <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{team.members.length}</TableCell>
+      <TableCell align="center" sx={{ border: '2px solid black' }}>
+        {team.members.length}
+      </TableCell>
     </TableRow>
   ));
 
   return (
     <PageBlock title="Team Management">
-      <CreateTeamModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="50%">
-              Team Name
-            </TableCell>
-            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="30%">
-              Head
-            </TableCell>
-            <TableCell align="left" sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }} width="30%">
-              Number of Members
-            </TableCell>
-          </TableHead>
-          <TableBody>{teamTableRows}</TableBody>
-        </Table>
-      </TableContainer>
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        <NERButton variant="contained" onClick={() => setShowCreateModal(true)}>
-          New Team
-        </NERButton>
-      </Box>
+      <Grid container columnSpacing={2}>
+        <Grid item xs={12} md={6}>
+          <form
+            id={'create-team-form'}
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(onFormSubmit)(e);
+            }}
+            noValidate
+          >
+            <FormControl sx={{ width: '50%', marginRight: '10px' }}>
+              <FormLabel>Team Name</FormLabel>
+              <ReactHookTextField name="teamName" control={control} fullWidth errorMessage={errors.teamName} />
+            </FormControl>
+            <FormControl sx={{ width: '45%' }}>
+              <FormLabel>Slack Channel ID</FormLabel>
+              <ReactHookTextField name="slackId" control={control} fullWidth errorMessage={errors.slackId} />
+            </FormControl>
+            <FormControl fullWidth>
+              <FormLabel>Head</FormLabel>
+              <Controller
+                name="headId"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <NERAutocomplete
+                    value={headOptions.find((option) => option.id === value) || { id: '', label: '' }}
+                    onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
+                    options={headOptions}
+                    id="create-team-head"
+                    size="small"
+                    placeholder="Choose a user"
+                    errorMessage={errors.headId}
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth>
+              <FormLabel>Description</FormLabel>
+              <ReactHookTextField
+                name="description"
+                control={control}
+                fullWidth
+                multiline
+                rows={5}
+                errorMessage={errors.description}
+              />
+            </FormControl>
+            <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+              <NERButton variant="contained" type="submit">
+                Create Team
+              </NERButton>
+            </Box>
+          </form>
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
+          <AdminToolTable
+            columns={[{ name: 'Team Name' }, { name: 'Head' }, { name: 'Members', width: '20%' }]}
+            rows={teamTableRows}
+          />
+        </Grid>
+      </Grid>
     </PageBlock>
   );
 };
