@@ -17,9 +17,9 @@ import { GridMenuIcon } from '@mui/x-data-grid';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect, useState } from 'react';
 
-const textColor = 'white';
-const background = '#ef4345';
-const mobileWidthThreshold = 550;
+const TEXT_COLOR = 'white';
+const BACKGROUND = '#ef4345';
+const MOBILE_WIDTH_THRESHOLD = 550;
 
 interface NavTopBarProps extends LayoutProps {
   handleDrawerOpen: () => void;
@@ -35,7 +35,7 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
   const user = useCurrentUser();
   return (
     <NERAppBar position="fixed" open={open}>
-      <Toolbar disableGutters sx={{ height: 68, px: 1, background, color: textColor }}>
+      <Toolbar disableGutters sx={{ height: 68, px: 1, BACKGROUND, color: TEXT_COLOR }}>
         <IconButton
           color="inherit"
           aria-label="open drawer"
@@ -57,8 +57,8 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
                 alt="Northeastern Electric Racing Logo"
                 src="/NER-Logo-App-Icon.png"
               />
-              <Typography variant="h4" fontSize={30} component="div" sx={{ flexGrow: 1, paddingLeft: 2, color: textColor }}>
-                {width > mobileWidthThreshold ? 'FinishLine by NER' : 'FinishLine'}
+              <Typography variant="h4" fontSize={30} component="div" sx={{ flexGrow: 1, paddingLeft: 2, color: TEXT_COLOR }}>
+                {width > MOBILE_WIDTH_THRESHOLD ? 'FinishLine by NER' : 'FinishLine'}
               </Typography>
             </Box>
           </Link>
@@ -66,7 +66,7 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
         <Typography
           variant="body1"
           sx={{
-            color: textColor,
+            color: TEXT_COLOR,
             '@media (max-width: 600px)': {
               display: 'none' // Hide the text on screens with width less than 600 pixels
             }
