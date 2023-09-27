@@ -159,7 +159,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        toast.error(e.message, 3000);
+        toast.error(e.message, 5000);
       }
     }
   };
