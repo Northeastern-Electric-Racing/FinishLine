@@ -160,14 +160,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </Box>
   );
 
-  let teamName = '';
-  try {
-    teamName = project.teams[0].teamName;
-  } catch (e) {
-    teamName = 'None';
-  }
-  
-  const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name} - ${teamName}`;
+  const pageTitle = `${wbsPipe(project.wbsNum)} - ${project.name}`;
 
   const headerRight = (
     <Box display="flex" justifyContent="flex-end">
