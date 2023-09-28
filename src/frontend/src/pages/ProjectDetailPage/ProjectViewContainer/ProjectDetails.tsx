@@ -14,6 +14,7 @@ import WorkPackageSummary from './WorkPackageSummary';
 import DetailDisplay from '../../../components/DetailDisplay';
 import LinkView from '../../../components/Link/LinkView';
 import GroupIcon from '@mui/icons-material/Group';
+import { getProjectTeamsName } from '../../../utils/gantt.utils';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -36,7 +37,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         <Grid container spacing={2}>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <GroupIcon sx={{ mr: 2 }} />
-            <DetailDisplay label="Project Team" content={project.teams[0]?.teamName || 'None'} paddingRight={1} />
+            <DetailDisplay label="Teams" content={getProjectTeamsName(project)} paddingRight={1} />
           </Grid>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <Construction sx={{ mr: 2 }} />
