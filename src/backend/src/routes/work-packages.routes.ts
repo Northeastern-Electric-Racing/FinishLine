@@ -44,8 +44,8 @@ workPackagesRouter.post(
   body('deliverables').isArray(),
   body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('deliverables.*.detail')),
-  intMinZero(body('projectLead').optional()),
-  intMinZero(body('projectManager').optional()),
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional()),
   validateInputs,
   WorkPackagesController.editWorkPackage
 );

@@ -140,8 +140,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        projectLead: leadId ? parseInt(leadId) : undefined,
-        projectManager: managerId ? parseInt(managerId) : undefined,
+        projectLeadId: leadId ? parseInt(leadId) : undefined,
+        projectManagerId: managerId ? parseInt(managerId) : undefined,
         workPackageId: workPackage.id,
         userId,
         name,
