@@ -139,22 +139,22 @@ const Settings: React.FC = () => {
       </PageBlock>
       <PageBlock title="User Details">
         <Grid container spacing={2}>
-          <Grid item md={4} lg={2}>
+          <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay label="First Name" content={user.firstName} />
           </Grid>
-          <Grid item md={4} lg={2}>
+          <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay label="Last Name" content={user.lastName} />
           </Grid>
-          <Grid item md={4} lg={3}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <DetailDisplay label="Email" content={user.email} />
           </Grid>
-          <Grid item md={4} lg={2}>
+          <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay label="Email ID" content={String(user.emailId)} />
           </Grid>
-          <Grid item md={4} lg={2}>
+          <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay label="Role" content={user.role} />
           </Grid>
-          <Grid item md={4} lg={3}>
+          <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay
               label="Teams"
               content={userTeams.length === 0 ? 'None' : userTeams.map((team) => team.teamName).join(', ')}
