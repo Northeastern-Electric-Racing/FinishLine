@@ -111,7 +111,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       : 'Assign to My Team';
 
     return (
-      <MenuItem onClick={handleAssignToMyTeam}>
+      <MenuItem onClick={handleAssignToMyTeam} divider={true}>
         <ListItemIcon>
           <GroupIcon fontSize="small" />
         </ListItemIcon>

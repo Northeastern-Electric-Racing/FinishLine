@@ -19,7 +19,6 @@ interface ActionsMenuProps {
 
 const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -40,7 +39,19 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
       >
         {title}
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+        onClose={handleDropdownClose}
+      >
         {buttons.flatMap((button, index) => {
           return [
             button.dividerTop && <Divider key={`${index}-divider`} />,
