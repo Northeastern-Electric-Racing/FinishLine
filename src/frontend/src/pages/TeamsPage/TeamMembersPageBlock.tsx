@@ -194,10 +194,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const NonEditingLeadsView = () => (
     <Grid container>
-      <Grid item>
+      <Grid item xs={11} lg="auto">
         <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
       </Grid>
-      <Grid item mt={-1}>
+      <Grid item xs={1} mt={-1}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingLeads(true)} />}
       </Grid>
     </Grid>

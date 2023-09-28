@@ -177,8 +177,6 @@ export default class TeamsService {
       ...teamQueryArgs
     });
 
-    const teams = await prisma.team.findMany(teamQueryArgs);
-
     const newLeads = await getUsers(userIds);
 
     if (!team) throw new NotFoundException('Team', teamId);
@@ -193,10 +191,6 @@ export default class TeamsService {
 
     if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
       throw new HttpException(400, 'A lead cannot be a member of the team!');
-    }
-
-    if (teams.map((team) => team.headId).some((teamHeadId) => newLeads.map((lead) => lead.userId).includes(teamHeadId))) {
-      throw new HttpException(400, 'A teams lead must not be a head of another team!');
     }
 
     const transformedLeads = newLeads.map((lead) => {

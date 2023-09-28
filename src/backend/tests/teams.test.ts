@@ -259,18 +259,6 @@ describe('Teams', () => {
       await expect(callSetTeamLeads).rejects.toThrow(expectedException);
     });
 
-    test('setTeamLeads lead is a head on another team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([greenlantern]);
-      vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
-
-      const callSetTeamLeads = async () => await TeamsService.setTeamLeads(flash, prismaTeam1.teamId, [greenlantern.userId]);
-
-      const expectedException = new HttpException(400, 'A teams lead must not be a head of another team!');
-
-      await expect(callSetTeamLeads).rejects.toThrow(expectedException);
-    });
-
     test('setTeamLeads works', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
