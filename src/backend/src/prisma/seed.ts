@@ -322,7 +322,6 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 1 */
   const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
-    project1WbsNumber,
     'Bodywork Concept of Design',
     changeRequest1Id,
     WorkPackageStage.Design,
@@ -363,7 +362,6 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 2 */
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
     thomasEmrax,
-    project1WbsNumber,
     'Adhesive Shear Strength Test',
     changeRequest1Id,
     WorkPackageStage.Research,
@@ -399,9 +397,7 @@ const performSeed: () => Promise<void> = async () => {
       'Solder wiring segments together and heat shrink properly',
       'Cut all wires to length'
     ],
-    ['Completed wiring harness for the entire car'],
-    joeShmoe.userId,
-    thomasEmrax.userId
+    ['Completed wiring harness for the entire car']
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 

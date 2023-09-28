@@ -119,8 +119,6 @@ export default class WorkPackagesService {
    * @param blockedBy the WBS elements that need to be completed before this WP
    * @param expectedActivities the expected activities descriptions for this WP
    * @param deliverables the expected deliverables descriptions for this WP
-   * @param projectLead the new lead for this work package
-   * @param projectManager the new manager for this work package
    * @returns the WBS number of the successfully created work package
    * @throws if the work package could not be created
    */
@@ -133,9 +131,7 @@ export default class WorkPackagesService {
     duration: number,
     blockedBy: WbsNumber[],
     expectedActivities: string[],
-    deliverables: string[],
-    projectLead: number,
-    projectManager: number
+    deliverables: string[]
   ): Promise<string> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
@@ -174,14 +170,6 @@ export default class WorkPackagesService {
         400,
         `Given WBS Number ${carNumber}.${projectNumber}.${workPackageNumber} is not for a project.`
       );
-    }
-
-    if ((await getUserFullName(projectLead)) === 'no one') {
-      throw new NotFoundException('User', projectLead);
-    }
-
-    if ((await getUserFullName(projectManager)) === 'no one') {
-      throw new NotFoundException('User', projectManager);
     }
 
     if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
@@ -249,8 +237,6 @@ export default class WorkPackagesService {
             projectNumber,
             workPackageNumber: newWorkPackageNumber,
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager,
             changes: {
               create: {
                 changeRequestId: crId,

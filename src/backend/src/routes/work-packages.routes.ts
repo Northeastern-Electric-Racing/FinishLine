@@ -21,8 +21,6 @@ workPackagesRouter.post(
   nonEmptyString(body('expectedActivities.*')),
   body('deliverables').isArray(),
   nonEmptyString(body('deliverables.*')),
-  intMinZero(body('projectLead')),
-  intMinZero(body('projectManager')),
   validateInputs,
   WorkPackagesController.createWorkPackage
 );

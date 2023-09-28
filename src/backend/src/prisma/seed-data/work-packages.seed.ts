@@ -18,7 +18,6 @@ import { descBulletConverter } from '../../utils/description-bullets.utils';
  */
 export const seedWorkPackage = async (
   creator: User,
-  projectWbsNumber: WbsNumber,
   name: string,
   changeRequestId: number,
   stage: WorkPackageStage | null,
@@ -44,9 +43,7 @@ export const seedWorkPackage = async (
     duration,
     blockedBy,
     expectedActivities,
-    deliverables,
-    projectLead,
-    projectManager
+    deliverables
   );
 
   const workPackageWbsNumber = validateWBS(workPackage1WbsString);
