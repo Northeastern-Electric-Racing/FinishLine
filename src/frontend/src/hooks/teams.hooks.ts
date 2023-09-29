@@ -5,7 +5,14 @@
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { Team } from 'shared';
-import { getAllTeams, getSingleTeam, setTeamMembers, setTeamDescription, setTeamHead } from '../apis/teams.api';
+import {
+  getAllTeams,
+  getSingleTeam,
+  setTeamMembers,
+  setTeamDescription,
+  setTeamHead,
+  setTeamLeads
+} from '../apis/teams.api';
 
 export const useAllTeams = () => {
   return useQuery<Team[], Error>(['teams'], async () => {
@@ -58,6 +65,22 @@ export const useEditTeamDescription = (teamId: string) => {
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useSetTeamLeads = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, any>(
+    ['teams', 'edit'],
+    async (userIds: number[]) => {
+      const { data } = await setTeamLeads(teamId, userIds);
       return data;
     },
     {
