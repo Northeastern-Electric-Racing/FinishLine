@@ -164,7 +164,6 @@ export default class TeamsService {
       },
       ...teamQueryArgs
     });
-
     return teamTransformer(updateTeam);
   }
 
@@ -179,6 +178,6 @@ export default class TeamsService {
     if (!team) throw new NotFoundException('Team', teamId);
     if (!isAdmin(deleter.role)) throw new AccessDeniedAdminOnlyException('delete teams');
 
-    await prisma.team.delete({ where: { teamId } });
+    await prisma.team.delete({ where: { teamId }, ...teamQueryArgs });
   }
 }

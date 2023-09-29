@@ -1,6 +1,6 @@
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useDeleteTeam } from '../../../hooks/teams.hooks';
+import { useDeleteTeam, useSingleTeam } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import DeleteTeamView from './DeleteTeamView';
@@ -12,23 +12,26 @@ interface DeleteTeamProps {
 }
 
 export interface DeleteTeamInputs {
-  teamId: string;
+  teamName: string;
 }
 
 const DeleteTeam: React.FC<DeleteTeamProps> = ({ teamId, showModal, handleClose }: DeleteTeamProps) => {
   const history = useHistory();
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteTeam();
+  const { data: team } = useSingleTeam(teamId);
 
-  const handleConfirm = async ({ teamId }: DeleteTeamInputs) => {
-    try {
-      await mutateAsync(teamId);
-      handleClose();
-      history.goBack();
-      toast.success('Team deleted successfully!');
-    } catch (e) {
-      if (e instanceof Error) {
-        toast.error(e.message);
+  const handleConfirm = async ({ teamName }: DeleteTeamInputs) => {
+    if (team?.teamName.toLowerCase() === teamName.toLowerCase()) {
+      try {
+        await mutateAsync(teamId);
+        handleClose();
+        history.goBack();
+        toast.success('Team deleted successfully!');
+      } catch (e) {
+        if (e instanceof Error) {
+          toast.error(e.message);
+        }
       }
     }
   };

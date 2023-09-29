@@ -16,7 +16,6 @@ import {
   Typography
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { wbsPipe } from 'shared';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -32,7 +31,7 @@ const DeleteTeamView: React.FC<DeleteTeamViewProps> = ({ teamId, showModal, onHi
   const { isLoading, isError, data: team, error } = useSingleTeam(teamId);
 
   const teamNameTester = (teamName: string | undefined) =>
-    team !== undefined && teamName !== undefined && teamName.toLowerCase === team.teamName.toLowerCase;
+    team !== undefined && teamName !== undefined && teamName.toLowerCase() === team.teamName.toLowerCase();
 
   const schema = yup.object().shape({
     teamName: yup.string().required().test('team-name-test', 'Team name does not match', teamNameTester)
@@ -53,10 +52,8 @@ const DeleteTeamView: React.FC<DeleteTeamViewProps> = ({ teamId, showModal, onHi
   if (isLoading || !team) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const onSubmitWrapper = async (data: { teamName: string }) => {
-    const submitVal = { teamId };
-
-    await onSubmit(submitVal);
+  const onSubmitWrapper = async (data: DeleteTeamInputs) => {
+    await onSubmit(data);
   };
 
   return (
@@ -117,7 +114,7 @@ const DeleteTeamView: React.FC<DeleteTeamViewProps> = ({ teamId, showModal, onHi
         <NERSuccessButton variant="contained" sx={{ mx: 1 }} onClick={onHide}>
           Cancel
         </NERSuccessButton>
-        <NERFailButton variant="contained" type="submit" form="delete-wp-form" sx={{ mx: 1 }} disabled={!isValid}>
+        <NERFailButton variant="contained" type="submit" form="delete-team-form" sx={{ mx: 1 }} disabled={!isValid}>
           Delete
         </NERFailButton>
       </DialogActions>

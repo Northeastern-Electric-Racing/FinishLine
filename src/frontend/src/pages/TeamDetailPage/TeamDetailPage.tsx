@@ -1,4 +1,4 @@
-import { Button, Grid, ListItemIcon, MenuItem } from '@mui/material';
+import { Grid } from '@mui/material';
 import { useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
