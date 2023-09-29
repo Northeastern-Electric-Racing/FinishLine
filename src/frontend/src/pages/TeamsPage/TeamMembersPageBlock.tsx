@@ -26,7 +26,7 @@ const userToAutocompleteOption = (user: User): { label: string; id: string } => 
 };
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
-  const auth = useCurrentUser();
+  const user = useCurrentUser();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [isEditingHead, setIsEditingHead] = useState(false);
   const [isEditingLeads, setIsEditingLeads] = useState(false);
@@ -45,7 +45,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || setTeamLeadsIsLoading || !users)
     return <LoadingIndicator />;
 
-  const hasPerms = auth && (isAdmin(auth.role) || auth.userId === team.head.userId);
+  const hasPerms = (isAdmin(user.role) || user.userId === team.head.userId);
 
   const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
