@@ -224,7 +224,6 @@ export const validateUserIsPartOfFinanceTeam = async (user: User) => {
 export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
     console.warn('FINANCE_TEAM_ID not in env');
-    return false;
   }
 
   const financeTeam = await prisma.team.findUnique({
@@ -245,8 +244,7 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
  */
 export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
-    console.warn('FINANCE_TEAM_ID not in env');
-    return false;
+    console.error('FINANCE_TEAM_ID not in env');
   }
 
   const financeTeam = await prisma.team.findUnique({
