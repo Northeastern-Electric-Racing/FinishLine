@@ -41,8 +41,6 @@ describe('Work Packages', () => {
   const expectedActivities = ['ayo'];
   const deliverables = ['ajdhjakfjafja'];
   const stage = WorkPackageStage.Design;
-  const projectLead = flash.userId;
-  const projectManager = superman.userId;
   const createWorkPackageArgs: [
     User,
     WbsNumber,
@@ -53,23 +51,8 @@ describe('Work Packages', () => {
     number,
     WbsNumber[],
     string[],
-    string[],
-    number,
-    number
-  ] = [
-    batman,
-    projectWbsNum,
-    name,
-    crId,
-    stage,
-    startDate,
-    duration,
-    blockedBy,
-    expectedActivities,
-    deliverables,
-    projectLead,
-    projectManager
-  ];
+    string[]
+  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, blockedBy, expectedActivities, deliverables];
   /*********************************************************/
 
   afterEach(() => {
@@ -103,9 +86,7 @@ describe('Work Packages', () => {
           duration,
           blockedBy,
           expectedActivities,
-          deliverables,
-          projectLead,
-          projectManager
+          deliverables
         );
       };
 
@@ -115,7 +96,6 @@ describe('Work Packages', () => {
     });
 
     test('createWorkPackage fails if any elements in the blocked by are null', async () => {
-      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(flash);
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(null);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce({
@@ -144,9 +124,7 @@ describe('Work Packages', () => {
           duration,
           blockedBy,
           expectedActivities,
-          deliverables,
-          projectLead,
-          projectManager
+          deliverables
         );
       };
 
@@ -204,23 +182,8 @@ describe('Work Packages', () => {
         number,
         WbsNumber[],
         string[],
-        string[],
-        number,
-        number
-      ] = [
-        batman,
-        projectWbsNum,
-        name,
-        crId,
-        stage,
-        startDate,
-        duration,
-        [projectWbsNum],
-        expectedActivities,
-        deliverables,
-        projectLead,
-        projectManager
-      ];
+        string[]
+      ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, [projectWbsNum], expectedActivities, deliverables];
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, argsToTest);
