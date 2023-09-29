@@ -95,11 +95,11 @@ export default class ProjectsService {
     summary: string,
     teamIds: string[],
     budget: number | null,
-    links: LinkCreateArgs[],
-    rules: string[],
-    goals: { id: number; detail: string }[],
-    features: { id: number; detail: string }[],
-    otherConstraints: { id: number; detail: string }[],
+    links: LinkCreateArgs[] | null,
+    rules: string[] | null,
+    goals: { id: number; detail: string }[] | null,
+    features: { id: number; detail: string }[] | null,
+    otherConstraints: { id: number; detail: string }[] | null,
     projectLeadId: number | null,
     projectManagerId: number | null
   ): Promise<WbsNumber> {
@@ -125,11 +125,13 @@ export default class ProjectsService {
         name,
         projectLeadId,
         projectManagerId,
-        links: {
-          createMany: {
-            data: links.map((link) => ({ ...link, creatorId: user.userId }))
-          }
-        },
+        links: links
+          ? {
+              createMany: {
+                data: links.map((link) => ({ ...link, creatorId: user.userId }))
+              }
+            }
+          : undefined,
         project: {
           create: {
             summary,
@@ -137,16 +139,22 @@ export default class ProjectsService {
               connect: teamIds.map((teamId) => ({ teamId }))
             },
             budget: budget ?? undefined,
-            rules,
-            goals: {
-              createMany: { data: goals }
-            },
-            features: {
-              createMany: { data: features }
-            },
-            otherConstraints: {
-              createMany: { data: otherConstraints }
-            }
+            rules: rules ?? undefined,
+            goals: goals
+              ? {
+                  createMany: { data: goals }
+                }
+              : undefined,
+            features: features
+              ? {
+                  createMany: { data: features }
+                }
+              : undefined,
+            otherConstraints: otherConstraints
+              ? {
+                  createMany: { data: otherConstraints }
+                }
+              : undefined
           }
         },
         changes: {
