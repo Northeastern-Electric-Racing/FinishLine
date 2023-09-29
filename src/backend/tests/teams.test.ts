@@ -250,7 +250,7 @@ describe('Teams', () => {
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.team.delete).toHaveBeenCalledTimes(1);
-      expect(prisma.team.delete).toHaveBeenCalledWith({ where: { teamId: prismaTeam1.teamId } });
+      expect(prisma.team.delete).toHaveBeenCalledWith({ where: { teamId: prismaTeam1.teamId }, ...teamQueryArgs });
     });
   });
 
