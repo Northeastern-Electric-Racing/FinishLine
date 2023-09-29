@@ -39,7 +39,7 @@ export const setTeamHead = (id: string, userId: number) => {
 
 export const deleteTeam = (id: string) => {
   return axios.post(apiUrls.teamsDelete(id));
-  };
+};
 
 export const setTeamLeads = (id: string, userIds: number[]) => {
   return axios.post<Team>(apiUrls.teamsSetLeads(id), {

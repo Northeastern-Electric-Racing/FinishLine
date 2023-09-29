@@ -180,7 +180,7 @@ export default class TeamsService {
 
     await prisma.team.delete({ where: { teamId }, ...teamQueryArgs });
   }
-  
+
   /**
    * Update the given teamId's team's leads
    * @param submitter a user who's making this request

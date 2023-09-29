@@ -253,7 +253,7 @@ describe('Teams', () => {
       expect(prisma.team.delete).toHaveBeenCalledWith({ where: { teamId: prismaTeam1.teamId } });
     });
   });
-  
+
   describe('setTeamLeads', () => {
     test('setTeamLeads submitter is not the head or admin', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
