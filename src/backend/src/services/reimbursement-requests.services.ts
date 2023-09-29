@@ -446,8 +446,11 @@ export default class ReimbursementRequestService {
    */
   static async createVendor(submitter: User, name: string) {
     /* AUTHORIZATION CHECK */
-    if (!process.env.FINANCE_TEAM_ID)
-      throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
+    const failedAuthorizationException = new AccessDeniedException(
+      'Only admins, finance leads, and finance heads can create vendors.'
+    );
+
+    if (!process.env.FINANCE_TEAM_ID) throw failedAuthorizationException;
 
     // Check finance team manually because helpers in reimbursement-requests.utils.ts don't work as desired
     const financeTeam = await prisma.team.findUnique({
@@ -455,11 +458,11 @@ export default class ReimbursementRequestService {
       include: { head: true, leads: true, members: true }
     });
 
-    if (!financeTeam) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
+    if (!financeTeam) throw failedAuthorizationException;
 
     const authorized =
       isAdmin(submitter.role) || submitter.userId === financeTeam.headId || financeTeam.leads.includes(submitter);
-    if (!authorized) throw new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.');
+    if (!authorized) throw failedAuthorizationException;
     /* END AUTHORIZATION CHECK */
 
     const vendor = await prisma.vendor.create({
