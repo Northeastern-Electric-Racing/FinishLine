@@ -461,7 +461,7 @@ export default class ReimbursementRequestService {
     if (!financeTeam) throw failedAuthorizationException;
 
     const authorized =
-      isAdmin(submitter.role) || submitter.userId == financeTeam.headId || financeTeam.leads.includes(submitter);
+      isAdmin(submitter.role) || submitter.userId === financeTeam.headId || financeTeam.leads.includes(submitter);
     if (!authorized) throw failedAuthorizationException;
     /* END AUTHORIZATION CHECK */
 

@@ -17,7 +17,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { isHead } from 'shared';
 import { canAccessAdminTools } from '../../utils/users';
 
 const NavUserMenu: React.FC = () => {
