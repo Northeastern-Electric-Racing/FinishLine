@@ -45,7 +45,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || setTeamLeadsIsLoading || !users)
     return <LoadingIndicator />;
 
-  const hasPerms = (isAdmin(user.role) || user.userId === team.head.userId);
+  const hasPerms = isAdmin(user.role) || user.userId === team.head.userId;
 
   const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
