@@ -147,15 +147,15 @@ export default class UsersService {
     });
 
     if (!payload['given_name']) {
-      throw new HttpException(400, 'First Name not Found on Google Account');
+      throw new HttpException(400, 'First Name was not Found on Google Account');
     }
 
     if (!payload['family_name']) {
-      throw new HttpException(400, 'Last Name not Found on Google Account');
+      throw new HttpException(400, 'Last Name was not Found on Google Account');
     }
 
     if (!payload['email']) {
-      throw new HttpException(400, 'Email not Found on Google Account');
+      throw new HttpException(400, 'Email was not Found on Google Account');
     }
 
     // if not in database, create user in database

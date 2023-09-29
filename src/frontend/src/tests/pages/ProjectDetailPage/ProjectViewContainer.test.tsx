@@ -12,7 +12,7 @@ import { WorkPackageStage } from 'shared/src/types/work-package-types';
 import * as userHooks from '../../../hooks/users.hooks';
 import * as authHooks from '../../../hooks/auth.hooks';
 import * as wpHooks from '../../../hooks/work-packages.hooks';
-import { mockUseManyWorkPackagesReturnValue, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
+import { mockUseGetBlockingWorkPackagesReturnValue, mockUseUsersFavoriteProjects } from '../../test-support/mock-hooks';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 
 vi.mock('../../../utils/axios');
@@ -33,7 +33,9 @@ describe('Rendering Project View Container', () => {
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(userHooks, 'useUsersFavoriteProjects').mockReturnValue(mockUseUsersFavoriteProjects());
-    vi.spyOn(wpHooks, 'useManyWorkPackages').mockReturnValue(mockUseManyWorkPackagesReturnValue(exampleAllWorkPackages));
+    vi.spyOn(wpHooks, 'useGetBlockingWorkPackages').mockReturnValue(
+      mockUseGetBlockingWorkPackagesReturnValue(exampleAllWorkPackages)
+    );
     renderComponent();
   });
 

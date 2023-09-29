@@ -6,8 +6,7 @@ COPY yarn.lock .
 COPY tsconfig.build.json .
 COPY ./src/backend/package.json src/backend/
 COPY ./src/shared/package.json src/shared/
-RUN yarn plugin import workspace-tools
-RUN yarn workspace focus --production backend
+RUN yarn install
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 RUN yarn prisma:generate

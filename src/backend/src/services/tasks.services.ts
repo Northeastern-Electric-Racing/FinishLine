@@ -98,7 +98,10 @@ export default class TasksService {
    */
   static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission) throw new AccessDeniedException();
+    if (!hasPermission)
+      throw new AccessDeniedException(
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
+      );
 
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
@@ -133,7 +136,7 @@ export default class TasksService {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
       throw new AccessDeniedException(
-        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
       );
 
     const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
@@ -166,7 +169,7 @@ export default class TasksService {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
       throw new AccessDeniedException(
-        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
       );
 
     // this throws if any of the users aren't found
