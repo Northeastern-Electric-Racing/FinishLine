@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, flash, superman, wonderwoman } from './test-data/users.test-data';
+import { batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1, prismaWbsElement2 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
@@ -41,18 +41,17 @@ describe('Work Packages', () => {
   const expectedActivities = ['ayo'];
   const deliverables = ['ajdhjakfjafja'];
   const stage = WorkPackageStage.Design;
-  const createWorkPackageArgs: [
-    User,
-    WbsNumber,
-    string,
-    number,
-    WorkPackageStage,
-    string,
-    number,
-    WbsNumber[],
-    string[],
-    string[]
-  ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, blockedBy, expectedActivities, deliverables];
+  const createWorkPackageArgs: [User, string, number, WorkPackageStage, string, number, WbsNumber[], string[], string[]] = [
+    batman,
+    name,
+    crId,
+    stage,
+    startDate,
+    duration,
+    blockedBy,
+    expectedActivities,
+    deliverables
+  ];
   /*********************************************************/
 
   afterEach(() => {
@@ -172,18 +171,17 @@ describe('Work Packages', () => {
 
     test("fails if the blocked by include the work package's own project", async () => {
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(prismaWbsElement1);
-      const argsToTest: [
-        User,
-        WbsNumber,
-        string,
-        number,
-        WorkPackageStage,
-        string,
-        number,
-        WbsNumber[],
-        string[],
-        string[]
-      ] = [batman, projectWbsNum, name, crId, stage, startDate, duration, [projectWbsNum], expectedActivities, deliverables];
+      const argsToTest: [User, string, number, WorkPackageStage, string, number, WbsNumber[], string[], string[]] = [
+        batman,
+        name,
+        crId,
+        stage,
+        startDate,
+        duration,
+        [projectWbsNum],
+        expectedActivities,
+        deliverables
+      ];
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, argsToTest);
