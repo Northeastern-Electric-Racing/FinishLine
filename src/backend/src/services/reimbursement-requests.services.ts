@@ -21,6 +21,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -445,25 +446,16 @@ export default class ReimbursementRequestService {
    * @returns the created vendor
    */
   static async createVendor(submitter: User, name: string) {
-    /* AUTHORIZATION CHECK */
-    const failedAuthorizationException = new AccessDeniedException(
-      'Only admins, finance leads, and finance heads can create vendors.'
-    );
+    const validateCreateVendorSubmitter = async (submitter: User): Promise<void> => {
+      const failedAuthorizationException = new AccessDeniedException(
+        'Only admins, finance leads, and finance heads can create vendors.'
+      );
 
-    if (!process.env.FINANCE_TEAM_ID) throw failedAuthorizationException;
+      const authorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
+      if (!authorized) throw failedAuthorizationException;
+    };
 
-    // Check finance team manually because helpers in reimbursement-requests.utils.ts don't work as desired
-    const financeTeam = await prisma.team.findUnique({
-      where: { teamId: process.env.FINANCE_TEAM_ID },
-      include: { head: true, leads: true, members: true }
-    });
-
-    if (!financeTeam) throw failedAuthorizationException;
-
-    const authorized =
-      isAdmin(submitter.role) || submitter.userId === financeTeam.headId || financeTeam.leads.includes(submitter);
-    if (!authorized) throw failedAuthorizationException;
-    /* END AUTHORIZATION CHECK */
+    await validateCreateVendorSubmitter(submitter);
 
     const vendor = await prisma.vendor.create({
       data: {

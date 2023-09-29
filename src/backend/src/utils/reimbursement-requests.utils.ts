@@ -203,16 +203,60 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
 };
 
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
+  const userAuthorized = await isUserOnFinanceTeam(user);
+
+  if (!userAuthorized) {
+    throw new AccessDeniedException(`You are not a member of the finance team!`);
+  }
+};
+
+/**
+ * Determines if a user is part of the finance team.
+ *
+ * To be used for Prisma input validation of a plain User, as opposed to
+ * <code>isAuthUserOnFinance</code>, which uses the additional fields
+ * produced by authUserQueryArgs that are not in the User type by default.
+ *
+ * @param user the user to authenticate
+ * @returns whether the user is on the finance team
+ * @throws {HttpException} if finance team not found in database
+ */
+export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
+  if (!process.env.FINANCE_TEAM_ID) {
+    console.warn('FINANCE_TEAM_ID not in env');
+    return false;
+  }
+
   const financeTeam = await prisma.team.findUnique({
     where: { teamId: process.env.FINANCE_TEAM_ID },
     include: { head: true, leads: true, members: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+  return isUserOnTeam(financeTeam, user);
+};
 
-  if (!isUserOnTeam(financeTeam, user)) {
-    throw new AccessDeniedException(`You are not a member of the finance team!`);
+/**
+ * Determines if a user is lead or head of the finance team.
+ *
+ * @param user the user to authenticate
+ * @returns whether the user is lead or head of the finance team
+ * @throws {HttpException} if finance team not found in database
+ */
+export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
+  if (!process.env.FINANCE_TEAM_ID) {
+    console.warn('FINANCE_TEAM_ID not in env');
+    return false;
   }
+
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  return user.userId === financeTeam.headId || financeTeam.leads.includes(user);
 };
 
 export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
