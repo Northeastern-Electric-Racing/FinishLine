@@ -5,8 +5,7 @@
 
 import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useAuth } from '../../hooks/auth.hooks';
-import { useAllUsers } from '../../hooks/users.hooks';
+import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, isLeadership, Team, User } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
@@ -27,7 +26,7 @@ const userToAutocompleteOption = (user: User): { label: string; id: string } => 
 };
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
-  const auth = useAuth();
+  const auth = useCurrentUser();
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [isEditingHead, setIsEditingHead] = useState(false);
   const [isEditingLeads, setIsEditingLeads] = useState(false);
@@ -46,7 +45,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   if (allUsersIsLoading || setTeamMembersIsLoading || setTeamHeadIsLoading || setTeamLeadsIsLoading || !users)
     return <LoadingIndicator />;
 
-  const hasPerms = auth.user && (isAdmin(auth.user.role) || auth.user.userId === team.head.userId);
+  const hasPerms = auth && (isAdmin(auth.role) || auth.userId === team.head.userId);
 
   const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
