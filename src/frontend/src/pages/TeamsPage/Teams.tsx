@@ -6,7 +6,7 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import TeamsPage from './TeamsPage';
-import TeamDetailPage from '../TeamDetailPage/TeamDetailPage';
+import TeamDetailPage from './TeamSpecificPage';
 
 const Teams: React.FC = () => {
   return (
