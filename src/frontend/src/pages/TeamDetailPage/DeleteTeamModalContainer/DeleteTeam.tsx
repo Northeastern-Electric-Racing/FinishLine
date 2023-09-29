@@ -1,9 +1,9 @@
 import { useHistory } from 'react-router-dom';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { useDeleteWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useDeleteTeam } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import DeleteTeamView from './DeleteTeamView';
 
 interface DeleteTeamProps {
   teamId: string;
@@ -36,7 +36,7 @@ const DeleteTeam: React.FC<DeleteTeamProps> = ({ teamId, showModal, handleClose 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  return <DeleteTeamView team={teamId} showModal={showModal} onHide={handleClose} onSubmit={handleConfirm} />;
+  return <DeleteTeamView teamId={teamId} showModal={showModal} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
 export default DeleteTeam;
