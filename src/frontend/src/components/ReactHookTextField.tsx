@@ -4,7 +4,6 @@
  */
 import { Control, Controller, FieldError } from 'react-hook-form';
 import { TextField, InputAdornment, SxProps, Theme, SvgIconProps } from '@mui/material';
-import { kMaxLength } from 'buffer';
 import { countWords, isUnderWordCount } from 'shared';
 
 interface ReactHookTextFieldProps {
