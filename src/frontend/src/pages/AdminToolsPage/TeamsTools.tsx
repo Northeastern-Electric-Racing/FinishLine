@@ -135,6 +135,7 @@ const TeamsTools = () => {
                 multiline
                 rows={5}
                 errorMessage={errors.description}
+                maxLength={300}
               />
             </FormControl>
             <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>

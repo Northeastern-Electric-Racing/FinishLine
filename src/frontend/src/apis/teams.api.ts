@@ -41,3 +41,9 @@ export const setTeamHead = (id: string, userId: number) => {
 export const createTeam = (payload: CreateTeamPayload) => {
   return axios.post<Team>(apiUrls.teamsCreate(), payload);
 };
+
+export const setTeamLeads = (id: string, userIds: number[]) => {
+  return axios.post<Team>(apiUrls.teamsSetLeads(id), {
+    userIds
+  });
+};
