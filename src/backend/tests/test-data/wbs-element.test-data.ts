@@ -13,3 +13,17 @@ export const prismaWbsElement1: PrismaWbsElement = {
   projectLeadId: 4,
   projectManagerId: 5
 };
+
+export const prismaWbsElement2: PrismaWbsElement = {
+  wbsElementId: 1,
+  status: PrismaWBSElementStatus.ACTIVE,
+  carNumber: 1,
+  projectNumber: 2,
+  workPackageNumber: 2,
+  dateCreated: new Date(),
+  dateDeleted: null,
+  name: 'car',
+  deletedByUserId: null,
+  projectLeadId: 4,
+  projectManagerId: 5
+};
