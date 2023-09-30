@@ -68,8 +68,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }
   });
 
-  const onCostBlurHandler = (value: number, name: string) => {
-    setValue(name, value.toFixed(2));
+  const onCostBlurHandler = (value: number, index: number) => {
+    setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
 
   return (
@@ -78,7 +78,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         <TableHead>
           <TableRow>
             <TableCell width={'40%'}>
-              <FormLabel>WBS Element</FormLabel>
+              <FormLabel>Project</FormLabel>
             </TableCell>
             <TableCell width={'60%'}>
               <FormLabel>Products</FormLabel>
@@ -126,12 +126,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                 InputProps={{
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
-                                onBlur={(e) =>
-                                  onCostBlurHandler(
-                                    parseFloat(e.target.value),
-                                    `reimbursementProducts.${product.index}.cost`
-                                  )
-                                }
+                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                 sx={{ width: '50%' }}
                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
@@ -172,7 +167,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 }}
                 id={'append-product-autocomplete'}
                 size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select a Wbs Element" />}
+                renderInput={(params) => <TextField {...params} placeholder="Select a Project" />}
               />
             </TableCell>
           </TableRow>

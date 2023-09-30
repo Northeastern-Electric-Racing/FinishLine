@@ -56,7 +56,10 @@ const AccountCodesTable = () => {
       {clickedAccountCode && (
         <EditAccountCodeModal
           showModal={showEditModal}
-          handleClose={() => setShowEditModal(false)}
+          handleClose={() => {
+            setShowEditModal(false);
+            setClickedAccountCode(undefined);
+          }}
           accountCode={clickedAccountCode}
         />
       )}

@@ -52,7 +52,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   if (isError) return <ErrorPage message={error?.message} />;
   if (assigneeIsError) return <ErrorPage message={assigneeError?.message} />;
   if (!localStorage.getItem(TABLE_ROW_COUNT)) {
-    localStorage.setItem(TABLE_ROW_COUNT, '5');
+    localStorage.setItem(TABLE_ROW_COUNT, '25');
   }
 
   const moveToBacklog = (id: string) => async () => {
@@ -123,6 +123,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
       (auth.user.role === 'APP_ADMIN' ||
         auth.user.role === 'ADMIN' ||
         auth.user.role === 'LEADERSHIP' ||
+        auth.user.role === 'HEAD' ||
         project.projectLead?.userId === auth.user.userId ||
         project.projectManager?.userId === auth.user.userId ||
         task.assignees.map((u) => u.userId).includes(auth.user.userId) ||

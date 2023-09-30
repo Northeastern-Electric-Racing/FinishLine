@@ -25,7 +25,7 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
   mockUseQueryResult<UserSettings>(
     false,
     false,
-    settings || { id: 'id', defaultTheme: 'DARK', slackId: 'slackId', address: 'address', phone: 'phone', nuid: 'nuid' },
+    settings || { id: 'id', defaultTheme: 'DARK', slackId: 'slackId' },
     new Error()
   );
 
@@ -83,5 +83,5 @@ export const mockUseAllWorkPackagesReturnValue = (workPackages: WorkPackage[]) =
 export const mockUseAllProjectsReturnValue = (projects: Project[]) =>
   mockUseQueryResult<Project[]>(false, false, projects, new Error());
 
-export const mockUseManyWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
+export const mockUseGetBlockingWorkPackagesReturnValue = (workPackages: WorkPackage[]) =>
   mockUseQueryResult<WorkPackage[]>(false, false, workPackages, new Error());

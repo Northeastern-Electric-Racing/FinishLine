@@ -5,7 +5,14 @@
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { Team } from 'shared';
-import { getAllTeams, getSingleTeam, setTeamMembers, setTeamDescription } from '../apis/teams.api';
+import {
+  getAllTeams,
+  getSingleTeam,
+  setTeamMembers,
+  setTeamDescription,
+  setTeamHead,
+  setTeamLeads
+} from '../apis/teams.api';
 
 export const useAllTeams = () => {
   return useQuery<Team[], Error>(['teams'], async () => {
@@ -36,12 +43,44 @@ export const useSetTeamMembers = (teamId: string) => {
   );
 };
 
+export const useSetTeamHead = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, number>(
+    ['teams', 'edit'],
+    async (userId: number) => {
+      const { data } = await setTeamHead(teamId, userId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
 export const useEditTeamDescription = (teamId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useSetTeamLeads = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, any>(
+    ['teams', 'edit'],
+    async (userIds: number[]) => {
+      const { data } = await setTeamLeads(teamId, userIds);
       return data;
     },
     {

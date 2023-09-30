@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
@@ -128,6 +129,8 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
+    if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType.name} is not allowed!`);
+
     if (!expenseType.allowedRefundSources.includes(account)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
@@ -169,10 +172,11 @@ export default class ReimbursementRequestService {
    * Function to reimburse a user for their expenses.
    *
    * @param amount the amount to be reimbursed
+   * @param dateReceived the date the amount was received
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, dateReceived: string, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -197,11 +201,16 @@ export default class ReimbursementRequestService {
     if (amount > totalOwed - totalReimbursed) {
       throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
     }
+
+    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
+    const dateCreated = new Date(dateReceived.split('T')[0]);
+    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
+
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,
         amount,
-        dateCreated: new Date(),
+        dateCreated: dateReceived,
         userSubmittedId: submitter.userId
       },
       ...reimbursementQueryArgs

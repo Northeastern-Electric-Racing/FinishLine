@@ -4,11 +4,14 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
+  Link,
   IconButton,
   MenuItem,
   Select,
   TextField,
-  Typography
+  Typography,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -29,6 +32,10 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+import { expenseTypePipe } from '../../../utils/pipes';
+import { wbsNumComparator } from 'shared/src/validate-wbs';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -51,6 +58,7 @@ interface ReimbursementRequestFormViewProps {
   submitText: string;
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  hasSecureSettingsSet: boolean;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -70,7 +78,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   submitText,
   previousPage,
-  setValue
+  setValue,
+  hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
@@ -85,6 +94,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
   }));
+
+  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const ReceiptFileInput = () => (
     <FormControl>
@@ -111,6 +122,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         handleSubmit(onSubmit)(e);
       }}
     >
+      {!hasSecureSettingsSet && (
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
+          <Alert variant="filled" severity="warning">
+            Your secure settings must be set to create a reimbursement request, you can set them
+            <Link style={{ color: 'blue' }} component={RouterLink} to={routes.SETTINGS}>
+              {' '}
+              here
+            </Link>
+            .
+          </Alert>
+        </Snackbar>
+      )}
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
@@ -213,6 +236,37 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               />
             </FormControl>
           </Grid>
+          <Grid item container xs={6} spacing={2}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel>Expense Type</FormLabel>
+                <Controller
+                  name="expenseTypeId"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      onChange={(newValue) => onChange(newValue.target.value)}
+                      value={value}
+                      error={!!errors.expenseTypeId}
+                    >
+                      {allExpenseTypes
+                        .filter((expenseType) => expenseType.allowed)
+                        .map((expenseType) => (
+                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
+                            {expenseTypePipe(expenseType)}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  )}
+                />
+                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormLabel>Total Cost</FormLabel>
+              <Typography variant="h6">${calculatedTotalCost}</Typography>
+            </Grid>
+          </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
               <ReceiptFileInput />
@@ -228,7 +282,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       });
                     } else {
                       toast.error('File must be less than 1 MB', 5000);
-                      document.getElementById('receipt-image')!.value = '';
+                      document.getElementById('receipt-image')!.innerHTML = '';
                     }
                   }
                 }}
@@ -260,7 +314,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit">
+        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
           {submitText}
         </NERSuccessButton>
       </Box>

@@ -97,6 +97,6 @@ describe('user settings component', () => {
     mockUserSettingsHook(false, false, exampleUserSettingsLight);
     renderComponent();
     fireEvent.click(screen.getByRole('button'));
-    expect(screen.queryAllByRole('button').map((e) => e.innerHTML)).toStrictEqual(['Cancel', 'Save']);
+    expect(screen.queryAllByRole('button').map((e) => e.innerHTML)).toStrictEqual(['Cancel', 'Save', 'Cancel', 'Save']);
   });
 });

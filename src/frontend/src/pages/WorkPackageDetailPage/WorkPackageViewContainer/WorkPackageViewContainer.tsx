@@ -4,19 +4,17 @@
  */
 
 import { useState } from 'react';
-import { isGuest, WbsElementStatus, WorkPackage } from 'shared';
+import { Link as RouterLink } from 'react-router-dom';
+import { WbsElementStatus, WorkPackage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import ActivateWorkPackageModalContainer from '../ActivateWorkPackageModalContainer/ActivateWorkPackageModalContainer';
-import HorizontalList from '../../../components/HorizontalList';
 import WorkPackageDetails from './WorkPackageDetails';
 import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import CheckList from '../../../components/CheckList';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem, Link } from '@mui/material';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import { Menu, MenuItem } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -24,11 +22,12 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import Delete from '@mui/icons-material/Delete';
 import DeleteWorkPackage from '../DeleteWorkPackageModalContainer/DeleteWorkPackage';
-import { Link as RouterLink } from 'react-router-dom';
-import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
-import ErrorPage from '../../ErrorPage';
-import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useGetBlockingWorkPackages } from '../../../hooks/work-packages.hooks';
 import PageLayout from '../../../components/PageLayout';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import ScopeTab from './ScopeTab';
+import NERTabs from '../../../components/Tabs';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -49,18 +48,18 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   allowRequestChange,
   allowDelete
 }) => {
-  const user = useCurrentUser();
   const [showActivateModal, setShowActivateModal] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
+  const { data: dependencies, isError, isLoading, error } = useGetBlockingWorkPackages(workPackage.wbsNum);
   const dropdownOpen = Boolean(anchorEl);
+  const wbsNum = wbsPipe(workPackage.wbsNum);
+
+  const [tabValue, setTabValue] = useState<number>(0);
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-
-  const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -165,35 +164,27 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
       headerRight={projectActionsDropdown}
+      tabs={
+        <NERTabs
+          setTab={setTabValue}
+          tabsLabels={[
+            { tabUrlValue: 'overview', tabName: 'Overview' },
+            { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'changes', tabName: 'Changes' }
+          ]}
+          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+          defaultTab="overview"
+          id="wp-detail-tabs"
+        />
+      }
     >
-      <WorkPackageDetails workPackage={workPackage} />
-      <HorizontalList
-        title={'Blocked By'}
-        items={dependencies.map((dep) => (
-          <Link component={RouterLink} to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`} fontWeight="bold">
-            {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
-          </Link>
-        ))}
-      />
-      <CheckList
-        title={'Expected Activities'}
-        items={workPackage.expectedActivities
-          .filter((ea) => !ea.dateDeleted)
-          .map((ea) => {
-            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked, dateAdded: ea.dateAdded };
-          })}
-        isDisabled={checkListDisabled}
-      />
-      <CheckList
-        title={'Deliverables'}
-        items={workPackage.deliverables
-          .filter((del) => !del.dateDeleted)
-          .map((del) => {
-            return { ...del, resolved: !!del.userChecked, user: del.userChecked, dateAdded: del.dateAdded };
-          })}
-        isDisabled={checkListDisabled}
-      />
-      <ChangesList changes={workPackage.changes} />
+      {tabValue === 0 ? (
+        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
+      ) : tabValue === 1 ? (
+        <ScopeTab workPackage={workPackage} />
+      ) : (
+        <ChangesList changes={workPackage.changes} />
+      )}
       {showActivateModal && (
         <ActivateWorkPackageModalContainer
           wbsNum={workPackage.wbsNum}

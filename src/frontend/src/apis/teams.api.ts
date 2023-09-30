@@ -30,3 +30,15 @@ export const setTeamDescription = (id: string, description: string) => {
     newDescription: description
   });
 };
+
+export const setTeamHead = (id: string, userId: number) => {
+  return axios.post<Team>(apiUrls.teamsSetHead(id), {
+    userId
+  });
+};
+
+export const setTeamLeads = (id: string, userIds: number[]) => {
+  return axios.post<Team>(apiUrls.teamsSetLeads(id), {
+    userIds
+  });
+};

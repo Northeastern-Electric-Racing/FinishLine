@@ -21,7 +21,7 @@ const CreateReimbursementRequestPage: React.FC = () => {
     const { reimbursementRequestId } = await createReimbursementRequest(data);
     await uploadReceipts({
       id: reimbursementRequestId,
-      files: data.receiptFiles.map((file) => file.file)
+      files: data.receiptFiles.map((file) => file.file!)
     });
     return reimbursementRequestId;
   };

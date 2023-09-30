@@ -137,12 +137,15 @@ export default class TeamsService {
       where: { userId }
     });
 
+    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
+      throw new HttpException(400, 'Error: Team head cannot be a member');
+
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
 
-    // checking to see if any teams have the new head as their current head or lead
+    // checking to see if any other teams have the new head as their current head or lead
     const newHeadTeam = await prisma.team.findFirst({
-      where: { OR: [{ headId: userId }, { leads: { some: { userId } } }] }
+      where: { AND: [{ OR: [{ headId: userId }, { leads: { some: { userId } } }] }, { NOT: { teamId: team.teamId } }] }
     });
 
     if (newHeadTeam) throw new AccessDeniedException('The new team head must not be a head or lead of another team');
@@ -152,6 +155,55 @@ export default class TeamsService {
       data: {
         head: {
           connect: { userId }
+        }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Update the given teamId's team's leads
+   * @param submitter a user who's making this request
+   * @param teamId a id of team to be updated
+   * @param userIds a array of user Ids that replaces team's old leads
+   * @returns an updated team
+   * @throws if the team is not found, the submitter has no privilege, or any user from the given userIds does not exist
+   */
+  static async setTeamLeads(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    const newLeads = await getUsers(userIds);
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    if (!isAdmin(submitter.role) && submitter.userId !== team.headId) {
+      throw new AccessDeniedException('You must be an admin or the head to update the lead!');
+    }
+
+    if (newLeads.map((lead) => lead.userId).includes(team.headId)) {
+      throw new HttpException(400, 'A lead cannot be the head of the team!');
+    }
+
+    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
+      throw new HttpException(400, 'A lead cannot be a member of the team!');
+    }
+
+    const transformedLeads = newLeads.map((lead) => {
+      return {
+        userId: lead.userId
+      };
+    });
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        leads: {
+          set: transformedLeads
         }
       },
       ...teamQueryArgs

@@ -307,10 +307,10 @@ export const useSendPendingAdvisorList = () => {
  */
 export const useReportRefund = () => {
   const queryClient = useQueryClient();
-  return useMutation<Reimbursement, Error, { refundAmount: number }>(
+  return useMutation<Reimbursement, Error, { refundAmount: number; dateReceived: string }>(
     ['reimbursement'],
-    async (formData: { refundAmount: number }) => {
-      const { data } = await reportRefund(formData.refundAmount);
+    async (formData: { refundAmount: number; dateReceived: string }) => {
+      const { data } = await reportRefund(formData.refundAmount, formData.dateReceived);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
     }

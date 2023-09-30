@@ -14,21 +14,24 @@ const exampleConfluenceLinkType: LinkType = {
   name: 'Confluence',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,
-  iconName: 'confluence'
+  iconName: 'confluence',
+  required: true
 };
 
 const exampleBomLinkType: LinkType = {
   name: 'BOM',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,
-  iconName: 'bom'
+  iconName: 'bom',
+  required: true
 };
 
 const exampleGDriveLinkType: LinkType = {
   name: 'Google Drive',
   dateCreated: new Date('05/26/21'),
   creator: exampleAdminUser,
-  iconName: 'google-drive'
+  iconName: 'google-drive',
+  required: true
 };
 
 const exampleLinks: Link[] = [

@@ -72,9 +72,9 @@ export default class ReimbursementRequestsController {
   static async reimburseUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { amount } = req.body;
+      const { amount, dateReceived } = req.body;
 
-      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, user);
+      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, dateReceived, user);
       res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
@@ -188,6 +188,10 @@ export default class ReimbursementRequestsController {
 
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
 
+      const isProd = process.env.NODE_ENV === 'production';
+      const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
+
+      res.header('Access-Control-Allow-Origin', origin);
       res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);

@@ -2,14 +2,23 @@ import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, ListItemText, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import {
+  Checkbox,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  ListItemText,
+  MenuItem,
+  Select,
+  SelectChangeEvent
+} from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 const schema = yup.object().shape({
-  code: yup.number().required('Account Code is Required'),
+  code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
   allowed: yup.boolean().required('Allowed is Required'),
   refundSource: yup.string().required('Refund Source is Required')
@@ -27,10 +36,9 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
   const {
     handleSubmit,
     control,
-    formState: { isValid },
-    reset
+    reset,
+    formState: { errors }
   } = useForm({
-    mode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: {
       code: defaultValues?.code,
@@ -64,16 +72,16 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
-      reset={reset}
+      reset={() => reset({ name: '', code: undefined, allowed: false })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
-      disabled={!isValid}
       showCloseButton
     >
       <FormControl fullWidth>
         <FormLabel>Account Name</FormLabel>
         <ReactHookTextField name="name" control={control} fullWidth />
+        <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Refund Source</FormLabel>
@@ -95,6 +103,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>
         <ReactHookTextField name="code" control={control} fullWidth />
+        <FormHelperText error>{errors.code?.message}</FormHelperText>
       </FormControl>
       <FormControl>
         <FormLabel>Allowed?</FormLabel>

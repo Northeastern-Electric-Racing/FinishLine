@@ -64,12 +64,15 @@ const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activati
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
+const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
+const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -147,11 +150,14 @@ export const apiUrls = {
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
+  changeRequestRequestReviewer,
 
   teams,
   teamsById,
   teamsSetMembers,
+  teamsSetHead,
   teamsSetDescription,
+  teamsSetLeads,
 
   descriptionBulletsCheck,
 

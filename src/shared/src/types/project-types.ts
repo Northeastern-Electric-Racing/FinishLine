@@ -71,6 +71,7 @@ export interface DescriptionBullet {
   dateAdded: Date;
   dateDeleted?: Date;
   userChecked?: User;
+  dateChecked?: Date;
 }
 
 export interface LinkType {

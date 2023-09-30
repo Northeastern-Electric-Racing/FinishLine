@@ -39,7 +39,7 @@ const renderComponent = (workPackage = exampleWorkPackage5) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <WorkPackageDetails workPackage={workPackage} />
+      <WorkPackageDetails workPackage={workPackage} dependencies={[]} />
     </RouterWrapper>
   );
 };
@@ -89,7 +89,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 1', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleResearchWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} />);
+      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 2', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleDesignWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} />);
+      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('Work Package Details Component', () => {
     it('renders all the fields, example 3', () => {
       mockHook(false, false, users);
       const wp: WorkPackage = exampleManufacturingWorkPackage;
-      render(<WorkPackageDetails workPackage={wp} />);
+      render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();

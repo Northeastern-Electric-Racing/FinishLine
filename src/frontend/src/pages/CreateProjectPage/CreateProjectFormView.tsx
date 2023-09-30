@@ -28,7 +28,7 @@ const schema = yup.object().shape({
     .typeError('Car Number must be a number')
     .required('Car Number is required')
     .integer('Car Number must be an integer')
-    .min(1, 'Car Number must be greater than or equal to 1'),
+    .min(0, 'Car Number must be greater than or equal to 0'),
   crId: yup
     .number()
     .typeError('CR ID must be a number')
