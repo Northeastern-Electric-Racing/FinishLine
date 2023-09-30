@@ -33,7 +33,7 @@ import { isUnderWordCount, countWords } from 'shared';
 import { useAuth } from '../../../../hooks/auth.hooks';
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
-import { getTaskAssigneeOptions, userToAutocompleteOption } from '../../../../utils/task.utils';
+import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 
 interface TaskListNotesModalProps {
   task: Task;
@@ -89,7 +89,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   });
   if (!auth.user) return <LoadingIndicator />;
 
-  const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(userToAutocompleteOption);
+  const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
 
   const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';

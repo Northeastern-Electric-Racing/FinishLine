@@ -3,8 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Autocomplete, AutocompleteRenderInputParams, SxProps, TextField, Theme, useTheme } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteRenderInputParams,
+  FormHelperText,
+  SxProps,
+  TextField,
+  Theme,
+  useTheme
+} from '@mui/material';
 import { HTMLAttributes } from 'react';
+import { FieldError } from 'react-hook-form';
 
 interface NERAutocompleteProps {
   id: string;
@@ -16,6 +25,7 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
+  errorMessage?: FieldError;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -27,7 +37,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   sx,
   value,
   listboxProps,
-  filterSelectedOptions
+  filterSelectedOptions,
+  errorMessage
 }) => {
   const theme = useTheme();
 
@@ -54,19 +65,22 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   };
 
   return (
-    <Autocomplete
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      disablePortal
-      id={id}
-      onChange={onChange}
-      options={options}
-      sx={autocompleteStyle}
-      size={size}
-      renderInput={autocompleteRenderInput}
-      value={value}
-      filterSelectedOptions={filterSelectedOptions}
-      ListboxProps={listboxProps}
-    />
+    <>
+      <Autocomplete
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        disablePortal
+        id={id}
+        onChange={onChange}
+        options={options}
+        sx={autocompleteStyle}
+        size={size}
+        renderInput={autocompleteRenderInput}
+        value={value}
+        filterSelectedOptions={filterSelectedOptions}
+        ListboxProps={listboxProps}
+      />
+      <FormHelperText error={!!errorMessage}>{errorMessage?.message}</FormHelperText>
+    </>
   );
 };
 
