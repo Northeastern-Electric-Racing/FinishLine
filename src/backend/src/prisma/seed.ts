@@ -61,7 +61,7 @@ const performSeed: () => Promise<void> = async () => {
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
   const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
   const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
-  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews});
+  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
   const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
   const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
   const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
@@ -158,8 +158,19 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe, jkDobbins, davidOjabo, markAndrews, odellBeckham, chrisHorton,
-       mikeMacdonald, toddMonken, stephenBisciotti].map((user) => user.userId)
+    [
+      lamarJackson,
+      nezamJazayeri,
+      ryanHowe,
+      jkDobbins,
+      davidOjabo,
+      markAndrews,
+      odellBeckham,
+      chrisHorton,
+      mikeMacdonald,
+      toddMonken,
+      stephenBisciotti
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
