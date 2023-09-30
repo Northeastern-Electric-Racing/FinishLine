@@ -14,7 +14,7 @@ import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useState } from 'react';
-import DeleteTeam from './DeleteTeamModalContainer/DeleteTeam';
+import DeleteTeamModal from './DeleteTeamModal';
 
 interface ParamTypes {
   teamId: string;
@@ -42,7 +42,7 @@ const TeamSpecificPage: React.FC = () => {
 
   return (
     <PageLayout
-      headerRight={deleteButton}
+      headerRight={isAdmin(user.role) && deleteButton}
       title={`Team ${data.teamName}`}
       previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
     >
@@ -63,9 +63,7 @@ const TeamSpecificPage: React.FC = () => {
           <DescriptionPageBlock team={data} />
         </Grid>
       </Grid>
-      {showDeleteModal && (
-        <DeleteTeam teamId={teamId} showModal={showDeleteModal} handleClose={() => setShowDeleteModal(false)} />
-      )}
+      <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setShowDeleteModal(false)} />
     </PageLayout>
   );
 };
