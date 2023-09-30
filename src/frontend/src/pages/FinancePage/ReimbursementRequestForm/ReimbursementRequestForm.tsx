@@ -18,7 +18,7 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
-  account: ClubAccount;
+  account: ClubAccount | undefined;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
