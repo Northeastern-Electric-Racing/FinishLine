@@ -18,7 +18,7 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
-  account: ClubAccount;
+  account: ClubAccount | undefined;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -75,7 +75,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account ?? '',
+      account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
