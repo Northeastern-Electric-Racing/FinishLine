@@ -35,7 +35,7 @@ const NavTopBar: React.FC<NavTopBarProps> = ({ open, handleDrawerOpen }) => {
   const user = useCurrentUser();
   return (
     <NERAppBar position="fixed" open={open}>
-      <Toolbar disableGutters sx={{ height: 68, px: 1, BACKGROUND, color: TEXT_COLOR }}>
+      <Toolbar disableGutters sx={{ height: 68, px: 1, background: BACKGROUND, color: TEXT_COLOR }}>
         <IconButton
           color="inherit"
           aria-label="open drawer"

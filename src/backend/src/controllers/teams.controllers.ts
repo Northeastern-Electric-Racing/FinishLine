@@ -63,6 +63,17 @@ export default class TeamsController {
     }
   }
 
+  static async createTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamName, headId, slackId, description } = req.body;
+      const submitter = await getCurrentUser(res);
+      const team = await TeamsService.createTeam(submitter, teamName, headId, slackId, description);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setTeamLeads(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;

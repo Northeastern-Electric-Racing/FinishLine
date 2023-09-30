@@ -182,6 +182,61 @@ export default class TeamsService {
   }
 
   /**
+   * Creates a new team in the database
+   * @param submitter The submitter who is trying to create a new team
+   * @param teamName the name of the new team
+   * @param headId the id of the user who will be the head on the new team
+   * @param slackId the slack id for the slack channel for the team
+   * @param description a short description of the team (must be less than 300 words)
+   * @returns The newly created team
+   */
+  static async createTeam(
+    submitter: User,
+    teamName: string,
+    headId: number,
+    slackId: string,
+    description: string
+  ): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('You must be an admin or higher to create a new team!');
+    }
+
+    if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    const newHead = await prisma.user.findUnique({
+      where: { userId: headId }
+    });
+
+    if (!newHead) throw new NotFoundException('User', headId);
+    if (!isHead(newHead.role)) throw new HttpException(400, 'The team head must be at least a head');
+
+    // checking to see if any other teams have the new head as their current head
+    const newHeadTeam = await prisma.team.findFirst({
+      where: { headId }
+    });
+
+    if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head of another team');
+
+    const duplicateName = await prisma.team.findFirst({
+      where: { teamName }
+    });
+
+    if (duplicateName) throw new HttpException(400, 'The new team name must not be the name of another team');
+
+    const createdTeam = await prisma.team.create({
+      data: {
+        teamName,
+        slackId,
+        description,
+        head: { connect: { userId: headId } }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(createdTeam);
+  }
+
+  /*
    * Update the given teamId's team's leads
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated

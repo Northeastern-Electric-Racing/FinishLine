@@ -7,7 +7,7 @@ import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui
 import { useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
-import { isAdmin, isHead, isLeadership, Team, User } from 'shared';
+import { isAdmin, isHead, isLeadership, Team } from 'shared';
 import { fullNamePipe } from '../../utils/pipes';
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -16,14 +16,11 @@ import PageBlock from '../../layouts/PageBlock';
 import DetailDisplay from '../../components/DetailDisplay';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useToast } from '../../hooks/toasts.hooks';
+import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 
 interface TeamMembersPageBlockProps {
   team: Team;
 }
-
-const userToAutocompleteOption = (user: User): { label: string; id: string } => {
-  return { label: `${fullNamePipe(user)} (${user.email})`, id: `${user.userId}` };
-};
 
 const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => {
   const user = useCurrentUser();
@@ -49,12 +46,12 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
-    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .sort(userComparator)
     .map(userToAutocompleteOption);
 
   const headOptions = users
     .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isHead(user.role))
-    .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
+    .sort(userComparator)
     .map(userToAutocompleteOption);
 
   const leadOptions = users
