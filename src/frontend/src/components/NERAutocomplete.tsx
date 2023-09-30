@@ -3,16 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  Autocomplete,
-  AutocompleteRenderInputParams,
-  InputAdornment,
-  SxProps,
-  TextField,
-  Theme,
-  useTheme
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Autocomplete, AutocompleteRenderInputParams, SxProps, TextField, Theme, useTheme } from '@mui/material';
 import { HTMLAttributes } from 'react';
 
 interface NERAutocompleteProps {
@@ -44,15 +35,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     height: '40px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
-    borderRadius: '25px',
     border: 0,
-    '.MuiOutlinedInput-notchedOutline': {
-      borderColor: 'black',
-      borderRadius: '25px'
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'red'
-    },
+    borderColor: 'black',
     ...sx
   };
 
@@ -61,12 +45,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
       <TextField
         {...params}
         InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          )
+          ...params.InputProps
         }}
         placeholder={placeholder}
         required

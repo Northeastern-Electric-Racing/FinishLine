@@ -32,6 +32,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
@@ -110,6 +111,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       </ul>
     </FormControl>
   );
+
+  const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
+    return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
+  };
 
   return (
     <form
@@ -212,21 +217,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <Controller
                   name="expenseTypeId"
                   control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes
-                        .filter((expenseType) => expenseType.allowed)
-                        .map((expenseType) => (
-                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                            {expenseTypePipe(expenseType)}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  )}
+                  render={({ field: { onChange, value } }) => {
+                    const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
+                    return (
+                      <NERAutocomplete
+                        id={'expenseType'}
+                        size="medium"
+                        options={mappedExpenseTypes}
+                        value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                        placeholder="Expense Type"
+                        onChange={(_event, newValue) => {
+                          newValue ? onChange(newValue.id) : onChange('');
+                        }}
+                      />
+                    );
+                  }}
                 />
                 <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
               </FormControl>
