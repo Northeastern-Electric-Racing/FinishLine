@@ -1,17 +1,8 @@
-import { ClubAccount, ExpenseType } from 'shared';
+import { ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import {
-  Checkbox,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  ListItemText,
-  MenuItem,
-  Select,
-  SelectChangeEvent
-} from '@mui/material';
+import { Checkbox, FormControl, FormLabel, FormHelperText } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -48,14 +39,6 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     }
   });
 
-  const [refundSourcesMultiSelect, setRefundSourcesMultiSelect] = React.useState<ClubAccount[]>([]);
-  const handleChange = (event: SelectChangeEvent<typeof refundSourcesMultiSelect>) => {
-    const {
-      target: { value }
-    } = event;
-    setRefundSourcesMultiSelect(typeof value === 'string' ? value.split(',') : value);
-  };
-
   const onFormSubmit = async (data: ExpenseTypePayload) => {
     try {
       await onSubmit(data);
@@ -85,20 +68,6 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Refund Source</FormLabel>
-        <Select
-          name="allowedRefundSources"
-          multiple
-          value={refundSourcesMultiSelect}
-          onChange={handleChange}
-          renderValue={(selected) => selected.join(', ')}
-        >
-          {refundSourcesMultiSelect.map((account) => (
-            <MenuItem key={account} value={account}>
-              <Checkbox checked={refundSourcesMultiSelect.indexOf(account) > -1} />
-              <ListItemText primary={account} />
-            </MenuItem>
-          ))}
-        </Select>
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>
