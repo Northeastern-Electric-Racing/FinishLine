@@ -3,7 +3,12 @@ import { User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  AccessDeniedException,
+  HttpException,
+  AccessDeniedAdminOnlyException
+} from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
 
@@ -159,8 +164,21 @@ export default class TeamsService {
       },
       ...teamQueryArgs
     });
-
     return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Hard deletes the team with the given teamId
+   * @param deleter the user submitting this request
+   * @param teamId the id of the team to be deleted
+   */
+  static async deleteTeam(deleter: User, teamId: string): Promise<void> {
+    const team = await prisma.team.findUnique({ where: { teamId }, ...teamQueryArgs });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (!isAdmin(deleter.role)) throw new AccessDeniedAdminOnlyException('delete teams');
+
+    await prisma.team.delete({ where: { teamId }, ...teamQueryArgs });
   }
 
   /**

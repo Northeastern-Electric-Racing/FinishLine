@@ -38,6 +38,10 @@ export const setTeamHead = (id: string, userId: number) => {
   });
 };
 
+export const deleteTeam = (id: string) => {
+  return axios.post<{ message: string }>(apiUrls.teamsDelete(id));
+};
+
 export const createTeam = (payload: CreateTeamPayload) => {
   return axios.post<Team>(apiUrls.teamsCreate(), payload);
 };

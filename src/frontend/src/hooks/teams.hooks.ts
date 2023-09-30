@@ -11,6 +11,7 @@ import {
   setTeamMembers,
   setTeamDescription,
   setTeamHead,
+  deleteTeam,
   createTeam,
   setTeamLeads
 } from '../apis/teams.api';
@@ -73,6 +74,22 @@ export const useEditTeamDescription = (teamId: string) => {
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useDeleteTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['teams', 'delete'],
+    async (teamId: string) => {
+      const { data } = await deleteTeam(teamId);
       return data;
     },
     {
