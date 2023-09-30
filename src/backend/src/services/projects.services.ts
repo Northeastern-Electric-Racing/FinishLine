@@ -77,6 +77,7 @@ export default class ProjectsService {
    * @param summary the summary of the new project
    * @param teamIds the ids of the teams that the new project will be assigned to
    * @param budget the new budget of the project
+   * @param linkCreateArgs the link create args
    * @param summary the new summary of the project
    * @param rules the new rules of the project
    * @param goals the new goals of the project
@@ -95,7 +96,7 @@ export default class ProjectsService {
     summary: string,
     teamIds: string[],
     budget: number | null,
-    links: LinkCreateArgs[] | null,
+    linkCreateArgs: LinkCreateArgs[] | null,
     rules: string[] | null,
     goals: { id: number; detail: string }[] | null,
     features: { id: number; detail: string }[] | null,
@@ -104,7 +105,7 @@ export default class ProjectsService {
     projectManagerId: number | null
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
-
+    const { userId } = user;
     await validateChangeRequestAccepted(crId);
 
     if (teamIds.length > 0) {
@@ -123,38 +124,12 @@ export default class ProjectsService {
         projectNumber: maxProjectNumber + 1,
         workPackageNumber: 0,
         name,
-        projectLeadId,
-        projectManagerId,
-        links: links
-          ? {
-              createMany: {
-                data: links.map((link) => ({ ...link, creatorId: user.userId }))
-              }
-            }
-          : undefined,
         project: {
           create: {
             summary,
             teams: {
               connect: teamIds.map((teamId) => ({ teamId }))
-            },
-            budget: budget ?? undefined,
-            rules: rules ?? undefined,
-            goals: goals
-              ? {
-                  createMany: { data: goals }
-                }
-              : undefined,
-            features: features
-              ? {
-                  createMany: { data: features }
-                }
-              : undefined,
-            otherConstraints: otherConstraints
-              ? {
-                  createMany: { data: otherConstraints }
-                }
-              : undefined
+            }
           }
         },
         changes: {
@@ -165,7 +140,177 @@ export default class ProjectsService {
           }
         }
       },
-      include: { project: true, changes: true }
+      include: {
+        project: { include: { goals: true, features: true, otherConstraints: true } },
+        changes: true,
+        links: true
+      }
+    });
+    const { wbsElementId } = createdWbsElement;
+
+    // const createdProject = createdWbsElement.project;
+    const createdProject = await prisma.project.findUnique({
+      where: { wbsElementId },
+      include: { goals: true, features: true, otherConstraints: true }
+    });
+    // if it doesn't exist we error
+    if (!createdProject) throw new NotFoundException('Project', wbsElementId);
+
+    /* FROM UPDATE PROJECT METHOD */
+    const budgetChangeJson = createChange(
+      'budget',
+      createdProject.budget,
+      budget,
+      crId,
+      user.userId,
+      createdWbsElement.wbsElementId
+    );
+
+    const summaryChangeJson = createChange('summary', createdProject.summary, summary, crId, userId, wbsElementId);
+
+    const projectManagerChangeJson = createChange(
+      'project manager',
+      await getUserFullName(createdWbsElement.projectManagerId),
+      await getUserFullName(projectManagerId),
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const projectLeadChangeJson = createChange(
+      'project lead',
+      await getUserFullName(createdWbsElement.projectLeadId),
+      await getUserFullName(projectLeadId),
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    let changes = [];
+
+    // add to changes if not undefined
+    if (budgetChangeJson !== undefined) {
+      changes.push(budgetChangeJson);
+    }
+    if (summaryChangeJson !== undefined) {
+      changes.push(summaryChangeJson);
+    }
+    if (projectManagerChangeJson !== undefined) {
+      changes.push(projectManagerChangeJson);
+    }
+    if (projectLeadChangeJson !== undefined) {
+      changes.push(projectLeadChangeJson);
+    }
+
+    // Dealing with lists
+    const rulesChangeJson = createListChanges(
+      'rules',
+      createdProject.rules.map((rule) => {
+        return {
+          element: rule,
+          comparator: rule,
+          displayValue: rule
+        };
+      }),
+      rules
+        ? rules.map((rule) => {
+            return {
+              element: rule,
+              comparator: rule,
+              displayValue: rule
+            };
+          })
+        : [],
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const goalsChangeJson = createListChanges(
+      'goals',
+      descriptionBulletsToChangeListValues(createdProject.goals),
+      goals ? goals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const featuresChangeJson = createListChanges(
+      'features',
+      descriptionBulletsToChangeListValues(createdProject.features),
+      features ? features.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const otherConstraintsChangeJson = createListChanges(
+      'other constraints',
+      descriptionBulletsToChangeListValues(createdProject.otherConstraints),
+      otherConstraints ? otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    const linkChanges = createListChanges(
+      'link',
+      createdWbsElement.links ? createdWbsElement.links.map(linkToChangeListValue) : [],
+      linkCreateArgs ? linkCreateArgs.map(linkToChangeListValue) : [],
+      crId,
+      userId,
+      wbsElementId
+    );
+
+    // add the changes for each of blockers, expected activities, and deliverables
+    changes = changes
+      .concat(rulesChangeJson.changes)
+      .concat(goalsChangeJson.changes)
+      .concat(featuresChangeJson.changes)
+      .concat(otherConstraintsChangeJson.changes)
+      .concat(linkChanges.changes);
+
+    // Add the new goals
+    await addDescriptionBullets(
+      goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      createdProject.projectId,
+      'projectIdGoals'
+    );
+    // Add the new features
+    await addDescriptionBullets(
+      featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      createdProject.projectId,
+      'projectIdFeatures'
+    );
+    // Add the new other constraints
+    await addDescriptionBullets(
+      otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      createdProject.projectId,
+      'projectIdOtherConstraints'
+    );
+    // Edit the existing description bullets
+    await editDescriptionBullets(
+      goalsChangeJson.editedElements
+        .concat(featuresChangeJson.editedElements)
+        .concat(otherConstraintsChangeJson.editedElements)
+    );
+
+    // Update the links
+    await updateLinks(linkChanges, createdProject.wbsElementId, userId);
+
+    await prisma.change.createMany({
+      data: changes
+    });
+
+    // Set the initial data by updating the project
+    const project = await prisma.project.update({
+      where: { wbsElementId },
+      data: {
+        budget: budget ?? undefined,
+        summary,
+        rules: rules ?? undefined,
+        wbsElement: { update: { projectLeadId, projectManagerId } }
+      }
     });
 
     return wbsNumOf(createdWbsElement);
