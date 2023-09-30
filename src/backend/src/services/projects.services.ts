@@ -303,7 +303,7 @@ export default class ProjectsService {
     });
 
     // Set the initial data by updating the project
-    const project = await prisma.project.update({
+    await prisma.project.update({
       where: { wbsElementId },
       data: {
         budget: budget ?? undefined,
