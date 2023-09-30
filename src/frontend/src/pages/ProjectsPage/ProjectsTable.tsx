@@ -116,7 +116,7 @@ const ProjectsTable: React.FC = () => {
 
   const filterValues = JSON.parse(
     // sets filter to a default value if no filter is stored in local storage
-    localStorage.getItem('projectsTableFilters') ?? '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
+    localStorage.getItem('projectsTableFilter') ?? '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
   );
 
   const theme = useTheme();
@@ -168,7 +168,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          localStorage.setItem('projectsTableFilters', JSON.stringify(filterModel.items[0]));
+          localStorage.setItem('projectsTableFilter', JSON.stringify(filterModel.items[0]));
         }}
         initialState={{
           filter: {
