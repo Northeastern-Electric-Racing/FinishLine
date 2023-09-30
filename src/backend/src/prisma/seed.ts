@@ -158,7 +158,8 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe, jkDobbins, davidOjabo, markAndrews, odellBeckham, chrisHorton, mikeMacdonald, toddMonken, stephenBisciotti].map((user) => user.userId)
+    [lamarJackson, nezamJazayeri, ryanHowe, jkDobbins, davidOjabo, markAndrews, odellBeckham, chrisHorton,
+       mikeMacdonald, toddMonken, stephenBisciotti].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
