@@ -18,6 +18,7 @@ import { descBulletConverter } from '../../utils/description-bullets.utils';
  */
 export const seedWorkPackage = async (
   creator: User,
+  projectWbsNumber: WbsNumber,
   name: string,
   changeRequestId: number,
   stage: WorkPackageStage | null,
@@ -36,6 +37,7 @@ export const seedWorkPackage = async (
 }> => {
   const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
     creator,
+    projectWbsNumber,
     name,
     changeRequestId,
     stage,

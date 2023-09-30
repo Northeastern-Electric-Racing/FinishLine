@@ -111,6 +111,7 @@ export default class WorkPackagesService {
   /**
    * Creates a Work_Package in the database
    * @param user the user creating the work package
+   * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
    * @param stage the stage of the work package
@@ -124,6 +125,7 @@ export default class WorkPackagesService {
    */
   static async createWorkPackage(
     user: User,
+    projectWbsNum: WbsNumber,
     name: string,
     crId: number,
     stage: WorkPackageStage | null,
@@ -135,35 +137,11 @@ export default class WorkPackagesService {
   ): Promise<string> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
-    const changeRequest = await validateChangeRequestAccepted(crId);
-
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsElementId: changeRequest.wbsElementId
-      },
-      include: {
-        project: {
-          include: {
-            workPackages: { include: { wbsElement: true, blockedBy: true } }
-          }
-        }
-      }
-    });
-
-    if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
+    await validateChangeRequestAccepted(crId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
-    const { carNumber, projectNumber, workPackageNumber } = wbsElem;
-
-    const projectWbsNum: WbsNumber = {
-      carNumber,
-      projectNumber,
-      workPackageNumber
-    };
-
-    if (wbsElem.dateDeleted)
-      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
 
     if (workPackageNumber !== 0) {
       throw new HttpException(
@@ -175,6 +153,27 @@ export default class WorkPackagesService {
     if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
       throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
     }
+
+    const wbsElem = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      include: {
+        project: {
+          include: {
+            workPackages: { include: { wbsElement: true, blockedBy: true } }
+          }
+        }
+      }
+    });
+
+    if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+    if (wbsElem.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { project } = wbsElem;
 
