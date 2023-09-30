@@ -3,16 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  Autocomplete,
-  AutocompleteRenderInputParams,
-  InputAdornment,
-  SxProps,
-  TextField,
-  Theme,
-  useTheme
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Autocomplete, AutocompleteRenderInputParams, SxProps, TextField, Theme, useTheme } from '@mui/material';
 import { HTMLAttributes } from 'react';
 
 interface NERAutocompleteProps {
