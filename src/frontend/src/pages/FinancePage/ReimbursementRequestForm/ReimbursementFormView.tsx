@@ -34,7 +34,6 @@ import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { expenseTypePipe } from '../../../utils/pipes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 
 interface ReimbursementRequestFormViewProps {
@@ -235,37 +234,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid item container xs={6} spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Expense Type</FormLabel>
-                <Controller
-                  name="expenseTypeId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes
-                        .filter((expenseType) => expenseType.allowed)
-                        .map((expenseType) => (
-                          <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                            {expenseTypePipe(expenseType)}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  )}
-                />
-                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormLabel>Total Cost</FormLabel>
-              <Typography variant="h6">${calculatedTotalCost}</Typography>
-            </Grid>
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
