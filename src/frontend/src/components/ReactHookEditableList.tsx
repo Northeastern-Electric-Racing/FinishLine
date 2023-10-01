@@ -51,7 +51,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
         variant="contained"
         color="primary"
         onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ width: 'max-content' }}
+        sx={{ width: 'max-content', marginBottom: '20px' }}
       >
         + Add New Bullet
       </Button>
