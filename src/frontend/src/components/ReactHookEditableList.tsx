@@ -1,4 +1,4 @@
-import { Grid, Button, IconButton, TextField } from '@mui/material';
+import { Grid, Button, IconButton, TextField, FormLabel, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FieldArrayWithId, UseFieldArrayRemove, UseFormRegister, UseFieldArrayAppend } from 'react-hook-form';
 
@@ -13,16 +13,37 @@ interface ReactHookEditableListProps {
 const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, register, append, remove }) => {
   return (
     <>
-      {ls.map((_element, i) => {
-        return (
-          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField required autoComplete="off" sx={{ width: 9 / 10 }} {...register(`${name}.${i}.detail`)} />
-            <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Grid>
-        );
-      })}
+      <Grid item sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+        {ls.map((_element, i) => {
+          const formattedName = name
+            .split(/(?=[A-Z])/)
+            .map((name) => name.charAt(0).toUpperCase() + name.slice(1))
+            .join(' ');
+
+          return (
+            <>
+              <Grid item sx={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
+                <Typography variant="body1" sx={{ color: 'lightGrey', marginLeft: '7px' }}>
+                  {formattedName} {i + 1}
+                </Typography>
+                <Grid item sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                  <TextField
+                    required
+                    autoComplete="off"
+                    placeholder="Enter an activity ..."
+                    sx={{ width: '340px' }}
+                    multiline
+                    {...register(`${name}.${i}.detail`)}
+                  />
+                  <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </>
+          );
+        })}
+      </Grid>
       <Button
         variant="contained"
         color="success"
