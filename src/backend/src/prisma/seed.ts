@@ -13,6 +13,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
+  Vendor,
   WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
@@ -685,6 +686,10 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
+
+  const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
   const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
     Club_Accounts.CASH,

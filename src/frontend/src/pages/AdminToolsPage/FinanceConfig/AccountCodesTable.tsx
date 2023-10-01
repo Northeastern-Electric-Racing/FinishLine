@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Paper, Table, TableBody, TableContainer, TableHead, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Typography, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
+import AdminToolTable from '../AdminToolTable';
+import AdminToolTable from '../AdminToolTable';
 
 const AccountCodesTable = () => {
   const {
@@ -66,45 +68,15 @@ const AccountCodesTable = () => {
       <Typography variant="subtitle1" textAlign="left">
         Account Codes
       </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="25%"
-            >
-              Account Name
-            </TableCell>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="25%"
-            >
-              Account Code
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="15%"
-            >
-              Allowed
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="35%"
-            >
-              Allowed Refund Sources
-            </TableCell>
-          </TableHead>
-          <TableBody>{accountCodesTableRows}</TableBody>
-        </Table>
-      </TableContainer>
+      <AdminToolTable
+        columns={[
+          { name: 'Account Name', width: '25%' },
+          { name: 'Account Code', width: '25%' },
+          { name: 'Allowed', width: '15%' },
+          { name: 'Allowed Refund Sources', width: '35%' }
+        ]}
+        rows={accountCodesTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

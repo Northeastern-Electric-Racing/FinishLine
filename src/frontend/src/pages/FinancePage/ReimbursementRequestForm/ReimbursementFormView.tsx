@@ -32,6 +32,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
@@ -114,6 +115,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
+  const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
+    return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -143,11 +148,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
-                    {allVendors.map((vendor) => (
-                      <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
-                        {vendor.name}
-                      </MenuItem>
-                    ))}
+                    {allVendors
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((vendor) => (
+                        <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
+                          {vendor.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 )}
               />
