@@ -28,7 +28,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
                 <Typography variant="body1" sx={{ color: 'Grey', marginBottom: '5px' }}>
                   {formattedName} {i + 1}
                 </Typography>
-                <Grid item sx={{ display: 'flex', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <Grid item sx={{ display: 'flex', alignItems: 'flex-start', marginBottom: '20px' }}>
                   <TextField
                     required
                     autoComplete="off"
@@ -51,7 +51,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
         variant="contained"
         color="primary"
         onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ my: 2, width: 'max-content', flexDirection: 'row' }}
+        sx={{ width: 'max-content', flexDirection: 'row' }}
       >
         + Add New Bullet
       </Button>
