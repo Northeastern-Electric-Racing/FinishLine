@@ -38,7 +38,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <GroupIcon sx={{ mr: 2 }} />
             <DetailDisplay
-              label={getProjectTeamsName(project).split(', ').length > 1 ? 'Teams' : 'Team'}
+              label={project.teams.length > 1 ? 'Teams' : 'Team'}
               content={getProjectTeamsName(project)}
               paddingRight={1}
             />
