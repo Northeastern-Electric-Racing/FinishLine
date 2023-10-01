@@ -25,19 +25,20 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
           return (
             <>
               <Grid item sx={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
-                <Typography variant="body1" sx={{ color: 'lightGrey', marginLeft: '7px' }}>
+                <Typography variant="body1" sx={{ color: 'Grey', marginBottom: '5px' }}>
                   {formattedName} {i + 1}
                 </Typography>
-                <Grid item sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                <Grid item sx={{ display: 'flex', alignItems: 'flex-start', marginBottom: '10px' }}>
                   <TextField
                     required
                     autoComplete="off"
                     placeholder={placeholderText}
                     sx={{ width: '340px' }}
                     multiline
+                    maxRows={4}
                     {...register(`${name}.${i}.detail`)}
                   />
-                  <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
+                  <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0, color: 'red' }}>
                     <DeleteIcon />
                   </IconButton>
                 </Grid>
@@ -48,9 +49,9 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
       </Grid>
       <Button
         variant="contained"
-        color="success"
+        color="primary"
         onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ my: 2, width: 'max-content' }}
+        sx={{ my: 2, width: 'max-content', flexDirection: 'row' }}
       >
         + Add New Bullet
       </Button>
