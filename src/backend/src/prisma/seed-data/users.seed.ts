@@ -249,7 +249,7 @@ const brooksRobinson: Prisma.UserCreateInput = {
   lastName: 'Robinson',
   email: 'the.brooksters@orioles.com',
   googleAuthId: 'fries',
-  role: Role.ADMIN
+  role: Role.HEAD
 };
 
 const jimPalmer: Prisma.UserCreateInput = {
@@ -257,7 +257,7 @@ const jimPalmer: Prisma.UserCreateInput = {
   lastName: 'Palmer',
   email: 'jimmy.palms@orioles.com',
   googleAuthId: 'burger',
-  role: Role.GUEST
+  role: Role.LEADERSHIP
 };
 
 const eddieMurray: Prisma.UserCreateInput = {
@@ -289,7 +289,7 @@ const kenWilliams: Prisma.UserCreateInput = {
   lastName: 'Williams',
   email: 'justKen@orioles.com',
   googleAuthId: 'kenough',
-  role: Role.GUEST
+  role: Role.MEMBER
 };
 
 const boogPowell: Prisma.UserCreateInput = {
@@ -297,7 +297,7 @@ const boogPowell: Prisma.UserCreateInput = {
   lastName: 'Powell',
   email: 'boogs@orioles.com',
   googleAuthId: 'soda',
-  role: Role.ADMIN
+  role: Role.MEMBER
 };
 
 const mannyMachado: Prisma.UserCreateInput = {
@@ -313,7 +313,7 @@ const babyDollJacobson: Prisma.UserCreateInput = {
   lastName: 'Jacobson',
   email: 'bbydoll@orioles.com',
   googleAuthId: 'babes',
-  role: Role.ADMIN
+  role: Role.LEADERSHIP
 };
 
 export const dbSeedAllUsers = {
