@@ -8,7 +8,6 @@ import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
-import AdminToolTable from '../AdminToolTable';
 
 const AccountCodesTable = () => {
   const {

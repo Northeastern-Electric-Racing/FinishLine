@@ -32,10 +32,11 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
-import NERAutocomplete from '../../../components/NERAutocomplete';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { expenseTypePipe } from '../../../utils/pipes';
+import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -168,19 +169,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <Controller
                   name="expenseTypeId"
                   control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
+                  render={({ field: { onChange, value } }) => {
+                    const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
+                    return (
+                      <NERAutocomplete
+                        id={'expenseType'}
+                        size="medium"
+                        options={mappedExpenseTypes}
+                        value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                        placeholder="Expense Type"
+                        onChange={(_event, newValue) => {
+                          newValue ? onChange(newValue.id) : onChange('');
+                        }}
+                      />
+                    );
+                  }}
                 />
                 <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
               </FormControl>
