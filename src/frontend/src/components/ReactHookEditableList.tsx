@@ -20,6 +20,8 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
             .map((name) => name.charAt(0).toUpperCase() + name.slice(1))
             .join(' ');
 
+          const placeholderText = `Enter ${formattedName} ...`;
+
           return (
             <>
               <Grid item sx={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
@@ -30,7 +32,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
                   <TextField
                     required
                     autoComplete="off"
-                    placeholder="Enter an activity ..."
+                    placeholder={placeholderText}
                     sx={{ width: '340px' }}
                     multiline
                     {...register(`${name}.${i}.detail`)}
