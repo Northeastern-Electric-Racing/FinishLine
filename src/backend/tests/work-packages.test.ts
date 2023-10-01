@@ -105,7 +105,7 @@ describe('Work Packages', () => {
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce({
         ...prismaWbsElement1,
         project: prismaProject1
-      } as any);
+      } as typeof prismaWbsElement1);
 
       const callCreateWP = async () => {
         return await WorkPackageService.createWorkPackage.apply(null, createWorkPackageArgs);
@@ -248,7 +248,7 @@ describe('Work Packages', () => {
       vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
         ...prismaWorkPackage1,
         wbsElement: { dateDeleted: new Date() }
-      } as any);
+      } as typeof prismaWorkPackage1);
 
       await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
         new DeletedException('Work Package', '1.2.3')
@@ -258,7 +258,10 @@ describe('Work Packages', () => {
     });
 
     test('Work package successfully deleted', async () => {
-      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
+      vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({
+        ...prismaWorkPackage1,
+        wbsElement: {}
+      } as typeof prismaWorkPackage1);
       vi.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
 
       await WorkPackageService.deleteWorkPackage(batman, wbsNum);
