@@ -4,7 +4,7 @@ import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import { ExpenseType } from 'shared';
+import { ClubAccount, ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
@@ -43,9 +43,11 @@ const AccountCodesTable = () => {
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
         <Typography>
-          {expenseType.allowedRefundSources.map((source) => {
-            return source === 'CASH' ? 'CASH ' : 'BUDGET ';
-          })}
+          {expenseType.allowedRefundSources.reduce(
+            (accumulator, source) =>
+              source === ClubAccount.CASH ? accumulator + ClubAccount.CASH : accumulator + ClubAccount.BUDGET,
+            ''
+          )}
         </Typography>
       </TableCell>
     </TableRow>
