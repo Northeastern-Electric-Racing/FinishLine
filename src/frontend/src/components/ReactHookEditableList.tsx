@@ -13,7 +13,7 @@ interface ReactHookEditableListProps {
 const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, register, append, remove }) => {
   return (
     <>
-      <Grid item sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <Grid item sx={{ my: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {ls.map((_element, i) => {
           const formattedName = name
             .split(/(?=[A-Z])/)
