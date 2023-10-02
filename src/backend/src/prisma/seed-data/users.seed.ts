@@ -308,6 +308,78 @@ const reidChandler: Prisma.UserCreateInput = {
   role: Role.HEAD
 };
 
+const brooksRobinson: Prisma.UserCreateInput = {
+  firstName: 'Brooks',
+  lastName: 'Robinson',
+  email: 'the.brooksters@orioles.com',
+  googleAuthId: 'fries',
+  role: Role.HEAD
+};
+
+const jimPalmer: Prisma.UserCreateInput = {
+  firstName: 'Jim',
+  lastName: 'Palmer',
+  email: 'jimmy.palms@orioles.com',
+  googleAuthId: 'burger',
+  role: Role.LEADERSHIP
+};
+
+const eddieMurray: Prisma.UserCreateInput = {
+  firstName: 'Eddie',
+  lastName: 'Murray',
+  email: 'eddie.murray@orioles.com',
+  googleAuthId: 'hotdog',
+  role: Role.HEAD
+};
+
+const georgeSisler: Prisma.UserCreateInput = {
+  firstName: 'George',
+  lastName: 'Sisler',
+  email: 'g.sisler@orioles.com',
+  googleAuthId: 'popcorn',
+  role: Role.LEADERSHIP
+};
+
+const urbanShocker: Prisma.UserCreateInput = {
+  firstName: 'Urban',
+  lastName: 'Shocker',
+  email: 'shock.the.game@orioles.com',
+  googleAuthId: 'shocking',
+  role: Role.MEMBER
+};
+
+const kenWilliams: Prisma.UserCreateInput = {
+  firstName: 'Ken',
+  lastName: 'Williams',
+  email: 'justKen@orioles.com',
+  googleAuthId: 'kenough',
+  role: Role.MEMBER
+};
+
+const boogPowell: Prisma.UserCreateInput = {
+  firstName: 'Boog',
+  lastName: 'Powell',
+  email: 'boogs@orioles.com',
+  googleAuthId: 'soda',
+  role: Role.MEMBER
+};
+
+const mannyMachado: Prisma.UserCreateInput = {
+  firstName: 'Manny',
+  lastName: 'Machado',
+  email: 'machoman@orioles.com',
+  googleAuthId: 'macho',
+  role: Role.HEAD
+};
+
+const babyDollJacobson: Prisma.UserCreateInput = {
+  firstName: 'Baby Doll',
+  lastName: 'Jacobson',
+  email: 'bbydoll@orioles.com',
+  googleAuthId: 'babes',
+  role: Role.LEADERSHIP
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -340,5 +412,14 @@ export const dbSeedAllUsers = {
   chrisHorton,
   mikeMacdonald,
   toddMonken,
-  stephenBisciotti
+  stephenBisciotti,
+  brooksRobinson,
+  jimPalmer,
+  eddieMurray,
+  georgeSisler,
+  urbanShocker,
+  kenWilliams,
+  boogPowell,
+  mannyMachado,
+  babyDollJacobson
 };

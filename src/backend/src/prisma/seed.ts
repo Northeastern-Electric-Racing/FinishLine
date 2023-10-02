@@ -67,6 +67,15 @@ const performSeed: () => Promise<void> = async () => {
   const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
   const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
   const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
+  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
+  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
+  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
+  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
+  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
+  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
+  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
+  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
+  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -175,7 +184,20 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     brandonHyde,
     orioles.teamId,
-    [adleyRutschman, calRipken, anthonyBernardi].map((user) => user.userId)
+    [
+      adleyRutschman,
+      calRipken,
+      anthonyBernardi,
+      brooksRobinson,
+      jimPalmer,
+      eddieMurray,
+      georgeSisler,
+      urbanShocker,
+      kenWilliams,
+      boogPowell,
+      mannyMachado,
+      babyDollJacobson
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
