@@ -59,6 +59,14 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
+  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
+  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
+  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
+  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
+  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
+  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
+  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
+  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
   const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
   const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
   const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
@@ -159,7 +167,19 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe].map((user) => user.userId)
+    [
+      lamarJackson,
+      nezamJazayeri,
+      ryanHowe,
+      jkDobbins,
+      davidOjabo,
+      markAndrews,
+      odellBeckham,
+      chrisHorton,
+      mikeMacdonald,
+      toddMonken,
+      stephenBisciotti
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
