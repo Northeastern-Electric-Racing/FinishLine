@@ -83,25 +83,47 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             <Controller
               name="startDate"
               control={control}
-              rules={{ required: 'Start date is required' }}
-              render={({ field: { onChange, value } }) => (
+              rules={{ required: true }}
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
                 <>
                   <DatePicker
                     inputFormat="yyyy-MM-dd"
-                    onChange={(date) => onChange(date ?? new Date())}
+                    onChange={(date) => {
+                      // Check if the date is a valid date
+                      if (date && isNaN(date.getTime())) {
+                        control.setError('startDate', {
+                          type: 'invalidDate',
+                          message: 'Please enter a valid date (YYYY-MM-DD)'
+                        });
+                      }
+                      // Check if the date is a Monday
+                      else if (date && date.getDay() !== 1) {
+                        control.setError('startDate', {
+                          type: 'notMonday',
+                          message: 'Work Packages should always start on Mondays'
+                        });
+                      } else {
+                        // If it's a valid date and a Monday, clear any existing errors and update the date
+                        control.setError('startDate', { type: 'clear', message: '' }); // clear the error
+                        onChange(date ?? new Date());
+                      }
+                    }}
+                    className={'padding: 10'}
                     value={value}
                     shouldDisableDate={disableStartDate}
                     renderInput={(params) => (
                       <TextField
                         autoComplete="off"
                         {...params}
-                        error={!!errors.startDate}
+                        error={!!error && error.type !== 'clear'}
                         helperText={
-                          errors.startDate?.type === 'required'
+                          error?.type === 'required'
                             ? 'Start date is required'
-                            : errors.startDate
+                            : error?.type === 'notMonday'
+                            ? 'Work Packages should always start on Mondays'
+                            : error?.type === 'invalidDate'
                             ? 'Please enter a valid date (YYYY-MM-DD)'
-                            : null
+                            : ''
                         }
                       />
                     )}
