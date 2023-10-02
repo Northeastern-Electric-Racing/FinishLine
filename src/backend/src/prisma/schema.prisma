@@ -67,7 +67,7 @@ enum Work_Package_Stage {
   RESEARCH
   DESIGN
   MANUFACTURING
-  INTEGRATION
+  INSTALL
 }
 
 model User {
