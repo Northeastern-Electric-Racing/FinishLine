@@ -439,7 +439,7 @@ export default class ReimbursementRequestService {
    * @returns the created vendor
    */
   static async createVendor(submitter: User, name: string) {
-    const vendorNameFromDatabase = await prisma.vendor.findUnique({
+    const vendorNameFromDatabase = await prisma.vendor.findUnique({ 
       where: { name: name },
     });
     if (vendorNameFromDatabase == null) throw new HttpException(400, 'Submitted vendor name is the same as an existing vendor name.');
