@@ -17,8 +17,8 @@ import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
-  vendorId: string;
   account?: ClubAccount;
+  vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -37,8 +37,8 @@ interface ReimbursementRequestFormProps {
 }
 
 const schema = yup.object().shape({
-  vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
+  vendorId: yup.string().required('Vendor is required'),
   dateOfExpense: yup.date().required('Date of Expense is required'),
   expenseTypeId: yup.string().required('Expense Type is required'),
   reimbursementProducts: yup
@@ -74,8 +74,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
+      vendorId: defaultValues?.vendorId ?? '',
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),

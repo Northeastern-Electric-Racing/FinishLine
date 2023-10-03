@@ -39,8 +39,8 @@ import {
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
-  vendorId: string;
   account?: ClubAccount;
+  vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
