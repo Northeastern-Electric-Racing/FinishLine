@@ -43,11 +43,20 @@ const AccountCodesTable = () => {
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
         <Typography>
-          {expenseType.allowedRefundSources.reduce(
-            (accumulator, source) =>
-              source === ClubAccount.CASH ? accumulator + ClubAccount.CASH : accumulator + ClubAccount.BUDGET,
-            ''
-          )}
+          {expenseType.allowedRefundSources.reduce((accumulator, source) => {
+            let concatenated = '';
+            switch (source) {
+              case ClubAccount.CASH: {
+                concatenated = accumulator + ' ' + ClubAccount.CASH;
+                break;
+              }
+              case ClubAccount.BUDGET: {
+                concatenated = accumulator + ' ' + ClubAccount.BUDGET;
+                break;
+              }
+            }
+            return concatenated;
+          }, '')}
         </Typography>
       </TableCell>
     </TableRow>
