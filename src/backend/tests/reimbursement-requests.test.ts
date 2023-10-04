@@ -67,14 +67,20 @@ describe('Reimbursement Requests', () => {
   describe('Expense Tests', () => {
     test('Create Expense Type fails for non admins', async () => {
       await expect(
-        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed)
+        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed, [ClubAccount.CASH])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
     });
 
     test('Create Expense Type Successfully returns expense type Id', async () => {
       vi.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
 
-      const expenseType = await ReimbursementRequestService.createExpenseType(batman, Parts.name, Parts.code, Parts.allowed);
+      const expenseType = await ReimbursementRequestService.createExpenseType(
+        batman,
+        Parts.name,
+        Parts.code,
+        Parts.allowed,
+        [ClubAccount.BUDGET]
+      );
 
       expect(expenseType.expenseTypeId).toBe(Parts.expenseTypeId);
     });

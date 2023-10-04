@@ -26,7 +26,8 @@ export const Parts: PrismaExpenseType = {
   expenseTypeId: 'PARTS',
   name: 'hammer',
   code: 12245,
-  allowed: true
+  allowed: true,
+  allowedRefundSources: [ClubAccount.CASH, ClubAccount.BUDGET]
 };
 
 export const GiveMeMyMoney: PrismaReimbursementRequest = {
