@@ -317,50 +317,64 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
-   * Make approved change requests that has project 1 and 5 as wbs element
+   * Change Requests for Creating Work Packages
    */
 
-  const changeRequest2Id = await ChangeRequestsService.createStandardChangeRequest(
-    thomasEmrax,
+  const changeRequestWP1Id: number = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
     project1WbsNumber.carNumber,
     project1WbsNumber.projectNumber,
     project1WbsNumber.workPackageNumber,
-    CR_Type.DEFINITION_CHANGE,
-    'Remove the uncessary rule',
-    [{ type: Scope_CR_Why_Type.DESIGN, explain: 'The rule has changed' }]
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ]
   );
 
-  const proposedSolution2Id = await ChangeRequestsService.addProposedSolution(
-    thomasEmrax,
-    changeRequest2Id,
-    50,
-    'Remove the rule',
-    1,
-    'n/a'
+  // make a proposed solution for it
+  const proposedSolution2Id: string = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestWP1Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2Id, 'LGTM', true, proposedSolution2Id);
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP1Id, 'LGTM', true, proposedSolution2Id);
 
-  const changeRequest3Id = await ChangeRequestsService.createStandardChangeRequest(
-    thomasEmrax,
+  const changeRequestWP5Id: number = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
     project5WbsNumber.carNumber,
     project5WbsNumber.projectNumber,
     project5WbsNumber.workPackageNumber,
-    CR_Type.ISSUE,
-    'Change the wire material',
-    [{ type: Scope_CR_Why_Type.MAINTENANCE, explain: 'It would be better to maintain' }]
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ]
   );
 
-  const proposedSolution3Id = await ChangeRequestsService.addProposedSolution(
-    thomasEmrax,
-    changeRequest3Id,
-    50,
-    'Change to better wire material',
-    1,
-    'n/a'
+  // make a proposed solution for it
+  const proposedSolution5Id: string = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestWP5Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest3Id, 'LGTM', true, proposedSolution3Id);
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP5Id, 'LGTM', true, proposedSolution5Id);
 
   /**
    * Work Packages
@@ -369,7 +383,7 @@ const performSeed: () => Promise<void> = async () => {
   const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
     'Bodywork Concept of Design',
-    changeRequest2Id,
+    changeRequestWP1Id,
     WorkPackageStage.Design,
     '01/01/2023',
     3,
@@ -409,7 +423,7 @@ const performSeed: () => Promise<void> = async () => {
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
     thomasEmrax,
     'Adhesive Shear Strength Test',
-    changeRequest2Id,
+    changeRequestWP1Id,
     WorkPackageStage.Research,
     '01/22/2023',
     5,
@@ -432,7 +446,7 @@ const performSeed: () => Promise<void> = async () => {
   const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
     thomasEmrax,
     'Manufacture Wiring Harness',
-    changeRequest3Id,
+    changeRequestWP5Id,
     WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
@@ -459,7 +473,7 @@ const performSeed: () => Promise<void> = async () => {
     true
   );
 
-  const changeRequest4Id = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequest2Id = await ChangeRequestsService.createStandardChangeRequest(
     thomasEmrax,
     project2WbsNumber.carNumber,
     project2WbsNumber.projectNumber,
@@ -471,16 +485,16 @@ const performSeed: () => Promise<void> = async () => {
       { type: Scope_CR_Why_Type.ESTIMATION, explain: 'I estimate that it would be really pretty' }
     ]
   );
-  await ChangeRequestsService.addProposedSolution(thomasEmrax, changeRequest4Id, 50, 'Buy hot pink paint', 1, 'n/a');
+  await ChangeRequestsService.addProposedSolution(thomasEmrax, changeRequest2Id, 50, 'Buy hot pink paint', 1, 'n/a');
   await ChangeRequestsService.addProposedSolution(
     thomasEmrax,
-    changeRequest4Id,
+    changeRequest2Id,
     40,
     'Buy slightly cheaper but lower quality hot pink paint',
     1,
     'n/a'
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest4Id, 'What the hell Thomas', false, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2Id, 'What the hell Thomas', false, null);
 
   await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
