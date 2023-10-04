@@ -465,10 +465,9 @@ enum Material_Status {
   UNORDERED
 }
 
-enum Unit {
-  MM
-  FT
-  IN
+model Unit {
+  name      String     @id
+  materials Material[]
 }
 
 model Assembly {
@@ -504,13 +503,14 @@ model Material {
   manufacturer     Manufacturer    @relation(fields: [manufacturerName], references: [name])
   pdmFileName      String?
   quantity         Int
-  quantityUnit     Unit?
+  quantityUnit     Unit?           @relation(fields: [unitName], references: [name])
   price            Int
   subtotal         Int
   linkUrl          String
   notes            String
   materialTypeName String
   manufacturerName String
+  unitName         String?
 }
 
 model Material_Type {
