@@ -213,27 +213,30 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         <PageBlock title="Links">
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
-        <PageBlock title="Goals">
-          <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
-        </PageBlock>
-        <PageBlock title="Features">
-          <ReactHookEditableList
-            name="features"
-            register={register}
-            ls={features}
-            append={appendFeature}
-            remove={removeFeature}
-          />
-        </PageBlock>
-        <PageBlock title="Other Constraints">
-          <ReactHookEditableList
-            name="constraints"
-            register={register}
-            ls={constraints}
-            append={appendConstraint}
-            remove={removeConstraint}
-          />
-        </PageBlock>
+        <ReactHookEditableList
+          name="goals"
+          register={register}
+          ls={goals}
+          append={appendGoal}
+          remove={removeGoal}
+          title="Goals"
+        />
+        <ReactHookEditableList
+          name="features"
+          register={register}
+          ls={features}
+          append={appendFeature}
+          remove={removeFeature}
+          title="Features"
+        />
+        <ReactHookEditableList
+          name="constraints"
+          register={register}
+          ls={constraints}
+          append={appendConstraint}
+          remove={removeConstraint}
+          title="Other Constraints"
+        />
         <PageBlock title="Rules">
           {rules.map((_rule, i) => {
             return (

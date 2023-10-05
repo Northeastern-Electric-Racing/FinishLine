@@ -27,7 +27,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
                   <TextField
                     required
                     autoComplete="off"
-                    placeholder={'Enter ' + title}
+                    placeholder={'Enter ' + title + ' . . .'}
                     sx={{ width: '340px' }}
                     multiline
                     maxRows={4}
