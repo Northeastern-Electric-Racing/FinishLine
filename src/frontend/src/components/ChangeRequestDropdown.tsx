@@ -63,7 +63,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ height: 56, width: "100%", textAlign: 'left' }}
+              sx={{ height: 56, width: '100%', textAlign: 'left' }}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'bottom',

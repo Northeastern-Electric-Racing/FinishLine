@@ -61,7 +61,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
         <Grid item xs>
           <FormControl fullWidth>
-            <TeamDropdown control={control} name="teamId"/>
+            <TeamDropdown control={control} name="teamId" />
           </FormControl>
         </Grid>
         <Grid item xs>
