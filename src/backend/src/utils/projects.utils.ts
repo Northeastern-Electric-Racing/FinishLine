@@ -1,8 +1,17 @@
 import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { Project, WbsElementStatus } from 'shared';
-import { NotFoundException } from './errors.utils';
+import { LinkCreateArgs, Project, WbsElement, WbsElementStatus } from 'shared';
+import { DeletedException, NotFoundException } from './errors.utils';
 import { ChangeCreateArgs, ChangeListValue, createChange, createListChanges } from './changes.utils';
+import {
+  DescriptionBulletPreview,
+  descriptionBulletToChangeListValue,
+  descriptionBulletsToChangeListValues
+} from './description-bullets.utils';
+import { updateLinks } from './links.utils';
+import { selectFields } from 'express-validator/src/select-fields';
+import linkQueryArgs from '../prisma-query-args/links.query-args';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -63,39 +72,214 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
 };
 
 export const createChanges = async <T>(
-  wbsElementId: number,
-  originalProject: Project,
+  projectId: number,
+  // originalProject: Project,
   crId: number,
   implementerId: number,
-  changes: { nameOfField: string; oldValue: string | number | null; newValue: string | number | null }[],
-  listChanges: { nameOfField: string; oldArray: ChangeListValue<T>[]; newArray: ChangeListValue<T>[] }[]
+  // changes: { nameOfField: string; oldValue: string | number | null; newValue: string | number | null }[],
+  // listChanges: { nameOfField: string; oldArray: ChangeListValue<T>[]; newArray: ChangeListValue<T>[] }[]
+  name: string,
+  budget: number,
+  summary: string,
+  newRules: string[],
+  newGoals: { id: number; detail: string }[],
+  newFeatures: { id: number; detail: string }[],
+  newOtherConstraints: { id: number; detail: string }[],
+  newlinkCreateArgs: LinkCreateArgs[],
+  projectLeadId: number | null,
+  projectManagerId: number | null
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
-  for (const value of changes) {
-    const { nameOfField, oldValue, newValue } = value;
-    const changeJson = createChange(nameOfField, oldValue, newValue, crId, implementerId, wbsElementId);
-    if (changeJson !== undefined) {
-      changesJson.push(changeJson);
+  // for (const value of changes) {
+  //   const { nameOfField, oldValue, newValue } = value;
+  //   const changeJson = createChange(nameOfField, oldValue, newValue, crId, implementerId, wbsElementId);
+  //   if (changeJson !== undefined) {
+  //     changesJson.push(changeJson);
+  //   }
+  // }
+
+  const originalProject = await prisma.project.findUnique({
+    where: {
+      projectId
+    },
+    include: {
+      wbsElement: {
+        include: {
+          links: {
+            ...linkQueryArgs
+          }
+        }
+      },
+      goals: true,
+      features: true,
+      otherConstraints: true
     }
-  }
-
-  const listChangesJson: ReturnType<typeof createListChanges>[] = [];
-  for await (const value of listChanges) {
-    const { nameOfField, oldArray, newArray } = value;
-    const listChangeJson = createListChanges(nameOfField, oldArray, newArray, crId, implementerId, wbsElementId);
-
-    const capitalizedFieldName = nameOfField.charAt(0).toUpperCase() + nameOfField.slice(1); // capitalize first letter
-    const descriptionBulletIdField = `projectId${capitalizedFieldName}`;
-    await addDescriptionBullets(
-      listChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      originalProject.id,
-      descriptionBulletIdField
-    );
-  }
-
-  listChangesJson.forEach((listChangeJson) => {
-    changesJson = changesJson.concat(listChangeJson.changes);
   });
 
-  //
+  // if it doesn't exist we error
+  if (!originalProject) throw new NotFoundException('Project', projectId);
+  if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
+
+  const { wbsElementId } = originalProject;
+
+  const listChangesJson: ReturnType<typeof createListChanges>[] = [];
+  const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
+  const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
+  const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
+  const projectManagerChangeJson = createChange(
+    'project manager',
+    await getUserFullName(originalProject.wbsElement.projectManagerId),
+    await getUserFullName(projectManagerId),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+  const projectLeadChangeJson = createChange(
+    'project lead',
+    await getUserFullName(originalProject.wbsElement.projectLeadId),
+    await getUserFullName(projectLeadId),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  // Dealing with lists
+  const rulesChangeJson = createListChanges(
+    'rules',
+    originalProject.rules.map((rule) => {
+      return {
+        element: rule,
+        comparator: rule,
+        displayValue: rule
+      };
+    }),
+    newRules.map((rule) => {
+      return {
+        element: rule,
+        comparator: rule,
+        displayValue: rule
+      };
+    }),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+  if (nameChangeJson !== undefined) changesJson.push(nameChangeJson);
+  if (budgetChangeJson !== undefined) changesJson.push(budgetChangeJson);
+  if (summaryChangeJson !== undefined) changesJson.push(summaryChangeJson);
+  if (projectManagerChangeJson !== undefined) changesJson.push(projectManagerChangeJson);
+  if (projectLeadChangeJson !== undefined) changesJson.push(projectLeadChangeJson);
+
+  const goalsChangeJson = createListChanges(
+    'goals',
+    descriptionBulletsToChangeListValues(originalProject.goals),
+    newGoals.map((goal) => descriptionBulletToChangeListValue(goal)),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const featuresChangeJson = createListChanges(
+    'features',
+    descriptionBulletsToChangeListValues(originalProject.features),
+    newFeatures.map((feature) => descriptionBulletToChangeListValue(feature)),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const otherConstraintsChangeJson = createListChanges(
+    'other constraints',
+    descriptionBulletsToChangeListValues(originalProject.otherConstraints),
+    newOtherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const linkChanges = createListChanges(
+    'link',
+    originalProject.wbsElement.links.map(linkToChangeListValue),
+    newlinkCreateArgs.map(linkToChangeListValue),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  changesJson = changesJson
+    .concat(rulesChangeJson.changes)
+    .concat(goalsChangeJson.changes)
+    .concat(featuresChangeJson.changes)
+    .concat(otherConstraintsChangeJson.changes)
+    .concat(linkChanges.changes);
+
+  // update the project with the input fields
+  const updatedProject = await prisma.project.update({
+    where: {
+      wbsElementId
+    },
+    data: {
+      budget,
+      summary,
+      rules: newRules,
+      wbsElement: {
+        update: {
+          name,
+          projectLeadId,
+          projectManagerId
+        }
+      }
+    },
+    ...projectQueryArgs
+  });
+
+  // Update any deleted description bullets to have their date deleted as right now
+  const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
+    .concat(featuresChangeJson.deletedElements)
+    .concat(otherConstraintsChangeJson.deletedElements);
+
+  if (deletedDescriptionBullets.length > 0) {
+    await prisma.description_Bullet.updateMany({
+      where: {
+        descriptionId: {
+          in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
+        }
+      },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+  }
+
+  await addDescriptionBullets(
+    goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdGoals'
+  );
+  await addDescriptionBullets(
+    featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdFeatures'
+  );
+  // Add the new other constraints
+  await addDescriptionBullets(
+    otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdOtherConstraints'
+  );
+  // Edit the existing description bullets
+  await editDescriptionBullets(
+    goalsChangeJson.editedElements
+      .concat(featuresChangeJson.editedElements)
+      .concat(otherConstraintsChangeJson.editedElements)
+  );
+
+  // Update links
+  await updateLinks(linkChanges, wbsElementId, implementerId);
+
+  await prisma.change.createMany({
+    data: changesJson
+  });
+
+  return updatedProject;
 };
