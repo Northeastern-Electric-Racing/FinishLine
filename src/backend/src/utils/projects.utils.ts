@@ -1,7 +1,8 @@
 import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { WbsElementStatus } from 'shared';
+import { Project, WbsElementStatus } from 'shared';
 import { NotFoundException } from './errors.utils';
+import { ChangeCreateArgs, ChangeListValue, createChange, createListChanges } from './changes.utils';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -59,4 +60,42 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) throw new NotFoundException('User', userId);
   return `${user.firstName} ${user.lastName}`;
+};
+
+export const createChanges = async <T>(
+  wbsElementId: number,
+  originalProject: Project,
+  crId: number,
+  implementerId: number,
+  changes: { nameOfField: string; oldValue: string | number | null; newValue: string | number | null }[],
+  listChanges: { nameOfField: string; oldArray: ChangeListValue<T>[]; newArray: ChangeListValue<T>[] }[]
+) => {
+  let changesJson: ChangeCreateArgs[] = [];
+  for (const value of changes) {
+    const { nameOfField, oldValue, newValue } = value;
+    const changeJson = createChange(nameOfField, oldValue, newValue, crId, implementerId, wbsElementId);
+    if (changeJson !== undefined) {
+      changesJson.push(changeJson);
+    }
+  }
+
+  const listChangesJson: ReturnType<typeof createListChanges>[] = [];
+  for await (const value of listChanges) {
+    const { nameOfField, oldArray, newArray } = value;
+    const listChangeJson = createListChanges(nameOfField, oldArray, newArray, crId, implementerId, wbsElementId);
+
+    const capitalizedFieldName = nameOfField.charAt(0).toUpperCase() + nameOfField.slice(1); // capitalize first letter
+    const descriptionBulletIdField = `projectId${capitalizedFieldName}`;
+    await addDescriptionBullets(
+      listChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      originalProject.id,
+      descriptionBulletIdField
+    );
+  }
+
+  listChangesJson.forEach((listChangeJson) => {
+    changesJson = changesJson.concat(listChangeJson.changes);
+  });
+
+  //
 };
