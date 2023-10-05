@@ -71,11 +71,20 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
         <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
       </DrawerHeader>
       <Divider />
-      <Box overflow={'auto'} sx={{ overflowX: 'hidden' }}>
-        {linkItems.map((linkItem) => (
-          <NavPageLink {...linkItem} open={open} />
-        ))}
-        <Typography className={styles.versionNumber}>3.8.0</Typography>
+      <Box
+        overflow={'auto'}
+        sx={{ overflowX: 'hidden' }}
+        display="flex"
+        flexDirection={'column'}
+        flex={1}
+        justifyContent={'space-between'}
+      >
+        <Box>
+          {linkItems.map((linkItem) => (
+            <NavPageLink {...linkItem} open={open} />
+          ))}
+        </Box>
+        <Typography className={styles.versionNumber}>4.1.0</Typography>
       </Box>
     </NERDrawer>
   );

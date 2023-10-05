@@ -1,6 +1,7 @@
-import { ChangeRequest, daysBetween, User, wbsPipe, WorkPackage } from 'shared';
+import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
+import prisma from '../prisma/prisma';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -50,4 +51,19 @@ export const sendSlackRequestedReviewNotification = async (slackId: string, chan
 
   const fullMsg = `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
   await sendMessage(slackId, fullMsg);
+};
+
+/**
+ * Send Task assigned notification to assignee on Slack
+ * @param slackId the slack id of the assignee
+ * @param task the task they were assigned to
+ */
+export const sendSlackTaskAssignedNotification = async (slackId: string, task: Task): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const project = await prisma.wBS_Element.findUnique({ where: { wbsNumber: task.wbsNum } });
+  const msg = `You have been assigned to a task: ${task.title} on project ${wbsPipe(task.wbsNum)} - ${project?.name}`;
+  const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
+  const linkButtonText = 'View Task';
+  await sendMessage(slackId, msg, link, linkButtonText);
 };

@@ -2,13 +2,14 @@ import { User } from 'shared';
 import { FormControl, FormLabel, Grid } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 import TeamDropdown from '../../../components/TeamsDropdown';
+import { userToAutocompleteOption } from '../../../utils/teams.utils';
+
 interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectEditFormInput>;
@@ -18,11 +19,6 @@ interface ProjectEditDetailsProps {
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
 }
-
-const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
-  if (!user) return { label: '', id: '' };
-  return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-};
 
 const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   users,

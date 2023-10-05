@@ -4,11 +4,14 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
+  Link,
   IconButton,
   MenuItem,
   Select,
   TextField,
-  Typography
+  Typography,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -29,6 +32,11 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERAutocomplete from '../../../components/NERAutocomplete';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
+import { wbsNumComparator } from 'shared/src/validate-wbs';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -51,6 +59,7 @@ interface ReimbursementRequestFormViewProps {
   submitText: string;
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
+  hasSecureSettingsSet: boolean;
 }
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
@@ -70,7 +79,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   watch,
   submitText,
   previousPage,
-  setValue
+  setValue,
+  hasSecureSettingsSet
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
@@ -81,6 +91,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
     id: wbsPipe(wbsElement.wbsNum)
   }));
+
+  wbsElementAutocompleteOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const ReceiptFileInput = () => (
     <FormControl>
@@ -100,6 +112,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
+  const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
+    return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -107,6 +123,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         handleSubmit(onSubmit)(e);
       }}
     >
+      {!hasSecureSettingsSet && (
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
+          <Alert variant="filled" severity="warning">
+            Your secure settings must be set to create a reimbursement request, you can set them
+            <Link style={{ color: 'blue' }} component={RouterLink} to={routes.SETTINGS}>
+              {' '}
+              here
+            </Link>
+            .
+          </Alert>
+        </Snackbar>
+      )}
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
@@ -117,11 +145,13 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
-                    {allVendors.map((vendor) => (
-                      <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
-                        {vendor.name}
-                      </MenuItem>
-                    ))}
+                    {allVendors
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((vendor) => (
+                        <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
+                          {vendor.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 )}
               />
@@ -142,7 +172,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {Object.values(ClubAccount).map((account) => (
                       <MenuItem key={account} value={account}>
-                        {account}
+                        {codeAndRefundSourceName(account)}
                       </MenuItem>
                     ))}
                   </Select>
@@ -187,19 +217,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 <Controller
                   name="expenseTypeId"
                   control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      onChange={(newValue) => onChange(newValue.target.value)}
-                      value={value}
-                      error={!!errors.expenseTypeId}
-                    >
-                      {allExpenseTypes.map((expenseType) => (
-                        <MenuItem key={expenseType.expenseTypeId} value={expenseType.expenseTypeId}>
-                          {expenseType.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
+                  render={({ field: { onChange, value } }) => {
+                    const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
+                    return (
+                      <NERAutocomplete
+                        id={'expenseType'}
+                        size="medium"
+                        options={mappedExpenseTypes}
+                        value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                        placeholder="Expense Type"
+                        onChange={(_event, newValue) => {
+                          newValue ? onChange(newValue.id) : onChange('');
+                        }}
+                      />
+                    );
+                  }}
                 />
                 <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
               </FormControl>
@@ -256,7 +288,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
           Cancel
         </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit">
+        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
           {submitText}
         </NERSuccessButton>
       </Box>

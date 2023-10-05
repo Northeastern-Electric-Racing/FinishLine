@@ -24,7 +24,6 @@ import {
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
-  validateUserIsHeadOfFinanceTeam,
   validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
@@ -130,6 +129,8 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
+    if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType.name} is not allowed!`);
+
     const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
@@ -167,10 +168,11 @@ export default class ReimbursementRequestService {
    * Function to reimburse a user for their expenses.
    *
    * @param amount the amount to be reimbursed
+   * @param dateReceived the date the amount was received
    * @param submitter the person performing the reimbursement
    * @returns the created reimbursement
    */
-  static async reimburseUser(amount: number, submitter: User): Promise<Reimbursement> {
+  static async reimburseUser(amount: number, dateReceived: string, submitter: User): Promise<Reimbursement> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
@@ -195,11 +197,16 @@ export default class ReimbursementRequestService {
     if (amount > totalOwed - totalReimbursed) {
       throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
     }
+
+    // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
+    const dateCreated = new Date(dateReceived.split('T')[0]);
+    dateCreated.setTime(dateCreated.getTime() + 12 * 60 * 60 * 1000);
+
     const newReimbursement = await prisma.reimbursement.create({
       data: {
         purchaserId: submitter.userId,
         amount,
-        dateCreated: new Date(),
+        dateCreated: dateReceived,
         userSubmittedId: submitter.userId
       },
       ...reimbursementQueryArgs
@@ -326,7 +333,7 @@ export default class ReimbursementRequestService {
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
   static async getPendingAdvisorList(requester: User): Promise<ReimbursementRequest[]> {
-    await validateUserIsHeadOfFinanceTeam(requester);
+    await validateUserIsPartOfFinanceTeam(requester);
 
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
@@ -352,7 +359,7 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    */
   static async sendPendingAdvisorList(sender: User, saboNumbers: number[]) {
-    await validateUserIsHeadOfFinanceTeam(sender);
+    await validateUserIsPartOfFinanceTeam(sender);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
