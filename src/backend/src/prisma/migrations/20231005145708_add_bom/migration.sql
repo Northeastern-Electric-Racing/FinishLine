@@ -1,8 +1,12 @@
 -- CreateEnum
 CREATE TYPE "Material_Status" AS ENUM ('RECEIVED', 'ORDERED', 'SHIPPED', 'UNORDERED');
 
--- CreateEnum
-CREATE TYPE "Unit" AS ENUM ('MM', 'FT', 'IN');
+-- CreateTable
+CREATE TABLE "Unit" (
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Unit_pkey" PRIMARY KEY ("name")
+);
 
 -- CreateTable
 CREATE TABLE "Assembly" (
@@ -20,7 +24,7 @@ CREATE TABLE "Assembly" (
 
 -- CreateTable
 CREATE TABLE "Material" (
-    "modelId" TEXT NOT NULL,
+    "materialId" TEXT NOT NULL,
     "assembyId" TEXT,
     "name" TEXT NOT NULL,
     "wbsElementId" INTEGER NOT NULL,
@@ -29,17 +33,18 @@ CREATE TABLE "Material" (
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "userCreatedId" INTEGER NOT NULL,
     "staus" "Material_Status" NOT NULL,
+    "materialTypeName" TEXT NOT NULL,
+    "manufacturerName" TEXT NOT NULL,
+    "manufacturerPartNumber" TEXT NOT NULL,
     "pdmFileName" TEXT,
     "quantity" INTEGER NOT NULL,
-    "quantityUnit" "Unit",
+    "unitName" TEXT,
     "price" INTEGER NOT NULL,
     "subtotal" INTEGER NOT NULL,
     "linkUrl" TEXT NOT NULL,
     "notes" TEXT NOT NULL,
-    "materialTypeName" TEXT NOT NULL,
-    "manufacturerName" TEXT NOT NULL,
 
-    CONSTRAINT "Material_pkey" PRIMARY KEY ("modelId")
+    CONSTRAINT "Material_pkey" PRIMARY KEY ("materialId")
 );
 
 -- CreateTable
@@ -92,3 +97,6 @@ ALTER TABLE "Material" ADD CONSTRAINT "Material_materialTypeName_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "Material" ADD CONSTRAINT "Material_manufacturerName_fkey" FOREIGN KEY ("manufacturerName") REFERENCES "Manufacturer"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Material" ADD CONSTRAINT "Material_unitName_fkey" FOREIGN KEY ("unitName") REFERENCES "Unit"("name") ON DELETE SET NULL ON UPDATE CASCADE;

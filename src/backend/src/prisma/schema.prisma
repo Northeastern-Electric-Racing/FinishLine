@@ -486,31 +486,32 @@ model Assembly {
 }
 
 model Material {
-  modelId          String          @id @default(uuid())
-  assemby          Assembly?       @relation(fields: [assembyId], references: [assemblyId])
-  assembyId        String?
-  name             String          @unique
-  wbsElement       WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
-  wbsElementId     Int
-  dateDeleted      DateTime?
-  userDeleted      User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
-  userDeletedId    Int?
-  dateCreated      DateTime
-  userCreated      User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
-  userCreatedId    Int
-  staus            Material_Status
-  materialType     Material_Type   @relation(fields: [materialTypeName], references: [name])
-  manufacturer     Manufacturer    @relation(fields: [manufacturerName], references: [name])
-  pdmFileName      String?
-  quantity         Int
-  quantityUnit     Unit?           @relation(fields: [unitName], references: [name])
-  price            Int
-  subtotal         Int
-  linkUrl          String
-  notes            String
-  materialTypeName String
-  manufacturerName String
-  unitName         String?
+  materialId             String          @id @default(uuid())
+  assemby                Assembly?       @relation(fields: [assembyId], references: [assemblyId])
+  assembyId              String?
+  name                   String          @unique
+  wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId           Int
+  dateDeleted            DateTime?
+  userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeletedId          Int?
+  dateCreated            DateTime
+  userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreatedId          Int
+  staus                  Material_Status
+  materialType           Material_Type   @relation(fields: [materialTypeName], references: [name])
+  materialTypeName       String
+  manufacturer           Manufacturer    @relation(fields: [manufacturerName], references: [name])
+  manufacturerName       String
+  manufacturerPartNumber String
+  pdmFileName            String?
+  quantity               Int
+  quantityUnit           Unit?           @relation(fields: [unitName], references: [name])
+  unitName               String?
+  price                  Int
+  subtotal               Int
+  linkUrl                String
+  notes                  String
 }
 
 model Material_Type {
