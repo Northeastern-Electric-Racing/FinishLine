@@ -204,20 +204,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectLead={setProjectLeadId}
           setProjectManager={setprojectManagerId}
         />
-        <PageBlock title="Project Summary">
-          <Grid item sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Summary"
-                multiline={true}
-                rows={5}
-                errorMessage={errors.summary}
-              />
-            </FormControl>
-          </Grid>
-        </PageBlock>
         <PageBlock title="Links">
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
