@@ -216,21 +216,21 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             />
           </FormControl>
         </PageBlock>
-        <Typography variant="h5">Expected Activities</Typography>
         <ReactHookEditableList
           name="expectedActivities"
           register={register}
           ls={expectedActivities}
           append={appendExpectedActivity}
           remove={removeExpectedActivity}
+          title="Expected Activities"
         />
-        <Typography variant="h5">Deliverables</Typography>
         <ReactHookEditableList
           name="deliverables"
           register={register}
           ls={deliverables}
           append={appendDeliverable}
           remove={removeDeliverable}
+          title="Deliverables"
         />
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
