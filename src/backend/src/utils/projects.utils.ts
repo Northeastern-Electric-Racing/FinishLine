@@ -73,11 +73,9 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
 
 export const createChanges = async <T>(
   projectId: number,
-  // originalProject: Project,
+
   crId: number,
   implementerId: number,
-  // changes: { nameOfField: string; oldValue: string | number | null; newValue: string | number | null }[],
-  // listChanges: { nameOfField: string; oldArray: ChangeListValue<T>[]; newArray: ChangeListValue<T>[] }[]
   name: string,
   budget: number,
   summary: string,
@@ -90,13 +88,6 @@ export const createChanges = async <T>(
   projectManagerId: number | null
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
-  // for (const value of changes) {
-  //   const { nameOfField, oldValue, newValue } = value;
-  //   const changeJson = createChange(nameOfField, oldValue, newValue, crId, implementerId, wbsElementId);
-  //   if (changeJson !== undefined) {
-  //     changesJson.push(changeJson);
-  //   }
-  // }
 
   const originalProject = await prisma.project.findUnique({
     where: {
@@ -122,7 +113,6 @@ export const createChanges = async <T>(
 
   const { wbsElementId } = originalProject;
 
-  const listChangesJson: ReturnType<typeof createListChanges>[] = [];
   const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
   const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
   const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
