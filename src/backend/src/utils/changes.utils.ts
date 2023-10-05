@@ -46,6 +46,13 @@ export const createChange = (
       wbsElementId,
       detail: `Added ${nameOfField} "${newValue}"`
     };
+  } else if (oldValue !== null && newValue == null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      wbsElementId,
+      detail: `Deleted ${nameOfField} "${oldValue}"`
+    };
   } else if (oldValue !== newValue) {
     return {
       changeRequestId: crId,
