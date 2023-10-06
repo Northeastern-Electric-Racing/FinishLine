@@ -14,6 +14,7 @@ workPackagesRouter.post(
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
+  body('blockedBy').isArray(),
   intMinZero(body('blockedBy.*.carNumber')),
   intMinZero(body('blockedBy.*.projectNumber')),
   intMinZero(body('blockedBy.*.workPackageNumber')),
