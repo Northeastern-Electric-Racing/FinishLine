@@ -4,6 +4,7 @@
  */
 
 import { Prisma, Role, Theme } from '@prisma/client';
+import { PipelineTransformSource } from 'stream';
 
 const thomasEmrax: Prisma.UserCreateInput = {
   firstName: 'Thomas',
@@ -244,6 +245,102 @@ const reidChandler: Prisma.UserCreateInput = {
   role: Role.HEAD
 };
 
+const cristianoRonaldo: Prisma.UserCreateInput = {
+  firstName: 'Cristiano',
+  lastName: 'Ronaldo',
+  email: 'cronaldo@united.com',
+  googleAuthId:'Winger',
+  role: Role.MEMBER
+};
+
+const thierryHenry: Prisma.UserCreateInput = {
+  firstName: 'Thierry',
+  lastName: 'Henry',
+  email: 'thenry@arsenal.com',
+  googleAuthId: 'InvincibleStriker',
+  role: Role.MEMBER
+};
+
+const frankLampard: Prisma.UserCreateInput = {
+  firstName: 'Frank',
+  lastName: 'Lampard',
+  email: 'flampard@chelsea.com',
+  googleAuthId: 'MidfieldMaestro',
+  role: Role.MEMBER
+};
+
+const stevenGerrard: Prisma.UserCreateInput = {
+  firstName: 'Steven',
+  lastName: 'Gerrard',
+  email: 'sgerrard@liverpool.com',
+  googleAuthId: 'RedCaptain',
+  role: Role.MEMBER
+};
+
+const ryanGiggs: Prisma.UserCreateInput = {
+  firstName: 'Ryan',
+  lastName: 'Giggs',
+  email: 'rgiggs@united.com',
+  googleAuthId: 'WingWizard',
+  role: Role.MEMBER
+};
+
+const alanShearer: Prisma.UserCreateInput = {
+  firstName: 'Alan',
+  lastName: 'Shearer',
+  email: 'ashearer@blackburn.com',
+  googleAuthId: 'GoalMachine',
+  role: Role.MEMBER
+};
+
+const paulScholes: Prisma.UserCreateInput = {
+  firstName: 'Paul',
+  lastName: 'Scholes',
+  email: 'pscholes@united.com',
+  googleAuthId: 'PassMaster',
+  role: Role.MEMBER
+};
+
+const ericCantona: Prisma.UserCreateInput = {
+  firstName: 'Eric',
+  lastName: 'Cantona',
+  email: 'ecantona@united.com',
+  googleAuthId: 'KingEric',
+  role: Role.MEMBER
+};
+
+const didierDrogba: Prisma.UserCreateInput = {
+  firstName: 'Didier',
+  lastName: 'Drogba',
+  email: 'ddrogba@chelsea.com',
+  googleAuthId: 'ClutchStriker',
+  role: Role.MEMBER
+};
+
+const patrickVieira: Prisma.UserCreateInput = {
+  firstName: 'Patrick',
+  lastName: 'Vieira',
+  email: 'pvieira@arsenal.com',
+  googleAuthId: 'MidfieldAnchor',
+  role: Role.MEMBER
+};
+
+const johnTerry: Prisma.UserCreateInput = {
+  firstName: 'John',
+  lastName: 'Terry',
+  email: 'jterry@chelsea.com',
+  googleAuthId: 'DefensiveRock',
+  role: Role.MEMBER
+};
+
+const dennisBergkamp: Prisma.UserCreateInput = {
+  firstName: 'Dennis',
+  lastName: 'Bergkamp',
+  email: 'dbergkamp@arsenal.com',
+  googleAuthId: 'DutchMaster',
+  role: Role.MEMBER
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -268,5 +365,17 @@ export const dbSeedAllUsers = {
   nezamJazayeri,
   ryanHowe,
   anthonyBernardi,
-  reidChandler
+  reidChandler,
+  cristianoRonaldo,
+  thierryHenry,
+  frankLampard,
+  stevenGerrard,
+  ryanGiggs,
+  paulScholes,
+  alanShearer,
+  ericCantona,
+  patrickVieira,
+  didierDrogba,
+  johnTerry,
+  dennisBergkamp
 };
