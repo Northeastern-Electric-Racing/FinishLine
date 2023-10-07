@@ -183,7 +183,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
         <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
       </Grid>
       <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
-        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingLeads(true)} />}
+        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingHead(true)} />}
       </Grid>
     </Grid>
   );
