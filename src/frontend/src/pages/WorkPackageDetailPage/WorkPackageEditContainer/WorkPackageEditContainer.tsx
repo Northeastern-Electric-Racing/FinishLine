@@ -223,6 +223,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             ls={expectedActivities}
             append={appendExpectedActivity}
             remove={removeExpectedActivity}
+            label="Expected Activity"
             title="Expected Activites"
           />
           <ReactHookEditableList
@@ -231,6 +232,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             ls={deliverables}
             append={appendDeliverable}
             remove={removeDeliverable}
+            label="Deliverable"
             title="Deliverables"
           />
         </Stack>

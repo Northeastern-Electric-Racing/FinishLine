@@ -294,6 +294,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
                   ls={expectedActivities}
                   append={appendExpectedActivity}
                   remove={removeExpectedActivity}
+                  label="Expected Activity"
                   title="Expected Activites"
                 />
               </FormControl>
@@ -306,6 +307,7 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
                   ls={deliverables}
                   append={appendDeliverable}
                   remove={removeDeliverable}
+                  label="Deliverable"
                   title="Deliverables"
                 />
               </FormControl>
