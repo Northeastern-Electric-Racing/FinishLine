@@ -219,7 +219,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={goals}
             append={appendGoal}
             remove={removeGoal}
-            label="Goal"
             title="Goals"
           />
           <ReactHookEditableList
@@ -228,7 +227,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={features}
             append={appendFeature}
             remove={removeFeature}
-            label="Feature"
             title="Features"
           />
           <ReactHookEditableList
@@ -237,7 +235,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={constraints}
             append={appendConstraint}
             remove={removeConstraint}
-            label="Constraint"
             title="Other Constraints"
           />
           <ReactHookEditableList
@@ -246,7 +243,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             ls={rules}
             append={appendRule}
             remove={removeRule}
-            label="Rule"
             title="Rules"
           />
         </Stack>
