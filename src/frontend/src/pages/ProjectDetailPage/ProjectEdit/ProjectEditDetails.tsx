@@ -32,7 +32,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   return (
     <PageBlock title="Project Details">
       <Grid container spacing={3}>
-        <Grid item xs>
+        <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
@@ -43,12 +43,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs>
+        <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
             <ChangeRequestDropdown control={control} name="crId" />
           </FormControl>
         </Grid>
-        <Grid item xs>
+        <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Car Number</FormLabel>
             <ReactHookTextField
@@ -59,12 +59,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs>
+        <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
             <TeamDropdown control={control} name="teamId" />
           </FormControl>
         </Grid>
-        <Grid item xs>
+        <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
@@ -79,7 +79,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
       </Grid>
       <Grid container spacing={2}>
-        <Grid item xs={4}>
+        <Grid item lg={4} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Project Summary</FormLabel>
             <ReactHookTextField
