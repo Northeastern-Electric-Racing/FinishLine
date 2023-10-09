@@ -203,9 +203,9 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
 };
 
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
-  const userAuthorized = await isUserOnFinanceTeam(user);
+  const isUserAuthorized = await isUserOnFinanceTeam(user);
 
-  if (!userAuthorized) {
+  if (!isUserAuthorized) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
 };

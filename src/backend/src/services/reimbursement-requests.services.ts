@@ -451,8 +451,8 @@ export default class ReimbursementRequestService {
         'Only admins, finance leads, and finance heads can create vendors.'
       );
 
-      const authorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
-      if (!authorized) throw failedAuthorizationException;
+      const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
+      if (!isAuthorized) throw failedAuthorizationException;
     };
 
     await validateCreateVendorSubmitter(submitter);
