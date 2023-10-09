@@ -202,6 +202,13 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   }
 };
 
+/**
+ * Validates that the given user is on the finance team.
+ *
+ * @param user The user to validate.
+ * @throws {AccessDeniedException} Fails validation when user is not on the
+ * finance team.
+ */
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
   const isUserAuthorized = await isUserOnFinanceTeam(user);
 
