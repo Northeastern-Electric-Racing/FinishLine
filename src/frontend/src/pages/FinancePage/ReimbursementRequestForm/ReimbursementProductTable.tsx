@@ -23,7 +23,6 @@ import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import React, { useState } from 'react';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -72,8 +71,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
-
-  const [inputValue, setInputValue] = useState('');
 
   return (
     <TableContainer>
