@@ -163,9 +163,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 sx={{ my: 1 }}
                 options={wbsElementAutocompleteOptions}
                 onChange={(_event, value) => {
-                  if (value) {
-                    appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
-                  }
+                  if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
                 }}
                 value={null}
                 blurOnSelect={true}
