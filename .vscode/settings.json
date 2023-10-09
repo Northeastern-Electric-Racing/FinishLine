@@ -21,5 +21,8 @@
     "editor.defaultFormatter": "Prisma.prisma"
   },
   "editor.formatOnSave": true,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "develop"
+  ]
 }
