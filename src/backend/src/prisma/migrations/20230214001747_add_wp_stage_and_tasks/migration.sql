@@ -5,7 +5,7 @@ CREATE TYPE "Task_Priority" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 CREATE TYPE "Task_Status" AS ENUM ('IN_BACKLOG', 'IN_PROGRESS', 'DONE');
 
 -- CreateEnum
-CREATE TYPE "Work_Package_Stage" AS ENUM ('RESEARCH', 'DESIGN', 'MANUFACTURING', 'INSTALL');
+CREATE TYPE "Work_Package_Stage" AS ENUM ('RESEARCH', 'DESIGN', 'MANUFACTURING', 'INTEGRATION');
 
 -- AlterTable
 ALTER TABLE "Work_Package" ADD COLUMN     "stage" "Work_Package_Stage";
