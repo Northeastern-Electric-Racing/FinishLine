@@ -25,6 +25,7 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
+  autoStyle?: 'workPackage' | 'autoComplete';
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -36,7 +37,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   sx,
   value,
   listboxProps,
-  filterSelectedOptions
+  filterSelectedOptions,
+  autoStyle = 'autoComplete'
 }) => {
   const theme = useTheme();
 
@@ -55,6 +57,22 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     },
     ...sx
   };
+
+  const workPackageStyle = {
+    height: '40px',
+    width: '100%',
+    borderRadius: '4px',
+    border: 0,
+    ...sx
+  };
+
+  function chooseStyle() {
+    if (autoStyle === 'workPackage') {
+      return workPackageStyle;
+    } else {
+      return autocompleteStyle;
+    }
+  }
 
   const autocompleteRenderInput = (params: AutocompleteRenderInputParams) => {
     return (
@@ -81,7 +99,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
       id={id}
       onChange={onChange}
       options={options}
-      sx={autocompleteStyle}
+      sx={chooseStyle}
       size={size}
       renderInput={autocompleteRenderInput}
       value={value}

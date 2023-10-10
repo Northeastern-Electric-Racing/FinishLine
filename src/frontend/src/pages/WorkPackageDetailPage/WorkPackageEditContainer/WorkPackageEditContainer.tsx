@@ -14,10 +14,10 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl } from '@mui/material';
+import { TextField, Autocomplete, FormControl } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
-import WorkPackageEditDetails from './WorkPackageEditDetails';
+import WorkPackageFormDetails from './WorkPackageFormDetails';
 import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -25,7 +25,6 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { useSingleProject } from '../../../hooks/projects.hooks';
 import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -171,7 +170,16 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
+      headerRight={
+        <>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </>
+      }
     >
       <form
         id="work-package-edit-form"
@@ -184,7 +192,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           e.key === 'Enter' && e.preventDefault();
         }}
       >
-        <WorkPackageEditDetails
+        <WorkPackageFormDetails
           control={control}
           errors={errors}
           usersForProjectLead={users}
@@ -234,14 +242,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             remove={removeDeliverable}
           />
         </PageBlock>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </form>
     </PageLayout>
   );

@@ -33,9 +33,11 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
+  selectHeight?: string;
+  fullWidthOn?: false | true;
 }
 
-const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name, selectHeight, fullWidthOn = false }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -49,7 +51,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <FormControl>
+      <FormControl fullWidth={fullWidthOn}>
         <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
         <Controller
           control={control}
@@ -63,7 +65,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
+              sx={{ height: `${selectHeight}em`, textAlign: 'left' }}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'bottom',
