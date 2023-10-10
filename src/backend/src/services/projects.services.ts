@@ -13,7 +13,7 @@ import {
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
-  createChanges,
+  updateProjectAndCreateChanges,
   editDescriptionBullets,
   getHighestProjectNumber,
   getUserFullName
@@ -154,7 +154,8 @@ export default class ProjectsService {
       throw new NotFoundException('Project', wbsElementId);
     }
 
-    const { project } = await createChanges(
+    // Project has been created, so create the changes and add other details (like budget, project manager id, etc)
+    await updateProjectAndCreateChanges(
       createdProject?.projectId,
       crId,
       userId,
@@ -169,17 +170,6 @@ export default class ProjectsService {
       projectLeadId,
       projectManagerId
     );
-
-    // Set the initial data by updating the project
-    await prisma.project.update({
-      where: { wbsElementId },
-      data: {
-        budget: budget ?? undefined,
-        summary,
-        rules: rules ?? undefined,
-        wbsElement: { update: { projectLeadId, projectManagerId } }
-      }
-    });
 
     return wbsNumOf(createdWbsElement);
   }

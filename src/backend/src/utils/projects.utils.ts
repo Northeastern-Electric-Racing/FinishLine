@@ -71,7 +71,7 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
   return `${user.firstName} ${user.lastName}`;
 };
 
-export const createChanges = async <T>(
+export const updateProjectAndCreateChanges = async <T>(
   projectId: number,
   crId: number,
   implementerId: number,
