@@ -15,7 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Box, FormControl, Stack } from '@mui/material';
+import { Grid, Box, FormControl, Stack, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
@@ -213,42 +213,50 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
         <Stack spacing={4}>
-          <ReactHookEditableList
-            name="goals"
-            register={register}
-            ls={goals}
-            append={appendGoal}
-            remove={removeGoal}
-            label="Goal"
-            title="Goals"
-          />
-          <ReactHookEditableList
-            name="features"
-            register={register}
-            ls={features}
-            append={appendFeature}
-            remove={removeFeature}
-            label="Feature"
-            title="Features"
-          />
-          <ReactHookEditableList
-            name="constraints"
-            register={register}
-            ls={constraints}
-            append={appendConstraint}
-            remove={removeConstraint}
-            label="Constraint"
-            title="Other Constraints"
-          />
-          <ReactHookEditableList
-            name="rules"
-            register={register}
-            ls={rules}
-            append={appendRule}
-            remove={removeRule}
-            label="Rule"
-            title="Rules"
-          />
+          <Box>
+            <Typography variant="h5">{'Goals'}</Typography>
+            <ReactHookEditableList
+              name="goals"
+              register={register}
+              ls={goals}
+              append={appendGoal}
+              remove={removeGoal}
+              bulletName="Goal"
+            />
+          </Box>
+          <Box>
+            <Typography variant="h5">{'Features'}</Typography>
+            <ReactHookEditableList
+              name="features"
+              register={register}
+              ls={features}
+              append={appendFeature}
+              remove={removeFeature}
+              bulletName="Feature"
+            />
+          </Box>
+          <Box>
+            <Typography variant="h5">{'Constraints'}</Typography>
+            <ReactHookEditableList
+              name="constraints"
+              register={register}
+              ls={constraints}
+              append={appendConstraint}
+              remove={removeConstraint}
+              bulletName="Constraint"
+            />
+          </Box>
+          <Box>
+            <Typography variant="h5">{'Rules'}</Typography>
+            <ReactHookEditableList
+              name="rules"
+              register={register}
+              ls={rules}
+              append={appendRule}
+              remove={removeRule}
+              bulletName="Rule"
+            />
+          </Box>
         </Stack>
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
