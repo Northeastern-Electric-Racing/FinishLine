@@ -1,15 +1,14 @@
 import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { LinkCreateArgs, Project, WbsElement, WbsElementStatus } from 'shared';
+import { LinkCreateArgs, WbsElementStatus } from 'shared';
 import { DeletedException, NotFoundException } from './errors.utils';
-import { ChangeCreateArgs, ChangeListValue, createChange, createListChanges } from './changes.utils';
+import { ChangeCreateArgs, createChange, createListChanges } from './changes.utils';
 import {
   DescriptionBulletPreview,
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues
 } from './description-bullets.utils';
 import { linkToChangeListValue, updateLinks } from './links.utils';
-import { selectFields } from 'express-validator/src/select-fields';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
@@ -71,7 +70,7 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
   return `${user.firstName} ${user.lastName}`;
 };
 
-export const updateProjectAndCreateChanges = async <T>(
+export const updateProjectAndCreateChanges = async (
   projectId: number,
   crId: number,
   implementerId: number,

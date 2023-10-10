@@ -149,7 +149,8 @@ export default class ProjectsService {
     });
     const { wbsElementId } = createdWbsElement;
 
-    const createdProject = createdWbsElement.project;
+    // const createdProject = createdWbsElement.project;
+    const createdProject = await prisma.project.findFirst({ where: { wbsElementId } });
     if (!createdProject) {
       throw new NotFoundException('Project', wbsElementId);
     }
