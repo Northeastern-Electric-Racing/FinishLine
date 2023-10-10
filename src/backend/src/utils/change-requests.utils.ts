@@ -134,7 +134,7 @@ export const updateBlocking = async (
  * @throws if the change request is unreviewed, denied, or deleted
  */
 export const validateChangeRequestAccepted = async (crId: number) => {
-  const changeRequest = await prisma.change_Request.findUnique({ where: { crId }, include: { changes: true}});
+  const changeRequest = await prisma.change_Request.findUnique({ where: { crId }, include: { changes: true } });
   const currentDate = new Date();
 
   if (!changeRequest) throw new NotFoundException('Change Request', crId);
@@ -145,7 +145,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   if (currentDate.getTime() - changeRequest.changes[0].dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
     throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
-  return changeRequest; 
+  return changeRequest;
 };
 
 /**
