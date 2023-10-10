@@ -1,6 +1,7 @@
-import { Grid, Button, IconButton, TextField, InputLabel, Box, Stack } from '@mui/material';
+import { Grid, Button, IconButton, TextField, Typography, Stack, InputLabel, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FieldArrayWithId, UseFieldArrayRemove, UseFormRegister, UseFieldArrayAppend } from 'react-hook-form';
+import { Title } from '@mui/icons-material';
 
 interface ReactHookEditableListProps {
   name: string;
@@ -23,6 +24,9 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({
     <>
       <Box>
         <Grid container spacing={2}>
+          {
+            //</Grid><Grid container sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }} spacing={2}>
+          }
           {ls.map((_element, i) => {
             return (
               //Grid container with direction "row", and then each item inside is wrapped in a grid-element
