@@ -13,6 +13,7 @@ import {
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
+  createChanges,
   editDescriptionBullets,
   getHighestProjectNumber,
   getUserFullName
@@ -148,159 +149,194 @@ export default class ProjectsService {
     });
     const { wbsElementId } = createdWbsElement;
 
-    // const createdProject = createdWbsElement.project;
-    const createdProject = await prisma.project.findUnique({
-      where: { wbsElementId },
-      include: { goals: true, features: true, otherConstraints: true }
-    });
-    // if it doesn't exist we error
-    if (!createdProject) throw new NotFoundException('Project', wbsElementId);
+    const createdProject = createdWbsElement.project;
+    if (!createdProject) {
+      throw new NotFoundException('Project', wbsElementId);
+    }
 
-    /* FROM UPDATE PROJECT METHOD */
-    const budgetChangeJson = createChange(
-      'budget',
-      createdProject.budget,
+    const { project } = await createChanges(
+      createdProject?.projectId,
+      crId,
+      userId,
+      name,
       budget,
-      crId,
-      user.userId,
-      createdWbsElement.wbsElementId
+      summary,
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      linkCreateArgs,
+      projectLeadId,
+      projectManagerId
     );
+    // const createdProject = await prisma.project.findUnique({
+    //   where: { wbsElementId },
+    //   include: { goals: true, features: true, otherConstraints: true }
+    // });
+    // // if it doesn't exist we error
+    // if (!createdProject) throw new NotFoundException('Project', wbsElementId);
 
-    const summaryChangeJson = createChange('summary', createdProject.summary, summary, crId, userId, wbsElementId);
+    // /* FROM UPDATE PROJECT METHOD */
+    // const budgetChangeJson = createChange(
+    //   'budget',
+    //   createdProject.budget,
+    //   budget,
+    //   crId,
+    //   user.userId,
+    //   createdWbsElement.wbsElementId
+    // );
 
-    const projectManagerChangeJson = createChange(
-      'project manager',
-      await getUserFullName(createdWbsElement.projectManagerId),
-      await getUserFullName(projectManagerId),
-      crId,
-      userId,
-      wbsElementId
-    );
+    // const summaryChangeJson = createChange('summary', createdProject.summary, summary, crId, userId, wbsElementId);
 
-    const projectLeadChangeJson = createChange(
-      'project lead',
-      await getUserFullName(createdWbsElement.projectLeadId),
-      await getUserFullName(projectLeadId),
-      crId,
-      userId,
-      wbsElementId
-    );
+    // const projectManagerChangeJson = createChange(
+    //   'project manager',
+    //   await getUserFullName(createdWbsElement.projectManagerId),
+    //   await getUserFullName(projectManagerId),
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    let changes = [];
+    // const projectLeadChangeJson = createChange(
+    //   'project lead',
+    //   await getUserFullName(createdWbsElement.projectLeadId),
+    //   await getUserFullName(projectLeadId),
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    // add to changes if not undefined
-    if (budgetChangeJson !== undefined) {
-      changes.push(budgetChangeJson);
-    }
-    if (summaryChangeJson !== undefined) {
-      changes.push(summaryChangeJson);
-    }
-    if (projectManagerChangeJson !== undefined) {
-      changes.push(projectManagerChangeJson);
-    }
-    if (projectLeadChangeJson !== undefined) {
-      changes.push(projectLeadChangeJson);
-    }
+    // let changes = [];
 
-    // Dealing with lists
-    const rulesChangeJson = createListChanges(
-      'rules',
-      createdProject.rules.map((rule) => {
-        return {
-          element: rule,
-          comparator: rule,
-          displayValue: rule
-        };
-      }),
-      rules
-        ? rules.map((rule) => {
-            return {
-              element: rule,
-              comparator: rule,
-              displayValue: rule
-            };
-          })
-        : [],
-      crId,
-      userId,
-      wbsElementId
-    );
+    // // add to changes if not undefined
+    // if (budgetChangeJson !== undefined) {
+    //   changes.push(budgetChangeJson);
+    // }
+    // if (summaryChangeJson !== undefined) {
+    //   changes.push(summaryChangeJson);
+    // }
+    // if (projectManagerChangeJson !== undefined) {
+    //   changes.push(projectManagerChangeJson);
+    // }
+    // if (projectLeadChangeJson !== undefined) {
+    //   changes.push(projectLeadChangeJson);
+    // }
 
-    const goalsChangeJson = createListChanges(
-      'goals',
-      descriptionBulletsToChangeListValues(createdProject.goals),
-      goals ? goals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
-      crId,
-      userId,
-      wbsElementId
-    );
+    // // Dealing with lists
+    // const rulesChangeJson = createListChanges(
+    //   'rules',
+    //   createdProject.rules.map((rule) => {
+    //     return {
+    //       element: rule,
+    //       comparator: rule,
+    //       displayValue: rule
+    //     };
+    //   }),
+    //   rules
+    //     ? rules.map((rule) => {
+    //         return {
+    //           element: rule,
+    //           comparator: rule,
+    //           displayValue: rule
+    //         };
+    //       })
+    //     : [],
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    const featuresChangeJson = createListChanges(
-      'features',
-      descriptionBulletsToChangeListValues(createdProject.features),
-      features ? features.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
-      crId,
-      userId,
-      wbsElementId
-    );
+    // const goalsChangeJson = createListChanges(
+    //   'goals',
+    //   descriptionBulletsToChangeListValues(createdProject.goals),
+    //   goals ? goals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    const otherConstraintsChangeJson = createListChanges(
-      'other constraints',
-      descriptionBulletsToChangeListValues(createdProject.otherConstraints),
-      otherConstraints ? otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
-      crId,
-      userId,
-      wbsElementId
-    );
+    // const featuresChangeJson = createListChanges(
+    //   'features',
+    //   descriptionBulletsToChangeListValues(createdProject.features),
+    //   features ? features.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    const linkChanges = createListChanges(
-      'link',
-      createdWbsElement.links ? createdWbsElement.links.map(linkToChangeListValue) : [],
-      linkCreateArgs ? linkCreateArgs.map(linkToChangeListValue) : [],
-      crId,
-      userId,
-      wbsElementId
-    );
+    // const otherConstraintsChangeJson = createListChanges(
+    //   'other constraints',
+    //   descriptionBulletsToChangeListValues(createdProject.otherConstraints),
+    //   otherConstraints ? otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    // add the changes for each of blockers, expected activities, and deliverables
-    changes = changes
-      .concat(rulesChangeJson.changes)
-      .concat(goalsChangeJson.changes)
-      .concat(featuresChangeJson.changes)
-      .concat(otherConstraintsChangeJson.changes)
-      .concat(linkChanges.changes);
+    // const linkChanges = createListChanges(
+    //   'link',
+    //   createdWbsElement.links ? createdWbsElement.links.map(linkToChangeListValue) : [],
+    //   linkCreateArgs ? linkCreateArgs.map(linkToChangeListValue) : [],
+    //   crId,
+    //   userId,
+    //   wbsElementId
+    // );
 
-    // Add the new goals
-    await addDescriptionBullets(
-      goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      createdProject.projectId,
-      'projectIdGoals'
-    );
-    // Add the new features
-    await addDescriptionBullets(
-      featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      createdProject.projectId,
-      'projectIdFeatures'
-    );
-    // Add the new other constraints
-    await addDescriptionBullets(
-      otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      createdProject.projectId,
-      'projectIdOtherConstraints'
-    );
-    // Edit the existing description bullets
-    await editDescriptionBullets(
-      goalsChangeJson.editedElements
-        .concat(featuresChangeJson.editedElements)
-        .concat(otherConstraintsChangeJson.editedElements)
-    );
+    // // add the changes for each of blockers, expected activities, and deliverables
+    // changes = changes
+    //   .concat(rulesChangeJson.changes)
+    //   .concat(goalsChangeJson.changes)
+    //   .concat(featuresChangeJson.changes)
+    //   .concat(otherConstraintsChangeJson.changes)
+    //   .concat(linkChanges.changes);
 
-    // Update the links
-    await updateLinks(linkChanges, createdProject.wbsElementId, userId);
+    // // Add the new goals
+    // await addDescriptionBullets(
+    //   goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    //   createdProject.projectId,
+    //   'projectIdGoals'
+    // );
+    // // Add the new features
+    // await addDescriptionBullets(
+    //   featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    //   createdProject.projectId,
+    //   'projectIdFeatures'
+    // );
+    // // Add the new other constraints
+    // await addDescriptionBullets(
+    //   otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    //   createdProject.projectId,
+    //   'projectIdOtherConstraints'
+    // );
+    // // Edit the existing description bullets
+    // await editDescriptionBullets(
+    //   goalsChangeJson.editedElements
+    //     .concat(featuresChangeJson.editedElements)
+    //     .concat(otherConstraintsChangeJson.editedElements)
+    // );
 
-    await prisma.change.createMany({
-      data: changes
-    });
+    // // Update the links
+    // await updateLinks(linkChanges, createdProject.wbsElementId, userId);
+
+    // await prisma.change.createMany({
+    //   data: changes
+    // });
+
+    // const updatedProject = createChanges(
+    //   createdProject!.projectId,
+    //   crId,
+    //   userId,
+    //   name,
+    //   budget,
+    //   summary,
+    //   rules,
+    //   goals,
+    //   features,
+    //   otherConstraints,
+    //   linkCreateArgs,
+    //   projectLeadId,
+    //   projectManagerId
+    // );
 
     // Set the initial data by updating the project
     await prisma.project.update({

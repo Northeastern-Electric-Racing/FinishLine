@@ -8,7 +8,7 @@ import {
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues
 } from './description-bullets.utils';
-import { updateLinks } from './links.utils';
+import { linkToChangeListValue, updateLinks } from './links.utils';
 import { selectFields } from 'express-validator/src/select-fields';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
@@ -73,17 +73,16 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
 
 export const createChanges = async <T>(
   projectId: number,
-
   crId: number,
   implementerId: number,
   name: string,
-  budget: number,
+  budget: number | null,
   summary: string,
-  newRules: string[],
-  newGoals: { id: number; detail: string }[],
-  newFeatures: { id: number; detail: string }[],
-  newOtherConstraints: { id: number; detail: string }[],
-  newlinkCreateArgs: LinkCreateArgs[],
+  newRules: string[] | null,
+  newGoals: { id: number; detail: string }[] | null,
+  newFeatures: { id: number; detail: string }[] | null,
+  newOtherConstraints: { id: number; detail: string }[] | null,
+  newLinkCreateArgs: LinkCreateArgs[] | null,
   projectLeadId: number | null,
   projectManagerId: number | null
 ) => {
@@ -94,13 +93,7 @@ export const createChanges = async <T>(
       projectId
     },
     include: {
-      wbsElement: {
-        include: {
-          links: {
-            ...linkQueryArgs
-          }
-        }
-      },
+      wbsElement: { include: { links: { ...linkQueryArgs } } },
       goals: true,
       features: true,
       otherConstraints: true
@@ -143,13 +136,15 @@ export const createChanges = async <T>(
         displayValue: rule
       };
     }),
-    newRules.map((rule) => {
-      return {
-        element: rule,
-        comparator: rule,
-        displayValue: rule
-      };
-    }),
+    newRules
+      ? newRules.map((rule) => {
+          return {
+            element: rule,
+            comparator: rule,
+            displayValue: rule
+          };
+        })
+      : [],
     crId,
     implementerId,
     wbsElementId
@@ -163,7 +158,7 @@ export const createChanges = async <T>(
   const goalsChangeJson = createListChanges(
     'goals',
     descriptionBulletsToChangeListValues(originalProject.goals),
-    newGoals.map((goal) => descriptionBulletToChangeListValue(goal)),
+    newGoals ? newGoals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
     crId,
     implementerId,
     wbsElementId
@@ -172,7 +167,7 @@ export const createChanges = async <T>(
   const featuresChangeJson = createListChanges(
     'features',
     descriptionBulletsToChangeListValues(originalProject.features),
-    newFeatures.map((feature) => descriptionBulletToChangeListValue(feature)),
+    newFeatures ? newFeatures.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
     crId,
     implementerId,
     wbsElementId
@@ -181,7 +176,7 @@ export const createChanges = async <T>(
   const otherConstraintsChangeJson = createListChanges(
     'other constraints',
     descriptionBulletsToChangeListValues(originalProject.otherConstraints),
-    newOtherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
+    newOtherConstraints ? newOtherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
     crId,
     implementerId,
     wbsElementId
@@ -190,7 +185,7 @@ export const createChanges = async <T>(
   const linkChanges = createListChanges(
     'link',
     originalProject.wbsElement.links.map(linkToChangeListValue),
-    newlinkCreateArgs.map(linkToChangeListValue),
+    newLinkCreateArgs ? newLinkCreateArgs.map(linkToChangeListValue) : [],
     crId,
     implementerId,
     wbsElementId
@@ -209,9 +204,9 @@ export const createChanges = async <T>(
       wbsElementId
     },
     data: {
-      budget,
+      budget: budget ?? undefined,
       summary,
-      rules: newRules,
+      rules: newRules ?? undefined,
       wbsElement: {
         update: {
           name,
@@ -271,5 +266,5 @@ export const createChanges = async <T>(
     data: changesJson
   });
 
-  return updatedProject;
+  return { project: updatedProject, wbsElementId };
 };
