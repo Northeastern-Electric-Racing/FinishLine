@@ -2,7 +2,7 @@ import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaProject1, prismaProject2, sharedProject1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
@@ -99,7 +99,7 @@ describe('Projects', () => {
   test('createProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(prismaWbsElement1);
+    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({ ...prismaWbsElement1, project: prismaProject2 });
 
     const res = await ProjectsService.createProject(
       batman,

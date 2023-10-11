@@ -70,6 +70,7 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
   return `${user.firstName} ${user.lastName}`;
 };
 
+// Update a project and create changes together
 export const updateProjectAndCreateChanges = async (
   projectId: number,
   crId: number,
