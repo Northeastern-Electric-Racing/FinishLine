@@ -15,7 +15,7 @@ interface ReactHookEditableListProps {
 const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, bulletName, register, append, remove }) => {
   return (
     <>
-      <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+      <Grid container columnSpacing={{ xs: 4, sm: 2, md: 3 }}>
         {ls.map((_element, i) => {
           const formattedName = name
             .split(/(?=[A-Z])/)
@@ -34,7 +34,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
                   placeholder={'Enter ' + formattedName + ' . . .'}
                   sx={{ width: 12 / 12 }}
                   multiline
-                  maxRows={4}
+                  maxRows={3}
                   {...register(`${name}.${i}.detail`)}
                 />
                 <IconButton
