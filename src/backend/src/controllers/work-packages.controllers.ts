@@ -29,13 +29,11 @@ export default class WorkPackagesController {
     }
   }
 
-  // Fetch the work packages for the specified WBS numbers
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const pastedWbs: string = req.body.wbsNums;
-      const wbsNums: WbsNumber[] = pastedWbs.split('\n').map((wbsNum) => validateWBS(wbsNum));
+      const wbsNums: WbsNumber[] = req.body.wbsNums.map((wbsNum: string) => validateWBS(wbsNum));
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums);
-      res.send(200).json(workPackages);
+      res.status(200).json(workPackages);
     } catch (error: unknown) {
       next(error);
     }

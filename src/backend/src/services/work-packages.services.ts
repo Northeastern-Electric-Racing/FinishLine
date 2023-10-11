@@ -140,7 +140,7 @@ export default class WorkPackagesService {
       ...workPackageQueryArgs
     });
 
-    if (!workPackages) {
+    if (!workPackages || workPackages.length !== wbsNums.length) {
       throw new NotFoundException('Work Package', wbsNums.map((wbsNum) => wbsPipe(wbsNum)).join(', '));
     }
 
