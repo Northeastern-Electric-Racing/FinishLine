@@ -14,7 +14,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
 import WorkPackageEditDetails from './WorkPackageEditDetails';
@@ -216,21 +216,23 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             />
           </FormControl>
         </PageBlock>
+        <Typography variant="h5">Expected Activities</Typography>
         <ReactHookEditableList
           name="expectedActivities"
           register={register}
           ls={expectedActivities}
           append={appendExpectedActivity}
           remove={removeExpectedActivity}
-          title="Expected Activities"
+          bulletName="Expected Activities"
         />
+        <Typography variant="h5">Deliverables</Typography>
         <ReactHookEditableList
           name="deliverables"
           register={register}
           ls={deliverables}
           append={appendDeliverable}
           remove={removeDeliverable}
-          title="Deliverables"
+          bulletName="Deliverables"
         />
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>

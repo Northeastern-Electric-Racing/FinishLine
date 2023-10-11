@@ -1,6 +1,7 @@
-import { Grid, Button, IconButton, TextField, Typography } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Grid, Button, IconButton, TextField, InputLabel } from '@mui/material';
+import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import { FieldArrayWithId, UseFieldArrayRemove, UseFormRegister, UseFieldArrayAppend } from 'react-hook-form';
+import { Box } from '@mui/system';
 
 interface ReactHookEditableListProps {
   name: string;
@@ -8,41 +9,43 @@ interface ReactHookEditableListProps {
   register: UseFormRegister<any>;
   append: UseFieldArrayAppend<any, any>;
   remove: UseFieldArrayRemove;
-  title: string;
+  bulletName?: string;
 }
 
-const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, title, register, append, remove }) => {
+const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls, bulletName, register, append, remove }) => {
   return (
     <>
-      <Typography variant="h5">{title}</Typography>
-      <Grid item sx={{ my: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         {ls.map((_element, i) => {
+          const formattedName = name
+            .split(/(?=[A-Z])/)
+            .map((name) => name.charAt(0).toUpperCase() + name.slice(1))
+            .join(' ');
+
           return (
-            <>
-              <Grid item sx={{ display: 'flex', flexDirection: 'column', marginRight: '20px' }}>
-                <Typography variant="body1" sx={{ color: 'Grey', marginBottom: '5px' }}>
-                  {title} {i + 1}
-                </Typography>
-                <Grid item sx={{ display: 'flex', alignItems: 'flex-start', marginBottom: '20px' }}>
-                  <TextField
-                    required
-                    autoComplete="off"
-                    placeholder={'Enter ' + title + ' . . .'}
-                    sx={{ width: '340px' }}
-                    multiline
-                    maxRows={4}
-                    {...register(`${name}.${i}.detail`)}
-                  />
-                  <IconButton
-                    type="button"
-                    onClick={() => remove(i)}
-                    sx={{ mx: 1, my: 0, color: 'red', marginLeft: '15px', borderRadius: '4px', outline: 'solid' }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            </>
+            <Grid item xs={12} md={6} lg={4}>
+              <InputLabel sx={{ marginBottom: '5px' }}>
+                {bulletName ? `${bulletName}` : formattedName} {i + 1}
+              </InputLabel>
+              <Box sx={{ display: 'flex', alignItems: 'start', marginBottom: '20px' }}>
+                <TextField
+                  required
+                  autoComplete="off"
+                  placeholder={'Enter ' + formattedName + ' . . .'}
+                  sx={{ width: 12 / 12 }}
+                  multiline
+                  maxRows={4}
+                  {...register(`${name}.${i}.detail`)}
+                />
+                <IconButton
+                  type="button"
+                  onClick={() => remove(i)}
+                  sx={{ mx: 1, color: 'red', marginLeft: '15px', borderRadius: '4px', outline: 'solid' }}
+                >
+                  <DeleteForeverOutlinedIcon />
+                </IconButton>
+              </Box>
+            </Grid>
           );
         })}
       </Grid>
@@ -50,9 +53,9 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
         variant="contained"
         color="primary"
         onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ width: 'max-content', marginBottom: '20px' }}
+        sx={{ width: 'max-content', marginBottom: '40px' }}
       >
-        + Add {title}
+        {bulletName ? `+ Add ${bulletName}` : '+ Add new bullet'}
       </Button>
     </>
   );
