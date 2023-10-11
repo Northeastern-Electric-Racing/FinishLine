@@ -1,8 +1,8 @@
-import { ExpenseType } from 'shared';
+import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, FormHelperText } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, FormHelperText, Autocomplete, TextField } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -50,6 +50,12 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
+  const refundSourceToAutocompleteOption = (clubAccount: ClubAccount) => {
+    return { id: clubAccount, label: `${clubAccount}` };
+  };
+
+  const refundSourceOptions = Object.values(ClubAccount).map(refundSourceToAutocompleteOption);
+
   return (
     <NERFormModal
       open={showModal}
@@ -68,6 +74,29 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Refund Source</FormLabel>
+        <Controller
+          name="allowedRefundSources"
+          control={control}
+          render={({ field: { onChange, value: formValue } }) => (
+            <Autocomplete
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterSelectedOptions
+              multiple
+              options={refundSourceOptions}
+              getOptionLabel={(option) => option.label}
+              onChange={(_, value) => onChange(value.map((v) => v.id))}
+              value={formValue.map((v: string) => refundSourceOptions.find((o) => o.id === v)!)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  placeholder="Select Allowed Refund Source(s)"
+                  error={!!errors.allowedRefundSources}
+                />
+              )}
+            />
+          )}
+        />
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>
