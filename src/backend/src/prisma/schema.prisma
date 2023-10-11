@@ -498,7 +498,7 @@ model Material {
   dateCreated            DateTime
   userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
   userCreatedId          Int
-  staus                  Material_Status
+  status                 Material_Status
   materialType           Material_Type   @relation(fields: [materialTypeName], references: [name])
   materialTypeName       String
   manufacturer           Manufacturer    @relation(fields: [manufacturerName], references: [name])
