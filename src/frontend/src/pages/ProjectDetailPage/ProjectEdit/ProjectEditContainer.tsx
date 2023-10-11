@@ -15,8 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Button, Box, TextField, IconButton, FormControl } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Grid, Box, FormControl, Stack } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
@@ -213,42 +212,40 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         <PageBlock title="Links">
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
-        <PageBlock title="Goals">
-          <ReactHookEditableList name="goals" register={register} ls={goals} append={appendGoal} remove={removeGoal} />
-        </PageBlock>
-        <PageBlock title="Features">
+        <Stack spacing={4}>
+          <ReactHookEditableList
+            name="goals"
+            register={register}
+            ls={goals}
+            append={appendGoal}
+            remove={removeGoal}
+            title="Goals"
+          />
           <ReactHookEditableList
             name="features"
             register={register}
             ls={features}
             append={appendFeature}
             remove={removeFeature}
+            title="Features"
           />
-        </PageBlock>
-        <PageBlock title="Other Constraints">
           <ReactHookEditableList
             name="constraints"
             register={register}
             ls={constraints}
             append={appendConstraint}
             remove={removeConstraint}
+            title="Other Constraints"
           />
-        </PageBlock>
-        <PageBlock title="Rules">
-          {rules.map((_rule, i) => {
-            return (
-              <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                <TextField required autoComplete="off" {...register(`rules.${i}.rule`)} sx={{ width: 5 / 10 }} />
-                <IconButton type="button" onClick={() => removeRule(i)} sx={{ mx: 1, my: 0 }}>
-                  <DeleteIcon />
-                </IconButton>
-              </Grid>
-            );
-          })}
-          <Button variant="contained" color="success" onClick={() => appendRule({ rule: '' })} sx={{ mt: 2 }}>
-            + ADD NEW RULE
-          </Button>
-        </PageBlock>
+          <ReactHookEditableList
+            name="rules"
+            register={register}
+            ls={rules}
+            append={appendRule}
+            remove={removeRule}
+            title="Rules"
+          />
+        </Stack>
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
             Cancel
