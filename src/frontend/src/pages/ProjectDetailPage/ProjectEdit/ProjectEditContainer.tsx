@@ -234,7 +234,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             remove={removeConstraint}
           />
         </PageBlock>
-
         <PageBlock title="Rules">
           {rules.map((_rule, i) => {
             return (
