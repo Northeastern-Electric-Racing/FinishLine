@@ -244,6 +244,102 @@ const reidChandler: Prisma.UserCreateInput = {
   role: Role.HEAD
 };
 
+const aang: Prisma.UserCreateInput = {
+  firstName: 'Aang',
+  lastName: '',
+  googleAuthId: 'aang',
+  email: 'aang@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const katara: Prisma.UserCreateInput = {
+  firstName: 'Katara',
+  lastName: '',
+  googleAuthId: 'katara',
+  email: 'katara@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const sokka: Prisma.UserCreateInput = {
+  firstName: 'Sokka',
+  lastName: '',
+  googleAuthId: 'sokka',
+  email: 'sokka@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const toph: Prisma.UserCreateInput = {
+  firstName: 'Toph',
+  lastName: 'Beifong',
+  googleAuthId: 'toph',
+  email: 'toph@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const zuko: Prisma.UserCreateInput = {
+  firstName: 'Zuko',
+  lastName: '',
+  googleAuthId: 'zuko',
+  email: 'zuko@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const iroh: Prisma.UserCreateInput = {
+  firstName: 'Uncle',
+  lastName: 'Iroh',
+  googleAuthId: 'iroh',
+  email: 'uncleIroh@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const azula: Prisma.UserCreateInput = {
+  firstName: 'Azula',
+  lastName: '',
+  googleAuthId: 'azula',
+  email: 'azula@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const appa: Prisma.UserCreateInput = {
+  firstName: 'Appa',
+  lastName: '',
+  googleAuthId: 'appa',
+  email: 'appa@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const momo: Prisma.UserCreateInput = {
+  firstName: 'Momo',
+  lastName: '',
+  googleAuthId: 'momo',
+  email: 'momo@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const suki: Prisma.UserCreateInput = {
+  firstName: 'Suki',
+  lastName: '',
+  googleAuthId: 'suki',
+  email: 'suki@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const yue: Prisma.UserCreateInput = {
+  firstName: 'Princess',
+  lastName: 'Yue',
+  googleAuthId: 'yue',
+  email: 'princessYue@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const bumi: Prisma.UserCreateInput = {
+  firstName: 'King',
+  lastName: 'Bumi',
+  googleAuthId: 'bumi',
+  email: 'kingBumi@avatarBenders.com',
+  role: Role.GUEST
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -260,6 +356,18 @@ export const dbSeedAllUsers = {
   greenLantern,
   martianManhunter,
   nightwing,
+  aang,
+  katara,
+  sokka,
+  toph,
+  zuko,
+  iroh,
+  azula,
+  appa,
+  momo,
+  suki,
+  yue,
+  bumi,
   brandonHyde,
   calRipken,
   adleyRutschman,
@@ -268,5 +376,5 @@ export const dbSeedAllUsers = {
   nezamJazayeri,
   ryanHowe,
   anthonyBernardi,
-  reidChandler
+  reidChandler,
 };

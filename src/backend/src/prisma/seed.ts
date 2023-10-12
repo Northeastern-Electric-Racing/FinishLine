@@ -27,6 +27,7 @@ import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
+import { T } from 'vitest/dist/types-198fd1d9';
 
 const prisma = new PrismaClient();
 
@@ -58,7 +59,18 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
-
+  const aang = await prisma.user.create({ data: dbSeedAllUsers.aang });
+  const katara = await prisma.user.create({ data: dbSeedAllUsers.katara });
+  const sokka = await prisma.user.create({ data: dbSeedAllUsers.sokka });
+  const toph = await prisma.user.create({ data: dbSeedAllUsers.toph });
+  const zuko = await prisma.user.create({ data: dbSeedAllUsers.zuko });
+  const iroh = await prisma.user.create({ data: dbSeedAllUsers.iroh });
+  const azula = await prisma.user.create({ data: dbSeedAllUsers.azula });
+  const appa = await prisma.user.create({ data: dbSeedAllUsers.appa });
+  const momo = await prisma.user.create({ data: dbSeedAllUsers.momo });
+  const suki = await prisma.user.create({ data: dbSeedAllUsers.suki });
+  const yue = await prisma.user.create({ data: dbSeedAllUsers.yue });
+  const bumi = await prisma.user.create({ data: dbSeedAllUsers.bumi });
   /**
    * Make initial project so that we can start to create other stuff
    */
@@ -119,6 +131,7 @@ const performSeed: () => Promise<void> = async () => {
    */
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
@@ -145,6 +158,11 @@ const performSeed: () => Promise<void> = async () => {
     [wonderwoman, flash, aquaman, superman, hawkMan, hawkWoman, cyborg, greenLantern, martianManhunter].map(
       (user) => user.userId
     )
+  );
+  await TeamsService.setTeamMembers(
+    aang,
+    avatarBenders.teamId,
+    [aang, katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
