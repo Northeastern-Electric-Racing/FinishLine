@@ -45,13 +45,20 @@ export interface ReimbursementRequest {
   expenseType: ExpenseType;
 }
 
+export enum OtherProductReason {
+  TOOLS_AND_EQUIPMENT = 'TOOLS_AND_EQUIPMENT',
+  COMPETITION = 'COMPETITION',
+  CONSUMABLES = 'CONSUMABLES',
+  GENERAL_STOCK = 'GENERAL_STOCK',
+  SUBSCRIPTIONS_AND_MEMBERSHIPS = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
+}
+
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
   dateDeleted?: Date;
   cost: number;
-  wbsNum: WbsNumber;
-  wbsName: string;
+  reimbursementProductReason: { wbsNum: WbsNumber; wbsName: string } | OtherProductReason;
 }
 
 export interface Vendor {
