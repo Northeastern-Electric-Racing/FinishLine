@@ -85,11 +85,11 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
               options={refundSourceOptions}
               getOptionLabel={(option) => option.label}
               onChange={(_, value) => onChange(value.map((v) => v.id))}
-              value={formValue.map((v: string) => refundSourceOptions.find((o) => o.id === v)!)}
+              value={formValue.map((v: ClubAccount) => refundSourceOptions.find((o) => o.id === v)!)}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  variant="standard"
+                  variant="outlined"
                   placeholder="Select Allowed Refund Source(s)"
                   error={!!errors.allowedRefundSources}
                 />
