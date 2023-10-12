@@ -12,7 +12,7 @@ import { routes } from '../../../utils/routes';
 
 interface BlockedByProps {
   wbsNumber: WbsNumber;
-  handleDelete: any;
+  handleDelete: (wbsNumber: WbsNumber) => void;
 }
 
 const BlockedBy: React.FC<BlockedByProps> = ({ wbsNumber, handleDelete }) => {
