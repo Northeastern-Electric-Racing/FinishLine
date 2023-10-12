@@ -249,7 +249,7 @@ const cristianoRonaldo: Prisma.UserCreateInput = {
   firstName: 'Cristiano',
   lastName: 'Ronaldo',
   email: 'cronaldo@united.com',
-  googleAuthId:'Winger',
+  googleAuthId: 'Winger',
   role: Role.MEMBER
 };
 
