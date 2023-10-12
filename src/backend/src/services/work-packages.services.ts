@@ -447,8 +447,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLeadId,
-            projectManagerId: projectManagerId
+            projectLeadId,
+            projectManagerId
           }
         },
         stage,
