@@ -12,6 +12,7 @@ import {
   Task_Priority,
   Task_Status,
   Team,
+  Vendor,
   WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
@@ -71,6 +72,24 @@ const performSeed: () => Promise<void> = async () => {
   const suki = await prisma.user.create({ data: dbSeedAllUsers.suki });
   const yue = await prisma.user.create({ data: dbSeedAllUsers.yue });
   const bumi = await prisma.user.create({ data: dbSeedAllUsers.bumi });
+  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
+  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
+  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
+  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
+  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
+  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
+  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
+  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
+  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
+  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
+  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
+  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
+  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
+  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
+  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
+  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
+  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
+
   /**
    * Make initial project so that we can start to create other stuff
    */
@@ -167,12 +186,37 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe].map((user) => user.userId)
+    [
+      lamarJackson,
+      nezamJazayeri,
+      ryanHowe,
+      jkDobbins,
+      davidOjabo,
+      markAndrews,
+      odellBeckham,
+      chrisHorton,
+      mikeMacdonald,
+      toddMonken,
+      stephenBisciotti
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
     orioles.teamId,
-    [adleyRutschman, calRipken, anthonyBernardi].map((user) => user.userId)
+    [
+      adleyRutschman,
+      calRipken,
+      anthonyBernardi,
+      brooksRobinson,
+      jimPalmer,
+      eddieMurray,
+      georgeSisler,
+      urbanShocker,
+      kenWilliams,
+      boogPowell,
+      mannyMachado,
+      babyDollJacobson
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
@@ -702,6 +746,10 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
+
+  const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
   const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
 
@@ -716,7 +764,7 @@ const performSeed: () => Promise<void> = async () => {
         wbsNum: {
           carNumber: 1,
           projectNumber: 1,
-          workPackageNumber: 1
+          workPackageNumber: 0
         },
         cost: 200000
       }

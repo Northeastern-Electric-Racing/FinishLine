@@ -228,6 +228,70 @@ const ryanHowe: Prisma.UserCreateInput = {
   role: Role.HEAD
 };
 
+const jkDobbins: Prisma.UserCreateInput = {
+  firstName: 'J.K',
+  lastName: 'Dobbins',
+  email: 'Dobbins.j.k@ravens.com',
+  googleAuthId: 'ravensRB',
+  role: Role.MEMBER
+};
+
+const davidOjabo: Prisma.UserCreateInput = {
+  firstName: 'David',
+  lastName: 'Ojabo',
+  email: 'Ojabo.D@ravens.com',
+  googleAuthId: 'ravensOLB',
+  role: Role.MEMBER
+};
+
+const markAndrews: Prisma.UserCreateInput = {
+  firstName: 'Mark',
+  lastName: 'Andrews',
+  email: 'Andrews.MD@ravens.com',
+  googleAuthId: 'ravensTE',
+  role: Role.MEMBER
+};
+
+const odellBeckham: Prisma.UserCreateInput = {
+  firstName: 'Odell',
+  lastName: 'Beckham',
+  email: 'Beckham.O@ravens.com',
+  googleAuthId: 'ravensWR',
+  role: Role.MEMBER
+};
+
+const chrisHorton: Prisma.UserCreateInput = {
+  firstName: 'Chris',
+  lastName: 'Horton',
+  email: 'Horton.C@ravens.com',
+  googleAuthId: 'ravensSTC',
+  role: Role.LEADERSHIP
+};
+
+const mikeMacdonald: Prisma.UserCreateInput = {
+  firstName: 'Mike',
+  lastName: 'Macdonald',
+  email: 'Macdonald.M@ravens.com',
+  googleAuthId: 'ravensDC',
+  role: Role.MEMBER
+};
+
+const toddMonken: Prisma.UserCreateInput = {
+  firstName: 'Todd',
+  lastName: 'Monken',
+  email: 'Monken.T@ravens.com',
+  googleAuthId: 'ravensOC',
+  role: Role.MEMBER
+};
+
+const stephenBisciotti: Prisma.UserCreateInput = {
+  firstName: 'Stephen',
+  lastName: 'Bisciotti',
+  email: 'Bisciotti.S@ravens.com',
+  googleAuthId: 'ravensOwner',
+  role: Role.HEAD
+};
+
 const anthonyBernardi: Prisma.UserCreateInput = {
   firstName: 'Anthony',
   lastName: 'Bernadi',
@@ -340,6 +404,79 @@ const bumi: Prisma.UserCreateInput = {
   role: Role.GUEST
 };
 
+
+const brooksRobinson: Prisma.UserCreateInput = {
+  firstName: 'Brooks',
+  lastName: 'Robinson',
+  email: 'the.brooksters@orioles.com',
+  googleAuthId: 'fries',
+  role: Role.HEAD
+};
+
+const jimPalmer: Prisma.UserCreateInput = {
+  firstName: 'Jim',
+  lastName: 'Palmer',
+  email: 'jimmy.palms@orioles.com',
+  googleAuthId: 'burger',
+  role: Role.LEADERSHIP
+};
+
+const eddieMurray: Prisma.UserCreateInput = {
+  firstName: 'Eddie',
+  lastName: 'Murray',
+  email: 'eddie.murray@orioles.com',
+  googleAuthId: 'hotdog',
+  role: Role.HEAD
+};
+
+const georgeSisler: Prisma.UserCreateInput = {
+  firstName: 'George',
+  lastName: 'Sisler',
+  email: 'g.sisler@orioles.com',
+  googleAuthId: 'popcorn',
+  role: Role.LEADERSHIP
+};
+
+const urbanShocker: Prisma.UserCreateInput = {
+  firstName: 'Urban',
+  lastName: 'Shocker',
+  email: 'shock.the.game@orioles.com',
+  googleAuthId: 'shocking',
+  role: Role.MEMBER
+};
+
+const kenWilliams: Prisma.UserCreateInput = {
+  firstName: 'Ken',
+  lastName: 'Williams',
+  email: 'justKen@orioles.com',
+  googleAuthId: 'kenough',
+  role: Role.MEMBER
+};
+
+const boogPowell: Prisma.UserCreateInput = {
+  firstName: 'Boog',
+  lastName: 'Powell',
+  email: 'boogs@orioles.com',
+  googleAuthId: 'soda',
+  role: Role.MEMBER
+};
+
+const mannyMachado: Prisma.UserCreateInput = {
+  firstName: 'Manny',
+  lastName: 'Machado',
+  email: 'machoman@orioles.com',
+  googleAuthId: 'macho',
+  role: Role.HEAD
+};
+
+const babyDollJacobson: Prisma.UserCreateInput = {
+  firstName: 'Baby Doll',
+  lastName: 'Jacobson',
+  email: 'bbydoll@orioles.com',
+  googleAuthId: 'babes',
+  role: Role.LEADERSHIP
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -377,4 +514,21 @@ export const dbSeedAllUsers = {
   ryanHowe,
   anthonyBernardi,
   reidChandler,
+  jkDobbins,
+  davidOjabo,
+  markAndrews,
+  odellBeckham,
+  chrisHorton,
+  mikeMacdonald,
+  toddMonken,
+  stephenBisciotti,
+  brooksRobinson,
+  jimPalmer,
+  eddieMurray,
+  georgeSisler,
+  urbanShocker,
+  kenWilliams,
+  boogPowell,
+  mannyMachado,
+  babyDollJacobson
 };
