@@ -73,7 +73,7 @@ export default class WorkPackagesController {
         expectedActivities,
         deliverables,
         projectLead,
-        projectManager
+        projectManagerId
       } = req.body;
 
       let { stage } = req.body;
@@ -95,7 +95,7 @@ export default class WorkPackagesController {
         expectedActivities,
         deliverables,
         projectLead,
-        projectManager
+        projectManagerId
       );
       return res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {

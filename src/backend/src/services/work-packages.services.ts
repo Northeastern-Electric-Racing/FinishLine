@@ -281,8 +281,8 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
-    projectLead: number,
-    projectManager: number
+    projectLeadId: number,
+    projectManagerId: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
     if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
@@ -407,7 +407,7 @@ export default class WorkPackagesService {
     const projectManagerChangeJson = createChange(
       'project manager',
       await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
-      await getUserFullName(projectManager),
+      await getUserFullName(projectManagerId),
       crId,
       userId,
       wbsElementId!
@@ -419,7 +419,7 @@ export default class WorkPackagesService {
     const projectLeadChangeJson = createChange(
       'project lead',
       await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
-      await getUserFullName(projectLead),
+      await getUserFullName(projectLeadId),
       crId,
       userId,
       wbsElementId!
@@ -447,8 +447,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager
+            projectLeadId: projectLeadId,
+            projectManagerId: projectManagerId
           }
         },
         stage,
