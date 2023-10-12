@@ -99,7 +99,7 @@ describe('Projects', () => {
   test('createProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({ ...prismaWbsElement1, project: prismaProject2 });
+    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue({ ...prismaWbsElement1, project: prismaProject2 } as any);
 
     const res = await ProjectsService.createProject(
       batman,
