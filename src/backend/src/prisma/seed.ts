@@ -59,7 +59,7 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
-  const cristianoRonaldo = await prisma.user.create({data: dbSeedAllUsers.cristianoRonaldo});
+  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
   const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
   const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
   const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
@@ -152,7 +152,7 @@ const performSeed: () => Promise<void> = async () => {
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
-  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId))
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -221,7 +221,19 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     cristianoRonaldo,
     plLegends.teamId,
-    [thierryHenry,frankLampard,stevenGerrard, ryanGiggs, paulScholes, alanShearer,ericCantona, patrickVieira, didierDrogba, johnTerry, dennisBergkamp].map((user)=>user.userId)
+    [
+      thierryHenry,
+      frankLampard,
+      stevenGerrard,
+      ryanGiggs,
+      paulScholes,
+      alanShearer,
+      ericCantona,
+      patrickVieira,
+      didierDrogba,
+      johnTerry,
+      dennisBergkamp
+    ].map((user) => user.userId)
   );
 
   /**

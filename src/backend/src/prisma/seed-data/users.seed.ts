@@ -4,7 +4,6 @@
  */
 
 import { Prisma, Role, Theme } from '@prisma/client';
-import { PipelineTransformSource } from 'stream';
 
 const thomasEmrax: Prisma.UserCreateInput = {
   firstName: 'Thomas',
@@ -313,7 +312,7 @@ const cristianoRonaldo: Prisma.UserCreateInput = {
   firstName: 'Cristiano',
   lastName: 'Ronaldo',
   email: 'cronaldo@united.com',
-  googleAuthId:'Winger',
+  googleAuthId: 'Winger',
   role: Role.MEMBER
 };
 
@@ -403,6 +402,7 @@ const dennisBergkamp: Prisma.UserCreateInput = {
   email: 'dbergkamp@arsenal.com',
   googleAuthId: 'DutchMaster',
   role: Role.MEMBER
+};
 
 const brooksRobinson: Prisma.UserCreateInput = {
   firstName: 'Brooks',
