@@ -179,10 +179,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const NonEditingHeadView = () => (
     <Grid container>
-      <Grid item>
+      <Grid item xs={11}>
         <DetailDisplay label="Head" content={fullNamePipe(team.head)} />
       </Grid>
-      <Grid item mt={-1}>
+      <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingHead(true)} />}
       </Grid>
     </Grid>
@@ -190,10 +190,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const NonEditingLeadsView = () => (
     <Grid container>
-      <Grid item xs={11} lg="auto">
+      <Grid item xs={11}>
         <DetailDisplay label="Leads" content={team.leads.map((lead) => fullNamePipe(lead)).join(', ')} />
       </Grid>
-      <Grid item xs={1} mt={-1}>
+      <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingLeads(true)} />}
       </Grid>
     </Grid>
@@ -201,10 +201,10 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const NonEditingMembersView = () => (
     <Grid container>
-      <Grid item xs={11} lg="auto">
+      <Grid item xs={11}>
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
-      <Grid item xs={1} mt={-1}>
+      <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
         {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
       </Grid>
     </Grid>
