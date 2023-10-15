@@ -164,7 +164,7 @@ const ProjectsTable: React.FC = () => {
         }}
         initialState={{
           sorting: {
-            sortModel: [{ field: 'wbsNum', sort: 'asc' }]
+            sortModel: [{ field: 'status', sort: 'asc' }]
           },
           columns: {
             columnVisibilityModel: {
