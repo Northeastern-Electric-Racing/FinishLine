@@ -32,7 +32,7 @@ CREATE TABLE "Material" (
     "userDeletedId" INTEGER,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "userCreatedId" INTEGER NOT NULL,
-    "staus" "Material_Status" NOT NULL,
+    "status" "Material_Status" NOT NULL,
     "materialTypeName" TEXT NOT NULL,
     "manufacturerName" TEXT NOT NULL,
     "manufacturerPartNumber" TEXT NOT NULL,
