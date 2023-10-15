@@ -9,20 +9,18 @@ const projectRouter = express.Router();
 projectRouter.get('/', ProjectsController.getAllProjects);
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
+
 projectRouter.post(
   '/create',
-  nonEmptyString(body('name')),
-  intMinZero(body('crId')),
   intMinZero(body('carNumber')),
   body('teamIds').isArray(),
   intMinZero(body('teamIds.*')),
+  intMinZero(body('crId')),
+  nonEmptyString(body('name')),
   intMinZero(body('budget')),
   nonEmptyString(body('summary')),
-  intMinZero(body('projectLeadId').optional()),
-  intMinZero(body('projectManagerId').optional()),
-  body('links').isArray(),
-  nonEmptyString(body('links.*.url')),
-  nonEmptyString(body('links.*.linkTypeName')),
+  body('rules').isArray(),
+  nonEmptyString(body('rules.*')),
   body('goals').isArray(),
   body('goals.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('goals.*.detail')),
@@ -32,8 +30,11 @@ projectRouter.post(
   body('otherConstraints').isArray(),
   body('otherConstraints.*.id').isInt({ min: -1 }).not().isString(),
   nonEmptyString(body('otherConstraints.*.detail')),
-  body('rules').isArray(),
-  nonEmptyString(body('rules.*')),
+  body('links').isArray(),
+  nonEmptyString(body('links.*.url')),
+  nonEmptyString(body('links.*.linkTypeName')),
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional()),
   validateInputs,
   ProjectsController.createProject
 );
