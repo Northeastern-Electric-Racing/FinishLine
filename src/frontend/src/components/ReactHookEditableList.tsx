@@ -1,7 +1,6 @@
 import { Grid, Button, IconButton, TextField, Typography, Stack, InputLabel, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FieldArrayWithId, UseFieldArrayRemove, UseFormRegister, UseFieldArrayAppend } from 'react-hook-form';
-import { Title } from '@mui/icons-material';
 
 interface ReactHookEditableListProps {
   name: string;
