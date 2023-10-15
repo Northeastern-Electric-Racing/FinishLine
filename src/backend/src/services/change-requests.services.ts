@@ -700,6 +700,7 @@ export default class ChangeRequestsService {
       ...changeRequestQueryArgs
     });
 
+
     if (!foundCR) throw new NotFoundException('Change Request', crId);
 
     if (foundCR.submitterId !== submitter.userId)
@@ -708,6 +709,8 @@ export default class ChangeRequestsService {
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
 
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
+
+    const oldReviewers = foundCR.requestedReviewers
 
     const reviewerIds = reviewers.map((reviewer) => {
       return {
@@ -725,8 +728,12 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
+
     reviewers.forEach(async (user) => {
+      //if (!oldReviewers.includes(user)) {
+      console.log("sending slack noti")
       await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
+      //}
     });
   }
 }
