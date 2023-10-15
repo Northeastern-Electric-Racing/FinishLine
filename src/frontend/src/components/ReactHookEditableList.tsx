@@ -25,7 +25,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({
       <Grid container spacing={2}>
         {ls.map((_element, i) => {
           return (
-            <Grid item sx={{ alignItems: 'center' }} xs={12} md={4}>
+            <Grid item sx={{ alignItems: 'center' }} xs={12} md={6} lg={4}>
               <InputLabel>{bulletName + ' ' + (i + 1)}</InputLabel>
               <Box sx={{ display: 'flex', alignItems: 'start' }}>
                 <TextField
@@ -41,7 +41,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({
                 <IconButton
                   type="button"
                   onClick={() => remove(i)}
-                  sx={{ mx: 1, color: 'red', marginLeft: '15px', borderRadius: '4px', outline: 'solid' }}
+                  sx={{ mx: 1, color: 'red', marginLeft: '15px', borderRadius: '4px', outline: 'solid', marginTop: '3px' }}
                 >
                   <DeleteIcon />
                 </IconButton>
