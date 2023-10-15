@@ -222,7 +222,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           ls={expectedActivities}
           append={appendExpectedActivity}
           remove={removeExpectedActivity}
-          bulletName="Expected Activities"
+          bulletName="Expected Activity"
         />
         <ReactHookEditableList
           name="deliverables"
@@ -230,7 +230,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           ls={deliverables}
           append={appendDeliverable}
           remove={removeDeliverable}
-          bulletName="Deliverables"
+          bulletName="Deliverable"
         />
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
