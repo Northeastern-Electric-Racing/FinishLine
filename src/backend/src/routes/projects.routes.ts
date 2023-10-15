@@ -13,7 +13,7 @@ projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 const projectValidators = [
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('budget')),
+  body('budget').optional().isInt({ min: 0 }).default(0),
   nonEmptyString(body('summary')),
   body('rules').isArray(),
   nonEmptyString(body('rules.*')),
