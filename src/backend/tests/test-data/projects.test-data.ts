@@ -1,4 +1,9 @@
-import { Prisma, WBS_Element_Status as PrismaWBSElementStatus, Project } from '@prisma/client';
+import {
+  Material_Type as PrismaMaterialType,
+  Prisma,
+  WBS_Element_Status as PrismaWBSElementStatus,
+  Project
+} from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
@@ -96,4 +101,10 @@ export const sharedProject1: SharedProject = {
   workPackages: [],
   tasks: [],
   teams: []
+};
+
+export const toolMaterial: PrismaMaterialType = {
+  name: 'Tools',
+  dateCreated: new Date(),
+  creatorId: batman.userId
 };

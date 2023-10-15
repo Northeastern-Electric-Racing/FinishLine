@@ -2,7 +2,7 @@ import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaProject1, sharedProject1, toolMaterial } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
@@ -250,6 +250,22 @@ describe('Projects', () => {
       expect(res).toBe(sharedProject1);
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('materialType', () => {
+    test('Create material type fails if user is not leader', async () => {
+      await expect(ProjectsService.createMaterialType('Tools', wonderwoman)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create material type')
+      );
+    });
+
+    test('Create material type works', async () => {
+      vi.spyOn(prisma.material_Type, 'create').mockResolvedValue(toolMaterial);
+
+      const materialType = await ProjectsService.createMaterialType('Tools', batman);
+      expect(materialType.name).toBe('Tools');
+      expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
   });
 });
