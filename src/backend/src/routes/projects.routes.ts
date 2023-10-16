@@ -13,7 +13,6 @@ projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 const projectValidators = [
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  body('budget').optional().isInt({ min: 0 }).default(0),
   nonEmptyString(body('summary')),
   body('rules').isArray(),
   nonEmptyString(body('rules.*')),
@@ -38,6 +37,7 @@ projectRouter.post(
   intMinZero(body('carNumber')),
   body('teamIds').isArray(),
   intMinZero(body('teamIds.*')),
+  body('budget').optional().isInt({ min: 0 }).default(0),
   ...projectValidators,
   validateInputs,
   ProjectsController.createProject
@@ -45,6 +45,7 @@ projectRouter.post(
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),
+  intMinZero(body('budget')),
   ...projectValidators,
   validateInputs,
   ProjectsController.editProject

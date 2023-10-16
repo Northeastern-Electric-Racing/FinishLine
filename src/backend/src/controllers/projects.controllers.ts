@@ -52,14 +52,14 @@ export default class ProjectsController {
         name,
         summary,
         teamIds,
-        budget || null,
-        links || null,
-        rules || null,
-        goals || null,
-        features || null,
-        otherConstraints || null,
-        projectLeadId || null,
-        projectManagerId || null
+        budget,
+        links,
+        rules,
+        goals,
+        features,
+        otherConstraints,
+        projectLeadId,
+        projectManagerId
       );
 
       return res.status(200).json(wbsPipe(createdWbsNumber));
