@@ -20,10 +20,10 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
         {ls.map((_element, i) => {
           return (
             <Grid item xs={12} md={6} lg={4} key={`${name}-${i}`}>
-              <InputLabel sx={{ marginBottom: '5px' }}>
+              <InputLabel sx={{ marginBottom: '5px', marginTop: '7px' }}>
                 {bulletName} {i + 1}
               </InputLabel>
-              <Box sx={{ display: 'flex', alignItems: 'start', marginBottom: '20px' }}>
+              <Box sx={{ display: 'flex', alignItems: 'start', marginBottom: '10px' }}>
                 <TextField
                   required
                   autoComplete="off"
@@ -36,7 +36,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
                 <IconButton
                   type="button"
                   onClick={() => remove(i)}
-                  sx={{ mx: 1, color: 'red', marginLeft: '15px', borderRadius: '4px', outline: 'solid' }}
+                  sx={{ mx: 1, color: 'red', marginLeft: '15px', marginTop: '3px', borderRadius: '4px', outline: 'solid' }}
                 >
                   <DeleteIcon />
                 </IconButton>
