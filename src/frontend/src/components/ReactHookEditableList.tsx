@@ -49,7 +49,7 @@ const ReactHookEditableList: React.FC<ReactHookEditableListProps> = ({ name, ls,
         variant="contained"
         color="primary"
         onClick={() => append({ bulletId: -1, detail: '' })}
-        sx={{ width: 'max-content', marginBottom: '40px' }}
+        sx={{ width: 'max-content', marginBottom: '30px', marginTop: '10px' }}
       >
         {bulletName ? `+ Add ${bulletName}` : '+ Add new bullet'}
       </NERButton>
