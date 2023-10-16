@@ -4,7 +4,7 @@ import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import { ClubAccount, ExpenseType } from 'shared';
+import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
@@ -38,24 +38,13 @@ const AccountCodesTable = () => {
     >
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Typography>
           {expenseType.allowedRefundSources.reduce((accumulator, source) => {
-            let concatenated = '';
-            switch (source) {
-              case ClubAccount.CASH: {
-                concatenated = accumulator + ' ' + ClubAccount.CASH;
-                break;
-              }
-              case ClubAccount.BUDGET: {
-                concatenated = accumulator + ' ' + ClubAccount.BUDGET;
-                break;
-              }
-            }
-            return concatenated;
+            return accumulator + ' ' + source;
           }, '')}
         </Typography>
       </TableCell>

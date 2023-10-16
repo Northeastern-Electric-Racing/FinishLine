@@ -2,7 +2,7 @@ import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, FormHelperText, Autocomplete, TextField } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -11,8 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
   name: yup.string().required('Account Name is Required'),
-  allowed: yup.boolean().required('Allowed is Required'),
-  refundSource: yup.string().required('Refund Source is Required')
+  allowed: yup.boolean().required('Allowed is Required')
 });
 
 interface AccountCodeFormModalProps {
@@ -50,12 +49,6 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     handleClose();
   };
 
-  const refundSourceToAutocompleteOption = (clubAccount: ClubAccount) => {
-    return { id: clubAccount, label: `${clubAccount}` };
-  };
-
-  const refundSourceOptions = Object.values(ClubAccount).map(refundSourceToAutocompleteOption);
-
   return (
     <NERFormModal
       open={showModal}
@@ -78,23 +71,18 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
           name="allowedRefundSources"
           control={control}
           render={({ field: { onChange, value: formValue } }) => (
-            <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              filterSelectedOptions
+            <Select
               multiple
-              options={refundSourceOptions}
-              getOptionLabel={(option) => option.label}
-              onChange={(_, value) => onChange(value.map((v) => v.id))}
-              value={formValue.map((v: ClubAccount) => refundSourceOptions.find((o) => o.id === v)!)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  placeholder="Select Allowed Refund Source(s)"
-                  error={!!errors.allowedRefundSources}
-                />
-              )}
-            />
+              value={formValue}
+              onChange={(e) => onChange(e.target.value as ClubAccount[])}
+              input={<OutlinedInput />}
+            >
+              {Object.values(ClubAccount).map((refundSource) => (
+                <MenuItem key={refundSource} value={refundSource}>
+                  {refundSource}
+                </MenuItem>
+              ))}
+            </Select>
           )}
         />
       </FormControl>

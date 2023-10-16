@@ -162,58 +162,33 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
           </Grid>
-          <Grid item container xs={6} spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <FormLabel>Expense Type</FormLabel>
-                <Controller
-                  name="expenseTypeId"
-                  control={control}
-                  render={({ field: { onChange, value } }) => {
-                    const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
-                    return (
-                      <NERAutocomplete
-                        id={'expenseType'}
-                        size="medium"
-                        options={mappedExpenseTypes}
-                        value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
-                        placeholder="Expense Type"
-                        onChange={(_event, newValue) => {
-                          newValue ? onChange(newValue.id) : onChange('');
-                        }}
-                      />
-                    );
-                  }}
-                />
-                <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormLabel>Total Cost</FormLabel>
-              <Typography variant="h6">${calculatedTotalCost}</Typography>
-            </Grid>
-          </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <FormLabel>Refund Source</FormLabel>
+              <FormLabel>Expense Type</FormLabel>
               <Controller
-                name="account"
+                name="expenseTypeId"
                 control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select
-                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
-                    value={value}
-                    error={!!errors.account}
-                  >
-                    {refundSources.map((refundSource) => (
-                      <MenuItem key={refundSource} value={refundSource}>
-                        {refundSource}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
+                render={({ field: { onChange, value } }) => {
+                  const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
+                  const onClear = () => {
+                    onChange('');
+                    setValue('account', undefined);
+                  };
+                  return (
+                    <NERAutocomplete
+                      id={'expenseType'}
+                      size="medium"
+                      options={mappedExpenseTypes}
+                      value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                      placeholder=""
+                      onChange={(_event, newValue) => {
+                        newValue ? onChange(newValue.id) : onClear();
+                      }}
+                    />
+                  );
+                }}
               />
-              <FormHelperText error>{errors.account?.message}</FormHelperText>
+              <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={6}>
@@ -247,6 +222,30 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
+              <FormLabel>Refund Source</FormLabel>
+              <Controller
+                name="account"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                    value={value}
+                    disabled={!selectedExpenseType}
+                    error={!!errors.account}
+                  >
+                    {refundSources.map((refundSource) => (
+                      <MenuItem key={refundSource} value={refundSource}>
+                        {refundSource}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
+              <FormHelperText error>{errors.account?.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={6}>
+            <FormControl fullWidth>
               <ReceiptFileInput />
               <input
                 onChange={(e) => {
@@ -271,6 +270,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormLabel>Total Cost</FormLabel>
+            <Typography variant="h6">${calculatedTotalCost}</Typography>
           </Grid>
         </Grid>
         <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
