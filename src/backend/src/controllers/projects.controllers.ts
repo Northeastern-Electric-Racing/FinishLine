@@ -26,18 +26,6 @@ export default class ProjectsController {
     }
   }
 
-  // static async createProject(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     const user: User = await getCurrentUser(res);
-  //     const { crId, carNumber, name, summary, teamId } = req.body;
-
-  //     const createdWbsNumber: WbsNumber = await ProjectsService.createProject(user, crId, carNumber, name, summary, teamId);
-
-  //     return res.status(200).json(wbsPipe(createdWbsNumber));
-  //   } catch (error: unknown) {
-  //     next(error);
-  //   }
-  // }
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
