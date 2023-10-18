@@ -385,7 +385,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       experimentalFeatures={{ newEditingApi: true }}
       isCellEditable={isCellEditable}
       pageSize={pageSize}
-      rowsPerPageOptions={[5, 10, 15, 100]}
+      rowsPerPageOptions={[5, 10, 15, 25, 100]}
       onPageSizeChange={(newPageSize) => {
         localStorage.setItem(tableRowCount, String(newPageSize));
         setPageSize(newPageSize);

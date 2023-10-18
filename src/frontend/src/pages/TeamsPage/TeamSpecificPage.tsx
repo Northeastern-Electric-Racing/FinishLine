@@ -9,6 +9,12 @@ import ActiveProjectCardView from './ProjectCardsView';
 import DescriptionPageBlock from './DescriptionPageBlock';
 import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
+import { Delete } from '@mui/icons-material';
+import { NERButton } from '../../components/NERButton';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isAdmin } from 'shared';
+import { useState } from 'react';
+import DeleteTeamModal from './DeleteTeamModal';
 
 interface ParamTypes {
   teamId: string;
@@ -17,12 +23,29 @@ interface ParamTypes {
 const TeamSpecificPage: React.FC = () => {
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
+  const user = useCurrentUser();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
 
+  const deleteButton = (
+    <NERButton
+      variant="contained"
+      disabled={!isAdmin(user.role)}
+      startIcon={<Delete />}
+      onClick={() => setShowDeleteModal(true)}
+    >
+      Delete
+    </NERButton>
+  );
+
   return (
-    <PageLayout title={`Team ${data.teamName}`} previousPages={[{ name: 'Teams', route: routes.TEAMS }]}>
+    <PageLayout
+      headerRight={isAdmin(user.role) && deleteButton}
+      title={`Team ${data.teamName}`}
+      previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
+    >
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TeamMembersPageBlock team={data} />
@@ -40,6 +63,7 @@ const TeamSpecificPage: React.FC = () => {
           <DescriptionPageBlock team={data} />
         </Grid>
       </Grid>
+      <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setShowDeleteModal(false)} />
     </PageLayout>
   );
 };

@@ -78,7 +78,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         <TableHead>
           <TableRow>
             <TableCell width={'40%'}>
-              <FormLabel>WBS Element</FormLabel>
+              <FormLabel>Project</FormLabel>
             </TableCell>
             <TableCell width={'60%'}>
               <FormLabel>Products</FormLabel>
@@ -165,9 +165,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 onChange={(_event, value) => {
                   if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
                 }}
+                value={null}
+                blurOnSelect={true}
                 id={'append-product-autocomplete'}
                 size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select a Wbs Element" />}
+                renderInput={(params) => <TextField {...params} placeholder="Select a Project" />}
               />
             </TableCell>
           </TableRow>

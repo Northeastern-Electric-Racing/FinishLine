@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
@@ -135,6 +135,11 @@ const ChangeRequestsTable: React.FC = () => {
     }
   ];
 
+  const filterValues = JSON.parse(
+    // sets filter to a default value if no filter is stored in local storage
+    localStorage.getItem('changeRequestsTableFilter') ?? '{"columnField": "crId", "operatorValue": "=", "value": ""}'
+  );
+
   return (
     <div>
       <DataGrid
@@ -182,7 +187,21 @@ const ChangeRequestsTable: React.FC = () => {
             quickFilterProps: { debounceMs: 500 }
           }
         }}
+        onFilterModelChange={(filterModel: GridFilterModel) => {
+          localStorage.setItem('changeRequestsTableFilter', JSON.stringify(filterModel.items[0]));
+        }}
         initialState={{
+          filter: {
+            filterModel: {
+              items: [
+                {
+                  columnField: filterValues.columnField,
+                  operatorValue: filterValues.operatorValue,
+                  value: filterValues.value
+                }
+              ]
+            }
+          },
           sorting: {
             sortModel: [{ field: 'crId', sort: 'desc' }]
           },

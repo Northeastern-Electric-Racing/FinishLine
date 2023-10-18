@@ -143,24 +143,21 @@ describe('Reimbursement Requests', () => {
       // assert
       expect(prismaFindTeamSpy).toBeCalledTimes(1);
       expect(prismaFindTeamSpy).toBeCalledWith({
-        where: { teamId: process.env.FINANCE_TEAM_ID }
+        where: { teamId: process.env.FINANCE_TEAM_ID },
+        include: { head: true, leads: true, members: true }
       });
     });
 
-    test('fails if user is not head of finance team', async () => {
+    test('fails if user is not on finance team', async () => {
       // mock prisma calls
       const prismaGetManySpy = vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([findManyResult]);
-      const prismaFindTeamSpy = vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
 
       // act
-      const action = async () => await ReimbursementRequestService.getPendingAdvisorList(batman);
-      await expect(action).rejects.toEqual(new AccessDeniedException('You are not the head of the finance team!'));
+      const action = async () => await ReimbursementRequestService.getPendingAdvisorList(alfred);
+      await expect(action).rejects.toEqual(new AccessDeniedException(`You are not a member of the finance team!`));
 
       // assert
-      expect(prismaFindTeamSpy).toBeCalledTimes(1);
-      expect(prismaFindTeamSpy).toBeCalledWith({
-        where: { teamId: process.env.FINANCE_TEAM_ID }
-      });
       expect(prismaGetManySpy).toBeCalledTimes(0);
     });
   });
@@ -573,7 +570,7 @@ describe('Reimbursement Requests', () => {
 
   describe('Reimbursement User Tests', () => {
     test('Throws an error if user is a guest', async () => {
-      await expect(ReimbursementRequestService.reimburseUser(100, theVisitor)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(100, '2023-01-11T11:12:33.409Z', theVisitor)).rejects.toThrow(
         new AccessDeniedException('Guests cannot reimburse a user for their expenses.')
       );
     });
@@ -590,7 +587,7 @@ describe('Reimbursement Requests', () => {
         }
       ]);
 
-      await expect(ReimbursementRequestService.reimburseUser(200, batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.reimburseUser(200, '2023-01-01T09:12:33.409Z', batman)).rejects.toThrow(
         new HttpException(400, 'Reimbursement is greater than the total amount owed to the user')
       );
     });
@@ -602,7 +599,7 @@ describe('Reimbursement Requests', () => {
         reimbursementId: 'reimbursementMockId',
         purchaserId: batman.userId,
         amount: reimbursementAmount,
-        dateCreated: new Date(),
+        dateCreated: new Date('2023-01-01'),
         userSubmitted: batman,
         userSubmittedId: batman.userId
       };
@@ -619,7 +616,11 @@ describe('Reimbursement Requests', () => {
       ]);
       vi.spyOn(prisma.reimbursement, 'create').mockResolvedValue(reimbursementMock);
 
-      const newReimbursement = await ReimbursementRequestService.reimburseUser(reimbursementAmount, batman);
+      const newReimbursement = await ReimbursementRequestService.reimburseUser(
+        reimbursementAmount,
+        '2023-01-01T19:12:33.409Z',
+        batman
+      );
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
     });

@@ -11,6 +11,7 @@ import * as descBulletHooks from '../../hooks/description-bullets.hooks';
 import { mockAuth } from '../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../test-support/test-data/users.stub';
 import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
+import { ToastProvider } from '../../components/Toast/ToastProvider';
 
 const testItems: CheckListItem[] = [
   { id: 1, detail: 'testItem1', resolved: false },
@@ -24,7 +25,9 @@ const renderComponent = (items: CheckListItem[] = [], title: string = '', isDisa
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <CheckList items={items} title={title} isDisabled={isDisabled} />
+      <ToastProvider>
+        <CheckList items={items} title={title} isDisabled={isDisabled} />{' '}
+      </ToastProvider>
     </RouterWrapper>
   );
 };
