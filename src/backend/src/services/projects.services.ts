@@ -607,7 +607,7 @@ export default class ProjectsService {
    * Create a new material type
    * @param name the name of the new material type
    * @param submitter the user who is creating the material type
-   * @throws if the submitter is a leader or the material type with given name already exists
+   * @throws if the submitter is not a leader or the material type with the given name already exists
    */
   static async createMaterialType(name: string, submitter: User): Promise<Material_Type> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedAdminOnlyException('create material type');
