@@ -201,7 +201,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const NonEditingMembersView = () => (
     <Grid container>
-      <Grid item xs={11}>
+      <Grid item xs={11} lg="auto" style={{ maxWidth: 'fit-content' }}>
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
       <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
