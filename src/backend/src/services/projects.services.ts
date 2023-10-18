@@ -607,11 +607,20 @@ export default class ProjectsService {
    * Create a new material type
    * @param name the name of the new material type
    * @param submitter the user who is creating the material type
+   * @throws if the submitter is a leader or the material type with given name already exists
    */
   static async createMaterialType(name: string, submitter: User): Promise<Material_Type> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedAdminOnlyException('create material type');
 
-    const materialType = await prisma.material_Type.create({
+    const materialType = await prisma.material_Type.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!!materialType) throw new HttpException(400, `The following material type alraedy exists: ${name}`);
+
+    const newMaterialType = await prisma.material_Type.create({
       data: {
         name,
         dateCreated: new Date(),
@@ -619,6 +628,6 @@ export default class ProjectsService {
       }
     });
 
-    return materialType;
+    return newMaterialType;
   }
 }

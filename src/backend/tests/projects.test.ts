@@ -260,11 +260,20 @@ describe('Projects', () => {
       );
     });
 
+    test('Create material type fails if the material type with the given name already exists'),
+      async () => {
+        vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+
+        await expect(ProjectsService.createMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+          new HttpException(400, 'The following material type alraedy exists: NERSoftwareTools')
+        );
+      };
+
     test('Create material type works', async () => {
       vi.spyOn(prisma.material_Type, 'create').mockResolvedValue(toolMaterial);
 
-      const materialType = await ProjectsService.createMaterialType('Tools', batman);
-      expect(materialType.name).toBe('Tools');
+      const materialType = await ProjectsService.createMaterialType('NERSoftwareTools', batman);
+      expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
   });

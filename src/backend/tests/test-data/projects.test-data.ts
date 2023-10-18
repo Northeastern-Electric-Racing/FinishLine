@@ -104,7 +104,7 @@ export const sharedProject1: SharedProject = {
 };
 
 export const toolMaterial: PrismaMaterialType = {
-  name: 'Tools',
+  name: 'NERSoftwareTools',
   dateCreated: new Date(),
   creatorId: batman.userId
 };
