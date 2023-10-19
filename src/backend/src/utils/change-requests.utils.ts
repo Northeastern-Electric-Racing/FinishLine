@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
 import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
-import { addWeeksToDate, ChangeRequest, ChangeRequestReason } from 'shared';
+import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
