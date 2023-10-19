@@ -1,7 +1,7 @@
 import { useHistory } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { wbsPipe, WorkPackage } from 'shared';
-import { Box, Alert, IconButton, Collapse, Link, Typography, AlertTitle, Card } from '@mui/material';
+import { Box, Alert, IconButton, Collapse, Link, Typography, AlertTitle } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
