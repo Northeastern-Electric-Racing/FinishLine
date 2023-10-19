@@ -1,4 +1,13 @@
-import { Prisma, WBS_Element_Status as PrismaWBSElementStatus, Project } from '@prisma/client';
+import {
+  Assembly,
+  Manufacturer,
+  Material,
+  Material_Type,
+  Prisma,
+  WBS_Element_Status as PrismaWBSElementStatus,
+  Project,
+  Unit
+} from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
@@ -96,4 +105,53 @@ export const sharedProject1: SharedProject = {
   workPackages: [],
   tasks: [],
   teams: []
+};
+
+export const prismaAssembly: Assembly = {
+  assemblyId: '1',
+  name: 'name',
+  pdmFileName: 'fileName',
+  dateDeleted: null,
+  userDeletedId: null,
+  dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1,
+  wbsElementId: 1
+};
+
+export const prismaMaterialType: Material_Type = {
+  name: 'name',
+  dateCreated: new Date('10-18-2023'),
+  creatorId: 1
+};
+
+export const prismaManufacturer: Manufacturer = {
+  name: 'name',
+  dateCreated: new Date('10-18-2023'),
+  creatorId: 1
+};
+
+export const prismaUnit: Unit = {
+  name: 'FT'
+};
+
+export const prismaMaterial: Material = {
+  materialId: 'id',
+  assemblyId: 'assemblyId',
+  name: 'name',
+  wbsElementId: 1,
+  dateDeleted: null,
+  userDeletedId: null,
+  dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1,
+  pdmFileName: 'file',
+  status: 'ORDERED',
+  notes: 'none',
+  materialTypeName: 'type',
+  manufacturerName: 'manufacturer',
+  manufacturerPartNumber: 'partNum',
+  price: 800,
+  subtotal: 400,
+  quantity: 6,
+  unitName: 'FT',
+  linkUrl: 'https://www.google.com'
 };

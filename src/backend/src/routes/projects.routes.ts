@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import { intMinZero, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
+import { Material_Status } from '@prisma/client';
 
 const projectRouter = express.Router();
 
@@ -47,5 +48,30 @@ projectRouter.post(
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
 projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 projectRouter.post('/:wbsNum/favorite', ProjectsController.toggleFavorite);
+projectRouter.post(
+  '/material/:wbsNum/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('assemblyId').optional()),
+  nonEmptyString(
+    body('status').isIn([
+      Material_Status.ORDERED,
+      Material_Status.RECEIVED,
+      Material_Status.SHIPPED,
+      Material_Status.UNORDERED
+    ])
+  ),
+  nonEmptyString(body('materialTypeName')),
+  nonEmptyString(body('manufacturerName')),
+  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('pdmFileName').optional()),
+  intMinZero(body('quantity')),
+  nonEmptyString(body('unitName')),
+  intMinZero(body('price')), // in cents
+  intMinZero(body('subtotal')), // in cents
+  nonEmptyString(body('linkUrl').isURL()),
+  body('notes').isString(),
+  validateInputs,
+  ProjectsController.createMaterial
+);
 
 export default projectRouter;

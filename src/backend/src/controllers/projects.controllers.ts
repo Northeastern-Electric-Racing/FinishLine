@@ -127,4 +127,46 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async createMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const creator = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const id = await ProjectsService.createMaterial(
+        creator,
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsNum
+      );
+      return res.status(200).json({ message: `Successfully created material with id #${id}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
