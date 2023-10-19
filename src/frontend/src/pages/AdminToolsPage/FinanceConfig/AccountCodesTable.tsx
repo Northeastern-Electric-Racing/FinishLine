@@ -43,8 +43,8 @@ const AccountCodesTable = () => {
       </TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Typography>
-          {expenseType.allowedRefundSources.reduce((accumulator, source) => {
-            return accumulator + ' ' + source;
+          {expenseType.allowedRefundSources.reduce((accumulator, source, idx) => {
+            return accumulator + source + (idx < expenseType.allowedRefundSources.length - 1 ? ', ' : '');
           }, '')}
         </Typography>
       </TableCell>
