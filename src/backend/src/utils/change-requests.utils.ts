@@ -1,6 +1,6 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request } from '@prisma/client';
-import { addWeeksToDate, ChangeRequestReason } from 'shared';
+import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
+import { addWeeksToDate, ChangeRequest, ChangeRequestReason } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
@@ -142,7 +142,8 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   if (changeRequest.accepted === null) throw new HttpException(400, 'Cannot implement an unreviewed change request');
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
   if (!changeRequest.dateReviewed) throw new HttpException(400, 'Cannot use an unreviewed change request');
-  if (currentDate.getTime() - changeRequest.changes[0].dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
+  const dateImplemented = getDateImplemented(changeRequest);
+  if (dateImplemented !== undefined && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
     throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
   return changeRequest;
@@ -164,6 +165,14 @@ export const calculateChangeRequestStatus = (
     return ChangeRequestStatus.Denied;
   }
   return ChangeRequestStatus.Open;
+};
+
+export const getDateImplemented = (changeRequest: Change_Request & { changes: Change[] }): Date | undefined => {
+  return changeRequest.changes.reduce(
+    (res: Date | undefined, change) =>
+      !res || change.dateImplemented.valueOf() > res.valueOf() ? change.dateImplemented : res,
+    undefined
+  );
 };
 
 /**
