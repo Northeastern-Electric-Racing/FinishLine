@@ -261,11 +261,21 @@ describe('Projects', () => {
       );
     });
 
-    test('Create Manufacturer successfully returns correct Creator ID', async () => {
+    test('Create Manufacturer throws an error if manufacturer already exists', async () => {
+      vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
+
+      await expect(ProjectsService.createManufacturer(batman, 'Manufacturer1')).rejects.toThrow(
+        new HttpException(400, 'The following manufacturer already exists: Manufacturer1')
+      );
+    });
+
+    test('Create Manufacturer successfully returns correct Name and Creator ID', async () => {
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
 
       const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
 
+      expect(manufacturer.name).toBe(prismaManufacturer1.name);
       expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
     });
   });
