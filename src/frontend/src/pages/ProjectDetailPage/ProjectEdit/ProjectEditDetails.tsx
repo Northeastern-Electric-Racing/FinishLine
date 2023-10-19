@@ -1,5 +1,5 @@
 import { User } from 'shared';
-import { FormControl, FormLabel, Grid } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import NERAutocomplete from '../../../components/NERAutocomplete';
@@ -30,7 +30,10 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   setProjectManager
 }) => {
   return (
-    <PageBlock title="Project Details">
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: '10px' }}>
+        Project Details
+      </Typography>
       <Grid container spacing={3}>
         <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
@@ -79,7 +82,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
       </Grid>
       <Grid container spacing={2}>
-        <Grid item lg={4} xs={12}>
+        <Grid item lg={4} xs={12} mt={{ xs: 3, lg: 1 }}>
           <FormControl fullWidth>
             <FormLabel>Project Summary</FormLabel>
             <ReactHookTextField
@@ -92,7 +95,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={3} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={3} mt={1}>
           <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
@@ -115,7 +118,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           />
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 

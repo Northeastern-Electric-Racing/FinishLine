@@ -173,7 +173,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
       headerRight={
-        <Box textAlign="right" sx={{ my: 2 }}>
+        <Box textAlign="right">
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
