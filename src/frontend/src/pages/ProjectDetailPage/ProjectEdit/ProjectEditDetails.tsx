@@ -1,6 +1,5 @@
 import { User } from 'shared';
 import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
-import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
