@@ -602,4 +602,14 @@ export default class ProjectsService {
       })
     ).map(linkTypeTransformer);
   }
+
+  static async createManufacturer(submitter: User, name: string) {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create manufacturers');
+
+    const manufacturer = await prisma.manufacturer.create({
+      data: { name, dateCreated: new Date(), creatorId: submitter.userId }
+    });
+
+    return manufacturer;
+  }
 }

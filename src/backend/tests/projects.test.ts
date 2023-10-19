@@ -9,6 +9,7 @@ import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -250,6 +251,14 @@ describe('Projects', () => {
       expect(res).toBe(sharedProject1);
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Manufacturer Tests', () => {
+    test('Create Manufacturer throws an error if user is guest', async () => {
+      await expect(ProjectsService.createManufacturer(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
+        new AccessDeniedGuestException('create manufacturers')
+      );
     });
   });
 });
