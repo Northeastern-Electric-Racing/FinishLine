@@ -612,7 +612,7 @@ export default class ProjectsService {
       }
     });
 
-    if (manufacturer) throw new HttpException(400, `The following manufacturer already exists: ${name}`);
+    if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
 
     const newManufacturer = await prisma.manufacturer.create({
       data: { name, dateCreated: new Date(), creatorId: submitter.userId }

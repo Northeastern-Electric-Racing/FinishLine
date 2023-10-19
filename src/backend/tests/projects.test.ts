@@ -255,21 +255,21 @@ describe('Projects', () => {
   });
 
   describe('Manufacturer Tests', () => {
-    test('Create Manufacturer throws an error if user is guest', async () => {
+    test('createManufacturer throws an error if user is a guest', async () => {
       await expect(ProjectsService.createManufacturer(wonderwoman, 'NAME')).rejects.toThrow(
         new AccessDeniedGuestException('create manufacturers')
       );
     });
 
-    test('Create Manufacturer throws an error if manufacturer already exists', async () => {
+    test('createManufacturer throws an error if manufacturer already exists', async () => {
       vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
 
       await expect(ProjectsService.createManufacturer(batman, 'Manufacturer1')).rejects.toThrow(
-        new HttpException(400, 'The following manufacturer already exists: Manufacturer1')
+        new HttpException(400, 'Manufacturer1 already exists as a manufacturer!')
       );
     });
 
-    test('Create Manufacturer successfully returns correct Name and Creator ID', async () => {
+    test('createManufacturer works as intended and successfully returns correct name and creator ID', async () => {
       vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
 
