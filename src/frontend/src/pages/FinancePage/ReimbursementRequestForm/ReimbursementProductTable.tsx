@@ -165,6 +165,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 onChange={(_event, value) => {
                   if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
                 }}
+                value={null}
+                blurOnSelect={true}
                 id={'append-product-autocomplete'}
                 size={'small'}
                 renderInput={(params) => <TextField {...params} placeholder="Select a Project" />}

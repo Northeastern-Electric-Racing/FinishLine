@@ -362,7 +362,7 @@ export default class WorkPackagesService {
     let changes = [];
     // get the changes or undefined for each of the fields
     const nameChangeJson = createChange('name', originalWorkPackage.wbsElement.name, name, crId, userId, wbsElementId!);
-    const stageChangeJson = createChange('stage', originalWorkPackage.stage, stage ?? 'None', crId, userId, wbsElementId!);
+    const stageChangeJson = createChange('stage', originalWorkPackage.stage, stage, crId, userId, wbsElementId!);
     const startDateChangeJson = createChange(
       'start date',
       originalWorkPackage.startDate.toDateString(),
