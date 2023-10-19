@@ -143,7 +143,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
   if (!changeRequest.accepted) throw new HttpException(400, 'Cannot implement a denied change request');
   if (!changeRequest.dateReviewed) throw new HttpException(400, 'Cannot use an unreviewed change request');
   const dateImplemented = getDateImplemented(changeRequest);
-  if (dateImplemented !== undefined && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
+  if (dateImplemented && currentDate.getTime() - dateImplemented.getTime() > 1000 * 60 * 60 * 24 * 5)
     throw new HttpException(400, 'Cannot tie changes to outdated change request');
 
   return changeRequest;
