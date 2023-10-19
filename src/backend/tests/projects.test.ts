@@ -11,7 +11,6 @@ import {
   prismaUnit,
   sharedProject1
 } from './test-data/projects.test-data';
-import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
@@ -32,7 +31,9 @@ const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise
 
 describe('Projects', () => {
   beforeEach(() => {
-    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => prismaChangeRequest1);
+    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(
+      async (_crId) => prismaProject1.wbsElement
+    );
     vi.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
     vi.spyOn(WorkPackagesService, 'deleteWorkPackage').mockImplementation(async (_user: User, _wbsNum: WbsNumber) => {});
   });
@@ -287,7 +288,7 @@ describe('Projects', () => {
       ).rejects.toThrow(new NotFoundException('WBS Element', '1.1.1'));
     });
     test('createMaterial fails when assembly is not found', async () => {
-      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
       vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(null);
 
       await expect(() =>
@@ -311,7 +312,7 @@ describe('Projects', () => {
       ).rejects.toThrow(new NotFoundException('Assembly', 'assemblyName'));
     });
     test('createMaterial fails when material type is not found', async () => {
-      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
       vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(null);
 
@@ -337,7 +338,7 @@ describe('Projects', () => {
     });
   });
   test('createMaterial fails when manufacturer is not found', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
     vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
@@ -363,7 +364,7 @@ describe('Projects', () => {
     ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
   });
   test('createMaterial fails when unit is not found', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
     vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
@@ -390,7 +391,7 @@ describe('Projects', () => {
     ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
   });
   test('createMaterial fails if there is a material of the same name', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
     vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
@@ -418,7 +419,7 @@ describe('Projects', () => {
     ).rejects.toThrow(new HttpException(400, 'There is already a material with the name material'));
   });
   test('createMaterial fails if the creator does not have perms', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
     vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
@@ -446,7 +447,7 @@ describe('Projects', () => {
     ).rejects.toThrow(new AccessDeniedException('create materials'));
   });
   test('createMaterial works', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaChangeRequest1);
+    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
     vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
