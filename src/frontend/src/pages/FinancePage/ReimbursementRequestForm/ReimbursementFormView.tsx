@@ -35,7 +35,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { expenseTypePipe } from '../../../utils/pipes';
+import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 
 interface ReimbursementRequestFormViewProps {
@@ -164,16 +164,20 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <FormLabel>Expense Type</FormLabel>
+              <FormLabel>Account Code</FormLabel>
               <Controller
                 name="expenseTypeId"
                 control={control}
                 render={({ field: { onChange, value } }) => {
-                  const mappedExpenseTypes = allExpenseTypes.map(expenseTypesToAutocomplete);
+                  const mappedExpenseTypes = allExpenseTypes
+                    .filter((expenseType) => expenseType.allowed)
+                    .map(expenseTypesToAutocomplete);
+
                   const onClear = () => {
-                    onChange('');
                     setValue('account', undefined);
+                    onChange('');
                   };
+
                   return (
                     <NERAutocomplete
                       id={'expenseType'}
@@ -235,7 +239,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   >
                     {refundSources.map((refundSource) => (
                       <MenuItem key={refundSource} value={refundSource}>
-                        {refundSource}
+                        {codeAndRefundSourceName(refundSource)}
                       </MenuItem>
                     ))}
                   </Select>

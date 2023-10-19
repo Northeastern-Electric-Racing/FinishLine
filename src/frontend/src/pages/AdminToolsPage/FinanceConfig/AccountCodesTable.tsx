@@ -8,6 +8,7 @@ import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const AccountCodesTable = () => {
   const {
@@ -28,12 +29,13 @@ const AccountCodesTable = () => {
     return <ErrorPage message={expenseTypesError.message} />;
   }
 
-  const accountCodesTableRows = expenseTypes.map((expenseType) => (
+  const accountCodesTableRows = expenseTypes.map((expenseType, index) => (
     <TableRow
       onClick={() => {
         setClickedAccountCode(expenseType);
         setShowEditModal(true);
       }}
+      key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
@@ -42,11 +44,9 @@ const AccountCodesTable = () => {
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        <Typography>
-          {expenseType.allowedRefundSources.reduce((accumulator, source, idx) => {
-            return accumulator + source + (idx < expenseType.allowedRefundSources.length - 1 ? ', ' : '');
-          }, '')}
-        </Typography>
+        {expenseType.allowedRefundSources.map((refundSource, idx) => (
+          <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
+        ))}
       </TableCell>
     </TableRow>
   ));

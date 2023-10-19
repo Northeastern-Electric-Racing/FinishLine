@@ -7,6 +7,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
@@ -66,7 +67,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>
       <FormControl fullWidth>
-        <FormLabel>Refund Source</FormLabel>
+        <FormLabel>Allowed Refund Source</FormLabel>
         <Controller
           name="allowedRefundSources"
           control={control}
@@ -79,7 +80,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
             >
               {Object.values(ClubAccount).map((refundSource) => (
                 <MenuItem key={refundSource} value={refundSource}>
-                  {refundSource}
+                  {codeAndRefundSourceName(refundSource)}
                 </MenuItem>
               ))}
             </Select>
