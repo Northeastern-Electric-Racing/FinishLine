@@ -43,7 +43,7 @@ const ReimbursementRequestTable = ({
               <ColumnHeader title="Sabo ID" />
               <ColumnHeader title="Amount ($)" />
               <ColumnHeader title="Date Submitted" />
-              <ColumnHeader title="Date Delivered" />
+              <ColumnHeader title="Date Item Delivered" />
               <ColumnHeader title="Status" />
             </TableRow>
           </TableHead>

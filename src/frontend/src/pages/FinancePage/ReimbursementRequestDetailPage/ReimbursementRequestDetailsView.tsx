@@ -129,7 +129,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
+            <VerticalDetailDisplay
+              label="Date Item Delivered"
+              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
+            />
           </Grid>
           <Grid
             item
