@@ -745,7 +745,7 @@ const performSeed: () => Promise<void> = async () => {
         wbsNum: {
           carNumber: 1,
           projectNumber: 1,
-          workPackageNumber: 1
+          workPackageNumber: 0
         },
         cost: 200000
       }
