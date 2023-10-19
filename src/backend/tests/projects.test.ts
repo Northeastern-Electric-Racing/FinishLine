@@ -11,6 +11,7 @@ import {
   prismaUnit,
   sharedProject1
 } from './test-data/projects.test-data';
+import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
@@ -31,9 +32,7 @@ const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise
 
 describe('Projects', () => {
   beforeEach(() => {
-    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(
-      async (_crId) => prismaProject1.wbsElement
-    );
+    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => prismaChangeRequest1);
     vi.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
     vi.spyOn(WorkPackagesService, 'deleteWorkPackage').mockImplementation(async (_user: User, _wbsNum: WbsNumber) => {});
   });
@@ -396,7 +395,7 @@ describe('Projects', () => {
     vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
     vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
     vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
-    vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(prismaUnit);
+    vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(prismaMaterial);
 
     await expect(() =>
       ProjectsService.createMaterial(
