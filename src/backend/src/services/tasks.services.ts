@@ -55,20 +55,20 @@ export default class TasksService {
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    const curWorkPackages = requestedWbsElement.project?.workPackages;
+    const curWorkPackages = project.workPackages;
 
-    const isWorkPackageLead = curWorkPackages?.some((workPackage) => {
+    const isWorkPackageLead = curWorkPackages.some((workPackage) => {
       return workPackage.wbsElement.projectLeadId === createdBy.userId;
     });
 
     if (
       !isLeadership(createdBy.role) &&
       !isProjectLeadOrManager &&
-      isWorkPackageLead &&
+      !isWorkPackageLead &&
       !teams.some((team) => isUserOnTeam(team, createdBy))
     ) {
       throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
+        'Only admins, app-admins, project leads, project managers, work package leads, or current team users can create tasks'
       );
     }
 
