@@ -2,7 +2,7 @@ import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaManufacturer1, prismaProject1, sharedProject1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
@@ -256,9 +256,17 @@ describe('Projects', () => {
 
   describe('Manufacturer Tests', () => {
     test('Create Manufacturer throws an error if user is guest', async () => {
-      await expect(ProjectsService.createManufacturer(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
+      await expect(ProjectsService.createManufacturer(wonderwoman, 'NAME')).rejects.toThrow(
         new AccessDeniedGuestException('create manufacturers')
       );
+    });
+
+    test('Create Manufacturer successfully returns correct Creator ID', async () => {
+      vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
+
+      const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
+
+      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
     });
   });
 });
