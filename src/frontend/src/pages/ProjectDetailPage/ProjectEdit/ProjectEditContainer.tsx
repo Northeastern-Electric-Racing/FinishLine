@@ -180,7 +180,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     <PageLayout
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" errors={errors} errorMessage={errors.crId} />}
+      headerRight={<ChangeRequestDropdown control={control} name="crId" errors={errors} />}
     >
       <form
         id="project-edit-form"

@@ -37,7 +37,7 @@ interface ChangeRequestDropdownProps {
   errorMessage?: FieldError;
 }
 
-const ChangeRequestDropdown = ({ control, name, errors, errorMessage }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -66,7 +66,7 @@ const ChangeRequestDropdown = ({ control, name, errors, errorMessage }: ChangeRe
               size={'small'}
               placeholder={'Change Request Id'}
               sx={{ width: 200, textAlign: 'left' }}
-              error={!!errorMessage}
+              error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'bottom',
