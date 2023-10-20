@@ -104,7 +104,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       submitText="Yes"
       onSubmit={handleMarkDelivered}
     >
-      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
     </NERModal>
   );
 
