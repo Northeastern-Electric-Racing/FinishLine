@@ -262,7 +262,7 @@ describe('Projects', () => {
     });
 
     test('createManufacturer throws an error if manufacturer already exists', async () => {
-      vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(prismaManufacturer1);
 
       await expect(ProjectsService.createManufacturer(batman, 'Manufacturer1')).rejects.toThrow(
         new HttpException(400, 'Manufacturer1 already exists as a manufacturer!')

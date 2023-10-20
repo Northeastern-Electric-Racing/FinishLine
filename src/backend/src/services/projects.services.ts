@@ -603,6 +603,13 @@ export default class ProjectsService {
     ).map(linkTypeTransformer);
   }
 
+  /**
+   * Creates a new Manufacturer
+   * @param submitter the user who's creating the manufacturer
+   * @param name the name of the manufacturer
+   * @returns the newly created manufacturer
+   * @throws if the submitter is a guest or the given manufacturer name already exists
+   */
   static async createManufacturer(submitter: User, name: string) {
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create manufacturers');
 
@@ -612,7 +619,7 @@ export default class ProjectsService {
       }
     });
 
-    if (!!manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
+    if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
 
     const newManufacturer = await prisma.manufacturer.create({
       data: { name, dateCreated: new Date(), creatorId: submitter.userId }
