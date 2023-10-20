@@ -170,7 +170,7 @@ export const calculateChangeRequestStatus = (
 export const getDateImplemented = (changeRequest: Change_Request & { changes: Change[] }): Date | undefined => {
   return changeRequest.changes.reduce(
     (res: Date | undefined, change) =>
-      !res || change.dateImplemented.valueOf() > res.valueOf() ? change.dateImplemented : res,
+      !res || change.dateImplemented.valueOf() < res.valueOf() ? change.dateImplemented : res,
     undefined
   );
 };
