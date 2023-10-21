@@ -9,7 +9,8 @@ import {
   AccessDeniedGuestException,
   HttpException,
   NotFoundException,
-  DeletedException
+  DeletedException,
+  AccessDeniedException
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
@@ -610,7 +611,8 @@ export default class ProjectsService {
    * @throws if the submitter is not a leader or the material type with the given name already exists
    */
   static async createMaterialType(name: string, submitter: User): Promise<Material_Type> {
-    if (!isLeadership(submitter.role)) throw new AccessDeniedAdminOnlyException('create material type');
+    if (!isLeadership(submitter.role))
+      throw new AccessDeniedException('Only leadership or above can create a material type');
 
     const materialType = await prisma.material_Type.findUnique({
       where: {

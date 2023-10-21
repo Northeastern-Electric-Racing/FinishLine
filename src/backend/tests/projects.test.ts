@@ -9,6 +9,7 @@ import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -258,7 +259,7 @@ describe('Projects', () => {
   describe('materialType', () => {
     test('Create material type fails if user is not leader', async () => {
       await expect(ProjectsService.createMaterialType('Tools', wonderwoman)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('create material type')
+        new AccessDeniedException('Only leadership or above can create a material type')
       );
     });
 
