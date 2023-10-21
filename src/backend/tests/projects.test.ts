@@ -23,7 +23,9 @@ const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise
 
 describe('Projects', () => {
   beforeEach(() => {
-    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => prismaChangeRequest1);
+    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+      return { ...prismaChangeRequest1, changes: [] };
+    });
     vi.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
     vi.spyOn(WorkPackagesService, 'deleteWorkPackage').mockImplementation(async (_user: User, _wbsNum: WbsNumber) => {});
   });

@@ -447,6 +447,24 @@ const performSeed: () => Promise<void> = async () => {
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 
+  /** Work Package 4 */
+  const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
+    thomasEmrax,
+    project5WbsNumber,
+    'Install Wiring Harness',
+    changeRequest1Id,
+    WorkPackageStage.Install,
+    '04/01/2023',
+    7,
+    [],
+    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
+    ['Wiring harness is functional and installed in the car'],
+    thomasEmrax,
+    WbsElementStatus.Active,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
+
   /**
    * Change Requests
    */

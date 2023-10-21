@@ -12,7 +12,7 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   const fiveDaysAgo = subDays(today, 5);
 
   const filteredRequests = changeRequests.filter(
-    (cr) => cr.dateReviewed && cr.accepted && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
+    (cr) => cr.dateImplemented && cr.accepted && isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today })
   );
 
   // The current user's CRs should be at the top
