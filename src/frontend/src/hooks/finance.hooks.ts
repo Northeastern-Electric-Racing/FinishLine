@@ -44,7 +44,7 @@ export interface CreateReimbursementRequestPayload {
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   totalCost: number;
-  account?: ClubAccount;
+  account: ClubAccount;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
