@@ -275,6 +275,18 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQ
   );
 };
 
+/**
+ * Determines if the user is a finance lead or head.
+ * @param user the user to check
+ * @returns Whether they are a finance lead.
+ */
+export const isAuthUserLeadForFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  if (!process.env.FINANCE_TEAM_ID) return false;
+  const financeTeamId = process.env.FINANCE_TEAM_ID;
+  const { teamAsHead, teamsAsLead } = user;
+  return teamAsHead?.teamId === financeTeamId || isTeamIdInList(financeTeamId, teamsAsLead);
+};
+
 export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
   return user.teamAsHead?.teamId === process.env.FINANCE_TEAM_ID;
 };
