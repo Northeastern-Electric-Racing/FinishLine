@@ -2,13 +2,14 @@ import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { prismaManufacturer1, prismaProject1, sharedProject1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -252,6 +253,32 @@ describe('Projects', () => {
       expect(res).toBe(sharedProject1);
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Manufacturer Tests', () => {
+    test('createManufacturer throws an error if user is a guest', async () => {
+      await expect(ProjectsService.createManufacturer(wonderwoman, 'NAME')).rejects.toThrow(
+        new AccessDeniedGuestException('create manufacturers')
+      );
+    });
+
+    test('createManufacturer throws an error if manufacturer already exists', async () => {
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(prismaManufacturer1);
+
+      await expect(ProjectsService.createManufacturer(batman, 'Manufacturer1')).rejects.toThrow(
+        new HttpException(400, 'Manufacturer1 already exists as a manufacturer!')
+      );
+    });
+
+    test('createManufacturer works as intended and successfully returns correct name and creator ID', async () => {
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
+
+      const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
+
+      expect(manufacturer.name).toBe(prismaManufacturer1.name);
+      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
     });
   });
 });
