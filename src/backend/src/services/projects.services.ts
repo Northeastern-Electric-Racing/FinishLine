@@ -620,7 +620,7 @@ export default class ProjectsService {
       }
     });
 
-    if (!!materialType) throw new HttpException(400, `The following material type alraedy exists: ${name}`);
+    if (!!materialType) throw new HttpException(400, `The following material type already exists: ${name}`);
 
     const newMaterialType = await prisma.material_Type.create({
       data: {

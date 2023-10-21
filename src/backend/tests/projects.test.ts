@@ -267,7 +267,7 @@ describe('Projects', () => {
       vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
 
       await expect(ProjectsService.createMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
-        new HttpException(400, 'The following material type alraedy exists: NERSoftwareTools')
+        new HttpException(400, 'The following material type already exists: NERSoftwareTools')
       );
     });
 
