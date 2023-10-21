@@ -47,6 +47,8 @@ projectRouter.post(
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
 projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 projectRouter.post('/:wbsNum/favorite', ProjectsController.toggleFavorite);
+
+/**************** BOM Section ****************/
 projectRouter.post(
   '/bom/manufacturer/create',
   nonEmptyString(body('name')),
