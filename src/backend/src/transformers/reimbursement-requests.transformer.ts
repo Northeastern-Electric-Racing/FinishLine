@@ -83,7 +83,8 @@ export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayloa
     expenseTypeId: expenseType.expenseTypeId,
     name: expenseType.name,
     code: expenseType.code,
-    allowed: expenseType.allowed
+    allowed: expenseType.allowed,
+    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[]
   };
 };
 

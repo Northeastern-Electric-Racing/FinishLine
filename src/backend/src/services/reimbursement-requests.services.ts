@@ -5,7 +5,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Multer } from 'multer';
-import { Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -130,6 +130,10 @@ export default class ReimbursementRequestService {
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
 
     if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType.name} is not allowed!`);
+
+    if (!expenseType.allowedRefundSources.includes(account)) {
+      throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
+    }
 
     const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
 
@@ -268,6 +272,9 @@ export default class ReimbursementRequestService {
 
     if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
     if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
+    if (!expenseType.allowedRefundSources.includes(account)) {
+      throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
+    }
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
@@ -463,15 +470,23 @@ export default class ReimbursementRequestService {
    * @param name The name of the expense type
    * @param code the expense type's SABO code
    * @param allowed whether or not this expense type is allowed
+   * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
    * @returns the created expense type
    */
-  static async createExpenseType(submitter: User, name: string, code: number, allowed: boolean) {
+  static async createExpenseType(
+    submitter: User,
+    name: string,
+    code: number,
+    allowed: boolean,
+    allowedRefundSources: Club_Accounts[]
+  ) {
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
     const expense = await prisma.expense_Type.create({
       data: {
         name,
         allowed,
-        code
+        code,
+        allowedRefundSources
       }
     });
 
@@ -487,7 +502,14 @@ export default class ReimbursementRequestService {
    * @param submitter the person editing expense type code number
    * @returns the updated expense type
    */
-  static async editExpenseType(expenseTypeId: string, code: number, name: string, allowed: boolean, submitter: User) {
+  static async editExpenseType(
+    expenseTypeId: string,
+    code: number,
+    name: string,
+    allowed: boolean,
+    submitter: User,
+    allowedRefundSources: Club_Accounts[]
+  ) {
     if (!isHead(submitter.role))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
 
@@ -502,7 +524,8 @@ export default class ReimbursementRequestService {
       data: {
         name,
         code,
-        allowed
+        allowed,
+        allowedRefundSources
       }
     });
 

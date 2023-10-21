@@ -128,6 +128,17 @@ export default class ProjectsController {
     }
   }
 
+  static async createManufacturer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdManufacturer = await ProjectsService.createManufacturer(user, name);
+      res.status(200).json(createdManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

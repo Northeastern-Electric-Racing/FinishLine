@@ -90,7 +90,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
             return (
               <TableRow key={key}>
                 <TableCell>
-                  <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)!.label}</Typography>
+                  <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)?.label}</Typography>
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
