@@ -117,13 +117,13 @@ const WorkPackageEditDetails: React.FC<Props> = ({
                         {...params}
                         error={!!error && error.type !== 'clear'}
                         helperText={
-                          error?.type === 'required'
+                          error && error.type === 'required'
                             ? 'Start date is required'
-                            : error?.type === 'notMonday'
+                            : error && error.type === 'notMonday'
                             ? 'Work Packages should always start on Mondays'
-                            : error?.type === 'invalidDate'
+                            : error && error.type === 'invalidDate'
                             ? 'Please enter a valid date (YYYY-MM-DD)'
-                            : ''
+                            : undefined
                         }
                       />
                     )}
