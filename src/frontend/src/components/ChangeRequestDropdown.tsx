@@ -34,7 +34,6 @@ interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
   errors: FieldErrors<ChangeRequest>;
-  errorMessage?: FieldError;
 }
 
 const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownProps) => {
