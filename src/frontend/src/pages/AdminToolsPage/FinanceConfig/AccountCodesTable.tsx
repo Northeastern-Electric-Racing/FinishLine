@@ -8,6 +8,7 @@ import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const AccountCodesTable = () => {
   const {
@@ -28,18 +29,24 @@ const AccountCodesTable = () => {
     return <ErrorPage message={expenseTypesError.message} />;
   }
 
-  const accountCodesTableRows = expenseTypes.map((expenseType) => (
+  const accountCodesTableRows = expenseTypes.map((expenseType, index) => (
     <TableRow
       onClick={() => {
         setClickedAccountCode(expenseType);
         setShowEditModal(true);
       }}
+      key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
+      </TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
+        {expenseType.allowedRefundSources.map((refundSource, idx) => (
+          <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
+        ))}
       </TableCell>
     </TableRow>
   ));
@@ -62,9 +69,10 @@ const AccountCodesTable = () => {
       </Typography>
       <AdminToolTable
         columns={[
-          { name: 'Account Name', width: '50%' },
-          { name: 'Account Code', width: '30%' },
-          { name: 'Allowed', width: '20%' }
+          { name: 'Account Name', width: '25%' },
+          { name: 'Account Code', width: '25%' },
+          { name: 'Allowed', width: '15%' },
+          { name: 'Allowed Refund Sources', width: '35%' }
         ]}
         rows={accountCodesTableRows}
       />

@@ -12,7 +12,7 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, ReimbursementRequest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
 
@@ -26,7 +26,8 @@ export const Parts: PrismaExpenseType = {
   expenseTypeId: 'PARTS',
   name: 'hammer',
   code: 12245,
-  allowed: true
+  allowed: true,
+  allowedRefundSources: [Club_Accounts.CASH, Club_Accounts.BUDGET]
 };
 
 export const GiveMeMyMoney: PrismaReimbursementRequest = {
@@ -146,7 +147,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,
   receiptPictures: [],
-  expenseType: Parts,
+  expenseType: Parts as ExpenseType,
   vendor: PopEyes,
   recipient: userTransformer(batman),
   saboId: undefined,
