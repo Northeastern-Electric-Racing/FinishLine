@@ -124,12 +124,6 @@ export const prismaMaterialType: Material_Type = {
   creatorId: 1
 };
 
-export const prismaManufacturer: Manufacturer = {
-  name: 'name',
-  dateCreated: new Date('10-18-2023'),
-  creatorId: 1
-};
-
 export const prismaUnit: Unit = {
   name: 'FT'
 };
@@ -154,4 +148,16 @@ export const prismaMaterial: Material = {
   quantity: 6,
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
+};
+
+export const prismaManufacturer1: Manufacturer = {
+  name: 'Manufacturer1',
+  dateCreated: new Date('10-1-2023'),
+  creatorId: 1
+};
+
+export const prismaManufacturer2: Manufacturer = {
+  name: 'name',
+  dateCreated: new Date('10-18-2023'),
+  creatorId: 1
 };

@@ -7,6 +7,7 @@
 
 import {
   CR_Type,
+  Club_Accounts,
   PrismaClient,
   Scope_CR_Why_Type,
   Task_Priority,
@@ -447,6 +448,24 @@ const performSeed: () => Promise<void> = async () => {
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 
+  /** Work Package 4 */
+  const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
+    thomasEmrax,
+    project5WbsNumber,
+    'Install Wiring Harness',
+    changeRequest1Id,
+    WorkPackageStage.Install,
+    '04/01/2023',
+    7,
+    [],
+    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
+    ['Wiring harness is functional and installed in the car'],
+    thomasEmrax,
+    WbsElementStatus.Active,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
+
   /**
    * Change Requests
    */
@@ -732,7 +751,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
+  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
+    Club_Accounts.CASH,
+    Club_Accounts.BUDGET
+  ]);
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
@@ -745,7 +767,7 @@ const performSeed: () => Promise<void> = async () => {
         wbsNum: {
           carNumber: 1,
           projectNumber: 1,
-          workPackageNumber: 1
+          workPackageNumber: 0
         },
         cost: 200000
       }

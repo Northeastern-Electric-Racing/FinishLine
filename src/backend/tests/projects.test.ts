@@ -4,7 +4,8 @@ import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import { aquaman, batman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import {
   prismaAssembly,
-  prismaManufacturer,
+  prismaManufacturer1,
+  prismaManufacturer2,
   prismaMaterial,
   prismaMaterialType,
   prismaProject1,
@@ -18,6 +19,7 @@ import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
+  AccessDeniedGuestException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -32,7 +34,9 @@ const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise
 
 describe('Projects', () => {
   beforeEach(() => {
-    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => prismaChangeRequest1);
+    vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
+      return { ...prismaChangeRequest1, changes: [] };
+    });
     vi.spyOn(projectTransformer, 'default').mockReturnValue(sharedProject1);
     vi.spyOn(WorkPackagesService, 'deleteWorkPackage').mockImplementation(async (_user: User, _wbsNum: WbsNumber) => {});
   });
@@ -261,7 +265,7 @@ describe('Projects', () => {
       expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
-
+  
   describe('Materials', () => {
     test('createMaterial fails when wbsElement is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(null);
@@ -335,21 +339,131 @@ describe('Projects', () => {
         )
       ).rejects.toThrow(new NotFoundException('Material Type', 'type'));
     });
-  });
-  test('createMaterial fails when manufacturer is not found', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-    vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
-    vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
-    vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
+    test('createMaterial fails when manufacturer is not found', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
 
-    await expect(() =>
-      ProjectsService.createMaterial(
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          'assemblyName',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          'file',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
+        )
+      ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
+    });
+    test('createMaterial fails when unit is not found', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          'assemblyName',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          'file',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
+        )
+      ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
+    });
+    test('createMaterial fails if there is a material of the same name', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
+      vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(prismaMaterial);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          'assemblyName',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          'file',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
+        )
+      ).rejects.toThrow(new HttpException(400, 'There is already a material with the name material'));
+    });
+    test('createMaterial fails if the creator does not have perms', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
+      vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          theVisitor,
+          'material',
+          'assemblyName',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          'file',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
+        )
+      ).rejects.toThrow(new AccessDeniedException('create materials'));
+    });
+    test('createMaterial works', async () => {
+      vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
+      vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.material, 'create').mockResolvedValue(prismaMaterial);
+
+      const res = await ProjectsService.createMaterial(
         batman,
         'material',
-        'assemblyName',
+        prismaAssembly.assemblyId,
         Material_Status.ORDERED,
-        'type',
-        'manufacturer',
+        prismaMaterialType.name,
+        prismaManufacturer2.name,
         'partNum',
         'file',
         6,
@@ -359,119 +473,35 @@ describe('Projects', () => {
         'https://www.google.com',
         'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-      )
-    ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
+      );
+
+      expect(res).toBeDefined();
+    });
   });
-  test('createMaterial fails when unit is not found', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-    vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
-    vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
-    vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
-    vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(null);
 
-    await expect(() =>
-      ProjectsService.createMaterial(
-        batman,
-        'material',
-        'assemblyName',
-        Material_Status.ORDERED,
-        'type',
-        'manufacturer',
-        'partNum',
-        'file',
-        6,
-        'FT',
-        800,
-        400,
-        'https://www.google.com',
-        'none',
-        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-      )
-    ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
-  });
-  test('createMaterial fails if there is a material of the same name', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-    vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
-    vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
-    vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
-    vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
-    vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(prismaMaterial);
+  describe('Manufacturer Tests', () => {
+    test('createManufacturer throws an error if user is a guest', async () => {
+      await expect(ProjectsService.createManufacturer(wonderwoman, 'NAME')).rejects.toThrow(
+        new AccessDeniedGuestException('create manufacturers')
+      );
+    });
 
-    await expect(() =>
-      ProjectsService.createMaterial(
-        batman,
-        'material',
-        'assemblyName',
-        Material_Status.ORDERED,
-        'type',
-        'manufacturer',
-        'partNum',
-        'file',
-        6,
-        'FT',
-        800,
-        400,
-        'https://www.google.com',
-        'none',
-        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-      )
-    ).rejects.toThrow(new HttpException(400, 'There is already a material with the name material'));
-  });
-  test('createMaterial fails if the creator does not have perms', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-    vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
-    vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
-    vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
-    vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
-    vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
+    test('createManufacturer throws an error if manufacturer already exists', async () => {
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(prismaManufacturer1);
 
-    await expect(() =>
-      ProjectsService.createMaterial(
-        theVisitor,
-        'material',
-        'assemblyName',
-        Material_Status.ORDERED,
-        'type',
-        'manufacturer',
-        'partNum',
-        'file',
-        6,
-        'FT',
-        800,
-        400,
-        'https://www.google.com',
-        'none',
-        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-      )
-    ).rejects.toThrow(new AccessDeniedException('create materials'));
-  });
-  test('createMaterial works', async () => {
-    vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-    vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
-    vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
-    vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer);
-    vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
-    vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
-    vi.spyOn(prisma.material, 'create').mockResolvedValue(prismaMaterial);
+      await expect(ProjectsService.createManufacturer(batman, 'Manufacturer1')).rejects.toThrow(
+        new HttpException(400, 'Manufacturer1 already exists as a manufacturer!')
+      );
+    });
 
-    const res = await ProjectsService.createMaterial(
-      batman,
-      'material',
-      prismaAssembly.assemblyId,
-      Material_Status.ORDERED,
-      prismaMaterialType.name,
-      prismaManufacturer.name,
-      'partNum',
-      'file',
-      6,
-      'FT',
-      800,
-      400,
-      'https://www.google.com',
-      'none',
-      { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-    );
+    test('createManufacturer works as intended and successfully returns correct name and creator ID', async () => {
+      vi.spyOn(prisma.manufacturer, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.manufacturer, 'create').mockResolvedValue(prismaManufacturer1);
 
-    expect(res).toBeDefined();
+      const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
+
+      expect(manufacturer.name).toBe(prismaManufacturer1.name);
+      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+    });
   });
 });

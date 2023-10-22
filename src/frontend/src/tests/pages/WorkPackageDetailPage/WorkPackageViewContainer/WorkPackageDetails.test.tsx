@@ -10,7 +10,7 @@ import {
   exampleResearchWorkPackage,
   exampleDesignWorkPackage,
   exampleManufacturingWorkPackage,
-  exampleIntegrationWorkPackage,
+  exampleInstallWorkPackage,
   exampleWorkPackage5
 } from '../../../test-support/test-data/work-packages.stub';
 import WorkPackageDetails from '../../../../pages/WorkPackageDetailPage/WorkPackageViewContainer/WorkPackageDetails';
@@ -76,12 +76,12 @@ describe('Work Package Details Component', () => {
       expect(chips[0]).toHaveTextContent('Manufacturing');
     });
 
-    it('renders work package integration stage label', () => {
+    it('renders work package install stage label', () => {
       mockHook(false, false, users);
-      const { container } = renderComponent(exampleIntegrationWorkPackage);
+      const { container } = renderComponent(exampleInstallWorkPackage);
       const chips = Array.from(container.getElementsByClassName('MuiChip-label'));
       expect(chips.length).toBe(2);
-      expect(chips[0]).toHaveTextContent('Integration');
+      expect(chips[0]).toHaveTextContent('Install');
     });
   });
 

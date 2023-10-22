@@ -74,4 +74,12 @@ projectRouter.post(
   ProjectsController.createMaterial
 );
 
+/**************** BOM Section ****************/
+projectRouter.post(
+  '/bom/manufacturer/create',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ProjectsController.createManufacturer
+);
+
 export default projectRouter;
