@@ -119,32 +119,41 @@ export default class WorkPackagesService {
       if (isProject(wbsNum)) {
         throw new HttpException(
           404,
-          'WBS Number ' +
-            `${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}` +
-            ' is a project WBS#, not a Work Package WBS#'
+          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is a project WBS#, not a Work Package WBS#`
         );
       }
     }
 
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        wbsElement: {
-          dateDeleted: null,
-          OR: wbsNums.map((wbsNum) => ({
-            carNumber: wbsNum.carNumber,
-            projectNumber: wbsNum.projectNumber,
-            workPackageNumber: wbsNum.workPackageNumber
-          }))
-        }
-      },
-      ...workPackageQueryArgs
+    const workPackagePromises = wbsNums.map(async (wbsNum) => {
+      const workPackages = await prisma.work_Package.findMany({
+        where: {
+          AND: [
+            {
+              wbsElement: {
+                dateDeleted: null
+              }
+            },
+            {
+              wbsElement: {
+                carNumber: wbsNum.carNumber,
+                projectNumber: wbsNum.projectNumber,
+                workPackageNumber: wbsNum.workPackageNumber
+              }
+            }
+          ]
+        },
+        ...workPackageQueryArgs
+      });
+
+      if (!workPackages || workPackages.length !== 1) {
+        throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+      }
+
+      return workPackageTransformer(workPackages[0]);
     });
 
-    if (!workPackages || workPackages.length !== wbsNums.length) {
-      throw new NotFoundException('Work Package', wbsNums.map((wbsNum) => wbsPipe(wbsNum)).join(', '));
-    }
-
-    return workPackages.map(workPackageTransformer);
+    const resolvedWorkPackages = await Promise.all(workPackagePromises);
+    return resolvedWorkPackages;
   }
 
   /**

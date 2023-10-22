@@ -7,7 +7,14 @@ const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
-workPackagesRouter.post('/get-many', WorkPackagesController.getManyWorkPackages);
+workPackagesRouter.post(
+  '/get-many',
+  body('wbsNums').exists().isArray(),
+  body('wbsNums.*.carNumber').exists().isNumeric(),
+  body('wbsNums.*.projectNumber').exists().isNumeric(),
+  body('wbsNums.*.workPackageNumber').exists().isNumeric(),
+  WorkPackagesController.getManyWorkPackages
+);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
