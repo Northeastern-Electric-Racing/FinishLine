@@ -313,7 +313,7 @@ const cristianoRonaldo: Prisma.UserCreateInput = {
   lastName: 'Ronaldo',
   email: 'cronaldo@united.com',
   googleAuthId: 'Winger',
-  role: Role.MEMBER
+  role: Role.HEAD
 };
 
 const thierryHenry: Prisma.UserCreateInput = {
