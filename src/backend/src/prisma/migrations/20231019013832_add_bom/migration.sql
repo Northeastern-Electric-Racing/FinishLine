@@ -25,7 +25,7 @@ CREATE TABLE "Assembly" (
 -- CreateTable
 CREATE TABLE "Material" (
     "materialId" TEXT NOT NULL,
-    "assembyId" TEXT,
+    "assemblyId" TEXT,
     "name" TEXT NOT NULL,
     "wbsElementId" INTEGER NOT NULL,
     "dateDeleted" TIMESTAMP(3),
@@ -81,7 +81,7 @@ ALTER TABLE "Assembly" ADD CONSTRAINT "Assembly_userCreatedId_fkey" FOREIGN KEY 
 ALTER TABLE "Assembly" ADD CONSTRAINT "Assembly_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Material" ADD CONSTRAINT "Material_assembyId_fkey" FOREIGN KEY ("assembyId") REFERENCES "Assembly"("assemblyId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Material" ADD CONSTRAINT "Material_assemblyId_fkey" FOREIGN KEY ("assemblyId") REFERENCES "Assembly"("assemblyId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Material" ADD CONSTRAINT "Material_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
