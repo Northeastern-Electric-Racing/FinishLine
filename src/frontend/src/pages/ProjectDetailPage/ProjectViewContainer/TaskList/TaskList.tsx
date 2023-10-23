@@ -13,7 +13,6 @@ import { routes } from '../../../../utils/routes';
 import { Auth } from '../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { displayEnum } from '../../../../utils/pipes';
 
 interface TaskListProps {
   project: Project;
@@ -56,9 +55,9 @@ const TaskList = ({ project }: TaskListProps) => {
   const [addTask, setAddTask] = useState(false);
   const tasks = project.tasks.sort(sortAscendingDate);
 
-  const backLogTasks = tasks.filter((task: Task) => task.status === displayEnum(TaskStatus.IN_BACKLOG));
-  const inProgressTasks = tasks.filter((task: Task) => task.status === displayEnum(TaskStatus.IN_PROGRESS));
-  const doneTasks = tasks.filter((task: Task) => task.status === displayEnum(TaskStatus.DONE));
+  const backLogTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_BACKLOG);
+  const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.IN_PROGRESS);
+  const doneTasks = tasks.filter((task: Task) => task.status === TaskStatus.DONE);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue);

@@ -15,6 +15,7 @@ import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
+import { displayEnum } from '../../utils/pipes';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -143,7 +144,7 @@ const Settings: React.FC = () => {
             <DetailDisplay label="Email ID" content={String(user.emailId)} />
           </Grid>
           <Grid item md={4} lg={2}>
-            <DetailDisplay label="Role" content={user.role} />
+            <DetailDisplay label="Role" content={displayEnum(user.role)} />
           </Grid>
         </Grid>
       </PageBlock>

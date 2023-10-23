@@ -22,7 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
-import { displayEnum, fullNamePipe } from '../../../../utils/pipes';
+import { fullNamePipe } from '../../../../utils/pipes';
 import { GridColDefStyle } from '../../../../utils/tables';
 import { Row, TaskListDataGridProps } from '../../../../utils/task.utils';
 import React from 'react';
@@ -203,7 +203,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
               disabled={!editTaskPermissions(params.row.task)}
             />
           );
-        } else if (status === displayEnum(TaskStatus.IN_PROGRESS)) {
+        } else if (status === TaskStatus.IN_PROGRESS) {
           actions.push(
             <GridActionsCellItem
               icon={<PauseIcon fontSize="small" />}
