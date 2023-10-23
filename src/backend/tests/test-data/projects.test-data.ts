@@ -114,6 +114,7 @@ export const prismaAssembly1: Assembly = {
   dateDeleted: null,
   userDeletedId: null,
   assemblyId: '1'
+};
 
 export const prismaManufacturer1: Manufacturer = {
   name: 'Manufacturer1',

@@ -135,9 +135,11 @@ export default class ProjectsController {
     try {
       const createAssembly = await ProjectsService.createAssembly(name, pdmFileName, user, wbsNum);
       res.status(200).json(createAssembly);
+    } catch (error: unknown) {
+      next(error);
     }
   }
-  
+
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

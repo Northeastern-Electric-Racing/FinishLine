@@ -7,7 +7,6 @@ import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
-  AccessDeniedException,
   HttpException,
   NotFoundException,
   DeletedException,
@@ -657,7 +656,8 @@ export default class ProjectsService {
 
     return assembly;
   }
-  
+
+  /*
    * Creates a new Manufacturer
    * @param submitter the user who's creating the manufacturer
    * @param name the name of the manufacturer
