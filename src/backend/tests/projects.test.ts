@@ -10,7 +10,7 @@ import {
   prismaManufacturer1
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
-import { justiceLeague, prismaTeam1 } from './test-data/teams.test-data';
+import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
@@ -290,8 +290,8 @@ describe('Projects', () => {
     test('createAssembly fails when project has been deleted', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
         wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
-        projectId: prismaProject1.projectId,
-        teams: justiceLeague
+        projectId: prismaProject1.projectId
+        //teams: justiceLeague
       } as any);
       await expect(
         async () =>
@@ -336,8 +336,11 @@ describe('Projects', () => {
     });
 
     test('createAssembly works if the submitter is admin', async () => {
-      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, teams: [{ prismaTeam1 }] });
-      //vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
       vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
 
       // no error, no return value
