@@ -30,7 +30,7 @@ import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
-import { isUserPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
+import { isUserPartOfTeams } from '../utils/teams.utils';
 
 export default class ProjectsService {
   /**
