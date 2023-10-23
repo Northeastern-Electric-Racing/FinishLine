@@ -110,6 +110,10 @@ model User {
   createdLinkTypes          LinkType[]              @relation(name: "linkTypeCreator")
   deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
   createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
+  deletedAssemblies         Assembly[]              @relation(name: "assemblyDeleter")
+  createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
+  deletedMaterials          Material[]              @relation(name: "materialDeleter")
+  createdMaterials          Material[]              @relation(name: "materialCreator")
 }
 
 model Team {
@@ -252,6 +256,8 @@ model WBS_Element {
   tasks                 Task[]
   reimbursementProducts Reimbursement_Product[]
   links                 Link[]                  @relation(name: "links")
+  assembies             Assembly[]
+  materials             Material[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -450,4 +456,74 @@ model User_Secure_Settings {
   state                String
   zipcode              String
   phoneNumber          String @unique
+}
+
+enum Material_Status {
+  RECEIVED
+  ORDERED
+  SHIPPED
+  UNORDERED
+}
+
+model Unit {
+  name      String     @id
+  materials Material[]
+}
+
+model Assembly {
+  assemblyId    String      @id @default(uuid())
+  name          String      @unique
+  pdmFileName   String
+  dateDeleted   DateTime?
+  userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
+  userDeletedId Int?
+  dateCreated   DateTime
+  userCreated   User        @relation(fields: [userCreatedId], references: [userId], name: "assemblyCreator")
+  userCreatedId Int
+  wbsElement    WBS_Element @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId  Int
+  materials     Material[]
+}
+
+model Material {
+  materialId             String          @id @default(uuid())
+  assemby                Assembly?       @relation(fields: [assembyId], references: [assemblyId])
+  assembyId              String?
+  name                   String          @unique
+  wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId           Int
+  dateDeleted            DateTime?
+  userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeletedId          Int?
+  dateCreated            DateTime
+  userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreatedId          Int
+  staus                  Material_Status
+  materialType           Material_Type   @relation(fields: [materialTypeName], references: [name])
+  materialTypeName       String
+  manufacturer           Manufacturer    @relation(fields: [manufacturerName], references: [name])
+  manufacturerName       String
+  manufacturerPartNumber String
+  pdmFileName            String?
+  quantity               Int
+  quantityUnit           Unit?           @relation(fields: [unitName], references: [name])
+  unitName               String?
+  price                  Int
+  subtotal               Int
+  linkUrl                String
+  notes                  String
+}
+
+model Material_Type {
+  name        String     @id
+  dateCreated DateTime
+  creatorId   Int
+  materials   Material[]
+}
+
+model Manufacturer {
+  name        String     @id
+  dateCreated DateTime
+  creatorId   Int
+  materials   Material[]
 }

@@ -48,8 +48,6 @@ const justiceLeague = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-
-
 const plLegends = (headId: number): Prisma.TeamCreateArgs => {
   return {
     data: {
@@ -59,7 +57,6 @@ const plLegends = (headId: number): Prisma.TeamCreateArgs => {
     }
   };
 };
-
 
 const huskies = (headId: number): Prisma.TeamCreateArgs => {
   return {
