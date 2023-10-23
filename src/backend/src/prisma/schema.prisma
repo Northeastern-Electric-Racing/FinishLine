@@ -474,7 +474,7 @@ model Unit {
 model Assembly {
   assemblyId    String      @id @default(uuid())
   name          String      @unique
-  pdmFileName   String
+  pdmFileName   String?
   dateDeleted   DateTime?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
   userDeletedId Int?

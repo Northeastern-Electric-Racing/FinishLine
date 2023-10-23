@@ -267,11 +267,16 @@ describe('Projects', () => {
     test('createAssembly fails given invalid project wbs number', async () => {
       await expect(
         async () =>
-          await ProjectsService.createAssembly('new assembly', 'file.txt', batman, {
-            carNumber: 1,
-            projectNumber: 1,
-            workPackageNumber: 1
-          })
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 1
+            },
+            'file.txt'
+          )
       ).rejects.toThrow(new HttpException(400, `1.1.1 is not a valid project WBS #!`));
     });
 
@@ -279,11 +284,16 @@ describe('Projects', () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
       await expect(
         async () =>
-          await ProjectsService.createAssembly('new assembly', 'file.txt', batman, {
-            carNumber: 1,
-            projectNumber: 1,
-            workPackageNumber: 0
-          })
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
       ).rejects.toThrow(new NotFoundException('Project', '1.1.0'));
     });
 
@@ -295,11 +305,16 @@ describe('Projects', () => {
       } as any);
       await expect(
         async () =>
-          await ProjectsService.createAssembly('new assembly', 'file.txt', batman, {
-            carNumber: 1,
-            projectNumber: 1,
-            workPackageNumber: 0
-          })
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
       ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
     });
 
@@ -311,11 +326,16 @@ describe('Projects', () => {
       } as any);
       await expect(
         async () =>
-          await ProjectsService.createAssembly('new assembly', 'file.txt', wonderwoman, {
-            carNumber: 1,
-            projectNumber: 1,
-            workPackageNumber: 0
-          })
+          await ProjectsService.createAssembly(
+            'new assembly',
+            wonderwoman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
       ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
     });
 
@@ -327,11 +347,16 @@ describe('Projects', () => {
       } as any);
       await expect(
         async () =>
-          await ProjectsService.createAssembly('new assembly', 'file.txt', aquaman, {
-            carNumber: 1,
-            projectNumber: 1,
-            workPackageNumber: 0
-          })
+          await ProjectsService.createAssembly(
+            'new assembly',
+            aquaman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
       ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
     });
 
@@ -344,11 +369,16 @@ describe('Projects', () => {
       vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
 
       // no error, no return value
-      await ProjectsService.createAssembly('new assembly', 'file.txt', batman, {
-        carNumber: 1,
-        projectNumber: 1,
-        workPackageNumber: 0
-      });
+      await ProjectsService.createAssembly(
+        'new assembly',
+        batman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
     });
 
     test('createAssembly works if the submitter is on the team', async () => {
@@ -357,11 +387,16 @@ describe('Projects', () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
 
       // no error, no return value
-      await ProjectsService.createAssembly('new assembly', 'file.txt', superman, {
-        carNumber: 1,
-        projectNumber: 1,
-        workPackageNumber: 0
-      });
+      await ProjectsService.createAssembly(
+        'new assembly',
+        superman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
     });
   });
 

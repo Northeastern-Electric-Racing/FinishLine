@@ -616,9 +616,9 @@ export default class ProjectsService {
    */
   static async createAssembly(
     name: string,
-    pdmFileName: string | '',
     userCreated: User,
-    wbsNumber: WbsNumber
+    wbsNumber: WbsNumber,
+    pdmFileName?: string
   ): Promise<Assembly> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
@@ -647,10 +647,10 @@ export default class ProjectsService {
     const assembly = await prisma.assembly.create({
       data: {
         name,
-        pdmFileName,
         dateCreated: new Date(),
         userCreatedId,
-        wbsElementId
+        wbsElementId,
+        pdmFileName
       }
     });
 
