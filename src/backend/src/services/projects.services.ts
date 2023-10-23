@@ -1,5 +1,5 @@
-import { User } from '@prisma/client';
-import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { Material_Type, User } from '@prisma/client';
+import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -9,7 +9,8 @@ import {
   AccessDeniedGuestException,
   HttpException,
   NotFoundException,
-  DeletedException
+  DeletedException,
+  AccessDeniedException
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
@@ -626,5 +627,34 @@ export default class ProjectsService {
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Create a new material type
+   * @param name the name of the new material type
+   * @param submitter the user who is creating the material type
+   * @throws if the submitter is not a leader or the material type with the given name already exists
+   */
+  static async createMaterialType(name: string, submitter: User): Promise<Material_Type> {
+    if (!isLeadership(submitter.role))
+      throw new AccessDeniedException('Only leadership or above can create a material type');
+
+    const materialType = await prisma.material_Type.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!!materialType) throw new HttpException(400, `The following material type already exists: ${name}`);
+
+    const newMaterialType = await prisma.material_Type.create({
+      data: {
+        name,
+        dateCreated: new Date(),
+        creatorId: submitter.userId
+      }
+    });
+
+    return newMaterialType;
   }
 }
