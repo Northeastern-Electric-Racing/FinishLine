@@ -1,4 +1,4 @@
-import { User, Assembly, Team } from '@prisma/client';
+import { User, Assembly } from '@prisma/client';
 import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -49,7 +49,7 @@ export default class ProjectsService {
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
   static async getSingleProject(wbsNumber: WbsNumber): Promise<Project> {
-    //if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
