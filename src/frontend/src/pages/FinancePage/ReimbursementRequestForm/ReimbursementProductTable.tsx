@@ -127,7 +127,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
                                 onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                sx={{ width: '50%' }}
+                                sx={{ width: '50%', 
+                                      mt: {xs: '10px' } }}
                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
                             )}
