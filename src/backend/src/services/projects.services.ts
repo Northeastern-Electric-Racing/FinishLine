@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User, Assembly, Team } from '@prisma/client';
 import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -7,6 +7,7 @@ import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
+  AccessDeniedException,
   HttpException,
   NotFoundException,
   DeletedException
@@ -29,6 +30,7 @@ import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
+import { isUserPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 
 export default class ProjectsService {
   /**
@@ -47,7 +49,7 @@ export default class ProjectsService {
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
   static async getSingleProject(wbsNumber: WbsNumber): Promise<Project> {
-    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    //if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
@@ -601,5 +603,57 @@ export default class ProjectsService {
         ...linkTypeQueryArgs
       })
     ).map(linkTypeTransformer);
+  }
+
+  /**
+   * Create an assembly
+   * @param name The name of the assembly to be created
+   * @param pdmFileName The name of the file holding the assembly
+   * @param userCreated The user creating the assembly
+   * @param wbsElementId The
+   * @returns the project that the user has favorited/unfavorited
+   * @throws if the project wbs doesn't exist or is not corresponding to a project
+   */
+  static async createAssembly(
+    name: string,
+    pdmFileName: string | '',
+    userCreated: User,
+    wbsNumber: WbsNumber
+  ): Promise<Assembly> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const { teams, wbsElementId } = project;
+
+    if (!isAdmin(userCreated.role) || !isUserPartOfTeams(teams, userCreated))
+      throw new AccessDeniedException('Users must be admin, or assigned to the team to create assemblies');
+
+    const userCreatedId = userCreated.userId;
+
+    const assembly = await prisma.assembly.create({
+      data: {
+        name,
+        pdmFileName,
+        dateCreated: new Date(),
+        userCreatedId,
+        wbsElementId
+      }
+    });
+
+    return assembly;
   }
 }

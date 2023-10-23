@@ -127,4 +127,16 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async createAssembly(req: Request, res: Response, next: NextFunction) {
+    const user: User = await getCurrentUser(res);
+    const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+    const { name, pdmFileName } = req.body;
+    try {
+      const createAssembly = await ProjectsService.createAssembly(name, pdmFileName, user, wbsNum);
+      res.status(200).json(createAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
