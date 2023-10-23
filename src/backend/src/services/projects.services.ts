@@ -639,7 +639,16 @@ export default class ProjectsService {
 
     const { teams, wbsElementId } = project;
 
-    if (!isAdmin(userCreated.role) || !isUserPartOfTeams(teams, userCreated))
+    if (
+      !isAdmin(userCreated.role) &&
+      !teams.some(
+        (team) =>
+          team.headId === userCreated.userId ||
+          team.leads.map((lead) => lead.userId).includes(userCreated.userId) ||
+          team.members.map((member) => member.userId).includes(userCreated.userId)
+      )
+    )
+      //&& !isUserPartOfTeams(teams, userCreated))
       throw new AccessDeniedException('Users must be admin, or assigned to the team to create assemblies');
 
     const userCreatedId = userCreated.userId;

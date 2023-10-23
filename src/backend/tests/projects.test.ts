@@ -306,7 +306,8 @@ describe('Projects', () => {
     test('createAssembly fails when no permissions', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
         wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
-        projectId: prismaProject1.projectId
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
       } as any);
       await expect(
         async () =>
@@ -321,7 +322,8 @@ describe('Projects', () => {
     test('createAssembly fails when no permissions - leadership', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
         wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
-        projectId: prismaProject1.projectId
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
       } as any);
       await expect(
         async () =>
@@ -334,7 +336,8 @@ describe('Projects', () => {
     });
 
     test('createAssembly works if the submitter is admin', async () => {
-      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, teams: [{ prismaTeam1 }] });
+      //vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
       vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
 
       // no error, no return value
