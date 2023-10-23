@@ -76,10 +76,11 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
     0
   );
-  const totalOwed = displayedReimbursementRequests.reduce(
-    (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
-    0
-  );
+  const totalOwed =
+    displayedReimbursementRequests.reduce(
+      (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
+      0
+    ) - totalReceived;
   const percentRefunded = (totalReceived / totalOwed) * 100;
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
@@ -98,7 +99,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
       >
         <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
           <RefundHeader header="Total Received" data={`$${centsToDollar(totalReceived)}`} />
-          <RefundHeader header="Total Owed" data={`$${centsToDollar(totalOwed)}`} />
+          <RefundHeader header="Currently Owed" data={`$${centsToDollar(totalOwed)}`} />
         </Box>
         <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
         <TableContainer component={Paper}>
