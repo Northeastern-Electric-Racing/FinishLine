@@ -1,6 +1,5 @@
 import {
   Assembly,
-  Manufacturer,
   Material,
   Material_Type as PrismaMaterialType,
   Prisma,
