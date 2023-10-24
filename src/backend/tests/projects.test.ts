@@ -19,7 +19,6 @@ import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
-  AccessDeniedException,
   AccessDeniedGuestException,
   AccessDeniedException,
   DeletedException,
