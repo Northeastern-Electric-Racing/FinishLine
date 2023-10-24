@@ -10,7 +10,8 @@ import {
   prismaMaterialType,
   prismaProject1,
   prismaUnit,
-  sharedProject1
+  sharedProject1,
+  toolMaterial
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
@@ -20,6 +21,7 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   AccessDeniedGuestException,
+  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -502,6 +504,31 @@ describe('Projects', () => {
 
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
       expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+    });
+  });
+
+  describe('materialType', () => {
+    test('Create material type fails if user is not leader', async () => {
+      await expect(ProjectsService.createMaterialType('Tools', wonderwoman)).rejects.toThrow(
+        new AccessDeniedException('Only leadership or above can create a material type')
+      );
+    });
+
+    test('Create material type fails if the material type with the given name already exists', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+
+      await expect(ProjectsService.createMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new HttpException(400, 'The following material type already exists: NERSoftwareTools')
+      );
+    });
+
+    test('Create material type works', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.material_Type, 'create').mockResolvedValue(toolMaterial);
+
+      const materialType = await ProjectsService.createMaterialType('NERSoftwareTools', batman);
+      expect(materialType.name).toBe('NERSoftwareTools');
+      expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
   });
 });

@@ -180,4 +180,15 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async createMaterialType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdMaterialType = await ProjectsService.createMaterialType(name, user);
+      res.status(200).json(createdMaterialType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

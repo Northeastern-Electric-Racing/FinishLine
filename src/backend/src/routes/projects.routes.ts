@@ -81,5 +81,6 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createManufacturer
 );
+projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
 
 export default projectRouter;
