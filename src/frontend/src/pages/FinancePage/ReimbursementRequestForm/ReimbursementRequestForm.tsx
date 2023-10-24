@@ -47,7 +47,7 @@ const schema = yup.object().shape({
       yup.object().shape({
         wbsNum: yup.object().required('WBS Number is required'),
         name: yup.string().required('Description is required'),
-        cost: yup.number().required('Amount is required').moreThan(0, 'Amount must be greater than 0')
+        cost: yup.number().required('Amount is required').min(0.1, 'Amount must be greater than 0')
       })
     )
     .required('reimbursement products required')
