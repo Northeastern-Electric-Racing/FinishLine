@@ -137,8 +137,5 @@
     ]
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@prisma/client": "latest"
-  }
+  "license": "ISC"
 }
