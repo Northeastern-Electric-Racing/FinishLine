@@ -30,6 +30,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
+import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -146,12 +147,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
+
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
       )}
       {deleteModalShow && (
         <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
       )}
+      <OtherChangeRequestsPopupTabs changeRequest={changeRequest} />
     </PageLayout>
   );
 };
