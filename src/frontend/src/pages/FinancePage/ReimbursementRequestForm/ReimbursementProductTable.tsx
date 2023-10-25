@@ -6,6 +6,7 @@ import {
   Autocomplete,
   Button,
   FormLabel,
+  FormHelperText,
   IconButton,
   InputAdornment,
   Table,
@@ -97,41 +98,51 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                          <Controller
-                            name={`reimbursementProducts.${product.index}.name`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                label={'Description'}
-                                autoComplete="off"
-                                size={'small'}
-                                variant={'outlined'}
-                                sx={{ width: '50%', marginRight: '4px' }}
-                                error={!!errors.reimbursementProducts?.[product.index]?.name}
-                              />
-                            )}
-                          />
-                          <Controller
-                            name={`reimbursementProducts.${product.index}.cost`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                label={'Cost'}
-                                size={'small'}
-                                variant={'outlined'}
-                                type="number"
-                                autoComplete="off"
-                                InputProps={{
-                                  startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                }}
-                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                sx={{ width: '50%' }}
-                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                              />
-                            )}
-                          />
+                          <div style={{ display: 'flex', flexDirection: 'column', width: '50%', marginRight: '4px' }}>
+                            <Controller
+                              name={`reimbursementProducts.${product.index}.name`}
+                              control={control}
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label={'Description'}
+                                  autoComplete="off"
+                                  size={'small'}
+                                  variant={'outlined'}
+                                  sx={{ width: '100%' }}
+                                  error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                />
+                              )}
+                            />
+                            <FormHelperText error>
+                              {errors.reimbursementProducts?.[product.index]?.name?.message}
+                            </FormHelperText>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
+                            <Controller
+                              name={`reimbursementProducts.${product.index}.cost`}
+                              control={control}
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label={'Cost'}
+                                  size={'small'}
+                                  variant={'outlined'}
+                                  type="number"
+                                  autoComplete="off"
+                                  InputProps={{
+                                    startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                  }}
+                                  onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                  sx={{ width: '100%' }}
+                                  error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                />
+                              )}
+                            />
+                            <FormHelperText error>
+                              {errors.reimbursementProducts?.[product.index]?.cost?.message}
+                            </FormHelperText>
+                          </div>
                           <IconButton onClick={() => removeProduct(product.index)}>
                             <Delete />
                           </IconButton>
