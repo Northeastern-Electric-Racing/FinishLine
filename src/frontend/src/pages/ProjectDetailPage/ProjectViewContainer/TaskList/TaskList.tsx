@@ -13,6 +13,7 @@ import { routes } from '../../../../utils/routes';
 import { Auth } from '../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import Projects from '../../../ProjectsPage/Projects';
 
 interface TaskListProps {
   project: Project;
@@ -71,7 +72,8 @@ const TaskList = ({ project }: TaskListProps) => {
     project.projectLead?.userId === user.userId ||
     project.projectManager?.userId === user.userId ||
     project.teams.some((team) => team.head.userId === user.userId) ||
-    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId));
+    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
+    project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
 
   const addTaskButton: JSX.Element = (
     <Button
