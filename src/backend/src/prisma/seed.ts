@@ -38,6 +38,14 @@ const performSeed: () => Promise<void> = async () => {
   });
   const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
   const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
+  const lexLuther = await prisma.user.create({ data: dbSeedAllUsers.lexLuther });
+  const hawkgirl = await prisma.user.create({ data: dbSeedAllUsers.hawkgirl });
+  const elongatedMan = await prisma.user.create({ data: dbSeedAllUsers.elongatedMan });
+  const zatanna = await prisma.user.create({ data: dbSeedAllUsers.zatanna });
+  const phantomStranger = await prisma.user.create({ data: dbSeedAllUsers.phantomStranger });
+  const redTornado = await prisma.user.create({ data: dbSeedAllUsers.redTornado });
+  const firestorm = await prisma.user.create({ data: dbSeedAllUsers.firestorm });
+  const hankHeywood = await prisma.user.create({ data: dbSeedAllUsers.hankHeywood });
   const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
   const flash = await prisma.user.create({ data: dbSeedAllUsers.flash });
   const aquaman = await prisma.user.create({ data: dbSeedAllUsers.aquaman });
