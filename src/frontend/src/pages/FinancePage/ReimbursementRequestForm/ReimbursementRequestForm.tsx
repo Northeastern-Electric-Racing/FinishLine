@@ -51,7 +51,7 @@ const schema = yup.object().shape({
           .number()
           .typeError('Amount is required')
           .required('Amount is required')
-          .min(1, 'Amount must be greater than 0')
+          .min(0.01, 'Amount must be greater than 0')
       })
     )
     .required('reimbursement products required')
