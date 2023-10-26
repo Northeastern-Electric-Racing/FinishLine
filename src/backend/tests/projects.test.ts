@@ -318,12 +318,32 @@ describe('Projects', () => {
       ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
     });
 
+    test('createAssembly fails if name is not unique', async () => {
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, name: 'a1' });
+
+      // no error, no return value
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'a1',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+    });
+
     test('createAssembly fails when no permissions', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
         wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
         projectId: prismaProject1.projectId,
         teams: [{ prismaTeam1, leads: [], members: [] }]
       } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
       await expect(
         async () =>
           await ProjectsService.createAssembly(
@@ -345,6 +365,7 @@ describe('Projects', () => {
         projectId: prismaProject1.projectId,
         teams: [{ prismaTeam1, leads: [], members: [] }]
       } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
       await expect(
         async () =>
           await ProjectsService.createAssembly(
@@ -366,6 +387,7 @@ describe('Projects', () => {
         projectId: prismaProject1.projectId,
         teams: [{ prismaTeam1, leads: [], members: [] }]
       } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
 
       // no error, no return value
@@ -385,6 +407,7 @@ describe('Projects', () => {
       mockGetHighestProjectNumber.mockResolvedValue(0);
       vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
 
       // no error, no return value
       await ProjectsService.createAssembly(

@@ -608,9 +608,9 @@ export default class ProjectsService {
   /**
    * Create an assembly
    * @param name The name of the assembly to be created
-   * @param pdmFileName The name of the file holding the assembly
    * @param userCreated The user creating the assembly
    * @param wbsElementId The
+   * @param pdmFileName optional - The name of the file holding the assembly
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
    */
@@ -622,6 +622,14 @@ export default class ProjectsService {
   ): Promise<Assembly> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const checkAssembly = await prisma.assembly.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
 
     const project = await prisma.project.findFirst({
       where: {
