@@ -5,6 +5,7 @@
 import {
   Autocomplete,
   Button,
+  FormControl,
   FormLabel,
   FormHelperText,
   IconButton,
@@ -98,7 +99,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', width: '50%', marginRight: '4px' }}>
+                          <FormControl sx={{ width: '50%', marginRight: '4px' }}>
                             <Controller
                               name={`reimbursementProducts.${product.index}.name`}
                               control={control}
@@ -117,8 +118,8 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             <FormHelperText error>
                               {errors.reimbursementProducts?.[product.index]?.name?.message}
                             </FormHelperText>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
+                          </FormControl>
+                          <FormControl sx={{ width: '50%' }}>
                             <Controller
                               name={`reimbursementProducts.${product.index}.cost`}
                               control={control}
@@ -142,7 +143,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                             <FormHelperText error>
                               {errors.reimbursementProducts?.[product.index]?.cost?.message}
                             </FormHelperText>
-                          </div>
+                          </FormControl>
                           <IconButton onClick={() => removeProduct(product.index)}>
                             <Delete />
                           </IconButton>
