@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { Manufacturer, User } from '@prisma/client';
 import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -27,8 +27,10 @@ import {
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
+import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 
 export default class ProjectsService {
   /**
@@ -627,4 +629,17 @@ export default class ProjectsService {
 
     return newManufacturer;
   }
+
+  /**
+   * Get all the manufacturers in the database.
+   * @returns all the manufacturers
+   */
+  static async getAllManufacturers(): Promise<Manufacturer[]> {
+    return (
+      await prisma.manufacturer.findMany({
+        ...manufacturerQueryArgs
+      })
+    ).map(manufacturerTransformer);
+  }
+
 }

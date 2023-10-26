@@ -55,5 +55,6 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createManufacturer
 );
+projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
 
 export default projectRouter;

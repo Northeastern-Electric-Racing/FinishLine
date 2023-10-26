@@ -95,3 +95,9 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
+
+export interface Manufacturer {
+  name: string;
+  dateCreated: Date;
+  creatorId: number;
+}
