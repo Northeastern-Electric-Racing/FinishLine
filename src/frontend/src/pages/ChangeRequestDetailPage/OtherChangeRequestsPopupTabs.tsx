@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import React, { useState } from 'react';
 import { Box, useTheme, Collapse, Tabs, Tab, Typography } from '@mui/material';
 import { ChangeRequest } from 'shared';
@@ -10,6 +15,7 @@ import ErrorPage from '../ErrorPage';
 interface OtherChangeRequestsPopupTabsProps {
   changeRequest: ChangeRequest;
 }
+
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
   changeRequest
 }: OtherChangeRequestsPopupTabsProps) => {
@@ -27,6 +33,21 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       cr.crId !== changeRequest.crId
   );
 
+  const displayTab = (value: number, title: string) => (
+    <Tab
+      value={value}
+      label={
+        <Typography sx={{ display: 'flex' }}>
+          {title}
+          {tab === value ? <ExpandMore sx={{ paddingLeft: 0.5 }} /> : <ExpandLess sx={{ paddingLeft: 0.5 }} />}
+        </Typography>
+      }
+      onClick={() => {
+        tab === value && setTab(0);
+      }}
+    />
+  );
+
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
       sx={{
@@ -34,8 +55,8 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         justifyContent: 'flex-start',
         padding: '20px',
         background: theme.palette.background.paper,
-        borderTop: 'solid black',
-        minWidth: '100vw'
+        borderTop: `solid ${theme.palette.divider}`,
+        borderLeft: `solid ${theme.palette.divider}`
       }}
     >
       {crList.map((cr: ChangeRequest) => (
@@ -49,7 +70,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       sx={{
         position: 'fixed',
         bottom: '0px',
-        left: '65px'
+        width: '100%'
       }}
     >
       <Tabs
@@ -61,45 +82,20 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           },
           '& button': {
             background: theme.palette.background.paper,
-            borderRight: 'solid grey',
-            borderTop: 'solid grey',
+            border: `solid ${theme.palette.divider}`,
             color: theme.palette.text.primary,
             textTransform: 'none'
           },
           '& button.Mui-selected': {
-            color: theme.palette.text.primary
-          }
+            color: theme.palette.text.primary,
+            borderBottom: 'transparent'
+          },
+          marginBottom: '-3px'
         }}
       >
-        <Tab
-          value={1}
-          label={
-            <Typography sx={{ display: 'flex' }}>
-              Other CR's from {changeRequest.submitter.firstName} {changeRequest.submitter.lastName}
-              {tab === 1 ? <ExpandMore sx={{ paddingLeft: 0.5 }} /> : <ExpandLess sx={{ paddingLeft: 0.5 }} />}
-            </Typography>
-          }
-          onClick={() => {
-            tab === 1 && setTab(0);
-          }}
-        />
-        <Tab
-          value={2}
-          label={
-            <Typography sx={{ display: 'flex' }}>
-              Placeholder
-              {tab === 2 ? <ExpandMore sx={{ paddingLeft: 0.5 }} /> : <ExpandLess sx={{ paddingLeft: 0.5 }} />}
-            </Typography>
-          }
-          onClick={() => {
-            tab === 2 && setTab(0);
-          }}
-        />
+        {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
       </Tabs>
-      <Collapse in={tab !== 0}>
-        {tab === 1 && displayCRCards(crFromSameUser || [])}
-        {tab === 2 && displayCRCards(changeRequests || [])}
-      </Collapse>
+      <Collapse in={tab !== 0}>{tab === 1 && displayCRCards(crFromSameUser || [])}</Collapse>
     </Box>
   );
 };
