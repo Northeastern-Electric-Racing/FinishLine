@@ -98,7 +98,6 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,
     status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
-    dateDelivered: reimbursementRequest.dateDelivered,
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
     submitter: reimbursementRequest.recipient
   };
