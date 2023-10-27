@@ -301,7 +301,6 @@ describe('Projects', () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
         wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
         projectId: prismaProject1.projectId
-        //teams: justiceLeague
       } as any);
       await expect(
         async () =>
@@ -319,6 +318,10 @@ describe('Projects', () => {
     });
 
     test('createAssembly fails if name is not unique', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement },
+        projectId: prismaProject1.projectId
+      } as any);
       vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, name: 'a1' });
 
       // no error, no return value

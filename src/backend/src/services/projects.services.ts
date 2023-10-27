@@ -623,14 +623,6 @@ export default class ProjectsService {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
 
-    const checkAssembly = await prisma.assembly.findUnique({
-      where: {
-        name
-      }
-    });
-
-    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
-
     const project = await prisma.project.findFirst({
       where: {
         wbsElement: {
@@ -644,6 +636,10 @@ export default class ProjectsService {
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const checkAssembly = await prisma.assembly.findUnique({ where: { name } });
+
+    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
 
     const { teams, wbsElementId } = project;
 
