@@ -169,7 +169,7 @@ export default class ProjectsController {
       next(error);
     }
   }
-  
+
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;

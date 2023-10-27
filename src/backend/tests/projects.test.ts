@@ -266,7 +266,7 @@ describe('Projects', () => {
       expect(prisma.user.update).toBeCalledTimes(1);
     });
   });
-  
+
   describe('Materials', () => {
     test('createMaterial fails when wbsElement is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(null);
