@@ -60,6 +60,18 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
+  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
+  const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
+  const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
+  const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
+  const ryanGiggs = await prisma.user.create({ data: dbSeedAllUsers.ryanGiggs });
+  const paulScholes = await prisma.user.create({ data: dbSeedAllUsers.paulScholes });
+  const alanShearer = await prisma.user.create({ data: dbSeedAllUsers.alanShearer });
+  const ericCantona = await prisma.user.create({ data: dbSeedAllUsers.ericCantona });
+  const patrickVieira = await prisma.user.create({ data: dbSeedAllUsers.patrickVieira });
+  const didierDrogba = await prisma.user.create({ data: dbSeedAllUsers.didierDrogba });
+  const johnTerry = await prisma.user.create({ data: dbSeedAllUsers.johnTerry });
+  const dennisBergkamp = await prisma.user.create({ data: dbSeedAllUsers.dennisBergkamp });
   const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
   const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
   const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
@@ -141,6 +153,7 @@ const performSeed: () => Promise<void> = async () => {
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -204,6 +217,24 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax,
     huskies.teamId,
     [joeShmoe, joeBlow, reidChandler, nightwing].map((user) => user.userId)
+  );
+
+  await TeamsService.setTeamMembers(
+    cristianoRonaldo,
+    plLegends.teamId,
+    [
+      thierryHenry,
+      frankLampard,
+      stevenGerrard,
+      ryanGiggs,
+      paulScholes,
+      alanShearer,
+      ericCantona,
+      patrickVieira,
+      didierDrogba,
+      johnTerry,
+      dennisBergkamp
+    ].map((user) => user.userId)
   );
 
   /**
