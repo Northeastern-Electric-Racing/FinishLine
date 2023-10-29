@@ -56,5 +56,11 @@ projectRouter.post(
   ProjectsController.createManufacturer
 );
 projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
+projectRouter.post(
+  '/bom/assembly/:wbsNum/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('pdmFileName')).optional(),
+  ProjectsController.createAssembly
+);
 
 export default projectRouter;
