@@ -187,9 +187,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   const allowEdit =
-    (user.userId === reimbursementRequest.recipient.userId &&
-      !isReimbursementRequestAdvisorApproved(reimbursementRequest)) ||
-    user.isFinance;
+    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestAdvisorApproved(reimbursementRequest);
 
   const buttons: ButtonInfo[] = [
     {
