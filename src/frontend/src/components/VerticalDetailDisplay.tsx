@@ -18,11 +18,11 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
   const backgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   return (
     <Box
-      overflow={'hidden'}
+      overflow={'auto'}
       whiteSpace={'nowrap'}
       sx={{ backgroundColor: backgroundColor, borderRadius: '10px', justifyContent: 'center', boxShadow: 1, ...boxStyle }}
     >
-      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={50}>
+      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={'2.5rem'} margin={'0px 10px'}>
         {content}
       </Typography>
       <Typography textAlign={'center'} fontWeight={'bold'}>
