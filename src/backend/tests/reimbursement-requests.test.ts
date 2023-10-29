@@ -625,4 +625,28 @@ describe('Reimbursement Requests', () => {
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
     });
   });
+
+  describe('Edit Vendor Tests', () => {
+    test('Throws error if user isnt an admin', async () => {
+      await expect(
+        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('only Admins can edit vendors'));
+    });
+
+    test('Vendor Name already exists', async () => {
+      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+        new HttpException(400, 'vendor name already exists')
+      );
+    });
+
+    test('Successfuly changes Vendors name', async () => {
+      vi.spyOn(prisma.vendor, 'update').mockResolvedValue(PopEyes);
+
+      expect(PopEyes.vendorId).toBe('CHICKEN');
+
+      ReimbursementRequestService.editVendors('3GreenValleyDrive', PopEyes.vendorId, batman);
+
+      expect(PopEyes.vendorId).toBe('3GreenValleyDrive');
+    });
+  });
 });
