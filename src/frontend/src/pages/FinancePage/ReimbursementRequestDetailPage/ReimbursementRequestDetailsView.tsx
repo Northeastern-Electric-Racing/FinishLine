@@ -187,14 +187,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   const allowEdit =
-    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestAdvisorApproved(reimbursementRequest);
+    (user.userId === reimbursementRequest.recipient.userId &&
+      !isReimbursementRequestAdvisorApproved(reimbursementRequest)) ||
+    user.isFinance;
 
   const buttons: ButtonInfo[] = [
     {
       title: 'Edit',
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
       icon: <Edit />,
-      disabled: !allowEdit
+      disabled: !allowEdit && !user.isFinance
     },
     {
       title: 'Delete',

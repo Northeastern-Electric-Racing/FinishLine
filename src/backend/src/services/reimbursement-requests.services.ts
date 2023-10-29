@@ -255,10 +255,12 @@ export default class ReimbursementRequestService {
 
     if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
-    if (oldReimbursementRequest.recipientId !== submitter.userId)
-      throw new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
-      );
+    try {
+      await validateUserIsPartOfFinanceTeam(submitter);
+    } catch {
+      if (oldReimbursementRequest.recipientId !== submitter.userId)
+        throw new AccessDeniedException('You do not have access to edit this reimbursement request');
+    }
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
