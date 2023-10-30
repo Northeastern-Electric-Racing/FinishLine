@@ -273,8 +273,8 @@ export default class WorkPackagesService {
    * @param blockedBy the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
-   * @param projectLead the new lead for this work package
-   * @param projectManager the new manager for this work package
+   * @param projectLeadId the new lead for this work package
+   * @param projectManagerId the new manager for this work package
    */
   static async editWorkPackage(
     user: User,
@@ -287,8 +287,8 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
-    projectLead: number,
-    projectManager: number
+    projectLeadId: number,
+    projectManagerId: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
     if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
@@ -419,7 +419,7 @@ export default class WorkPackagesService {
     const projectManagerChangeJson = createChange(
       'project manager',
       await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
-      await getUserFullName(projectManager),
+      await getUserFullName(projectManagerId),
       crId,
       userId,
       wbsElementId!
@@ -431,7 +431,7 @@ export default class WorkPackagesService {
     const projectLeadChangeJson = createChange(
       'project lead',
       await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
-      await getUserFullName(projectLead),
+      await getUserFullName(projectLeadId),
       crId,
       userId,
       wbsElementId!
@@ -459,8 +459,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager
+            projectLeadId,
+            projectManagerId
           }
         },
         stage,
