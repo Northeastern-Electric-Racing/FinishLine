@@ -33,7 +33,13 @@ const schema = yup.object().shape({
     .date()
     .required('Start Date is required!')
     .test('start-date-valid', 'start date is not valid', startDateTester),
-  duration: yup.number().required()
+  duration: yup.number().required(),
+  crId: yup
+    .number()
+    .required('CR ID is required')
+    .typeError('CR ID must be a number')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1')
 });
 
 interface WorkPackageEditContainerProps {
@@ -140,8 +146,8 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        projectLead: leadId ? parseInt(leadId) : undefined,
-        projectManager: managerId ? parseInt(managerId) : undefined,
+        projectLeadId: leadId ? parseInt(leadId) : undefined,
+        projectManagerId: managerId ? parseInt(managerId) : undefined,
         workPackageId: workPackage.id,
         userId,
         name,
@@ -171,7 +177,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
+      headerRight={<ChangeRequestDropdown control={control} name="crId" errors={errors} />}
     >
       <form
         id="work-package-edit-form"

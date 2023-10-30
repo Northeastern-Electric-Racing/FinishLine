@@ -72,6 +72,7 @@ export interface ExpenseType {
   name: string;
   code: number;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 export interface ReimbursementProductCreateArgs {

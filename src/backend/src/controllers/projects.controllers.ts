@@ -127,4 +127,38 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async createAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const { name, pdmFileName } = req.body;
+      const createAssembly = await ProjectsService.createAssembly(name, user, wbsNum, pdmFileName);
+      res.status(200).json(createAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createManufacturer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdManufacturer = await ProjectsService.createManufacturer(user, name);
+      res.status(200).json(createdManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createMaterialType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdMaterialType = await ProjectsService.createMaterialType(name, user);
+      res.status(200).json(createdMaterialType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

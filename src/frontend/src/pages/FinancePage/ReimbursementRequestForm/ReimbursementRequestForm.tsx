@@ -18,11 +18,11 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
-  account: ClubAccount;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
+  account: ClubAccount | undefined;
 }
 
 export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
@@ -47,7 +47,11 @@ const schema = yup.object().shape({
       yup.object().shape({
         wbsNum: yup.object().required('WBS Number is required'),
         name: yup.string().required('Description is required'),
-        cost: yup.number().required('Amount is required').min(1, 'Amount must be greater than 0')
+        cost: yup
+          .number()
+          .typeError('Amount is required')
+          .required('Amount is required')
+          .min(0.01, 'Amount must be greater than 0')
       })
     )
     .required('reimbursement products required')
@@ -75,7 +79,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account ?? ClubAccount.BUDGET,
+      account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
