@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, superman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -505,7 +505,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails when manufacturer is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaaasembly1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
 
