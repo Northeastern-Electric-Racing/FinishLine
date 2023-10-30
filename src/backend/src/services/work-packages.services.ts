@@ -267,8 +267,8 @@ export default class WorkPackagesService {
    * @param blockedBy the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
-   * @param projectLead the new lead for this work package
-   * @param projectManager the new manager for this work package
+   * @param projectLeadId the new lead for this work package
+   * @param projectManagerId the new manager for this work package
    */
   static async editWorkPackage(
     user: User,
