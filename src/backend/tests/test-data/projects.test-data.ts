@@ -107,15 +107,15 @@ export const sharedProject1: SharedProject = {
   teams: []
 };
 
-export const prismaAssembly: Assembly = {
-  assemblyId: '1',
-  name: 'name',
-  pdmFileName: 'fileName',
+export const prismaAssembly1: Assembly = {
+  name: 'New Assembly',
+  pdmFileName: 'file.txt',
+  dateCreated: new Date('10-19-2023'),
+  userCreatedId: batman.userId,
+  wbsElementId: 66,
   dateDeleted: null,
   userDeletedId: null,
-  dateCreated: new Date('10-18-2023'),
-  userCreatedId: 1,
-  wbsElementId: 1
+  assemblyId: '1'
 };
 
 export const prismaMaterialType: PrismaMaterialType = {
@@ -149,7 +149,6 @@ export const prismaMaterial: Material = {
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
-
 export const prismaManufacturer1: Manufacturer = {
   name: 'Manufacturer1',
   dateCreated: new Date('10-1-2023'),

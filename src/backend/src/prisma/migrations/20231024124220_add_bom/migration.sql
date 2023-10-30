@@ -12,7 +12,7 @@ CREATE TABLE "Unit" (
 CREATE TABLE "Assembly" (
     "assemblyId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "pdmFileName" TEXT NOT NULL,
+    "pdmFileName" TEXT,
     "dateDeleted" TIMESTAMP(3),
     "userDeletedId" INTEGER,
     "dateCreated" TIMESTAMP(3) NOT NULL,
