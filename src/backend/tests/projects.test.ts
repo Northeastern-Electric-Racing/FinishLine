@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, superman, wonderwoman } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -480,7 +480,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails when material type is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(null);
 
       await expect(() =>
@@ -505,7 +505,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails when manufacturer is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaaasembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
 
@@ -531,7 +531,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails when unit is not found', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
       vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(null);
@@ -558,7 +558,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails if there is a material of the same name', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
       vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
@@ -586,7 +586,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails if the creator does not have perms', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
       vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
@@ -614,7 +614,7 @@ describe('Projects', () => {
     });
     test('createMaterial works', async () => {
       vi.spyOn(prisma.wBS_Element, 'findFirst').mockResolvedValue(prismaProject1.wbsElement);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
       vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
@@ -624,7 +624,7 @@ describe('Projects', () => {
       const res = await ProjectsService.createMaterial(
         batman,
         'material',
-        prismaAssembly.assemblyId,
+        prismaAssembly1.assemblyId,
         Material_Status.ORDERED,
         prismaMaterialType.name,
         prismaManufacturer2.name,
