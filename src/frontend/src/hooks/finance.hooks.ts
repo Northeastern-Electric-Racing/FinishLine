@@ -40,11 +40,11 @@ import {
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
-  account: ClubAccount;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   totalCost: number;
+  account: ClubAccount;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -55,6 +55,7 @@ export interface ExpenseTypePayload {
   code: number;
   name: string;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 /**

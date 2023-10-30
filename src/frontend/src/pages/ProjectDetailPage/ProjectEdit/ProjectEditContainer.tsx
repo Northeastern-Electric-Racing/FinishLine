@@ -37,7 +37,13 @@ const schema = yup.object().shape({
       url: yup.string().required('URL is required!').url('Invalid URL')
     })
   ),
-  summary: yup.string().required('Summary is required!')
+  summary: yup.string().required('Summary is required!'),
+  crId: yup
+    .number()
+    .required('CR ID is required')
+    .typeError('CR ID must be a number')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1')
 });
 
 interface ProjectEditContainerProps {

@@ -183,7 +183,7 @@ const ProjectsTable: React.FC = () => {
             }
           },
           sorting: {
-            sortModel: [{ field: 'wbsNum', sort: 'asc' }]
+            sortModel: [{ field: 'status', sort: 'asc' }]
           },
           columns: {
             columnVisibilityModel: {

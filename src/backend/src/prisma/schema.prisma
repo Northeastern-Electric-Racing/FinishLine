@@ -67,7 +67,7 @@ enum Work_Package_Stage {
   RESEARCH
   DESIGN
   MANUFACTURING
-  INTEGRATION
+  INSTALL
 }
 
 model User {
@@ -256,7 +256,7 @@ model WBS_Element {
   tasks                 Task[]
   reimbursementProducts Reimbursement_Product[]
   links                 Link[]                  @relation(name: "links")
-  assembies             Assembly[]
+  assemblies            Assembly[]
   materials             Material[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
@@ -429,11 +429,12 @@ model Vendor {
 }
 
 model Expense_Type {
-  expenseTypeId String                  @id @default(uuid())
-  name          String
-  code          Int
-  allowed       Boolean
-  requests      Reimbursement_Request[]
+  expenseTypeId        String                  @id @default(uuid())
+  name                 String
+  code                 Int
+  allowed              Boolean
+  allowedRefundSources Club_Accounts[]
+  requests             Reimbursement_Request[]
 }
 
 model Reimbursement {
@@ -473,7 +474,7 @@ model Unit {
 model Assembly {
   assemblyId    String      @id @default(uuid())
   name          String      @unique
-  pdmFileName   String
+  pdmFileName   String?
   dateDeleted   DateTime?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
   userDeletedId Int?
@@ -487,8 +488,8 @@ model Assembly {
 
 model Material {
   materialId             String          @id @default(uuid())
-  assemby                Assembly?       @relation(fields: [assembyId], references: [assemblyId])
-  assembyId              String?
+  assembly               Assembly?       @relation(fields: [assemblyId], references: [assemblyId])
+  assemblyId             String?
   name                   String          @unique
   wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           Int

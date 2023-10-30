@@ -86,6 +86,8 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.post(
   '/vendors/create',
   nonEmptyString(body('name')),
+  body('allowedRefundSources').isArray(),
+  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createVendor
 );
@@ -95,6 +97,8 @@ reimbursementRequestsRouter.post(
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
+  body('allowedRefundSources').isArray(),
+  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createExpenseType
 );
