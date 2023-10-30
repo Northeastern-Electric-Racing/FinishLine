@@ -47,7 +47,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
         </Grid>
         <Grid item lg={2.4} xs={12}>
           <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" />
+            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
           </FormControl>
         </Grid>
         <Grid item lg={2.4} xs={12}>
