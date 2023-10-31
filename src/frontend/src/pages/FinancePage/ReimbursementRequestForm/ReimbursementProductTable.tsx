@@ -96,7 +96,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
-                        <Box sx={{ display: 'flex-row', flexDirection: { sm: 'row', xs: 'column' } }}>
+                        <Box sx={{ display: 'flex', flexDirection: { sm: 'row', xs: 'column' } }}>
                           <Controller
                             name={`reimbursementProducts.${product.index}.name`}
                             control={control}
@@ -127,7 +127,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                   startAdornment: <InputAdornment position="start">$</InputAdornment>
                                 }}
                                 onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                sx={{ width: '50%', mt: { xs: '10px' } }}
+                                sx={{ width: '50%', mt: { sm: '0px', xs: '10px' } }}
                                 error={!!errors.reimbursementProducts?.[product.index]?.cost}
                               />
                             )}
