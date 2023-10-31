@@ -72,8 +72,8 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       } = req.body;
 
       let { stage } = req.body;
@@ -94,8 +94,8 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       );
       return res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {

@@ -1,12 +1,13 @@
-import { ExpenseType } from 'shared';
+import { ClubAccount, ExpenseType } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { Checkbox, FormControl, FormLabel, FormHelperText } from '@mui/material';
+import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
@@ -33,7 +34,8 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
     defaultValues: {
       code: defaultValues?.code,
       name: defaultValues?.name ?? '',
-      allowed: defaultValues?.allowed ?? false
+      allowed: defaultValues?.allowed ?? false,
+      allowedRefundSources: defaultValues?.allowedRefundSources ?? []
     }
   });
 
@@ -53,7 +55,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       open={showModal}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit Account Code' : 'Create Account Code'}
-      reset={() => reset({ name: '', code: undefined, allowed: false })}
+      reset={() => reset({ name: '', code: undefined, allowed: false, allowedRefundSources: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
       formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
@@ -63,6 +65,27 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
         <FormLabel>Account Name</FormLabel>
         <ReactHookTextField name="name" control={control} fullWidth />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
+      </FormControl>
+      <FormControl fullWidth>
+        <FormLabel>Allowed Refund Source</FormLabel>
+        <Controller
+          name="allowedRefundSources"
+          control={control}
+          render={({ field: { onChange, value: formValue } }) => (
+            <Select
+              multiple
+              value={formValue}
+              onChange={(e) => onChange(e.target.value as ClubAccount[])}
+              input={<OutlinedInput />}
+            >
+              {Object.values(ClubAccount).map((refundSource) => (
+                <MenuItem key={refundSource} value={refundSource}>
+                  {codeAndRefundSourceName(refundSource)}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        />
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Account Code</FormLabel>

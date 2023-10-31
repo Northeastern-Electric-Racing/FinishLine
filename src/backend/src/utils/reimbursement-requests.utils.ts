@@ -233,15 +233,3 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authU
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
 };
-
-export const validateUserIsHeadOfFinanceTeam = async (user: User) => {
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
-  });
-
-  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
-
-  if (!(financeTeam.headId === user.userId)) {
-    throw new AccessDeniedException('You are not the head of the finance team!');
-  }
-};

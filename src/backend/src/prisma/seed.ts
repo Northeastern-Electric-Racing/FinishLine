@@ -7,11 +7,13 @@
 
 import {
   CR_Type,
+  Club_Accounts,
   PrismaClient,
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
   Team,
+  Vendor,
   WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
@@ -58,6 +60,35 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
+  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
+  const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
+  const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
+  const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
+  const ryanGiggs = await prisma.user.create({ data: dbSeedAllUsers.ryanGiggs });
+  const paulScholes = await prisma.user.create({ data: dbSeedAllUsers.paulScholes });
+  const alanShearer = await prisma.user.create({ data: dbSeedAllUsers.alanShearer });
+  const ericCantona = await prisma.user.create({ data: dbSeedAllUsers.ericCantona });
+  const patrickVieira = await prisma.user.create({ data: dbSeedAllUsers.patrickVieira });
+  const didierDrogba = await prisma.user.create({ data: dbSeedAllUsers.didierDrogba });
+  const johnTerry = await prisma.user.create({ data: dbSeedAllUsers.johnTerry });
+  const dennisBergkamp = await prisma.user.create({ data: dbSeedAllUsers.dennisBergkamp });
+  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
+  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
+  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
+  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
+  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
+  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
+  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
+  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
+  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
+  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
+  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
+  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
+  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
+  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
+  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
+  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
+  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -122,6 +153,7 @@ const performSeed: () => Promise<void> = async () => {
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -149,17 +181,60 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe].map((user) => user.userId)
+    [
+      lamarJackson,
+      nezamJazayeri,
+      ryanHowe,
+      jkDobbins,
+      davidOjabo,
+      markAndrews,
+      odellBeckham,
+      chrisHorton,
+      mikeMacdonald,
+      toddMonken,
+      stephenBisciotti
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
     orioles.teamId,
-    [adleyRutschman, calRipken, anthonyBernardi].map((user) => user.userId)
+    [
+      adleyRutschman,
+      calRipken,
+      anthonyBernardi,
+      brooksRobinson,
+      jimPalmer,
+      eddieMurray,
+      georgeSisler,
+      urbanShocker,
+      kenWilliams,
+      boogPowell,
+      mannyMachado,
+      babyDollJacobson
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
     huskies.teamId,
     [joeShmoe, joeBlow, reidChandler, nightwing].map((user) => user.userId)
+  );
+
+  await TeamsService.setTeamMembers(
+    cristianoRonaldo,
+    plLegends.teamId,
+    [
+      thierryHenry,
+      frankLampard,
+      stevenGerrard,
+      ryanGiggs,
+      paulScholes,
+      alanShearer,
+      ericCantona,
+      patrickVieira,
+      didierDrogba,
+      johnTerry,
+      dennisBergkamp
+    ].map((user) => user.userId)
   );
 
   /**
@@ -403,6 +478,24 @@ const performSeed: () => Promise<void> = async () => {
     ['Completed wiring harness for the entire car']
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
+
+  /** Work Package 4 */
+  const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
+    thomasEmrax,
+    project5WbsNumber,
+    'Install Wiring Harness',
+    changeRequest1Id,
+    WorkPackageStage.Install,
+    '04/01/2023',
+    7,
+    [],
+    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
+    ['Wiring harness is functional and installed in the car'],
+    thomasEmrax,
+    WbsElementStatus.Active,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
 
   /**
    * Change Requests
@@ -684,8 +777,15 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
+  const vendors: Vendor[] = [vendor, vendor2, vendor3];
+
+  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
+    Club_Accounts.CASH,
+    Club_Accounts.BUDGET
+  ]);
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
@@ -698,7 +798,7 @@ const performSeed: () => Promise<void> = async () => {
         wbsNum: {
           carNumber: 1,
           projectNumber: 1,
-          workPackageNumber: 1
+          workPackageNumber: 0
         },
         cost: 200000
       }

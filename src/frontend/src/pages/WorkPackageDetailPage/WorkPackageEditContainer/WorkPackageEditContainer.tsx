@@ -172,12 +172,6 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       ]}
       headerRight={
         <>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
         </>
       }
     >
@@ -242,6 +236,14 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             remove={removeDeliverable}
           />
         </PageBlock>
+        <Box textAlign="right" sx={{ my: 2 }}>
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
       </form>
     </PageLayout>
   );

@@ -61,7 +61,7 @@ describe('Work Packages', () => {
 
   beforeEach(() => {
     vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
-      return prismaChangeRequest1;
+      return { ...prismaChangeRequest1, changes: [] };
     });
 
     vi.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);

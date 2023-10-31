@@ -15,7 +15,7 @@ export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) =>
       return green[600];
     case WorkPackageStage.Manufacturing:
       return blue[600];
-    case WorkPackageStage.Integration:
+    case WorkPackageStage.Install:
       return purple[400];
     default:
       return grey[500];
@@ -31,8 +31,8 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Design';
     case WorkPackageStage.Manufacturing:
       return 'Manufacturing';
-    case WorkPackageStage.Integration:
-      return 'Integration';
+    case WorkPackageStage.Install:
+      return 'Install';
     default:
       return 'No Stage';
   }

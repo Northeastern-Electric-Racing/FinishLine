@@ -48,4 +48,19 @@ projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validate
 projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
 projectRouter.post('/:wbsNum/favorite', ProjectsController.toggleFavorite);
 
+/**************** BOM Section ****************/
+projectRouter.post(
+  '/bom/manufacturer/create',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ProjectsController.createManufacturer
+);
+projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
+projectRouter.post(
+  '/bom/assembly/:wbsNum/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('pdmFileName')).optional(),
+  ProjectsController.createAssembly
+);
+
 export default projectRouter;
