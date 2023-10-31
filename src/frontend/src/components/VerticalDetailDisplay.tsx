@@ -33,7 +33,7 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
       height: '0.6rem' // Adjust the the thickness of the scrollbar
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: '#EF4345', //FinishLine 'red'
+      backgroundColor: '#EF4345', //FinishLine 'red' color
       borderRadius: '0.5rem'
     },
     '&::-webkit-scrollbar-thumb:hover': {
