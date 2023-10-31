@@ -143,10 +143,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             sx={{ backgroundColor: totalCostBackgroundColor, borderRadius: '10px', boxShadow: 1 }}
           >
             <Grid item xs={6} textAlign={'center'} mt={-2}>
-              <Typography fontSize={'2.5rem'}>Total Cost</Typography>
+              <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
             <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography fontSize={'2.5rem'}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
+              <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
             </Grid>
           </Grid>
         </Grid>

@@ -17,36 +17,32 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
 
-  // Box Styles
-  const customSx = {
-    overflow: 'auto',
-    whiteSpace: 'nowrap',
-    backgroundColor: backgroundColor,
-    justifyContent: 'center',
-    boxShadow: 1,
-    borderRadius: '10px'
-  };
-
-  // Custom Scrollbar Styles
-  const hoverSx = {
-    '&::-webkit-scrollbar': {
-      height: '0.6rem' // Adjust the the thickness of the scrollbar
-    },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: '#EF4345', //FinishLine 'red' color
-      borderRadius: '0.5rem'
-    },
-    '&::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: '#b0191a' // Change to a darker shade of red on hover
-    }
-  };
-
   return (
-    <Box overflow={'auto'} whiteSpace={'nowrap'} sx={{ ...customSx, ...hoverSx }}>
-      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={'2.5rem'} margin={'0px 10px'}>
+    <Box
+      overflow={'auto'}
+      whiteSpace={'nowrap'}
+      sx={{
+        backgroundColor: backgroundColor,
+        borderRadius: '10px',
+        justifyContent: 'center',
+        boxShadow: 1,
+        '&::-webkit-scrollbar': {
+          height: '0.55rem' // Adjust the the thickness of the scrollbar
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#EF4345', //FinishLine 'red' color
+          borderRadius: '10px' //make the scrollbar rounded
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: '#b0191a' // Change to a darker shade of red on hover
+        },
+        ...boxStyle
+      }}
+    >
+      <Typography textOverflow={'ellipsis'} textAlign={'center'} fontSize={50}>
         {content}
       </Typography>
-      <Typography textAlign={'center'} fontWeight={'bold'}>
+      <Typography textAlign={'center'} fontWeight={'bold'} marginBottom={'5px'}>
         {label}
       </Typography>
     </Box>
