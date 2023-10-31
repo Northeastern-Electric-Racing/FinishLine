@@ -31,7 +31,7 @@ export default class WorkPackagesController {
 
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      const wbsNums: WbsNumber[] = req.body.wbsNums.map((wbsNum: string) => validateWBS(wbsNum));
+      const { wbsNums } = req.body;
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums);
       res.status(200).json(workPackages);
     } catch (error: unknown) {

@@ -125,7 +125,7 @@ export default class WorkPackagesService {
     }
 
     const workPackagePromises = wbsNums.map(async (wbsNum) => {
-      const workPackages = await prisma.work_Package.findMany({
+      const workPackage = await prisma.work_Package.findFirst({
         where: {
           AND: [
             {
@@ -145,11 +145,12 @@ export default class WorkPackagesService {
         ...workPackageQueryArgs
       });
 
-      if (!workPackages || workPackages.length !== 1) {
+      console.log(workPackage);
+
+      if (!workPackage) {
         throw new NotFoundException('Work Package', wbsPipe(wbsNum));
       }
-
-      return workPackageTransformer(workPackages[0]);
+      return workPackageTransformer(workPackage);
     });
 
     const resolvedWorkPackages = await Promise.all(workPackagePromises);

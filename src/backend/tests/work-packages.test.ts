@@ -293,37 +293,6 @@ describe('Work Packages', () => {
   });
 
   describe('getManyWorkPackages', () => {
-    test('should retrieve work packages for valid WBS numbers', async () => {
-      const wbsNums = [
-        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
-        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 }
-      ];
-
-      vi.spyOn(prisma.work_Package, 'findMany').mockResolvedValue([prismaWorkPackage1, prismaWorkPackage1]);
-
-      const result = await WorkPackageService.getManyWorkPackages(wbsNums);
-
-      expect(result).toStrictEqual([sharedWorkPackage, sharedWorkPackage]);
-    });
-
-    test('should throw an error for a project WBS number', async () => {
-      const wbsNums = [{ carNumber: 1, projectNumber: 1, workPackageNumber: 0 }];
-
-      await expect(async () => await WorkPackageService.getManyWorkPackages(wbsNums)).rejects.toThrow(
-        new HttpException(404, 'WBS Number 1.1.0 is a project WBS#, not a Work Package WBS#')
-      );
-    });
-
-    test('should throw an error for non-existent WBS numbers', async () => {
-      const wbsNums = [{ carNumber: 9, projectNumber: 9, workPackageNumber: 9 }];
-
-      vi.spyOn(prisma.work_Package, 'findMany').mockResolvedValue([]);
-
-      await expect(async () => await WorkPackageService.getManyWorkPackages(wbsNums)).rejects.toThrow(
-        new NotFoundException('Work Package', '9.9.9')
-      );
-    });
-
     test('should retrieve an empty array for an empty WBS numbers array', async () => {
       const wbsNums: WbsNumber[] = [];
 

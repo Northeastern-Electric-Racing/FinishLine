@@ -6,15 +6,16 @@ import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '..
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
-workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
-workPackagesRouter.post(
+workPackagesRouter.get(
   '/get-many',
   body('wbsNums').exists().isArray(),
-  body('wbsNums.*.carNumber').exists().isNumeric(),
-  body('wbsNums.*.projectNumber').exists().isNumeric(),
-  body('wbsNums.*.workPackageNumber').exists().isNumeric(),
+  intMinZero(body('wbsNums.*.carNumber')),
+  intMinZero(body('wbsNums.*.projectNumber')),
+  intMinZero(body('wbsNums.*.workPackageNumber')),
+  validateInputs,
   WorkPackagesController.getManyWorkPackages
 );
+workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
