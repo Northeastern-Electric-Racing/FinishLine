@@ -39,7 +39,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       label={
         <Typography sx={{ display: 'flex' }}>
           {title}
-          {tab === value ? <ExpandMore sx={{ paddingLeft: 0.5 }} /> : <ExpandLess sx={{ paddingLeft: 0.5 }} />}
+          {tab === value ? <ExpandMore sx={{ pl: 0.5 }} /> : <ExpandLess sx={{ pl: 0.5 }} />}
         </Typography>
       }
       onClick={() => {
@@ -70,7 +70,8 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       sx={{
         position: 'fixed',
         bottom: '0px',
-        width: '100%'
+        left: '65px',
+        minWidth: '100%'
       }}
     >
       <Tabs
@@ -90,7 +91,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
             color: theme.palette.text.primary,
             borderBottom: 'transparent'
           },
-          marginBottom: '-3px'
+          mb: '-1px'
         }}
       >
         {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
