@@ -621,40 +621,43 @@ export default class ProjectsService {
    * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
    * @param notes any notes about the material as a string
-   * @param wbsNumber the WBS number of the WBS element associated with this material
+   * @param wbsNumber the WBS number of the project associated with this material
    * @returns the id of the created material
    */
   static async createMaterial(
     creator: User,
     name: string,
-    assemblyId: string,
     status: Material_Status,
     materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
-    pdmFileName: string,
     quantity: number,
     unitName: string,
     price: number,
     subtotal: number,
     linkUrl: string,
     notes: string,
-    wbsNumber: WbsNumber
+    wbsNumber: WbsNumber,
+    assemblyId?: string,
+    pdmFileName?: string
   ): Promise<string> {
-    const wbsElement = await prisma.wBS_Element.findFirst({
+    const project = await prisma.project.findFirst({
       where: {
-        carNumber: wbsNumber.carNumber,
-        projectNumber: wbsNumber.projectNumber,
-        workPackageNumber: wbsNumber.workPackageNumber
+        wbsElement: {
+          carNumber: wbsNumber.carNumber,
+          projectNumber: wbsNumber.projectNumber,
+          workPackageNumber: wbsNumber.workPackageNumber
+        }
       },
-      include: { project: { ...projectQueryArgs }, workPackage: { include: { project: { ...projectQueryArgs } } } }
+      ...projectQueryArgs
     });
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNumber));
 
-    const assembly = await prisma.assembly.findFirst({
-      where: { assemblyId }
-    });
-    if (assemblyId && !assembly) throw new NotFoundException('Assembly', assemblyId);
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+
+    if (assemblyId) {
+      const assembly = prisma.assembly.findFirst({ where: { assemblyId } });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    }
 
     const materialType = await prisma.material_Type.findFirst({
       where: { name: materialTypeName }
@@ -671,19 +674,7 @@ export default class ProjectsService {
     });
     if (!unit) throw new NotFoundException('Unit', unitName);
 
-    const sameName = await prisma.material.findFirst({ where: { name } }); // checks for a material with the desired name
-    if (sameName) throw new HttpException(400, `There is already a material with the name ${name}`);
-
-    const project = wbsElement.project ?? wbsElement.workPackage?.project;
-
-    const perms =
-      isLeadership(creator.role) ||
-      project?.teams.some(
-        (team) =>
-          team.headId === creator.userId ||
-          team.leads.some((lead) => lead.userId === creator.userId) ||
-          team.members.some((member) => member.userId === creator.userId)
-      );
+    const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
 
     if (!perms) throw new AccessDeniedException('create materials');
 
@@ -704,7 +695,7 @@ export default class ProjectsService {
         linkUrl,
         notes,
         dateCreated: new Date(),
-        wbsElementId: wbsElement.wbsElementId
+        wbsElementId: project.wbsElementId
       }
     });
 

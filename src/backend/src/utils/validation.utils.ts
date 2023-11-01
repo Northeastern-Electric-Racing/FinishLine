@@ -1,3 +1,4 @@
+import { Material_Status } from '@prisma/client';
 import { ValidationChain } from 'express-validator';
 import { ClubAccount } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
@@ -43,4 +44,10 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
 
 export const isAccount = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([ClubAccount.BUDGET, ClubAccount.CASH]);
+};
+
+export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([Material_Status.ORDERED, Material_Status.RECEIVED, Material_Status.SHIPPED, Material_Status.UNORDERED]);
 };

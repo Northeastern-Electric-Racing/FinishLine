@@ -162,19 +162,19 @@ export default class ProjectsController {
       const id = await ProjectsService.createMaterial(
         creator,
         name,
-        assemblyId,
         status,
         materialTypeName,
         manufacturerName,
         manufacturerPartNumber,
-        pdmFileName,
         quantity,
         unitName,
         price,
         subtotal,
         linkUrl,
         notes,
-        wbsNum
+        wbsNum,
+        assemblyId,
+        pdmFileName
       );
       return res.status(200).json({ message: `Successfully created material with id #${id}` });
     } catch (error: unknown) {
