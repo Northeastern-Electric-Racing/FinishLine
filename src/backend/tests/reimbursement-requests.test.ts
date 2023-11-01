@@ -222,7 +222,11 @@ describe('Reimbursement Requests', () => {
           [],
           superman
         )
-      ).rejects.toThrow(new AccessDeniedException('You do not have access to edit this reimbursement request'));
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to edit this reimbursement request, only the creator or finance team can edit a reimbursement request'
+        )
+      );
     });
 
     test('Edit Reimbursement Request fails if Submitter not on Finance Team', async () => {
@@ -239,7 +243,11 @@ describe('Reimbursement Requests', () => {
           [],
           alfred
         )
-      ).rejects.toThrow(new AccessDeniedException('You do not have access to edit this reimbursement request'));
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to edit this reimbursement request, only the creator or finance team can edit a reimbursement request'
+        )
+      );
     });
 
     test('Edit Reimbursement Request Fails When Vendor does not exist', async () => {

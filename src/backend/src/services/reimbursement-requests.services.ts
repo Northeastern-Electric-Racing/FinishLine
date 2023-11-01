@@ -259,7 +259,9 @@ export default class ReimbursementRequestService {
       await validateUserIsPartOfFinanceTeam(submitter);
     } catch {
       if (oldReimbursementRequest.recipientId !== submitter.userId)
-        throw new AccessDeniedException('You do not have access to edit this reimbursement request');
+        throw new AccessDeniedException(
+          'You do not have access to edit this reimbursement request, only the creator or finance team can edit a reimbursement request'
+        );
     }
 
     const vendor = await prisma.vendor.findUnique({
