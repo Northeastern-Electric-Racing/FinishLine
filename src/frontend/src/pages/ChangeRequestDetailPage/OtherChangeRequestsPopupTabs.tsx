@@ -91,7 +91,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
             color: theme.palette.text.primary,
             borderBottom: 'transparent'
           },
-          mb: '-1px'
+          mb: '-1.5px'
         }}
       >
         {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
