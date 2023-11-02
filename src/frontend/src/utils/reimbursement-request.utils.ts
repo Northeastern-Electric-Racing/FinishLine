@@ -78,6 +78,13 @@ export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: Reimbu
     .includes(ReimbursementStatusType.SABO_SUBMITTED);
 };
 
+export const getReimbursementRequestDateSubmittedToSabo = (reimbursementRequest: ReimbursementRequest) => {
+  const saboStatus = reimbursementRequest.reimbursementStatuses.find(
+    (status) => status.type === ReimbursementStatusType.SABO_SUBMITTED
+  );
+  return saboStatus?.dateCreated;
+};
+
 export const imagePreviewUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}/preview`;
 
 export const getRefundRowData = (refund: Reimbursement) => {
@@ -91,7 +98,7 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,
     status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
-    dateDelivered: reimbursementRequest.dateDelivered,
+    dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
     submitter: reimbursementRequest.recipient
   };
 };
