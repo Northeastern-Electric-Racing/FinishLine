@@ -209,10 +209,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             </FormControl>
           </Grid>
         </PageBlock>
-        <PageBlock title="Links">
-          <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
-        </PageBlock>
         <Stack spacing={4}>
+          <Box>
+            <Typography variant="h5">{'Links'}</Typography>
+            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
+          </Box>
           <Box>
             <Typography variant="h5">{'Goals'}</Typography>
             <ReactHookEditableList
