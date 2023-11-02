@@ -1,12 +1,13 @@
 import { User } from 'shared';
-import { FormControl, FormLabel, Grid } from '@mui/material';
-import PageBlock from '../../../layouts/PageBlock';
+import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { ProjectEditFormInput } from './ProjectEditContainer';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
+import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
+import TeamDropdown from '../../../components/TeamsDropdown';
 
 interface ProjectEditDetailsProps {
   users: User[];
@@ -33,9 +34,12 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   setProjectManager
 }) => {
   return (
-    <PageBlock title="Project Details">
-      <Grid container spacing={2}>
-        <Grid item xs={8}>
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: '10px' }}>
+        Project Details
+      </Typography>
+      <Grid container spacing={3}>
+        <Grid item lg={2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
@@ -46,7 +50,28 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item lg={2.4} md={6} xs={12}>
+          <FormControl fullWidth>
+            <ChangeRequestDropdown control={control} name="crId" />
+          </FormControl>
+        </Grid>
+        <Grid item lg={2.4} md={6} xs={12}>
+          <FormControl fullWidth>
+            <FormLabel>Car Number</FormLabel>
+            <ReactHookTextField
+              name="car-number"
+              control={control}
+              placeholder="Enter a car number..."
+              errorMessage={errors.name}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item lg={2.4} md={6} xs={12}>
+          <FormControl fullWidth>
+            <TeamDropdown control={control} name="teamId" />
+          </FormControl>
+        </Grid>
+        <Grid item lg={2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Budget</FormLabel>
             <ReactHookTextField
@@ -59,7 +84,9 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+      </Grid>
+      <Grid container spacing={2}>
+        <Grid item lg={6} md={12} xs={12} mt={{ xs: 3, md: 3, lg: 2 }}>
           <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
@@ -70,7 +97,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
           />
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+        <Grid item lg={6} md={12} xs={12} mt={{ xs: 0, md: 0, lg: 2 }}>
           <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
@@ -81,8 +108,21 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
           />
         </Grid>
+        <Grid item lg={12} md={12} xs={12}>
+          <FormControl fullWidth>
+            <FormLabel>Project Summary</FormLabel>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              type="number"
+              placeholder="Enter a summmary..."
+              multiline={true}
+              rows={5}
+            />
+          </FormControl>
+        </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 

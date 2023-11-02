@@ -15,8 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Box, FormControl, Stack, Typography } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import { Box, Stack, Typography } from '@mui/material';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
@@ -27,7 +26,6 @@ import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -173,7 +171,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     <PageLayout
       title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
+      headerRight={
+        <Box textAlign="right">
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      }
     >
       <form
         id="project-edit-form"
@@ -195,20 +202,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectLead={setProjectLeadId}
           setProjectManager={setprojectManagerId}
         />
-        <PageBlock title="Project Summary">
-          <Grid item sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Summary"
-                multiline={true}
-                rows={5}
-                errorMessage={errors.summary}
-              />
-            </FormControl>
-          </Grid>
-        </PageBlock>
         <PageBlock title="Links">
           <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
         </PageBlock>
@@ -258,14 +251,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             />
           </Box>
         </Stack>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </form>
     </PageLayout>
   );
