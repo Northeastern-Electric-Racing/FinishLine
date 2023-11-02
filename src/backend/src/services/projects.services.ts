@@ -714,4 +714,11 @@ export default class ProjectsService {
 
     return newMaterialType;
   }
+
+  /**
+   * Assign a material on a project to a different assembly
+   */
+  static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
+    // TODO: Permission: leadership and up, anyone on project team
+  }
 }

@@ -161,4 +161,16 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async assignMaterialAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialId } = req.params;
+      const { assemblyId } = req.body;
+      const user = await getCurrentUser(res);
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(user, materialId, assemblyId);
+      res.status(200).json(updatedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

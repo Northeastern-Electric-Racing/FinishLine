@@ -62,5 +62,10 @@ projectRouter.post(
   nonEmptyString(body('pdmFileName')).optional(),
   ProjectsController.createAssembly
 );
+projectRouter.post(
+  '/bom/material/:materialId/assign-assembly',
+  nonEmptyString(body('assemblyId')),
+  ProjectsController.assignMaterialAssembly
+);
 
 export default projectRouter;
