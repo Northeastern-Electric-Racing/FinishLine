@@ -5,14 +5,14 @@
 
 import { User, WorkPackageStage } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
-import PageBlock from '../../../layouts/PageBlock';
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
+import { Box } from '@mui/system';
 
 interface Props {
   lead?: string;
@@ -65,7 +65,10 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   );
 
   return (
-    <PageBlock title="Work Package Details">
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
+        Project Details
+      </Typography>
       <Grid container xs={12}>
         <Grid item xs={12} md={4} sx={{ mt: 2, mr: 2 }}>
           <FormControl fullWidth>
@@ -78,8 +81,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
-          <ChangeRequestDropdown fullWidthOn={true} selectHeight="3.4375" control={control} name="crId" />
+        <Grid item xs={12} md={2} lg={2} sx={{ mt: 2, mr: 2 }}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} changeHeight={56} />
         </Grid>
         <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
           <StageSelect />
@@ -121,7 +124,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         <Grid item xs={12} md={4} sx={{ mt: 1 }}>
           <FormLabel> Project Lead</FormLabel>
           <NERAutocomplete
-            autoStyle="workPackage"
             sx={{ mt: 1, width: '90%' }}
             id="project-lead-autocomplete"
             onChange={(_event, value) => setLead(value?.id)}
@@ -136,7 +138,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
           <FormLabel>Project Manager</FormLabel>
 
           <NERAutocomplete
-            autoStyle="workPackage"
             sx={{ mt: 1, width: '90%' }}
             id="project-manager-autocomplete"
             onChange={(_event, value) => setManager(value?.id)}
@@ -147,7 +148,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
           />
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 

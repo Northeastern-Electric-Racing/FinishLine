@@ -25,6 +25,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { useSingleProject } from '../../../hooks/projects.hooks';
 import PageLayout from '../../../components/PageLayout';
+import { Box } from '@mui/system';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -170,10 +171,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         { name: 'Projects', route: routes.PROJECTS },
         { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
       ]}
-      headerRight={
-        <>
-        </>
-      }
+      headerRight={<></>}
     >
       <form
         id="work-package-edit-form"

@@ -26,7 +26,6 @@ interface NERAutocompleteProps {
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
   errorMessage?: FieldError;
-
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -40,12 +39,11 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   listboxProps,
   filterSelectedOptions,
   errorMessage
-
 }) => {
   const theme = useTheme();
 
   const autocompleteStyle = {
-    height: '40px',
+    height: '50%',
     backgroundColor: theme.palette.background.default,
     width: '100%',
     border: 0,
@@ -53,28 +51,13 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     ...sx
   };
 
-  const workPackageStyle = {
-    height: '40px',
-    width: '100%',
-    borderRadius: '4px',
-    border: 0,
-    ...sx
-  };
-
-  function chooseStyle() {
-    if (autoStyle === 'workPackage') {
-      return workPackageStyle;
-    } else {
-      return autocompleteStyle;
-    }
-  }
-
   const autocompleteRenderInput = (params: AutocompleteRenderInputParams) => {
     return (
       <TextField
         {...params}
         InputProps={{
-          ...params.InputProps
+          ...params.InputProps,
+          sx: { height: '56px' }
         }}
         placeholder={placeholder}
         required
@@ -99,7 +82,6 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
       />
       <FormHelperText error={!!errorMessage}>{errorMessage?.message}</FormHelperText>
     </>
-
   );
 };
 
