@@ -3,7 +3,8 @@ import {
   Prisma,
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
-  Manufacturer
+  Manufacturer,
+  Assembly
 } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
@@ -102,6 +103,17 @@ export const sharedProject1: SharedProject = {
   workPackages: [],
   tasks: [],
   teams: []
+};
+
+export const prismaAssembly1: Assembly = {
+  name: 'New Assembly',
+  pdmFileName: 'file.txt',
+  dateCreated: new Date('10-19-2023'),
+  userCreatedId: batman.userId,
+  wbsElementId: 66,
+  dateDeleted: null,
+  userDeletedId: null,
+  assemblyId: '1'
 };
 
 export const prismaManufacturer1: Manufacturer = {

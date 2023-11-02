@@ -1,8 +1,14 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
-import { prismaManufacturer1, prismaProject1, sharedProject1, toolMaterial } from './test-data/projects.test-data';
+import { aquaman, batman, wonderwoman, superman } from './test-data/users.test-data';
+import {
+  prismaProject1,
+  sharedProject1,
+  prismaAssembly1,
+  toolMaterial,
+  prismaManufacturer1
+} from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
@@ -254,6 +260,169 @@ describe('Projects', () => {
       expect(res).toBe(sharedProject1);
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('createAssembly', () => {
+    test('createAssembly fails given invalid project wbs number', async () => {
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 1
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new HttpException(400, `1.1.1 is not a valid project WBS #!`));
+    });
+
+    test('createAssembly fails when associated wbsElement doesnt exist', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new NotFoundException('Project', '1.1.0'));
+    });
+
+    test('createAssembly fails when project has been deleted', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
+        projectId: prismaProject1.projectId
+      } as any);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
+    });
+
+    test('createAssembly fails if name is not unique', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement },
+        projectId: prismaProject1.projectId
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, name: 'a1' });
+
+      // no error, no return value
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'a1',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+    });
+
+    test('createAssembly fails when no permissions', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            wonderwoman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
+    });
+
+    test('createAssembly fails when no permissions - leadership', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            aquaman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
+    });
+
+    test('createAssembly works if the submitter is admin', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
+
+      // no error, no return value
+      await ProjectsService.createAssembly(
+        'new assembly',
+        batman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
+    });
+
+    test('createAssembly works if the submitter is on the team', async () => {
+      mockGetHighestProjectNumber.mockResolvedValue(0);
+      vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+
+      // no error, no return value
+      await ProjectsService.createAssembly(
+        'new assembly',
+        superman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
     });
   });
 
