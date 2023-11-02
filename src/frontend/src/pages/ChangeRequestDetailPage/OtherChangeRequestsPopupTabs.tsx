@@ -73,7 +73,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       }}
     >
       {crList.length !== 0 ? (
-        crList.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>)
+        crList.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr} />)
       ) : (
         <Typography>No related change requests.</Typography>
       )}
