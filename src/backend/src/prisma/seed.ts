@@ -28,7 +28,6 @@ import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
-import { T } from 'vitest/dist/types-198fd1d9';
 
 const prisma = new PrismaClient();
 
@@ -181,7 +180,7 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
-    [aang, katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
