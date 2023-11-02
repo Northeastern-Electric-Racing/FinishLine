@@ -86,7 +86,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         position: 'fixed',
         bottom: '0px',
         left: '65px',
-        width: `calc(100% - 65px)`
+        width: 'calc(100% - 65px)'
       }}
     >
       <Tabs
