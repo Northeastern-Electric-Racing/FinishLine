@@ -55,8 +55,8 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         justifyContent: 'flex-start',
         padding: '20px',
         background: theme.palette.background.paper,
-        borderTop: `solid ${theme.palette.divider}`,
-        borderLeft: `solid ${theme.palette.divider}`
+        borderTop: `solid 1px ${theme.palette.divider}`,
+        borderLeft: `solid 1px ${theme.palette.divider}`
       }}
     >
       {crList.map((cr: ChangeRequest) => (
@@ -83,7 +83,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           },
           '& button': {
             background: theme.palette.background.paper,
-            border: `solid ${theme.palette.divider}`,
+            border: `solid 1px ${theme.palette.divider}`,
             color: theme.palette.text.primary,
             textTransform: 'none'
           },
@@ -91,7 +91,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
             color: theme.palette.text.primary,
             borderBottom: 'transparent'
           },
-          mb: '-1.5px'
+          mb: '-1px'
         }}
       >
         {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
