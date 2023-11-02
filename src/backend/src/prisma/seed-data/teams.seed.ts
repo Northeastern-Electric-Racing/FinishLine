@@ -53,7 +53,7 @@ const avatarBenders = (headId: number): Prisma.TeamCreateArgs => {
     data: {
       teamName: 'Avatar: The Last Airbender',
       slackId: 'avatar',
-            headId
+      headId
     }
   };
 };
@@ -79,6 +79,5 @@ const huskies = (headId: number): Prisma.TeamCreateArgs => {
     }
   };
 };
-
 
 export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends };
