@@ -56,12 +56,27 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         padding: '20px',
         background: theme.palette.background.paper,
         borderTop: `solid 1px ${theme.palette.divider}`,
-        borderLeft: `solid 1px ${theme.palette.divider}`
+        borderLeft: `solid 1px ${theme.palette.divider}`,
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        },
+        overflowX: 'scroll'
       }}
     >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
+      {crList.length !== 0 ? (
+        crList.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>)
+      ) : (
+        <Typography>No related change requests.</Typography>
+      )}
     </Box>
   );
 
@@ -71,7 +86,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         position: 'fixed',
         bottom: '0px',
         left: '65px',
-        minWidth: '100%'
+        width: `calc(100% - 65px)`
       }}
     >
       <Tabs

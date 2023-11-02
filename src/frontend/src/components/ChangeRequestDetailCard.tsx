@@ -106,7 +106,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
   const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
   const pillColor = determineChangeRequestPillColor(changeRequest.type);
   return (
-    <Card sx={{ width: 300, mr: 1, mb: 1, borderRadius: 5 }}>
+    <Card sx={{ minWidth: 300, width: 300, mr: 1, mb: 1, borderRadius: 5 }}>
       <CardContent>
         <Grid container justifyContent="space-between" alignItems="center">
           <Grid item>
