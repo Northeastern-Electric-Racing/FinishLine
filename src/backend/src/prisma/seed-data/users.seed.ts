@@ -402,7 +402,7 @@ const bumi: Prisma.UserCreateInput = {
   googleAuthId: 'bumi',
   email: 'kingBumi@avatarBenders.com',
   role: Role.GUEST
-}
+};
 
 const cristianoRonaldo: Prisma.UserCreateInput = {
   firstName: 'Cristiano',
