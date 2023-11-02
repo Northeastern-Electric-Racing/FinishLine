@@ -63,7 +63,7 @@ describe('Tasks', () => {
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app-admins, project leads, project managers, work package leads, or current team users can create tasks'
+          'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
         )
       );
 
