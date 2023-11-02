@@ -21,11 +21,11 @@ const VerticalDetailDisplay: React.FC<VerticalDetailDisplayProps> = ({ label, co
     <Box
       overflow={'auto'}
       whiteSpace={'nowrap'}
+      bgcolor={backgroundColor}
+      borderRadius={'10px'}
+      justifyContent={'center'}
+      boxShadow={1}
       sx={{
-        backgroundColor: backgroundColor,
-        borderRadius: '10px',
-        justifyContent: 'center',
-        boxShadow: 1,
         '&::-webkit-scrollbar': {
           height: '0.55rem' // Adjust the the thickness of the scrollbar
         },
