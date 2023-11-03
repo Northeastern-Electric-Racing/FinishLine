@@ -63,7 +63,6 @@ projectRouter.post(
   ProjectsController.createAssembly
 );
 
-projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType)
-
+projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
 
 export default projectRouter;
