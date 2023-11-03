@@ -574,6 +574,61 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Deny Reimbursement Request Tests', () => {
+    test('Deny Reimbursement Request fails if Submitter not on Finance Team', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new AccessDeniedException(`You are not a member of the finance team!`));
+    });
+
+    test('Deny Reimbursement Request fails if Finance Team does not exist', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(500, 'Finance team does not exist!'));
+    });
+
+    test('Deny Reimbursement Request fails if the Request does not exist', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
+    });
+
+    test('Deny Reimbursement Request fails if the Request has been deleted', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(GiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney2.reimbursementRequestId));
+    });
+
+    test('Deny Reimbursement Request fails if the request has already been approved', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
+
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
+    });
+    test('Deny Reimbursment Request success', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
+      vi.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
+
+      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
+        prismaGiveMeMyMoney3.reimbursementRequestId,
+        alfred
+      );
+
+      expect(reimbursementStatus.reimbursementStatusId).toStrictEqual(prismaReimbursementStatus.reimbursementStatusId);
+    });
+  });
+
   describe('Reimbursement User Tests', () => {
     test('Throws an error if user is a guest', async () => {
       await expect(ReimbursementRequestService.reimburseUser(100, '2023-01-11T11:12:33.409Z', theVisitor)).rejects.toThrow(

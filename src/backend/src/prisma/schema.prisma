@@ -364,6 +364,7 @@ enum Reimbursement_Status_Type {
   SABO_SUBMITTED
   ADVISOR_APPROVED
   REIMBURSED
+  DENIED
 }
 
 model Reimbursement_Status {
