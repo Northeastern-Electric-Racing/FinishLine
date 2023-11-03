@@ -19,6 +19,8 @@ import {
   prismaGiveMeMyMoney,
   prismaGiveMeMyMoney2,
   prismaGiveMeMyMoney3,
+  prismaGiveMeMyMoney4,
+  prismaGiveMeMyMoney5,
   prismaReimbursementStatus,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
@@ -607,15 +609,23 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney2.reimbursementRequestId));
     });
 
-    test('Deny Reimbursement Request fails if the request has already been approved', async () => {
+    test('Deny Reimbursement Request fails if the request has already been denied', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
-      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney4);
 
       await expect(
-        ReimbursementRequestService.denyReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
-      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
+        ReimbursementRequestService.denyReimbursementRequest(prismaGiveMeMyMoney4.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been denied'));
     });
-    test('Deny Reimbursment Request success', async () => {
+    test('Deny Reimbursement Request fails if the request has already been reimbursed', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney5);
+
+      await expect(
+        ReimbursementRequestService.denyReimbursementRequest(prismaGiveMeMyMoney5.reimbursementRequestId, alfred)
+      ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been reimbursed'));
+    });
+    test('Deny Reimbursement Request success', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
       vi.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);

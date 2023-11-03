@@ -723,10 +723,12 @@ export default class ReimbursementRequestService {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
 
-    if (
-      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
-    ) {
-      throw new HttpException(400, 'This reimbursement request has already been approved');
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been reimbursed');
     }
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
