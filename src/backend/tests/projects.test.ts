@@ -456,7 +456,7 @@ describe('Projects', () => {
     });
     test('createMaterial fails when assembly is not found', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
-      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.assembly, 'findFirst').mockImplementation(() => null);
 
       await expect(() =>
         ProjectsService.createMaterial(
@@ -557,7 +557,7 @@ describe('Projects', () => {
       ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
     });
     test('createMaterial fails if the creator does not have perms', async () => {
-      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, teams: [] });
       vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
       vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
