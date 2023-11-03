@@ -369,12 +369,9 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, { name: string }>(
-    ['vendors', 'create'],
-    async (vendorData: { name: string }) => {
-      const { data } = await createVendor(vendorData);
-      queryClient.invalidateQueries(['vendors']);
-      return data;
-    }
-  );
+  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
+    const { data } = await createVendor(vendorData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
 };
