@@ -478,7 +478,6 @@ describe('Projects', () => {
   });
 
   describe('Deleting material type', () => {
-
     test('Delete Material Type does not work', async () => {
       await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
         new AccessDeniedException('Only an admin or head can delete a material type')
