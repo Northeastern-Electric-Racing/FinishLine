@@ -720,5 +720,13 @@ export default class ProjectsService {
    */
   static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
     // TODO: Permission: leadership and up, anyone on project team
+    if (!isLeadership(submitter.role))
+      throw new AccessDeniedException('Only leadership or above can create a material type');
+
+    const material = await prisma.material.findUnique({ where: { materialId } });
+    if (!material) throw new HttpException(400, `The material ${materialId} does not exist`);
+
+    const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });
+    return updatedMaterial;
   }
 }
