@@ -655,7 +655,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
 
     if (assemblyId) {
-      const assembly = prisma.assembly.findFirst({ where: { assemblyId } });
+      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
       if (!assembly) throw new NotFoundException('Assembly', assemblyId);
     }
 
