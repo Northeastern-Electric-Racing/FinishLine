@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman, superman } from './test-data/users.test-data';
+import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -474,6 +474,23 @@ describe('Projects', () => {
       const materialType = await ProjectsService.createMaterialType('NERSoftwareTools', batman);
       expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Deleting material type', () => {
+
+    test('Delete Material Type does not work', async () => {
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Only an admin or head can delete a material type')
+      );
+    });
+
+    test('Delete Material Type works', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.material_Type, 'delete').mockResolvedValue(toolMaterial);
+      const deletedMaterialType = await ProjectsService.deleteMaterialType('NERSoftwareTools', superman);
+      expect(deletedMaterialType.name).toBe('NERSoftwareTools');
+      expect(prisma.material_Type.delete).toBeCalledTimes(1);
     });
   });
 });

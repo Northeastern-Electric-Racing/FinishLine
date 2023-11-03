@@ -1,5 +1,5 @@
 import { Material_Type, User, Assembly } from '@prisma/client';
-import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { isAdmin, isGuest, isHead, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -713,5 +713,32 @@ export default class ProjectsService {
     });
 
     return newMaterialType;
+  }
+
+  /**
+   * Deletes a material type based on the given Id
+   * @param submitter the user who is deleting the material type
+   * @param materialTypeId the Id of the material type being deleted
+   * @returns the deleted material type
+   */
+  static async deleteMaterialType(materialTypeId: string, submitter: User): Promise<Material_Type> {
+    if (!isHead(submitter.role) && !isAdmin(submitter.role)) {
+      throw new AccessDeniedException('Only an admin or head can delete a material type');
+    }
+    const materialType = await prisma.material_Type.findUnique({
+      where: {
+        name: materialTypeId
+      }
+    });
+
+    if (!materialType) throw new HttpException(400, `This material type does not exist`);
+
+    await prisma.material_Type.delete({
+      where: {
+        name: materialTypeId
+      }
+    });
+
+    return materialType;
   }
 }
