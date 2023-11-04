@@ -115,7 +115,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormLabel> Project Lead</FormLabel>
+          <FormLabel> Project Head</FormLabel>
           <NERAutocomplete
             sx={{ mt: 1, width: '90%' }}
             id="project-lead-autocomplete"
