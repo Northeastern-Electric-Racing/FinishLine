@@ -640,13 +640,13 @@ describe('Reimbursement Requests', () => {
     });
 
     test('Successfuly changes Vendors name', async () => {
-      vi.spyOn(prisma.vendor, 'update').mockResolvedValue(PopEyes);
+      // vi.spyOn(prisma.vendor, 'update').mockResolvedValue(PopEyes);
 
       expect(PopEyes.vendorId).toBe('CHICKEN');
 
-      ReimbursementRequestService.editVendors('3GreenValleyDrive', PopEyes.vendorId, batman);
+      const vendor = await ReimbursementRequestService.editVendors('1i56826', PopEyes.vendorId, batman);
 
-      expect(PopEyes.vendorId).toBe('3GreenValleyDrive');
+      expect(vendor.vendorId).toBe('1i56826');
     });
   });
 });

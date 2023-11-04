@@ -708,13 +708,13 @@ export default class ReimbursementRequestService {
       where: { name }
     });
 
-    if (vendorExists) throw new HttpException(400, 'vendor name already exists');
+    console.log(vendorExists);
+
+    if (!!vendorExists) throw new HttpException(400, 'vendor name already exists');
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
-      data: {
-        name
-      }
+      data: { name }
     });
 
     return vendor;
