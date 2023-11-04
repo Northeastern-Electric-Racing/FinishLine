@@ -1,6 +1,5 @@
-import { Material_Status } from '@prisma/client';
 import { ValidationChain } from 'express-validator';
-import { ClubAccount } from 'shared';
+import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
@@ -47,7 +46,5 @@ export const isAccount = (validationObject: ValidationChain): ValidationChain =>
 };
 
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject
-    .isString()
-    .isIn([Material_Status.ORDERED, Material_Status.RECEIVED, Material_Status.SHIPPED, Material_Status.UNORDERED]);
+  return validationObject.isString().isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered]);
 };

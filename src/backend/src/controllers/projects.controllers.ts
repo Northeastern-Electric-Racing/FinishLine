@@ -159,7 +159,7 @@ export default class ProjectsController {
       } = req.body;
       const creator = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      const id = await ProjectsService.createMaterial(
+      const material = await ProjectsService.createMaterial(
         creator,
         name,
         status,
@@ -176,7 +176,7 @@ export default class ProjectsController {
         assemblyId,
         pdmFileName
       );
-      return res.status(200).json({ message: `Successfully created material with id #${id}` });
+      return material;
     } catch (error: unknown) {
       next(error);
     }

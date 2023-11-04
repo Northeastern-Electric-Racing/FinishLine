@@ -1,4 +1,4 @@
-import { Material_Type, User, Assembly, Material_Status } from '@prisma/client';
+import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -609,12 +609,10 @@ export default class ProjectsService {
    * Creates a new Material
    * @param creator the user creating the material
    * @param name the name of the material
-   * @param assemblyId the id of the Assembly for the material
    * @param status the Material Status of the material
    * @param materialTypeName the name of the Material Type
    * @param manufacturerName the name of the material's manufacturer
    * @param manufacturerPartNumber the manufacturer part number for the material
-   * @param pdmFileName the name of the pdm file for the material
    * @param quantity the quantity of material as a number
    * @param unitName the name of the Quantity Unit the quantity is measured in
    * @param price the price of the material in whole cents
@@ -622,7 +620,9 @@ export default class ProjectsService {
    * @param linkUrl the url for the material's link as a string
    * @param notes any notes about the material as a string
    * @param wbsNumber the WBS number of the project associated with this material
-   * @returns the id of the created material
+   * @param assemblyId the id of the Assembly for the material
+   * @param pdmFileName the name of the pdm file for the material
+   * @returns the created material
    */
   static async createMaterial(
     creator: User,
@@ -640,7 +640,7 @@ export default class ProjectsService {
     wbsNumber: WbsNumber,
     assemblyId?: string,
     pdmFileName?: string
-  ): Promise<string> {
+  ): Promise<Material> {
     const project = await prisma.project.findFirst({
       where: {
         wbsElement: {
@@ -699,7 +699,7 @@ export default class ProjectsService {
       }
     });
 
-    return createdMaterial.materialId;
+    return createdMaterial;
   }
 
   /**

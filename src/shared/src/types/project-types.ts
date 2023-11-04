@@ -95,3 +95,9 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
+
+export enum MaterialStatus {
+  Ordered = 'ORDERED',
+  Received = 'RECEIVED',
+  Unordered = 'UNORDERED'
+}
