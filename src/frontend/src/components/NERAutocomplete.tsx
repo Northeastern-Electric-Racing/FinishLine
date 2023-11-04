@@ -6,14 +6,14 @@
 import {
   Autocomplete,
   AutocompleteRenderInputParams,
-  InputAdornment,
+  FormHelperText,
   SxProps,
   TextField,
   Theme,
   useTheme
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { HTMLAttributes } from 'react';
+import { FieldError } from 'react-hook-form';
 
 interface NERAutocompleteProps {
   id: string;
@@ -25,6 +25,7 @@ interface NERAutocompleteProps {
   value?: { label: string; id: string } | null;
   listboxProps?: HTMLAttributes<HTMLUListElement>;
   filterSelectedOptions?: boolean;
+  errorMessage?: FieldError;
 }
 
 const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
@@ -36,23 +37,17 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   sx,
   value,
   listboxProps,
-  filterSelectedOptions
+  filterSelectedOptions,
+  errorMessage
 }) => {
   const theme = useTheme();
 
   const autocompleteStyle = {
-    height: '40px',
+    height: '50%',
     backgroundColor: theme.palette.background.default,
     width: '100%',
-    borderRadius: '25px',
     border: 0,
-    '.MuiOutlinedInput-notchedOutline': {
-      borderColor: 'black',
-      borderRadius: '25px'
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'red'
-    },
+    borderColor: 'black',
     ...sx
   };
 
@@ -62,11 +57,7 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
         {...params}
         InputProps={{
           ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          )
+          sx: { height: '56px' }
         }}
         placeholder={placeholder}
         required
@@ -75,19 +66,22 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   };
 
   return (
-    <Autocomplete
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      disablePortal
-      id={id}
-      onChange={onChange}
-      options={options}
-      sx={autocompleteStyle}
-      size={size}
-      renderInput={autocompleteRenderInput}
-      value={value}
-      filterSelectedOptions={filterSelectedOptions}
-      ListboxProps={listboxProps}
-    />
+    <>
+      <Autocomplete
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        disablePortal
+        id={id}
+        onChange={onChange}
+        options={options}
+        sx={autocompleteStyle}
+        size={size}
+        renderInput={autocompleteRenderInput}
+        value={value}
+        filterSelectedOptions={filterSelectedOptions}
+        ListboxProps={listboxProps}
+      />
+      <FormHelperText error={!!errorMessage}>{errorMessage?.message}</FormHelperText>
+    </>
   );
 };
 
