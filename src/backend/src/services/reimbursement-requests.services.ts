@@ -704,7 +704,7 @@ export default class ReimbursementRequestService {
    * Adds a reimbursement status with type denied to the given reimbursement request
    *
    * @param reimbursementRequestId the id of the reimbursement request to deny
-   * @param submitter the user who is approving the reimbursement request
+   * @param submitter the user who is denying the reimbursement request
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User) {
