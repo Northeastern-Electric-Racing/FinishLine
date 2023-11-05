@@ -99,5 +99,6 @@ export interface LinkCreateArgs {
 export enum MaterialStatus {
   Ordered = 'ORDERED',
   Received = 'RECEIVED',
-  Unordered = 'UNORDERED'
+  Unordered = 'UNORDERED',
+  Shipped = 'SHIPPED'
 }

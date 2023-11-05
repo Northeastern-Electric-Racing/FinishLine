@@ -176,7 +176,7 @@ export default class ProjectsController {
         assemblyId,
         pdmFileName
       );
-      return material;
+      return res.status(200).json(material);
     } catch (error: unknown) {
       next(error);
     }

@@ -46,5 +46,7 @@ export const isAccount = (validationObject: ValidationChain): ValidationChain =>
 };
 
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered]);
+  return validationObject
+    .isString()
+    .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
 };
