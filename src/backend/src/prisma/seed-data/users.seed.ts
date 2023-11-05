@@ -313,7 +313,7 @@ const aang: Prisma.UserCreateInput = {
   lastName: 'Airbender',
   googleAuthId: 'aang',
   email: 'aang@avatarBenders.com',
-  role: Role.GUEST
+  role: Role.HEAD
 };
 
 const katara: Prisma.UserCreateInput = {
