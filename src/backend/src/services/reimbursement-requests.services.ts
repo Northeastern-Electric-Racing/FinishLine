@@ -701,6 +701,51 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Adds a reimbursement status with type denied to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to deny
+   * @param submitter the user who is approving the reimbursement request
+   * @returns the created reimbursment status
+   */
+  static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.DENIED,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
    * Downloads the receipt image file with the given google file id
    *
    * @param fileId the google file id of the receipt image
