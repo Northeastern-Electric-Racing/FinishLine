@@ -141,7 +141,8 @@ export default class ProjectsController {
 
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
-      const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers();
+      const user = await getCurrentUser(res);
+      const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers(user);
       return res.status(200).json(manufacturers);
     } catch (error: unknown) {
       next(error);

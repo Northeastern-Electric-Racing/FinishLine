@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import { prismaManufacturer1, prismaProject1, sharedProject1 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
@@ -284,10 +284,18 @@ describe('Projects', () => {
     test('Get all Manufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
 
-      const res = await ProjectsService.getAllManufacturers();
+      const res = await ProjectsService.getAllManufacturers(batman);
 
       expect(prisma.manufacturer.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([]);
+    });
+
+    test('Get all Manufacturer fails from guest', async () => {
+      vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
+
+      await expect(ProjectsService.getAllManufacturers(theVisitor)).rejects.toThrow(
+        new AccessDeniedGuestException('Guests cannot get the manufacturers')
+      );
     });
   });
 });

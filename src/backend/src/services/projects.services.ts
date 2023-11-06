@@ -1,4 +1,4 @@
-import { Manufacturer, User } from '@prisma/client';
+import { Manufacturer, Role, User } from '@prisma/client';
 import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -634,12 +634,15 @@ export default class ProjectsService {
    * Get all the manufacturers in the database.
    * @returns all the manufacturers
    */
-  static async getAllManufacturers(): Promise<Manufacturer[]> {
+  static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Guests cannot get the manufacturers');
+    }
+
     return (
       await prisma.manufacturer.findMany({
         ...manufacturerQueryArgs
       })
     ).map(manufacturerTransformer);
   }
-
 }
