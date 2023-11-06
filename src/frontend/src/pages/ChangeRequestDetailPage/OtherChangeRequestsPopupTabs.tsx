@@ -27,7 +27,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   // the CRs submitted or reviewed by the submitter of this CR
-  const crFromSameUser = changeRequests?.filter(
+  const crsFromSubmitter = changeRequests?.filter(
     (cr) =>
       (cr.submitter.userId === changeRequest.submitter.userId || cr.reviewer?.userId === changeRequest.submitter.userId) &&
       cr.crId !== changeRequest.crId
@@ -42,9 +42,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           {tab === value ? <ExpandMore sx={{ pl: 0.5 }} /> : <ExpandLess sx={{ pl: 0.5 }} />}
         </Typography>
       }
-      onClick={() => {
-        tab === value && setTab(0);
-      }}
+      onClick={() => tab === value && setTab(0)}
     />
   );
 
@@ -111,7 +109,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       >
         {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
       </Tabs>
-      <Collapse in={tab !== 0}>{tab === 1 && displayCRCards(crFromSameUser || [])}</Collapse>
+      <Collapse in={tab !== 0}>{tab === 1 && displayCRCards(crsFromSubmitter || [])}</Collapse>
     </Box>
   );
 };

@@ -147,7 +147,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         changes={changeRequest.implementedChanges || []}
         overallDateImplemented={changeRequest.dateImplemented}
       />
-
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
       )}
