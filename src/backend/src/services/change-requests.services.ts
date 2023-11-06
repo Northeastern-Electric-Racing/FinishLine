@@ -579,12 +579,20 @@ export default class ChangeRequestsService {
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
     if (teams && teams.length > 0) {
-      teams.forEach(async (team) => {
+      const completion: Promise<void>[] = teams.map(async (team) => {
         const slackMsg =
           `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
           `for the ${project.wbsElement.name} project`;
-        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+        try {
+          await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new HttpException(511, `Failed to send slack notification for CR: ${createdCR.crId}`);
+          }
+        }
       });
+
+      await Promise.all(completion);
     }
 
     return createdCR.crId;

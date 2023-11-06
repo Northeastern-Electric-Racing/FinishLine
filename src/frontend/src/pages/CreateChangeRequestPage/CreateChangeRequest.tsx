@@ -44,31 +44,46 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
 
   const { userId } = auth.user;
 
+  const addProposedSolutions = async (crId: number) => {
+    proposedSolutions.forEach(async (ps) => {
+      const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
+
+      await cpsMutateAsync({
+        crId,
+        submitterId: userId,
+        description,
+        timelineImpact,
+        scopeImpact,
+        budgetImpact
+      });
+    });
+  };
+
   const handleConfirm = async (data: FormInput) => {
+    let crId: number;
     try {
       const cr = await mutateAsync({
         ...data,
         wbsNum: validateWBS(wbsNum)
       });
-      const crId = parseInt(cr.message);
-      proposedSolutions.forEach(async (ps) => {
-        const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-
-        await cpsMutateAsync({
-          crId,
-          submitterId: userId,
-          description,
-          timelineImpact,
-          scopeImpact,
-          budgetImpact
-        });
-      });
-
-      history.push(routes.CHANGE_REQUESTS);
+      crId = parseInt(cr.message);
     } catch (e) {
       if (e instanceof Error) {
+        if (e.message.startsWith('Failed to send slack notification for CR: ')) {
+          const splitMessage = e.message.split(': ');
+          crId = parseInt(splitMessage[1]);
+          try {
+            await addProposedSolutions(crId);
+          } catch (e) {
+            if (e instanceof Error) {
+              toast.error(e.message);
+            }
+          }
+        }
         toast.error(e.message);
       }
+    } finally {
+      history.push(routes.CHANGE_REQUESTS);
     }
   };
 
