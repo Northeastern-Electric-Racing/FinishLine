@@ -6,7 +6,7 @@
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
 import { useAuth } from '../../hooks/auth.hooks';
-import { useCreateProposeSolution, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
 import ErrorPage from '../ErrorPage';
@@ -28,58 +28,22 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const query = useQuery();
   const history = useHistory();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
-  const {
-    isLoading: cpsIsLoading,
-    isError: cpsIsError,
-    error: cpsError,
-    mutateAsync: cpsMutateAsync
-  } = useCreateProposeSolution();
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
 
-  if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading || !auth.user) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
-
-  const { userId } = auth.user;
-
-  const addProposedSolutions = async (crId: number) => {
-    proposedSolutions.forEach(async (ps) => {
-      const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-
-      await cpsMutateAsync({
-        crId,
-        submitterId: userId,
-        description,
-        timelineImpact,
-        scopeImpact,
-        budgetImpact
-      });
-    });
-  };
 
   const handleConfirm = async (data: FormInput) => {
-    let crId: number;
     try {
-      const cr = await mutateAsync({
+      await mutateAsync({
         ...data,
-        wbsNum: validateWBS(wbsNum)
+        wbsNum: validateWBS(wbsNum),
+        proposedSolutions
       });
-      crId = parseInt(cr.message);
     } catch (e) {
       if (e instanceof Error) {
-        if (e.message.startsWith('Failed to send slack notification for CR: ')) {
-          const splitMessage = e.message.split(': ');
-          crId = parseInt(splitMessage[1]);
-          try {
-            await addProposedSolutions(crId);
-          } catch (e) {
-            if (e instanceof Error) {
-              toast.error(e.message);
-            }
-          }
-        }
         toast.error(e.message);
       }
     } finally {

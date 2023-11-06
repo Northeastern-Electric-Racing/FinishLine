@@ -1,4 +1,16 @@
-import { ChangeRequest, isAdmin, isGuest, isLeadership, isNotLeadership, wbsPipe } from 'shared';
+import {
+  ChangeRequest,
+  ChangeRequestReason,
+  ChangeRequestStatus,
+  isAdmin,
+  isGuest,
+  isLeadership,
+  isNotLeadership,
+  ProposedSolution,
+  ProposedSolutionCreateArgs,
+  StandardChangeRequest,
+  wbsPipe
+} from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
@@ -527,10 +539,14 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: { type: Scope_CR_Why_Type; explain: string }[]
-  ): Promise<number> {
+    why: { type: Scope_CR_Why_Type; explain: string }[],
+    proposedSolutions: ProposedSolutionCreateArgs[]
+  ): Promise<StandardChangeRequest> {
     // verify user is allowed to create standard change requests
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
+
+    //verify proposed solutions length is greater than 0
+    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -576,6 +592,19 @@ export default class ChangeRequestsService {
       }
     });
 
+    const proposedSolutionPromises = proposedSolutions.map(async (proposedSolution) => {
+      return await this.addProposedSolution(
+        submitter,
+        createdCR.crId,
+        proposedSolution.budgetImpact,
+        proposedSolution.description,
+        proposedSolution.timelineImpact,
+        proposedSolution.scopeImpact
+      );
+    });
+
+    const createdProposedSolutions = await Promise.all(proposedSolutionPromises);
+
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
     if (teams && teams.length > 0) {
@@ -583,19 +612,34 @@ export default class ChangeRequestsService {
         const slackMsg =
           `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
           `for the ${project.wbsElement.name} project`;
-        try {
-          await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
-        } catch (error) {
-          if (error instanceof Error) {
-            throw new HttpException(511, `Failed to send slack notification for CR: ${createdCR.crId}`);
-          }
-        }
+        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
       });
 
       await Promise.all(completion);
     }
 
-    return createdCR.crId;
+    return {
+      ...createdCR,
+      what,
+      why: why.map((why) => ({ explain: why.explain, type: why.type as ChangeRequestReason })),
+      type,
+      wbsNum: {
+        carNumber,
+        projectNumber,
+        workPackageNumber
+      },
+      wbsName: wbsElement.name,
+      submitter,
+      status: ChangeRequestStatus.Open,
+      requestedReviewers: [],
+      dateReviewed: undefined,
+      accepted: undefined,
+      reviewNotes: undefined,
+      scopeImpact: '',
+      budgetImpact: 0,
+      timelineImpact: 0,
+      proposedSolutions: createdProposedSolutions
+    };
   }
 
   /**
@@ -617,7 +661,7 @@ export default class ChangeRequestsService {
     description: string,
     timelineImpact: number,
     scopeImpact: string
-  ): Promise<string> {
+  ): Promise<ProposedSolution> {
     // verify user is allowed to add proposed solutions
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('add proposed solutions');
 
@@ -643,10 +687,11 @@ export default class ChangeRequestsService {
         budgetImpact,
         changeRequest: { connect: { scopeCrId: foundScopeCR.scopeCrId } },
         createdBy: { connect: { userId: submitter.userId } }
-      }
+      },
+      include: { createdBy: true }
     });
 
-    return createProposedSolution.proposedSolutionId;
+    return { ...createProposedSolution, id: createProposedSolution.proposedSolutionId };
   }
 
   /**

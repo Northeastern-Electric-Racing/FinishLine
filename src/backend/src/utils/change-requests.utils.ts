@@ -28,7 +28,7 @@ export const sendSlackChangeRequestNotification = async (
   crId: number,
   budgetImpact?: number
 ) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
