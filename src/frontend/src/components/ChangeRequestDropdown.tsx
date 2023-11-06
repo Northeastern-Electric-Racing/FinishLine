@@ -1,6 +1,6 @@
-import { Box, FormControl, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, FormHelperText, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
@@ -12,7 +12,7 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   const fiveDaysAgo = subDays(today, 5);
 
   const filteredRequests = changeRequests.filter(
-    (cr) => cr.dateReviewed && cr.accepted && isWithinInterval(cr.dateReviewed, { start: fiveDaysAgo, end: today })
+    (cr) => cr.dateImplemented && cr.accepted && isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today })
   );
 
   // The current user's CRs should be at the top
@@ -33,9 +33,11 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
 interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
+  errors: FieldErrors<ChangeRequest>;
+  changeHeight?: number;
 }
 
-const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -48,8 +50,8 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   }));
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <FormControl>
+    <Box>
+      <FormControl fullWidth>
         <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
         <Controller
           control={control}
@@ -63,7 +65,8 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
+              sx={{ textAlign: 'left', height: changeHeight }}
+              error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'bottom',
@@ -83,6 +86,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
             </Select>
           )}
         />
+        <FormHelperText error>{errors.crId?.message}</FormHelperText>
       </FormControl>
     </Box>
   );
