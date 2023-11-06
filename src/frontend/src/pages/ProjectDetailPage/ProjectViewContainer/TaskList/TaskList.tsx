@@ -66,9 +66,14 @@ const TaskList = ({ project }: TaskListProps) => {
   const { user } = auth;
   if (!user) return <LoadingIndicator />;
 
+  const isWorkPackageLeadOrManager = project.workPackages.some((workPackage) => {
+    return workPackage.projectLead?.userId === user.userId || workPackage.projectManager?.userId === user.userId;
+  });
+
   const createTaskPermissions =
     isLeadership(user.role) ||
     project.projectLead?.userId === user.userId ||
+    isWorkPackageLeadOrManager ||
     project.projectManager?.userId === user.userId ||
     project.teams.some((team) => team.head.userId === user.userId) ||
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId));
