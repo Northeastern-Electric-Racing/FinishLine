@@ -69,8 +69,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
       <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
         Project Details
       </Typography>
-      <Grid container xs={12}>
-        <Grid item xs={12} md={4} sx={{ mt: 2, mr: 2 }}>
+      <Grid container spacing={1} xs={12}>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
@@ -81,13 +81,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} lg={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={3}>
           <ChangeRequestDropdown control={control} name="crId" errors={errors} changeHeight={56} />
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={3}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -109,7 +109,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
@@ -121,10 +121,10 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={4} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={5}>
           <FormLabel> Project Lead</FormLabel>
           <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
+            sx={{ width: '100%' }}
             id="project-lead-autocomplete"
             onChange={(_event, value) => setLead(value?.id)}
             options={usersForProjectLead.map(userToOption)}
@@ -133,12 +133,10 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
           />
         </Grid>
-
-        <Grid item xs={12} md={4} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={5}>
           <FormLabel>Project Manager</FormLabel>
-
           <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
+            sx={{ width: '100%' }}
             id="project-manager-autocomplete"
             onChange={(_event, value) => setManager(value?.id)}
             options={usersForProjectManager.map(userToOption)}
