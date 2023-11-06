@@ -344,7 +344,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
       vi.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
       const response = await ChangeRequestsService.addProposedSolution(aquaman, crId, 1000, description, 10, 'huge');
-      expect(response).toStrictEqual({...prismaProposedSolution1, id: prismaProposedSolution1.proposedSolutionId});
+      expect(response).toStrictEqual({ ...prismaProposedSolution1, id: prismaProposedSolution1.proposedSolutionId });
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
