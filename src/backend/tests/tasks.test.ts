@@ -1,5 +1,5 @@
-import { Task_Priority, Task_Status } from '@prisma/client';
-import { TaskStatus, WbsNumber } from 'shared';
+import { Task, Task_Priority, Task_Status } from '@prisma/client';
+import { WbsNumber } from 'shared';
 import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
 import prisma from '../src/prisma/prisma';
 import TasksService from '../src/services/tasks.services';
