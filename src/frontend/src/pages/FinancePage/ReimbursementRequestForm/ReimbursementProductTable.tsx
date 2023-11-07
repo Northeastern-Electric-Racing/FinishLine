@@ -21,7 +21,7 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { ReimbursementProductCreateArgs, WbsNumber, validateWBS, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
