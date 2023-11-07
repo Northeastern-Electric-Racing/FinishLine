@@ -717,6 +717,10 @@ export default class ProjectsService {
 
   /**
    * Assign a material on a project to a different assembly
+   * @param submitter the submitter
+   * @param materialId the material that will be moved
+   * @param assemblyId the assembly to change the material to
+   * @throws if the submitter does not have the relevant positions
    */
   static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
     // TODO: Permission: leadership and up, anyone on project team
@@ -726,6 +730,7 @@ export default class ProjectsService {
     const material = await prisma.material.findUnique({ where: { materialId } });
     if (!material) throw new HttpException(400, `The material ${materialId} does not exist`);
 
+    // Assign a material on a project to a different assembly
     const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });
     return updatedMaterial;
   }
