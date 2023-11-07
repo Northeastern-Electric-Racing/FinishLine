@@ -18,6 +18,7 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createProject
 );
+
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),

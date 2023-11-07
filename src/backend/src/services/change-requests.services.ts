@@ -1,7 +1,5 @@
 import {
   ChangeRequest,
-  ChangeRequestReason,
-  ChangeRequestStatus,
   isAdmin,
   isGuest,
   isLeadership,
@@ -603,7 +601,7 @@ export default class ChangeRequestsService {
       );
     });
 
-    const createdProposedSolutions = await Promise.all(proposedSolutionPromises);
+    await Promise.all(proposedSolutionPromises);
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
@@ -618,28 +616,12 @@ export default class ChangeRequestsService {
       await Promise.all(completion);
     }
 
-    return {
-      ...createdCR,
-      what,
-      why: why.map((why) => ({ explain: why.explain, type: why.type as ChangeRequestReason })),
-      type,
-      wbsNum: {
-        carNumber,
-        projectNumber,
-        workPackageNumber
-      },
-      wbsName: wbsElement.name,
-      submitter,
-      status: ChangeRequestStatus.Open,
-      requestedReviewers: [],
-      dateReviewed: undefined,
-      accepted: undefined,
-      reviewNotes: undefined,
-      scopeImpact: '',
-      budgetImpact: 0,
-      timelineImpact: 0,
-      proposedSolutions: createdProposedSolutions
-    };
+    const finishedCR = await prisma.change_Request.findUnique({
+      where: { crId: createdCR.crId },
+      ...changeRequestQueryArgs
+    });
+
+    return changeRequestTransformer(finishedCR!) as StandardChangeRequest;
   }
 
   /**

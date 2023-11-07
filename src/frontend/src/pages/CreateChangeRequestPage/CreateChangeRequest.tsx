@@ -5,7 +5,6 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { useAuth } from '../../hooks/auth.hooks';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
@@ -24,7 +23,6 @@ export interface FormInput {
 }
 
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
-  const auth = useAuth();
   const query = useQuery();
   const history = useHistory();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
@@ -32,7 +30,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
 
-  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   const handleConfirm = async (data: FormInput) => {
