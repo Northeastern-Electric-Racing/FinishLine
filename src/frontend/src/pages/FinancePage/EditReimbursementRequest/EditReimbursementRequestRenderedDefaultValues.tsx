@@ -1,4 +1,4 @@
-import { ReimbursementRequest } from 'shared';
+import { OtherProductReason, ReimbursementRequest, WbsNumber } from 'shared';
 import ReimbursementRequestForm, {
   ReimbursementRequestDataSubmission
 } from '../ReimbursementRequestForm/ReimbursementRequestForm';
@@ -35,7 +35,9 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
           dateOfExpense: new Date(reimbursementRequest.dateOfExpense),
           expenseTypeId: reimbursementRequest.expenseType.expenseTypeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
-            wbsNum: product.wbsNum,
+            reason: (product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum
+              ? (product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum
+              : (product.reimbursementProductReason as OtherProductReason),
             name: product.name,
             cost: Number(centsToDollar(product.cost))
           })),

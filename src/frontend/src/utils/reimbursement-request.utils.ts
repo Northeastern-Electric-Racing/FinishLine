@@ -13,8 +13,12 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
   reimbursementRequest: ReimbursementRequest
 ): Map<string, ReimbursementProduct[]> => {
   const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
-  reimbursementRequest.reimbursementProducts.forEach((product) => {
-    const wbs = `${wbsPipe(product.wbsNum)} - ${product.wbsName}`;
+  const productWithWbsNums = reimbursementRequest.reimbursementProducts.filter(
+    (product) => !!(product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum
+  );
+  productWithWbsNums.forEach((product) => {
+    const reason = product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string };
+    const wbs = `${wbsPipe(reason.wbsNum)} - ${reason.wbsName}`;
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);

@@ -5,7 +5,13 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Multer } from 'multer';
-import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
+import {
+  Club_Accounts,
+  Other_Reimbursement_Product_Reason,
+  Reimbursement_Request,
+  Reimbursement_Status_Type,
+  User
+} from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -15,6 +21,7 @@ import {
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
+  WbsNumber,
   isAdmin,
   isGuest,
   isHead
@@ -135,7 +142,7 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
-    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProducts = await validateReimbursementProducts(reimbursementProducts);
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -150,20 +157,29 @@ export default class ReimbursementRequestService {
             type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
-        },
-        reimbursementProducts: {
-          createMany: {
-            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
-              return {
-                name: reimbursementProductInfo.name,
-                cost: reimbursementProductInfo.cost,
-                wbsElementId: reimbursementProductInfo.wbsElementId
-              };
-            })
-          }
         }
       }
     });
+
+    const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
+      return await prisma.reimbursement_Product.create({
+        data: {
+          name: product.name,
+          cost: product.cost,
+          reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId,
+          reimbursementProductReason: {
+            create: {
+              wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
+              otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
+                ? undefined
+                : (product.reason as Other_Reimbursement_Product_Reason)
+            }
+          }
+        }
+      });
+    });
+
+    await Promise.all(reimbursementProductsPromises);
 
     return createdReimbursementRequest;
   }

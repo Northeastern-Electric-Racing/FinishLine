@@ -50,15 +50,17 @@ export enum OtherProductReason {
   COMPETITION = 'COMPETITION',
   CONSUMABLES = 'CONSUMABLES',
   GENERAL_STOCK = 'GENERAL_STOCK',
-  SUBSCRIPTIONS_AND_MEMBERSHIPS = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
+  SUBSCRIPTIONS_AND_MEMBERSHIPS = 'SUBSCRIPTIONS_AND_MEMBERSHIPS',
+  UNKNOWN = 'Unknown'
 }
 
+export type ReimbursementProductReason = { wbsNum: WbsNumber; wbsName: string } | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
   dateDeleted?: Date;
   cost: number;
-  reimbursementProductReason: { wbsNum: WbsNumber; wbsName: string } | OtherProductReason;
+  reimbursementProductReason: ReimbursementProductReason;
 }
 
 export interface Vendor {
@@ -75,11 +77,13 @@ export interface ExpenseType {
   allowedRefundSources: ClubAccount[];
 }
 
+export type ReimbursementProductReasonCreateArgs = WbsNumber | OtherProductReason;
+
 export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
-  wbsNum: WbsNumber;
+  reason: ReimbursementProductReasonCreateArgs;
 }
 
 export interface ReimbursementReceiptCreateArgs {

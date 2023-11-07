@@ -290,7 +290,7 @@ describe('Reimbursement Requests', () => {
               id: '1',
               name: 'test',
               cost: 1,
-              wbsNum: {
+              reason: {
                 carNumber: 1,
                 projectNumber: 1,
                 workPackageNumber: 1
@@ -324,7 +324,7 @@ describe('Reimbursement Requests', () => {
             id: '1',
             name: 'test',
             cost: 1,
-            wbsNum: {
+            reason: {
               carNumber: 1,
               projectNumber: 1,
               workPackageNumber: 1

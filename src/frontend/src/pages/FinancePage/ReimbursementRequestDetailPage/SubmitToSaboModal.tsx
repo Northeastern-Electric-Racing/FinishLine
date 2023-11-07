@@ -1,7 +1,7 @@
 import NERModal from '../../../components/NERModal';
 import { Box, Grid, Typography } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
-import { ReimbursementRequest, wbsPipe } from 'shared';
+import { OtherProductReason, ReimbursementRequest, WbsNumber, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -30,7 +30,13 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
 
   const filteredProductsNames = reimbursementProducts
     .filter((product) => !product.dateDeleted)
-    .map((product) => wbsPipe(product.wbsNum) + ' - ' + product.wbsName)
+    .map((product) =>
+      !!(product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum
+        ? wbsPipe((product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum) +
+          ' - ' +
+          (product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsName
+        : (product.reimbursementProductReason as OtherProductReason)
+    )
     .filter((product, index, self) => index === self.indexOf(product))
     .join(', ');
 

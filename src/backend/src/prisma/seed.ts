@@ -795,7 +795,7 @@ const performSeed: () => Promise<void> = async () => {
     [
       {
         name: 'GLUE',
-        wbsNum: {
+        reason: {
           carNumber: 1,
           projectNumber: 1,
           workPackageNumber: 0

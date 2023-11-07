@@ -21,7 +21,7 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, WbsNumber, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
@@ -60,8 +60,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       index: number;
     }[]
   >();
-  reimbursementProducts.forEach((product, index) => {
-    const wbs = wbsPipe(product.wbsNum);
+  const productWithWbsNums = reimbursementProducts.filter((product) => !!(product.reason as WbsNumber).carNumber);
+  productWithWbsNums.forEach((product, index) => {
+    const wbs = wbsPipe(product.reason as WbsNumber);
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push({ ...product, index: index });
@@ -74,13 +75,21 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
 
+  const newProductSelectOptions = [
+    {
+      label: 'Project',
+      id: 'Project'
+    },
+    { label: 'Other Category', id: 'Other' }
+  ];
+
   return (
     <TableContainer>
       <Table>
         <TableHead>
           <TableRow>
             <TableCell width={'40%'}>
-              <FormLabel>Project</FormLabel>
+              <FormLabel>Project/Category</FormLabel>
             </TableCell>
             <TableCell width={'60%'}>
               <FormLabel>Products</FormLabel>
@@ -155,11 +164,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     sx={{ margin: '4px' }}
                     startIcon={<Add />}
                     onClick={() =>
-                      appendProduct({
-                        wbsNum: validateWBS(key),
-                        name: '',
-                        cost: 0
-                      })
+                      // appendProduct({
+                      //   wbsNum: validateWBS(key),
+                      //   name: '',
+                      //   cost: 0
+                      // })
+                      {}
                     }
                   >
                     Add Product
@@ -173,15 +183,15 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               <Autocomplete
                 fullWidth
                 sx={{ my: 1 }}
-                options={wbsElementAutocompleteOptions}
+                options={newProductSelectOptions}
                 onChange={(_event, value) => {
-                  if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
+                  // if (value) appendProduct({ reason: validateWBS(wbsElementAutocompleteOptions[0].id), name: '', cost: 0 });
                 }}
                 value={null}
                 blurOnSelect={true}
                 id={'append-product-autocomplete'}
                 size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select a Project" />}
+                renderInput={(params) => <TextField {...params} placeholder="Select Project or Other Category" />}
               />
             </TableCell>
           </TableRow>

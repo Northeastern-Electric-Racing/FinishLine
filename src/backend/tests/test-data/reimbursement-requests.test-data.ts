@@ -5,6 +5,7 @@ import {
   Reimbursement_Product as PrismaReimbursementProduct,
   Reimbursement_Status as PrismaReimbursementStatus,
   Reimbursement_Status_Type as PrismaReimbursementStatusType,
+  Reimbursement_Product_Reason as PrismaReimbursementProductReason,
   Prisma,
   Club_Accounts,
   User
@@ -64,7 +65,14 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
   name: 'test',
   cost: 0,
   dateDeleted: null,
-  wbsElementId: 1
+  reimbursementProductReasonId: '1'
+};
+
+export const GiveMeMoneyProductReason: PrismaReimbursementProductReason = {
+  reimbursementProductReasonId: '1',
+  reimbursementProductId: '1',
+  wbsElementId: 1,
+  otherReason: null
 };
 
 export const exampleSaboSubmittedStatus: PrismaReimbursementStatus = {
@@ -89,7 +97,9 @@ export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof 
   reimbursementStatuses: [{ ...examplePendingFinanceStatus, user: batman }],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
@@ -117,7 +127,9 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementStatuses: [prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
@@ -127,7 +139,9 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementStatuses: [prismaReimbursementStatus2],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
@@ -137,7 +151,9 @@ export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayloa
   reimbursementStatuses: [prismaReimbursementStatus2, prismaReimbursementStatus],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
@@ -157,8 +173,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   reimbursementStatuses: [],
   reimbursementProducts: [
     {
-      wbsNum: wbsNumOf(prismaWbsElement1),
-      wbsName: 'car',
+      reimbursementProductReason: { wbsNum: wbsNumOf(prismaWbsElement1), wbsName: 'car' },
       dateDeleted: undefined,
       name: GiveMeMoneyProduct.name,
       cost: GiveMeMoneyProduct.cost,

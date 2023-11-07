@@ -3,10 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import {
+  OtherProductReason,
+  ReimbursementProductCreateArgs,
+  ReimbursementProductReasonCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Other_Reimbursement_Product_Reason, Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
@@ -48,8 +55,7 @@ export const validateReimbursementProducts = async (
   {
     name: string;
     cost: number;
-    wbsElementId: number;
-    wbsNum: WbsNumber;
+    reason: { wbsElementId: number; wbsNum: WbsNumber } | OtherProductReason;
   }[]
 > => {
   if (reimbursementProductCreateArgs.length === 0) {
@@ -59,35 +65,44 @@ export const validateReimbursementProducts = async (
   /**
    * Aggregate all the wbsNums for all the reimbursement products
    */
-  const wbsNums = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsNum);
+  const reasons = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.reason);
 
   /**
    * Goes through each wbsNum and finds the wbs element associated with it
    * Checks if the wbs element exists and is not deleted
    */
-  const reimbursementProductsWithWbsElement: Promise<{
+  const reimbursementProductsWithReason: Promise<{
     name: string;
     cost: number;
-    wbsElementId: number;
-    wbsNum: WbsNumber;
-  }>[] = wbsNums.map(async (wbsNum, index) => {
-    const wbsElement = await prisma.wBS_Element.findFirst({
-      where: {
-        carNumber: wbsNum.carNumber,
-        projectNumber: wbsNum.projectNumber,
-        workPackageNumber: wbsNum.workPackageNumber
-      }
-    });
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+    reason: { wbsElementId: number; wbsNum: WbsNumber } | OtherProductReason;
+  }>[] = reasons.map(async (reason: ReimbursementProductReasonCreateArgs, index) => {
+    if (!!(reason as WbsNumber).carNumber) {
+      const wbsNum = reason as WbsNumber;
+      const wbsElement = await prisma.wBS_Element.findFirst({
+        where: {
+          carNumber: wbsNum.carNumber,
+          projectNumber: wbsNum.projectNumber,
+          workPackageNumber: wbsNum.workPackageNumber
+        }
+      });
+      if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
+      return {
+        name: reimbursementProductCreateArgs[index].name,
+        cost: reimbursementProductCreateArgs[index].cost,
+        reason: { wbsElementId: wbsElement.wbsElementId, wbsNum }
+      };
+    }
+    const otherReason = reason as OtherProductReason;
     return {
-      ...reimbursementProductCreateArgs[index],
-      wbsElementId: wbsElement.wbsElementId
+      name: reimbursementProductCreateArgs[index].name,
+      cost: reimbursementProductCreateArgs[index].cost,
+      reason: otherReason
     };
   });
 
-  return Promise.all(reimbursementProductsWithWbsElement);
+  return Promise.all(reimbursementProductsWithReason);
 };
 
 /**
@@ -190,15 +205,26 @@ const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
 const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
   //create the new reimbursement products
   if (products.length !== 0) {
-    const validatedReimbursementProudcts = await validateReimbursementProducts(products);
-    await prisma.reimbursement_Product.createMany({
-      data: validatedReimbursementProudcts.map((product) => ({
-        name: product.name,
-        cost: product.cost,
-        wbsElementId: product.wbsElementId,
-        reimbursementRequestId
-      }))
+    const validatedReimbursementProducts = await validateReimbursementProducts(products);
+    const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
+      return await prisma.reimbursement_Product.create({
+        data: {
+          name: product.name,
+          cost: product.cost,
+          reimbursementRequestId,
+          reimbursementProductReason: {
+            create: {
+              wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
+              otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
+                ? undefined
+                : (product.reason as Other_Reimbursement_Product_Reason)
+            }
+          }
+        }
+      });
     });
+
+    await Promise.all(reimbursementProductsPromises);
   }
 };
 
