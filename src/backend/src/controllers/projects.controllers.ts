@@ -164,7 +164,7 @@ export default class ProjectsController {
   static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialTypeId } = req.params;
-      const user = getCurrentUser(res);
+      const user = await getCurrentUser(res);
       const deletedMaterial = await ProjectsService.deleteMaterialType(materialTypeId, user);
       res.status(200).json(deletedMaterial);
     } catch (error: unknown) {
