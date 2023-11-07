@@ -4,18 +4,21 @@ import PageBlock from '../../../layouts/PageBlock';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { ProjectEditFormInput } from './ProjectEditContainer';
+import { ProjectFormInput } from './ProjectFormContainer';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 
 interface ProjectEditDetailsProps {
   users: User[];
-  control: Control<ProjectEditFormInput>;
-  errors: FieldErrorsImpl<ProjectEditFormInput>;
+  control: Control<ProjectFormInput>;
+  errors: FieldErrorsImpl<ProjectFormInput>;
   projectManager?: string;
   projectLead?: string;
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
+  creatingProject: boolean;
+  setcrId: (crId?: number) => void;
+  setCarNumber: (carNumber?: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -30,7 +33,8 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   projectManager,
   projectLead,
   setProjectLead,
-  setProjectManager
+  setProjectManager,
+  creatingProject
 }) => {
   return (
     <PageBlock title="Project Details">
@@ -56,6 +60,32 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
               type="number"
               placeholder="Enter budget..."
               errorMessage={errors.budget}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={4} sx={{ display: creatingProject ? 'flex' : 'none' }}>
+          <FormControl fullWidth>
+            <FormLabel>crId</FormLabel>
+            <ReactHookTextField
+              name="crId"
+              startAdornment={<AttachMoney />}
+              control={control}
+              type="number"
+              placeholder="Enter crId..."
+              errorMessage={errors.crId}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={4} sx={{ display: creatingProject ? 'flex' : 'none' }}>
+          <FormControl fullWidth>
+            <FormLabel>Car Number</FormLabel>
+            <ReactHookTextField
+              name="carNumber"
+              startAdornment={<AttachMoney />}
+              control={control}
+              type="number"
+              placeholder="Enter Car number..."
+              errorMessage={errors.crId}
             />
           </FormControl>
         </Grid>

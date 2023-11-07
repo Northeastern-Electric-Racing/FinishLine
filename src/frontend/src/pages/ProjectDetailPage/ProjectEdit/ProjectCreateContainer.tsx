@@ -4,30 +4,19 @@
  */
 
 import { LinkCreateArgs, Project } from 'shared';
-import { wbsPipe } from '../../../utils/pipes';
-import { routes } from '../../../utils/routes';
-import { useEditSingleProject } from '../../../hooks/projects.hooks';
+import { useCreateSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Box, FormControl, Stack, Typography } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import ProjectEditDetails from './ProjectEditDetails';
-import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
-import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LinksEditView from '../../../components/Link/LinksEditView';
-import { EditSingleProjectPayload } from '../../../utils/types';
+import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
-import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 import ProjectFormContainer from './ProjectFormContainer';
 import { ProjectFormInput } from './ProjectFormContainer';
 
@@ -43,26 +32,20 @@ const schema = yup.object().shape({
   summary: yup.string().required('Summary is required!')
 });
 
-interface ProjectEditContainerProps {
-  project: Project;
+interface ProjectCreateContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode, requiredLinkTypeNames }) => {
-  const query = useQuery();
+const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEditMode, requiredLinkTypeNames }) => {
+  //const query = useQuery();
   const allUsers = useAllUsers();
   const toast = useToast();
-  const { name, budget, summary } = project;
+  const name = String();
+  const budget = 0;
+  const summary = String();
 
-  const projectLinks = project.links.map((link) => {
-    return {
-      linkId: link.linkId,
-      url: link.url,
-      linkTypeName: link.linkType.name
-    };
-  });
-
+  const projectLinks: { linkId: string; url: string; linkTypeName: string }[] = [];
   const projectLinkTypeNames = projectLinks.map((link) => link.linkTypeName);
 
   requiredLinkTypeNames
@@ -87,14 +70,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       name,
       budget,
       summary,
-      crId: query.get('crId') || '',
-      rules: project.rules.map((rule) => {
-        return { rule };
-      }),
+      crId: '',
+      rules: [],
       links: projectLinks,
-      goals: bulletsToObject(project.goals),
-      features: bulletsToObject(project.features),
-      constraints: bulletsToObject(project.otherConstraints)
+      goals: [],
+      features: [],
+      constraints: []
     }
   });
   const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
@@ -106,9 +87,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     remove: removeConstraint
   } = useFieldArray({ control, name: 'constraints' });
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
-  const { mutateAsync } = useEditSingleProject(project.wbsNum);
-  const [projectManagerId, setprojectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
+  const { mutateAsync } = useCreateSingleProject();
+  const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
+  const [crid, setcrid] = useState<number | undefined>();
+  const [carNumber, setCarNumber] = useState<number | undefined>();
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -125,17 +108,18 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     const otherConstraints = mapBulletsToPayload(data.constraints);
 
     try {
-      const payload: EditSingleProjectPayload = {
+      const payload: CreateSingleProjectPayload = {
+        crId: parseInt(crid),
         name,
-        budget: budget,
+        carNumber,
         summary,
-        links,
-        projectId: project.id,
-        crId: parseInt(data.crId),
+        projectId,
+        budget: budget,
         rules,
         goals,
         features,
         otherConstraints,
+        links,
         projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
         projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
@@ -153,7 +137,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       <ProjectFormContainer
         exitEditMode={exitEditMode}
         requiredLinkTypeNames={requiredLinkTypeNames}
-        project={project}
+        //project={project}
         control={control}
         onSubmit={onSubmit}
         register={register}
@@ -185,7 +169,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
             projectManager={projectManagerId}
             setProjectLead={setProjectLeadId}
             setProjectManager={setprojectManagerId}
-            creatingProject={false}
+            creatingProject={true}
+            setcrId={setcrid}
+            setCarNumber={setCarNumber}
           />
         }
       />
@@ -193,4 +179,4 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   );
 };
 
-export default ProjectEditContainer;
+export default ProjectCreateContainer;
