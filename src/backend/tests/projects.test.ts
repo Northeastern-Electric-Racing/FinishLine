@@ -673,7 +673,7 @@ describe('Projects', () => {
         new AccessDeniedException('Only an admin or head can delete a material type')
       );
     });
-    
+
     test('Delete Material Type does not work if material type does not exist', async () => {
       await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
         new NotFoundException('Material Type', 'NERSoftwareTools')
