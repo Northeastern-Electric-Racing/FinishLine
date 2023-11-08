@@ -88,7 +88,7 @@ const hawkgirl: Prisma.UserCreateInput = {
 const elongatedMan: Prisma.UserCreateInput = {
   firstName: 'Randolph',
   lastName: 'Dibney',
-  email: 'elongatedman@justiceleague.com',
+  email: 'elongatedmangit @justiceleague.com',
   googleAuthId: 'joigiug',
   role: Role.MEMBER
 };

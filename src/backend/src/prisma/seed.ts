@@ -151,9 +151,25 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     batman,
     justiceLeague.teamId,
-    [wonderwoman, flash, aquaman, superman, hawkMan, hawkWoman, cyborg, greenLantern, martianManhunter].map(
-      (user) => user.userId
-    )
+    [
+      wonderwoman,
+      flash,
+      aquaman,
+      superman,
+      hawkMan,
+      hawkWoman,
+      cyborg,
+      greenLantern,
+      martianManhunter,
+      lexLuther,
+      hawkgirl,
+      elongatedMan,
+      zatanna,
+      phantomStranger,
+      redTornado,
+      firestorm,
+      hankHeywood
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
