@@ -840,7 +840,7 @@ export default class ProjectsService {
       }
     });
 
-    if (!materialType) throw new HttpException(400, `This material type does not exist`);
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeId);
 
     await prisma.material_Type.delete({
       where: {
