@@ -113,4 +113,7 @@ type ExceptionObjectNames =
   | 'User Secure Settings'
   | 'Image File'
   | 'Material'
-  | 'Assembly';
+  | 'Assembly'
+  | 'Material Type'
+  | 'Manufacturer'
+  | 'Unit';

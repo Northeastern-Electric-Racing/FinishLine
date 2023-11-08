@@ -308,6 +308,102 @@ const reidChandler: Prisma.UserCreateInput = {
   role: Role.HEAD
 };
 
+const aang: Prisma.UserCreateInput = {
+  firstName: 'Aang',
+  lastName: 'Airbender',
+  googleAuthId: 'aang',
+  email: 'aang@avatarBenders.com',
+  role: Role.HEAD
+};
+
+const katara: Prisma.UserCreateInput = {
+  firstName: 'Katara',
+  lastName: 'Waterbender',
+  googleAuthId: 'katara',
+  email: 'katara@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const sokka: Prisma.UserCreateInput = {
+  firstName: 'Sokka',
+  lastName: 'Warrior',
+  googleAuthId: 'sokka',
+  email: 'sokka@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const toph: Prisma.UserCreateInput = {
+  firstName: 'Toph',
+  lastName: 'Beifong',
+  googleAuthId: 'toph',
+  email: 'toph@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const zuko: Prisma.UserCreateInput = {
+  firstName: 'Zuko',
+  lastName: 'Firebender',
+  googleAuthId: 'zuko',
+  email: 'zuko@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const iroh: Prisma.UserCreateInput = {
+  firstName: 'Uncle',
+  lastName: 'Iroh',
+  googleAuthId: 'iroh',
+  email: 'uncleIroh@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const azula: Prisma.UserCreateInput = {
+  firstName: 'Azula',
+  lastName: 'Firebender',
+  googleAuthId: 'azula',
+  email: 'azula@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const appa: Prisma.UserCreateInput = {
+  firstName: 'Appa',
+  lastName: 'Skybison',
+  googleAuthId: 'appa',
+  email: 'appa@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const momo: Prisma.UserCreateInput = {
+  firstName: 'Momo',
+  lastName: 'Monkey',
+  googleAuthId: 'momo',
+  email: 'momo@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const suki: Prisma.UserCreateInput = {
+  firstName: 'Suki',
+  lastName: '-',
+  googleAuthId: 'suki',
+  email: 'suki@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const yue: Prisma.UserCreateInput = {
+  firstName: 'Princess',
+  lastName: 'Yue',
+  googleAuthId: 'yue',
+  email: 'princessYue@avatarBenders.com',
+  role: Role.GUEST
+};
+
+const bumi: Prisma.UserCreateInput = {
+  firstName: 'King',
+  lastName: 'Bumi',
+  googleAuthId: 'bumi',
+  email: 'kingBumi@avatarBenders.com',
+  role: Role.GUEST
+};
+
 const cristianoRonaldo: Prisma.UserCreateInput = {
   firstName: 'Cristiano',
   lastName: 'Ronaldo',
@@ -492,6 +588,18 @@ export const dbSeedAllUsers = {
   greenLantern,
   martianManhunter,
   nightwing,
+  aang,
+  katara,
+  sokka,
+  toph,
+  zuko,
+  iroh,
+  azula,
+  appa,
+  momo,
+  suki,
+  yue,
+  bumi,
   brandonHyde,
   calRipken,
   adleyRutschman,

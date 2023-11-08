@@ -37,7 +37,11 @@ export default class TasksService {
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsNumber: wbsNum },
-      include: { project: { include: { teams: { ...teamQueryArgs }, wbsElement: true } } }
+      include: {
+        project: {
+          include: { teams: { ...teamQueryArgs }, wbsElement: true, workPackages: { include: { wbsElement: true } } }
+        }
+      }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
@@ -51,9 +55,23 @@ export default class TasksService {
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !teams.some((team) => isUserOnTeam(team, createdBy))) {
+    const curWorkPackages = project.workPackages;
+
+    const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
+      return (
+        workPackage.wbsElement.projectLeadId === createdBy.userId ||
+        workPackage.wbsElement.projectManagerId === createdBy.userId
+      );
+    });
+
+    if (
+      !isLeadership(createdBy.role) &&
+      !isProjectLeadOrManager &&
+      !isWorkPackageLeadOrManager &&
+      !teams.some((team) => isUserOnTeam(team, createdBy))
+    ) {
       throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
+        'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
       );
     }
 
