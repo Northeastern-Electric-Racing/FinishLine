@@ -730,6 +730,9 @@ export default class ProjectsService {
     const material = await prisma.material.findUnique({ where: { materialId } });
     if (!material) throw new NotFoundException('Material', materialId);
 
+    const assembly = await prisma.assembly.findUnique({ where: { assemblyId } });
+    if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+
     // Assign a material on a project to a different assembly
     const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });
     return updatedMaterial;

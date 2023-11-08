@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman, superman } from './test-data/users.test-data';
+import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -475,5 +475,27 @@ describe('Projects', () => {
       expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
+  });
+
+  describe('assigning material assemblies', () => {
+    test('assignment fails because of permissions', async () => {
+      await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
+        new AccessDeniedException('Only leadership or above can create a material type')
+      );
+    });
+    test('assignment fails because of invalid material id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'invalid-mid', 'aid')).rejects.toThrow(
+        new NotFoundException('Material', 'invalid-mid')
+      );
+    });
+    test('assignment fails because of invalid assembly id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'invalid-aid')).rejects.toThrow(
+        new NotFoundException('Assembly', 'invalid-aid')
+      );
+    });
+    // test('assignment successful', async () => {});
   });
 });
