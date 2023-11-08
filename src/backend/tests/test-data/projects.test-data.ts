@@ -4,7 +4,8 @@ import {
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
   Manufacturer,
-  Assembly
+  Assembly,
+  Material
 } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
@@ -126,4 +127,26 @@ export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),
   creatorId: batman.userId
+};
+
+export const prismaMaterial1: Material = {
+  materialId: '1',
+  assemblyId: '1',
+  dateCreated: new Date('2023-11-07'),
+  linkUrl: 'https://eample.com',
+  manufacturerName: 'Manufacturer1',
+  manufacturerPartNumber: '1',
+  materialTypeName: 'NERSoftwareTools',
+  name: prismaManufacturer1.name,
+  notes: 'Sample notes',
+  pdmFileName: 'pdmname',
+  price: 10,
+  quantity: 89,
+  status: 'ORDERED',
+  subtotal: 1,
+  unitName: 'Unit',
+  userCreatedId: batman.userId,
+  wbsElementId: sharedProject1.id,
+  dateDeleted: null,
+  userDeletedId: null
 };

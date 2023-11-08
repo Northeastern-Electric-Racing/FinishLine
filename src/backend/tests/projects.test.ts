@@ -7,7 +7,8 @@ import {
   sharedProject1,
   prismaAssembly1,
   toolMaterial,
-  prismaManufacturer1
+  prismaManufacturer1,
+  prismaMaterial1
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { prismaTeam1 } from './test-data/teams.test-data';
@@ -24,7 +25,7 @@ import {
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
-import { User } from '@prisma/client';
+import { Material, User } from '@prisma/client';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -483,19 +484,34 @@ describe('Projects', () => {
         new AccessDeniedException('Only leadership or above can create a material type')
       );
     });
+
     test('assignment fails because of invalid material id', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
       await expect(ProjectsService.assignMaterialAssembly(superman, 'invalid-mid', 'aid')).rejects.toThrow(
         new NotFoundException('Material', 'invalid-mid')
       );
     });
+
     test('assignment fails because of invalid assembly id', async () => {
-      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
       vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
       await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'invalid-aid')).rejects.toThrow(
         new NotFoundException('Assembly', 'invalid-aid')
       );
     });
-    // test('assignment successful', async () => {});
+
+    test('assignment successful', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
+
+      const expectedUpdatedToolMaterial: Material = {
+        ...prismaMaterial1,
+        assemblyId: 'updated-aid'
+      };
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(expectedUpdatedToolMaterial);
+
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(superman, 'mid', 'updated-aid');
+      expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
+    });
   });
 });

@@ -723,7 +723,7 @@ export default class ProjectsService {
    * @throws if the submitter does not have the relevant positions
    */
   static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
-    // TODO: Permission: leadership and up, anyone on project team
+    // Permission: leadership and up, anyone on project team
     if (!isLeadership(submitter.role))
       throw new AccessDeniedException('Only leadership or above can create a material type');
 
