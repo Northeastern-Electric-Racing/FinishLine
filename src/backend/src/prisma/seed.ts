@@ -101,6 +101,14 @@ const performSeed: () => Promise<void> = async () => {
   const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
   const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
   const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
+  const husky = await prisma.user.create({ data: dbSeedAllUsers.husky });
+  const winter = await prisma.user.create({ data: dbSeedAllUsers.winter });
+  const frostBite = await prisma.user.create({ data: dbSeedAllUsers.frostBite });
+  const snowPaws = await prisma.user.create({ data: dbSeedAllUsers.snowPaws });
+  const paws = await prisma.user.create({ data: dbSeedAllUsers.paws });
+  const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
+  const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
+  const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -238,7 +246,9 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     thomasEmrax,
     huskies.teamId,
-    [joeShmoe, joeBlow, reidChandler, nightwing].map((user) => user.userId)
+    [joeShmoe, joeBlow, reidChandler, nightwing, frostBite, snowPaws, paws, whiteTail, husky, howler, snowBite].map(
+      (user) => user.userId
+    )
   );
 
   await TeamsService.setTeamMembers(

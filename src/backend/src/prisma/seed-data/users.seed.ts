@@ -572,6 +572,70 @@ const babyDollJacobson: Prisma.UserCreateInput = {
   role: Role.LEADERSHIP
 };
 
+const frostBite: Prisma.UserCreateInput = {
+  firstName: 'Frost',
+  lastName: 'Bite',
+  googleAuthId: 'husky1',
+  email: 'frostbite@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const winter: Prisma.UserCreateInput = {
+  firstName: 'Winter',
+  lastName: 'Warrior',
+  googleAuthId: 'husky2',
+  email: 'winterwarrior@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const paws: Prisma.UserCreateInput = {
+  firstName: 'Paws',
+  lastName: 'The-Dog',
+  googleAuthId: 'husky3',
+  email: 'paws@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const snowPaws: Prisma.UserCreateInput = {
+  firstName: 'Snow',
+  lastName: 'Paws',
+  googleAuthId: 'husky4',
+  email: 'snowpaws@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const whiteTail: Prisma.UserCreateInput = {
+  firstName: 'White',
+  lastName: 'Tail',
+  googleAuthId: 'husky5',
+  email: 'whitetail@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const husky: Prisma.UserCreateInput = {
+  firstName: 'Husky',
+  lastName: 'Dog',
+  googleAuthId: 'husky6',
+  email: 'huskydog@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const howler: Prisma.UserCreateInput = {
+  firstName: 'Howler',
+  lastName: 'Husky',
+  googleAuthId: 'husky7',
+  email: 'howler@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const snowBite: Prisma.UserCreateInput = {
+  firstName: 'Snow',
+  lastName: 'Bite',
+  googleAuthId: 'husky8',
+  email: 'SnowBite@northeastern.edu',
+  role: Role.MEMBER
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -637,5 +701,13 @@ export const dbSeedAllUsers = {
   kenWilliams,
   boogPowell,
   mannyMachado,
-  babyDollJacobson
+  babyDollJacobson,
+  frostBite,
+  winter,
+  snowPaws,
+  paws,
+  whiteTail,
+  husky,
+  howler,
+  snowBite
 };
