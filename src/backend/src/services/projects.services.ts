@@ -728,7 +728,7 @@ export default class ProjectsService {
       throw new AccessDeniedException('Only leadership or above can create a material type');
 
     const material = await prisma.material.findUnique({ where: { materialId } });
-    if (!material) throw new HttpException(400, `The material ${materialId} does not exist`);
+    if (!material) throw new NotFoundException('Material', materialId);
 
     // Assign a material on a project to a different assembly
     const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });
