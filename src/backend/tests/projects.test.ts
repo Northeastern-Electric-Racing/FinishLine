@@ -669,30 +669,30 @@ describe('Projects', () => {
   });
 
   describe('assigning material assemblies', () => {
-    // test('assignment fails because of permissions', async () => {
-    //   vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
-    //   vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
-    //   vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+    test('assignment fails because of permissions', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ teams: [prismaTeam1] });
 
-    //   await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
-    //     new AccessDeniedException('Only leadership or above can create a material type')
-    //   );
-    // });
+      await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
+        new AccessDeniedException('Only leadership or above can create a material type')
+      );
+    });
 
-    // test('assignment fails because of invalid material id', async () => {
-    //   vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
-    //   await expect(ProjectsService.assignMaterialAssembly(superman, 'invalid-mid', 'aid')).rejects.toThrow(
-    //     new NotFoundException('Material', 'invalid-mid')
-    //   );
-    // });
+    test('assignment fails because of invalid material id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'invalid-mid', 'aid')).rejects.toThrow(
+        new NotFoundException('Material', 'invalid-mid')
+      );
+    });
 
-    // test('assignment fails because of invalid assembly id', async () => {
-    //   vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
-    //   vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
-    //   await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'invalid-aid')).rejects.toThrow(
-    //     new NotFoundException('Assembly', 'invalid-aid')
-    //   );
-    // });
+    test('assignment fails because of invalid assembly id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'invalid-aid')).rejects.toThrow(
+        new NotFoundException('Assembly', 'invalid-aid')
+      );
+    });
 
     test('assignment successful', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
