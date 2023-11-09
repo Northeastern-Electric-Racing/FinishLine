@@ -219,7 +219,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         </PageBlock>
         <Stack spacing={4}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 2 }}>{'Links'}</Typography>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              {'Links'}
+            </Typography>
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
           </Box>
           <Box>
