@@ -52,8 +52,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
       toast.error('Must select at least one reviewer to request review from');
     } else {
       try {
-        toast.success('Request Review successful');
         await requestCRReview({ userIds: reviewerIds });
+        toast.success('Request Review successful');
       } catch (e) {
         if (e instanceof Error) {
           toast.error(e.message);
