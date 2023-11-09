@@ -171,7 +171,7 @@ export const prismaMaterial1: Material = {
   materialId: '1',
   assemblyId: '1',
   dateCreated: new Date('2023-11-07'),
-  linkUrl: 'https://eample.com',
+  linkUrl: 'https://example.com',
   manufacturerName: 'Manufacturer1',
   manufacturerPartNumber: '1',
   materialTypeName: 'NERSoftwareTools',
