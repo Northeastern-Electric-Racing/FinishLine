@@ -2,7 +2,7 @@
 CREATE TYPE "Club_Accounts" AS ENUM ('CASH', 'BUDGET');
 
 -- CreateEnum
-CREATE TYPE "Reimbursement_Status_Type" AS ENUM ('PENDING_FINANCE', 'SABO_SUBMITTED', 'ADVISOR_APPROVED', 'REIMBURSED', 'DENIED');
+CREATE TYPE "Reimbursement_Status_Type" AS ENUM ('PENDING_FINANCE', 'SABO_SUBMITTED', 'ADVISOR_APPROVED', 'REIMBURSED');
 
 -- CreateTable
 CREATE TABLE "Reimbursement_Status" (
