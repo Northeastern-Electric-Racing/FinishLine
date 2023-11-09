@@ -106,6 +106,7 @@ describe('Users', () => {
     });
 
     test('setUserSecureSettings works', async () => {
+      vi.spyOn(prisma.user_Secure_Settings, 'findFirst').mockResolvedValue(null);
       vi.spyOn(prisma.user_Secure_Settings, 'upsert').mockResolvedValue(batmanSecureSettings);
       const res = await UsersService.setUserSecureSettings(
         batman,
@@ -114,7 +115,7 @@ describe('Users', () => {
         'city',
         'state',
         'zipcode',
-        '019-932-1235'
+        '019-932-1234'
       );
 
       expect(res).toBe(batmanSecureSettings.userSecureSettingsId);
