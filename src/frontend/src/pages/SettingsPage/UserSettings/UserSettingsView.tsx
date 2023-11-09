@@ -8,6 +8,7 @@ import { UserSettings } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { Box } from '@mui/system';
+import { displayEnum } from '../../../utils/pipes';
 
 export interface UserSettingsViewProps {
   settings: UserSettings;
@@ -26,7 +27,7 @@ const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
-        <DetailDisplay label="Default Theme" content={settings.defaultTheme} />
+        <DetailDisplay label="Default Theme" content={displayEnum(settings.defaultTheme)} />
       </Grid>
       <Grid item xs={12} sm={6}>
         <SlackId settings={settings} />
