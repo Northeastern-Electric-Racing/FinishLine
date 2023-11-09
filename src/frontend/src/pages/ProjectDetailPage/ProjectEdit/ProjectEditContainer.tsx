@@ -15,7 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, FormControl, Grid, Stack, Typography } from '@mui/material';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
@@ -26,6 +26,7 @@ import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -215,6 +216,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
               />
             </FormControl>
           </Grid>
+        </PageBlock>
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>{'Links'}</Typography>
