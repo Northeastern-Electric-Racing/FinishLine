@@ -20,7 +20,8 @@ import {
   prismaGiveMeMyMoney2,
   prismaGiveMeMyMoney3,
   prismaReimbursementStatus,
-  sharedGiveMeMyMoney
+  sharedGiveMeMyMoney,
+  KFC
 } from './test-data/reimbursement-requests.test-data';
 import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
@@ -629,6 +630,30 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
+    });
+  });
+
+  describe('Edit Vendor Tests', () => {
+    test('Throws error if user isnt an admin', async () => {
+      await expect(
+        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('only Admins can edit vendors'));
+    });
+
+    test('Vendor Name already exists', async () => {
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+        new HttpException(400, 'vendor name already exists')
+      );
+    });
+
+    test('Successfuly changes Vendors name', async () => {
+      vi.spyOn(prisma.vendor, 'update').mockResolvedValue(KFC);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
+
+      const vendor = await ReimbursementRequestService.editVendors('kfc', PopEyes.vendorId, batman);
+
+      expect(vendor.name).toBe('kfc');
     });
   });
 });

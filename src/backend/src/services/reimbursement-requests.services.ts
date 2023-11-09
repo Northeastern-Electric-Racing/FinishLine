@@ -715,4 +715,31 @@ export default class ReimbursementRequestService {
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;
   }
+
+  /**
+   * Edits the vendor name
+   *
+   * @param name name to change of the vendor
+   * @param vendorId id of the vedor used to edit the name
+   * @param submitter the user who is downloading the receipt image
+   * @returns new vendor with a edited name
+   */
+  static async editVendors(name: string, vendorId: string, submitter: User) {
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('only Admins can edit vendors');
+
+    const vendorExists = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    console.log(vendorExists);
+
+    if (!!vendorExists) throw new HttpException(400, 'vendor name already exists');
+
+    const vendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { name }
+    });
+
+    return vendor;
+  }
 }
