@@ -6,8 +6,6 @@ import {
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
   Manufacturer,
-  Assembly,
-  Material,
   Unit
 } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
