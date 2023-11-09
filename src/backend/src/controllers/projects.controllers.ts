@@ -128,6 +128,60 @@ export default class ProjectsController {
     }
   }
 
+  static async createAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
+      const { name, pdmFileName } = req.body;
+      const createAssembly = await ProjectsService.createAssembly(name, user, wbsNum, pdmFileName);
+      res.status(200).json(createAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const creator = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const material = await ProjectsService.createMaterial(
+        creator,
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsNum,
+        assemblyId,
+        pdmFileName
+      );
+      return res.status(200).json(material);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
@@ -144,6 +198,17 @@ export default class ProjectsController {
       const user = await getCurrentUser(res);
       const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers(user);
       return res.status(200).json(manufacturers);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }      
+
+  static async createMaterialType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdMaterialType = await ProjectsService.createMaterialType(name, user);
+      res.status(200).json(createdMaterialType);
     } catch (error: unknown) {
       next(error);
     }

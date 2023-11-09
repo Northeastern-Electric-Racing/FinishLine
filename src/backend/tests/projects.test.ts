@@ -1,15 +1,26 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, theVisitor, wonderwoman } from './test-data/users.test-data';
-import { prismaManufacturer1, prismaProject1, sharedProject1 } from './test-data/projects.test-data';
+import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  prismaProject1,
+  sharedProject1,
+  prismaAssembly1,
+  toolMaterial,
+  prismaManufacturer1,
+  prismaManufacturer2,
+  prismaMaterial,
+  prismaMaterialType,
+  prismaUnit
+} from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
-import { prismaTeam1 } from './test-data/teams.test-data';
+import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
 import * as projectTransformer from '../src/transformers/projects.transformer';
 import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
+  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -17,7 +28,7 @@ import {
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
-import { User } from '@prisma/client';
+import { Material_Status, User } from '@prisma/client';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -256,6 +267,355 @@ describe('Projects', () => {
     });
   });
 
+  describe('createAssembly', () => {
+    test('createAssembly fails given invalid project wbs number', async () => {
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 1
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new HttpException(400, `1.1.1 is not a valid project WBS #!`));
+    });
+
+    test('createAssembly fails when associated wbsElement doesnt exist', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new NotFoundException('Project', '1.1.0'));
+    });
+
+    test('createAssembly fails when project has been deleted', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: new Date() },
+        projectId: prismaProject1.projectId
+      } as any);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
+    });
+
+    test('createAssembly fails if name is not unique', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement },
+        projectId: prismaProject1.projectId
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, name: 'a1' });
+
+      // no error, no return value
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'a1',
+            batman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+    });
+
+    test('createAssembly fails when no permissions', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            wonderwoman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
+    });
+
+    test('createAssembly fails when no permissions - leadership', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(
+        async () =>
+          await ProjectsService.createAssembly(
+            'new assembly',
+            aquaman,
+            {
+              carNumber: 1,
+              projectNumber: 1,
+              workPackageNumber: 0
+            },
+            'file.txt'
+          )
+      ).rejects.toThrow(new AccessDeniedException(`Users must be admin, or assigned to the team to create assemblies`));
+    });
+
+    test('createAssembly works if the submitter is admin', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({
+        wbsElement: { ...prismaProject1.wbsElement, dateDeleted: '' },
+        projectId: prismaProject1.projectId,
+        teams: [{ prismaTeam1, leads: [], members: [] }]
+      } as any);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
+
+      // no error, no return value
+      await ProjectsService.createAssembly(
+        'new assembly',
+        batman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
+    });
+
+    test('createAssembly works if the submitter is on the team', async () => {
+      mockGetHighestProjectNumber.mockResolvedValue(0);
+      vi.spyOn(prisma.assembly, 'create').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+
+      // no error, no return value
+      await ProjectsService.createAssembly(
+        'new assembly',
+        superman,
+        {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        'file.txt'
+      );
+    });
+  });
+
+  describe('Materials', () => {
+    test('createMaterial fails when project is not found', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new NotFoundException('Project', '1.1.1'));
+    });
+    test('createMaterial fails when assembly is not found', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new NotFoundException('Assembly', 'assemblyName'));
+    });
+    test('createMaterial fails when material type is not found', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new NotFoundException('Material Type', 'type'));
+    });
+    test('createMaterial fails when manufacturer is not found', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
+    });
+    test('createMaterial fails when unit is not found', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          batman,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
+    });
+    test('createMaterial fails if the creator does not have perms', async () => {
+      const customProject = { ...prismaProject1, teams: [primsaTeam2] };
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(customProject);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
+      vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
+
+      await expect(() =>
+        ProjectsService.createMaterial(
+          theVisitor,
+          'material',
+          Material_Status.ORDERED,
+          'type',
+          'manufacturer',
+          'partNum',
+          6,
+          'FT',
+          800,
+          400,
+          'https://www.google.com',
+          'none',
+          { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'assemblyName',
+          'file'
+        )
+      ).rejects.toThrow(new AccessDeniedException('create materials'));
+    });
+    test('createMaterial works', async () => {
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.assembly, 'findFirst').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.material_Type, 'findFirst').mockResolvedValue(prismaMaterialType);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.unit, 'findFirst').mockResolvedValue(prismaUnit);
+      vi.spyOn(prisma.material, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.material, 'create').mockResolvedValue(prismaMaterial);
+
+      const res = await ProjectsService.createMaterial(
+        batman,
+        'material',
+        Material_Status.ORDERED,
+        prismaMaterialType.name,
+        prismaManufacturer2.name,
+        'partNum',
+        6,
+        'FT',
+        800,
+        400,
+        'https://www.google.com',
+        'none',
+        { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+        'assemblyName',
+        'file'
+      );
+
+      expect(res).toBeDefined();
+    });
+  });
+
   describe('Manufacturer Tests', () => {
     test('createManufacturer throws an error if user is a guest', async () => {
       await expect(ProjectsService.createManufacturer(wonderwoman, 'NAME')).rejects.toThrow(
@@ -296,6 +656,31 @@ describe('Projects', () => {
       await expect(ProjectsService.getAllManufacturers(theVisitor)).rejects.toThrow(
         new AccessDeniedGuestException('Guests cannot get the manufacturers')
       );
+    });
+  });
+
+  describe('materialType', () => {
+    test('Create material type fails if user is not leader', async () => {
+      await expect(ProjectsService.createMaterialType('Tools', wonderwoman)).rejects.toThrow(
+        new AccessDeniedException('Only leadership or above can create a material type')
+      );
+    });
+
+    test('Create material type fails if the material type with the given name already exists', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+
+      await expect(ProjectsService.createMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new HttpException(400, 'The following material type already exists: NERSoftwareTools')
+      );
+    });
+
+    test('Create material type works', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.material_Type, 'create').mockResolvedValue(toolMaterial);
+
+      const materialType = await ProjectsService.createMaterialType('NERSoftwareTools', batman);
+      expect(materialType.name).toBe('NERSoftwareTools');
+      expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
   });
 });

@@ -120,3 +120,10 @@ export interface Manufacturer {
   creatorId: number;
   materials: Material[];
 }
+
+export enum MaterialStatus {
+  Ordered = 'ORDERED',
+  Received = 'RECEIVED',
+  Unordered = 'UNORDERED',
+  Shipped = 'SHIPPED'
+}

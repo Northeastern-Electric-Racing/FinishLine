@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -18,6 +18,7 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createProject
 );
+
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),
@@ -56,5 +57,30 @@ projectRouter.post(
   ProjectsController.createManufacturer
 );
 projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
+projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
+projectRouter.post(
+  '/bom/assembly/:wbsNum/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('pdmFileName')).optional(),
+  ProjectsController.createAssembly
+);
+projectRouter.post(
+  '/material/:wbsNum/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('assemblyId').optional()),
+  isMaterialStatus(body('status')),
+  nonEmptyString(body('materialTypeName')),
+  nonEmptyString(body('manufacturerName')),
+  nonEmptyString(body('manufacturerPartNumber')),
+  nonEmptyString(body('pdmFileName').optional()),
+  intMinZero(body('quantity')),
+  nonEmptyString(body('unitName')),
+  intMinZero(body('price')), // in cents
+  intMinZero(body('subtotal')), // in cents
+  nonEmptyString(body('linkUrl').isURL()),
+  body('notes').isString(),
+  validateInputs,
+  ProjectsController.createMaterial
+);
 
 export default projectRouter;
