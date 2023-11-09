@@ -69,6 +69,70 @@ const wonderwoman: Prisma.UserCreateInput = {
   googleAuthId: 'wonderwoman'
 };
 
+const lexLuther: Prisma.UserCreateInput = {
+  firstName: 'Alexander',
+  lastName: 'Luther',
+  email: 'lexluther@justiceleague.com',
+  googleAuthId: 'hjkklo',
+  role: Role.MEMBER
+};
+
+const hawkgirl: Prisma.UserCreateInput = {
+  firstName: 'Shiera',
+  lastName: 'Hall',
+  email: 'hawkgirl@justiceleague.com',
+  googleAuthId: 'bhuujki',
+  role: Role.MEMBER
+};
+
+const elongatedMan: Prisma.UserCreateInput = {
+  firstName: 'Randolph',
+  lastName: 'Dibney',
+  email: 'elongatedmangit @justiceleague.com',
+  googleAuthId: 'joigiug',
+  role: Role.MEMBER
+};
+
+const zatanna: Prisma.UserCreateInput = {
+  firstName: 'Zatanna',
+  lastName: 'Zatara',
+  email: 'zatanna@justiceleague.com',
+  googleAuthId: 'cawwww',
+  role: Role.MEMBER
+};
+
+const phantomStranger: Prisma.UserCreateInput = {
+  firstName: 'Judas',
+  lastName: 'Iscariot',
+  email: 'phantomstranger@justiceleague.com',
+  googleAuthId: 'bnhjiuy',
+  role: Role.MEMBER
+};
+
+const redTornado: Prisma.UserCreateInput = {
+  firstName: 'Red',
+  lastName: 'Tornado',
+  email: 'redtornado@justiceleague.com',
+  googleAuthId: 'vbnhught',
+  role: Role.MEMBER
+};
+
+const firestorm: Prisma.UserCreateInput = {
+  firstName: 'Ronnie',
+  lastName: 'Raymond',
+  email: 'firestorm@justiceleague.com',
+  googleAuthId: 'fghttyu',
+  role: Role.MEMBER
+};
+
+const hankHeywood: Prisma.UserCreateInput = {
+  firstName: 'Hank',
+  lastName: 'Heywood III',
+  email: 'hankheywood@justiceleague.com',
+  googleAuthId: 'hudhsgf',
+  role: Role.MEMBER
+};
+
 const flash: Prisma.UserCreateInput = {
   firstName: 'Barry',
   lastName: 'Allen',
@@ -643,6 +707,14 @@ export const dbSeedAllUsers = {
   wonderwoman,
   flash,
   aquaman,
+  lexLuther,
+  hawkgirl,
+  elongatedMan,
+  zatanna,
+  phantomStranger,
+  redTornado,
+  firestorm,
+  hankHeywood,
   robin,
   batman,
   superman,
