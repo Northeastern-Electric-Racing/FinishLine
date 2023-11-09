@@ -203,4 +203,46 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async editMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const {
+        name,
+        assembly,
+        status,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        quantityUnit,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const updatedMaterial = await ProjectsService.editMaterial(
+        user,
+        wbsNum,
+        name,
+        status,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        assembly,
+        pdmFileName,
+        quantityUnit
+      );
+      res.status(200).json(updatedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

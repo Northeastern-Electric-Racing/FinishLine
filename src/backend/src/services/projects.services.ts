@@ -1,4 +1,4 @@
-import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { Material_Type, User, Assembly, Material_Status, Material, Unit } from '@prisma/client';
 import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -810,5 +810,53 @@ export default class ProjectsService {
     });
 
     return newMaterialType;
+  }
+
+
+  /**
+   * Update a material
+   * @param name the name of the new material
+   * @param assembly the assembly of the new material
+   * @param status the Material status of the new material
+   * @param manufacturerName the manufacture name of the new material
+   * @param manufacturerPartNumber the manufacture part number of the new material
+   * @param pdmFileName the pdm file name of the new material
+   * @param quantity the quantity of the new material
+   * @param quantityUnit the quantity unit of the new material
+   * @param unitName the unit name of the new material
+   * @param price the price of the new material
+   * @param subtotal the subtotal of the new material
+   * @param linkUrl the link url of the new material
+   * @param notes the notes of the new material
+   */
+  static async editMaterial(
+    submitter: User,
+    wbsNumber: WbsNumber,
+    name: string,
+    status: Material_Status,
+    manufacturerName: string,
+    manufacturerPartNumber: number,
+    quantity: number,
+    unitName: string,
+    price: number,
+    subtotal: number,
+    linkUrl: string,
+    notes: string,
+    assembly?: Assembly,
+    pdmFileName?: string,
+    quantityUnit?: Unit,
+  ): Promise<Material> {
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber: wbsNumber.carNumber,
+          projectNumber: wbsNumber.projectNumber,
+          workPackageNumber: wbsNumber.workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
   }
 }
