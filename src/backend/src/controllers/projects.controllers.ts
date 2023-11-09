@@ -201,7 +201,7 @@ export default class ProjectsController {
     } catch (error: unknown) {
       next(error);
     }
-  }      
+  }
 
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {

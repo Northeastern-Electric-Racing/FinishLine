@@ -799,9 +799,9 @@ export default class ProjectsService {
         ...manufacturerQueryArgs
       })
     ).map(manufacturerTransformer);
-  }    
+  }
 
-  /**  
+  /**
    * Create a new material type
    * @param name the name of the new material type
    * @param submitter the user who is creating the material type
