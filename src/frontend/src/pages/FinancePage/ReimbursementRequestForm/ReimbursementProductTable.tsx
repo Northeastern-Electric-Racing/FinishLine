@@ -144,7 +144,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               {errors.reimbursementProducts?.[product.index]?.cost?.message}
                             </FormHelperText>
                           </FormControl>
-                          <IconButton onClick={() => removeProduct(product.index)}>
+                          <IconButton
+                            sx={{
+                              '&:focus': {
+                                backgroundColor: '#f5f5f5'
+                              }
+                            }}
+                            onClick={() => removeProduct(product.index)}
+                          >
                             <Delete />
                           </IconButton>
                         </Box>
@@ -152,7 +159,12 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     ))}
                   </Box>
                   <Button
-                    sx={{ margin: '4px' }}
+                    sx={{
+                      margin: '4px',
+                      '&:focus': {
+                        backgroundColor: '#fdf8f8'
+                      }
+                    }}
                     startIcon={<Add />}
                     onClick={() =>
                       appendProduct({
