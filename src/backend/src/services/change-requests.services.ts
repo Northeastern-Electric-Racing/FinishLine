@@ -744,11 +744,15 @@ export default class ChangeRequestsService {
 
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
 
+    const oldRequestedReviewersIds = foundCR.requestedReviewers.map((reviewer) => reviewer.userId);
+
     const reviewerIds = reviewers.map((reviewer) => {
       return {
         userId: reviewer.userId
       };
     });
+
+    const newReviewers = reviewers.filter((user) => !oldRequestedReviewersIds.includes(user.userId));
 
     await prisma.change_Request.update({
       where: { crId },
@@ -760,7 +764,7 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
-    reviewers.forEach(async (user) => {
+    newReviewers.forEach(async (user) => {
       await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
     });
   }
