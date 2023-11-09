@@ -24,7 +24,12 @@ reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementReq
 
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
-reimbursementRequestsRouter.post('/edit-vendors', nonEmptyString(body('name')), ReimbursementRequestController.editVendor);
+reimbursementRequestsRouter.post(
+  '/:vendorId/vendors/edit',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ReimbursementRequestController.editVendor
+);
 
 reimbursementRequestsRouter.post(
   '/create',
