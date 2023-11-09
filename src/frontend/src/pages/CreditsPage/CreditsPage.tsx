@@ -163,7 +163,6 @@ const CreditsPage: React.FC = () => {
   return (
     <PageLayout title="Credits">
       <PageBlock>
-        t
         <Grid container spacing={2}>
           {names.map((item) => (
             <Grid item>
