@@ -636,7 +636,7 @@ export default class ProjectsService {
    */
   static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
     if (submitter.role === Role.GUEST) {
-      throw new AccessDeniedGuestException('Guests cannot get the manufacturers');
+      throw new AccessDeniedGuestException('Get Manufacturers');
     }
 
     return (
