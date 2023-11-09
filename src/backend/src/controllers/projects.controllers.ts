@@ -1,6 +1,6 @@
 import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
+import { Manufacturer, User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
@@ -188,6 +188,17 @@ export default class ProjectsController {
       const user = await getCurrentUser(res);
       const createdManufacturer = await ProjectsService.createManufacturer(user, name);
       res.status(200).json(createdManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { name } = req.body;
+      const deletedManufacturer: Manufacturer = await ProjectsService.deleteManufacturer(user, name);
+      res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
       next(error);
     }

@@ -1,5 +1,16 @@
-import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
-import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { Material_Type, User, Assembly, Material_Status, Material, Manufacturer } from '@prisma/client';
+import {
+  isAdmin,
+  isAtLeastRank,
+  isGuest,
+  isLeadership,
+  isProject,
+  LinkCreateArgs,
+  LinkType,
+  Project,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -781,6 +792,37 @@ export default class ProjectsService {
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Deletes a manufacturer
+   * @param user the user who's deleting the manufacturer
+   * @param manufacturerId the name of the manufacturer
+   * @throws if the user is not at least a head (includes admin), or if the provided name isn't a manufacturer
+   * @returns the deleted manufacturer
+   */
+  static async deleteManufacturer(user: User, manufacturerId: string) {
+    if (!isAtLeastRank('HEAD', user.role)) {
+      throw new AccessDeniedException('Only heads or above can delete a manufacturer');
+    }
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: {
+        name: manufacturerId
+      }
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException('Manufacturer', manufacturerId);
+    }
+
+    const deletedManufacturer = await prisma.manufacturer.delete({
+      where: {
+        name: manufacturerId
+      }
+    });
+
+    return deletedManufacturer;
   }
 
   /**

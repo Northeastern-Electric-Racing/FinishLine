@@ -220,6 +220,23 @@ describe('Projects', () => {
     });
   });
 
+  describe('deleteManufacturer', () => {
+    test('deleteManufacturer works', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(null);
+
+      const res = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
+
+      expect(res).toStrictEqual(null);
+      expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.manufacturer.delete).toHaveBeenCalledTimes(1);
+    });
+
+    test('fails when user is not at least Head', async () => {});
+
+    test('fails when manufacturerId is not a manufacturer', async () => {});
+  });
+
   describe('toggleFavorite', () => {
     test('fails when project does not exist', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
