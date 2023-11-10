@@ -740,6 +740,6 @@ export default class ReimbursementRequestService {
       data: { name }
     });
 
-    return vendor;
+    return vendorTransformer(vendor);
   }
 }
