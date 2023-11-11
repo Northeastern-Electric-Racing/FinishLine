@@ -671,7 +671,7 @@ describe('Projects', () => {
         new NotFoundException('Manufacturer', prismaManufacturer1.name)
       );
 
-      expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
 
@@ -679,8 +679,8 @@ describe('Projects', () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
       vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
 
-      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-manufacturer')).rejects.toThrow(
-        new NotFoundException('Manufacturer', 'not-manufacturer')
+      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-a-man')).rejects.toThrow(
+        new HttpException(400, 'That is not a valid manufacturer!')
       );
 
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(0);
