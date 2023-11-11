@@ -812,7 +812,6 @@ export default class ProjectsService {
     return newMaterialType;
   }
 
-
   /**
    * Update a material
    * @param name the name of the new material
@@ -835,7 +834,7 @@ export default class ProjectsService {
     name: string,
     status: Material_Status,
     manufacturerName: string,
-    manufacturerPartNumber: number,
+    manufacturerPartNumber: string,
     quantity: number,
     unitName: string,
     price: number,
@@ -844,7 +843,7 @@ export default class ProjectsService {
     notes: string,
     assembly?: Assembly,
     pdmFileName?: string,
-    quantityUnit?: Unit,
+    quantityUnit?: Unit
   ): Promise<Material> {
     const project = await prisma.project.findFirst({
       where: {
@@ -858,5 +857,41 @@ export default class ProjectsService {
     });
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
+
+    const updatedMaterial = await prisma.material.update({
+      where: { name },
+      data: {
+        status,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsElementId: project.wbsElementId,
+        // assembly: {
+        //   connect:
+        //     {
+        //       assembly
+        //     } || undefined
+        // },
+        pdmFileName: pdmFileName || undefined
+        // quantityUnit: {
+        //   connect:
+        //     {
+        //       quantityUnit
+        //     } || undefined
+        // }
+      }
+    });
+
+    return updatedMaterial;
   }
 }
