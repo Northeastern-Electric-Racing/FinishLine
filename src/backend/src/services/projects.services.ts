@@ -823,7 +823,7 @@ export default class ProjectsService {
       },
       data: {
         dateDeleted,
-        deletedByUserId,
+        deletedByUserId
       }
     });
 
