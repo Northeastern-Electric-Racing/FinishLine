@@ -40,11 +40,11 @@ import {
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
-  account: ClubAccount;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   totalCost: number;
+  account: ClubAccount;
 }
 
 export interface EditReimbursementRequestPayload extends CreateReimbursementRequestPayload {
@@ -55,6 +55,7 @@ export interface ExpenseTypePayload {
   code: number;
   name: string;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 /**
@@ -339,7 +340,7 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  */
 export const useEditAccountCode = (expenseTypeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'edit'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await editAccountCode(expenseTypeId, accountCodeData);
@@ -354,7 +355,7 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'create'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await createAccountCode(accountCodeData);
@@ -369,7 +370,7 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(['vendors', 'create'], async (vendorData: { name: string }) => {
+  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
     const { data } = await createVendor(vendorData);
     queryClient.invalidateQueries(['vendors']);
     return data;

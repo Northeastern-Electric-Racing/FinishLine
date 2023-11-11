@@ -108,14 +108,20 @@ describe('Reimbursement Requests', () => {
   describe('Expense Tests', () => {
     test('Create Expense Type fails for non admins', async () => {
       await expect(
-        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed)
+        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed, [ClubAccount.CASH])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
     });
 
     test('Create Expense Type Successfully returns expense type Id', async () => {
       vi.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
 
-      const expenseType = await ReimbursementRequestService.createExpenseType(batman, Parts.name, Parts.code, Parts.allowed);
+      const expenseType = await ReimbursementRequestService.createExpenseType(
+        batman,
+        Parts.name,
+        Parts.code,
+        Parts.allowed,
+        [ClubAccount.BUDGET]
+      );
 
       expect(expenseType.expenseTypeId).toBe(Parts.expenseTypeId);
     });
@@ -184,24 +190,21 @@ describe('Reimbursement Requests', () => {
       // assert
       expect(prismaFindTeamSpy).toBeCalledTimes(1);
       expect(prismaFindTeamSpy).toBeCalledWith({
-        where: { teamId: process.env.FINANCE_TEAM_ID }
+        where: { teamId: process.env.FINANCE_TEAM_ID },
+        include: { head: true, leads: true, members: true }
       });
     });
 
-    test('fails if user is not head of finance team', async () => {
+    test('fails if user is not on finance team', async () => {
       // mock prisma calls
       const prismaGetManySpy = vi.spyOn(prisma.reimbursement_Request, 'findMany').mockResolvedValue([findManyResult]);
-      const prismaFindTeamSpy = vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
 
       // act
-      const action = async () => await ReimbursementRequestService.getPendingAdvisorList(batman);
-      await expect(action).rejects.toEqual(new AccessDeniedException('You are not the head of the finance team!'));
+      const action = async () => await ReimbursementRequestService.getPendingAdvisorList(alfred);
+      await expect(action).rejects.toEqual(new AccessDeniedException(`You are not a member of the finance team!`));
 
       // assert
-      expect(prismaFindTeamSpy).toBeCalledTimes(1);
-      expect(prismaFindTeamSpy).toBeCalledWith({
-        where: { teamId: process.env.FINANCE_TEAM_ID }
-      });
       expect(prismaGetManySpy).toBeCalledTimes(0);
     });
   });

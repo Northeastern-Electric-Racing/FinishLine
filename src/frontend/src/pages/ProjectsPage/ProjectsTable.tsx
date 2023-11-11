@@ -4,7 +4,7 @@
  */
 
 import { Grid, Link, useTheme } from '@mui/material';
-import { DataGrid, GridColDef, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
@@ -114,6 +114,11 @@ const ProjectsTable: React.FC = () => {
     }
   ];
 
+  const filterValues = JSON.parse(
+    // sets filter to a default value if no filter is stored in local storage
+    localStorage.getItem('projectsTableFilter') ?? '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
+  );
+
   const theme = useTheme();
   return (
     <Grid container xs={12}>
@@ -162,9 +167,23 @@ const ProjectsTable: React.FC = () => {
             quickFilterProps: { debounceMs: 500 }
           }
         }}
+        onFilterModelChange={(filterModel: GridFilterModel) => {
+          localStorage.setItem('projectsTableFilter', JSON.stringify(filterModel.items[0]));
+        }}
         initialState={{
+          filter: {
+            filterModel: {
+              items: [
+                {
+                  columnField: filterValues.columnField,
+                  operatorValue: filterValues.operatorValue,
+                  value: filterValues.value
+                }
+              ]
+            }
+          },
           sorting: {
-            sortModel: [{ field: 'wbsNum', sort: 'asc' }]
+            sortModel: [{ field: 'status', sort: 'asc' }]
           },
           columns: {
             columnVisibilityModel: {

@@ -5,7 +5,7 @@ import { ReimbursementRequest, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { datePipe } from '../../../utils/pipes';
+import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -91,10 +91,10 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Date Of Expense" content={datePipe(dateOfExpense)} />
         </Grid>
         <Grid item xs={7}>
-          <DetailDisplay label="Total Expense" content={`$${totalCost}`} />
+          <DetailDisplay label="Total Expense" content={`$${centsToDollar(totalCost)}`} />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay label="Expense Description" content={`${vendor.name}[${totalCost}]`} />
+          <DetailDisplay label="Expense Description" content={`${vendor.name}[${centsToDollar(totalCost)}]`} />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>

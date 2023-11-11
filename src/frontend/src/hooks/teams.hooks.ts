@@ -5,7 +5,23 @@
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { Team } from 'shared';
-import { getAllTeams, getSingleTeam, setTeamMembers, setTeamDescription, setTeamHead } from '../apis/teams.api';
+import {
+  getAllTeams,
+  getSingleTeam,
+  setTeamMembers,
+  setTeamDescription,
+  setTeamHead,
+  deleteTeam,
+  createTeam,
+  setTeamLeads
+} from '../apis/teams.api';
+
+export interface CreateTeamPayload {
+  teamName: string;
+  headId: number;
+  slackId: string;
+  description: string;
+}
 
 export const useAllTeams = () => {
   return useQuery<Team[], Error>(['teams'], async () => {
@@ -58,6 +74,54 @@ export const useEditTeamDescription = (teamId: string) => {
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useDeleteTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['teams', 'delete'],
+    async (teamId: string) => {
+      const { data } = await deleteTeam(teamId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useCreateTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, CreateTeamPayload>(
+    ['teams', 'create'],
+    async (formData: CreateTeamPayload) => {
+      const { data } = await createTeam(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useSetTeamLeads = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, any>(
+    ['teams', 'edit'],
+    async (userIds: number[]) => {
+      const { data } = await setTeamLeads(teamId, userIds);
       return data;
     },
     {

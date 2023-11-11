@@ -6,9 +6,10 @@
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin, isHead, isLeadership } from 'shared';
+import { isAdmin, isHead } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
+import TeamsTools from './TeamsTools';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -18,6 +19,7 @@ const AdminToolsPage: React.FC = () => {
       {isHead(currentUser.role) && <AdminToolsUserManagement />}
       {isAdmin(currentUser.role) && <AdminToolsSlackUpcomingDeadlines />}
       {(isAdmin(currentUser.role) || currentUser.isFinanceLead) && <AdminToolsFinanceConfig />}
+      {isAdmin(currentUser.role) && <TeamsTools />}
     </PageLayout>
   );
 };

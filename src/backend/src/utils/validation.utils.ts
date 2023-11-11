@@ -1,5 +1,5 @@
 import { ValidationChain } from 'express-validator';
-import { ClubAccount } from 'shared';
+import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
@@ -36,11 +36,17 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
       WorkPackageStage.Research,
       WorkPackageStage.Design,
       WorkPackageStage.Manufacturing,
-      WorkPackageStage.Integration,
+      WorkPackageStage.Install,
       'NONE'
     ]);
 };
 
 export const isAccount = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([ClubAccount.BUDGET, ClubAccount.CASH]);
+};
+
+export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
 };

@@ -1,5 +1,5 @@
-import { User } from '@prisma/client';
-import { isAdmin, isGuest, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -9,7 +9,8 @@ import {
   AccessDeniedGuestException,
   HttpException,
   NotFoundException,
-  DeletedException
+  DeletedException,
+  AccessDeniedException
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
@@ -29,6 +30,7 @@ import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
+import { isUserPartOfTeams } from '../utils/teams.utils';
 
 export default class ProjectsService {
   /**
@@ -601,5 +603,212 @@ export default class ProjectsService {
         ...linkTypeQueryArgs
       })
     ).map(linkTypeTransformer);
+  }
+
+  /**
+   * Creates a new Material
+   * @param creator the user creating the material
+   * @param name the name of the material
+   * @param status the Material Status of the material
+   * @param materialTypeName the name of the Material Type
+   * @param manufacturerName the name of the material's manufacturer
+   * @param manufacturerPartNumber the manufacturer part number for the material
+   * @param quantity the quantity of material as a number
+   * @param unitName the name of the Quantity Unit the quantity is measured in
+   * @param price the price of the material in whole cents
+   * @param subtotal the subtotal of the price for the material in whole cents
+   * @param linkUrl the url for the material's link as a string
+   * @param notes any notes about the material as a string
+   * @param wbsNumber the WBS number of the project associated with this material
+   * @param assemblyId the id of the Assembly for the material
+   * @param pdmFileName the name of the pdm file for the material
+   * @returns the created material
+   */
+  static async createMaterial(
+    creator: User,
+    name: string,
+    status: Material_Status,
+    materialTypeName: string,
+    manufacturerName: string,
+    manufacturerPartNumber: string,
+    quantity: number,
+    unitName: string,
+    price: number,
+    subtotal: number,
+    linkUrl: string,
+    notes: string,
+    wbsNumber: WbsNumber,
+    assemblyId?: string,
+    pdmFileName?: string
+  ): Promise<Material> {
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber: wbsNumber.carNumber,
+          projectNumber: wbsNumber.projectNumber,
+          workPackageNumber: wbsNumber.workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    }
+
+    const materialType = await prisma.material_Type.findFirst({
+      where: { name: materialTypeName }
+    });
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: { name: manufacturerName }
+    });
+    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+
+    const unit = await prisma.unit.findFirst({
+      where: { name: unitName }
+    });
+    if (!unit) throw new NotFoundException('Unit', unitName);
+
+    const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
+
+    if (!perms) throw new AccessDeniedException('create materials');
+
+    const createdMaterial = await prisma.material.create({
+      data: {
+        userCreatedId: creator.userId,
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        dateCreated: new Date(),
+        wbsElementId: project.wbsElementId
+      }
+    });
+
+    return createdMaterial;
+  }
+
+  /**
+   * Create an assembly
+   * @param name The name of the assembly to be created
+   * @param userCreated The user creating the assembly
+   * @param wbsElementId The
+   * @param pdmFileName optional - The name of the file holding the assembly
+   * @returns the project that the user has favorited/unfavorited
+   * @throws if the project wbs doesn't exist or is not corresponding to a project
+   */
+  static async createAssembly(
+    name: string,
+    userCreated: User,
+    wbsNumber: WbsNumber,
+    pdmFileName?: string
+  ): Promise<Assembly> {
+    if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
+    const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber,
+          projectNumber,
+          workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    const checkAssembly = await prisma.assembly.findUnique({ where: { name } });
+
+    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
+
+    const { teams, wbsElementId } = project;
+
+    if (!isAdmin(userCreated.role) && !isUserPartOfTeams(teams, userCreated))
+      throw new AccessDeniedException('Users must be admin, or assigned to the team to create assemblies');
+
+    const userCreatedId = userCreated.userId;
+
+    const assembly = await prisma.assembly.create({
+      data: {
+        name,
+        dateCreated: new Date(),
+        userCreatedId,
+        wbsElementId,
+        pdmFileName
+      }
+    });
+
+    return assembly;
+  }
+
+  /*
+   * Creates a new Manufacturer
+   * @param submitter the user who's creating the manufacturer
+   * @param name the name of the manufacturer
+   * @returns the newly created manufacturer
+   * @throws if the submitter is a guest or the given manufacturer name already exists
+   */
+  static async createManufacturer(submitter: User, name: string) {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create manufacturers');
+
+    const manufacturer = await prisma.manufacturer.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
+
+    const newManufacturer = await prisma.manufacturer.create({
+      data: { name, dateCreated: new Date(), creatorId: submitter.userId }
+    });
+
+    return newManufacturer;
+  }
+
+  /**
+   * Create a new material type
+   * @param name the name of the new material type
+   * @param submitter the user who is creating the material type
+   * @throws if the submitter is not a leader or the material type with the given name already exists
+   */
+  static async createMaterialType(name: string, submitter: User): Promise<Material_Type> {
+    if (!isLeadership(submitter.role))
+      throw new AccessDeniedException('Only leadership or above can create a material type');
+
+    const materialType = await prisma.material_Type.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!!materialType) throw new HttpException(400, `The following material type already exists: ${name}`);
+
+    const newMaterialType = await prisma.material_Type.create({
+      data: {
+        name,
+        dateCreated: new Date(),
+        creatorId: submitter.userId
+      }
+    });
+
+    return newMaterialType;
   }
 }

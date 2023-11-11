@@ -104,7 +104,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       submitText="Yes"
       onSubmit={handleMarkDelivered}
     >
-      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
     </NERModal>
   );
 
@@ -129,7 +129,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
+            <VerticalDetailDisplay
+              label="Date Item Delivered"
+              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
+            />
           </Grid>
           <Grid
             item
