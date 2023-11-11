@@ -675,16 +675,11 @@ describe('Projects', () => {
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
 
-    test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(primsaTeam2);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(primsaTeam2);
-
-      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-a-manufacturer')).rejects.toThrow(
-        new HttpException(400, 'That is not a valid manufacturer!')
+    test('deleteManufacturer fails when manufacturer has been deleted', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
+      await expect(async () => await ProjectsService.deleteManufacturer(batman, prismaManufacturer2.name)).rejects.toThrow(
+        new DeletedException('Manufacturer', prismaManufacturer2.name)
       );
-
-      expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(0);
-      expect(prisma.manufacturer.update).toHaveBeenCalledTimes(0);
     });
   });
 

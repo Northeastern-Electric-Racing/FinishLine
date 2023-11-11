@@ -815,6 +815,9 @@ export default class ProjectsService {
     if (!manufacturer) {
       throw new NotFoundException('Manufacturer', name);
     }
+
+    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
+
     const dateDeleted: Date = new Date();
     const deletedByUserId = user.userId;
     const deletedManufacturer = await prisma.manufacturer.update({
