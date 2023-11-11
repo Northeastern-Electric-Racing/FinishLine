@@ -523,8 +523,10 @@ model Material_Type {
 }
 
 model Manufacturer {
-  name        String     @id
-  dateCreated DateTime
-  creatorId   Int
-  materials   Material[]
+  name            String     @id
+  dateCreated     DateTime
+  creatorId       Int
+  dateDeleted     DateTime?
+  deletedByUserId Int?
+  materials       Material[]
 }

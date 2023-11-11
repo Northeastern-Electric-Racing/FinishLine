@@ -220,23 +220,6 @@ describe('Projects', () => {
     });
   });
 
-  describe('deleteManufacturer', () => {
-    test('deleteManufacturer works', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(null);
-
-      const res = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
-
-      expect(res).toStrictEqual(null);
-      expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
-      expect(prisma.manufacturer.delete).toHaveBeenCalledTimes(1);
-    });
-
-    test('fails when user is not at least Head', async () => {});
-
-    test('fails when manufacturerId is not a manufacturer', async () => {});
-  });
-
   describe('toggleFavorite', () => {
     test('fails when project does not exist', async () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
@@ -656,6 +639,41 @@ describe('Projects', () => {
 
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
       expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+    });
+
+    test('deleteManufacturer works', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+
+      const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
+
+      expect(manufacturer).toStrictEqual(null);
+      expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.manufacturer.update).toHaveBeenCalledTimes(1);
+    });
+
+    test('deleteManufacturer fails when user is not at least Head', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(null);
+
+      await expect(
+        async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
+      ).rejects.toThrow(new AccessDeniedException('delete manufacturer'));
+
+      expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.project.update).toHaveBeenCalledTimes(0);
+    });
+
+    test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(null);
+
+      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-manufacturer')).rejects.toThrow(
+        new NotFoundException('Manufacturer', 'not-manufacturer')
+      );
+
+      expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(0);
+      expect(prisma.manufacturer.delete).toHaveBeenCalledTimes(0);
     });
   });
 
