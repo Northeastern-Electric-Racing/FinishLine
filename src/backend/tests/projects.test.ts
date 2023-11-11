@@ -676,10 +676,10 @@ describe('Projects', () => {
     });
 
     test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(primsaTeam2);
 
-      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-a-man')).rejects.toThrow(
+      await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-a-manufacturer')).rejects.toThrow(
         new HttpException(400, 'That is not a valid manufacturer!')
       );
 
