@@ -24,7 +24,7 @@ export class DeletedException extends HttpException {
    * @param id the id of the thing that is deleted
    */
   constructor(name: ExceptionObjectNames, id: number | string) {
-    super(404, `${name} with id: ${id} has been deleted already!`);
+    super(400, `${name} with id: ${id} has been deleted already!`);
   }
 }
 
@@ -111,6 +111,7 @@ type ExceptionObjectNames =
   | 'Expense Type'
   | 'Reimbursement Request'
   | 'User Secure Settings'
+  | 'Material'
   | 'Image File'
   | 'Assembly'
   | 'Material Type'
