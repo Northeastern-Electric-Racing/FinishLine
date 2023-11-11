@@ -261,7 +261,7 @@ export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  return user.userId === financeTeam.headId || financeTeam.leads.includes(user);
+  return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
 export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
