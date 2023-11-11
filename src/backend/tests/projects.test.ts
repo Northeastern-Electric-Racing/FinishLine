@@ -642,12 +642,12 @@ describe('Projects', () => {
     });
 
     test('deleteManufacturer works', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer2);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
 
-      const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer2.name);
+      const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
 
-      expect(manufacturer).toStrictEqual(prismaManufacturer2);
+      expect(manufacturer).toStrictEqual(prismaManufacturer1);
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
       expect(prisma.manufacturer.update).toHaveBeenCalledTimes(1);
     });
