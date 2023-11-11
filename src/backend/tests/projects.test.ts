@@ -647,26 +647,38 @@ describe('Projects', () => {
 
       const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
 
-      expect(manufacturer).toStrictEqual(null);
+      expect(manufacturer).toStrictEqual(prismaManufacturer1);
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
       expect(prisma.manufacturer.update).toHaveBeenCalledTimes(1);
     });
 
     test('deleteManufacturer fails when user is not at least Head', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(null);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
 
       await expect(
         async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
       ).rejects.toThrow(new AccessDeniedException('delete manufacturer'));
 
-      expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
 
-    test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
+    test('deleteManufacturer fails when manufacturer is not found',async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(null);
+      
+
+      await expect(
+        async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
+      ).rejects.toThrow(new NotFoundException('Manufacturer', prismaManufacturer1.name));
+
+      expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.project.update).toHaveBeenCalledTimes(0);
+    })
+
+    test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
 
       await expect(async () => await ProjectsService.deleteManufacturer(batman, 'not-manufacturer')).rejects.toThrow(
         new NotFoundException('Manufacturer', 'not-manufacturer')
