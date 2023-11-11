@@ -658,23 +658,22 @@ describe('Projects', () => {
 
       await expect(
         async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
-      ).rejects.toThrow(new AccessDeniedException('delete manufacturer'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads or above can delete a manufacturer'));
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
 
-    test('deleteManufacturer fails when manufacturer is not found',async () => {
+    test('deleteManufacturer fails when manufacturer is not found', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(null);
-      
 
-      await expect(
-        async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
-      ).rejects.toThrow(new NotFoundException('Manufacturer', prismaManufacturer1.name));
+      await expect(async () => await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name)).rejects.toThrow(
+        new NotFoundException('Manufacturer', prismaManufacturer1.name)
+      );
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
-    })
+    });
 
     test('deleteManufacturer fails when manufacturerId is not a manufacturer', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
