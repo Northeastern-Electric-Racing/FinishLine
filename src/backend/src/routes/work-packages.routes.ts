@@ -8,7 +8,7 @@ const workPackagesRouter = express.Router();
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.get(
   '/get-many',
-  body('wbsNums').exists().isArray(),
+  body('wbsNums').isArray(),
   intMinZero(body('wbsNums.*.carNumber')),
   intMinZero(body('wbsNums.*.projectNumber')),
   intMinZero(body('wbsNums.*.workPackageNumber')),

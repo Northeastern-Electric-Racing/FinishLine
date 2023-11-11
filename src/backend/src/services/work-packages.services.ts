@@ -115,14 +115,14 @@ export default class WorkPackagesService {
    * @throws if any of the work packages are not found
    */
   static async getManyWorkPackages(wbsNums: WbsNumber[]): Promise<WorkPackage[]> {
-    for (const wbsNum of wbsNums) {
+    wbsNums.forEach((wbsNum) => {
       if (isProject(wbsNum)) {
         throw new HttpException(
           404,
           `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is a project WBS#, not a Work Package WBS#`
         );
       }
-    }
+    });
 
     const workPackagePromises = wbsNums.map(async (wbsNum) => {
       const workPackage = await prisma.work_Package.findFirst({
@@ -144,8 +144,6 @@ export default class WorkPackagesService {
         },
         ...workPackageQueryArgs
       });
-
-      console.log(workPackage);
 
       if (!workPackage) {
         throw new NotFoundException('Work Package', wbsPipe(wbsNum));
