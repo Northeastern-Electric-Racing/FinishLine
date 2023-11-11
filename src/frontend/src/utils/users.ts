@@ -1,4 +1,4 @@
-import { AuthenticatedUser, User, isHead, isLeadership } from 'shared';
+import { AuthenticatedUser, User, isHead } from 'shared';
 import { fullNamePipe } from './pipes';
 
 /**
