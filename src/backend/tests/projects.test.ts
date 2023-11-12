@@ -672,7 +672,8 @@ describe('Projects', () => {
     test('assignment fails because of permissions', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
       vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
-      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ teams: [prismaTeam1] });
+      const project = { ...prismaProject1, teams: [{ members: [aquaman], leads: [superman] }] };
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(project);
 
       await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
         new AccessDeniedException('Only leadership or above can create a material type')

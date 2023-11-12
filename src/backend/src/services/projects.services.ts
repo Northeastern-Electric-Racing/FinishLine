@@ -837,6 +837,7 @@ export default class ProjectsService {
       ...projectQueryArgs
     });
     if (!project) throw new NotFoundException('Project', assembly.wbsElementId);
+    console.log(project);
 
     // Permission: leadership and up, anyone on project team
     if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
