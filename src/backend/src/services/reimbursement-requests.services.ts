@@ -162,19 +162,20 @@ export default class ReimbursementRequestService {
     });
 
     const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
+      const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
+        data: {
+          wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
+          otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
+            ? undefined
+            : (product.reason as Other_Reimbursement_Product_Reason)
+        }
+      });
       return await prisma.reimbursement_Product.create({
         data: {
           name: product.name,
           cost: product.cost,
           reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId,
-          reimbursementProductReason: {
-            create: {
-              wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
-              otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
-                ? undefined
-                : (product.reason as Other_Reimbursement_Product_Reason)
-            }
-          }
+          reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
         }
       });
     });

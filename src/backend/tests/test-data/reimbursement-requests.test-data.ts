@@ -70,7 +70,6 @@ export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
 
 export const GiveMeMoneyProductReason: PrismaReimbursementProductReason = {
   reimbursementProductReasonId: '1',
-  reimbursementProductId: '1',
   wbsElementId: 1,
   otherReason: null
 };
