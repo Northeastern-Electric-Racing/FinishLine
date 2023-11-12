@@ -100,6 +100,9 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
   });
 };
 
+/**
+ * Custom React Hook to get many work packages
+ */
 export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
   return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
     const { data } = await getManyWorkPackages(wbsNums);
