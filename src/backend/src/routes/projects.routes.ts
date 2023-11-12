@@ -66,6 +66,7 @@ projectRouter.post(
 projectRouter.post(
   '/bom/material/:materialId/assign-assembly',
   nonEmptyString(body('assemblyId')),
+  validateInputs,
   ProjectsController.assignMaterialAssembly
 );
 projectRouter.post(

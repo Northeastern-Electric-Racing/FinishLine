@@ -818,6 +818,7 @@ export default class ProjectsService {
    * @param materialId the material that will be moved
    * @param assemblyId the assembly to change the material to
    * @throws if the submitter does not have the relevant positions
+   * @returns the updated material
    */
   static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
     const material = await prisma.material.findUnique({ where: { materialId } });
@@ -838,7 +839,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', assembly.wbsElementId);
 
     // Permission: leadership and up, anyone on project team
-    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project?.teams, submitter)))
+    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
       throw new AccessDeniedException('Only leadership or above can create a material type');
 
     // Assign a material on a project to a different assembly
