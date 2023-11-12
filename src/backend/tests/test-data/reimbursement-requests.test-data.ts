@@ -13,7 +13,7 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, ExpenseType, OtherProductReason, ReimbursementRequest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
 
@@ -127,7 +127,7 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [
-    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+    //{ ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
   expenseType: Parts
 };
@@ -139,7 +139,7 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [
-    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+    //{ ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
   expenseType: Parts
 };
@@ -172,7 +172,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   reimbursementStatuses: [],
   reimbursementProducts: [
     {
-      reimbursementProductReason: OtherProductReason.COMPETITION,
+      reimbursementProductReason: { wbsNum: wbsNumOf(prismaWbsElement1), wbsName: 'car' },
       dateDeleted: undefined,
       name: GiveMeMoneyProduct.name,
       cost: GiveMeMoneyProduct.cost,
