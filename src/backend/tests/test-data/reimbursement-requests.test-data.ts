@@ -13,7 +13,7 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
+import { ClubAccount, ExpenseType, OtherProductReason, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
 
@@ -172,7 +172,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   reimbursementStatuses: [],
   reimbursementProducts: [
     {
-      reimbursementProductReason: { wbsNum: wbsNumOf(prismaWbsElement1), wbsName: 'car' },
+      reimbursementProductReason: OtherProductReason.COMPETITION,
       dateDeleted: undefined,
       name: GiveMeMoneyProduct.name,
       cost: GiveMeMoneyProduct.cost,
