@@ -6,7 +6,7 @@ import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '..
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
-workPackagesRouter.get(
+workPackagesRouter.post(
   '/get-many',
   body('wbsNums').isArray(),
   intMinZero(body('wbsNums.*.carNumber')),
