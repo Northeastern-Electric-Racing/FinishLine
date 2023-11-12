@@ -827,6 +827,8 @@ export default class ProjectsService {
    * @param subtotal the subtotal of the new material
    * @param linkUrl the link url of the new material
    * @param notes the notes of the new material
+   * @throws if permission denied or material's wbsElement is undefined/deleted
+   * @returns the updated material
    */
   static async editMaterial(
     submitter: User,
