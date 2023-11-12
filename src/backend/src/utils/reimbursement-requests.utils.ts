@@ -245,6 +245,10 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
 /**
  * Determines if a user is lead or head of the finance team.
  *
+ * To be used for Prisma input validation of a plain User, as opposed to
+ * <code>isAuthUserLeadForFinance</code>, which uses the additional fields
+ * produced by authUserQueryArgs that are not in the User type by default.
+ *
  * @param user the user to authenticate
  * @returns whether the user is lead or head of the finance team
  * @throws {HttpException} if finance team not found in database
