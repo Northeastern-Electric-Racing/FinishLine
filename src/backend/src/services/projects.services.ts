@@ -1,4 +1,4 @@
-import { Material_Type, User, Assembly } from '@prisma/client';
+import { Manufacturer, Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -28,8 +28,10 @@ import {
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
+import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 
 export default class ProjectsService {
@@ -606,6 +608,103 @@ export default class ProjectsService {
   }
 
   /**
+   * Creates a new Material
+   * @param creator the user creating the material
+   * @param name the name of the material
+   * @param status the Material Status of the material
+   * @param materialTypeName the name of the Material Type
+   * @param manufacturerName the name of the material's manufacturer
+   * @param manufacturerPartNumber the manufacturer part number for the material
+   * @param quantity the quantity of material as a number
+   * @param unitName the name of the Quantity Unit the quantity is measured in
+   * @param price the price of the material in whole cents
+   * @param subtotal the subtotal of the price for the material in whole cents
+   * @param linkUrl the url for the material's link as a string
+   * @param notes any notes about the material as a string
+   * @param wbsNumber the WBS number of the project associated with this material
+   * @param assemblyId the id of the Assembly for the material
+   * @param pdmFileName the name of the pdm file for the material
+   * @returns the created material
+   */
+  static async createMaterial(
+    creator: User,
+    name: string,
+    status: Material_Status,
+    materialTypeName: string,
+    manufacturerName: string,
+    manufacturerPartNumber: string,
+    quantity: number,
+    unitName: string,
+    price: number,
+    subtotal: number,
+    linkUrl: string,
+    notes: string,
+    wbsNumber: WbsNumber,
+    assemblyId?: string,
+    pdmFileName?: string
+  ): Promise<Material> {
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElement: {
+          carNumber: wbsNumber.carNumber,
+          projectNumber: wbsNumber.projectNumber,
+          workPackageNumber: wbsNumber.workPackageNumber
+        }
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    }
+
+    const materialType = await prisma.material_Type.findFirst({
+      where: { name: materialTypeName }
+    });
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: { name: manufacturerName }
+    });
+    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+
+    const unit = await prisma.unit.findFirst({
+      where: { name: unitName }
+    });
+    if (!unit) throw new NotFoundException('Unit', unitName);
+
+    const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
+
+    if (!perms) throw new AccessDeniedException('create materials');
+
+    const createdMaterial = await prisma.material.create({
+      data: {
+        userCreatedId: creator.userId,
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        dateCreated: new Date(),
+        wbsElementId: project.wbsElementId
+      }
+    });
+
+    return createdMaterial;
+  }
+
+  /**
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly
@@ -684,6 +783,22 @@ export default class ProjectsService {
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Get all the manufacturers in the database.
+   * @returns all the manufacturers
+   */
+  static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Get Manufacturers');
+    }
+
+    return (
+      await prisma.manufacturer.findMany({
+        ...manufacturerQueryArgs
+      })
+    ).map(manufacturerTransformer);
   }
 
   /**

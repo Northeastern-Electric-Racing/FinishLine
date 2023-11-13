@@ -1,6 +1,6 @@
 import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
+import { Manufacturer, User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
@@ -140,12 +140,64 @@ export default class ProjectsController {
     }
   }
 
+  static async createMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const creator = await getCurrentUser(res);
+      const wbsNum = validateWBS(req.params.wbsNum);
+      const material = await ProjectsService.createMaterial(
+        creator,
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsNum,
+        assemblyId,
+        pdmFileName
+      );
+      return res.status(200).json(material);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
       const createdManufacturer = await ProjectsService.createManufacturer(user, name);
       res.status(200).json(createdManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers(user);
+      return res.status(200).json(manufacturers);
     } catch (error: unknown) {
       next(error);
     }

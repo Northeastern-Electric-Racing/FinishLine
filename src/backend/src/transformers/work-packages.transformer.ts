@@ -6,7 +6,7 @@ import { convertStatus, wbsNumOf } from '../utils/utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
 import userTransformer from './user.transformer';
 
-const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>) => {
+const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>): WorkPackage => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
   const wbsNum = wbsNumOf(wpInput.wbsElement);
   const progress = calculateWorkPackageProgress(wpInput.deliverables, wpInput.expectedActivities);

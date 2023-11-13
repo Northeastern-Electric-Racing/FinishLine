@@ -63,6 +63,9 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
     case ReimbursementStatusType.SABO_SUBMITTED: {
       return 'Submitted to Sabo';
     }
+    case ReimbursementStatusType.DENIED: {
+      return 'Denied';
+    }
   }
 };
 
