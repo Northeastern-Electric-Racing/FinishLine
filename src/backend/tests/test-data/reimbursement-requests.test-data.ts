@@ -168,7 +168,9 @@ export const prismaGiveMeMyMoney4: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementStatuses: [prismaReimbursementStatus3],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
@@ -178,7 +180,9 @@ export const prismaGiveMeMyMoney5: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementStatuses: [prismaReimbursementStatus4],
   recipient: batman,
   vendor: PopEyes,
-  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  reimbursementProducts: [
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+  ],
   expenseType: Parts
 };
 
