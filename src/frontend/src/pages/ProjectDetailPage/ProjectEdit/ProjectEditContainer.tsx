@@ -204,16 +204,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectManager={setprojectManagerId}
         />
         <PageBlock title="Project Summary">
-            <FormControl fullWidth>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Summary"
-                multiline={true}
-                rows={5}
-                errorMessage={errors.summary}
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <ReactHookTextField
+              name="summary"
+              control={control}
+              placeholder="Summary"
+              multiline={true}
+              rows={5}
+              errorMessage={errors.summary}
+            />
+          </FormControl>
         </PageBlock>
         <Stack spacing={4}>
           <Box>
