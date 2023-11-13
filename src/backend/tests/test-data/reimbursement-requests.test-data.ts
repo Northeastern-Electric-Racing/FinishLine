@@ -127,7 +127,7 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [
-    //{ ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
   expenseType: Parts
 };
@@ -139,7 +139,7 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [
-    //{ ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
+    { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
   expenseType: Parts
 };
@@ -154,4 +154,21 @@ export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayloa
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
   expenseType: Parts
+};
+
+export const sharedGiveMeMyMoney: ReimbursementRequest = {
+  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  dateCreated: GiveMeMyMoney.dateCreated,
+  dateOfExpense: GiveMeMyMoney.dateOfExpense,
+  totalCost: GiveMeMyMoney.totalCost,
+  receiptPictures: [],
+  expenseType: Parts as ExpenseType,
+  vendor: PopEyes,
+  recipient: userTransformer(batman),
+  saboId: undefined,
+  dateDeleted: undefined,
+  account: GiveMeMyMoney.account as ClubAccount,
+  dateDelivered: undefined,
+  reimbursementStatuses: [],
+  reimbursementProducts: []
 };
