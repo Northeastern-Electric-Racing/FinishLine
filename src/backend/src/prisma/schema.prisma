@@ -114,6 +114,7 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
+  deletedManufacturer       Manufacturer[]          @relation(name: "deletedManufacturer")
 }
 
 model Team {
@@ -528,5 +529,6 @@ model Manufacturer {
   creatorId       Int
   dateDeleted     DateTime?
   deletedByUserId Int?
+  deletedBy       User?      @relation(name: "deletedManufacturer", fields: [deletedByUserId], references: [userId])
   materials       Material[]
 }

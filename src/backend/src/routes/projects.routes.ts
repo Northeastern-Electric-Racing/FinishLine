@@ -56,7 +56,7 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createManufacturer
 );
-projectRouter.delete('/bom/manufacturer/:manufacturerId/delete', ProjectsController.deleteManufacturer);
+projectRouter.delete('/bom/manufacturer/:manufacturerName/delete', ProjectsController.deleteManufacturer);
 projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',

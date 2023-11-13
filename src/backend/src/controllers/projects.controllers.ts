@@ -196,8 +196,8 @@ export default class ProjectsController {
   static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
-      const { name } = req.body;
-      const deletedManufacturer: Manufacturer = await ProjectsService.deleteManufacturer(user, name);
+      const { manufacturerName } = req.body;
+      const deletedManufacturer: Manufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
       res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
       next(error);

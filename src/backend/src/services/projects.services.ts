@@ -1,7 +1,7 @@
 import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import {
   isAdmin,
-  isAtLeastRank,
+  isHead,
   isGuest,
   isLeadership,
   isProject,
@@ -802,7 +802,7 @@ export default class ProjectsService {
    * @returns the deleted manufacturer
    */
   static async deleteManufacturer(user: User, name: string) {
-    if (!isAtLeastRank('HEAD', user.role)) {
+    if (!isHead(user.role)) {
       throw new AccessDeniedException('Only heads or above can delete a manufacturer');
     }
 
