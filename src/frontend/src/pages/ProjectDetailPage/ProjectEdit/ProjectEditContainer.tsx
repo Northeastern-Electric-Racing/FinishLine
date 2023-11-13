@@ -15,7 +15,7 @@ import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, FormControl, Grid, Stack, Typography } from '@mui/material';
+import { Box, FormControl, Stack, Typography } from '@mui/material';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
@@ -204,7 +204,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectManager={setprojectManagerId}
         />
         <PageBlock title="Project Summary">
-          <Grid item sx={{ mt: 2 }}>
             <FormControl fullWidth>
               <ReactHookTextField
                 name="summary"
@@ -215,7 +214,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
                 errorMessage={errors.summary}
               />
             </FormControl>
-          </Grid>
         </PageBlock>
         <Stack spacing={4}>
           <Box>
