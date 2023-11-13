@@ -156,19 +156,4 @@ export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayloa
   expenseType: Parts
 };
 
-export const sharedGiveMeMyMoney: ReimbursementRequest = {
-  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
-  dateCreated: GiveMeMyMoney.dateCreated,
-  dateOfExpense: GiveMeMyMoney.dateOfExpense,
-  totalCost: GiveMeMyMoney.totalCost,
-  receiptPictures: [],
-  expenseType: Parts as ExpenseType,
-  vendor: PopEyes,
-  recipient: userTransformer(batman),
-  saboId: undefined,
-  dateDeleted: undefined,
-  account: GiveMeMyMoney.account as ClubAccount,
-  dateDelivered: undefined,
-  reimbursementStatuses: [],
-  reimbursementProducts: []
-};
+export const sharedGiveMeMyMoney = {};
