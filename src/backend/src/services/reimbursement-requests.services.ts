@@ -5,13 +5,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Multer } from 'multer';
-import {
-  Club_Accounts,
-  Other_Reimbursement_Product_Reason,
-  Reimbursement_Request,
-  Reimbursement_Status_Type,
-  User
-} from '@prisma/client';
+import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
@@ -21,13 +15,13 @@ import {
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
-  WbsNumber,
   isAdmin,
   isGuest,
   isHead
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  createReimbursementProducts,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -161,26 +155,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
-      const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
-        data: {
-          wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
-          otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
-            ? undefined
-            : (product.reason as Other_Reimbursement_Product_Reason)
-        }
-      });
-      return await prisma.reimbursement_Product.create({
-        data: {
-          name: product.name,
-          cost: product.cost,
-          reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId,
-          reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
-        }
-      });
-    });
-
-    await Promise.all(reimbursementProductsPromises);
+    await createReimbursementProducts(validatedReimbursementProducts, createdReimbursementRequest.reimbursementRequestId);
 
     return createdReimbursementRequest;
   }

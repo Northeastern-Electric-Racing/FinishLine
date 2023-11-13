@@ -78,6 +78,10 @@ export interface ExpenseType {
   allowedRefundSources: ClubAccount[];
 }
 
+export type ValidatedWbsArgs = { wbsElementId: number; wbsNum: WbsNumber };
+
+export type ValidatedReimbursementProductReasonCreateArgs = ValidatedWbsArgs | OtherProductReason;
+
 export type ReimbursementProductReasonCreateArgs = WbsNumber | OtherProductReason;
 
 export interface ReimbursementProductCreateArgs {

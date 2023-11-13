@@ -78,9 +78,7 @@ export const reimbursementProductTransformer = (
     name: reimbursementProduct.name,
     dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
-    reimbursementProductReason: reimbursementProduct.reimbursementProductReason
-      ? reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
-      : OtherProductReason.UNKNOWN
+    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
 };
 

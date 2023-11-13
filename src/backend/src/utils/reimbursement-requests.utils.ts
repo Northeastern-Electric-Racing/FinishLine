@@ -8,6 +8,8 @@ import {
   ReimbursementProductCreateArgs,
   ReimbursementProductReasonCreateArgs,
   ReimbursementReceiptCreateArgs,
+  ValidatedReimbursementProductReasonCreateArgs,
+  ValidatedWbsArgs,
   WbsNumber,
   wbsPipe
 } from 'shared';
@@ -55,7 +57,7 @@ export const validateReimbursementProducts = async (
   {
     name: string;
     cost: number;
-    reason: { wbsElementId: number; wbsNum: WbsNumber } | OtherProductReason;
+    reason: ValidatedReimbursementProductReasonCreateArgs;
   }[]
 > => {
   if (reimbursementProductCreateArgs.length === 0) {
@@ -74,8 +76,9 @@ export const validateReimbursementProducts = async (
   const reimbursementProductsWithReason: Promise<{
     name: string;
     cost: number;
-    reason: { wbsElementId: number; wbsNum: WbsNumber } | OtherProductReason;
+    reason: ValidatedReimbursementProductReasonCreateArgs;
   }>[] = reasons.map(async (reason: ReimbursementProductReasonCreateArgs, index) => {
+    //check whether the reason is a WBS Number
     if (!!(reason as WbsNumber).carNumber) {
       const wbsNum = reason as WbsNumber;
       const wbsElement = await prisma.wBS_Element.findFirst({
@@ -206,27 +209,43 @@ const createNewProducts = async (products: ReimbursementProductCreateArgs[], rei
   //create the new reimbursement products
   if (products.length !== 0) {
     const validatedReimbursementProducts = await validateReimbursementProducts(products);
-    const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
-      const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
-        data: {
-          wbsElementId: (product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId,
-          otherReason: !!(product.reason as { wbsNum: WbsNumber; wbsElementId: number }).wbsElementId
-            ? undefined
-            : (product.reason as Other_Reimbursement_Product_Reason)
-        }
-      });
-      return await prisma.reimbursement_Product.create({
-        data: {
-          name: product.name,
-          cost: product.cost,
-          reimbursementRequestId,
-          reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
-        }
-      });
-    });
-
-    await Promise.all(reimbursementProductsPromises);
+    await createReimbursementProducts(validatedReimbursementProducts, reimbursementRequestId);
   }
+};
+
+/**
+ * Takes in validated reimbursement products and create them in the database
+ * @param validatedReimbursementProducts validated create args for the reimbursement product
+ * @param reimbursementRequestId id of the reimbursement request to associate the reimbursement products with
+ */
+export const createReimbursementProducts = async (
+  validatedReimbursementProducts: {
+    name: string;
+    cost: number;
+    reason: ValidatedReimbursementProductReasonCreateArgs;
+  }[],
+  reimbursementRequestId: string
+) => {
+  const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
+    const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
+      data: {
+        wbsElementId: (product.reason as ValidatedWbsArgs).wbsElementId,
+        otherReason: !!(product.reason as ValidatedWbsArgs).wbsElementId
+          ? undefined
+          : (product.reason as Other_Reimbursement_Product_Reason)
+      }
+    });
+    return await prisma.reimbursement_Product.create({
+      data: {
+        name: product.name,
+        cost: product.cost,
+        reimbursementRequestId,
+        reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
+      }
+    });
+  });
+
+  await Promise.all(reimbursementProductsPromises);
 };
 
 //abstract createProducts method
