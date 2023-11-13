@@ -5,13 +5,13 @@ import { Button, IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getRequiredLinkTypeNames } from '../../utils/link.utils';
-import { ProjectEditFormInput } from '../../pages/ProjectDetailPage/ProjectEdit/ProjectEditContainer';
+import { ProjectFormInput } from '../../pages/ProjectDetailPage/ProjectEdit/ProjectFormContainer';
 import { Box } from '@mui/system';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
-  register: UseFormRegister<ProjectEditFormInput>;
-  watch: UseFormWatch<ProjectEditFormInput>;
+  register: UseFormRegister<ProjectFormInput>;
+  watch: UseFormWatch<ProjectFormInput>;
   append: UseFieldArrayAppend<any, any>;
   remove: UseFieldArrayRemove;
 }> = ({ ls, register, append, remove, watch }) => {

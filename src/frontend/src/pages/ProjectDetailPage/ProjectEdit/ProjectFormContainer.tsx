@@ -6,44 +6,29 @@
 import { LinkCreateArgs, Project, User } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import { useEditSingleProject } from '../../../hooks/projects.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
 import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
-import {
-  FieldErrorsImpl,
-  UseFieldArrayAppend,
-  UseFieldArrayRemove,
-  UseFormRegister,
-  UseFormWatch,
-  useFieldArray,
-  useForm
-} from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Grid, Box, FormControl, Stack, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { useToast } from '../../../hooks/toasts.hooks';
 import LinksEditView from '../../../components/Link/LinksEditView';
-import { EditSingleProjectPayload } from '../../../utils/types';
-import { ReactElement, useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
 import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
-import { Control } from 'react-hook-form';
-import { JsxElement } from 'typescript';
+import ProjectEditDetails from './ProjectEditDetails';
 
 export interface ProjectFormInput {
   name: string;
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: string;
+  crId: number | undefined;
   goals: {
     bulletId: number;
     detail: string;
@@ -59,6 +44,8 @@ export interface ProjectFormInput {
   rules: {
     rule: string;
   }[];
+  projectLeadId: string | undefined;
+  projectManagerId: string | undefined;
 }
 
 const schema = yup.object().shape({
@@ -70,92 +57,71 @@ const schema = yup.object().shape({
       url: yup.string().required('URL is required!').url('Invalid URL')
     })
   ),
-  summary: yup.string().required('Summary is required!')
+  summary: yup.string().required('Summary is required!'),
+  crId: yup.number().min(1).required('crId must be a non-zero number!'),
+  carNumber: yup.number().min(0).required('A car number is required!')
 });
 
 interface ProjectFormContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
-  project: Project;
-  control: Control<ProjectFormInput>;
-  onSubmit: (data: ProjectFormInput) => void;
-  register: UseFormRegister<any>;
-  appendLink: UseFieldArrayAppend<any, any>;
-  removeLink: UseFieldArrayRemove;
-  links: Record<'id', string>[];
-  watch: UseFormWatch<ProjectFormInput>;
-  goals: Record<'id', string>[];
-  appendGoal: UseFieldArrayAppend<any, any>;
-  removeGoal: UseFieldArrayRemove;
-  features: Record<'id', string>[];
-  appendFeature: UseFieldArrayAppend<any, any>;
-  removeFeature: UseFieldArrayRemove;
-  constraints: Record<'id', string>[];
-  appendConstraint: UseFieldArrayAppend<any, any>;
-  removeConstraint: UseFieldArrayRemove;
-  rules: Record<'id', string>[];
-  appendRule: UseFieldArrayAppend<any, any>;
-  removeRule: UseFieldArrayRemove;
-  handleSubmit: Function;
+  project?: Project;
+  //TODO make this not any?
+  onSubmit: (data: any) => void;
   users: User[];
-  errors: FieldErrorsImpl<ProjectFormInput>;
-  projectEditDetails: ReactElement<any, any>;
-}
-
-export interface ProjectFormInput {
-  name: string;
-  budget: number;
-  summary: string;
-  links: LinkCreateArgs[];
-  crId: string;
-  goals: {
-    bulletId: number;
-    detail: string;
-  }[];
-  features: {
-    bulletId: number;
-    detail: string;
-  }[];
-  constraints: {
-    bulletId: number;
-    detail: string;
-  }[];
-  rules: {
-    rule: string;
-  }[];
+  defaultValues: ProjectFormInput;
+  setProjectManagerId: (id: string) => void;
+  setProjectLeadId: (id: string) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   exitEditMode,
   requiredLinkTypeNames,
   project,
-  control,
   onSubmit,
-  register,
-  links,
-  appendLink,
-  removeLink,
-  watch,
-  goals,
-  appendGoal,
-  removeGoal,
-  features,
-  appendFeature,
-  removeFeature,
-  constraints,
-  appendConstraint,
-  removeConstraint,
-  rules,
-  appendRule,
-  removeRule,
-  handleSubmit,
   users,
-  errors,
-  projectEditDetails
+  defaultValues,
+  setProjectManagerId,
+  setProjectLeadId
 }) => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: defaultValues?.name,
+      budget: defaultValues?.budget,
+      summary: defaultValues?.summary,
+      crId: defaultValues.crId,
+      rules: defaultValues?.rules.map((rule) => {
+        return { rule };
+      }),
+      links: defaultValues?.links,
+      goals: defaultValues?.goals,
+      features: defaultValues?.features,
+      constraints: defaultValues?.constraints,
+      projectLeadId: defaultValues?.projectLeadId,
+      projectManagerId: defaultValues?.projectManagerId
+    }
+  });
+
+  const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
+  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
+  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
+  const {
+    fields: constraints,
+    append: appendConstraint,
+    remove: removeConstraint
+  } = useFieldArray({ control, name: 'constraints' });
+  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
+
   return (
     <PageLayout
-      title={`${wbsPipe(project.wbsNum)} - ${project.name}`}
+      title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
       headerRight={<ChangeRequestDropdown control={control} name="crId" />}
     >
@@ -170,7 +136,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           e.key === 'Enter' && e.preventDefault();
         }}
       >
-        {projectEditDetails}
+        <ProjectEditDetails
+          users={users}
+          control={control}
+          errors={errors}
+          setProjectManagerId={setProjectManagerId}
+          setProjectLeadId={setProjectLeadId}
+        />
         <PageBlock title="Project Summary">
           <Grid item sx={{ mt: 2 }}>
             <FormControl fullWidth>

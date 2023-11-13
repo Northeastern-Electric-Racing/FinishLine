@@ -12,13 +12,13 @@ interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectFormInput>;
   errors: FieldErrorsImpl<ProjectFormInput>;
+  createProject?: boolean;
   projectManager?: string;
   projectLead?: string;
   setProjectManager: (projectManager?: string) => void;
   setProjectLead: (projectLead?: string) => void;
-  creatingProject: boolean;
-  setcrId: (crId?: number) => void;
-  setCarNumber: (carNumber?: number) => void;
+  setcrId?: (crId?: number) => void;
+  setCarNumber?: (carNumber?: number) => void;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -30,11 +30,11 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   users,
   control,
   errors,
+  createProject = false,
   projectManager,
   projectLead,
   setProjectLead,
-  setProjectManager,
-  creatingProject
+  setProjectManager
 }) => {
   return (
     <PageBlock title="Project Details">
@@ -63,7 +63,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4} sx={{ display: creatingProject ? 'flex' : 'none' }}>
+        <Grid item xs={4} sx={{ display: createProject ? 'flex' : 'none' }}>
           <FormControl fullWidth>
             <FormLabel>crId</FormLabel>
             <ReactHookTextField
@@ -76,7 +76,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4} sx={{ display: creatingProject ? 'flex' : 'none' }}>
+        <Grid item xs={4} sx={{ display: createProject ? 'flex' : 'none' }}>
           <FormControl fullWidth>
             <FormLabel>Car Number</FormLabel>
             <ReactHookTextField

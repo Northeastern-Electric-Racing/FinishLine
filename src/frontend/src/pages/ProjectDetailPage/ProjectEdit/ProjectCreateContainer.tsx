@@ -3,34 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { LinkCreateArgs, Project } from 'shared';
+import { LinkCreateArgs } from 'shared';
 import { useCreateSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useQuery } from '../../../hooks/utils.hooks';
-import { useFieldArray, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import ProjectEditDetails from './ProjectEditDetails';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import { mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import ProjectFormContainer from './ProjectFormContainer';
 import { ProjectFormInput } from './ProjectFormContainer';
-
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-  links: yup.array().of(
-    yup.object().shape({
-      linkTypeName: yup.string().required('Link Type is required!'),
-      url: yup.string().required('URL is required!').url('Invalid URL')
-    })
-  ),
-  summary: yup.string().required('Summary is required!')
-});
 
 interface ProjectCreateContainerProps {
   requiredLinkTypeNames: string[];
@@ -45,53 +28,42 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
   const budget = 0;
   const summary = String();
 
-  const projectLinks: { linkId: string; url: string; linkTypeName: string }[] = [];
-  const projectLinkTypeNames = projectLinks.map((link) => link.linkTypeName);
+  const links: { linkId: string; url: string; linkTypeName: string }[] = [];
+  const goals: { bulletId: number; detail: string }[] = [];
+  const features: { bulletId: number; detail: string }[] = [];
+  const rules: { rule: string }[] = [];
+  const constraints: { bulletId: number; detail: string }[] = [];
+  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
+
+  const { mutateAsync } = useCreateSingleProject();
+  const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
+  const [crId, setcrId] = useState<number>();
+  const [carNumber, setCarNumber] = useState<number>();
+
+  const defaultValues = {
+    name,
+    budget,
+    summary,
+    links,
+    crId,
+    goals,
+    features,
+    constraints,
+    rules,
+    projectLeadId,
+    projectManagerId
+  };
 
   requiredLinkTypeNames
     .filter((name) => !projectLinkTypeNames.includes(name))
     .forEach((name) => {
-      projectLinks.push({
+      links.push({
         linkId: '-1',
         url: '',
         linkTypeName: name
       });
     });
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name,
-      budget,
-      summary,
-      crId: '',
-      rules: [],
-      links: projectLinks,
-      goals: [],
-      features: [],
-      constraints: []
-    }
-  });
-  const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
-  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
-  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
-  const {
-    fields: constraints,
-    append: appendConstraint,
-    remove: removeConstraint
-  } = useFieldArray({ control, name: 'constraints' });
-  const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
-  const { mutateAsync } = useCreateSingleProject();
-  const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
-  const [crid, setcrid] = useState<number | undefined>();
-  const [carNumber, setCarNumber] = useState<number | undefined>();
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -109,11 +81,10 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: parseInt(crid),
+        crId: crId ?? 0,
         name,
-        carNumber,
+        carNumber: carNumber ?? 0,
         summary,
-        projectId,
         budget: budget,
         rules,
         goals,
@@ -137,43 +108,11 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
       <ProjectFormContainer
         exitEditMode={exitEditMode}
         requiredLinkTypeNames={requiredLinkTypeNames}
-        //project={project}
-        control={control}
         onSubmit={onSubmit}
-        register={register}
-        links={links}
-        appendLink={appendLink}
-        removeLink={removeLink}
-        watch={watch}
-        goals={goals}
-        appendGoal={appendGoal}
-        removeGoal={removeGoal}
-        features={features}
-        appendFeature={appendFeature}
-        removeFeature={removeFeature}
-        constraints={constraints}
-        appendConstraint={appendConstraint}
-        removeConstraint={removeConstraint}
-        rules={rules}
-        appendRule={appendRule}
-        removeRule={removeRule}
-        handleSubmit={handleSubmit}
         users={users}
-        errors={errors}
-        projectEditDetails={
-          <ProjectEditDetails
-            users={users}
-            control={control}
-            errors={errors}
-            projectLead={projectLeadId}
-            projectManager={projectManagerId}
-            setProjectLead={setProjectLeadId}
-            setProjectManager={setprojectManagerId}
-            creatingProject={true}
-            setcrId={setcrid}
-            setCarNumber={setCarNumber}
-          />
-        }
+        defaultValues={defaultValues}
+        setProjectLeadId={setProjectLeadId}
+        setProjectManagerId={setprojectManagerId}
       />
     </>
   );

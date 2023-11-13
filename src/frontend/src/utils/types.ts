@@ -45,7 +45,6 @@ export interface CreateSingleProjectPayload {
   name: string;
   carNumber: number;
   summary: string;
-  projectId: number;
   budget?: number;
   rules?: string[];
   goals?: { id: number; detail: string }[];
