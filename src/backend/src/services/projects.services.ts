@@ -828,6 +828,7 @@ export default class ProjectsService {
    * Deletes a material type based on the given Id
    * @param submitter the user who is deleting the material type
    * @param materialTypeId the Id of the material type being deleted
+   * @throws if the submitter is not an admin/head or if the material type is not found
    * @returns the deleted material type
    */
   static async deleteMaterialType(materialTypeId: string, submitter: User): Promise<Material_Type> {
