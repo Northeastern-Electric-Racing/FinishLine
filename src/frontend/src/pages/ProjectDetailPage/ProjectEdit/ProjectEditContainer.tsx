@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { LinkCreateArgs, Project } from 'shared';
+import { Project } from 'shared';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';

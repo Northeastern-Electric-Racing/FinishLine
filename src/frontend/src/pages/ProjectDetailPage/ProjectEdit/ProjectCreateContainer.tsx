@@ -2,8 +2,6 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { LinkCreateArgs } from 'shared';
 import { useCreateSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -38,8 +36,8 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
   const { mutateAsync } = useCreateSingleProject();
   const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
-  const [crId, setcrId] = useState<number>();
-  const [carNumber, setCarNumber] = useState<number>();
+  const crId = 0;
+  const carNumber = 0;
 
   const defaultValues = {
     name,
