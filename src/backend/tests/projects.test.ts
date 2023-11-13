@@ -658,7 +658,7 @@ describe('Projects', () => {
 
       await expect(
         async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
-      ).rejects.toThrow(new AccessDeniedException('Only heads or above can delete a manufacturer'));
+      ).rejects.toThrow(new AccessDeniedException('Only heads and above can delete a manufacturer'));
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
