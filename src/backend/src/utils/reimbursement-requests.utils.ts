@@ -79,7 +79,7 @@ export const validateReimbursementProducts = async (
     reason: ValidatedReimbursementProductReasonCreateArgs;
   }>[] = reasons.map(async (reason: ReimbursementProductReasonCreateArgs, index) => {
     //check whether the reason is a WBS Number
-    if (!!(reason as WbsNumber).carNumber) {
+    if ((reason as WbsNumber).carNumber !== undefined) {
       const wbsNum = reason as WbsNumber;
       const wbsElement = await prisma.wBS_Element.findFirst({
         where: {

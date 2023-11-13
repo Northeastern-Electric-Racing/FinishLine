@@ -21,10 +21,19 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { ReimbursementProductCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import { OtherProductReason, ReimbursementProductCreateArgs, WbsNumber, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { useState } from 'react';
+
+const otherCategoryOptions = [
+  { label: 'COMPETITION', id: 'COMPETITION' },
+  { label: 'CONSUMABLES', id: 'CONSUMABLES' },
+  { label: 'GENERAL_STOCK', id: 'GENERAL_STOCK' },
+  { label: 'SUBSCRIPTIONS_AND_MEMBERSHIPS', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
+  { label: 'TOOLS_AND_EQUIPMENT', id: 'TOOLS_AND_EQUIPMENT' }
+];
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -52,6 +61,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   errors,
   setValue
 }) => {
+  const [reasons, setReasons] = useState<string[]>([]);
   const uniqueWbsElementsWithProducts = new Map<
     string,
     {
@@ -60,14 +70,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
       index: number;
     }[]
   >();
-  const productWithWbsNums = reimbursementProducts.filter((product) => !!(product.reason as WbsNumber).carNumber);
-  productWithWbsNums.forEach((product, index) => {
-    const wbs = wbsPipe(product.reason as WbsNumber);
-    if (uniqueWbsElementsWithProducts.has(wbs)) {
-      const products = uniqueWbsElementsWithProducts.get(wbs);
+  reimbursementProducts.forEach((product, index) => {
+    const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
+    if (uniqueWbsElementsWithProducts.has(productReason)) {
+      const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index: index });
     } else {
-      uniqueWbsElementsWithProducts.set(wbs, [{ ...product, index: index }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index: index }]);
     }
   });
 
@@ -101,7 +111,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
             return (
               <TableRow key={key}>
                 <TableCell>
-                  <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)?.label}</Typography>
+                  <Typography>
+                    {wbsElementAutocompleteOptions.concat(otherCategoryOptions).find((value) => value.id === key)?.label}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
@@ -164,12 +176,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     sx={{ margin: '4px' }}
                     startIcon={<Add />}
                     onClick={() =>
-                      // appendProduct({
-                      //   wbsNum: validateWBS(key),
-                      //   name: '',
-                      //   cost: 0
-                      // })
-                      {}
+                      appendProduct({
+                        reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
+                        name: '',
+                        cost: 0
+                      })
                     }
                   >
                     Add Product
@@ -178,6 +189,42 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               </TableRow>
             );
           })}
+          {reasons.map((reason, idx) => (
+            <TableRow>
+              <TableCell colSpan={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  <Autocomplete
+                    fullWidth
+                    sx={{ my: 1 }}
+                    options={reason === 'Project' ? wbsElementAutocompleteOptions : otherCategoryOptions}
+                    onChange={(_event, value) => {
+                      if (value) {
+                        appendProduct({
+                          reason: reason === 'Project' ? validateWBS(value.id) : (value.id as OtherProductReason),
+                          name: '',
+                          cost: 0
+                        });
+                        setReasons(reasons.filter((reason, indx) => indx !== idx));
+                      }
+                    }}
+                    value={null}
+                    blurOnSelect={true}
+                    id={'append-product-autocomplete'}
+                    size={'small'}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder={reason === 'Project' ? 'Select a Project' : 'Select an Other Category'}
+                      />
+                    )}
+                  />
+                  <IconButton onClick={() => setReasons(reasons.filter((reason, indx) => indx !== idx))}>
+                    <Delete />
+                  </IconButton>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
           <TableRow>
             <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
               <Autocomplete
@@ -185,13 +232,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 sx={{ my: 1 }}
                 options={newProductSelectOptions}
                 onChange={(_event, value) => {
-                  // if (value) appendProduct({ reason: validateWBS(wbsElementAutocompleteOptions[0].id), name: '', cost: 0 });
+                  if (value) setReasons([...reasons, value.id]);
                 }}
                 value={null}
                 blurOnSelect={true}
                 id={'append-product-autocomplete'}
                 size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select Project or Other Category" />}
+                renderInput={(params) => <TextField {...params} placeholder="Select Reason Type" />}
               />
             </TableCell>
           </TableRow>

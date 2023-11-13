@@ -47,12 +47,11 @@ export interface ReimbursementRequest {
 }
 
 export enum OtherProductReason {
-  TOOLS_AND_EQUIPMENT = 'TOOLS_AND_EQUIPMENT',
-  COMPETITION = 'COMPETITION',
-  CONSUMABLES = 'CONSUMABLES',
-  GENERAL_STOCK = 'GENERAL_STOCK',
-  SUBSCRIPTIONS_AND_MEMBERSHIPS = 'SUBSCRIPTIONS_AND_MEMBERSHIPS',
-  UNKNOWN = 'Unknown'
+  ToolsAndEquipment = 'TOOLS_AND_EQUIPMENT',
+  Competition = 'COMPETITION',
+  Consumables = 'CONSUMABLES',
+  GeneralStock = 'GENERAL_STOCK',
+  SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
 }
 
 export type ReimbursementProductReason = { wbsNum: WbsNumber; wbsName: string } | OtherProductReason;
