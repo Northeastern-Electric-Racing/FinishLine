@@ -113,6 +113,7 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
         defaultValues={defaultValues}
         setProjectLeadId={setProjectLeadId}
         setProjectManagerId={setprojectManagerId}
+        createProject={true}
       />
     </>
   );

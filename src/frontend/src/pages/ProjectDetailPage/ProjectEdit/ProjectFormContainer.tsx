@@ -72,6 +72,7 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setProjectManagerId: (id: string) => void;
   setProjectLeadId: (id: string) => void;
+  createProject?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -82,7 +83,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   users,
   defaultValues,
   setProjectManagerId,
-  setProjectLeadId
+  setProjectLeadId,
+  createProject
 }) => {
   const {
     register,
@@ -142,6 +144,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           errors={errors}
           setProjectManagerId={setProjectManagerId}
           setProjectLeadId={setProjectLeadId}
+          createProject={createProject}
         />
         <PageBlock title="Project Summary">
           <Grid item sx={{ mt: 2 }}>
