@@ -15,8 +15,8 @@ interface ProjectEditDetailsProps {
   createProject?: boolean;
   projectManager?: string;
   projectLead?: string;
-  setProjectManager: (projectManager?: string) => void;
-  setProjectLead: (projectLead?: string) => void;
+  setProjectManagerId: (projectManager: string) => void;
+  setProjectLeadId: (projectLead: string) => void;
   setcrId?: (crId?: number) => void;
   setCarNumber?: (carNumber?: number) => void;
 }
@@ -33,8 +33,8 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   createProject = false,
   projectManager,
   projectLead,
-  setProjectLead,
-  setProjectManager
+  setProjectLeadId,
+  setProjectManagerId
 }) => {
   return (
     <PageBlock title="Project Details">
@@ -93,7 +93,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           <FormLabel>Project Lead</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectLead(value?.id)}
+            onChange={(_event, value) => setProjectLeadId(value?.id ?? '')}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
@@ -104,7 +104,7 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
           <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectManager(value?.id)}
+            onChange={(_event, value) => setProjectManagerId(value?.id ?? '')}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"

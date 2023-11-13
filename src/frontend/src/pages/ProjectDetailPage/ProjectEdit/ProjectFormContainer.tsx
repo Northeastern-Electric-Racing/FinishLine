@@ -96,9 +96,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       budget: defaultValues?.budget,
       summary: defaultValues?.summary,
       crId: defaultValues.crId,
-      rules: defaultValues?.rules.map((rule) => {
-        return { rule };
-      }),
+      rules: defaultValues?.rules,
       links: defaultValues?.links,
       goals: defaultValues?.goals,
       features: defaultValues?.features,
