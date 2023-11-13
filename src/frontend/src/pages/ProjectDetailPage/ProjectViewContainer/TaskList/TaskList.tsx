@@ -76,7 +76,8 @@ const TaskList = ({ project }: TaskListProps) => {
     isWorkPackageLeadOrManager ||
     project.projectManager?.userId === user.userId ||
     project.teams.some((team) => team.head.userId === user.userId) ||
-    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId));
+    project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
+    project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
 
   const addTaskButton: JSX.Element = (
     <Button

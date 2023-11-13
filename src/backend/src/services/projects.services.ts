@@ -10,8 +10,7 @@ import {
   WbsNumber,
   wbsPipe
 } from 'shared';
-import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
-
+import { Manufacturer, Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -40,8 +39,10 @@ import {
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
+import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 
 export default class ProjectsService {
@@ -793,6 +794,22 @@ export default class ProjectsService {
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Get all the manufacturers in the database.
+   * @returns all the manufacturers
+   */
+  static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Get Manufacturers');
+    }
+
+    return (
+      await prisma.manufacturer.findMany({
+        ...manufacturerQueryArgs
+      })
+    ).map(manufacturerTransformer);
   }
 
   /**
