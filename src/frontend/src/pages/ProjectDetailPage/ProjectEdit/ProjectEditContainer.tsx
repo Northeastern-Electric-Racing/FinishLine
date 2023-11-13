@@ -8,14 +8,13 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, FormControl, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import ProjectEditDetails from './ProjectEditDetails';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
@@ -26,7 +25,6 @@ import LinksEditView from '../../../components/Link/LinksEditView';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import PageLayout from '../../../components/PageLayout';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -203,18 +201,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectLead={setProjectLeadId}
           setProjectManager={setprojectManagerId}
         />
-        <PageBlock title="Project Summary">
-          <FormControl fullWidth>
-            <ReactHookTextField
-              name="summary"
-              control={control}
-              placeholder="Summary"
-              multiline={true}
-              rows={5}
-              errorMessage={errors.summary}
-            />
-          </FormControl>
-        </PageBlock>
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>
