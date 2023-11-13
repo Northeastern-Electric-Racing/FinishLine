@@ -801,19 +801,19 @@ export default class ProjectsService {
    * @throws if the user is not at least a head (includes admin), or if the provided name isn't a manufacturer
    * @returns the deleted manufacturer
    */
-  static async deleteManufacturer(user: User, manufacturerName: string) {
+  static async deleteManufacturer(user: User, name: string) {
     if (!isHead(user.role)) {
       throw new AccessDeniedException('Only heads and above can delete a manufacturer');
     }
 
     const manufacturer = await prisma.manufacturer.findFirst({
       where: {
-        manufacturerName
+        name
       }
     });
 
     if (!manufacturer) {
-      throw new NotFoundException('Manufacturer', manufacturerName);
+      throw new NotFoundException('Manufacturer', name);
     }
 
     if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
@@ -822,7 +822,7 @@ export default class ProjectsService {
     const deletedByUserId = user.userId;
     const deletedManufacturer = await prisma.manufacturer.update({
       where: {
-        manufacturerName
+        name
       },
       data: {
         dateDeleted,
