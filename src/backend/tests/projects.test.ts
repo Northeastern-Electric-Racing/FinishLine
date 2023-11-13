@@ -654,7 +654,7 @@ describe('Projects', () => {
       vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
 
       await expect(ProjectsService.getAllManufacturers(theVisitor)).rejects.toThrow(
-        new AccessDeniedGuestException('Guests cannot get the manufacturers')
+        new AccessDeniedGuestException('Get Manufacturers')
       );
     });
   });
