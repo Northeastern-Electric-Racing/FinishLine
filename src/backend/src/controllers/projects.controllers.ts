@@ -207,16 +207,15 @@ export default class ProjectsController {
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const wbsNum = validateWBS(req.params.wbsNum);
+      const materialId = req.params.materialId;
       const {
         name,
-        assembly,
+        assemblyId,
         status,
         manufacturerName,
         manufacturerPartNumber,
         pdmFileName,
         quantity,
-        quantityUnit,
         unitName,
         price,
         subtotal,
@@ -225,20 +224,19 @@ export default class ProjectsController {
       } = req.body;
       const updatedMaterial = await ProjectsService.editMaterial(
         user,
-        wbsNum,
+        materialId,
         name,
         status,
         manufacturerName,
         manufacturerPartNumber,
         quantity,
-        unitName,
         price,
         subtotal,
         linkUrl,
         notes,
-        assembly,
-        pdmFileName,
-        quantityUnit
+        unitName,
+        assemblyId,
+        pdmFileName
       );
       res.status(200).json(updatedMaterial);
     } catch (error: unknown) {

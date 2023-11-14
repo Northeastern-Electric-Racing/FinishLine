@@ -82,18 +82,15 @@ projectRouter.post(
   ProjectsController.createMaterial
 );
 projectRouter.post(
-  '/bom/material/:wbsNum/edit',
+  '/bom/material/:materialId/edit',
   nonEmptyString(body('name')),
-  intMinZero(body('assembly.assemblyId').optional()),
-  nonEmptyString(body('assembly.name').optional()),
-  nonEmptyString(body('assembly.pdmFileName').optional()),
+  nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
   intMinZero(body('quantity')),
-  nonEmptyString(body('quantityUnit.name').optional()),
-  nonEmptyString(body('unitName')),
+  nonEmptyString(body('unitName').optional()),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),

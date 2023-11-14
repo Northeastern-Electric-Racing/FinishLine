@@ -1,4 +1,4 @@
-import { Material_Type, User, Assembly, Material_Status, Material, Unit } from '@prisma/client';
+import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
@@ -814,51 +814,56 @@ export default class ProjectsService {
 
   /**
    * Update a material
+   * @param submitter the submitter of the request
+   * @param materialId the material id of the new material
    * @param name the name of the new material
-   * @param assembly the assembly of the new material
-   * @param status the Material status of the new material
-   * @param manufacturerName the manufacture name of the new material
-   * @param manufacturerPartNumber the manufacture part number of the new material
-   * @param pdmFileName the pdm file name of the new material
+   * @param status the status of the new material
+   * @param manufacturerName the manufacturerName of the new material
+   * @param manufacturerPartNumber the manufacturerPartNumber of the new material
    * @param quantity the quantity of the new material
-   * @param quantityUnit the quantity unit of the new material
-   * @param unitName the unit name of the new material
    * @param price the price of the new material
    * @param subtotal the subtotal of the new material
-   * @param linkUrl the link url of the new material
+   * @param linkUrl the linkUrl of the new material
    * @param notes the notes of the new material
+   * @param unitName the unit name of the new material
+   * @param assemblyId the assembly id of the new material
+   * @param pdmFileName the pdm file name of the new material
    * @throws if permission denied or material's wbsElement is undefined/deleted
    * @returns the updated material
    */
   static async editMaterial(
     submitter: User,
-    wbsNumber: WbsNumber,
+    materialId: string,
     name: string,
     status: Material_Status,
     manufacturerName: string,
     manufacturerPartNumber: string,
     quantity: number,
-    unitName: string,
     price: number,
     subtotal: number,
     linkUrl: string,
     notes: string,
-    assembly?: Assembly,
-    pdmFileName?: string,
-    quantityUnit?: Unit
+    unitName?: string,
+    assemblyId?: string,
+    pdmFileName?: string
   ): Promise<Material> {
+    const material = await prisma.material.findUnique({
+      where: {
+        materialId
+      }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
+
     const project = await prisma.project.findFirst({
       where: {
-        wbsElement: {
-          carNumber: wbsNumber.carNumber,
-          projectNumber: wbsNumber.projectNumber,
-          workPackageNumber: wbsNumber.workPackageNumber
-        }
+        wbsElementId: material.wbsElementId
       },
       ...projectQueryArgs
     });
 
-    if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
     const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
@@ -866,8 +871,9 @@ export default class ProjectsService {
     if (!perms) throw new AccessDeniedException('update material');
 
     const updatedMaterial = await prisma.material.update({
-      where: { name },
+      where: { materialId },
       data: {
+        name,
         status,
         manufacturerName,
         manufacturerPartNumber,
@@ -878,19 +884,8 @@ export default class ProjectsService {
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
-        // assembly: {
-        //   connect:
-        //     {
-        //       assembly
-        //     } || undefined
-        // },
+        assemblyId: assemblyId || undefined,
         pdmFileName: pdmFileName || undefined
-        // quantityUnit: {
-        //   connect:
-        //     {
-        //       quantityUnit
-        //     } || undefined
-        // }
       }
     });
 
