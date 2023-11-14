@@ -25,7 +25,6 @@ import { OtherProductReason, ReimbursementProductCreateArgs, WbsNumber, validate
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
-import { useState } from 'react';
 
 const otherCategoryOptions = [
   { label: 'COMPETITION', id: 'COMPETITION' },
@@ -61,7 +60,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   errors,
   setValue
 }) => {
-  const [reasons, setReasons] = useState<string[]>([]);
   const uniqueWbsElementsWithProducts = new Map<
     string,
     {
@@ -84,14 +82,6 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
-
-  const newProductSelectOptions = [
-    {
-      label: 'Project',
-      id: 'Project'
-    },
-    { label: 'Other Category', id: 'Other' }
-  ];
 
   return (
     <TableContainer>
@@ -189,57 +179,48 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
               </TableRow>
             );
           })}
-          {reasons.map((reason, idx) => (
-            <TableRow>
-              <TableCell colSpan={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  <Autocomplete
-                    fullWidth
-                    sx={{ my: 1 }}
-                    options={reason === 'Project' ? wbsElementAutocompleteOptions : otherCategoryOptions}
-                    onChange={(_event, value) => {
-                      if (value) {
-                        appendProduct({
-                          reason: reason === 'Project' ? validateWBS(value.id) : (value.id as OtherProductReason),
-                          name: '',
-                          cost: 0
-                        });
-                        setReasons(reasons.filter((reason, indx) => indx !== idx));
-                      }
-                    }}
-                    value={null}
-                    blurOnSelect={true}
-                    id={'append-product-autocomplete'}
-                    size={'small'}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder={reason === 'Project' ? 'Select a Project' : 'Select an Other Category'}
-                      />
-                    )}
-                  />
-                  <IconButton onClick={() => setReasons(reasons.filter((reason, indx) => indx !== idx))}>
-                    <Delete />
-                  </IconButton>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
           <TableRow>
             <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
-              <Autocomplete
-                fullWidth
-                sx={{ my: 1 }}
-                options={newProductSelectOptions}
-                onChange={(_event, value) => {
-                  if (value) setReasons([...reasons, value.id]);
-                }}
-                value={null}
-                blurOnSelect={true}
-                id={'append-product-autocomplete'}
-                size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select Reason Type" />}
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'horizontal', gap: '5px' }}>
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={wbsElementAutocompleteOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: validateWBS(value.id),
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Project" />}
+                />
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={otherCategoryOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: value.id as OtherProductReason,
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Other Reason" />}
+                />
+              </Box>
             </TableCell>
           </TableRow>
         </TableBody>
