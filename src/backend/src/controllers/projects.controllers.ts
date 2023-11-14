@@ -217,7 +217,7 @@ export default class ProjectsController {
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const materialId = req.params.materialId;
+      const { materialId } = req.params;
       const {
         name,
         assemblyId,
