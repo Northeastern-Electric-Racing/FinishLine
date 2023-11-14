@@ -4,14 +4,14 @@
  */
 
 import { User, WorkPackageStage } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
-import PageBlock from '../../../layouts/PageBlock';
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import NERAutocomplete from '../../../components/NERAutocomplete';
-import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
+import { WorkPackageFormViewPayload } from './WorkPackageFormView';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import PageBlock from '../../layouts/PageBlock';
+import { fullNamePipe } from '../../utils/pipes';
 
 interface Props {
   lead?: string;
@@ -20,11 +20,11 @@ interface Props {
   setLead: (lead?: string) => void;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
-  control: Control<WorkPackageEditFormPayload>;
-  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
+  control: Control<WorkPackageFormViewPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({
+const WorkPackageFormDetails: React.FC<Props> = ({
   lead,
   manager,
   setManager,
@@ -143,4 +143,4 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   );
 };
 
-export default WorkPackageEditDetails;
+export default WorkPackageFormDetails;

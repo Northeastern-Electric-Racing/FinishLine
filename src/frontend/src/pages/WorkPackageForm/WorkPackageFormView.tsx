@@ -3,29 +3,25 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isGuest, validateWBS, WorkPackage } from 'shared';
-import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
-import { routes } from '../../../utils/routes';
-import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useQuery } from '../../../hooks/utils.hooks';
+import { User, validateWBS, wbsPipe, WorkPackage } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl } from '@mui/material';
-import ReactHookEditableList from '../../../components/ReactHookEditableList';
-import { useEditWorkPackage } from '../../../hooks/work-packages.hooks';
-import WorkPackageEditDetails from './WorkPackageEditDetails';
-import { bulletsToObject, mapBulletsToPayload, startDateTester } from '../../../utils/form';
-import NERSuccessButton from '../../../components/NERSuccessButton';
-import NERFailButton from '../../../components/NERFailButton';
-import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { useSingleProject } from '../../../hooks/projects.hooks';
-import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
+import { UseMutateAsyncFunction } from 'react-query';
+import WorkPackageFormDetails from './WorkPackageFormDetails';
+import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
+import NERFailButton from '../../components/NERFailButton';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import PageLayout from '../../components/PageLayout';
+import ReactHookEditableList from '../../components/ReactHookEditableList';
+import { useToast } from '../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import PageBlock from '../../layouts/PageBlock';
+import { startDateTester, mapBulletsToPayload } from '../../utils/form';
+import { projectWbsPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -42,12 +38,16 @@ const schema = yup.object().shape({
     .min(1, 'CR ID must be greater than or equal to 1')
 });
 
-interface WorkPackageEditContainerProps {
+interface WorkPackageFormViewProps {
+  exitActiveMode: () => void;
+  mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
+  defaultValues?: WorkPackageFormViewPayload;
   workPackage: WorkPackage;
-  exitEditMode: () => void;
+  leadOrManagerOptions: User[];
+  blockedByOptions: { id: string; label: string }[];
 }
 
-export interface WorkPackageEditFormPayload {
+export interface WorkPackageFormViewPayload {
   name: string;
   workPackageId: number;
   startDate: Date;
@@ -65,12 +65,16 @@ export interface WorkPackageEditFormPayload {
   }[];
 }
 
-const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ workPackage, exitEditMode }) => {
+const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
+  exitActiveMode,
+  mutateAsync,
+  defaultValues,
+  workPackage,
+  leadOrManagerOptions,
+  blockedByOptions
+}) => {
   const toast = useToast();
   const user = useCurrentUser();
-  const query = useQuery();
-  const allUsers = useAllUsers();
-  const { name, startDate, duration } = workPackage;
   const {
     register,
     handleSubmit,
@@ -78,17 +82,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      workPackageId: workPackage.id,
-      name,
-      crId: query.get('crId') || '',
-      stage: workPackage.stage || 'NONE',
-      startDate,
-      blockedBy: workPackage.blockedBy.map(wbsPipe),
-      duration,
-      expectedActivities: bulletsToObject(workPackage.expectedActivities),
-      deliverables: bulletsToObject(workPackage.deliverables)
-    }
+    defaultValues
   });
 
   const [managerId, setManagerId] = useState<string | undefined>(workPackage.projectManager?.userId.toString());
@@ -106,40 +100,14 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
     remove: removeDeliverable
   } = useFieldArray({ control, name: 'deliverables' });
 
-  const {
-    data: project,
-    isLoading: projectIsLoading,
-    isError: projectIsError,
-    error: projectError
-  } = useSingleProject(validateWBS(projectWbsPipe(workPackage.wbsNum)));
-
-  const { mutateAsync } = useEditWorkPackage(workPackage.wbsNum);
-
-  if (allUsers.isLoading || !allUsers.data || projectIsLoading || !project) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
-  }
-  if (projectIsError) {
-    return <ErrorPage message={projectError?.message} />;
-  }
-
-  const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
-    return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
-  };
-
-  const blockedByOptions =
-    project.workPackages.filter((wp) => wp.id !== workPackage.id).map(blockedByToAutocompleteOption) || [];
-
   const { userId } = user;
-
-  const users = allUsers.data.filter((u) => !isGuest(u.role));
 
   const transformDate = (date: Date) => {
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
-  const onSubmit = async (data: WorkPackageEditFormPayload) => {
+  const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
@@ -148,7 +116,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
       const payload = {
         projectLeadId: leadId ? parseInt(leadId) : undefined,
         projectManagerId: managerId ? parseInt(managerId) : undefined,
-        workPackageId: workPackage.id,
+        workPackageId: defaultValues?.workPackageId,
         userId,
         name,
         crId: parseInt(crId),
@@ -160,7 +128,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
         stage
       };
       await mutateAsync(payload);
-      exitEditMode();
+      exitActiveMode();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -190,11 +158,11 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           e.key === 'Enter' && e.preventDefault();
         }}
       >
-        <WorkPackageEditDetails
+        <WorkPackageFormDetails
           control={control}
           errors={errors}
-          usersForProjectLead={users}
-          usersForProjectManager={users}
+          usersForProjectLead={leadOrManagerOptions}
+          usersForProjectManager={leadOrManagerOptions}
           lead={leadId}
           manager={managerId}
           setLead={setLeadId}
@@ -241,7 +209,7 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
           />
         </PageBlock>
         <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+          <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
           <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
@@ -253,4 +221,4 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
   );
 };
 
-export default WorkPackageEditContainer;
+export default WorkPackageFormView;

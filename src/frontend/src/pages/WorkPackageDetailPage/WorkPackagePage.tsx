@@ -5,14 +5,14 @@
 
 import { useState } from 'react';
 import { isAdmin, isGuest, WbsNumber } from 'shared';
-import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useEditWorkPackage, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import WorkPackageEditContainer from './WorkPackageEditContainer/WorkPackageEditContainer';
 import WorkPackageViewContainer from './WorkPackageViewContainer/WorkPackageViewContainer';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
+import WorkPackageForm from '../WorkPackageForm/WorkPackageForm';
 
 interface WorkPackagePageProps {
   wbsNum: WbsNumber;
@@ -30,12 +30,13 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
 
   if (editMode) {
     return (
-      <WorkPackageEditContainer
-        workPackage={data!}
-        exitEditMode={() => {
+      <WorkPackageForm
+        wbsNum={wbsNum}
+        exitActiveMode={() => {
           setEditMode(false);
           history.push(`${history.location.pathname}`);
         }}
+        operation={useEditWorkPackage}
       />
     );
   }
