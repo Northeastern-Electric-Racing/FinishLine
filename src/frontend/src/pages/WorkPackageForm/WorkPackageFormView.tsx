@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, wbsPipe, WorkPackage } from 'shared';
+import { isProject, User, validateWBS, WbsElement, wbsPipe, WorkPackage } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -42,7 +42,7 @@ interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
   defaultValues?: WorkPackageFormViewPayload;
-  workPackage: WorkPackage;
+  wbsElement: WbsElement;
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
 }
@@ -53,7 +53,7 @@ export interface WorkPackageFormViewPayload {
   startDate: Date;
   duration: number;
   crId: string;
-  stage: string;
+  stage?: string;
   blockedBy: string[];
   expectedActivities: {
     bulletId: number;
@@ -69,7 +69,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   mutateAsync,
   defaultValues,
-  workPackage,
+  wbsElement,
   leadOrManagerOptions,
   blockedByOptions
 }) => {
@@ -85,8 +85,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     defaultValues
   });
 
-  const [managerId, setManagerId] = useState<string | undefined>(workPackage.projectManager?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(workPackage.projectLead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
 
   // lists of stuff
   const {
@@ -136,14 +136,19 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       }
     }
   };
-  const projectWbsString: string = projectWbsPipe(workPackage.wbsNum);
+  const projectWbsString: string = projectWbsPipe(wbsElement.wbsNum);
 
   return (
     <PageLayout
-      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+      title={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name} ${isProject(wbsElement.wbsNum) ? 'New Work Package' : ''}`}
       previousPages={[
         { name: 'Projects', route: routes.PROJECTS },
-        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+        {
+          name: `${projectWbsString} - ${
+            isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName
+          }`,
+          route: `${routes.PROJECTS}/${projectWbsString}`
+        }
       ]}
       headerRight={<ChangeRequestDropdown control={control} name="crId" errors={errors} />}
     >

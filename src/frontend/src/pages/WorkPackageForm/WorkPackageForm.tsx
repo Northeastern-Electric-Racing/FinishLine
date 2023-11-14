@@ -1,5 +1,5 @@
 import { UseMutationResult } from 'react-query';
-import { WbsNumber, WorkPackage, isGuest, validateWBS, wbsPipe } from 'shared';
+import { WbsNumber, WorkPackage, isGuest, isProject, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
@@ -15,7 +15,6 @@ interface WorkPackageFormProps {
 }
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, exitActiveMode }) => {
-  const { data: workPackage, isLoading, isError, error } = useSingleWorkPackage(validateWBS(wbsPipe(wbsNum)));
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -23,37 +22,42 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
     isError: projectIsError,
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
+  const { data: workPackage, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useSingleWorkPackage(wbsNum);
   const { mutateAsync } = operation(wbsNum);
 
-  if (isLoading || usersIsLoading || !users || !workPackage || projectIsLoading || !project) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
+  const defaultValues: WorkPackageFormViewPayload | undefined = isProject(wbsNum)
+    ? undefined
+    : {
+        ...workPackage!,
+        workPackageId: workPackage!.id,
+        crId: workPackage!.changes[0].changeRequestId.toString(),
+        stage: workPackage!.stage,
+        blockedBy: workPackage!.blockedBy.map(wbsPipe),
+        expectedActivities: bulletsToObject(workPackage!.expectedActivities),
+        deliverables: bulletsToObject(workPackage!.deliverables)
+      };
+
+  if (wpIsLoading || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
+  if (wpIsError) return <ErrorPage message={wpError.message} />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (projectIsError) return <ErrorPage message={projectError.message} />;
-
-  const defaultValues: WorkPackageFormViewPayload = {
-    ...workPackage,
-    workPackageId: workPackage.id,
-    crId: workPackage.changes[0].changeRequestId.toString(),
-    stage: workPackage.stage!,
-    blockedBy: workPackage.blockedBy.map(wbsPipe),
-    expectedActivities: bulletsToObject(workPackage.expectedActivities),
-    deliverables: bulletsToObject(workPackage.deliverables)
-  };
 
   const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
   };
 
+  const wbsElement = workPackage ?? project;
+
   const leadOrManagerOptions = users.filter((user) => !isGuest(user.role));
   const blockedByOptions =
-    project.workPackages.filter((wp) => wp.id !== workPackage.id).map(blockedByToAutocompleteOption) || [];
+    project.workPackages.filter((wp) => wp.id !== wbsElement.id).map(blockedByToAutocompleteOption) || [];
 
   return (
     <WorkPackageFormView
       exitActiveMode={exitActiveMode}
       mutateAsync={mutateAsync}
       defaultValues={defaultValues}
-      workPackage={workPackage}
+      wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
     />
