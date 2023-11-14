@@ -6,7 +6,7 @@
 import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
@@ -232,4 +232,13 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authU
 
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
+};
+
+export const validateUserEditReimbursementRequest = async (user: User, reimbursementRequest: Reimbursement_Request) => {
+  try {
+    await validateUserIsPartOfFinanceTeam(user);
+  } catch {
+    if (reimbursementRequest.recipientId !== user.userId)
+      throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
+  }
 };

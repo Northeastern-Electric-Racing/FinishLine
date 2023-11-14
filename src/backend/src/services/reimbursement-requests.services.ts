@@ -24,6 +24,7 @@ import {
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
+  validateUserEditReimbursementRequest,
   validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
@@ -255,12 +256,7 @@ export default class ReimbursementRequestService {
 
     if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
-    try {
-      await validateUserIsPartOfFinanceTeam(submitter);
-    } catch {
-      if (oldReimbursementRequest.recipientId !== submitter.userId)
-        throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
-    }
+    await validateUserEditReimbursementRequest(submitter, oldReimbursementRequest);
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
