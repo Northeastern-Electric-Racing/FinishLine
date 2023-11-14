@@ -234,7 +234,12 @@ const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
 };
 
-export const validateUserEditReimbursementRequest = async (user: User, reimbursementRequest: Reimbursement_Request) => {
+/**
+ * Validates user has permission to edit the reimbursement request.
+ * @param user the person editing the reimbursement request
+ * @param reimbursementRequest the reimbursement request to edit
+ */
+export const validateUserEditRRPermissions = async (user: User, reimbursementRequest: Reimbursement_Request) => {
   try {
     await validateUserIsPartOfFinanceTeam(user);
   } catch {
