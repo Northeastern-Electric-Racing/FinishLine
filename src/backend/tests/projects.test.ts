@@ -641,6 +641,23 @@ describe('Projects', () => {
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
       expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
     });
+
+    test('Get all Manufacturer works', async () => {
+      vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
+
+      const res = await ProjectsService.getAllManufacturers(batman);
+
+      expect(prisma.manufacturer.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
+
+    test('Get all Manufacturer fails from guest', async () => {
+      vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
+
+      await expect(ProjectsService.getAllManufacturers(theVisitor)).rejects.toThrow(
+        new AccessDeniedGuestException('Get Manufacturers')
+      );
+    });
   });
 
   describe('materialType', () => {

@@ -7,7 +7,7 @@ import { UseQueryResult } from 'react-query';
 import { AuthenticatedUser, WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { Auth } from '../../../utils/types';
-import { useGetBlockingWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useGetManyWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleDesignWorkPackage, exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
@@ -25,7 +25,7 @@ const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPacka
   mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
 };
 
-const mockedGetBlockingWorkPackages = useGetBlockingWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
+const mockedGetBlockingWorkPackages = useGetManyWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 
 const mockGetBlockingWorkPackagesHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
   mockedGetBlockingWorkPackages.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
