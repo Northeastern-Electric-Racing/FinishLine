@@ -6,18 +6,15 @@
 import { LinkCreateArgs, Project, User } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
-import PageBlock from '../../../layouts/PageBlock';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Grid, Box, FormControl, Stack, Typography } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import { Box, Stack, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import LinksEditView from '../../../components/Link/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
-import ChangeRequestDropdown from '../../../components/ChangeRequestDropdown';
 import ProjectEditDetails from './ProjectEditDetails';
 
 export interface ProjectFormInput {
@@ -67,8 +64,8 @@ interface ProjectFormContainerProps {
   onSubmit: (data: any) => void;
   users: User[];
   defaultValues: ProjectFormInput;
-  setProjectManagerId: (id: string) => void;
-  setProjectLeadId: (id: string) => void;
+  setProjectManagerId: (id?: string) => void;
+  setProjectLeadId: (id?: string) => void;
   createProject?: boolean;
 }
 
@@ -120,7 +117,16 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     <PageLayout
       title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
       previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" />}
+      headerRight={
+        <Box textAlign="right">
+          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      }
     >
       <form
         id="project-edit-form"
@@ -139,26 +145,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           errors={errors}
           setProjectManagerId={setProjectManagerId}
           setProjectLeadId={setProjectLeadId}
-          createProject={createProject}
         />
-        <PageBlock title="Project Summary">
-          <Grid item sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <ReactHookTextField
-                name="summary"
-                control={control}
-                placeholder="Summary"
-                multiline={true}
-                rows={5}
-                errorMessage={errors.summary}
-              />
-            </FormControl>
-          </Grid>
-        </PageBlock>
-        <PageBlock title="Links">
-          <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
-        </PageBlock>
         <Stack spacing={4}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              {'Links'}
+            </Typography>
+            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
+          </Box>
           <Box>
             <Typography variant="h5">{'Goals'}</Typography>
             <ReactHookEditableList
@@ -204,14 +198,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
         </Stack>
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </form>
     </PageLayout>
   );
