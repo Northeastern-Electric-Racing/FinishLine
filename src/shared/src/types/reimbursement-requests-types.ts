@@ -54,7 +54,9 @@ export enum OtherProductReason {
   SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
 }
 
-export type ReimbursementProductReason = { wbsNum: WbsNumber; wbsName: string } | OtherProductReason;
+export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
+
+export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;

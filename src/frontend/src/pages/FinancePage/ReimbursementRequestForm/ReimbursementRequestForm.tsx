@@ -45,7 +45,6 @@ const schema = yup.object().shape({
     .array()
     .of(
       yup.object().shape({
-        wbsNum: yup.object().required('WBS Number is required'),
         name: yup.string().required('Description is required'),
         cost: yup
           .number()

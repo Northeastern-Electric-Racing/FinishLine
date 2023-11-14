@@ -5,6 +5,7 @@ import {
   ReimbursementRequest,
   ReimbursementStatus,
   ReimbursementStatusType,
+  WBSElementData,
   WbsNumber,
   wbsPipe
 } from 'shared';
@@ -13,12 +14,12 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
   reimbursementRequest: ReimbursementRequest
 ): Map<string, ReimbursementProduct[]> => {
   const uniqueWbsElementsWithProducts = new Map<string, ReimbursementProduct[]>();
-  const productWithWbsNums = reimbursementRequest.reimbursementProducts.filter(
-    (product) => !!(product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string }).wbsNum
-  );
-  productWithWbsNums.forEach((product) => {
-    const reason = product.reimbursementProductReason as { wbsNum: WbsNumber; wbsName: string };
-    const wbs = `${wbsPipe(reason.wbsNum)} - ${reason.wbsName}`;
+  reimbursementRequest.reimbursementProducts.forEach((product) => {
+    const wbs = !!(product.reimbursementProductReason as WBSElementData).wbsNum
+      ? `${wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum)} - ${
+          (product.reimbursementProductReason as WBSElementData).wbsName
+        }`
+      : (product.reimbursementProductReason as string);
     if (uniqueWbsElementsWithProducts.has(wbs)) {
       const products = uniqueWbsElementsWithProducts.get(wbs);
       products?.push(product);
