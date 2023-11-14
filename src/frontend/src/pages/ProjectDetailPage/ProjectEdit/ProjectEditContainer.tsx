@@ -8,7 +8,6 @@ import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
@@ -202,10 +201,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           setProjectLead={setProjectLeadId}
           setProjectManager={setprojectManagerId}
         />
-        <PageBlock title="Links">
-          <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
-        </PageBlock>
         <Stack spacing={4}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              {'Links'}
+            </Typography>
+            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
+          </Box>
           <Box>
             <Typography variant="h5">{'Goals'}</Typography>
             <ReactHookEditableList
