@@ -11,6 +11,7 @@ import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { fullNamePipe } from '../../utils/pipes';
 
 interface OtherChangeRequestsPopupTabsProps {
   changeRequest: ChangeRequest;
@@ -27,15 +28,20 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   // the CRs submitted or reviewed by the submitter of this CR
-  const crsFromSubmitter = changeRequests?.filter(
-    (cr) =>
-      (cr.submitter.userId === changeRequest.submitter.userId || cr.reviewer?.userId === changeRequest.submitter.userId) &&
-      cr.crId !== changeRequest.crId
-  );
+  const crsFromSubmitter = changeRequests
+    ?.filter(
+      (cr) =>
+        (cr.submitter.userId === changeRequest.submitter.userId || cr.reviewer?.userId === changeRequest.submitter.userId) &&
+        cr.crId !== changeRequest.crId
+    )
+    .sort((a: ChangeRequest, b: ChangeRequest) => {
+      return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
+    });
 
   const displayTab = (value: number, title: string) => (
     <Tab
       value={value}
+      sx={{ borderRadius: '16px 16px 0 0' }}
       label={
         <Typography sx={{ display: 'flex' }}>
           {title}
@@ -107,7 +113,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           mb: '-1px'
         }}
       >
-        {displayTab(1, `Other CR's from ${changeRequest.submitter.firstName} ${changeRequest.submitter.lastName}`)}
+        {displayTab(1, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
       <Collapse in={tab !== 0}>{tab === 1 && displayCRCards(crsFromSubmitter || [])}</Collapse>
     </Box>
