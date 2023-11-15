@@ -15,7 +15,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Other_Reimbursement_Product_Reason, Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Other_Reimbursement_Product_Reason, Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
@@ -280,4 +280,18 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authU
 
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
+};
+
+/**
+ * Validates user has permission to edit the reimbursement request.
+ * @param user the person editing the reimbursement request
+ * @param reimbursementRequest the reimbursement request to edit
+ */
+export const validateUserEditRRPermissions = async (user: User, reimbursementRequest: Reimbursement_Request) => {
+  try {
+    await validateUserIsPartOfFinanceTeam(user);
+  } catch {
+    if (reimbursementRequest.recipientId !== user.userId)
+      throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
+  }
 };

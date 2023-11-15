@@ -194,7 +194,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Edit',
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
       icon: <Edit />,
-      disabled: !allowEdit
+      disabled: !allowEdit && !user.isFinance
     },
     {
       title: 'Delete',
