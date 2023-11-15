@@ -15,7 +15,15 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Other_Reimbursement_Product_Reason, Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
+import {
+  Other_Reimbursement_Product_Reason,
+  Prisma,
+  Receipt,
+  Reimbursement_Product,
+  Reimbursement_Request,
+  Team,
+  User
+} from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
