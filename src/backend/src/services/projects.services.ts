@@ -826,7 +826,7 @@ export default class ProjectsService {
       },
       data: {
         dateDeleted,
-        deletedByUserId
+        deletedBy: { connect: { userId: deletedByUserId } }
       }
     });
 
