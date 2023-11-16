@@ -111,4 +111,5 @@ type ExceptionObjectNames =
   | 'Expense Type'
   | 'Reimbursement Request'
   | 'User Secure Settings'
-  | 'Image File';
+  | 'Image File'
+  | 'Assembly';

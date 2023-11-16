@@ -1,5 +1,16 @@
 import { Material_Type, User, Assembly } from '@prisma/client';
-import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import {
+  isAdmin,
+  isGuest,
+  isHead,
+  isLeadership,
+  isProject,
+  LinkCreateArgs,
+  LinkType,
+  Project,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -713,5 +724,37 @@ export default class ProjectsService {
     });
 
     return newMaterialType;
+  }
+
+  /**
+   * Deletes an assembly type
+   * @param name the name of the assembly
+   * @param submitter the user who is deleting the assembly type
+   * @throws if the user is not an admin/head, the assembly does not exist, or has already been deleted
+   * @returns
+   */
+  static async deleteAssembly(name: string, submitter: User): Promise<Assembly> {
+    if (!isAdmin(submitter.role) || !isHead(submitter.role))
+      throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
+
+    const assembly = await prisma.assembly.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!assembly) throw new NotFoundException('Assembly', name);
+    if (assembly.dateDeleted) throw new DeletedException('Assembly', name);
+
+    const deletedAssembly = await prisma.assembly.update({
+      where: {
+        name
+      },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+
+    return deletedAssembly;
   }
 }

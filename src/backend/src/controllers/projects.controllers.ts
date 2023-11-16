@@ -161,4 +161,15 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async deleteAssemblyType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assemblyId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedAssembly = await ProjectsService.deleteAssembly(assemblyId, user);
+      res.status(200).json(deletedAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

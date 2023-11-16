@@ -63,4 +63,6 @@ projectRouter.post(
   ProjectsController.createAssembly
 );
 
+projectRouter.delete('bom/assembly/:assemblyId/delete', ProjectsController.deleteAssemblyType);
+
 export default projectRouter;
