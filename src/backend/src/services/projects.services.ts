@@ -14,6 +14,7 @@ import {
 } from '../utils/errors.utils';
 import {
   addDescriptionBullets,
+  checkMaterialInputs,
   editDescriptionBullets,
   getHighestProjectNumber,
   getUserFullName
@@ -656,25 +657,7 @@ export default class ProjectsService {
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
 
-    if (assemblyId) {
-      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
-      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
-    }
-
-    const materialType = await prisma.material_Type.findFirst({
-      where: { name: materialTypeName }
-    });
-    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
-
-    const manufacturer = await prisma.manufacturer.findFirst({
-      where: { name: manufacturerName }
-    });
-    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-
-    const unit = await prisma.unit.findFirst({
-      where: { name: unitName }
-    });
-    if (!unit) throw new NotFoundException('Unit', unitName);
+    await checkMaterialInputs(manufacturerName, unitName, assemblyId, materialTypeName);
 
     const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
 
@@ -884,6 +867,8 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', material.wbsElementId);
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
+    await checkMaterialInputs(manufacturerName, unitName, assemblyId);
+
     const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
 
     if (!perms) throw new AccessDeniedException('update material');
@@ -902,8 +887,8 @@ export default class ProjectsService {
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
-        assemblyId: assemblyId || undefined,
-        pdmFileName: pdmFileName || undefined
+        assemblyId: assemblyId,
+        pdmFileName: pdmFileName
       }
     });
 
