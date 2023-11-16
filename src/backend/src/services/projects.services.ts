@@ -887,8 +887,8 @@ export default class ProjectsService {
         linkUrl,
         notes,
         wbsElementId: project.wbsElementId,
-        assemblyId: assemblyId,
-        pdmFileName: pdmFileName
+        assemblyId,
+        pdmFileName
       }
     });
 
