@@ -121,7 +121,8 @@ export const prismaAssembly1: Assembly = {
 export const prismaMaterialType: PrismaMaterialType = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: null
 };
 
 export const prismaUnit: Unit = {
