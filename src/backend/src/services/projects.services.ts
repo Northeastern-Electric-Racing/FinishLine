@@ -802,6 +802,7 @@ export default class ProjectsService {
    * @returns the deleted manufacturer
    */
   static async deleteManufacturer(user: User, name: string) {
+    console.log('e');
     if (!isHead(user.role)) {
       throw new AccessDeniedException('Only heads and above can delete a manufacturer');
     }
@@ -822,11 +823,11 @@ export default class ProjectsService {
     const deletedByUserId = user.userId;
     const deletedManufacturer = await prisma.manufacturer.update({
       where: {
-        name
+        name: manufacturer.name
       },
       data: {
         dateDeleted,
-        deletedBy: { connect: { userId: deletedByUserId } }
+        deletedByUserId
       }
     });
 
