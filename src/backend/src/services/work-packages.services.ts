@@ -109,6 +109,53 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Retrieve a subset of work packages.
+   * @param wbsNums the WBS numbers of the work packages to retrieve
+   * @returns the work packages with the given WBS numbers
+   * @throws if any of the work packages are not found
+   */
+  static async getManyWorkPackages(wbsNums: WbsNumber[]): Promise<WorkPackage[]> {
+    wbsNums.forEach((wbsNum) => {
+      if (isProject(wbsNum)) {
+        throw new HttpException(
+          404,
+          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is a project WBS#, not a Work Package WBS#`
+        );
+      }
+    });
+
+    const workPackagePromises = wbsNums.map(async (wbsNum) => {
+      const workPackage = await prisma.work_Package.findFirst({
+        where: {
+          AND: [
+            {
+              wbsElement: {
+                dateDeleted: null
+              }
+            },
+            {
+              wbsElement: {
+                carNumber: wbsNum.carNumber,
+                projectNumber: wbsNum.projectNumber,
+                workPackageNumber: wbsNum.workPackageNumber
+              }
+            }
+          ]
+        },
+        ...workPackageQueryArgs
+      });
+
+      if (!workPackage) {
+        throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+      }
+      return workPackageTransformer(workPackage);
+    });
+
+    const resolvedWorkPackages = await Promise.all(workPackagePromises);
+    return resolvedWorkPackages;
+  }
+
+  /**
    * Creates a Work_Package in the database
    * @param user the user creating the work package
    * @param projectWbsNum the WBS number of the attached project

@@ -111,6 +111,24 @@ export const prismaReimbursementStatus2: PrismaReimbursementStatus & { user: Use
   user: alfred
 };
 
+export const prismaReimbursementStatus3: PrismaReimbursementStatus & { user: User } = {
+  reimbursementStatusId: 3,
+  type: 'DENIED',
+  userId: 0,
+  dateCreated: new Date('23/8/2023'),
+  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  user: alfred
+};
+
+export const prismaReimbursementStatus4: PrismaReimbursementStatus & { user: User } = {
+  reimbursementStatusId: 3,
+  type: 'REIMBURSED',
+  userId: 0,
+  dateCreated: new Date('23/8/2023'),
+  reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  user: alfred
+};
+
 export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
   ...GiveMeMyMoney,
   receiptPictures: [],
@@ -125,6 +143,26 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
   ...GiveMeMyMoney,
   receiptPictures: [],
   reimbursementStatuses: [prismaReimbursementStatus2],
+  recipient: batman,
+  vendor: PopEyes,
+  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  expenseType: Parts
+};
+
+export const prismaGiveMeMyMoney4: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
+  ...GiveMeMyMoney,
+  receiptPictures: [],
+  reimbursementStatuses: [prismaReimbursementStatus3],
+  recipient: batman,
+  vendor: PopEyes,
+  reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
+  expenseType: Parts
+};
+
+export const prismaGiveMeMyMoney5: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
+  ...GiveMeMyMoney,
+  receiptPictures: [],
+  reimbursementStatuses: [prismaReimbursementStatus4],
   recipient: batman,
   vendor: PopEyes,
   reimbursementProducts: [{ ...GiveMeMoneyProduct, wbsElement: prismaWbsElement1 }],
