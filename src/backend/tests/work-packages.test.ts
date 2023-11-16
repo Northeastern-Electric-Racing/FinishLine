@@ -61,7 +61,7 @@ describe('Work Packages', () => {
 
   beforeEach(() => {
     vi.spyOn(changeRequestUtils, 'validateChangeRequestAccepted').mockImplementation(async (_crId) => {
-      return prismaChangeRequest1;
+      return { ...prismaChangeRequest1, changes: [] };
     });
 
     vi.spyOn(workPackageTransformer, 'default').mockReturnValue(sharedWorkPackage);
@@ -289,6 +289,18 @@ describe('Work Packages', () => {
       const result = await WorkPackageService.getSingleWorkPackage({ carNumber: 1, projectNumber: 1, workPackageNumber: 1 });
 
       expect(result).toStrictEqual(sharedWorkPackage);
+    });
+  });
+
+  describe('getManyWorkPackages', () => {
+    test('should retrieve an empty array for an empty WBS numbers array', async () => {
+      const wbsNums: WbsNumber[] = [];
+
+      vi.spyOn(prisma.work_Package, 'findMany').mockResolvedValue([]);
+
+      const result = await WorkPackageService.getManyWorkPackages(wbsNums);
+
+      expect(result).toStrictEqual([]);
     });
   });
 
