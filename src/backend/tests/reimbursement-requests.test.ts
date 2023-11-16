@@ -224,11 +224,24 @@ describe('Reimbursement Requests', () => {
           [],
           superman
         )
-      ).rejects.toThrow(
-        new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
+      ).rejects.toThrow(new AccessDeniedException('Only the creator or finance team can edit a reimbursement request'));
+    });
+
+    test('Edit Reimbursement Request fails if Submitter not on Finance Team', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 1 });
+      await expect(
+        ReimbursementRequestService.editReimbursementRequest(
+          GiveMeMyMoney.reimbursementRequestId,
+          GiveMeMyMoney.dateOfExpense,
+          GiveMeMyMoney.vendorId,
+          GiveMeMyMoney.account as ClubAccount,
+          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.totalCost,
+          [],
+          [],
+          alfred
         )
-      );
+      ).rejects.toThrow(new AccessDeniedException('Only the creator or finance team can edit a reimbursement request'));
     });
 
     test('Edit Reimbursement Request Fails When Vendor does not exist', async () => {
