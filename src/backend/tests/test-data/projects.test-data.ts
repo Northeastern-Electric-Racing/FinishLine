@@ -164,5 +164,6 @@ export const prismaManufacturer2: Manufacturer = {
 export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),
-  creatorId: batman.userId
+  creatorId: batman.userId,
+  dateDeleted: null
 };

@@ -859,13 +859,17 @@ export default class ProjectsService {
     });
 
     if (!materialType) throw new NotFoundException('Material Type', materialTypeId);
+    if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeId);
 
-    await prisma.material_Type.delete({
+    const deletedMaterialType = await prisma.material_Type.update({
       where: {
         name: materialTypeId
+      },
+      data: {
+        dateDeleted: new Date()
       }
     });
 
-    return materialType;
+    return deletedMaterialType;
   }
 }
