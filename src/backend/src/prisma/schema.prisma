@@ -114,18 +114,22 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
+  Team                      Team[]
 }
 
 model Team {
-  teamId      String    @id @default(uuid())
-  teamName    String
-  slackId     String
-  description String    @default("")
-  projects    Project[] @relation(name: "assignedBy")
-  members     User[]    @relation(name: "teamsAsMember")
-  leads       User[]    @relation(name: "teamsAsLead")
-  headId      Int       @unique
-  head        User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  teamId       String    @id @default(uuid())
+  teamName     String
+  slackId      String
+  description  String    @default("")
+  projects     Project[] @relation(name: "assignedBy")
+  members      User[]    @relation(name: "teamsAsMember")
+  leads        User[]    @relation(name: "teamsAsLead")
+  headId       Int       @unique
+  head         User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  dateArchived DateTime?
+  userId       Int?
+  userArchived User?     @relation(fields: [userId], references: [userId])
 }
 
 model Session {
