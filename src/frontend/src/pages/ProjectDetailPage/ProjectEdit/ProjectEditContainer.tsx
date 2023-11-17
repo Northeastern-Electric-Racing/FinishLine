@@ -38,7 +38,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const projectLinkTypeNames = links.map((link) => link.linkTypeName);
-  const [projectManagerId, setprojectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
+  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
   const goals = bulletsToObject(project.goals);
   const features = bulletsToObject(project.features);
@@ -73,7 +73,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     features,
     constraints,
     rules,
-    projectLeadId,
+    projectLeadId: projectLeadId,
     projectManagerId
   };
 
@@ -118,9 +118,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         project={project}
         onSubmit={onSubmit}
         users={users}
-        setProjectManagerId={setprojectManagerId}
+        setProjectManagerId={setProjectManagerId}
         setProjectLeadId={setProjectLeadId}
         defaultValues={defaultValues}
+        projectLeadId={projectLeadId}
+        projectManagerId={projectManagerId}
       />
     </>
   );

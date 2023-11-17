@@ -38,8 +38,6 @@ export interface ProjectFormInput {
   rules: {
     rule: string;
   }[];
-  projectLeadId: string | undefined;
-  projectManagerId: string | undefined;
 }
 
 const schema = yup.object().shape({
@@ -67,6 +65,8 @@ interface ProjectFormContainerProps {
   setProjectManagerId: (id?: string) => void;
   setProjectLeadId: (id?: string) => void;
   createProject?: boolean;
+  projectLeadId?: string;
+  projectManagerId?: string;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -78,7 +78,9 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   defaultValues,
   setProjectManagerId,
   setProjectLeadId,
-  createProject
+  createProject,
+  projectLeadId,
+  projectManagerId
 }) => {
   const {
     register,
@@ -97,9 +99,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       links: defaultValues?.links,
       goals: defaultValues?.goals,
       features: defaultValues?.features,
-      constraints: defaultValues?.constraints,
-      projectLeadId: defaultValues?.projectLeadId,
-      projectManagerId: defaultValues?.projectManagerId
+      constraints: defaultValues?.constraints
     }
   });
 
@@ -114,30 +114,30 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
   return (
-    <PageLayout
-      title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
-      previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
-      headerRight={
-        <Box textAlign="right">
-          <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
-      }
+    <form
+      id="project-edit-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
     >
-      <form
-        id="project-edit-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onSubmit)(e);
-        }}
-        onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
-        }}
+      <PageLayout
+        title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
+        previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
+        headerRight={
+          <Box textAlign="right">
+            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        }
       >
         <ProjectEditDetails
           users={users}
@@ -145,6 +145,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           errors={errors}
           setProjectManagerId={setProjectManagerId}
           setProjectLeadId={setProjectLeadId}
+          projectLead={projectLeadId}
+          projectManager={projectManagerId}
         />
         <Stack spacing={4}>
           <Box>
@@ -198,8 +200,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
         </Stack>
-      </form>
-    </PageLayout>
+      </PageLayout>
+    </form>
   );
 };
 
