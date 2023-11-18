@@ -2,7 +2,7 @@ import { UseMutationResult } from 'react-query';
 import { WbsNumber, WorkPackage, isGuest, isProject, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
-import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -15,6 +15,7 @@ interface WorkPackageFormProps {
 }
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, exitActiveMode }) => {
+  console.log(true);
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -22,13 +23,15 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
     isError: projectIsError,
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
-  const { data: workPackage, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useSingleWorkPackage(wbsNum);
+  const { data: workPackages, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useAllWorkPackages();
   const { mutateAsync } = operation(wbsNum);
 
-  if (wpIsLoading || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
-  if (wpIsError) return <ErrorPage message={wpError.message} />;
+  if (wpIsLoading || !workPackages || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (projectIsError) return <ErrorPage message={projectError.message} />;
+  if (wpIsError) return <ErrorPage message={wpError.message} />;
+
+  const workPackage = workPackages.find((wp) => wp.wbsNum === wbsNum);
 
   const defaultValues: WorkPackageFormViewPayload | undefined = isProject(wbsNum)
     ? undefined

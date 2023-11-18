@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isProject, User, validateWBS, WbsElement, wbsPipe, WorkPackage } from 'shared';
+import { isProject, User, validateWBS, WbsElement, wbsPipe, WorkPackage, WorkPackageStage } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -82,7 +82,17 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues
+    defaultValues: {
+      name: defaultValues?.name ?? '',
+      workPackageId: defaultValues?.workPackageId ?? 0,
+      startDate: defaultValues?.startDate ?? new Date(),
+      duration: defaultValues?.duration ?? 0,
+      crId: defaultValues?.crId ?? '',
+      stage: defaultValues?.stage ?? 'DESIGN',
+      blockedBy: defaultValues?.blockedBy ?? [],
+      expectedActivities: defaultValues?.expectedActivities ?? [],
+      deliverables: defaultValues?.deliverables ?? []
+    }
   });
 
   const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());

@@ -14,6 +14,8 @@ const CreateWorkPackageForm: React.FC = () => {
 
   if (!wbsNum) throw new HttpException(400, 'WBS number not included in request.');
 
+  console.log(true);
+
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
