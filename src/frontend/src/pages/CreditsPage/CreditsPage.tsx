@@ -147,6 +147,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Yash Jayaprakash', color: '#66b2b2' },
     { name: 'Maggie Chua', color: '#E6E6FA' },
     { name: 'Bradford Derby', color: '#577DD5' },
+    { name: 'Vidyuth Ramkumar', color: '#800000' },
     { name: 'Makarios Mansour', color: '#DC143C' }
   ];
 
