@@ -53,7 +53,9 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
     } else {
       try {
         await requestCRReview({ userIds: reviewerIds });
-        toast.success('Request Review successful');
+        reviewerIds.forEach(function (value) {
+          toast.success('Request Review successful for reviewers ' + value);
+        });
       } catch (e) {
         if (e instanceof Error) {
           toast.error(e.message);
