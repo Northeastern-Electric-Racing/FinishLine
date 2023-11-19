@@ -816,13 +816,31 @@ export default class ProjectsService {
    * Assign a material on a project to a different assembly
    * @param submitter the submitter
    * @param materialId the material that will be moved
-   * @param assemblyId the assembly to change the material to
+   * @param assemblyId the assembly to change the material to, or undefined to unassign the material
    * @throws if the submitter does not have the relevant positions
    * @returns the updated material
    */
-  static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: string) {
+  static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId: undefined | string) {
     const material = await prisma.material.findUnique({ where: { materialId } });
     if (!material) throw new NotFoundException('Material', materialId);
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElementId: material.wbsElementId
+      },
+      ...projectQueryArgs
+    });
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
+
+    // Permission: leadership and up, anyone on project team
+    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
+      throw new AccessDeniedException('Only leadership or above can create a material type');
+
+    if (assemblyId === undefined) {
+      // Unassign material from current assembly if assembly id is undefined
+      const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId: undefined } });
+      return updatedMaterial;
+    }
 
     const assembly = await prisma.assembly.findUnique({
       where: { assemblyId },
@@ -830,24 +848,12 @@ export default class ProjectsService {
     });
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
 
-    const project = await prisma.project.findFirst({
-      where: {
-        wbsElement: assembly.wbsElement
-      },
-      ...projectQueryArgs
-    });
-    if (!project) throw new NotFoundException('Project', assembly.wbsElementId);
-
     // Confirm that the assembly's wbsElement is the same as the material's wbsElement
     if (material.wbsElementId !== assembly.wbsElementId)
       throw new HttpException(
         400,
         `The WBS element of the material (${material.wbsElementId}) and assembly (${assembly.wbsElementId}) do not match`
       );
-
-    // Permission: leadership and up, anyone on project team
-    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
-      throw new AccessDeniedException('Only leadership or above can create a material type');
 
     // Assign a material on a project to a different assembly
     const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });

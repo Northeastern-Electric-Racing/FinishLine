@@ -717,5 +717,19 @@ describe('Projects', () => {
       const updatedMaterial = await ProjectsService.assignMaterialAssembly(aquaman, 'mid', 'updated-aid');
       expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
     });
+
+    test('unassigning material from assebly works', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+
+      const expectedUpdatedToolMaterial: Material = {
+        ...prismaMaterial1,
+        assemblyId: null
+      };
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(expectedUpdatedToolMaterial);
+
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(aquaman, 'mid', undefined);
+      expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
+    });
   });
 });
