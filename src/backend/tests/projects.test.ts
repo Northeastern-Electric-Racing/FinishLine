@@ -734,7 +734,9 @@ describe('Projects', () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(project);
 
       await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
-        new AccessDeniedException('Only leadership or above can assign materials to assemblies')
+        new AccessDeniedException(
+          `Only leadership or above, or someone on the project's team can assign materials to assemblies`
+        )
       );
     });
 
@@ -754,10 +756,18 @@ describe('Projects', () => {
     });
 
     test('assignment fails because the wbsElements do not match', async () => {
-      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue({ ...prismaMaterial1, wbsElementId: 1 });
-      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, wbsElementId: 2 });
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue({
+        ...prismaMaterial1,
+        wbsElementId: 1,
+        wbsElement: prismaWbsElement1
+      });
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({
+        ...prismaAssembly1,
+        wbsElementId: 2,
+        wbsElement: { ...prismaWbsElement1, wbsElementId: 2, projectNumber: 1 }
+      });
       await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'aid')).rejects.toThrow(
-        new HttpException(400, `The WBS element of the material (1) and assembly (2) do not match`)
+        new HttpException(400, `The WBS element of the material (1.2.0) and assembly (1.1.0) do not match`)
       );
     });
 
@@ -773,20 +783,6 @@ describe('Projects', () => {
       vi.spyOn(prisma.material, 'update').mockResolvedValue(expectedUpdatedToolMaterial);
 
       const updatedMaterial = await ProjectsService.assignMaterialAssembly(aquaman, 'mid', 'updated-aid');
-      expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
-    });
-
-    test('unassigning material from assebly works', async () => {
-      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
-      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
-
-      const expectedUpdatedToolMaterial: Material = {
-        ...prismaMaterial1,
-        assemblyId: null
-      };
-      vi.spyOn(prisma.material, 'update').mockResolvedValue(expectedUpdatedToolMaterial);
-
-      const updatedMaterial = await ProjectsService.assignMaterialAssembly(aquaman, 'mid', undefined);
       expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
     });
   });

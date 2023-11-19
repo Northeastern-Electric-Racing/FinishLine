@@ -44,6 +44,7 @@ import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
+import { disconnect } from 'process';
 
 export default class ProjectsService {
   /**
@@ -888,7 +889,10 @@ export default class ProjectsService {
    * @returns the updated material
    */
   static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId?: string) {
-    const material = await prisma.material.findUnique({ where: { materialId } });
+    const material = await prisma.material.findUnique({
+      where: { materialId },
+      include: { wbsElement: true, assembly: true }
+    });
     if (!material) throw new NotFoundException('Material', materialId);
 
     const project = await prisma.project.findFirst({
@@ -903,7 +907,9 @@ export default class ProjectsService {
 
     // Permission: leadership and up, anyone on project team
     if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
-      throw new AccessDeniedException('Only leadership or above can assign materials to assemblies');
+      throw new AccessDeniedException(
+        `Only leadership or above, or someone on the project's team can assign materials to assemblies`
+      );
 
     if (assemblyId) {
       const assembly = await prisma.assembly.findUnique({
@@ -916,14 +922,33 @@ export default class ProjectsService {
       if (material.wbsElementId !== assembly.wbsElementId)
         throw new HttpException(
           400,
-          `The WBS element of the material (${material.wbsElementId}) and assembly (${assembly.wbsElementId}) do not match`
+          `The WBS element of the material (${wbsPipe(material.wbsElement)}) and assembly (${wbsPipe(
+            assembly.wbsElement
+          )}) do not match`
         );
+      const updatedMaterial = await prisma.material.update({
+        where: { materialId },
+        data: { assemblyId }
+      });
+
+      return updatedMaterial;
     }
+    if (material.assemblyId) {
+      // Assign a material on a project to a different assembly
+      await prisma.assembly.update({
+        where: { assemblyId: material.assemblyId },
+        data: { materials: { disconnect: { materialId } } },
+        include: { materials: true }
+      });
 
-    // Assign a material on a project to a different assembly
-    const updatedMaterial = await prisma.material.update({ where: { materialId }, data: { assemblyId } });
+      const updatedMaterial = await prisma.material.findUnique({
+        where: { materialId },
+        include: { wbsElement: true, assembly: true }
+      });
 
-    return updatedMaterial;
+      return updatedMaterial;
+    }
+    return material;
   }
 
   /**
