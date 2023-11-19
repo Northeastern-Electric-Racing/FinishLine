@@ -627,7 +627,6 @@ export default class ProjectsService {
    * @param manufacturerName the name of the material's manufacturer
    * @param manufacturerPartNumber the manufacturer part number for the material
    * @param quantity the quantity of material as a number
-   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @param price the price of the material in whole cents
    * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
@@ -635,6 +634,7 @@ export default class ProjectsService {
    * @param wbsNumber the WBS number of the project associated with this material
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
+   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @returns the created material
    */
   static async createMaterial(
@@ -645,14 +645,14 @@ export default class ProjectsService {
     manufacturerName: string,
     manufacturerPartNumber: string,
     quantity: number,
-    unitName: string,
     price: number,
     subtotal: number,
     linkUrl: string,
     notes: string,
     wbsNumber: WbsNumber,
     assemblyId?: string,
-    pdmFileName?: string
+    pdmFileName?: string,
+    unitName?: string
   ): Promise<Material> {
     const project = await prisma.project.findFirst({
       where: {
@@ -682,10 +682,12 @@ export default class ProjectsService {
     });
     if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
 
-    const unit = await prisma.unit.findFirst({
-      where: { name: unitName }
-    });
-    if (!unit) throw new NotFoundException('Unit', unitName);
+    if (unitName) {
+      const unit = await prisma.unit.findFirst({
+        where: { name: unitName }
+      });
+      if (!unit) throw new NotFoundException('Unit', unitName);
+    }
 
     const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
 
@@ -871,5 +873,110 @@ export default class ProjectsService {
     });
 
     return deletedMaterialType;
+  }
+
+  /**
+   * Update a material
+   * @param submitter the submitter of the request
+   * @param materialId the material id of the material being edited
+   * @param name the name of the edited material
+   * @param status the status of the edited material
+   * @param materialTypeName the material type of the edited material
+   * @param manufacturerName the manufacturerName of the edited material
+   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material
+   * @param quantity the quantity of the edited material
+   * @param price the price of the edited material
+   * @param subtotal the subtotal of the edited material
+   * @param linkUrl the linkUrl of the edited material
+   * @param notes the notes of the edited material
+   * @param unitName the unit name of the edited material
+   * @param assemblyId the assembly id of the edited material
+   * @param pdmFileName the pdm file name of the edited material
+   * @throws if permission denied or material's wbsElement is undefined/deleted
+   * @returns the updated material
+   */
+  static async editMaterial(
+    submitter: User,
+    materialId: string,
+    name: string,
+    status: Material_Status,
+    materialTypeName: string,
+    manufacturerName: string,
+    manufacturerPartNumber: string,
+    quantity: number,
+    price: number,
+    subtotal: number,
+    linkUrl: string,
+    notes: string,
+    unitName?: string,
+    assemblyId?: string,
+    pdmFileName?: string
+  ): Promise<Material> {
+    const material = await prisma.material.findUnique({
+      where: {
+        materialId
+      }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElementId: material.wbsElementId
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    }
+
+    const materialType = await prisma.material_Type.findFirst({
+      where: { name: materialTypeName }
+    });
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: { name: manufacturerName }
+    });
+    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+
+    if (unitName) {
+      const unit = await prisma.unit.findFirst({
+        where: { name: unitName }
+      });
+      if (!unit) throw new NotFoundException('Unit', unitName);
+    }
+
+    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
+
+    const updatedMaterial = await prisma.material.update({
+      where: { materialId },
+      data: {
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsElementId: project.wbsElementId,
+        assemblyId,
+        pdmFileName
+      }
+    });
+
+    return updatedMaterial;
   }
 }
