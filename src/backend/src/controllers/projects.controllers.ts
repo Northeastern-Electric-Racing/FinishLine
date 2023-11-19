@@ -167,14 +167,14 @@ export default class ProjectsController {
         manufacturerName,
         manufacturerPartNumber,
         quantity,
-        unitName,
         price,
         subtotal,
         linkUrl,
         notes,
         wbsNum,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        unitName
       );
       return res.status(200).json(material);
     } catch (error: unknown) {
@@ -222,6 +222,7 @@ export default class ProjectsController {
         name,
         assemblyId,
         status,
+        materialTypeName,
         manufacturerName,
         manufacturerPartNumber,
         pdmFileName,
@@ -237,6 +238,7 @@ export default class ProjectsController {
         materialId,
         name,
         status,
+        materialTypeName,
         manufacturerName,
         manufacturerPartNumber,
         quantity,

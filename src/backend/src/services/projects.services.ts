@@ -617,7 +617,6 @@ export default class ProjectsService {
    * @param manufacturerName the name of the material's manufacturer
    * @param manufacturerPartNumber the manufacturer part number for the material
    * @param quantity the quantity of material as a number
-   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @param price the price of the material in whole cents
    * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
@@ -625,6 +624,7 @@ export default class ProjectsService {
    * @param wbsNumber the WBS number of the project associated with this material
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
+   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @returns the created material
    */
   static async createMaterial(
@@ -635,14 +635,14 @@ export default class ProjectsService {
     manufacturerName: string,
     manufacturerPartNumber: string,
     quantity: number,
-    unitName: string,
     price: number,
     subtotal: number,
     linkUrl: string,
     notes: string,
     wbsNumber: WbsNumber,
     assemblyId?: string,
-    pdmFileName?: string
+    pdmFileName?: string,
+    unitName?: string
   ): Promise<Material> {
     const project = await prisma.project.findFirst({
       where: {
@@ -657,7 +657,7 @@ export default class ProjectsService {
 
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
 
-    await checkMaterialInputs(manufacturerName, unitName, assemblyId, materialTypeName);
+    await checkMaterialInputs(manufacturerName, materialTypeName, unitName, assemblyId);
 
     const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
 
@@ -816,19 +816,20 @@ export default class ProjectsService {
   /**
    * Update a material
    * @param submitter the submitter of the request
-   * @param materialId the material id of the new material
-   * @param name the name of the new material
-   * @param status the status of the new material
-   * @param manufacturerName the manufacturerName of the new material
-   * @param manufacturerPartNumber the manufacturerPartNumber of the new material
-   * @param quantity the quantity of the new material
-   * @param price the price of the new material
-   * @param subtotal the subtotal of the new material
-   * @param linkUrl the linkUrl of the new material
-   * @param notes the notes of the new material
-   * @param unitName the unit name of the new material
-   * @param assemblyId the assembly id of the new material
-   * @param pdmFileName the pdm file name of the new material
+   * @param materialId the material id of the material being edited
+   * @param name the name of the edited material
+   * @param status the status of the edited material
+   * @param materialTypeName the material type of the edited material
+   * @param manufacturerName the manufacturerName of the edited material
+   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material
+   * @param quantity the quantity of the edited material
+   * @param price the price of the edited material
+   * @param subtotal the subtotal of the edited material
+   * @param linkUrl the linkUrl of the edited material
+   * @param notes the notes of the edited material
+   * @param unitName the unit name of the edited material
+   * @param assemblyId the assembly id of the edited material
+   * @param pdmFileName the pdm file name of the edited material
    * @throws if permission denied or material's wbsElement is undefined/deleted
    * @returns the updated material
    */
@@ -837,6 +838,7 @@ export default class ProjectsService {
     materialId: string,
     name: string,
     status: Material_Status,
+    materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
     quantity: number,
@@ -867,7 +869,7 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', material.wbsElementId);
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
-    await checkMaterialInputs(manufacturerName, unitName, assemblyId);
+    await checkMaterialInputs(manufacturerName, materialTypeName, unitName, assemblyId);
 
     const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
 
@@ -878,6 +880,7 @@ export default class ProjectsService {
       data: {
         name,
         status,
+        materialTypeName,
         manufacturerName,
         manufacturerPartNumber,
         quantity,

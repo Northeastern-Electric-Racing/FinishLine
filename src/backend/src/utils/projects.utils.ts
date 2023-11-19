@@ -64,28 +64,26 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
 /**
  * Check if given assembly, material type, manufacturer, and unit exist in the app database
  * @param manufacturerName the manufacure of the material to check if it exists
+ * @param materialTypeName the material type of the material to check if it exists
  * @param unitName the unit of the material to check if it exists
  * @param assemblyId the assembly of the material to check if it exists
- * @param materialTypeName the material type of the material to check if it exists
  * @throws if any of these properties of the material does not exist in the db
  */
 export const checkMaterialInputs = async (
   manufacturerName: string,
+  materialTypeName: string,
   unitName?: string,
-  assemblyId?: string,
-  materialTypeName?: string
+  assemblyId?: string
 ) => {
   if (!!assemblyId) {
     const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
   }
 
-  if (!!materialTypeName) {
-    const materialType = await prisma.material_Type.findFirst({
-      where: { name: materialTypeName }
-    });
-    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
-  }
+  const materialType = await prisma.material_Type.findFirst({
+    where: { name: materialTypeName }
+  });
+  if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
 
   const manufacturer = await prisma.manufacturer.findFirst({
     where: { name: manufacturerName }
