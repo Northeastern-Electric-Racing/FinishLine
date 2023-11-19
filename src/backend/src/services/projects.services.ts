@@ -845,27 +845,27 @@ export default class ProjectsService {
 
   /**
    * Deletes an assembly type
-   * @param name the name of the assembly
+   * @param assemblyId the name of the assembly
    * @param submitter the user who is deleting the assembly type
    * @throws if the user is not an admin/head, the assembly does not exist, or has already been deleted
    * @returns
    */
-  static async deleteAssembly(name: string, submitter: User): Promise<Assembly> {
+  static async deleteAssembly(assemblyId: string, submitter: User): Promise<Assembly> {
     if (!isAdmin(submitter.role) || !isHead(submitter.role))
       throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
 
     const assembly = await prisma.assembly.findUnique({
       where: {
-        name
+        assemblyId
       }
     });
 
-    if (!assembly) throw new NotFoundException('Assembly', name);
-    if (assembly.dateDeleted) throw new DeletedException('Assembly', name);
+    if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
 
     const deletedAssembly = await prisma.assembly.update({
       where: {
-        name
+        assemblyId
       },
       data: {
         dateDeleted: new Date()
