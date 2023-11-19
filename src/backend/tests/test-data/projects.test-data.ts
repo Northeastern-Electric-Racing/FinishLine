@@ -112,7 +112,7 @@ export const prismaAssembly1: Assembly = {
   pdmFileName: 'file.txt',
   dateCreated: new Date('10-19-2023'),
   userCreatedId: batman.userId,
-  wbsElementId: 66,
+  wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null,
   assemblyId: '1'

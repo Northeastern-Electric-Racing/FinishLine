@@ -838,6 +838,13 @@ export default class ProjectsService {
     });
     if (!project) throw new NotFoundException('Project', assembly.wbsElementId);
 
+    // Confirm that the assembly's wbsElement is the same as the material's wbsElement
+    if (material.wbsElementId !== assembly.wbsElementId)
+      throw new HttpException(
+        400,
+        `The WBS element of the material (${material.wbsElementId}) and assembly (${assembly.wbsElementId}) do not match`
+      );
+
     // Permission: leadership and up, anyone on project team
     if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
       throw new AccessDeniedException('Only leadership or above can create a material type');

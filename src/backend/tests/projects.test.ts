@@ -695,6 +695,14 @@ describe('Projects', () => {
       );
     });
 
+    test('assignment fails because the wbsElements do not match', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue({ ...prismaMaterial1, wbsElementId: 1 });
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, wbsElementId: 2 });
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'aid')).rejects.toThrow(
+        new HttpException('400', `The WBS element of the material (1) and assembly (2) do not match`)
+      );
+    });
+
     test('assignment successful', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
       vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
