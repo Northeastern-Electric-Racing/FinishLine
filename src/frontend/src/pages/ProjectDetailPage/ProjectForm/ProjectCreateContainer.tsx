@@ -2,22 +2,23 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useCreateSingleProject } from '../../../hooks/projects.hooks';
+import { useAllLinkTypes, useCreateSingleProject } from '../../../hooks/projects.hooks';
 import { mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import ProjectFormContainer from './ProjectForm';
 import { ProjectFormInput } from './ProjectForm';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
-interface ProjectCreateContainerProps {
-  requiredLinkTypeNames: string[];
-  exitEditMode: () => void;
-}
-
-const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEditMode, requiredLinkTypeNames }) => {
+const ProjectCreateContainer: React.FC = () => {
   //const query = useQuery();
   const toast = useToast();
+  const history = useHistory();
   const name = String();
   const budget = 0;
   const summary = String();
@@ -27,13 +28,35 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
   const features: { bulletId: number; detail: string }[] = [];
   const rules: { rule: string }[] = [];
   const constraints: { bulletId: number; detail: string }[] = [];
-  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
 
   const { mutateAsync } = useCreateSingleProject();
+  const {
+    data: allLinkTypes,
+    isLoading: allLinkTypesIsLoading,
+    isError: allLinkTypesIsError,
+    error: allLinkTypesError
+  } = useAllLinkTypes();
   const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
   const crId = 0;
   const carNumber = 0;
+
+  if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
+  if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
+
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
+
+  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
+
+  requiredLinkTypeNames
+    .filter((name) => !projectLinkTypeNames.includes(name))
+    .forEach((name) => {
+      links.push({
+        linkId: '-1',
+        url: '',
+        linkTypeName: name
+      });
+    });
 
   const defaultValues = {
     name,
@@ -48,16 +71,6 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
     projectLeadId,
     projectManagerId
   };
-
-  requiredLinkTypeNames
-    .filter((name) => !projectLinkTypeNames.includes(name))
-    .forEach((name) => {
-      links.push({
-        linkId: '-1',
-        url: '',
-        linkTypeName: name
-      });
-    });
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links } = data;
@@ -83,7 +96,7 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
         projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
       await mutateAsync(payload);
-      exitEditMode();
+      history.push(routes.PROJECTS_ALL);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -92,17 +105,15 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
   };
 
   return (
-    <>
-      <ProjectFormContainer
-        exitEditMode={exitEditMode}
-        requiredLinkTypeNames={requiredLinkTypeNames}
-        onSubmit={onSubmit}
-        defaultValues={defaultValues}
-        setProjectLeadId={setProjectLeadId}
-        setProjectManagerId={setprojectManagerId}
-        createProject={true}
-      />
-    </>
+    <ProjectFormContainer
+      requiredLinkTypeNames={requiredLinkTypeNames}
+      exitEditMode={() => history.push(routes.PROJECTS_ALL)}
+      onSubmit={onSubmit}
+      defaultValues={defaultValues}
+      setProjectLeadId={setProjectLeadId}
+      setProjectManagerId={setprojectManagerId}
+      createProject={true}
+    />
   );
 };
 

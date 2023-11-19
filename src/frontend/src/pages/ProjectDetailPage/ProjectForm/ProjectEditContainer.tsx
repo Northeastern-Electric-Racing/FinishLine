@@ -4,7 +4,7 @@
  */
 
 import { Project } from 'shared';
-import { useEditSingleProject } from '../../../hooks/projects.hooks';
+import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -12,18 +12,26 @@ import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
 import ProjectFormContainer from './ProjectForm';
 import { ProjectFormInput } from './ProjectForm';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 
 interface ProjectEditContainerProps {
   project: Project;
-  requiredLinkTypeNames: string[];
   exitEditMode: () => void;
 }
 
-const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode, requiredLinkTypeNames }) => {
+const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const query = useQuery();
   const toast = useToast();
   const { name, budget, summary } = project;
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
+  const {
+    data: allLinkTypes,
+    isLoading: allLinkTypesIsLoading,
+    isError: allLinkTypesIsError,
+    error: allLinkTypesError
+  } = useAllLinkTypes();
 
   const links = project.links.map((link) => {
     return {
@@ -33,7 +41,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   });
 
-  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
   const goals = bulletsToObject(project.goals);
@@ -43,6 +50,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     return { rule };
   });
   const crId = parseInt(query.get('crId') || '');
+
+  if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
+  if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
+
+  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
+
+  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
 
   requiredLinkTypeNames
     .filter((name) => !projectLinkTypeNames.includes(name))
@@ -102,19 +116,17 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   return (
-    <>
-      <ProjectFormContainer
-        exitEditMode={exitEditMode}
-        requiredLinkTypeNames={requiredLinkTypeNames}
-        project={project}
-        onSubmit={onSubmit}
-        setProjectManagerId={setProjectManagerId}
-        setProjectLeadId={setProjectLeadId}
-        defaultValues={defaultValues}
-        projectLeadId={projectLeadId}
-        projectManagerId={projectManagerId}
-      />
-    </>
+    <ProjectFormContainer
+      requiredLinkTypeNames={requiredLinkTypeNames}
+      exitEditMode={exitEditMode}
+      project={project}
+      onSubmit={onSubmit}
+      setProjectManagerId={setProjectManagerId}
+      setProjectLeadId={setProjectLeadId}
+      defaultValues={defaultValues}
+      projectLeadId={projectLeadId}
+      projectManagerId={projectManagerId}
+    />
   );
 };
 
