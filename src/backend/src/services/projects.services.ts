@@ -799,6 +799,42 @@ export default class ProjectsService {
   }
 
   /**
+   * Deletes a manufacturer
+   * @param user the user who's deleting the manufacturer
+   * @param name the name of the manufacturer
+   * @throws if the user is not at least a head, or if the provided name isn't a manufacturer, or if the manufacturer has already been soft-deleted
+   * @returns the deleted manufacturer
+   */
+  static async deleteManufacturer(user: User, name: string) {
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Only heads and above can delete a manufacturer');
+    }
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: {
+        name
+      }
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException('Manufacturer', name);
+    }
+
+    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
+
+    const dateDeleted: Date = new Date();
+    const deletedManufacturer = await prisma.manufacturer.update({
+      where: {
+        name: manufacturer.name
+      },
+      data: {
+        dateDeleted
+      }
+    });
+
+    return deletedManufacturer;
+  }
+  /**
    * Get all the manufacturers in the database.
    * @returns all the manufacturers
    */

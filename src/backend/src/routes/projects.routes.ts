@@ -56,6 +56,7 @@ projectRouter.post(
   validateInputs,
   ProjectsController.createManufacturer
 );
+projectRouter.delete('/bom/manufacturer/:manufacturerName/delete', ProjectsController.deleteManufacturer);
 projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
 projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
 projectRouter.post(

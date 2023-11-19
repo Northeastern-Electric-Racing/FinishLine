@@ -528,5 +528,6 @@ model Manufacturer {
   name        String     @id
   dateCreated DateTime
   creatorId   Int
+  dateDeleted DateTime?
   materials   Material[]
 }

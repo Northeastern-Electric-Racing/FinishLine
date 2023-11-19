@@ -62,6 +62,7 @@ CREATE TABLE "Manufacturer" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "creatorId" INTEGER NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Manufacturer_pkey" PRIMARY KEY ("name")
 );

@@ -193,6 +193,17 @@ export default class ProjectsController {
     }
   }
 
+  static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { manufacturerName } = req.params;
+      const deletedManufacturer: Manufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
+      res.status(200).json(deletedManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);

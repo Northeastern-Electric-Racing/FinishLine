@@ -153,13 +153,15 @@ export const prismaMaterial: Material = {
 export const prismaManufacturer1: Manufacturer = {
   name: 'Manufacturer1',
   dateCreated: new Date('10-1-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: null
 };
 
 export const prismaManufacturer2: Manufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: new Date('10-18-2023')
 };
 
 export const toolMaterial: PrismaMaterialType = {
