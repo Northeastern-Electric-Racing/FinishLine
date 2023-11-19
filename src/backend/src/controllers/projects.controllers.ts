@@ -167,14 +167,14 @@ export default class ProjectsController {
         manufacturerName,
         manufacturerPartNumber,
         quantity,
-        unitName,
         price,
         subtotal,
         linkUrl,
         notes,
         wbsNum,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        unitName
       );
       return res.status(200).json(material);
     } catch (error: unknown) {
@@ -204,12 +204,86 @@ export default class ProjectsController {
     }
   }
 
+  static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers(user);
+      return res.status(200).json(manufacturers);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
       const createdMaterialType = await ProjectsService.createMaterialType(name, user);
       res.status(200).json(createdMaterialType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteAssemblyType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assemblyId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedAssembly = await ProjectsService.deleteAssembly(assemblyId, user);
+      res.status(200).json(deletedAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialTypeId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedMaterial = await ProjectsService.deleteMaterialType(materialTypeId, user);
+      res.status(200).json(deletedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { materialId } = req.params;
+      const {
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const updatedMaterial = await ProjectsService.editMaterial(
+        user,
+        materialId,
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        unitName,
+        assemblyId,
+        pdmFileName
+      );
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
       next(error);
     }

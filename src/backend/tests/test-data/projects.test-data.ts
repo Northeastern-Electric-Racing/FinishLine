@@ -121,7 +121,8 @@ export const prismaAssembly1: Assembly = {
 export const prismaMaterialType: PrismaMaterialType = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: null
 };
 
 export const prismaUnit: Unit = {
@@ -168,5 +169,28 @@ export const prismaManufacturer2: Manufacturer = {
 export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),
-  creatorId: batman.userId
+  creatorId: batman.userId,
+  dateDeleted: null
+};
+
+export const prismaMaterial2: Material = {
+  materialId: 'id',
+  assemblyId: 'assemblyId',
+  name: 'name2',
+  wbsElementId: 1,
+  dateDeleted: null,
+  userDeletedId: null,
+  dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1,
+  pdmFileName: 'file2',
+  status: 'ORDERED',
+  notes: 'random notes',
+  materialTypeName: 'type',
+  manufacturerName: 'manufacturer',
+  manufacturerPartNumber: 'partNum',
+  price: 1000,
+  subtotal: 500,
+  quantity: 8,
+  unitName: 'FT',
+  linkUrl: 'https://www.google.com'
 };

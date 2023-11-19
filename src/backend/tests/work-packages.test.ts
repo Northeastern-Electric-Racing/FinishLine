@@ -292,6 +292,18 @@ describe('Work Packages', () => {
     });
   });
 
+  describe('getManyWorkPackages', () => {
+    test('should retrieve an empty array for an empty WBS numbers array', async () => {
+      const wbsNums: WbsNumber[] = [];
+
+      vi.spyOn(prisma.work_Package, 'findMany').mockResolvedValue([]);
+
+      const result = await WorkPackageService.getManyWorkPackages(wbsNums);
+
+      expect(result).toStrictEqual([]);
+    });
+  });
+
   describe('slackMessageUpcomingDeadlines', () => {
     beforeEach(() => {
       vi.spyOn(slackUtils, 'sendSlackUpcomingDeadlineNotification').mockImplementation(async () => {});

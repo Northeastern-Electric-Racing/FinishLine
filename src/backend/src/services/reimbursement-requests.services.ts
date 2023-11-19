@@ -24,6 +24,7 @@ import {
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
+  validateUserEditRRPermissions,
   validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
@@ -255,10 +256,7 @@ export default class ReimbursementRequestService {
 
     if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
-    if (oldReimbursementRequest.recipientId !== submitter.userId)
-      throw new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only the creator can edit a reimbursement request'
-      );
+    await validateUserEditRRPermissions(submitter, oldReimbursementRequest);
 
     const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
@@ -689,6 +687,51 @@ export default class ReimbursementRequestService {
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.SABO_SUBMITTED,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
+   * Adds a reimbursement status with type denied to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to deny
+   * @param submitter the user who is denying the reimbursement request
+   * @returns the created reimbursment status
+   */
+  static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.DENIED,
         userId: submitter.userId,
         reimbursementRequestId: reimbursementRequest.reimbursementRequestId
       },
