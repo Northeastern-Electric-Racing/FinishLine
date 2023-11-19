@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -682,6 +682,35 @@ describe('Projects', () => {
       const materialType = await ProjectsService.createMaterialType('NERSoftwareTools', batman);
       expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Deleting material type', () => {
+    test('Delete Material Type does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Only an admin or head can delete a material type')
+      );
+    });
+
+    test('Delete Material Type does not work if material type does not exist', async () => {
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new NotFoundException('Material Type', 'NERSoftwareTools')
+      );
+    });
+
+    test('Deleted Material Tye does not work if the material type is already deleted', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue({ ...toolMaterial, dateDeleted: new Date() });
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new DeletedException('Material Type', 'NERSoftwareTools')
+      );
+    });
+
+    test('Delete Material Type works', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.material_Type, 'update').mockResolvedValue({ ...toolMaterial, dateDeleted: new Date() });
+      const deletedMaterialType = await ProjectsService.deleteMaterialType('NERSoftwareTools', superman);
+      expect(deletedMaterialType.name).toBe('NERSoftwareTools');
+      expect(prisma.material_Type.update).toBeCalledTimes(1);
     });
   });
 

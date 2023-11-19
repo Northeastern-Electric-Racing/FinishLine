@@ -51,6 +51,7 @@ CREATE TABLE "Material" (
 CREATE TABLE "Material_Type" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
     "creatorId" INTEGER NOT NULL,
 
     CONSTRAINT "Material_Type_pkey" PRIMARY KEY ("name")

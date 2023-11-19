@@ -519,6 +519,7 @@ model Material {
 model Material_Type {
   name        String     @id
   dateCreated DateTime
+  dateDeleted DateTime?
   creatorId   Int
   materials   Material[]
 }

@@ -101,4 +101,6 @@ projectRouter.post(
   ProjectsController.editMaterial
 );
 
+projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
+
 export default projectRouter;
