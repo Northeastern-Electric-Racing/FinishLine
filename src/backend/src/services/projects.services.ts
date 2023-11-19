@@ -44,7 +44,6 @@ import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
-import { disconnect } from 'process';
 
 export default class ProjectsService {
   /**
@@ -893,6 +892,7 @@ export default class ProjectsService {
       where: { materialId },
       include: { wbsElement: true, assembly: true }
     });
+
     if (!material) throw new NotFoundException('Material', materialId);
 
     const project = await prisma.project.findFirst({
@@ -911,6 +911,7 @@ export default class ProjectsService {
         `Only leadership or above, or someone on the project's team can assign materials to assemblies`
       );
 
+    //assigning the material to a new assembly
     if (assemblyId) {
       const assembly = await prisma.assembly.findUnique({
         where: { assemblyId },
@@ -933,8 +934,8 @@ export default class ProjectsService {
 
       return updatedMaterial;
     }
+    //unassigning material from an existing assembly
     if (material.assemblyId) {
-      // Assign a material on a project to a different assembly
       await prisma.assembly.update({
         where: { assemblyId: material.assemblyId },
         data: { materials: { disconnect: { materialId } } },
