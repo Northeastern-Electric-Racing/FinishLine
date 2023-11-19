@@ -230,7 +230,7 @@ export const validateUserIsPartOfFinanceTeam = async (user: User) => {
  */
 export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
-    console.warn('FINANCE_TEAM_ID not in env');
+    throw new Error('FINANCE_TEAM_ID not in env');
   }
 
   const financeTeam = await prisma.team.findUnique({
@@ -246,7 +246,7 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
  * Determines if a user is lead or head of the finance team.
  *
  * To be used for Prisma input validation of a plain User, as opposed to
- * <code>isAuthUserLeadForFinance</code>, which uses the additional fields
+ * <code>isAuthUserAtLeastLeadForFinance</code>, which uses the additional fields
  * produced by authUserQueryArgs that are not in the User type by default.
  *
  * @param user the user to authenticate
@@ -255,7 +255,7 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
  */
 export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
-    console.error('FINANCE_TEAM_ID not in env');
+    throw new Error('FINANCE_TEAM_ID not in env');
   }
 
   const financeTeam = await prisma.team.findUnique({
@@ -284,7 +284,7 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQ
  * @param user the user to check
  * @returns Whether they are a finance lead.
  */
-export const isAuthUserLeadForFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
   if (!process.env.FINANCE_TEAM_ID) return false;
   const financeTeamId = process.env.FINANCE_TEAM_ID;
   const { teamAsHead, teamsAsLead } = user;

@@ -18,7 +18,7 @@ const AdminToolsPage: React.FC = () => {
     <PageLayout title="Admin Tools">
       {isHead(currentUser.role) && <AdminToolsUserManagement />}
       {isAdmin(currentUser.role) && <AdminToolsSlackUpcomingDeadlines />}
-      {(isAdmin(currentUser.role) || currentUser.isFinanceLead) && <AdminToolsFinanceConfig />}
+      {(isAdmin(currentUser.role) || currentUser.isAtLeastFinanceLead) && <AdminToolsFinanceConfig />}
       {isAdmin(currentUser.role) && <TeamsTools />}
     </PageLayout>
   );

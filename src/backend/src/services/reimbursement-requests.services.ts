@@ -454,16 +454,12 @@ export default class ReimbursementRequestService {
    * @returns the created vendor
    */
   static async createVendor(submitter: User, name: string) {
-    const validateCreateVendorSubmitter = async (submitter: User): Promise<void> => {
-      const failedAuthorizationException = new AccessDeniedException(
-        'Only admins, finance leads, and finance heads can create vendors.'
-      );
+    const failedAuthorizationException = new AccessDeniedException(
+      'Only admins, finance leads, and finance heads can create vendors.'
+    );
 
-      const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
-      if (!isAuthorized) throw failedAuthorizationException;
-    };
-
-    await validateCreateVendorSubmitter(submitter);
+    const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
+    if (!isAuthorized) throw failedAuthorizationException;
 
     const vendor = await prisma.vendor.create({
       data: {

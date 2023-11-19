@@ -3,7 +3,7 @@ import { AuthenticatedUser } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import {
   isAuthUserHeadOfFinance,
-  isAuthUserLeadForFinance,
+  isAuthUserAtLeastLeadForFinance,
   isAuthUserOnFinance
 } from '../utils/reimbursement-requests.utils';
 
@@ -20,7 +20,7 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<typeof authUse
     favoritedProjectsId: user.favoriteProjects.map((project) => project.projectId),
     isFinance: isAuthUserOnFinance(user),
     isHeadOfFinance: isAuthUserHeadOfFinance(user),
-    isFinanceLead: isAuthUserLeadForFinance(user),
+    isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
   };
 };
