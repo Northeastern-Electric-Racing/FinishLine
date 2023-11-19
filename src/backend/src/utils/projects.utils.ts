@@ -75,7 +75,9 @@ export const checkMaterialInputs = async (
   unitName?: string,
   assemblyId?: string
 ) => {
-  if (!!assemblyId) {
+  console.log('test');
+
+  if (assemblyId) {
     const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
   }
@@ -90,7 +92,7 @@ export const checkMaterialInputs = async (
   });
   if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
 
-  if (!!unitName) {
+  if (unitName) {
     const unit = await prisma.unit.findFirst({
       where: { name: unitName }
     });

@@ -444,14 +444,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Project', '1.1.1'));
     });
@@ -468,14 +468,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Assembly', 'assemblyName'));
     });
@@ -493,14 +493,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Material Type', 'type'));
     });
@@ -519,14 +519,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
     });
@@ -546,14 +546,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
     });
@@ -575,14 +575,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new AccessDeniedException('create materials'));
     });
@@ -603,14 +603,14 @@ describe('Projects', () => {
         prismaManufacturer2.name,
         'partNum',
         6,
-        'FT',
         800,
         400,
         'https://www.google.com',
         'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
         'assemblyName',
-        'file'
+        'file',
+        'FT'
       );
 
       expect(res).toBeDefined();
@@ -695,6 +695,7 @@ describe('Projects', () => {
           prismaMaterial2.materialId,
           prismaMaterial2.name,
           prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
           prismaMaterial2.manufacturerName,
           prismaMaterial2.manufacturerPartNumber,
           prismaMaterial2.quantity,
@@ -719,6 +720,7 @@ describe('Projects', () => {
           prismaMaterial2.materialId,
           prismaMaterial2.name,
           prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
           prismaMaterial2.manufacturerName,
           prismaMaterial2.manufacturerPartNumber,
           prismaMaterial2.quantity,
@@ -743,6 +745,7 @@ describe('Projects', () => {
           prismaMaterial2.materialId,
           prismaMaterial2.name,
           prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
           prismaMaterial2.manufacturerName,
           prismaMaterial2.manufacturerPartNumber,
           prismaMaterial2.quantity,
@@ -768,6 +771,7 @@ describe('Projects', () => {
           prismaMaterial2.materialId,
           prismaMaterial2.name,
           prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
           prismaMaterial2.manufacturerName,
           prismaMaterial2.manufacturerPartNumber,
           prismaMaterial2.quantity,
@@ -793,6 +797,7 @@ describe('Projects', () => {
           prismaMaterial2.materialId,
           prismaMaterial2.name,
           prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
           prismaMaterial2.manufacturerName,
           prismaMaterial2.manufacturerPartNumber,
           prismaMaterial2.quantity,
@@ -817,6 +822,7 @@ describe('Projects', () => {
         prismaMaterial2.materialId,
         prismaMaterial2.name,
         prismaMaterial2.status,
+        prismaMaterial2.materialTypeName,
         prismaMaterial2.manufacturerName,
         prismaMaterial2.manufacturerPartNumber,
         prismaMaterial2.quantity,
