@@ -734,7 +734,7 @@ describe('Projects', () => {
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(project);
 
       await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
-        new AccessDeniedException('Only leadership or above can create a material type')
+        new AccessDeniedException('Only leadership or above can assign materials to assemblies')
       );
     });
 
@@ -798,6 +798,8 @@ describe('Projects', () => {
     });
 
     test('Deleting assembly fails if assembly does not exist', async () => {
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+
       await expect(ProjectsService.deleteAssembly('New Assembly', batman)).rejects.toThrow(
         new NotFoundException('Assembly', 'New Assembly')
       );
