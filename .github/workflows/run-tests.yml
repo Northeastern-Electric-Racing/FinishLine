@@ -20,13 +20,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set env variables
+        run: touch .env && echo FINANCE_TEAM_ID=0 >> .env
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.17.1
           cache: 'yarn'
-      - name: Set env variables
-        run: touch .env && echo FINANCE_TEAM_ID=0 >> .env
       - name: Install modules
         run: yarn install && yarn prisma:generate
       - name: Run tests
