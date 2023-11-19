@@ -642,7 +642,6 @@ describe('Projects', () => {
       expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
     });
 
-<<<<<<< HEAD
     test('deleteManufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
       vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
@@ -681,7 +680,8 @@ describe('Projects', () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
       await expect(async () => await ProjectsService.deleteManufacturer(batman, prismaManufacturer2.name)).rejects.toThrow(
         new DeletedException('Manufacturer', prismaManufacturer2.name)
-=======
+      );
+    });
     test('Get all Manufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
 
@@ -696,7 +696,6 @@ describe('Projects', () => {
 
       await expect(ProjectsService.getAllManufacturers(theVisitor)).rejects.toThrow(
         new AccessDeniedGuestException('Get Manufacturers')
->>>>>>> develop
       );
     });
   });
