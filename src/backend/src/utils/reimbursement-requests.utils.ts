@@ -256,7 +256,6 @@ export const createReimbursementProducts = async (
   await Promise.all(reimbursementProductsPromises);
 };
 
-
 /**
  * Validates that the given user is on the finance team.
  *
