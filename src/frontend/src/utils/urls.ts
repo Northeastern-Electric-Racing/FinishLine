@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { WbsNumber, wbsPipe } from 'shared';
+
 /**
  * This file centralizes URLs used to query the API.
  */
@@ -105,6 +107,16 @@ const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${e
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 
+/**************** Bill of Material Endpoints **************************/
+const bomEndpoints = () => `${API_URL}/bom`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials`;
+const bomGetAllUnits = () => `${bomEndpoints()}/units`;
+const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-types`;
+const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturers`;
+const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/assemblies`;
+const bomCreateMaterial = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials/create`;
+const bomEditMaterial = (materialId: string) => `${bomEndpoints()}/materials/${materialId}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -189,6 +201,15 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+
+  bomEndpoints,
+  bomGetMaterialsByWbsNum,
+  bomGetAllUnits,
+  bomGetAllMaterialTypes,
+  bomGetAllManufacturers,
+  bomGetAssembliesByWbsNum,
+  bomCreateMaterial,
+  bomEditMaterial,
 
   version
 };

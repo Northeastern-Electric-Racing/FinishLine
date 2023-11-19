@@ -30,6 +30,7 @@ import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
 import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
+import CreateMaterialModal from '../../BOMsPage/MaterialForm/CreateMaterialModal';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -48,6 +49,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
+  const [showCreateMaterial, setShowCreateMaterial] = useState(false);
   const dropdownOpen = Boolean(anchorEl);
 
   if (isLoading || !favoriteProjects) return <LoadingIndicator />;
@@ -56,6 +58,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsHeadId } = user;
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
+
+  const hideMaterialModal = () => {
+    setShowCreateMaterial(false);
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -129,6 +135,17 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
+  const CreateMaterialButton = () => {
+    return (
+      <MenuItem onClick={() => setShowCreateMaterial(true)}>
+        <ListItemIcon>
+          <SyncAltIcon fontSize="small" />
+        </ListItemIcon>
+        Create Material
+      </MenuItem>
+    );
+  };
+
   const projectActionsDropdown = (
     <Box ml={2}>
       <NERButton
@@ -156,6 +173,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <CreateChangeRequestButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
         <DeleteButton />
+        <CreateMaterialButton />
       </Menu>
     </Box>
   );
@@ -205,6 +223,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
+      )}
+      {showCreateMaterial && (
+        <CreateMaterialModal open={showCreateMaterial} wbsElement={project} onHide={hideMaterialModal} />
       )}
     </PageLayout>
   );

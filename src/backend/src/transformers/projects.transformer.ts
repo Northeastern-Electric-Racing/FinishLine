@@ -18,6 +18,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
 import { linkTransformer } from './links.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
+import { materialTransformer } from './bom.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -53,6 +54,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     features: project.features.map(descBulletConverter),
     otherConstraints: project.otherConstraints.map(descBulletConverter),
     tasks: wbsElement.tasks.map(taskTransformer),
+    materials: wbsElement.materials.map(materialTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
@@ -92,7 +94,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         expectedActivities: workPackage.expectedActivities.map(descBulletConverter),
         deliverables: workPackage.deliverables.map(descBulletConverter),
         projectName: wbsElement.name,
-        stage: (workPackage.stage || undefined) as WorkPackageStage
+        stage: (workPackage.stage || undefined) as WorkPackageStage,
+        materials: workPackage.wbsElement?.materials.map(materialTransformer)
       };
     })
   };
