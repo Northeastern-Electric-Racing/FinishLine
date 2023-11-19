@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: 18.17.1
           cache: 'yarn'
+      - name: Set env variables
+        run: touch .env && echo FINANCE_TEAM_ID=0 >> .env
       - name: Install modules
         run: yarn install && yarn prisma:generate
       - name: Run tests
