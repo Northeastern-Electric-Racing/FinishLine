@@ -9,18 +9,19 @@ import { projectWbsPipe } from '../../utils/pipes';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
+  const crId = query.get('crId');
   const wbsNum = query.get('wbs');
   const history = useHistory();
 
   if (!wbsNum) throw new HttpException(400, 'WBS number not included in request.');
-
-  console.log(true);
+  if (!crId) throw new HttpException(400, 'CR ID not included in request.');
 
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
       operation={useCreateSingleWorkPackage}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
+      crId={crId}
     />
   );
 };

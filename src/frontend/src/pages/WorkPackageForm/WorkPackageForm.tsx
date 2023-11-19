@@ -2,7 +2,7 @@ import { UseMutationResult } from 'react-query';
 import { WbsNumber, WorkPackage, isGuest, isProject, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
-import { useAllWorkPackages, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -12,10 +12,10 @@ interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   operation: (wbsNum: WbsNumber) => UseMutationResult;
   exitActiveMode: () => void;
+  crId?: string;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, exitActiveMode }) => {
-  console.log(true);
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, exitActiveMode, crId }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -31,7 +31,12 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
   if (projectIsError) return <ErrorPage message={projectError.message} />;
   if (wpIsError) return <ErrorPage message={wpError.message} />;
 
-  const workPackage = workPackages.find((wp) => wp.wbsNum === wbsNum);
+  const workPackage = workPackages.find(
+    (wp) =>
+      wp.wbsNum.carNumber === wbsNum.carNumber &&
+      wp.wbsNum.projectNumber === wbsNum.projectNumber &&
+      wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber
+  );
 
   const defaultValues: WorkPackageFormViewPayload | undefined = isProject(wbsNum)
     ? undefined
@@ -63,6 +68,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
+      crId={crId}
     />
   );
 };
