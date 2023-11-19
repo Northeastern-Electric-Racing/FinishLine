@@ -756,16 +756,14 @@ describe('Projects', () => {
     });
 
     test('assignment fails because the wbsElements do not match', async () => {
-      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue({
-        ...prismaMaterial1,
-        wbsElementId: 1,
-        wbsElement: prismaWbsElement1
-      });
-      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({
+      const material = { ...prismaMaterial1, wbsElementId: 1, wbsElement: prismaWbsElement1 };
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(material);
+      const assembly = {
         ...prismaAssembly1,
         wbsElementId: 2,
         wbsElement: { ...prismaWbsElement1, wbsElementId: 2, projectNumber: 1 }
-      });
+      };
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(assembly);
       await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'aid')).rejects.toThrow(
         new HttpException(400, `The WBS element of the material (1.2.0) and assembly (1.1.0) do not match`)
       );
