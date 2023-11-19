@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { LinkCreateArgs, Project, User } from 'shared';
+import { LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -15,14 +15,17 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import LinksEditView from '../../../components/Link/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
-import ProjectEditDetails from './ProjectEditDetails';
+import ProjectFormDetails from './ProjectFormDetails';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 export interface ProjectFormInput {
   name: string;
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: number | undefined;
+  crId: number;
   goals: {
     bulletId: number;
     detail: string;
@@ -50,17 +53,15 @@ const schema = yup.object().shape({
     })
   ),
   summary: yup.string().required('Summary is required!'),
-  crId: yup.number().min(1).required('crId must be a non-zero number!'),
-  carNumber: yup.number().min(0).required('A car number is required!')
+  crId: yup.number().min(1).required('crId must be a non-zero number!')
+  //carNumber: yup.number().min(0).required('A car number is required!')
 });
 
 interface ProjectFormContainerProps {
   requiredLinkTypeNames: string[];
   exitEditMode: () => void;
   project?: Project;
-  //TODO make this not any?
-  onSubmit: (data: any) => void;
-  users: User[];
+  onSubmit: (data: ProjectFormInput) => void;
   defaultValues: ProjectFormInput;
   setProjectManagerId: (id?: string) => void;
   setProjectLeadId: (id?: string) => void;
@@ -74,7 +75,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   requiredLinkTypeNames,
   project,
   onSubmit,
-  users,
   defaultValues,
   setProjectManagerId,
   setProjectLeadId,
@@ -82,6 +82,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   projectLeadId,
   projectManagerId
 }) => {
+  const allUsers = useAllUsers();
+
   const {
     register,
     handleSubmit,
@@ -113,6 +115,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   } = useFieldArray({ control, name: 'constraints' });
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
+  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
+  if (allUsers.isError) {
+    return <ErrorPage message={allUsers.error?.message} />;
+  }
+
+  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+
   return (
     <form
       id="project-edit-form"
@@ -139,7 +148,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
-        <ProjectEditDetails
+        <ProjectFormDetails
           users={users}
           control={control}
           errors={errors}

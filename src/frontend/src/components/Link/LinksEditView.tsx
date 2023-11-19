@@ -5,7 +5,7 @@ import { Button, IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getRequiredLinkTypeNames } from '../../utils/link.utils';
-import { ProjectFormInput } from '../../pages/ProjectDetailPage/ProjectEdit/ProjectFormContainer';
+import { ProjectFormInput } from '../../pages/ProjectDetailPage/ProjectForm/ProjectForm';
 import { Box } from '@mui/system';
 
 const LinksEditView: React.FC<{

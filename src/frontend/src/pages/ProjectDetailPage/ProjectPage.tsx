@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { WbsNumber } from 'shared';
 import { useAllLinkTypes, useSingleProject } from '../../hooks/projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
-import ProjectEditContainer from './ProjectEdit/ProjectEditContainer';
+import ProjectEditContainer from './ProjectForm/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useQuery } from '../../hooks/utils.hooks';

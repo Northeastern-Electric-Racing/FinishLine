@@ -5,16 +5,13 @@
 
 import { Project } from 'shared';
 import { useEditSingleProject } from '../../../hooks/projects.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
-import ProjectFormContainer from './ProjectFormContainer';
-import { ProjectFormInput } from './ProjectFormContainer';
+import ProjectFormContainer from './ProjectForm';
+import { ProjectFormInput } from './ProjectForm';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -24,7 +21,6 @@ interface ProjectEditContainerProps {
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode, requiredLinkTypeNames }) => {
   const query = useQuery();
-  const allUsers = useAllUsers();
   const toast = useToast();
   const { name, budget, summary } = project;
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
@@ -58,11 +54,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       });
     });
 
-  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
-  }
-
   const defaultValues = {
     name,
     budget,
@@ -77,10 +68,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     projectManagerId
   };
 
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links } = data;
     const rules = data.rules.map((rule) => rule.rule);
+    const changeRequestId = data.crId;
 
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -93,7 +84,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         links,
         projectId: project.id,
-        crId: crId,
+        crId: changeRequestId,
         rules,
         goals,
         features,
@@ -117,7 +108,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         requiredLinkTypeNames={requiredLinkTypeNames}
         project={project}
         onSubmit={onSubmit}
-        users={users}
         setProjectManagerId={setProjectManagerId}
         setProjectLeadId={setProjectLeadId}
         defaultValues={defaultValues}

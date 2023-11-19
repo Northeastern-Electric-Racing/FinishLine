@@ -3,7 +3,7 @@ import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { ProjectFormInput } from './ProjectFormContainer';
+import { ProjectFormInput } from './ProjectForm';
 import { Control, FieldErrorsImpl } from 'react-hook-form';
 import { AttachMoney } from '@mui/icons-material';
 import TeamDropdown from '../../../components/TeamsDropdown';
@@ -27,7 +27,7 @@ const userToAutocompleteOption = (user?: User): { label: string; id: string } =>
   return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
 };
 
-const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
+const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   users,
   control,
   errors,
@@ -59,17 +59,19 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
             <ChangeRequestDropdown control={control} name="crId" />
           </FormControl>
         </Grid>
-        <Grid item lg={2.4} md={6} xs={12} sx={{ display: createProject ? 'flex' : 'none' }}>
-          <FormControl fullWidth>
-            <FormLabel>Car Number</FormLabel>
-            <ReactHookTextField
-              name="car-number"
-              control={control}
-              placeholder="Enter a car number..."
-              errorMessage={errors.name}
-            />
-          </FormControl>
-        </Grid>
+        {createProject && (
+          <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
+            <FormControl fullWidth>
+              <FormLabel>Car Number</FormLabel>
+              <ReactHookTextField
+                name="car-number"
+                control={control}
+                placeholder="Enter a car number..."
+                errorMessage={errors.name}
+              />
+            </FormControl>
+          </Grid>
+        )}
         <Grid item lg={2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <TeamDropdown control={control} name="teamId" />
@@ -130,4 +132,4 @@ const ProjectEditDetails: React.FC<ProjectEditDetailsProps> = ({
   );
 };
 
-export default ProjectEditDetails;
+export default ProjectFormDetails;

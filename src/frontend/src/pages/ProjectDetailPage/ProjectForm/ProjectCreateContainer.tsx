@@ -3,15 +3,12 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useCreateSingleProject } from '../../../hooks/projects.hooks';
-import { useAllUsers } from '../../../hooks/users.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import { mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
-import ProjectFormContainer from './ProjectFormContainer';
-import { ProjectFormInput } from './ProjectFormContainer';
+import ProjectFormContainer from './ProjectForm';
+import { ProjectFormInput } from './ProjectForm';
 
 interface ProjectCreateContainerProps {
   requiredLinkTypeNames: string[];
@@ -20,7 +17,6 @@ interface ProjectCreateContainerProps {
 
 const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEditMode, requiredLinkTypeNames }) => {
   //const query = useQuery();
-  const allUsers = useAllUsers();
   const toast = useToast();
   const name = String();
   const budget = 0;
@@ -63,12 +59,6 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
       });
     });
 
-  if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
-  if (allUsers.isError) {
-    return <ErrorPage message={allUsers.error?.message} />;
-  }
-
-  const users = allUsers.data.filter((u) => u.role !== 'GUEST');
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links } = data;
     const rules = data.rules.map((rule) => rule.rule);
@@ -107,7 +97,6 @@ const ProjectCreateContainer: React.FC<ProjectCreateContainerProps> = ({ exitEdi
         exitEditMode={exitEditMode}
         requiredLinkTypeNames={requiredLinkTypeNames}
         onSubmit={onSubmit}
-        users={users}
         defaultValues={defaultValues}
         setProjectLeadId={setProjectLeadId}
         setProjectManagerId={setprojectManagerId}
