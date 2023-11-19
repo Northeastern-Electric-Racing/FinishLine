@@ -29,10 +29,12 @@ import {
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
+import { materialTypeTransformer } from '../transformers/material-type.transformer';
 
 export default class ProjectsService {
   /**
@@ -760,7 +762,7 @@ export default class ProjectsService {
     return assembly;
   }
 
-  /*
+  /**
    * Creates a new Manufacturer
    * @param submitter the user who's creating the manufacturer
    * @param name the name of the manufacturer
@@ -787,6 +789,7 @@ export default class ProjectsService {
 
   /**
    * Get all the manufacturers in the database.
+   * @param submitter the user who's getting all manufacturers
    * @returns all the manufacturers
    */
   static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
@@ -799,6 +802,23 @@ export default class ProjectsService {
         ...manufacturerQueryArgs
       })
     ).map(manufacturerTransformer);
+  }
+
+  /**
+   * Get all the material types in the database.
+   * @param submitter the user who's getting all material types
+   * @returns all the material types
+   */
+  static async getAllMaterialTypes(submitter: User): Promise<Material_Type[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Get Material Types');
+    }
+
+    return (
+      await prisma.material_Type.findMany({
+        ...materialTypeQueryArgs
+      })
+    ).map(materialTypeTransformer);
   }
 
   /**

@@ -57,6 +57,7 @@ projectRouter.post(
   ProjectsController.createManufacturer
 );
 projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
+projectRouter.get('/bom/material-type', ProjectsController.getAllMaterialTypes);
 projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
