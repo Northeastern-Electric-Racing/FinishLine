@@ -19,6 +19,7 @@ import { useState } from 'react';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { taskUserToAutocompleteOption } from '../../utils/task.utils';
+import { getUserFullName } from '../../../../backend/src/utils/users.utils';
 
 interface ChangeRequestActionMenuProps {
   isUserAllowedToReview: boolean;
@@ -54,7 +55,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
       try {
         await requestCRReview({ userIds: reviewerIds });
         reviewerIds.forEach(function (value) {
-          toast.success('Request Review successful for reviewers ' + value);
+          toast.success('Request Review successful for reviewers ' + getUserFullName(reviewerIds[value]) + value);
         });
       } catch (e) {
         if (e instanceof Error) {
