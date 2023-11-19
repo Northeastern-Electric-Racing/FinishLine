@@ -62,6 +62,8 @@ CREATE TABLE "Manufacturer" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "creatorId" INTEGER NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
+    "deletedByUserId" INTEGER,
 
     CONSTRAINT "Manufacturer_pkey" PRIMARY KEY ("name")
 );
@@ -98,3 +100,6 @@ ALTER TABLE "Material" ADD CONSTRAINT "Material_manufacturerName_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "Material" ADD CONSTRAINT "Material_unitName_fkey" FOREIGN KEY ("unitName") REFERENCES "Unit"("name") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Manufacturer" ADD CONSTRAINT "Manufacturer_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
