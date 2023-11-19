@@ -685,6 +685,35 @@ describe('Projects', () => {
     });
   });
 
+  describe('Delete Assembly', () => {
+    test('Deleteing assembly fails because user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteAssembly('New Assembly', theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Only an Admin or a head can delete an Assembly')
+      );
+    });
+
+    test('Deleting assembly fails if assembly does not exist', async () => {
+      await expect(ProjectsService.deleteAssembly('New Assembly', batman)).rejects.toThrow(
+        new NotFoundException('Assembly', 'New Assembly')
+      );
+    });
+
+    test('Deleting assembly fails if assemly has already been deleted', async () => {
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, dateDeleted: new Date() });
+      await expect(ProjectsService.deleteAssembly('New Assembly', batman)).rejects.toThrow(
+        new DeletedException('Assembly', 'New Assembly')
+      );
+    });
+
+    test('Deleting assembly works', async () => {
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.assembly, 'update').mockResolvedValue({ ...prismaAssembly1, dateDeleted: new Date() });
+      const deletedAssembly = await ProjectsService.deleteAssembly('New Assembly', batman);
+      expect(deletedAssembly.name).toBe('New Assembly');
+      expect(prisma.assembly.update).toBeCalledTimes(1);
+    });
+  });
+
   describe('Deleting material type', () => {
     test('Delete Material Type does not work if user is not an admin or head', async () => {
       await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
