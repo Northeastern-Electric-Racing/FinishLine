@@ -162,7 +162,7 @@ export const approveReimbursementRequest = (id: string) => {
  * Deny Reimbursement Request
  *
  * @param id of the reimbursement request being denied by finance
- * @returns the reimbursement request with the given id
+ * @returns the denied reimbursement status
  */
 export const denyReimbursementRequest = (id: string) => {
   return axios.post(apiUrls.financeDenyReimbursementRequest(id));

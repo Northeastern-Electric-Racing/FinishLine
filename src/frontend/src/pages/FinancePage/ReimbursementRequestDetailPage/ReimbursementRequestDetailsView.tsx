@@ -80,6 +80,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const handleDeny = () => {
     try {
       denyReimbursementRequest();
+      setShowDenyModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);

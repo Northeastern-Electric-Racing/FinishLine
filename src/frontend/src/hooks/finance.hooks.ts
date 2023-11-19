@@ -265,7 +265,7 @@ export const useApproveReimbursementRequest = (id: string) => {
  * Custom react hook to deny a reimbursement request for the finance team
  *
  * @param id id of the reimbursement request to deny
- * @returns the denied reimbursement request
+ * @returns the denied reimbursement request status
  */
 export const useDenyReimbursementRequest = (id: string) => {
   const queryClient = useQueryClient();
