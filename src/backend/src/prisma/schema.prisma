@@ -114,7 +114,6 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
-  deletedManufacturers      Manufacturer[]          @relation(name: "deletedManufacturer")
 }
 
 model Team {
@@ -526,11 +525,9 @@ model Material_Type {
 }
 
 model Manufacturer {
-  name            String     @id
-  dateCreated     DateTime
-  creatorId       Int
-  dateDeleted     DateTime?
-  deletedByUserId Int?
-  deletedBy       User?      @relation(name: "deletedManufacturer", fields: [deletedByUserId], references: [userId])
-  materials       Material[]
+  name        String     @id
+  dateCreated DateTime
+  creatorId   Int
+  dateDeleted DateTime?
+  materials   Material[]
 }

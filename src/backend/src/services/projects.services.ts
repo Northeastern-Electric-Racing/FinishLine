@@ -823,14 +823,12 @@ export default class ProjectsService {
     if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
 
     const dateDeleted: Date = new Date();
-    const deletedByUserId = user.userId;
     const deletedManufacturer = await prisma.manufacturer.update({
       where: {
         name: manufacturer.name
       },
       data: {
-        dateDeleted,
-        deletedByUserId
+        dateDeleted
       }
     });
 
