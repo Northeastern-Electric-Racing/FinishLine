@@ -880,6 +880,79 @@ export default class ProjectsService {
   }
 
   /**
+   * Assign a material on a project to a different assembly
+   * @param submitter the submitter
+   * @param materialId the material that will be moved
+   * @param assemblyId the assembly to change the material to, or undefined to unassign the material
+   * @throws if the submitter does not have the relevant positions
+   * @returns the updated material
+   */
+  static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId?: string) {
+    const material = await prisma.material.findUnique({
+      where: { materialId },
+      include: { wbsElement: true, assembly: true }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElementId: material.wbsElementId
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    // Permission: leadership and up, anyone on project team
+    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
+      throw new AccessDeniedException(
+        `Only leadership or above, or someone on the project's team can assign materials to assemblies`
+      );
+
+    //assigning the material to a new assembly
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findUnique({
+        where: { assemblyId },
+        include: { wbsElement: true }
+      });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+
+      // Confirm that the assembly's wbsElement is the same as the material's wbsElement
+      if (material.wbsElementId !== assembly.wbsElementId)
+        throw new HttpException(
+          400,
+          `The WBS element of the material (${wbsPipe(material.wbsElement)}) and assembly (${wbsPipe(
+            assembly.wbsElement
+          )}) do not match`
+        );
+      const updatedMaterial = await prisma.material.update({
+        where: { materialId },
+        data: { assemblyId }
+      });
+
+      return updatedMaterial;
+    }
+    //unassigning material from an existing assembly
+    if (material.assemblyId) {
+      await prisma.assembly.update({
+        where: { assemblyId: material.assemblyId },
+        data: { materials: { disconnect: { materialId } } },
+        include: { materials: true }
+      });
+
+      const updatedMaterial = await prisma.material.findUnique({
+        where: { materialId },
+        include: { wbsElement: true, assembly: true }
+      });
+
+      return updatedMaterial;
+    }
+    return material;
+  }
+
+  /**
    * Deletes an assembly type
    * @param assemblyId the name of the assembly
    * @param submitter the user who is deleting the assembly type

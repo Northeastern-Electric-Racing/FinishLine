@@ -62,8 +62,14 @@ projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), Pr
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('pdmFileName')).optional(),
+  nonEmptyString(body('pdmFileName').optional()),
   ProjectsController.createAssembly
+);
+projectRouter.post(
+  '/bom/material/:materialId/assign-assembly',
+  nonEmptyString(body('assemblyId').optional()),
+  validateInputs,
+  ProjectsController.assignMaterialAssembly
 );
 projectRouter.post(
   '/material/:wbsNum/create',
