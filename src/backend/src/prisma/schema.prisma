@@ -507,7 +507,7 @@ model Material {
   materialId             String          @id @default(uuid())
   assembly               Assembly?       @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
-  name                   String          @unique
+  name                   String
   wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           Int
   dateDeleted            DateTime?
@@ -535,6 +535,7 @@ model Material {
 model Material_Type {
   name        String     @id
   dateCreated DateTime
+  dateDeleted DateTime?
   creatorId   Int
   materials   Material[]
 }
@@ -543,5 +544,6 @@ model Manufacturer {
   name        String     @id
   dateCreated DateTime
   creatorId   Int
+  dateDeleted DateTime?
   materials   Material[]
 }

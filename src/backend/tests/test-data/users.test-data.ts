@@ -1,6 +1,5 @@
 import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings, Team } from '@prisma/client';
 import { User as SharedUser } from 'shared';
-import { prismaTeam1 } from './teams.test-data';
 
 export const batman: PrismaUser = {
   userId: 1,
@@ -114,7 +113,9 @@ export const alfred: PrismaUser & { teamsAsMember: Team[]; teamsAsLead: Team[] }
   emailId: 'butler',
   role: PrismaRole.APP_ADMIN,
   googleAuthId: 'u',
-  teamsAsMember: [prismaTeam1],
+  // Do NOT put a team here! This will create a circular dependency that breaks tests.
+  // Do this instead: { ...alfred, teamsAsMember: [<your team>]}
+  teamsAsMember: [],
   teamsAsLead: []
 };
 

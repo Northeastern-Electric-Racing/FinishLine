@@ -82,8 +82,6 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.post(
   '/vendors/create',
   nonEmptyString(body('name')),
-  body('allowedRefundSources').isArray(),
-  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createVendor
 );
