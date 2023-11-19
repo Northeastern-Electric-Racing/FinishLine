@@ -74,7 +74,7 @@ projectRouter.post(
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
   intMinZero(body('quantity')),
-  nonEmptyString(body('unitName')),
+  nonEmptyString(body('unitName')).optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
@@ -87,11 +87,12 @@ projectRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
+  nonEmptyString(body('materialTypeName')),
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
   intMinZero(body('quantity')),
-  nonEmptyString(body('unitName').optional()),
+  body('unitName').optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
