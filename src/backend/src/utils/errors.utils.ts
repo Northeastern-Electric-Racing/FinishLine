@@ -115,4 +115,5 @@ type ExceptionObjectNames =
   | 'Assembly'
   | 'Material Type'
   | 'Manufacturer'
-  | 'Unit';
+  | 'Unit'
+  | 'Material';

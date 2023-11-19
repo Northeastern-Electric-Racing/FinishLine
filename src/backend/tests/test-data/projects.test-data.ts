@@ -166,3 +166,25 @@ export const toolMaterial: PrismaMaterialType = {
   dateCreated: new Date(),
   creatorId: batman.userId
 };
+
+export const prismaMaterial2: Material = {
+  materialId: 'id',
+  assemblyId: 'assemblyId',
+  name: 'name2',
+  wbsElementId: 1,
+  dateDeleted: null,
+  userDeletedId: null,
+  dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1,
+  pdmFileName: 'file2',
+  status: 'ORDERED',
+  notes: 'random notes',
+  materialTypeName: 'type',
+  manufacturerName: 'manufacturer',
+  manufacturerPartNumber: 'partNum',
+  price: 1000,
+  subtotal: 500,
+  quantity: 8,
+  unitName: 'FT',
+  linkUrl: 'https://www.google.com'
+};
