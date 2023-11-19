@@ -1,4 +1,4 @@
-import { Task_Priority, Task_Status } from '@prisma/client';
+import { Task, Task_Priority, Task_Status } from '@prisma/client';
 import { WbsNumber } from 'shared';
 import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
 import prisma from '../src/prisma/prisma';
@@ -247,7 +247,7 @@ describe('Tasks', () => {
       vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({
         ...taskSaveTheDayPrisma,
         wbsElement: { project: { teams: [justiceLeague] } }
-      } as any);
+      } as Task);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);

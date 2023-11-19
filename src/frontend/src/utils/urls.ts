@@ -53,6 +53,7 @@ const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
+const workPackagesMany = () => `${workPackages()}/get-many`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -142,6 +143,7 @@ export const apiUrls = {
   workPackagesDelete,
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
+  workPackagesMany,
 
   changeRequests,
   changeRequestsById,
