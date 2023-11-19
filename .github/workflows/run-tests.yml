@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set env variables
-        run: touch .env && echo FINANCE_TEAM_ID=0 >> .env
+        run: touch .env && echo "FINANCE_TEAM_ID=0" >> .env
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
