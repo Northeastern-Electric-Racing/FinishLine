@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import { getHighestProjectNumber } from '../src/utils/projects.utils';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
-import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -11,7 +11,8 @@ import {
   prismaManufacturer2,
   prismaMaterial,
   prismaMaterialType,
-  prismaUnit
+  prismaUnit,
+  prismaMaterial2
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -443,14 +444,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Project', '1.1.1'));
     });
@@ -467,14 +468,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Assembly', 'assemblyName'));
     });
@@ -492,14 +493,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Material Type', 'type'));
     });
@@ -518,14 +519,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Manufacturer', 'manufacturer'));
     });
@@ -545,14 +546,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new NotFoundException('Unit', 'FT'));
     });
@@ -574,14 +575,14 @@ describe('Projects', () => {
           'manufacturer',
           'partNum',
           6,
-          'FT',
           800,
           400,
           'https://www.google.com',
           'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
           'assemblyName',
-          'file'
+          'file',
+          'FT'
         )
       ).rejects.toThrow(new AccessDeniedException('create materials'));
     });
@@ -602,14 +603,14 @@ describe('Projects', () => {
         prismaManufacturer2.name,
         'partNum',
         6,
-        'FT',
         800,
         400,
         'https://www.google.com',
         'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
         'assemblyName',
-        'file'
+        'file',
+        'FT'
       );
 
       expect(res).toBeDefined();
@@ -710,6 +711,190 @@ describe('Projects', () => {
       const deletedAssembly = await ProjectsService.deleteAssembly('New Assembly', batman);
       expect(deletedAssembly.name).toBe('New Assembly');
       expect(prisma.assembly.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Deleting material type', () => {
+    test('Delete Material Type does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Only an admin or head can delete a material type')
+      );
+    });
+
+    test('Delete Material Type does not work if material type does not exist', async () => {
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new NotFoundException('Material Type', 'NERSoftwareTools')
+      );
+    });
+
+    test('Deleted Material Tye does not work if the material type is already deleted', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue({ ...toolMaterial, dateDeleted: new Date() });
+      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
+        new DeletedException('Material Type', 'NERSoftwareTools')
+      );
+    });
+
+    test('Delete Material Type works', async () => {
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.material_Type, 'update').mockResolvedValue({ ...toolMaterial, dateDeleted: new Date() });
+      const deletedMaterialType = await ProjectsService.deleteMaterialType('NERSoftwareTools', superman);
+      expect(deletedMaterialType.name).toBe('NERSoftwareTools');
+      expect(prisma.material_Type.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('updateMaterial', () => {
+    test('Update material fails if the given material does not exists', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        ProjectsService.editMaterial(
+          batman,
+          prismaMaterial2.materialId,
+          prismaMaterial2.name,
+          prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
+          prismaMaterial2.manufacturerName,
+          prismaMaterial2.manufacturerPartNumber,
+          prismaMaterial2.quantity,
+          prismaMaterial2.price,
+          prismaMaterial2.subtotal,
+          prismaMaterial2.linkUrl,
+          prismaMaterial2.notes,
+          prismaMaterial2.unitName || undefined,
+          prismaMaterial2.assemblyId || undefined,
+          prismaMaterial2.pdmFileName || undefined
+        )
+      ).rejects.toThrow(new NotFoundException('Material', prismaMaterial2.materialId));
+    });
+
+    test('Update material fails if the given material deleted', async () => {
+      const deletedMaterial = { ...prismaMaterial, dateDeleted: new Date() };
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(deletedMaterial);
+
+      await expect(
+        ProjectsService.editMaterial(
+          batman,
+          prismaMaterial2.materialId,
+          prismaMaterial2.name,
+          prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
+          prismaMaterial2.manufacturerName,
+          prismaMaterial2.manufacturerPartNumber,
+          prismaMaterial2.quantity,
+          prismaMaterial2.price,
+          prismaMaterial2.subtotal,
+          prismaMaterial2.linkUrl,
+          prismaMaterial2.notes,
+          prismaMaterial2.unitName || undefined,
+          prismaMaterial2.assemblyId || undefined,
+          prismaMaterial2.pdmFileName || undefined
+        )
+      ).rejects.toThrow(new DeletedException('Material', prismaMaterial2.materialId));
+    });
+
+    test('Update material fails if the project of the material does not exists', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(null);
+
+      await expect(
+        ProjectsService.editMaterial(
+          batman,
+          prismaMaterial2.materialId,
+          prismaMaterial2.name,
+          prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
+          prismaMaterial2.manufacturerName,
+          prismaMaterial2.manufacturerPartNumber,
+          prismaMaterial2.quantity,
+          prismaMaterial2.price,
+          prismaMaterial2.subtotal,
+          prismaMaterial2.linkUrl,
+          prismaMaterial2.notes,
+          prismaMaterial2.unitName || undefined,
+          prismaMaterial2.assemblyId || undefined,
+          prismaMaterial2.pdmFileName || undefined
+        )
+      ).rejects.toThrow(new NotFoundException('Project', prismaMaterial2.wbsElementId));
+    });
+
+    test('Update material fails if the project of the material deleted', async () => {
+      const deletedWbsElement = { ...prismaProject1, wbsElement: { dateDeleted: new Date() } };
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(deletedWbsElement);
+
+      await expect(
+        ProjectsService.editMaterial(
+          batman,
+          prismaMaterial2.materialId,
+          prismaMaterial2.name,
+          prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
+          prismaMaterial2.manufacturerName,
+          prismaMaterial2.manufacturerPartNumber,
+          prismaMaterial2.quantity,
+          prismaMaterial2.price,
+          prismaMaterial2.subtotal,
+          prismaMaterial2.linkUrl,
+          prismaMaterial2.notes,
+          prismaMaterial2.unitName || undefined,
+          prismaMaterial2.assemblyId || undefined,
+          prismaMaterial2.pdmFileName || undefined
+        )
+      ).rejects.toThrow(new DeletedException('Project', prismaProject1.projectId));
+    });
+
+    test('Update material fails if the submitter is not a leader or part of project team', async () => {
+      const customProject = { ...prismaProject1, teams: [primsaTeam2] };
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(customProject);
+
+      await expect(
+        ProjectsService.editMaterial(
+          theVisitor,
+          prismaMaterial2.materialId,
+          prismaMaterial2.name,
+          prismaMaterial2.status,
+          prismaMaterial2.materialTypeName,
+          prismaMaterial2.manufacturerName,
+          prismaMaterial2.manufacturerPartNumber,
+          prismaMaterial2.quantity,
+          prismaMaterial2.price,
+          prismaMaterial2.subtotal,
+          prismaMaterial2.linkUrl,
+          prismaMaterial2.notes,
+          prismaMaterial2.unitName || undefined,
+          prismaMaterial2.assemblyId || undefined,
+          prismaMaterial2.pdmFileName || undefined
+        )
+      ).rejects.toThrow(new AccessDeniedException('update material'));
+    });
+
+    test('Update material successfully works', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(prismaMaterial2);
+
+      const updatedMaterial = await ProjectsService.editMaterial(
+        batman,
+        prismaMaterial2.materialId,
+        prismaMaterial2.name,
+        prismaMaterial2.status,
+        prismaMaterial2.materialTypeName,
+        prismaMaterial2.manufacturerName,
+        prismaMaterial2.manufacturerPartNumber,
+        prismaMaterial2.quantity,
+        prismaMaterial2.price,
+        prismaMaterial2.subtotal,
+        prismaMaterial2.linkUrl,
+        prismaMaterial2.notes,
+        prismaMaterial2.unitName || undefined,
+        prismaMaterial2.assemblyId || undefined,
+        prismaMaterial2.pdmFileName || undefined
+      );
+
+      expect(updatedMaterial.name).toBe('name2');
+      expect(prisma.material.update).toBeCalledTimes(1);
     });
   });
 });

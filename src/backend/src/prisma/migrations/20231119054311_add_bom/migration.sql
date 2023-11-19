@@ -51,6 +51,7 @@ CREATE TABLE "Material" (
 CREATE TABLE "Material_Type" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
     "creatorId" INTEGER NOT NULL,
 
     CONSTRAINT "Material_Type_pkey" PRIMARY KEY ("name")
@@ -67,9 +68,6 @@ CREATE TABLE "Manufacturer" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Assembly_name_key" ON "Assembly"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Material_name_key" ON "Material"("name");
 
 -- AddForeignKey
 ALTER TABLE "Assembly" ADD CONSTRAINT "Assembly_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
