@@ -108,14 +108,15 @@ const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/crea
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 
 /**************** Bill of Material Endpoints **************************/
-const bomEndpoints = () => `${API_URL}/bom`;
-const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials`;
+const bomEndpoints = () => `${API_URL}/projects/bom`;
+const materialEndpoints = () => `${bomEndpoints()}/material`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
 const bomGetAllUnits = () => `${bomEndpoints()}/units`;
-const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-types`;
-const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturers`;
+const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
+const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
 const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/assemblies`;
-const bomCreateMaterial = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/materials/create`;
-const bomEditMaterial = (materialId: string) => `${bomEndpoints()}/materials/${materialId}/edit`;
+const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;

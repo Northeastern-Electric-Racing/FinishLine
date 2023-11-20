@@ -18,7 +18,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
 import { linkTransformer } from './links.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
-import { materialTransformer } from './bom.transformer';
+import { assemblyTransformer, materialTransformer } from './material.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -55,6 +55,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     otherConstraints: project.otherConstraints.map(descBulletConverter),
     tasks: wbsElement.tasks.map(taskTransformer),
     materials: wbsElement.materials.map(materialTransformer),
+    assemblies: wbsElement.assemblies.map(assemblyTransformer),
     workPackages: project.workPackages.map((workPackage) => {
       const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
       const progress = calculateWorkPackageProgress(workPackage.deliverables, workPackage.expectedActivities);
@@ -95,7 +96,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         deliverables: workPackage.deliverables.map(descBulletConverter),
         projectName: wbsElement.name,
         stage: (workPackage.stage || undefined) as WorkPackageStage,
-        materials: workPackage.wbsElement?.materials.map(materialTransformer)
+        materials: workPackage.wbsElement?.materials.map(materialTransformer),
+        assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer)
       };
     })
   };

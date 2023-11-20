@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { WbsNumber } from 'shared';
 import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
+import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { manufacturerTransformer, materialTransformer, materialTypeTransformer } from './transformers/bom.transformers';
+import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
 
 /**
  * Requests all the material types from the backend.
@@ -32,28 +32,7 @@ export const getAllManufacturers = async () => {
  */
 export const getAllUnits = async () => {
   const { data } = await axios.get(apiUrls.bomGetAllUnits());
-  return data;
-};
-
-/**
- * Requests all materials for the given wbsNum.
- * @param wbsNum The wbsNum to get materials for
- * @returns All the materials within the wbsnum
- */
-export const getMaterialsByWbsNum = async (wbsNum: WbsNumber) => {
-  const { data } = await axios.get(apiUrls.bomGetMaterialsByWbsNum(wbsNum), {
-    transformResponse: (data) => JSON.parse(data).map(materialTransformer)
-  });
-  return data;
-};
-
-/**
- * Requests all assemblies for the given wbsNum.
- * @param wbsNum The wbsNum to get assemblies for
- * @returns All the assemblies within the wbsnum
- */
-export const getAssembliesByWbsNum = async (wbsNum: WbsNumber) => {
-  const { data } = await axios.get(apiUrls.bomGetAssembliesByWbsNum(wbsNum));
+  console.log(data);
   return data;
 };
 

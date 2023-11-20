@@ -10,6 +10,7 @@ import {
   Manufacturer,
   MaterialType,
   Project,
+  Unit,
   WbsNumber,
   wbsPipe
 } from 'shared';
@@ -48,6 +49,7 @@ import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
+import { materialPreviewTransformer } from '../transformers/material.transformer';
 
 export default class ProjectsService {
   /**
@@ -796,7 +798,7 @@ export default class ProjectsService {
     if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
 
     const newManufacturer = await prisma.manufacturer.create({
-      data: { name, dateCreated: new Date(), creatorId: submitter.userId }
+      data: { name, dateCreated: new Date(), userCreatedId: submitter.userId }
     });
 
     return newManufacturer;
@@ -894,7 +896,7 @@ export default class ProjectsService {
       data: {
         name,
         dateCreated: new Date(),
-        creatorId: submitter.userId
+        userCreatedId: submitter.userId
       }
     });
 
@@ -1141,5 +1143,23 @@ export default class ProjectsService {
     });
 
     return updatedMaterial;
+  }
+
+  /**
+   * Gets all the units in the database with all their materials
+   * @returns all the units in the database
+   */
+  static async getAllUnits(user: User): Promise<Unit[]> {
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('get units');
+
+    const units = await prisma.unit.findMany({
+      include: {
+        materials: true
+      }
+    });
+
+    return units.map((unit) => {
+      return { ...unit, materials: unit.materials.map(materialPreviewTransformer) };
+    });
   }
 }

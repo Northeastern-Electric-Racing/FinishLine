@@ -4,8 +4,9 @@
  */
 
 import { Prisma } from '@prisma/client';
-import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import { Manufacturer } from 'shared';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import { materialPreviewTransformer } from './material.transformer';
 
 export const manufacturerTransformer = (
   manufacturer: Prisma.ManufacturerGetPayload<typeof manufacturerQueryArgs>
@@ -13,7 +14,9 @@ export const manufacturerTransformer = (
   return {
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
-    creatorId: manufacturer.creatorId,
-    dateDeleted: manufacturer.dateDeleted ?? undefined
+    userCreatedId: manufacturer.userCreatedId,
+    userCreated: manufacturer.userCreated,
+    dateDeleted: manufacturer.dateDeleted ?? undefined,
+    materials: manufacturer.materials.map(materialPreviewTransformer)
   };
 };

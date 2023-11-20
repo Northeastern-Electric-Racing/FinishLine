@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from './tasks.query-args';
 import linkQueryArgs from './links.query-args';
-import { materialQueryArgs } from './bom.query-args';
+import { assemblyQueryArgs, materialQueryArgs } from './bom.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -14,6 +14,9 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
         materials: {
           ...materialQueryArgs
+        },
+        assemblies: {
+          ...assemblyQueryArgs
         }
       }
     },
@@ -36,6 +39,9 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
             changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
             materials: {
               ...materialQueryArgs
+            },
+            assemblies: {
+              ...assemblyQueryArgs
             }
           }
         },

@@ -310,4 +310,14 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async getAllUnits(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const units = await ProjectsService.getAllUnits(user);
+      res.status(200).json(units);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

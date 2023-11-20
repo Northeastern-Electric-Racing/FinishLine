@@ -9,7 +9,7 @@ export enum MaterialStatus {
 
 export interface Unit {
   name: string;
-  materials: MaterialPreview;
+  materials: MaterialPreview[];
 }
 
 export type UnitPreview = Omit<Unit, 'materials'>;
@@ -17,11 +17,12 @@ export type UnitPreview = Omit<Unit, 'materials'>;
 export interface MaterialType {
   name: string;
   dateCreated: Date;
-  creatorId: number;
-  creator: UserPreview;
+  userCreatedId: number;
+  userCreated: UserPreview;
+  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
-export type MaterialTypePreview = Omit<MaterialType, 'materials' | 'creator'>;
+export type MaterialTypePreview = Omit<MaterialType, 'materials' | 'userCreated'>;
 
 export interface Assembly {
   assemblyId: string;
@@ -36,21 +37,22 @@ export interface Assembly {
   materials: MaterialPreview[];
 }
 
-export type AssemblyPreview = Omit<Assembly, 'materials'>;
+export type AssemblyPreview = Omit<Assembly, 'materials' | 'userCreated' | 'userDeleted'>;
 
 export interface Manufacturer {
   name: string;
   dateCreated: Date;
-  creatorId: number;
-  creator: User;
+  userCreatedId: number;
+  userCreated: User;
+  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
 
-export type ManufacturerPreview = Omit<Manufacturer, 'materials' | 'creator'>;
+export type ManufacturerPreview = Omit<Manufacturer, 'materials' | 'userCreated'>;
 
 export interface Material {
   materialId: string;
-  assemblyId: string;
+  assemblyId?: string;
   assembly?: AssemblyPreview;
   name: string;
   wbsElementId: number;

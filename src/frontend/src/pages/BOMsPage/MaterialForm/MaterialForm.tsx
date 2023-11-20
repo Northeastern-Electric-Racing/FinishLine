@@ -3,12 +3,8 @@ import { useForm } from 'react-hook-form';
 import { MaterialStatus, WbsElement } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import {
-  useAssembliesByWbsNum,
-  useGetAllManufacturers,
-  useGetAllMaterialTypes,
-  useGetAllUnits
-} from '../../../hooks/bom.hooks';
+import { useGetAllManufacturers, useGetAllMaterialTypes, useGetAllUnits } from '../../../hooks/bom.hooks';
+import ErrorPage from '../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 
 const schema = yup.object().shape({
@@ -71,24 +67,40 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     resolver: yupResolver(schema)
   });
 
-  const { data: materialTypes, isLoading: isLoadingMaterialTypes } = useGetAllMaterialTypes();
+  const {
+    data: materialTypes,
+    isLoading: isLoadingMaterialTypes,
+    isError: materialTypesIsError,
+    error: materialTypesError
+  } = useGetAllMaterialTypes();
 
-  const { data: units, isLoading: isLoadingUnits } = useGetAllUnits();
+  const { data: units, isLoading: isLoadingUnits, isError: unitsIsError, error: unitsError } = useGetAllUnits();
 
-  const { data: manufactuers, isLoading: isLoadingManufactuers } = useGetAllManufacturers();
+  const {
+    data: manufactuers,
+    isLoading: isLoadingManufactuers,
+    isError: manufacturersIsError,
+    error: manufacturersError
+  } = useGetAllManufacturers();
 
-  const { data: assemblies, isLoading: isLoadingAssemblies } = useAssembliesByWbsNum(wbsElement.wbsNum);
+  const { assemblies } = wbsElement;
 
-  if (
-    isLoadingManufactuers ||
-    isLoadingMaterialTypes ||
-    isLoadingUnits ||
-    isLoadingAssemblies ||
-    !materialTypes ||
-    !units ||
-    !manufactuers ||
-    !assemblies
-  ) {
+  console.log(
+    isLoadingManufactuers,
+    isLoadingMaterialTypes,
+    isLoadingUnits,
+    materialTypes,
+    units,
+    manufactuers,
+    materialTypesIsError,
+    unitsIsError,
+    manufacturersIsError
+  );
+
+  if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
+  if (unitsIsError) return <ErrorPage message={unitsError?.message} />;
+  if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
+  if (isLoadingManufactuers || isLoadingMaterialTypes || isLoadingUnits || !materialTypes || !units || !manufactuers) {
     return <LoadingIndicator />;
   }
 

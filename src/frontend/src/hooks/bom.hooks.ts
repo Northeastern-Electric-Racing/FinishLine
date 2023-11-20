@@ -1,13 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
-import {
-  createMaterial,
-  editMaterial,
-  getAllManufacturers,
-  getAllMaterialTypes,
-  getAllUnits,
-  getAssembliesByWbsNum
-} from '../apis/bom.api';
+import { Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
+import { createMaterial, editMaterial, getAllManufacturers, getAllMaterialTypes, getAllUnits } from '../apis/bom.api';
 import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
 
 /**
@@ -16,7 +9,7 @@ import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
  */
 export const useGetAllMaterialTypes = () => {
   return useQuery<MaterialType[], Error>(['materials', 'materialTypes'], async () => {
-    const { data } = await getAllMaterialTypes();
+    const data = await getAllMaterialTypes();
     return data;
   });
 };
@@ -27,7 +20,7 @@ export const useGetAllMaterialTypes = () => {
  */
 export const useGetAllManufacturers = () => {
   return useQuery<Manufacturer[], Error>(['materials', 'manufacturers'], async () => {
-    const { data } = await getAllManufacturers();
+    const data = await getAllManufacturers();
     return data;
   });
 };
@@ -38,19 +31,7 @@ export const useGetAllManufacturers = () => {
  */
 export const useGetAllUnits = () => {
   return useQuery<Unit[], Error>(['materials', 'units'], async () => {
-    const { data } = await getAllUnits();
-    return data;
-  });
-};
-
-/**
- * Custom React hook to supply all assemblies for the given wbsNum.
- * @param wbsNum The wbsNum to get the assemblies for
- * @returns the assemblies within the wbs element
- */
-export const useAssembliesByWbsNum = (wbsNum: WbsNumber) => {
-  return useQuery<Assembly[], Error>(['materials', 'assemblies', wbsNum], async () => {
-    const { data } = await getAssembliesByWbsNum(wbsNum);
+    const data = await getAllUnits();
     return data;
   });
 };
@@ -65,7 +46,7 @@ export const useEditMaterial = (materialId: string) => {
   return useMutation<Material, Error, MaterialFormInput>(
     ['materials', 'edit'],
     async (editPayload: MaterialFormInput) => {
-      const { data } = await editMaterial(materialId, editPayload);
+      const data = await editMaterial(materialId, editPayload);
       return data;
     },
     {
@@ -86,7 +67,7 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
   return useMutation<Material, Error, MaterialFormInput>(
     ['materials', 'create'],
     async (createPayload: MaterialFormInput) => {
-      const { data } = await createMaterial(wbsNum, createPayload);
+      const data = await createMaterial(wbsNum, createPayload);
       return data;
     },
     {

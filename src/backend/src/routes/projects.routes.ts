@@ -73,7 +73,7 @@ projectRouter.post(
   ProjectsController.assignMaterialAssembly
 );
 projectRouter.post(
-  '/material/:wbsNum/create',
+  '/bom/material/:wbsNum/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('assemblyId').optional()),
   isMaterialStatus(body('status')),
@@ -112,5 +112,7 @@ projectRouter.post(
 projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
 
 projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssemblyType);
+
+projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 export default projectRouter;

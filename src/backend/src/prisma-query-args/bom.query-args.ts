@@ -1,7 +1,8 @@
 export const assemblyQueryArgs = {
   include: {
     userCreated: true,
-    userDeleted: true
+    userDeleted: true,
+    materials: true
   }
 };
 

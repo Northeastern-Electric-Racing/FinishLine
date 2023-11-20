@@ -7,7 +7,8 @@ import { Prisma } from '@prisma/client';
 
 const materialTypeQueryArgs = Prisma.validator<Prisma.Material_TypeArgs>()({
   include: {
-    materials: true
+    materials: true,
+    userCreated: true
   }
 });
 
