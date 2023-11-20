@@ -4,14 +4,15 @@
  */
 
 import { User, WorkPackageStage } from 'shared';
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import { WorkPackageFormViewPayload } from './WorkPackageFormView';
+import { Box } from '@mui/system';
+import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import PageBlock from '../../layouts/PageBlock';
 import { fullNamePipe } from '../../utils/pipes';
+import { WorkPackageFormViewPayload } from './WorkPackageFormView';
 
 interface Props {
   lead?: string;
@@ -45,7 +46,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
 
   const StageSelect = () => (
     <FormControl fullWidth>
-      <FormLabel>Stage Select</FormLabel>
+      <FormLabel>Work Package Stage</FormLabel>
       <Controller
         name="stage"
         control={control}
@@ -64,9 +65,12 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   );
 
   return (
-    <PageBlock title="Work Package Details">
-      <Grid container xs={12}>
-        <Grid item xs={12} md={5} sx={{ mt: 2, mr: 2 }}>
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
+        Project Details
+      </Typography>
+      <Grid container spacing={1} xs={12}>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
@@ -77,7 +81,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={3}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} changeHeight={56} />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <StageSelect />
+        </Grid>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -99,10 +109,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
-          <StageSelect />
-        </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
@@ -114,10 +121,10 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={5}>
           <FormLabel> Project Lead</FormLabel>
           <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
+            sx={{ width: '100%' }}
             id="project-lead-autocomplete"
             onChange={(_event, value) => setLead(value?.id)}
             options={usersForProjectLead.map(userToOption)}
@@ -126,10 +133,10 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
           />
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+        <Grid item xs={12} md={5}>
           <FormLabel>Project Manager</FormLabel>
           <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
+            sx={{ width: '100%' }}
             id="project-manager-autocomplete"
             onChange={(_event, value) => setManager(value?.id)}
             options={usersForProjectManager.map(userToOption)}
@@ -139,7 +146,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
           />
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 

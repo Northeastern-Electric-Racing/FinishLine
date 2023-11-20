@@ -7,7 +7,7 @@ import { isProject, User, validateWBS, WbsElement, wbsPipe, WorkPackage } from '
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
@@ -18,7 +18,6 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import PageBlock from '../../layouts/PageBlock';
 import { startDateTester, mapBulletsToPayload } from '../../utils/form';
 import { projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
@@ -190,7 +189,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           setLead={setLeadId}
           setManager={setManagerId}
         />
-        <PageBlock title="Blocked By">
+        <Box my={2}>
+          <Typography variant="h5">Blocked By</Typography>
           <FormControl fullWidth>
             <Controller
               name="blockedBy"
@@ -211,25 +211,25 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
               )}
             />
           </FormControl>
-        </PageBlock>
-        <PageBlock title="Expected Activities">
-          <ReactHookEditableList
-            name="expectedActivities"
-            register={register}
-            ls={expectedActivities}
-            append={appendExpectedActivity}
-            remove={removeExpectedActivity}
-          />
-        </PageBlock>
-        <PageBlock title="Deliverables">
-          <ReactHookEditableList
-            name="deliverables"
-            register={register}
-            ls={deliverables}
-            append={appendDeliverable}
-            remove={removeDeliverable}
-          />
-        </PageBlock>
+        </Box>
+        <Typography variant="h5">Expected Activities</Typography>
+        <ReactHookEditableList
+          name="expectedActivities"
+          register={register}
+          ls={expectedActivities}
+          append={appendExpectedActivity}
+          remove={removeExpectedActivity}
+          bulletName="Expected Activity"
+        />
+        <Typography variant="h5">Deliverables</Typography>
+        <ReactHookEditableList
+          name="deliverables"
+          register={register}
+          ls={deliverables}
+          append={appendDeliverable}
+          remove={removeDeliverable}
+          bulletName="Deliverable"
+        />
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
             Cancel
