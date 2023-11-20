@@ -1045,7 +1045,7 @@ export default class ProjectsService {
    * @returns the deleted material
    * @throws if the user does not have permission, or materidal already deleted
    */
-  static async deleteMaterial(currentUser: User, materialId: string): Promise<string> {
+  static async deleteMaterial(currentUser: User, materialId: string): Promise<Material> {
     if (!isLeadership(currentUser.role)) {
       throw new AccessDeniedException('Only Leadership can delete materials');
     }
@@ -1061,7 +1061,7 @@ export default class ProjectsService {
       data: { dateDeleted: new Date(), userDeletedId: currentUser.userId }
     });
 
-    return deletedMaterial.materialId;
+    return deletedMaterial;
   }
 
   /**
