@@ -3,8 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Manufacturer, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import { Manufacturer } from 'shared';
 
 export const manufacturerTransformer = (
   manufacturer: Prisma.ManufacturerGetPayload<typeof manufacturerQueryArgs>

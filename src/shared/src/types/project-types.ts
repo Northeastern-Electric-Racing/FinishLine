@@ -118,7 +118,12 @@ export interface Manufacturer {
   name: string;
   dateCreated: Date;
   creatorId: number;
-  materials: Material[];
+}
+
+export interface MaterialType {
+  name: string;
+  dateCreated: Date;
+  creatorId: number;
 }
 
 export enum MaterialStatus {

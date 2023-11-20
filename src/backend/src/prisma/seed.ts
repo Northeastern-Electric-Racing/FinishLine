@@ -29,6 +29,7 @@ import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
+import ProjectsService from '../services/projects.services';
 
 const prisma = new PrismaClient();
 
@@ -837,6 +838,10 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId]
   );
 
+  /**
+   * Reimbursements
+   */
+
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
   const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
   const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
@@ -867,6 +872,12 @@ const performSeed: () => Promise<void> = async () => {
     expenseType.expenseTypeId,
     100
   );
+
+  /**
+   * Bill of Materials
+   */
+  await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
+  await ProjectsService.createMaterialType('Resistor', thomasEmrax);
 };
 
 performSeed()

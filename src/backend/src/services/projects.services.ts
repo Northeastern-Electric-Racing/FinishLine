@@ -1,5 +1,17 @@
-import { Manufacturer, Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
-import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import {
+  isAdmin,
+  isGuest,
+  isLeadership,
+  isProject,
+  LinkCreateArgs,
+  LinkType,
+  Manufacturer,
+  MaterialType,
+  Project,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -809,7 +821,7 @@ export default class ProjectsService {
    * @param submitter the user who's getting all material types
    * @returns all the material types
    */
-  static async getAllMaterialTypes(submitter: User): Promise<Material_Type[]> {
+  static async getAllMaterialTypes(submitter: User): Promise<MaterialType[]> {
     if (submitter.role === Role.GUEST) {
       throw new AccessDeniedGuestException('Get Material Types');
     }

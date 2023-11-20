@@ -1,6 +1,6 @@
-import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
+import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { Manufacturer, Material_Type, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
@@ -206,7 +206,7 @@ export default class ProjectsController {
   static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const materialTypes: Material_Type[] = await ProjectsService.getAllMaterialTypes(user);
+      const materialTypes: MaterialType[] = await ProjectsService.getAllMaterialTypes(user);
       return res.status(200).json(materialTypes);
     } catch (error: unknown) {
       next(error);

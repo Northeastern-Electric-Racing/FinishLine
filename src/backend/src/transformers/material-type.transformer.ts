@@ -3,12 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Material_Type, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
+import { MaterialType } from 'shared';
 
 export const materialTypeTransformer = (
   materialType: Prisma.Material_TypeGetPayload<typeof materialTypeQueryArgs>
-): Material_Type => {
+): MaterialType => {
   return {
     name: materialType.name,
     dateCreated: materialType.dateCreated,
