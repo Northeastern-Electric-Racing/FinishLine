@@ -683,6 +683,7 @@ describe('Projects', () => {
         new DeletedException('Manufacturer', prismaManufacturer2.name)
       );
     });
+
     test('Get all Manufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
 
@@ -1013,6 +1014,43 @@ describe('Projects', () => {
 
       expect(updatedMaterial.name).toBe('name2');
       expect(prisma.material.update).toBeCalledTimes(1);
+    });
+
+    test('deleteMaterial works', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      const deletedMaterial = { ...prismaMaterial, dateDeleted: new Date() };
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(deletedMaterial);
+
+      const material = await ProjectsService.deleteMaterial(batman, prismaMaterial.materialId);
+
+      expect(material).toStrictEqual(deletedMaterial);
+    });
+
+    test('deleteMaterial fails when user is not at least Lead', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial);
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(prismaMaterial);
+
+      await expect(async () => await ProjectsService.deleteMaterial(wonderwoman, prismaMaterial.materialId)).rejects.toThrow(
+        new AccessDeniedException('Only Leadership can delete materials')
+      );
+    });
+
+    test('deleteMaterial fails when material is not found', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(prismaMaterial);
+
+      await expect(async () => await ProjectsService.deleteMaterial(batman, prismaMaterial.materialId)).rejects.toThrow(
+        new NotFoundException('Material', prismaMaterial.materialId)
+      );
+    });
+
+    test('deleteMaterial fails when material has been deleted', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue({ ...prismaMaterial, dateDeleted: new Date() });
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(prismaMaterial);
+
+      await expect(async () => await ProjectsService.deleteMaterial(batman, prismaMaterial.materialId)).rejects.toThrow(
+        new DeletedException('Material', prismaMaterial.materialId)
+      );
     });
   });
 });

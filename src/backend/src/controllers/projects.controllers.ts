@@ -269,6 +269,17 @@ export default class ProjectsController {
     }
   }
 
+  static async deleteMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialId } = req.params;
+      const user: User = await getCurrentUser(res);
+      const updatedMaterial = await ProjectsService.deleteMaterial(user, materialId);
+      res.status(200).json(updatedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
