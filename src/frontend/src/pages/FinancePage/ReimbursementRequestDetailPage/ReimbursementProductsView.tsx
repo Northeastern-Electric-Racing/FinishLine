@@ -21,7 +21,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
       <Table component={Paper}>
         <TableHead>
           <TableRow>
-            <TableCell>WBS Element</TableCell>
+            <TableCell>Project or Expense Category</TableCell>
             <TableCell>Products</TableCell>
           </TableRow>
         </TableHead>
