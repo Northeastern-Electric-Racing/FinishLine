@@ -21,6 +21,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -451,7 +452,12 @@ export default class ReimbursementRequestService {
    * @returns the created vendor
    */
   static async createVendor(submitter: User, name: string) {
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create vendors');
+    const failedAuthorizationException = new AccessDeniedException(
+      'Only admins, finance leads, and finance heads can create vendors.'
+    );
+
+    const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
+    if (!isAuthorized) throw failedAuthorizationException;
 
     const vendor = await prisma.vendor.create({
       data: {

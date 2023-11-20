@@ -22,13 +22,14 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { ChangeRequest, ClubAccount, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ClubAccount, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
+import ProjectsService from '../services/projects.services';
 
 const prisma = new PrismaClient();
 
@@ -208,15 +209,12 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     justiceLeague.teamId,
     [
-      wonderwoman,
       flash,
       aquaman,
       superman,
       hawkMan,
       hawkWoman,
-      cyborg,
       greenLantern,
-      martianManhunter,
       lexLuther,
       hawkgirl,
       elongatedMan,
@@ -226,6 +224,11 @@ const performSeed: () => Promise<void> = async () => {
       firestorm,
       hankHeywood
     ].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    batman,
+    justiceLeague.teamId,
+    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     aang,
@@ -837,6 +840,10 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId]
   );
 
+  /**
+   * Reimbursements
+   */
+
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
   const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
   const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
@@ -867,6 +874,12 @@ const performSeed: () => Promise<void> = async () => {
     expenseType.expenseTypeId,
     100
   );
+
+  /**
+   * Bill of Materials
+   */
+  await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
+  await ProjectsService.createMaterialType('Resistor', thomasEmrax);
 };
 
 performSeed()

@@ -521,6 +521,7 @@ model Material {
 model Material_Type {
   name          String     @id
   dateCreated   DateTime
+  dateDeleted DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "materialTypeCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]
@@ -531,5 +532,6 @@ model Manufacturer {
   dateCreated   DateTime
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
+  dateDeleted DateTime?
   materials     Material[]
 }
