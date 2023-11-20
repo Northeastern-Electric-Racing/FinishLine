@@ -1,6 +1,6 @@
-import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
+import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { Manufacturer, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 
@@ -197,7 +197,7 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const { manufacturerName } = req.params;
-      const deletedManufacturer: Manufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
+      const deletedManufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
       res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
       next(error);
@@ -214,12 +214,34 @@ export default class ProjectsController {
     }
   }
 
+  static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const materialTypes: MaterialType[] = await ProjectsService.getAllMaterialTypes(user);
+      return res.status(200).json(materialTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
       const createdMaterialType = await ProjectsService.createMaterialType(name, user);
       res.status(200).json(createdMaterialType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async assignMaterialAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialId } = req.params;
+      const { assemblyId } = req.body;
+      const user = await getCurrentUser(res);
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(user, materialId, assemblyId);
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
       next(error);
     }

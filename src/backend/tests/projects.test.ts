@@ -8,6 +8,7 @@ import {
   prismaAssembly1,
   toolMaterial,
   prismaManufacturer1,
+  prismaMaterial1,
   prismaManufacturer2,
   prismaMaterial,
   prismaMaterialType,
@@ -29,7 +30,7 @@ import {
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
-import { Material_Status, User } from '@prisma/client';
+import { Material, Material_Status, User } from '@prisma/client';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -723,8 +724,83 @@ describe('Projects', () => {
       expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
+
+    test('Get all Material Types fails from guest', async () => {
+      vi.spyOn(prisma.material_Type, 'findMany').mockResolvedValue([]);
+
+      await expect(ProjectsService.getAllMaterialTypes(theVisitor)).rejects.toThrow(
+        new AccessDeniedGuestException('Get Material Types')
+      );
+    });
+
+    test('Get all Material Types works', async () => {
+      vi.spyOn(prisma.material_Type, 'findMany').mockResolvedValue([]);
+
+      const res = await ProjectsService.getAllMaterialTypes(batman);
+
+      expect(prisma.material_Type.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
   });
 
+  describe('assigning material assemblies', () => {
+    test('assignment fails because of permissions', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
+      const project = { ...prismaProject1, teams: [{ members: [aquaman], leads: [superman] }] };
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(project);
+
+      await expect(ProjectsService.assignMaterialAssembly(theVisitor, 'mid', 'aid')).rejects.toThrow(
+        new AccessDeniedException(
+          `Only leadership or above, or someone on the project's team can assign materials to assemblies`
+        )
+      );
+    });
+
+    test('assignment fails because of invalid material id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'invalid-mid', 'aid')).rejects.toThrow(
+        new NotFoundException('Material', 'invalid-mid')
+      );
+    });
+
+    test('assignment fails because of invalid assembly id', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'invalid-aid')).rejects.toThrow(
+        new NotFoundException('Assembly', 'invalid-aid')
+      );
+    });
+
+    test('assignment fails because the wbsElements do not match', async () => {
+      const material = { ...prismaMaterial1, wbsElementId: 1, wbsElement: prismaWbsElement1 };
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(material);
+      const assembly = {
+        ...prismaAssembly1,
+        wbsElementId: 2,
+        wbsElement: { ...prismaWbsElement1, wbsElementId: 2, projectNumber: 1 }
+      };
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(assembly);
+      await expect(ProjectsService.assignMaterialAssembly(superman, 'mid', 'aid')).rejects.toThrow(
+        new HttpException(400, `The WBS element of the material (1.2.0) and assembly (1.1.0) do not match`)
+      );
+    });
+
+    test('assignment successful', async () => {
+      vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(prismaMaterial1);
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(prismaAssembly1);
+      vi.spyOn(prisma.project, 'findFirst').mockResolvedValue(prismaProject1);
+
+      const expectedUpdatedToolMaterial: Material = {
+        ...prismaMaterial1,
+        assemblyId: 'updated-aid'
+      };
+      vi.spyOn(prisma.material, 'update').mockResolvedValue(expectedUpdatedToolMaterial);
+
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(aquaman, 'mid', 'updated-aid');
+      expect(updatedMaterial).toBe(expectedUpdatedToolMaterial);
+    });
+  });
   describe('Delete Assembly', () => {
     test('Deleteing assembly fails because user is not an admin or head', async () => {
       await expect(ProjectsService.deleteAssembly('New Assembly', theVisitor)).rejects.toThrow(
@@ -733,6 +809,8 @@ describe('Projects', () => {
     });
 
     test('Deleting assembly fails if assembly does not exist', async () => {
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(null);
+
       await expect(ProjectsService.deleteAssembly('New Assembly', batman)).rejects.toThrow(
         new NotFoundException('Assembly', 'New Assembly')
       );

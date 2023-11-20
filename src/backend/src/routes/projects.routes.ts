@@ -58,12 +58,19 @@ projectRouter.post(
 );
 projectRouter.delete('/bom/manufacturer/:manufacturerName/delete', ProjectsController.deleteManufacturer);
 projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
+projectRouter.get('/bom/material-type', ProjectsController.getAllMaterialTypes);
 projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('pdmFileName')).optional(),
+  nonEmptyString(body('pdmFileName').optional()),
   ProjectsController.createAssembly
+);
+projectRouter.post(
+  '/bom/material/:materialId/assign-assembly',
+  nonEmptyString(body('assemblyId').optional()),
+  validateInputs,
+  ProjectsController.assignMaterialAssembly
 );
 projectRouter.post(
   '/material/:wbsNum/create',
