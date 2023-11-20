@@ -24,15 +24,24 @@ import {
   prismaReimbursementStatus,
   sharedGiveMeMyMoney
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
+import {
+  alfred,
+  batman,
+  flash,
+  sharedBatman,
+  superman,
+  wonderwoman,
+  theVisitor,
+  aquaman,
+  greenlantern
+} from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
   reimbursementRequestTransformer,
   reimbursementTransformer
 } from '../src/transformers/reimbursement-requests.transformer';
-import { prismaTeam1 } from './test-data/teams.test-data';
-import { justiceLeague, primsaTeam2 } from './test-data/teams.test-data';
+import { justiceLeague, prismaTeam1, primsaTeam2 } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -42,6 +51,12 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Vendor Tests', () => {
+    beforeAll(() => {
+      // Circular Dependency Check
+      expect(prismaTeam1.head).toBeDefined();
+      expect(primsaTeam2.head).toBeDefined();
+    });
+
     test('Get all vendors works', async () => {
       vi.spyOn(prisma.vendor, 'findMany').mockResolvedValue([]);
 
@@ -51,13 +66,39 @@ describe('Reimbursement Requests', () => {
       expect(res).toStrictEqual([]);
     });
 
-    test('Create Vendor throws error if user is not admin', async () => {
-      await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('create vendors')
+    test('Create Vendor throws error if user is not admin or finance lead', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      await expect(ReimbursementRequestService.createVendor(aquaman, 'HOLA BUDDY')).rejects.toThrow(
+        new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
+      );
+    });
+
+    test('Create Vendor works for finance leads', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).resolves.not.toThrow(
+        new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
+      );
+    });
+
+    test('Create Vendor works for finance head', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 5 });
+      vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.createVendor(greenlantern, 'HOLA BUDDY')).resolves.not.toThrow(
+        new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
+      );
+    });
+
+    test('Create Vendor works for admin', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.createVendor(flash, 'HOLA BUDDY')).resolves.not.toThrow(
+        new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
       );
     });
 
     test('Create Vendor Successfully returns vendor Id', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValueOnce(prismaTeam1);
       vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
 
       const vendor = await ReimbursementRequestService.createVendor(batman, 'HOLA BUDDY');

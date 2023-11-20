@@ -13,6 +13,7 @@ export const manufacturerTransformer = (
   return {
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
-    creatorId: manufacturer.creatorId
+    creatorId: manufacturer.creatorId,
+    dateDeleted: manufacturer.dateDeleted
   };
 };
