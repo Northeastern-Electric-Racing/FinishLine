@@ -9,7 +9,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -30,6 +30,7 @@ import {
   undefinedPipe
 } from '../../../utils/pipes';
 import {
+  imageDownloadUrl,
   imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestSaboSubmitted
@@ -38,6 +39,7 @@ import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -175,11 +177,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         <Typography variant="h5">Receipts</Typography>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
-            <iframe
-              style={{ height: `200px`, width: '50%' }}
-              src={imagePreviewUrl(receipt.googleFileId)}
-              title={receipt.name}
-            />
+            <Box>
+              <Link href={receipt.googleFileId} target="_blank" underline="hover" fontSize={19}>
+                {receipt.name}
+              </Link>
+              <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
+                <DownloadIcon />
+              </IconButton>
+              <iframe
+                style={{ height: `200px`, width: '50%' }}
+                src={imagePreviewUrl(receipt.googleFileId)}
+                title={receipt.name}
+              />
+            </Box>
           );
         })}
       </Box>
