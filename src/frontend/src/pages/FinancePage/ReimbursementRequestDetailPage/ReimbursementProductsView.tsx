@@ -1,7 +1,7 @@
 import { Chip, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { getUniqueWbsElementsWithProductsFromReimbursementRequest } from '../../../utils/reimbursement-request.utils';
 import { ReimbursementRequest } from 'shared';
-import { centsToDollar } from '../../../utils/pipes';
+import { centsToDollar, displayEnum } from '../../../utils/pipes';
 
 interface ReimbursementRequestProductsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -29,7 +29,7 @@ const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps>
           {keys.map((key) => {
             return (
               <TableRow key={key}>
-                <TableCell>{key}</TableCell>
+                <TableCell>{displayEnum(key)}</TableCell>
                 <TableCell>
                   {uniqueWbsElementsWithProducts.get(key)?.map((product) => {
                     return <Chip label={`${product.name} $${centsToDollar(product.cost)}`} />;

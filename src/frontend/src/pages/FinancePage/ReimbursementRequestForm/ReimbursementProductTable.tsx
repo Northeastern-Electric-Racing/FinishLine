@@ -27,11 +27,11 @@ import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-fo
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
 const otherCategoryOptions = [
-  { label: 'COMPETITION', id: 'COMPETITION' },
-  { label: 'CONSUMABLES', id: 'CONSUMABLES' },
-  { label: 'GENERAL_STOCK', id: 'GENERAL_STOCK' },
-  { label: 'SUBSCRIPTIONS_AND_MEMBERSHIPS', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
-  { label: 'TOOLS_AND_EQUIPMENT', id: 'TOOLS_AND_EQUIPMENT' }
+  { label: 'Competition', id: 'COMPETITION' },
+  { label: 'Consumeables', id: 'CONSUMABLES' },
+  { label: 'General Stock', id: 'GENERAL_STOCK' },
+  { label: 'Subscriptions and Memberships', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
+  { label: 'Tools and Equipment', id: 'TOOLS_AND_EQUIPMENT' }
 ];
 
 interface ReimbursementProductTableProps {
@@ -218,7 +218,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   blurOnSelect={true}
                   id={'append-product-autocomplete'}
                   size={'small'}
-                  renderInput={(params) => <TextField {...params} placeholder="Select Other Reason" />}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Other Category" />}
                 />
               </Box>
             </TableCell>
