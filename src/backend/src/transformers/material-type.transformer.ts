@@ -13,6 +13,7 @@ export const materialTypeTransformer = (
   return {
     name: materialType.name,
     dateCreated: materialType.dateCreated,
-    creatorId: materialType.creatorId
+    creatorId: materialType.creatorId,
+    dateDeleted: materialType.dateDeleted ?? undefined
   };
 };

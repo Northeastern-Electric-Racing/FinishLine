@@ -1,31 +1,18 @@
-<<<<<<< HEAD
 import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import {
   isAdmin,
   isGuest,
-=======
-import {
-  isAdmin,
-  isGuest,
   isHead,
->>>>>>> develop
   isLeadership,
   isProject,
   LinkCreateArgs,
   LinkType,
-<<<<<<< HEAD
   Manufacturer,
   MaterialType,
-=======
->>>>>>> develop
   Project,
   WbsNumber,
   wbsPipe
 } from 'shared';
-<<<<<<< HEAD
-=======
-import { Manufacturer, Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
->>>>>>> develop
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';

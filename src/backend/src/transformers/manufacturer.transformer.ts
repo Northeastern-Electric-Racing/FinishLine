@@ -14,6 +14,6 @@ export const manufacturerTransformer = (
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
     creatorId: manufacturer.creatorId,
-    dateDeleted: manufacturer.dateDeleted
+    dateDeleted: manufacturer.dateDeleted ?? undefined
   };
 };
