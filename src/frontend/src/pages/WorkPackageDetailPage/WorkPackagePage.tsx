@@ -27,7 +27,7 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   if (editMode) {
-    return <EditWorkPackageForm wbsNum={wbsNum} stateFunction={setEditMode} />;
+    return <EditWorkPackageForm wbsNum={wbsNum} setPageMode={setEditMode} />;
   }
 
   return (

@@ -1,5 +1,5 @@
-import { UseMutationResult } from 'react-query';
-import { WbsNumber, WorkPackage, isGuest, isProject, wbsPipe } from 'shared';
+import { UseMutateAsyncFunction } from 'react-query';
+import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -10,12 +10,13 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
-  operation: (wbsNum: WbsNumber) => UseMutationResult;
   exitActiveMode: () => void;
   crId?: string;
+  mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
+  createForm?: boolean;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, exitActiveMode, crId }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -24,7 +25,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
     error: projectError
   } = useSingleProject({ ...wbsNum, workPackageNumber: 0 });
   const { data: workPackages, isLoading: wpIsLoading, isError: wpIsError, error: wpError } = useAllWorkPackages();
-  const { mutateAsync } = operation(wbsNum);
 
   if (wpIsLoading || !workPackages || usersIsLoading || !users || projectIsLoading || !project) return <LoadingIndicator />;
   if (usersIsError) return <ErrorPage message={usersError.message} />;
@@ -38,7 +38,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, operation, ex
       wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber
   );
 
-  const defaultValues: WorkPackageFormViewPayload | undefined = isProject(wbsNum)
+  const defaultValues: WorkPackageFormViewPayload | undefined = createForm
     ? undefined
     : {
         ...workPackage!,

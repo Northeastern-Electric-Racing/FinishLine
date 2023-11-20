@@ -5,18 +5,20 @@ import { useHistory } from 'react-router-dom';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
-  stateFunction: (value: React.SetStateAction<boolean>) => void;
+  setPageMode: (value: React.SetStateAction<boolean>) => void;
 }
 
-const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, stateFunction }) => {
+const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPageMode }) => {
   const history = useHistory();
+
+  const { mutateAsync } = useEditWorkPackage(wbsNum);
 
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      operation={useEditWorkPackage}
+      mutateAsync={mutateAsync}
       exitActiveMode={() => {
-        stateFunction(false);
+        setPageMode(false);
         history.push(`${history.location.pathname}`);
       }}
     />

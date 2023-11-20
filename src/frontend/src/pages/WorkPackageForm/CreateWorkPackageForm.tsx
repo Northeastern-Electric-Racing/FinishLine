@@ -16,12 +16,15 @@ const CreateWorkPackageForm: React.FC = () => {
   if (!wbsNum) throw new HttpException(400, 'WBS number not included in request.');
   if (!crId) throw new HttpException(400, 'CR ID not included in request.');
 
+  const { mutateAsync } = useCreateSingleWorkPackage();
+
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      operation={useCreateSingleWorkPackage}
+      mutateAsync={mutateAsync}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}
+      createForm
     />
   );
 };

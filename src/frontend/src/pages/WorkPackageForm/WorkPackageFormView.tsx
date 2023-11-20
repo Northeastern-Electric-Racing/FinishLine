@@ -11,7 +11,6 @@ import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/mate
 import { useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
-import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -46,6 +45,7 @@ interface WorkPackageFormViewProps {
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
+  createForm?: boolean;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -73,7 +73,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   wbsElement,
   leadOrManagerOptions,
   blockedByOptions,
-  crId
+  crId,
+  createForm
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -84,21 +85,16 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: defaultValues
-      ? {
-          ...defaultValues,
-          crId: crId ?? defaultValues.crId
-        }
-      : {
-          name: '',
-          workPackageId: 0,
-          startDate: getMonday(new Date()),
-          duration: 0,
-          crId: crId ?? '',
-          blockedBy: [],
-          expectedActivities: [],
-          deliverables: []
-        }
+    defaultValues: {
+      name: defaultValues?.name ?? '',
+      workPackageId: defaultValues?.workPackageId ?? 0,
+      startDate: defaultValues?.startDate ?? getMonday(new Date()),
+      duration: defaultValues?.duration ?? 0,
+      crId: crId ?? defaultValues?.crId ?? '',
+      blockedBy: defaultValues?.blockedBy ?? [],
+      expectedActivities: defaultValues?.expectedActivities ?? [],
+      deliverables: defaultValues?.deliverables ?? []
+    }
   });
 
   const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
@@ -156,7 +152,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   return (
     <PageLayout
-      title={`${isProject(wbsElement.wbsNum) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+      stickyHeader
+      title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
       previousPages={[
         { name: 'Projects', route: routes.PROJECTS },
         {
@@ -166,7 +163,16 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           route: `${routes.PROJECTS}/${projectWbsString}`
         }
       ]}
-      headerRight={<ChangeRequestDropdown control={control} name="crId" errors={errors} />}
+      headerRight={
+        <Box textAlign="right">
+          <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      }
     >
       <form
         id="work-package-edit-form"
@@ -230,14 +236,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           remove={removeDeliverable}
           bulletName="Deliverable"
         />
-        <Box textAlign="right" sx={{ my: 2 }}>
-          <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
       </form>
     </PageLayout>
   );
