@@ -54,7 +54,7 @@ export interface WorkPackageFormViewPayload {
   startDate: Date;
   duration: number;
   crId: string;
-  stage?: string;
+  stage: string | undefined;
   blockedBy: string[];
   expectedActivities: {
     bulletId: number;
@@ -93,7 +93,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       crId: crId ?? defaultValues?.crId ?? '',
       blockedBy: defaultValues?.blockedBy ?? [],
       expectedActivities: defaultValues?.expectedActivities ?? [],
-      deliverables: defaultValues?.deliverables ?? []
+      deliverables: defaultValues?.deliverables ?? [],
+      stage: defaultValues?.stage
     }
   });
 
