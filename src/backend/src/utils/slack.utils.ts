@@ -1,7 +1,8 @@
 import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
-import { sendMessage } from '../integrations/slack';
+import slack, { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
+import { UserWithSettings } from './auth.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -66,4 +67,17 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
   const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
   const linkButtonText = 'View Task';
   await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+export const sendSlackReimbursementRequestNotification = async (
+  slackId: string,
+  recipient: UserWithSettings,
+  totalCost: number,
+  reimbursementRequestId: string
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const fullMsg = `:tada: Reimbursement Request made by ${recipient} for $${totalCost} :tada:`;
+  const fullLink = `https://finishlinebyner.com/finance/reimbursement-requests/${reimbursementRequestId}`;
+  const btnText = `View Reimbursement Request`;
+  await sendMessage(slackId, fullMsg, fullLink, btnText);
 };

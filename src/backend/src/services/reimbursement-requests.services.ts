@@ -47,6 +47,7 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { sendSlackReimbursementRequestNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -166,6 +167,16 @@ export default class ReimbursementRequestService {
         }
       }
     });
+
+    /** Gets the current content of the .env file */
+    const currentEnv = require('dotenv').config().parsed;
+    const financeTeamId = currentEnv.FINANCE_TEAM_ID;
+    sendSlackReimbursementRequestNotification(
+      financeTeamId,
+      recipient,
+      totalCost,
+      createdReimbursementRequest.reimbursementRequestId
+    );
 
     return createdReimbursementRequest;
   }
