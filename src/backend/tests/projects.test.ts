@@ -724,6 +724,23 @@ describe('Projects', () => {
       expect(materialType.name).toBe('NERSoftwareTools');
       expect(prisma.material_Type.create).toBeCalledTimes(1);
     });
+
+    test('Get all Material Types fails from guest', async () => {
+      vi.spyOn(prisma.material_Type, 'findMany').mockResolvedValue([]);
+
+      await expect(ProjectsService.getAllMaterialTypes(theVisitor)).rejects.toThrow(
+        new AccessDeniedGuestException('Get Material Types')
+      );
+    });
+
+    test('Get all Material Types works', async () => {
+      vi.spyOn(prisma.material_Type, 'findMany').mockResolvedValue([]);
+
+      const res = await ProjectsService.getAllMaterialTypes(batman);
+
+      expect(prisma.material_Type.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
   });
 
   describe('assigning material assemblies', () => {
