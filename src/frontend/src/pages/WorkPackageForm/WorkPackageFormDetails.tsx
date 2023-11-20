@@ -67,7 +67,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   return (
     <Box>
       <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
-        Project Details
+        Details
       </Typography>
       <Grid container spacing={1} xs={12}>
         <Grid item xs={12} md={4}>

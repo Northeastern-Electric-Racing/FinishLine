@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { isProject, User, validateWBS, WbsElement, wbsPipe, WorkPackage } from 'shared';
+import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -18,7 +18,7 @@ import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { startDateTester, mapBulletsToPayload } from '../../utils/form';
-import { projectWbsPipe } from '../../utils/pipes';
+import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 
@@ -148,20 +148,26 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       }
     }
   };
-  const projectWbsString: string = projectWbsPipe(wbsElement.wbsNum);
+
+  const crIdDisplay = crId ?? defaultValues?.crId;
 
   return (
     <PageLayout
       stickyHeader
       title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
       previousPages={[
-        { name: 'Projects', route: routes.PROJECTS },
-        {
-          name: `${projectWbsString} - ${
-            isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName
-          }`,
-          route: `${routes.PROJECTS}/${projectWbsString}`
-        }
+        createForm
+          ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
+          : { name: 'Projects', route: routes.PROJECTS },
+        createForm && crIdDisplay
+          ? {
+              name: `Change Request #${crIdDisplay}`,
+              route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
+            }
+          : {
+              name: `${projectWbsNamePipe(wbsElement)}`,
+              route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+            }
       ]}
       headerRight={
         <Box textAlign="right">
