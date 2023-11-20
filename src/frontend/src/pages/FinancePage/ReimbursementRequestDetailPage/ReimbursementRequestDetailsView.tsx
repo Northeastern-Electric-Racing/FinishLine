@@ -31,6 +31,7 @@ import {
 } from '../../../utils/pipes';
 import {
   imageDownloadUrl,
+  imageFileUrl,
   imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestSaboSubmitted
@@ -147,7 +148,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
             </Grid>
           </Grid>
@@ -175,15 +176,17 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
         <Typography variant="h5">Receipts</Typography>
-        {reimbursementRequest.receiptPictures.map((receipt) => {
+        {reimbursementRequest.receiptPictures.map((receipt, index, arr) => {
           return (
-            <Box>
-              <Link href={receipt.googleFileId} target="_blank" underline="hover" fontSize={19}>
-                {receipt.name}
-              </Link>
-              <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
-                <DownloadIcon />
-              </IconButton>
+            <Box sx={{ mb: arr.length !== index + 1 ? 5 : 0 }}>
+              <Box sx={{ width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover">
+                  {receipt.name}
+                </Link>
+                <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
+                  <DownloadIcon />
+                </IconButton>
+              </Box>
               <iframe
                 style={{ height: `200px`, width: '50%' }}
                 src={imagePreviewUrl(receipt.googleFileId)}
