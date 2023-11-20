@@ -1,4 +1,4 @@
-import { Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
+import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
@@ -167,14 +167,14 @@ export default class ProjectsController {
         manufacturerName,
         manufacturerPartNumber,
         quantity,
-        unitName,
         price,
         subtotal,
         linkUrl,
         notes,
         wbsNum,
         assemblyId,
-        pdmFileName
+        pdmFileName,
+        unitName
       );
       return res.status(200).json(material);
     } catch (error: unknown) {
@@ -193,12 +193,119 @@ export default class ProjectsController {
     }
   }
 
+  static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { manufacturerName } = req.params;
+      const deletedManufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
+      res.status(200).json(deletedManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const manufacturers: Manufacturer[] = await ProjectsService.getAllManufacturers(user);
+      return res.status(200).json(manufacturers);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const materialTypes: MaterialType[] = await ProjectsService.getAllMaterialTypes(user);
+      return res.status(200).json(materialTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
       const createdMaterialType = await ProjectsService.createMaterialType(name, user);
       res.status(200).json(createdMaterialType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async assignMaterialAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialId } = req.params;
+      const { assemblyId } = req.body;
+      const user = await getCurrentUser(res);
+      const updatedMaterial = await ProjectsService.assignMaterialAssembly(user, materialId, assemblyId);
+      res.status(200).json(updatedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteAssemblyType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { assemblyId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedAssembly = await ProjectsService.deleteAssembly(assemblyId, user);
+      res.status(200).json(deletedAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { materialTypeId } = req.params;
+      const user = await getCurrentUser(res);
+      const deletedMaterial = await ProjectsService.deleteMaterialType(materialTypeId, user);
+      res.status(200).json(deletedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editMaterial(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { materialId } = req.params;
+      const {
+        name,
+        assemblyId,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        pdmFileName,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes
+      } = req.body;
+      const updatedMaterial = await ProjectsService.editMaterial(
+        user,
+        materialId,
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        unitName,
+        assemblyId,
+        pdmFileName
+      );
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
       next(error);
     }

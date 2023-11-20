@@ -96,6 +96,38 @@ export interface LinkCreateArgs {
   url: string;
 }
 
+export interface Material {
+  materialId: String;
+  name: String;
+  wbsElement: WbsElement;
+  wbsElementId: number;
+  dateCreated: Date;
+  userCreated: User;
+  userCreatedId: number;
+  materialTypeName: String;
+  manufacturerName: String;
+  manufacturerPartNumber: String;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  linkUrl: String;
+  notes: String;
+}
+
+export interface Manufacturer {
+  name: string;
+  dateCreated: Date;
+  creatorId: number;
+  dateDeleted?: Date;
+}
+
+export interface MaterialType {
+  name: string;
+  dateCreated: Date;
+  creatorId: number;
+  dateDeleted?: Date;
+}
+
 export enum MaterialStatus {
   Ordered = 'ORDERED',
   Received = 'RECEIVED',

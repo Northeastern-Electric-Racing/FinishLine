@@ -5,8 +5,8 @@ import {
   Prisma,
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
-  Unit,
-  Manufacturer
+  Manufacturer,
+  Unit
 } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
@@ -112,7 +112,7 @@ export const prismaAssembly1: Assembly = {
   pdmFileName: 'file.txt',
   dateCreated: new Date('10-19-2023'),
   userCreatedId: batman.userId,
-  wbsElementId: 66,
+  wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null,
   assemblyId: '1'
@@ -121,7 +121,8 @@ export const prismaAssembly1: Assembly = {
 export const prismaMaterialType: PrismaMaterialType = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: null
 };
 
 export const prismaUnit: Unit = {
@@ -152,17 +153,64 @@ export const prismaMaterial: Material = {
 export const prismaManufacturer1: Manufacturer = {
   name: 'Manufacturer1',
   dateCreated: new Date('10-1-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: null
 };
 
 export const prismaManufacturer2: Manufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1
+  creatorId: 1,
+  dateDeleted: new Date('10-18-2023')
 };
 
 export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),
-  creatorId: batman.userId
+  creatorId: batman.userId,
+  dateDeleted: null
+};
+
+export const prismaMaterial2: Material = {
+  materialId: 'id',
+  assemblyId: 'assemblyId',
+  name: 'name2',
+  wbsElementId: 1,
+  dateDeleted: null,
+  userDeletedId: null,
+  dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1,
+  pdmFileName: 'file2',
+  status: 'ORDERED',
+  notes: 'random notes',
+  materialTypeName: 'type',
+  manufacturerName: 'manufacturer',
+  manufacturerPartNumber: 'partNum',
+  price: 1000,
+  subtotal: 500,
+  quantity: 8,
+  unitName: 'FT',
+  linkUrl: 'https://www.google.com'
+};
+
+export const prismaMaterial1: Material = {
+  materialId: '1',
+  assemblyId: '1',
+  dateCreated: new Date('2023-11-07'),
+  linkUrl: 'https://example.com',
+  manufacturerName: 'Manufacturer1',
+  manufacturerPartNumber: '1',
+  materialTypeName: 'NERSoftwareTools',
+  name: prismaManufacturer1.name,
+  notes: 'Sample notes',
+  pdmFileName: 'pdmname',
+  price: 10,
+  quantity: 89,
+  status: 'ORDERED',
+  subtotal: 1,
+  unitName: 'Unit',
+  userCreatedId: batman.userId,
+  wbsElementId: sharedProject1.id,
+  dateDeleted: null,
+  userDeletedId: null
 };

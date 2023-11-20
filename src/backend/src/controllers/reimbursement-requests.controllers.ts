@@ -230,6 +230,17 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async denyReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
