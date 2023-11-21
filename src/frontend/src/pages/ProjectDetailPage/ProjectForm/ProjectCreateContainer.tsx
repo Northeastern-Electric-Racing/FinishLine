@@ -16,22 +16,23 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const ProjectCreateContainer: React.FC = () => {
-  //const query = useQuery();
   const toast = useToast();
   const history = useHistory();
+
   const name = String();
   const budget = 0;
   const summary = String();
-
   const links: { linkId: string; url: string; linkTypeName: string }[] = [];
   const goals: { bulletId: number; detail: string }[] = [];
   const features: { bulletId: number; detail: string }[] = [];
-  const temprules: string[] = [];
-  const rules: { rule: string }[] = temprules.map((rule) => {
-    return { rule };
-  });
+  const rules: { bulletId: number; detail: string }[] = [];
+  console.log(rules);
   const constraints: { bulletId: number; detail: string }[] = [];
   const teamId = '';
+  const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
+  const crId = 0;
+  const carNumber = 0;
 
   const { mutateAsync } = useCreateSingleProject();
   const {
@@ -40,10 +41,6 @@ const ProjectCreateContainer: React.FC = () => {
     isError: allLinkTypesIsError,
     error: allLinkTypesError
   } = useAllLinkTypes();
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
-  const crId = 0;
-  const carNumber = 0;
 
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
@@ -80,8 +77,8 @@ const ProjectCreateContainer: React.FC = () => {
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, crId, teamId, carNumber } = data;
-    const rules = data.rules.map((rule) => rule.rule);
 
+    const rules = data.rules.map((rule) => rule.detail);
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
     const otherConstraints = mapBulletsToPayload(data.constraints);

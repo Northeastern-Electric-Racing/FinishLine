@@ -85,7 +85,7 @@ export default class ProjectsService {
     teamIds: string[],
     budget: number | null,
     linkCreateArgs: LinkCreateArgs[] | null,
-    rules: string[] | null,
+    rules: string[],
     goals: { id: number; detail: string }[] | null,
     features: { id: number; detail: string }[] | null,
     otherConstraints: { id: number; detail: string }[] | null,

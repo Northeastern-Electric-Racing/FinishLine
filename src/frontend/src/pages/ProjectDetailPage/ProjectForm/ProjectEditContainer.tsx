@@ -5,7 +5,7 @@
 
 import { Project } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
+import { bulletsToObject, mapBulletsToPayload, rulesToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
@@ -22,7 +22,16 @@ interface ProjectEditContainerProps {
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
+
   const { name, budget, summary } = project;
+  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
+  const goals = bulletsToObject(project.goals);
+  const features = bulletsToObject(project.features);
+  const constraints = bulletsToObject(project.otherConstraints);
+  const rules = rulesToObject(project.rules);
+  const crId = project.changes[0].changeRequestId;
+
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
   const {
     data: allLinkTypes,
@@ -38,16 +47,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       linkTypeName: link.linkType.name
     };
   });
-
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
-  const goals = bulletsToObject(project.goals);
-  const features = bulletsToObject(project.features);
-  const constraints = bulletsToObject(project.otherConstraints);
-  const rules: { rule: string }[] = project.rules.map((rule) => {
-    return { rule };
-  });
-  const crId = project.changes[0].changeRequestId;
 
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
@@ -85,8 +84,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links } = data;
-    const rules = data.rules.map((rule) => rule.rule);
-    const changeRequestId = data.crId;
+    const rules = data.rules.map((rule) => rule.detail);
+    const crId = data.crId;
 
     const goals = mapBulletsToPayload(data.goals);
     const features = mapBulletsToPayload(data.features);
@@ -99,7 +98,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         links,
         projectId: project.id,
-        crId: changeRequestId,
+        crId,
         rules,
         goals,
         features,

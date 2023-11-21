@@ -39,7 +39,8 @@ export interface ProjectFormInput {
     detail: string;
   }[];
   rules: {
-    rule: string;
+    bulletId: number;
+    detail: string;
   }[];
   teamId: string;
 }
@@ -214,19 +215,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               bulletName="Constraint"
             />
           </Box>
-          {!createProject && (
-            <Box>
-              <Typography variant="h5">{'Rules'}</Typography>
-              <ReactHookEditableList
-                name="rules"
-                register={register}
-                ls={rules}
-                append={appendRule}
-                remove={removeRule}
-                bulletName="Rule"
-              />
-            </Box>
-          )}
+          <Box>
+            <Typography variant="h5">{'Rules'}</Typography>
+            <ReactHookEditableList
+              name="rules"
+              register={register}
+              ls={rules}
+              append={appendRule}
+              remove={removeRule}
+              bulletName="Rule"
+            />
+          </Box>
         </Stack>
       </PageLayout>
     </form>
