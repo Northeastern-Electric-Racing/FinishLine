@@ -26,7 +26,6 @@ const ProjectCreateContainer: React.FC = () => {
   const goals: { bulletId: number; detail: string }[] = [];
   const features: { bulletId: number; detail: string }[] = [];
   const rules: { bulletId: number; detail: string }[] = [];
-  console.log(rules);
   const constraints: { bulletId: number; detail: string }[] = [];
   const teamId = '';
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
