@@ -49,6 +49,10 @@ const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: Chan
     value: cr.crId
   }));
 
+  const renderValues = new Map<number, string>();
+
+  changeRequests.forEach((cr) => renderValues.set(cr.crId, `${cr.crId} - ${wbsPipe(cr.wbsNum)}`));
+
   return (
     <Box>
       <FormControl fullWidth>
@@ -60,7 +64,7 @@ const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: Chan
             <Select
               id="cr-autocomplete"
               displayEmpty
-              renderValue={(value) => value}
+              renderValue={(value) => renderValues.get(value)}
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}

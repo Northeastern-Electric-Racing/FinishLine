@@ -201,6 +201,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           manager={managerId}
           setLead={setLeadId}
           setManager={setManagerId}
+          createForm={createForm}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
