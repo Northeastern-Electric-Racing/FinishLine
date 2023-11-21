@@ -225,6 +225,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));

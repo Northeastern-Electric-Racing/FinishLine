@@ -98,7 +98,6 @@ export const useCreateReimbursementRequest = () => {
   return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestPayload>(
     ['reimbursement-requests', 'create'],
     async (formData: CreateReimbursementRequestPayload) => {
-      console.log(formData);
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
@@ -115,7 +114,6 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
   return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
     ['reimbursement-requests', 'edit'],
     async (formData: EditReimbursementRequestPayload) => {
-      console.log(formData);
       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
       return data;
     }
