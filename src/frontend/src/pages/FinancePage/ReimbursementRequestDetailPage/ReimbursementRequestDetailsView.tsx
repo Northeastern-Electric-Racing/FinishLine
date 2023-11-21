@@ -175,23 +175,18 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
-        <Typography variant="h5">Receipts</Typography>
-        {reimbursementRequest.receiptPictures.map((receipt, index, arr) => {
+        <Box sx={{ position: 'sticky', top: 0, background: theme.palette.background.default, pb: 1, zIndex: 1 }}>
+          <Typography variant="h5">Receipts</Typography>
+        </Box>
+        {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
-            <Box sx={{ mb: arr.length !== index + 1 ? 5 : 0 }}>
-              <Box sx={{ width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover">
-                  {receipt.name}
-                </Link>
-                <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
-                  <DownloadIcon />
-                </IconButton>
-              </Box>
-              <iframe
-                style={{ height: `200px`, width: '50%' }}
-                src={imagePreviewUrl(receipt.googleFileId)}
-                title={receipt.name}
-              />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 30 }}>
+                {receipt.name}
+              </Link>
+              <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
+                <DownloadIcon sx={{ fontSize: 30 }} />
+              </IconButton>
             </Box>
           );
         })}
