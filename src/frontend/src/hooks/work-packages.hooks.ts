@@ -80,7 +80,7 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work packages', wbsNum]);
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );

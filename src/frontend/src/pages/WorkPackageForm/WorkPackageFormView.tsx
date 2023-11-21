@@ -153,44 +153,44 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const crIdDisplay = crId ?? defaultValues?.crId;
 
   return (
-    <PageLayout
-      stickyHeader
-      title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-      previousPages={[
-        createForm
-          ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
-          : { name: 'Projects', route: routes.PROJECTS },
-        createForm && crIdDisplay
-          ? {
-              name: `Change Request #${crIdDisplay}`,
-              route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
-            }
-          : {
-              name: `${projectWbsNamePipe(wbsElement)}`,
-              route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-            }
-      ]}
-      headerRight={
-        <Box textAlign="right">
-          <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
-      }
+    <form
+      id="work-package-edit-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
     >
-      <form
-        id="work-package-edit-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onSubmit)(e);
-        }}
-        onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
-        }}
+      <PageLayout
+        stickyHeader
+        title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        previousPages={[
+          createForm
+            ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
+            : { name: 'Projects', route: routes.PROJECTS },
+          createForm && crIdDisplay
+            ? {
+                name: `Change Request #${crIdDisplay}`,
+                route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
+              }
+            : {
+                name: `${projectWbsNamePipe(wbsElement)}`,
+                route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+              }
+        ]}
+        headerRight={
+          <Box textAlign="right">
+            <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        }
       >
         <WorkPackageFormDetails
           control={control}
@@ -243,8 +243,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           remove={removeDeliverable}
           bulletName="Deliverable"
         />
-      </form>
-    </PageLayout>
+      </PageLayout>
+    </form>
   );
 };
 
