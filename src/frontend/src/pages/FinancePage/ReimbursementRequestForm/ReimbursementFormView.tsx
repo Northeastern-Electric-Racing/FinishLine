@@ -11,7 +11,8 @@ import {
   TextField,
   Typography,
   Snackbar,
-  Alert
+  Alert,
+  Button
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -37,6 +38,7 @@ import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -251,27 +253,42 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           <Grid item xs={6}>
             <FormControl fullWidth>
               <ReceiptFileInput />
-              <input
-                onChange={(e) => {
-                  if (e.target.files) {
-                    const file = e.target.files[0];
-                    if (file.size < 1000000) {
-                      receiptAppend({
-                        file: e.target.files[0],
-                        name: e.target.files[0].name,
-                        googleFileId: ''
-                      });
-                    } else {
-                      toast.error('File must be less than 1 MB', 5000);
-                      document.getElementById('receipt-image')!.innerHTML = '';
-                    }
-                  }
+              <Button
+                variant="contained"
+                color="success"
+                component="label"
+                startIcon={<FileUploadIcon />}
+                sx={{
+                  width: 'fit-content',
+                  textTransform: 'none'
                 }}
-                type="file"
-                id="receipt-image"
-                accept="image/png, image/jpeg, .pdf"
-                name="receiptFiles"
-              />
+              >
+                Upload
+                <input
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      [...e.target.files].forEach((file) => {
+                        if (file.size < 1000000) {
+                          receiptAppend({
+                            file: file,
+                            name: file.name,
+                            googleFileId: ''
+                          });
+                        } else {
+                          toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                          document.getElementById('receipt-image')!.innerHTML = '';
+                        }
+                      });
+                    }
+                  }}
+                  type="file"
+                  id="receipt-image"
+                  accept="image/png, image/jpeg, .pdf"
+                  name="receiptFiles"
+                  multiple
+                  hidden
+                />
+              </Button>
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
           </Grid>
