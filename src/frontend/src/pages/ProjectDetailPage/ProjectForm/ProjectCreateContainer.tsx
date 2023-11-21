@@ -19,21 +19,15 @@ const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
   const history = useHistory();
 
-  const name = String();
-  const budget = 0;
-  const summary = String();
-  const links: { linkId: string; url: string; linkTypeName: string }[] = [];
-  const goals: { bulletId: number; detail: string }[] = [];
-  const features: { bulletId: number; detail: string }[] = [];
-  const rules: { bulletId: number; detail: string }[] = [];
-  const constraints: { bulletId: number; detail: string }[] = [];
-  const teamId = '';
+  //const links: { linkId: string; url: string; linkTypeName: string }[] = [];
+  //const goals: { bulletId: number; detail: string }[] = [];
+  //const features: { bulletId: number; detail: string }[] = [];
+  //const rules: { bulletId: number; detail: string }[] = [];
+  //const constraints: { bulletId: number; detail: string }[] = [];
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
-  const crId = 0;
-  const carNumber = 0;
 
-  const { mutateAsync } = useCreateSingleProject();
+  const { mutateAsync, isLoading } = useCreateSingleProject();
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -41,35 +35,24 @@ const ProjectCreateContainer: React.FC = () => {
     error: allLinkTypesError
   } = useAllLinkTypes();
 
+  if (isLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
-  const projectLinkTypeNames = links.map((link) => link.linkTypeName);
-
-  requiredLinkTypeNames
-    .filter((name) => !projectLinkTypeNames.includes(name))
-    .forEach((name) => {
-      links.push({
-        linkId: '-1',
-        url: '',
-        linkTypeName: name
-      });
-    });
-
   const defaultValues = {
-    name,
-    budget,
-    summary,
-    teamId,
-    carNumber,
-    links,
-    crId,
-    goals,
-    features,
-    constraints,
-    rules,
+    name: String(),
+    budget: 0,
+    summary: String(),
+    teamId: String(),
+    carNumber: 0,
+    links: [],
+    crId: 0,
+    goals: [],
+    features: [],
+    constraints: [],
+    rules: [],
     projectLeadId,
     projectManagerId
   };
@@ -117,7 +100,6 @@ const ProjectCreateContainer: React.FC = () => {
       setProjectManagerId={setProjectManagerId}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
-      createProject={true}
     />
   );
 };

@@ -1,12 +1,13 @@
 import { useAllLinkTypes } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../LoadingIndicator';
 import ErrorPage from '../../pages/ErrorPage';
-import { Button, IconButton, MenuItem, Select, TextField } from '@mui/material';
+import { IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getRequiredLinkTypeNames } from '../../utils/link.utils';
 import { ProjectFormInput } from '../../pages/ProjectDetailPage/ProjectForm/ProjectForm';
 import { Box } from '@mui/system';
+import { NERButton } from '../NERButton';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
@@ -66,14 +67,14 @@ const LinksEditView: React.FC<{
         );
       })}
       {availableOptions.length > 0 && (
-        <Button
+        <NERButton
           variant="contained"
-          color="success"
+          color="primary"
           onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
           sx={{ my: 2, width: 'max-content' }}
         >
           + Add New Link
-        </Button>
+        </NERButton>
       )}
     </>
   );

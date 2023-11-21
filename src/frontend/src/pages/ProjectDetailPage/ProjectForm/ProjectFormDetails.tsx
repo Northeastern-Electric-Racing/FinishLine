@@ -1,4 +1,4 @@
-import { User } from 'shared';
+import { Project, User } from 'shared';
 import { Box, FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { fullNamePipe } from '../../../utils/pipes';
@@ -13,7 +13,7 @@ interface ProjectEditDetailsProps {
   users: User[];
   control: Control<ProjectFormInput>;
   errors: FieldErrorsImpl<ProjectFormInput>;
-  createProject?: boolean;
+  project?: Project;
   projectManager?: string;
   projectLead?: string;
   setProjectManagerId: (projectManager?: string) => void;
@@ -31,7 +31,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   users,
   control,
   errors,
-  createProject = false,
+  project,
   projectManager,
   projectLead,
   setProjectLeadId,
@@ -43,7 +43,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
         Project Details
       </Typography>
       <Grid container spacing={3}>
-        <Grid item lg={2.4} md={6} xs={12}>
+        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Project Name</FormLabel>
             <ReactHookTextField
@@ -54,12 +54,12 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item lg={2.4} md={6} xs={12}>
+        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <ChangeRequestDropdown control={control} name="crId" />
           </FormControl>
         </Grid>
-        {createProject && (
+        {!project && (
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
               <FormControl fullWidth>
@@ -79,9 +79,9 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             </Grid>
           </>
         )}
-        <Grid item lg={2.4} md={6} xs={12}>
+        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Budget</FormLabel>
+            <FormLabel>{!project ? 'Budget (optional)' : 'Budget'}</FormLabel>
             <ReactHookTextField
               name="budget"
               startAdornment={<AttachMoney />}
@@ -95,7 +95,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
       </Grid>
       <Grid container spacing={2}>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 3, md: 3, lg: 2 }}>
-          <FormLabel>Project Lead</FormLabel>
+          <FormLabel>{!project ? 'Project Lead (optional)' : 'Project Lead'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectLeadId(value?.id)}
@@ -106,7 +106,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
           />
         </Grid>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 0, md: 0, lg: 2 }}>
-          <FormLabel>Project Manager</FormLabel>
+          <FormLabel>{!project ? 'Project Manager (optional)' : 'Project Manager'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
             onChange={(_event, value) => setProjectManagerId(value?.id)}

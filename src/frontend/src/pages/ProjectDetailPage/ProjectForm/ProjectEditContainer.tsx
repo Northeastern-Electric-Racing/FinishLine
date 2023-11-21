@@ -32,7 +32,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const rules = rulesToObject(project.rules);
   const crId = project.changes[0].changeRequestId;
 
-  const { mutateAsync } = useEditSingleProject(project.wbsNum);
+  const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -48,6 +48,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     };
   });
 
+  if (isLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 

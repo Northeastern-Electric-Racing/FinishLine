@@ -53,7 +53,7 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setProjectManagerId: (id?: string) => void;
   setProjectLeadId: (id?: string) => void;
-  createProject?: boolean;
+  //createProject?: boolean;
   projectLeadId?: string;
   projectManagerId?: string;
 }
@@ -66,39 +66,47 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   defaultValues,
   setProjectManagerId,
   setProjectLeadId,
-  createProject,
+  //createProject,
   projectLeadId,
   projectManagerId
 }) => {
   const allUsers = useAllUsers();
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is required!'),
-    budget: createProject
-      ? yup.number().optional()
-      : yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-    links: createProject
-      ? yup.array().of(
-          yup
-            .object()
-            .optional()
-            .shape({
-              linkTypeName: yup.string().optional(),
-              url: yup.string().optional().url('Invalid URL')
-            })
-        )
-      : yup.array().of(
+  // teamId, carNumber, name, crid, summary
+  const schema = !project
+    ? yup.object().shape({
+        name: yup.string().required('Name is required!'),
+        crId: yup.number().min(1).required('crId must be a non-zero number!'),
+        carNumber: yup.number().min(0).required('A car number is required!'),
+        teamId: yup.string().required('A Team Id is required'),
+        budget: yup.number().optional(),
+        summary: yup.string().required('Summary is required!'),
+        links: yup
+          .array()
+          .optional()
+          .of(
+            yup
+              .object()
+              .optional()
+              .shape({
+                linkTypeName: yup.string().optional(),
+                url: yup.string().optional().url('Invalid URL')
+              })
+          )
+      })
+    : yup.object().shape({
+        name: yup.string().required('Name is required!'),
+        crId: yup.number().min(1).required('crId must be a non-zero number!'),
+        budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+        summary: yup.string().required('Summary is required!'),
+        links: yup.array().of(
           yup.object().shape({
             linkTypeName: yup.string().required('Link Type is required!'),
             url: yup.string().required('URL is required!').url('Invalid URL')
           })
         ),
-    summary: yup.string().required('Summary is required!'),
-    crId: yup.number().min(1).required('crId must be a non-zero number!'),
-    teamId: createProject ? yup.string().required('A Team Id is required') : yup.string().optional(),
-    carNumber: createProject ? yup.number().min(0).required('A car number is required!') : yup.number().optional()
-  });
-
+        teamId: yup.string().optional(),
+        carNumber: yup.number().optional()
+      });
   const {
     register,
     handleSubmit,
@@ -152,6 +160,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       }}
     >
       <PageLayout
+        stickyHeader
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
@@ -173,17 +182,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           setProjectLeadId={setProjectLeadId}
           projectLead={projectLeadId}
           projectManager={projectManagerId}
-          createProject={createProject}
+          project={project}
         />
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>
-              {'Links'}
+              {!project ? 'Links (optional)' : 'Links'}
             </Typography>
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
           </Box>
           <Box>
-            <Typography variant="h5">{'Goals'}</Typography>
+            <Typography variant="h5">{!project ? 'Goals (optional)' : 'Goals'}</Typography>
             <ReactHookEditableList
               name="goals"
               register={register}
@@ -194,7 +203,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
           <Box>
-            <Typography variant="h5">{'Features'}</Typography>
+            <Typography variant="h5">{!project ? 'Features (optional)' : 'Features'}</Typography>
             <ReactHookEditableList
               name="features"
               register={register}
@@ -205,7 +214,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
           <Box>
-            <Typography variant="h5">{'Constraints'}</Typography>
+            <Typography variant="h5">{!project ? 'Constraints (optional)' : 'Constraints'}</Typography>
             <ReactHookEditableList
               name="constraints"
               register={register}
@@ -216,7 +225,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
           <Box>
-            <Typography variant="h5">{'Rules'}</Typography>
+            <Typography variant="h5">{!project ? 'Rules (optional)' : 'Rules'}</Typography>
             <ReactHookEditableList
               name="rules"
               register={register}
