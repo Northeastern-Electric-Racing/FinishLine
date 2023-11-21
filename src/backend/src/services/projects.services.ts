@@ -1041,6 +1041,32 @@ export default class ProjectsService {
   }
 
   /**
+   * Delete material in the database
+   * @param materialId the id number of the given material
+   * @param currentUser the current user currently accessing the material
+   * @returns the deleted material
+   * @throws if the user does not have permission, or materidal already deleted
+   */
+  static async deleteMaterial(currentUser: User, materialId: string): Promise<Material> {
+    if (!isLeadership(currentUser.role)) {
+      throw new AccessDeniedException('Only Leadership can delete materials');
+    }
+
+    const material = await prisma.material.findUnique({ where: { materialId } });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
+
+    const deletedMaterial = await prisma.material.update({
+      where: { materialId },
+      data: { dateDeleted: new Date(), userDeletedId: currentUser.userId }
+    });
+
+    return deletedMaterial;
+  }
+
+  /**
    * Update a material
    * @param submitter the submitter of the request
    * @param materialId the material id of the material being edited
