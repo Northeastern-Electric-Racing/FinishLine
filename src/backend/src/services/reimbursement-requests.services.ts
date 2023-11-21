@@ -702,13 +702,13 @@ export default class ReimbursementRequestService {
    * @returns the updated vendor
    */
   static async editVendors(name: string, vendorId: string, submitter: User) {
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('only Admins can edit vendors');
+    if (!isHead(submitter.role)) throw new AccessDeniedAdminOnlyException('only Admins and Heads can edit vendors');
 
-    const vendorExists = await prisma.vendor.findUnique({
+    const vendorUniqueName = await prisma.vendor.findUnique({
       where: { name }
     });
 
-    if (!!vendorExists) throw new HttpException(400, 'vendor name already exists');
+    if (!!vendorUniqueName) throw new HttpException(400, 'vendor name already exists');
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
