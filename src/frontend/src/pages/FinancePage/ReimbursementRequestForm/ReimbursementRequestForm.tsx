@@ -3,7 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs } from 'shared';
+import {
+  ClubAccount,
+  OtherProductReason,
+  OtherReimbursementProductCreateArgs,
+  ReimbursementProductFormArgs,
+  ReimbursementReceiptUploadArgs,
+  WbsNumber,
+  WbsReimbursementProductCreateArgs
+} from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -16,16 +24,20 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
-export interface ReimbursementRequestFormInput {
+export interface ReimbursementRequestInformation {
   vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
 }
+export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
+  reimbursementProducts: ReimbursementProductFormArgs[];
+}
 
-export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
+export interface ReimbursementRequestDataSubmission extends ReimbursementRequestInformation {
+  otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
 }
 
@@ -81,7 +93,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
-      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
+      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
   });
@@ -151,12 +163,33 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     try {
       //total cost is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
-      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductCreateArgs) => {
+      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         return { ...product, cost: Math.round(product.cost * 100) };
       });
+
+      const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
+      const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
+
+      reimbursementProducts.forEach((product) => {
+        if (product.reason instanceof Object) {
+          wbsReimbursementProducts.push({
+            reason: product.reason as WbsNumber,
+            cost: product.cost,
+            name: product.name
+          });
+        } else {
+          otherReimbursementProducts.push({
+            reason: product.reason as OtherProductReason,
+            cost: product.cost,
+            name: product.name
+          });
+        }
+      });
+
       const reimbursementRequestId = await submitData({
         ...data,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         totalCost
       });
       history.push(routes.FINANCE + '/' + reimbursementRequestId);

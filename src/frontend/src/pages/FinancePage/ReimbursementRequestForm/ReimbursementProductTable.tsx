@@ -21,7 +21,7 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { OtherProductReason, ReimbursementProductCreateArgs, WbsNumber, validateWBS, wbsPipe } from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
@@ -35,9 +35,9 @@ const otherCategoryOptions = [
 ];
 
 interface ReimbursementProductTableProps {
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
-  appendProduct: (args: ReimbursementProductCreateArgs) => void;
+  appendProduct: (args: ReimbursementProductFormArgs) => void;
   wbsElementAutocompleteOptions: {
     label: string;
     id: string;

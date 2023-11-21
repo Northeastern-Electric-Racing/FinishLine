@@ -5,25 +5,16 @@
 
 import {
   OtherProductReason,
+  OtherReimbursementProductCreateArgs,
   ReimbursementProductCreateArgs,
-  ReimbursementProductReasonCreateArgs,
   ReimbursementReceiptCreateArgs,
-  ValidatedReimbursementProductReasonCreateArgs,
-  ValidatedWbsArgs,
-  WbsNumber,
-  wbsPipe
+  ValidatedWbsReimbursementProductCreateArgs,
+  wbsPipe,
+  WbsReimbursementProductCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import {
-  Other_Reimbursement_Product_Reason,
-  Prisma,
-  Receipt,
-  Reimbursement_Product,
-  Reimbursement_Request,
-  Team,
-  User
-} from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
@@ -60,35 +51,24 @@ export const removeDeletedReceiptPictures = async (
  * @throws if any of the wbs elements are deleted or dont exist
  */
 export const validateReimbursementProducts = async (
-  reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]
-): Promise<
-  {
-    name: string;
-    cost: number;
-    reason: ValidatedReimbursementProductReasonCreateArgs;
-  }[]
-> => {
-  if (reimbursementProductCreateArgs.length === 0) {
+  otherReimbursementProductCreateArgs: OtherReimbursementProductCreateArgs[],
+  wbsReimbursementProductsCreateArgs: WbsReimbursementProductCreateArgs[]
+): Promise<{
+  validatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  validatedWbsReimbursementProducts: ValidatedWbsReimbursementProductCreateArgs[];
+}> => {
+  if (otherReimbursementProductCreateArgs.length + wbsReimbursementProductsCreateArgs.length === 0) {
     throw new HttpException(400, 'You must have at least one product to reimburse');
   }
-
-  /**
-   * Aggregate all the wbsNums for all the reimbursement products
-   */
-  const reasons = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.reason);
 
   /**
    * Goes through each wbsNum and finds the wbs element associated with it
    * Checks if the wbs element exists and is not deleted
    */
-  const reimbursementProductsWithReason: Promise<{
-    name: string;
-    cost: number;
-    reason: ValidatedReimbursementProductReasonCreateArgs;
-  }>[] = reasons.map(async (reason: ReimbursementProductReasonCreateArgs, index) => {
-    //check whether the reason is a WBS Number
-    if ((reason as WbsNumber).carNumber !== undefined) {
-      const wbsNum = reason as WbsNumber;
+  const validatedWbsReimbursementProductsPromises: Promise<ValidatedWbsReimbursementProductCreateArgs>[] =
+    wbsReimbursementProductsCreateArgs.map(async (product) => {
+      //check whether the reason is a WBS Number
+      const wbsNum = product.reason;
       const wbsElement = await prisma.wBS_Element.findFirst({
         where: {
           carNumber: wbsNum.carNumber,
@@ -100,20 +80,22 @@ export const validateReimbursementProducts = async (
       if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
       return {
-        name: reimbursementProductCreateArgs[index].name,
-        cost: reimbursementProductCreateArgs[index].cost,
-        reason: { wbsElementId: wbsElement.wbsElementId, wbsNum }
+        ...product,
+        wbsElementId: wbsElement.wbsElementId,
+        wbsNum
       };
-    }
-    const otherReason = reason as OtherProductReason;
+    });
+
+  const validatedOtherReimbursementProducts = otherReimbursementProductCreateArgs.map((product) => {
     return {
-      name: reimbursementProductCreateArgs[index].name,
-      cost: reimbursementProductCreateArgs[index].cost,
-      reason: otherReason
+      ...product,
+      reason: product.reason as OtherProductReason
     };
   });
 
-  return Promise.all(reimbursementProductsWithReason);
+  const validatedWbsReimbursementProducts = await Promise.all(validatedWbsReimbursementProductsPromises);
+
+  return { validatedOtherReimbursementProducts, validatedWbsReimbursementProducts };
 };
 
 /**
@@ -124,22 +106,31 @@ export const validateReimbursementProducts = async (
  */
 export const updateReimbursementProducts = async (
   currentReimbursementProducts: Reimbursement_Product[],
-  updatedReimbursementProducts: ReimbursementProductCreateArgs[],
+  updatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+  updatedWbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
   reimbursementRequestId: string
 ) => {
-  if (updatedReimbursementProducts.length === 0) {
+  if (updatedOtherReimbursementProducts.length + updatedWbsReimbursementProducts.length === 0) {
     throw new HttpException(400, 'A reimbursement request must have at least one reimbursement product!');
   }
 
   //if a product has an id that means it existed before and was updated
-  const updatedExistingProducts = updatedReimbursementProducts.filter((product) => product.id);
+  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter((product) => product.id);
+
+  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter((product) => product.id);
+
+  const updatedExistingProducts = (updatedOtherExistingProducts as ReimbursementProductCreateArgs[]).concat(
+    updatedWbsExistingProducts as ReimbursementProductCreateArgs[]
+  );
 
   validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
 
   const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
 
   //if the product does not have an id that means it is new
-  const newProducts = updatedReimbursementProducts.filter((product) => !product.id);
+  const newOtherProducts = updatedOtherReimbursementProducts.filter((product) => !product.id);
+
+  const newWbsProducts = updatedWbsReimbursementProducts.filter((product) => !product.id);
 
   //if there are products that exist in the current database but were not included in this edit, that means they were deleted
   const deletedProducts = currentReimbursementProducts.filter(
@@ -148,7 +139,7 @@ export const updateReimbursementProducts = async (
 
   await updateDeletedProducts(deletedProducts);
 
-  await createNewProducts(newProducts, reimbursementRequestId);
+  await createNewProducts(newOtherProducts, newWbsProducts, reimbursementRequestId);
 
   await updateExistingProducts(updatedExistingProducts);
 };
@@ -210,39 +201,44 @@ const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
 };
 
 /**
- * Creates the new products in the database
- * @param products the products to create
+ * Validates and Creates the new products in the database
+ * @param otherProducts the other reimbursement products to create
+ * @param wbsProducts the wbs reimbursement products to create
  */
-const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
+const createNewProducts = async (
+  otherProducts: OtherReimbursementProductCreateArgs[],
+  wbsProducts: WbsReimbursementProductCreateArgs[],
+  reimbursementRequestId: string
+) => {
   //create the new reimbursement products
-  if (products.length !== 0) {
-    const validatedReimbursementProducts = await validateReimbursementProducts(products);
-    await createReimbursementProducts(validatedReimbursementProducts, reimbursementRequestId);
+  if (otherProducts.length + wbsProducts.length !== 0) {
+    const validatedReimbursementProducts = await validateReimbursementProducts(otherProducts, wbsProducts);
+    await createReimbursementProducts(
+      validatedReimbursementProducts.validatedOtherReimbursementProducts,
+      validatedReimbursementProducts.validatedWbsReimbursementProducts,
+      reimbursementRequestId
+    );
   }
 };
 
 /**
  * Takes in validated reimbursement products and create them in the database
- * @param validatedReimbursementProducts validated create args for the reimbursement product
+ * @param validatedOtherReimbursementProducts the other reimbursement products to create
+ * @param validatedWbsReimbursementProducts the wbs reimbursement products to create
  * @param reimbursementRequestId id of the reimbursement request to associate the reimbursement products with
  */
 export const createReimbursementProducts = async (
-  validatedReimbursementProducts: {
-    name: string;
-    cost: number;
-    reason: ValidatedReimbursementProductReasonCreateArgs;
-  }[],
+  validatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+  validatedWbsReimbursementProducts: ValidatedWbsReimbursementProductCreateArgs[],
   reimbursementRequestId: string
-) => {
-  const reimbursementProductsPromises = validatedReimbursementProducts.map(async (product) => {
+): Promise<void> => {
+  const otherReimbursementProductPromises = validatedOtherReimbursementProducts.map(async (product) => {
     const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
       data: {
-        wbsElementId: (product.reason as ValidatedWbsArgs).wbsElementId,
-        otherReason: !!(product.reason as ValidatedWbsArgs).wbsElementId
-          ? undefined
-          : (product.reason as Other_Reimbursement_Product_Reason)
+        otherReason: product.reason
       }
     });
+
     return await prisma.reimbursement_Product.create({
       data: {
         name: product.name,
@@ -253,7 +249,28 @@ export const createReimbursementProducts = async (
     });
   });
 
-  await Promise.all(reimbursementProductsPromises);
+  const wbsReimbursementProductPromises = validatedWbsReimbursementProducts.map(async (product) => {
+    const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
+      data: {
+        wbsElement: {
+          connect: {
+            wbsElementId: product.wbsElementId
+          }
+        }
+      }
+    });
+
+    return await prisma.reimbursement_Product.create({
+      data: {
+        name: product.name,
+        cost: product.cost,
+        reimbursementRequestId,
+        reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
+      }
+    });
+  });
+
+  await Promise.all([...otherReimbursementProductPromises, ...wbsReimbursementProductPromises]);
 };
 
 /**
@@ -284,7 +301,7 @@ export const validateUserIsPartOfFinanceTeam = async (user: User) => {
  */
 export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
-    throw new Error('FINANCE_TEAM_ID not in env');
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
   }
 
   const financeTeam = await prisma.team.findUnique({
@@ -309,7 +326,7 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
  */
 export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
   if (!process.env.FINANCE_TEAM_ID) {
-    throw new Error('FINANCE_TEAM_ID not in env');
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
   }
 
   const financeTeam = await prisma.team.findUnique({

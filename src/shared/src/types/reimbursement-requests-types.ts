@@ -79,17 +79,27 @@ export interface ExpenseType {
   allowedRefundSources: ClubAccount[];
 }
 
-export type ValidatedWbsArgs = { wbsElementId: number; wbsNum: WbsNumber };
-
-export type ValidatedReimbursementProductReasonCreateArgs = ValidatedWbsArgs | OtherProductReason;
-
-export type ReimbursementProductReasonCreateArgs = WbsNumber | OtherProductReason;
-
 export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
-  reason: ReimbursementProductReasonCreateArgs;
+}
+
+export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
+  reason: WbsNumber | OtherProductReason;
+}
+
+export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  reason: OtherProductReason;
+}
+
+export interface WbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  reason: WbsNumber;
+}
+
+export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  wbsElementId: number;
+  wbsNum: WbsNumber;
 }
 
 export interface ReimbursementReceiptCreateArgs {

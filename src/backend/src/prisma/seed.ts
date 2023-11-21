@@ -860,6 +860,7 @@ const performSeed: () => Promise<void> = async () => {
     new Date(),
     vendor.vendorId,
     ClubAccount.CASH,
+    [],
     [
       {
         name: 'GLUE',
