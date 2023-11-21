@@ -32,7 +32,6 @@ import {
 import {
   imageDownloadUrl,
   imageFileUrl,
-  imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestSaboSubmitted
 } from '../../../utils/reimbursement-request.utils';
