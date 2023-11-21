@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
-import { createMaterial, editMaterial, getAllManufacturers, getAllMaterialTypes, getAllUnits } from '../apis/bom.api';
+import {
+  createMaterial,
+  deleteSingleMaterial,
+  editMaterial,
+  getAllManufacturers,
+  getAllMaterialTypes,
+  getAllUnits
+} from '../apis/bom.api';
 import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
 
 /**
@@ -51,7 +58,7 @@ export const useEditMaterial = (materialId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['material']);
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );
@@ -72,7 +79,28 @@ export const useCreateMaterial = (wbsNum: WbsNumber) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['material']);
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to delete a material.
+ * @param materialId The material to delete's id
+ * @returns mutation function to delete a material
+ */
+export const useDeleteMaterial = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { materialId: string }>(
+    ['materials', 'delete'],
+    async (payload: { materialId: string }) => {
+      const data = await deleteSingleMaterial(payload.materialId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
       }
     }
   );

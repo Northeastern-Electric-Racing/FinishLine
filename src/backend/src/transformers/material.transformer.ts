@@ -26,7 +26,7 @@ const assemblyPreviewTransformer = (assembly: Prisma.AssemblyGetPayload<{}>): As
 export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof materialQueryArgs>): Material => {
   return {
     materialId: material.materialId,
-    assemblyId: material.assemblyId ?? '',
+    assemblyId: material.assemblyId ?? undefined,
     assembly: material.assembly ? assemblyPreviewTransformer(material.assembly) : undefined,
     name: material.name,
     wbsElementId: material.wbsElementId,

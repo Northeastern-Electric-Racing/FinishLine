@@ -1,4 +1,4 @@
-import { WbsNumber } from 'shared';
+import { Material, WbsNumber } from 'shared';
 import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -51,6 +51,15 @@ export const createMaterial = async (wbsNum: WbsNumber, material: MaterialFormIn
  * @returns The edited material
  */
 export const editMaterial = async (materialId: string, material: MaterialFormInput) => {
-  const { data } = await axios.put(apiUrls.bomEditMaterial(materialId), material);
+  const { data } = await axios.post(apiUrls.bomEditMaterial(materialId), material);
   return data;
+};
+
+/**
+ * Soft deletes a material.
+ * @param materialId
+ * @returns
+ */
+export const deleteSingleMaterial = async (materialId: string) => {
+  return axios.post<Material>(apiUrls.bomDeleteMaterial(materialId), {});
 };

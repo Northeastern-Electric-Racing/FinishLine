@@ -4,6 +4,7 @@ import { useEditMaterial } from '../../../hooks/bom.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import MaterialForm, { MaterialFormInput } from './MaterialForm';
+import React from 'react';
 
 export interface EditMaterialModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
     try {
       await editMaterial(data);
       toast.success('Material edited successfully');
+      onHide();
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

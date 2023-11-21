@@ -22,6 +22,7 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
     try {
       await createMaterial(data);
       toast.success('Material Created Successfully');
+      onHide();
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

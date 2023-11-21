@@ -13,9 +13,11 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         links: { ...linkQueryArgs },
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
         materials: {
+          where: { dateDeleted: null },
           ...materialQueryArgs
         },
         assemblies: {
+          where: { dateDeleted: null },
           ...assemblyQueryArgs
         }
       }
