@@ -43,7 +43,9 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     deletedByUserId: null,
     changes: [],
     tasks: [],
-    links: []
+    links: [],
+    materials: [],
+    assemblies: []
   },
   workPackages: [
     {
@@ -68,7 +70,9 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
         projectManagerId: null,
         projectManager: null,
         changes: [],
-        links: []
+        links: [],
+        materials: [],
+        assemblies: []
       },
       blockedBy: [],
       expectedActivities: [],
@@ -104,7 +108,9 @@ export const sharedProject1: SharedProject = {
   otherConstraints: [],
   workPackages: [],
   tasks: [],
-  teams: []
+  teams: [],
+  materials: [],
+  assemblies: []
 };
 
 export const prismaAssembly1: Assembly = {
@@ -121,7 +127,7 @@ export const prismaAssembly1: Assembly = {
 export const prismaMaterialType: PrismaMaterialType = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1,
+  userCreatedId: 1,
   dateDeleted: null
 };
 
@@ -153,21 +159,21 @@ export const prismaMaterial: Material = {
 export const prismaManufacturer1: Manufacturer = {
   name: 'Manufacturer1',
   dateCreated: new Date('10-1-2023'),
-  creatorId: 1,
+  userCreatedId: 1,
   dateDeleted: null
 };
 
 export const prismaManufacturer2: Manufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  creatorId: 1,
+  userCreatedId: 1,
   dateDeleted: new Date('10-18-2023')
 };
 
 export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),
-  creatorId: batman.userId,
+  userCreatedId: batman.userId,
   dateDeleted: null
 };
 

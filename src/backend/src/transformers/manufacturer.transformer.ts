@@ -8,7 +8,7 @@ import { Manufacturer } from 'shared';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import { materialPreviewTransformer } from './material.transformer';
 
-export const manufacturerTransformer = (
+const manufacturerTransformer = (
   manufacturer: Prisma.ManufacturerGetPayload<typeof manufacturerQueryArgs>
 ): Manufacturer => {
   return {
@@ -20,3 +20,5 @@ export const manufacturerTransformer = (
     materials: manufacturer.materials.map(materialPreviewTransformer)
   };
 };
+
+export default manufacturerTransformer;

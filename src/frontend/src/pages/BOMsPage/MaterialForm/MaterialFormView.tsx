@@ -1,7 +1,7 @@
 import { Close } from '@mui/icons-material';
 import { Dialog, DialogContent, DialogTitle, FormControl, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { Box } from '@mui/system';
-import { Control, Controller, FieldErrors, Form, UseFormHandleSubmit } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import ReactHookTextField from '../../../components/ReactHookTextField';

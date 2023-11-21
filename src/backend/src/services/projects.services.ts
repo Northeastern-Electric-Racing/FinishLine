@@ -42,14 +42,14 @@ import {
 } from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
-import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
-import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
 import { materialPreviewTransformer } from '../transformers/material.transformer';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import manufacturerTransformer from '../transformers/manufacturer.transformer';
 
 export default class ProjectsService {
   /**

@@ -640,7 +640,7 @@ describe('Projects', () => {
       const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
 
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
-      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+      expect(manufacturer.userCreatedId).toBe(prismaManufacturer1.userCreatedId);
     });
 
     test('deleteManufacturer works', async () => {
