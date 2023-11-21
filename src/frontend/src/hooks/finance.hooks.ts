@@ -98,7 +98,7 @@ export const useCreateReimbursementRequest = () => {
   return useMutation<ReimbursementRequest, Error, CreateReimbursementRequestPayload>(
     ['reimbursement-requests', 'create'],
     async (formData: CreateReimbursementRequestPayload) => {
-      console.log(formData)
+      console.log(formData);
       const { data } = await createReimbursementRequest(formData);
       return data;
     }
