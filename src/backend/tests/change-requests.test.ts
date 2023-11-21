@@ -459,7 +459,7 @@ describe('Change Requests', () => {
 
     test('Change request successfully assigned reviewers', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
-      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, requestedReviewers: [] });
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
       await ChangeRequestsService.requestCRReview(batman, [1], 1);
