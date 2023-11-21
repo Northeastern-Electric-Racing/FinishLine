@@ -26,8 +26,12 @@ const ProjectCreateContainer: React.FC = () => {
   const links: { linkId: string; url: string; linkTypeName: string }[] = [];
   const goals: { bulletId: number; detail: string }[] = [];
   const features: { bulletId: number; detail: string }[] = [];
-  const rules: { rule: string }[] = [];
+  const temprules: string[] = [];
+  const rules: { rule: string }[] = temprules.map((rule) => {
+    return { rule };
+  });
   const constraints: { bulletId: number; detail: string }[] = [];
+  const teamId = '';
 
   const { mutateAsync } = useCreateSingleProject();
   const {
@@ -36,7 +40,7 @@ const ProjectCreateContainer: React.FC = () => {
     isError: allLinkTypesIsError,
     error: allLinkTypesError
   } = useAllLinkTypes();
-  const [projectManagerId, setprojectManagerId] = useState<string | undefined>();
+  const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
   const crId = 0;
   const carNumber = 0;
@@ -62,6 +66,8 @@ const ProjectCreateContainer: React.FC = () => {
     name,
     budget,
     summary,
+    teamId,
+    carNumber,
     links,
     crId,
     goals,
@@ -73,7 +79,7 @@ const ProjectCreateContainer: React.FC = () => {
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links } = data;
+    const { name, budget, summary, links, crId, teamId, carNumber } = data;
     const rules = data.rules.map((rule) => rule.rule);
 
     const goals = mapBulletsToPayload(data.goals);
@@ -82,11 +88,12 @@ const ProjectCreateContainer: React.FC = () => {
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: crId ?? 0,
+        crId,
         name,
-        carNumber: carNumber ?? 0,
+        carNumber,
         summary,
-        budget: budget,
+        teamIds: [teamId],
+        budget,
         rules,
         goals,
         features,
@@ -111,7 +118,9 @@ const ProjectCreateContainer: React.FC = () => {
       onSubmit={onSubmit}
       defaultValues={defaultValues}
       setProjectLeadId={setProjectLeadId}
-      setProjectManagerId={setprojectManagerId}
+      setProjectManagerId={setProjectManagerId}
+      projectLeadId={projectLeadId}
+      projectManagerId={projectManagerId}
       createProject={true}
     />
   );

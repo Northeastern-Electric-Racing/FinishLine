@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Alert, Link, Button } from '@mui/material';
+import { Typography, Alert, Link } from '@mui/material';
 import { routes } from '../../utils/routes';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -13,13 +13,11 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHistory } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
-import { useState } from 'react';
 
 const Home = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-  const [disable, setDisabled] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -41,7 +39,6 @@ const Home = () => {
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-      <Button onClick={() => setDisabled(true)} disabled={disable}></Button>
     </PageLayout>
   );
 };

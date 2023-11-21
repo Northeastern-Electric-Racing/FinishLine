@@ -60,23 +60,25 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
           </FormControl>
         </Grid>
         {createProject && (
-          <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
-            <FormControl fullWidth>
-              <FormLabel>Car Number</FormLabel>
-              <ReactHookTextField
-                name="car-number"
-                control={control}
-                placeholder="Enter a car number..."
-                errorMessage={errors.name}
-              />
-            </FormControl>
-          </Grid>
+          <>
+            <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
+              <FormControl fullWidth>
+                <FormLabel>Car Number</FormLabel>
+                <ReactHookTextField
+                  name="car-number"
+                  control={control}
+                  placeholder="Enter a car number..."
+                  errorMessage={errors.name}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item lg={2.4} md={6} xs={12}>
+              <FormControl fullWidth>
+                <TeamDropdown control={control} name="teamId" />
+              </FormControl>
+            </Grid>
+          </>
         )}
-        <Grid item lg={2.4} md={6} xs={12}>
-          <FormControl fullWidth>
-            <TeamDropdown control={control} name="teamId" />
-          </FormControl>
-        </Grid>
         <Grid item lg={2.4} md={6} xs={12}>
           <FormControl fullWidth>
             <FormLabel>Budget</FormLabel>

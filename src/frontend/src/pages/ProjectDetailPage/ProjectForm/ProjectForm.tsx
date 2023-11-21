@@ -2,7 +2,6 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
 import { LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
@@ -26,6 +25,7 @@ export interface ProjectFormInput {
   summary: string;
   links: LinkCreateArgs[];
   crId: number;
+  carNumber: number;
   goals: {
     bulletId: number;
     detail: string;
@@ -41,21 +41,8 @@ export interface ProjectFormInput {
   rules: {
     rule: string;
   }[];
+  teamId: string;
 }
-
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-  links: yup.array().of(
-    yup.object().shape({
-      linkTypeName: yup.string().required('Link Type is required!'),
-      url: yup.string().required('URL is required!').url('Invalid URL')
-    })
-  ),
-  summary: yup.string().required('Summary is required!'),
-  crId: yup.number().min(1).required('crId must be a non-zero number!')
-  //carNumber: yup.number().min(0).required('A car number is required!')
-});
 
 interface ProjectFormContainerProps {
   requiredLinkTypeNames: string[];
@@ -84,6 +71,33 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 }) => {
   const allUsers = useAllUsers();
 
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    budget: createProject
+      ? yup.number().optional()
+      : yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+    links: createProject
+      ? yup.array().of(
+          yup
+            .object()
+            .optional()
+            .shape({
+              linkTypeName: yup.string().optional(),
+              url: yup.string().optional().url('Invalid URL')
+            })
+        )
+      : yup.array().of(
+          yup.object().shape({
+            linkTypeName: yup.string().required('Link Type is required!'),
+            url: yup.string().required('URL is required!').url('Invalid URL')
+          })
+        ),
+    summary: yup.string().required('Summary is required!'),
+    crId: yup.number().min(1).required('crId must be a non-zero number!'),
+    teamId: createProject ? yup.string().required('A Team Id is required') : yup.string().optional(),
+    carNumber: createProject ? yup.number().min(0).required('A car number is required!') : yup.number().optional()
+  });
+
   const {
     register,
     handleSubmit,
@@ -96,12 +110,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       name: defaultValues?.name,
       budget: defaultValues?.budget,
       summary: defaultValues?.summary,
-      crId: defaultValues.crId,
+      crId: defaultValues?.crId,
+      carNumber: defaultValues?.carNumber,
       rules: defaultValues?.rules,
       links: defaultValues?.links,
       goals: defaultValues?.goals,
       features: defaultValues?.features,
-      constraints: defaultValues?.constraints
+      constraints: defaultValues?.constraints,
+      teamId: defaultValues?.teamId
     }
   });
 
@@ -156,6 +172,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           setProjectLeadId={setProjectLeadId}
           projectLead={projectLeadId}
           projectManager={projectManagerId}
+          createProject={createProject}
         />
         <Stack spacing={4}>
           <Box>
@@ -197,17 +214,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               bulletName="Constraint"
             />
           </Box>
-          <Box>
-            <Typography variant="h5">{'Rules'}</Typography>
-            <ReactHookEditableList
-              name="rules"
-              register={register}
-              ls={rules}
-              append={appendRule}
-              remove={removeRule}
-              bulletName="Rule"
-            />
-          </Box>
+          {!createProject && (
+            <Box>
+              <Typography variant="h5">{'Rules'}</Typography>
+              <ReactHookEditableList
+                name="rules"
+                register={register}
+                ls={rules}
+                append={appendRule}
+                remove={removeRule}
+                bulletName="Rule"
+              />
+            </Box>
+          )}
         </Stack>
       </PageLayout>
     </form>

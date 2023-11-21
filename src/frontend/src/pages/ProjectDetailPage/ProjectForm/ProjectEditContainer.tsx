@@ -5,7 +5,6 @@
 
 import { Project } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { useQuery } from '../../../hooks/utils.hooks';
 import { bulletsToObject, mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
@@ -22,7 +21,6 @@ interface ProjectEditContainerProps {
 }
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
-  const query = useQuery();
   const toast = useToast();
   const { name, budget, summary } = project;
   const { mutateAsync } = useEditSingleProject(project.wbsNum);
@@ -46,10 +44,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const goals = bulletsToObject(project.goals);
   const features = bulletsToObject(project.features);
   const constraints = bulletsToObject(project.otherConstraints);
-  const rules = project.rules.map((rule) => {
+  const rules: { rule: string }[] = project.rules.map((rule) => {
     return { rule };
   });
-  const crId = parseInt(query.get('crId') || '');
+  const crId = project.changes[0].changeRequestId;
 
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
@@ -72,13 +70,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     name,
     budget,
     summary,
+    // teamId and carNumber aren't used for projectEdit
+    teamId: '',
+    carNumber: 0,
     links,
     crId,
     goals,
     features,
     constraints,
     rules,
-    projectLeadId: projectLeadId,
+    projectLeadId,
     projectManagerId
   };
 
@@ -94,7 +95,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     try {
       const payload: EditSingleProjectPayload = {
         name,
-        budget: budget,
+        budget,
         summary,
         links,
         projectId: project.id,
