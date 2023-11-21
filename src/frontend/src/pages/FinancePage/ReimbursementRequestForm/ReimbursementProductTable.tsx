@@ -25,6 +25,7 @@ import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { useTheme } from '@mui/system';
 
 interface ReimbursementProductTableProps {
   reimbursementProducts: ReimbursementProductCreateArgs[];
@@ -73,6 +74,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
+
+  const userTheme = useTheme();
+  const hoverColor = userTheme.palette.action.hover;
 
   return (
     <TableContainer>
@@ -147,7 +151,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                           <IconButton
                             sx={{
                               '&:focus': {
-                                backgroundColor: '#f5f5f5'
+                                backgroundColor: hoverColor
                               }
                             }}
                             onClick={() => removeProduct(product.index)}
@@ -162,7 +166,10 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     sx={{
                       margin: '4px',
                       '&:focus': {
-                        backgroundColor: '#fdf8f8'
+                        backgroundColor: hoverColor
+                      },
+                      '&:hover': {
+                        backgroundColor: hoverColor
                       }
                     }}
                     startIcon={<Add />}
