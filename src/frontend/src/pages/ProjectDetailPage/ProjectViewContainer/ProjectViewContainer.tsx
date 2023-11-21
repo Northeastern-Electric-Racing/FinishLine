@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { Project, isGuest, isAdmin } from 'shared';
+import { Project, isGuest, isAdmin, isLeadership } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
@@ -30,7 +30,8 @@ import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
 import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
-import CreateMaterialModal from '../../BOMsPage/MaterialForm/CreateMaterialModal';
+import BOMTab from './BOMTab';
+import SavingsIcon from '@mui/icons-material/Savings';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -49,7 +50,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tab, setTab] = useState(0);
-  const [showCreateMaterial, setShowCreateMaterial] = useState(false);
   const dropdownOpen = Boolean(anchorEl);
 
   if (isLoading || !favoriteProjects) return <LoadingIndicator />;
@@ -58,10 +58,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   const { teamAsHeadId } = user;
   const projectIsFavorited = favoriteProjects.map((favoriteProject) => favoriteProject.id).includes(project.id);
-
-  const hideMaterialModal = () => {
-    setShowCreateMaterial(false);
-  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -111,6 +107,16 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
+  const SuggestBudgetIncreaseButton = () => (
+    //todo: hookup
+    <MenuItem onClick={() => console.log()} disabled={!isLeadership(user.role)}>
+      <ListItemIcon>
+        <SavingsIcon fontSize="small" />
+      </ListItemIcon>
+      Suggest Budget Increase
+    </MenuItem>
+  );
+
   const AssignToMyTeamButton = () => {
     const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
       ? 'Unassign from My Team'
@@ -134,17 +140,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       Delete
     </MenuItem>
   );
-
-  const CreateMaterialButton = () => {
-    return (
-      <MenuItem onClick={() => setShowCreateMaterial(true)}>
-        <ListItemIcon>
-          <SyncAltIcon fontSize="small" />
-        </ListItemIcon>
-        Create Material
-      </MenuItem>
-    );
-  };
 
   const projectActionsDropdown = (
     <Box ml={2}>
@@ -171,9 +166,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
+        <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
         <DeleteButton />
-        <CreateMaterialButton />
       </Menu>
     </Box>
   );
@@ -201,7 +196,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'tasks', tabName: 'Tasks' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'changes', tabName: 'Changes' }
+            { tabUrlValue: 'changes', tabName: 'Changes' },
+            { tabUrlValue: 'bom', tabName: 'BOM' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -218,14 +214,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ScopeTab project={project} />
       ) : tab === 3 ? (
         <ProjectGantt workPackages={project.workPackages} />
-      ) : (
+      ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
+      ) : (
+        <BOMTab project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
-      )}
-      {showCreateMaterial && (
-        <CreateMaterialModal open={showCreateMaterial} wbsElement={project} onHide={hideMaterialModal} />
       )}
     </PageLayout>
   );

@@ -10,13 +10,14 @@ import MaterialFormView from './MaterialFormView';
 const schema = yup.object().shape({
   name: yup.string().required(),
   status: yup.string().required(),
-  typeName: yup.string().required(),
-  manufactuerPartNumber: yup.number().required(),
-  nerPN: yup.number().required(),
+  materialTypeName: yup.string().required(),
+  manufacturerPartNumber: yup.string().required(),
+  nerPartNumber: yup.string().required(),
   quantity: yup.number().required(),
   price: yup.number().required(),
-  unitName: yup.string().required(),
-  link: yup.string().required(),
+  subtotal: yup.number().required(),
+  unitName: yup.string().optional(),
+  linkUrl: yup.string().required(),
   notes: yup.string().required()
 });
 
@@ -28,6 +29,7 @@ export interface MaterialFormInput {
   manufacturerPartNumber: string;
   nerPartNumber?: string;
   price: number;
+  subtotal: number;
   quantity: number;
   unitName?: string;
   linkUrl: string;
@@ -59,10 +61,11 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       manufacturerName: defaultValues?.manufacturerName ?? '',
       nerPartNumber: defaultValues?.nerPartNumber ?? '',
       price: defaultValues?.price ?? 0,
-      unitName: defaultValues?.unitName ?? '',
+      unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
       notes: defaultValues?.notes ?? '',
-      assemblyId: defaultValues?.assemblyId ?? ''
+      assemblyId: defaultValues?.assemblyId,
+      subtotal: defaultValues?.subtotal ?? 0
     },
     resolver: yupResolver(schema)
   });
@@ -84,18 +87,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   } = useGetAllManufacturers();
 
   const { assemblies } = wbsElement;
-
-  console.log(
-    isLoadingManufactuers,
-    isLoadingMaterialTypes,
-    isLoadingUnits,
-    materialTypes,
-    units,
-    manufactuers,
-    materialTypesIsError,
-    unitsIsError,
-    manufacturersIsError
-  );
 
   if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
   if (unitsIsError) return <ErrorPage message={unitsError?.message} />;

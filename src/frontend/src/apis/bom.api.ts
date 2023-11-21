@@ -32,7 +32,6 @@ export const getAllManufacturers = async () => {
  */
 export const getAllUnits = async () => {
   const { data } = await axios.get(apiUrls.bomGetAllUnits());
-  console.log(data);
   return data;
 };
 
