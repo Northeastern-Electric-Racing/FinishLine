@@ -121,6 +121,8 @@ const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materi
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
+const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -218,6 +220,8 @@ export const apiUrls = {
   bomDeleteMaterial,
   bomCreateAssembly,
   bomAssignAssembly,
+  bomCreateManufacturer,
+  bomCreateMaterialType,
 
   version
 };

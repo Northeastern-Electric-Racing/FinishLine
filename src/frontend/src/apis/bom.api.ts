@@ -31,6 +31,26 @@ export const getAllManufacturers = async () => {
 };
 
 /**
+ * Requests to create a manufacturer.
+ * @param manufacturer The manufacturer to create
+ * @returns The created manufacturer
+ */
+export const createManufacturer = async (name: string) => {
+  const { data } = await axios.post(apiUrls.bomCreateManufacturer(), { name });
+  return data;
+};
+
+/**
+ * Requests to create a material type.
+ * @param materialType The material type to create
+ * @returns The created material type
+ */
+export const createMaterialType = async (name: string) => {
+  const { data } = await axios.post(apiUrls.bomCreateMaterialType(), { name });
+  return data;
+};
+
+/**
  * Requests all the units from the backend.
  * @returns All the units
  */

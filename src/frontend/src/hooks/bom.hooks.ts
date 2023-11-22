@@ -3,7 +3,9 @@ import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 
 import {
   assignMaterialToAssembly,
   createAssembly,
+  createManufacturer,
   createMaterial,
+  createMaterialType,
   deleteSingleMaterial,
   editMaterial,
   getAllManufacturers,
@@ -150,6 +152,46 @@ export const useAssignMaterialToAssembly = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a manufacturer.
+ * @returns mutation function to create a manufacturer
+ */
+export const useCreateManufacturer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { name: string }>(
+    ['manufacturer', 'create'],
+    async (payload: { name: string }) => {
+      const data = await createManufacturer(payload.name);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'manufacturers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a material type.
+ * @returns mutation function to create a material type
+ */
+export const useCreateMaterialType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { name: string }>(
+    ['materialType', 'create'],
+    async (payload: { name: string }) => {
+      const data = await createMaterialType(payload.name);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'materialTypes']);
       }
     }
   );
