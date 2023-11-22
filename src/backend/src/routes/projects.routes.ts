@@ -36,7 +36,7 @@ projectRouter.post(
   '/create',
   intMinZero(body('carNumber')),
   body('teamIds').isArray(),
-  intMinZero(body('teamIds.*')),
+  nonEmptyString(body('teamIds.*')),
   body('budget').optional().isInt({ min: 0 }).default(0),
   ...projectValidators,
   validateInputs,
