@@ -65,10 +65,10 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
               <FormControl fullWidth>
                 <FormLabel>Car Number</FormLabel>
                 <ReactHookTextField
-                  name="car-number"
+                  name="carNumber"
                   control={control}
                   placeholder="Enter a car number..."
-                  errorMessage={errors.name}
+                  errorMessage={errors.crId}
                 />
               </FormControl>
             </Grid>
@@ -126,6 +126,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
               placeholder="Enter a summmary..."
               multiline={true}
               rows={5}
+              errorMessage={errors.summary}
             />
           </FormControl>
         </Grid>

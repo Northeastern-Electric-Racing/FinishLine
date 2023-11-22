@@ -80,6 +80,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         teamId: yup.string().required('A Team Id is required'),
         budget: yup.number().optional(),
         summary: yup.string().required('Summary is required!'),
+        projectLeadId: yup.number().optional(),
+        projectManagerId: yup.number().optional(),
         links: yup
           .array()
           .optional()
@@ -149,6 +151,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   return (
     <form
+      noValidate
       id="project-edit-form"
       onSubmit={(e) => {
         e.preventDefault();
