@@ -45,6 +45,7 @@ const BOMTable = ({
   return (
     <Box
       sx={{
+        height: 'calc(100vh - 255px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
@@ -57,21 +58,15 @@ const BOMTable = ({
       <DataGrid
         columns={columns}
         rows={rows}
-        pageSize={pageSize}
-        rowsPerPageOptions={[5, 10, 15, 25, 100]}
-        onPageSizeChange={(newPageSize: React.SetStateAction<number>) => {
-          localStorage.setItem(tableRowCount, String(newPageSize));
-          setPageSize(newPageSize);
-        }}
         getRowClassName={(params) =>
           `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
         }
+        rowsPerPageOptions={[]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
-        autoHeight={true}
+        autoHeight={false}
       />
     </Box>
   );
 };
-//todo: can I make datagrid with a sticky header?
 export default BOMTable;

@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { Project, isGuest, isAdmin, isLeadership } from 'shared';
-import { wbsPipe } from '../../../utils/pipes';
+import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
 import { NERButton } from '../../../components/NERButton';
@@ -30,7 +30,7 @@ import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
 import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
-import BOMTab from './BOMTab';
+import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
 
 interface ProjectViewContainerProps {
@@ -41,6 +41,7 @@ interface ProjectViewContainerProps {
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, enterEditMode }) => {
   const user = useCurrentUser();
   const toast = useToast();
+  const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
   const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
@@ -107,15 +108,24 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const SuggestBudgetIncreaseButton = () => (
-    //todo: hookup
-    <MenuItem onClick={() => console.log()} disabled={!isLeadership(user.role)}>
-      <ListItemIcon>
-        <SavingsIcon fontSize="small" />
-      </ListItemIcon>
-      Suggest Budget Increase
-    </MenuItem>
-  );
+  const SuggestBudgetIncreaseButton = () => {
+    const budgetIncrease = project.materials.reduce(addMaterialCosts, 0) - project.budget;
+    return (
+      <MenuItem
+        onClick={() =>
+          history.push(
+            `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+          )
+        }
+        disabled={!isLeadership(user.role) || budgetIncrease <= 0}
+      >
+        <ListItemIcon>
+          <SavingsIcon fontSize="small" />
+        </ListItemIcon>
+        Suggest Budget Increase
+      </MenuItem>
+    );
+  };
 
   const AssignToMyTeamButton = () => {
     const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)

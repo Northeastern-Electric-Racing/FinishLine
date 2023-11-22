@@ -1,7 +1,5 @@
 import { Material } from 'shared';
 import { GridColDefStyle } from './tables';
-import { GridRenderCellParams } from '@mui/x-data-grid';
-import { Link } from '@mui/material';
 
 export const materialToRow = (material: Material, idx: number) => {
   return {

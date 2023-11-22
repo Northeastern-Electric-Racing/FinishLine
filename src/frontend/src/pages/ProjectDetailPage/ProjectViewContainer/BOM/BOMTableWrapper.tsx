@@ -23,19 +23,18 @@ const renderLink = (params: GridRenderCellParams) =>
     </Link>
   );
 
-//todo: make actually colors
 const renderStatus = (params: GridRenderCellParams) => {
   if (!params.value) return;
   const status = params.value;
   const color =
     status === MaterialStatus.Ordered
-      ? 'yellow'
-      : status === MaterialStatus.Unordered
-      ? 'green'
-      : status === MaterialStatus.Received
-      ? 'red'
-      : status === MaterialStatus.Shipped
       ? 'orange'
+      : status === MaterialStatus.Unordered
+      ? 'red'
+      : status === MaterialStatus.Received
+      ? 'green'
+      : status === MaterialStatus.Shipped
+      ? 'yellow'
       : 'grey';
   return (
     <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
@@ -100,9 +99,6 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
     project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
 
-  //todo: actually add
-  const switchAssembly = true;
-
   const { assemblies, materials } = project;
 
   const selectedMaterial = materials.find((material) => material.materialId === selectedMaterialId);
@@ -141,7 +137,7 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
               icon={<MoveToInboxIcon fontSize="small" />}
               label={`Switch to Assembly: ${assembly.name}`}
               showInMenu
-              disabled={!switchAssembly}
+              disabled={!editPerms}
               onClick={assignMaterial(params.row.materialId, assembly.assemblyId)}
             />
           );
@@ -151,7 +147,7 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
               icon={<MoveToInboxIcon fontSize="small" />}
               label={`Remove From Assembly: ${assembly.name}`}
               showInMenu
-              disabled={!switchAssembly}
+              disabled={!editPerms}
               onClick={assignMaterial(params.row.materialId)}
             />
           );
@@ -167,80 +163,104 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
       flex: 1.2,
       field: 'status',
       headerName: 'Status',
-      renderCell: renderStatus
+      renderCell: renderStatus,
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'type',
       headerName: 'Type',
-      type: 'string'
+      type: 'string',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       flex: 1.5,
       field: 'name',
       headerName: 'Name',
-      type: 'string'
+      type: 'string',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       flex: 1.2,
       field: 'manufacturer',
       headerName: 'Manufacturer',
-      type: 'string'
+      type: 'string',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       flex: 1.5,
       field: 'manufacturerPN',
       headerName: 'Manufacterer PN',
-      type: 'string'
+      type: 'string',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       flex: 1.3,
       field: 'pdmFileName',
       headerName: 'PDM File Name',
-      type: 'string'
+      type: 'string',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'quantity',
       headerName: 'Quantity',
-      type: 'number'
+      type: 'number',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'price',
       headerName: 'Price',
-      type: 'number'
+      type: 'number',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'subtotal',
       headerName: 'Subtotal',
-      type: 'number'
+      type: 'number',
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'link',
       headerName: 'Link',
       type: 'string',
-      renderCell: renderLink
+      renderCell: renderLink,
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       field: 'notes',
       headerName: 'Notes',
       type: 'string',
-      renderCell: renderNotes
+      renderCell: renderNotes,
+      sortable: false,
+      filterable: false
     },
     {
       ...bomBaseColDef,
       flex: 0.1,
       field: 'actions',
       type: 'actions',
-      getActions
+      getActions,
+      sortable: false,
+      filterable: false
     }
   ];
 

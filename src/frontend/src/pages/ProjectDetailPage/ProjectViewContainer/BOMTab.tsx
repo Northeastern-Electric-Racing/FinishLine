@@ -9,7 +9,8 @@ import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
-const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) => currentMaterial.subtotal + accumulator;
+export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
+  currentMaterial.subtotal + accumulator;
 
 const BOMTab = ({ project }: { project: Project }) => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
