@@ -1,7 +1,7 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
 import { useState } from 'react';
-import { MaterialStatus, Project, isLeadership } from 'shared';
+import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
@@ -12,38 +12,9 @@ import { useAssignMaterialToAssembly, useDeleteMaterial } from '../../../../hook
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
 import { Link, Typography } from '@mui/material';
-import { BOM_TABLE_ROW_COUNT, bomBaseColDef } from '../../../../utils/bom.utils';
+import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
-import { displayEnum } from '../../../../utils/pipes';
-
-const renderLink = (params: GridRenderCellParams) =>
-  params.value && (
-    <Link href={params.value} target="_blank" underline="hover" sx={{ pl: 1 }}>
-      Buyer Link
-    </Link>
-  );
-
-const renderStatus = (params: GridRenderCellParams) => {
-  if (!params.value) return;
-  const status = params.value;
-  const color =
-    status === MaterialStatus.Ordered
-      ? 'orange'
-      : status === MaterialStatus.Unordered
-      ? 'red'
-      : status === MaterialStatus.Received
-      ? 'green'
-      : status === MaterialStatus.Shipped
-      ? 'yellow'
-      : 'grey';
-  return (
-    <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
-      <Typography fontSize="14px" color="black">
-        {displayEnum(status)}
-      </Typography>
-    </Box>
-  );
-};
+import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
 
 const BOMTableWrapper = ({ project }: { project: Project }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
@@ -163,7 +134,7 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
       flex: 1.2,
       field: 'status',
       headerName: 'Status',
-      renderCell: renderStatus,
+      renderCell: renderStatusBOM,
       sortable: false,
       filterable: false
     },
@@ -240,7 +211,7 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
       field: 'link',
       headerName: 'Link',
       type: 'string',
-      renderCell: renderLink,
+      renderCell: renderLinkBOM,
       sortable: false,
       filterable: false
     },
@@ -263,10 +234,6 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
       filterable: false
     }
   ];
-
-  if (!localStorage.getItem(BOM_TABLE_ROW_COUNT)) {
-    localStorage.setItem(BOM_TABLE_ROW_COUNT, '25');
-  }
 
   return (
     <Box>
@@ -291,12 +258,7 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
           </Box>
         </NERModal>
       )}
-      <BOMTable
-        columns={columns}
-        assemblies={project.assemblies}
-        materials={project.materials}
-        tableRowCount={BOM_TABLE_ROW_COUNT}
-      />
+      <BOMTable columns={columns} assemblies={project.assemblies} materials={project.materials} />
     </Box>
   );
 };

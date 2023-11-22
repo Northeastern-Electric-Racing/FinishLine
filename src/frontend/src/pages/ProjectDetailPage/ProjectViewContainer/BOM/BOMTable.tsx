@@ -1,6 +1,5 @@
 import { Box } from '@mui/system';
 import { DataGrid, GridColumns } from '@mui/x-data-grid';
-import { useState } from 'react';
 import { Assembly, Material } from 'shared';
 import { bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
 import { useTheme } from '@mui/material';
@@ -8,15 +7,12 @@ import { useTheme } from '@mui/material';
 const BOMTable = ({
   columns,
   materials,
-  assemblies,
-  tableRowCount
+  assemblies
 }: {
   columns: GridColumns<any>;
   materials: Material[];
   assemblies: Assembly[];
-  tableRowCount: string;
 }) => {
-  const [pageSize, setPageSize] = useState(Number(localStorage.getItem(tableRowCount)));
   const theme = useTheme();
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
 
@@ -45,7 +41,7 @@ const BOMTable = ({
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 255px)',
+        height: 'calc(100vh - 260px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
