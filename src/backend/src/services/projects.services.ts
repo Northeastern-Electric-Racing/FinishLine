@@ -26,25 +26,13 @@ import {
   DeletedException,
   AccessDeniedException
 } from '../utils/errors.utils';
-import {
-  addDescriptionBullets,
-  editDescriptionBullets,
-  getHighestProjectNumber,
-  getUserFullName
-} from '../utils/projects.utils';
+import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
-import { createChange, createListChanges } from '../utils/changes.utils';
-import {
-  DescriptionBulletPreview,
-  descriptionBulletsToChangeListValues,
-  descriptionBulletToChangeListValue
-} from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
 import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
-import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
 import { materialPreviewTransformer } from '../transformers/material.transformer';
@@ -97,6 +85,15 @@ export default class ProjectsService {
    * @param name the name of the new project
    * @param summary the summary of the new project
    * @param teamIds the ids of the teams that the new project will be assigned to
+   * @param budget the new budget of the project
+   * @param linkCreateArgs the link create args
+   * @param summary the new summary of the project
+   * @param rules the new rules of the project
+   * @param goals the new goals of the project
+   * @param features the new features of the project
+   * @param otherConstraints the new otherConstraints of the project
+   * @param projectLeadId the new projectLead of the project
+   * @param projectManagerId the new projectManager of the project
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -106,10 +103,18 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamIds: string[]
+    teamIds: string[],
+    budget: number | null,
+    linkCreateArgs: LinkCreateArgs[] | null,
+    rules: string[],
+    goals: { id: number; detail: string }[] | null,
+    features: { id: number; detail: string }[] | null,
+    otherConstraints: { id: number; detail: string }[] | null,
+    projectLeadId: number | null,
+    projectManagerId: number | null
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
-
+    const { userId } = user;
     await validateChangeRequestAccepted(crId);
 
     if (teamIds.length > 0) {
@@ -146,6 +151,28 @@ export default class ProjectsService {
       },
       include: { project: true, changes: true }
     });
+
+    const { wbsElementId, project: createdProject } = createdWbsElement;
+    if (!createdProject) {
+      throw new NotFoundException('Project', wbsElementId);
+    }
+
+    // Project has been created, so create the changes and add other details (like budget, project manager id, etc)
+    await updateProjectAndCreateChanges(
+      createdProject?.projectId,
+      crId,
+      userId,
+      name,
+      budget,
+      summary,
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      linkCreateArgs,
+      projectLeadId,
+      projectManagerId
+    );
 
     return wbsNumOf(createdWbsElement);
   }
@@ -213,188 +240,21 @@ export default class ProjectsService {
     if (!originalProject) throw new NotFoundException('Project', projectId);
     if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
-    const { wbsElementId } = originalProject;
-
-    let changes = [];
-
-    // get the changes or undefined for each field and add it to changes
-    const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
-
-    const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, userId, wbsElementId);
-
-    const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, userId, wbsElementId);
-
-    const projectManagerChangeJson = createChange(
-      'project manager',
-      await getUserFullName(originalProject.wbsElement.projectManagerId),
-      await getUserFullName(projectManagerId),
+    const { project: updatedProject } = await updateProjectAndCreateChanges(
+      originalProject.projectId,
       crId,
       userId,
-      wbsElementId
+      name,
+      budget,
+      summary,
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      linkCreateArgs,
+      projectLeadId,
+      projectManagerId
     );
-
-    const projectLeadChangeJson = createChange(
-      'project lead',
-      await getUserFullName(originalProject.wbsElement.projectLeadId),
-      await getUserFullName(projectLeadId),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    // add to changes if not undefined
-    if (nameChangeJson !== undefined) {
-      changes.push(nameChangeJson);
-    }
-    if (budgetChangeJson !== undefined) {
-      changes.push(budgetChangeJson);
-    }
-    if (summaryChangeJson !== undefined) {
-      changes.push(summaryChangeJson);
-    }
-    if (projectManagerChangeJson !== undefined) {
-      changes.push(projectManagerChangeJson);
-    }
-    if (projectLeadChangeJson !== undefined) {
-      changes.push(projectLeadChangeJson);
-    }
-
-    // Dealing with lists
-    const rulesChangeJson = createListChanges(
-      'rules',
-      originalProject.rules.map((rule) => {
-        return {
-          element: rule,
-          comparator: rule,
-          displayValue: rule
-        };
-      }),
-      rules.map((rule) => {
-        return {
-          element: rule,
-          comparator: rule,
-          displayValue: rule
-        };
-      }),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const goalsChangeJson = createListChanges(
-      'goals',
-      descriptionBulletsToChangeListValues(originalProject.goals),
-      goals.map((goal) => descriptionBulletToChangeListValue(goal)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const featuresChangeJson = createListChanges(
-      'features',
-      descriptionBulletsToChangeListValues(originalProject.features),
-      features.map((feature) => descriptionBulletToChangeListValue(feature)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const otherConstraintsChangeJson = createListChanges(
-      'other constraints',
-      descriptionBulletsToChangeListValues(originalProject.otherConstraints),
-      otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const linkChanges = createListChanges(
-      'link',
-      originalProject.wbsElement.links.map(linkToChangeListValue),
-      linkCreateArgs.map(linkToChangeListValue),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    // add the changes for each of blockers, expected activities, and deliverables
-    changes = changes
-      .concat(rulesChangeJson.changes)
-      .concat(goalsChangeJson.changes)
-      .concat(featuresChangeJson.changes)
-      .concat(otherConstraintsChangeJson.changes)
-      .concat(linkChanges.changes);
-
-    // update the project with the input fields
-    const updatedProject = await prisma.project.update({
-      where: {
-        wbsElementId
-      },
-      data: {
-        budget,
-        summary,
-        rules,
-        wbsElement: {
-          update: {
-            name,
-            projectLeadId,
-            projectManagerId
-          }
-        }
-      },
-      ...projectQueryArgs
-    });
-
-    // Update any deleted description bullets to have their date deleted as right now
-    const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
-      .concat(featuresChangeJson.deletedElements)
-      .concat(otherConstraintsChangeJson.deletedElements);
-
-    if (deletedDescriptionBullets.length > 0) {
-      await prisma.description_Bullet.updateMany({
-        where: {
-          descriptionId: {
-            in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
-          }
-        },
-        data: {
-          dateDeleted: new Date()
-        }
-      });
-    }
-
-    // Add the new goals
-    await addDescriptionBullets(
-      goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdGoals'
-    );
-    // Add the new features
-    await addDescriptionBullets(
-      featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdFeatures'
-    );
-    // Add the new other constraints
-    await addDescriptionBullets(
-      otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdOtherConstraints'
-    );
-    // Edit the existing description bullets
-    await editDescriptionBullets(
-      goalsChangeJson.editedElements
-        .concat(featuresChangeJson.editedElements)
-        .concat(otherConstraintsChangeJson.editedElements)
-    );
-
-    // Update the links
-    await updateLinks(linkChanges, updatedProject.wbsElementId, userId);
-
-    // create the changes in prisma
-    await prisma.change.createMany({
-      data: changes
-    });
 
     // return the updated work package
     return projectTransformer(updatedProject);
