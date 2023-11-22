@@ -52,14 +52,23 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
+      const {
+        dateOfExpense,
+        vendorId,
+        account,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
+        expenseTypeId,
+        totalCost
+      } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         expenseTypeId,
         totalCost
       );
@@ -84,8 +93,16 @@ export default class ReimbursementRequestsController {
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
-      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, receiptPictures } =
-        req.body;
+      const {
+        dateOfExpense,
+        vendorId,
+        account,
+        expenseTypeId,
+        totalCost,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
+        receiptPictures
+      } = req.body;
       const user = await getCurrentUser(res);
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
@@ -94,7 +111,8 @@ export default class ReimbursementRequestsController {
         account,
         expenseTypeId,
         totalCost,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         receiptPictures,
         user
       );

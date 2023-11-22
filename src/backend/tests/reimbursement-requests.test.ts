@@ -225,6 +225,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -246,6 +247,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -263,6 +265,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           superman
         )
       ).rejects.toThrow(new AccessDeniedException('Only the creator or finance team can edit a reimbursement request'));
@@ -278,6 +281,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [],
           [],
           alfred
@@ -299,6 +303,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
@@ -317,6 +322,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [],
           [],
           batman
@@ -341,12 +347,13 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [
             {
               id: '1',
               name: 'test',
               cost: 1,
-              wbsNum: {
+              reason: {
                 carNumber: 1,
                 projectNumber: 1,
                 workPackageNumber: 1
@@ -375,12 +382,13 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.account as ClubAccount,
         GiveMeMyMoney.expenseTypeId,
         GiveMeMyMoney.totalCost,
+        [],
         [
           {
             id: '1',
             name: 'test',
             cost: 1,
-            wbsNum: {
+            reason: {
               carNumber: 1,
               projectNumber: 1,
               workPackageNumber: 1

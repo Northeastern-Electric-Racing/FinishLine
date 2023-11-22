@@ -10,17 +10,19 @@ import {
   ClubAccount,
   ExpenseType,
   Reimbursement,
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
   isAdmin,
   isGuest,
-  isHead
+  isHead,
+  WbsReimbursementProductCreateArgs,
+  OtherReimbursementProductCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
@@ -111,7 +113,8 @@ export default class ReimbursementRequestService {
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
-    reimbursementProducts: ReimbursementProductCreateArgs[],
+    otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+    wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
   ): Promise<Reimbursement_Request> {
@@ -137,7 +140,10 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
-    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProducts = await validateReimbursementProducts(
+      otherReimbursementProducts,
+      wbsReimbursementProducts
+    );
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -152,20 +158,15 @@ export default class ReimbursementRequestService {
             type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
-        },
-        reimbursementProducts: {
-          createMany: {
-            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
-              return {
-                name: reimbursementProductInfo.name,
-                cost: reimbursementProductInfo.cost,
-                wbsElementId: reimbursementProductInfo.wbsElementId
-              };
-            })
-          }
         }
       }
     });
+
+    await createReimbursementProducts(
+      validatedReimbursementProducts.validatedOtherReimbursementProducts,
+      validatedReimbursementProducts.validatedWbsReimbursementProducts,
+      createdReimbursementRequest.reimbursementRequestId
+    );
 
     return createdReimbursementRequest;
   }
@@ -243,7 +244,8 @@ export default class ReimbursementRequestService {
     account: ClubAccount,
     expenseTypeId: string,
     totalCost: number,
-    reimbursementProducts: ReimbursementProductCreateArgs[],
+    otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+    wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User
   ): Promise<Reimbursement_Request> {
@@ -277,7 +279,8 @@ export default class ReimbursementRequestService {
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
-      reimbursementProducts,
+      otherReimbursementProducts,
+      wbsReimbursementProducts,
       oldReimbursementRequest.reimbursementRequestId
     );
 
