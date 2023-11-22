@@ -65,6 +65,7 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
               size={'small'}
               placeholder={'Change Request Id'}
               sx={{ height: 56, width: '100%', textAlign: 'left' }}
+              error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'bottom',
