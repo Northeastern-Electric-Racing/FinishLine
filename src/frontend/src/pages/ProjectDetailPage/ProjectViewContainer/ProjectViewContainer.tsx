@@ -204,10 +204,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
             { tabUrlValue: 'tasks', tabName: 'Tasks' },
+            { tabUrlValue: 'bom', tabName: 'BOM' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
-            { tabUrlValue: 'gantt', tabName: 'Gantt' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
-            { tabUrlValue: 'bom', tabName: 'BOM' }
+            { tabUrlValue: 'gantt', tabName: 'Gantt' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -221,13 +221,13 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 1 ? (
         <TaskList project={project} />
       ) : tab === 2 ? (
-        <ScopeTab project={project} />
+        <BOMTab project={project} />
       ) : tab === 3 ? (
-        <ProjectGantt workPackages={project.workPackages} />
+        <ScopeTab project={project} />
       ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
       ) : (
-        <BOMTab project={project} />
+        <ProjectGantt workPackages={project.workPackages} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />
