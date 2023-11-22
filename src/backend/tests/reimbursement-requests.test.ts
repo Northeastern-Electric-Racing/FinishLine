@@ -23,16 +23,7 @@ import {
   sharedGiveMeMyMoney,
   KFC
 } from './test-data/reimbursement-requests.test-data';
-import {
-  alfred,
-  batman,
-  flash,
-  sharedBatman,
-  superman,
-  wonderwoman,
-  theVisitor,
-  alfredGuest
-} from './test-data/users.test-data';
+import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
