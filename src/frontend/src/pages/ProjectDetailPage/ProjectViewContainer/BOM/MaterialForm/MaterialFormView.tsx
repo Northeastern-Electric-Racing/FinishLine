@@ -1,10 +1,10 @@
-import { FormControl, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
-import NERFormModal from '../../../components/NERFormModal';
+import NERFormModal from '../../../../../components/NERFormModal';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -45,21 +45,26 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
       showCloseButton
     >
       <Grid container spacing={2} mt={1}>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <FormLabel>Name</FormLabel>
+            <ReactHookTextField
+              name="name"
+              control={control}
+              errorMessage={errors.name}
+              placeholder="Enter Name for Material"
+            />
+          </FormControl>
+        </Grid>
         <Grid item xs={4}>
           <FormControl fullWidth>
+            <FormLabel>Status</FormLabel>
             <Controller
               name="status"
               control={control}
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="Status"
-                  variant="outlined"
-                  error={!!errors.status}
-                  helperText={errors.status?.message}
-                >
+                <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
                   {['ORDERED', 'UNORDERED', 'SHIPPED', 'RECEIVED'].map((status) => (
                     <MenuItem key={status} value={status}>
                       {status}
@@ -72,6 +77,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={4}>
           <FormControl fullWidth>
+            <FormLabel>Type</FormLabel>
             <Controller
               name="materialTypeName"
               control={control}
@@ -80,7 +86,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 <TextField
                   {...field}
                   select
-                  label="Type"
                   variant="outlined"
                   error={!!errors.materialTypeName}
                   helperText={errors.materialTypeName?.message}
@@ -95,42 +100,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <ReactHookTextField
-              name="name"
-              control={control}
-              label="Name"
-              errorMessage={errors.name}
-              placeholder="Enter Name for Material"
-            />
-          </FormControl>
-        </Grid>
         <Grid item xs={4}>
           <FormControl fullWidth>
-            <ReactHookTextField
-              name="manufacturerPartNumber"
-              control={control}
-              label="Manufacturer Part Number"
-              errorMessage={errors.manufacturerPartNumber}
-              placeholder="Enter Manufacturer Part Number"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={4}>
-          <FormControl fullWidth>
-            <ReactHookTextField
-              required={false}
-              name="nerPartNumber"
-              control={control}
-              label="NER Part Number"
-              errorMessage={errors.nerPartNumber}
-              placeholder="Enter NER Part Number"
-            />
-          </FormControl>
-        </Grid>
-        <Grid item xs={4}>
-          <FormControl fullWidth>
+            <FormLabel>Manufacturer</FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
@@ -139,7 +111,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 <TextField
                   {...field}
                   select
-                  label="Manufacturer"
                   variant="outlined"
                   error={!!errors.materialTypeName}
                   helperText={errors.materialTypeName?.message}
@@ -154,18 +125,42 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid xs={4}>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>Manufacturer Part Number</FormLabel>
+            <ReactHookTextField
+              name="manufacturerPartNumber"
+              control={control}
+              errorMessage={errors.manufacturerPartNumber}
+              placeholder="Enter Manufacturer Part Number"
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>PDM File Name (optional)</FormLabel>
+            <ReactHookTextField
+              required={false}
+              name="nerPartNumber"
+              control={control}
+              errorMessage={errors.nerPartNumber}
+              placeholder="Enter PDM File Name"
+            />
+          </FormControl>
+        </Grid>
+        <Grid xs={6}>
           <Box display={'flex'} alignItems={'center'} mt={2} ml={2}>
             <FormControl fullWidth>
+              <FormLabel>Quantity</FormLabel>
               <ReactHookTextField
                 name="quantity"
                 control={control}
-                label="Quantity"
                 errorMessage={errors.quantity}
                 placeholder="Enter Quantity"
               />
             </FormControl>
             <FormControl fullWidth>
+              <FormLabel>Unit (optional)</FormLabel>
               <Controller
                 name="unitName"
                 control={control}
@@ -174,7 +169,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   <TextField
                     {...field}
                     select
-                    label="Unit"
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
@@ -190,23 +184,18 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Box>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           <FormControl fullWidth>
-            <ReactHookTextField
-              name="price"
-              control={control}
-              label="Price"
-              errorMessage={errors.price}
-              placeholder="Enter Price"
-            />
+            <FormLabel>Price</FormLabel>
+            <ReactHookTextField name="price" control={control} errorMessage={errors.price} placeholder="Enter Price" />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           <FormControl fullWidth>
+            <FormLabel>Subtotal</FormLabel>
             <ReactHookTextField
               name="subtotal"
               control={control}
-              label="Subtotal"
               errorMessage={errors.subtotal}
               placeholder="Enter Subtotal"
             />
@@ -214,29 +203,26 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <ReactHookTextField
-              name="linkUrl"
-              control={control}
-              label="Link"
-              errorMessage={errors.linkUrl}
-              placeholder="Enter Link"
-            />
+            <FormLabel>Link</FormLabel>
+            <ReactHookTextField name="linkUrl" control={control} errorMessage={errors.linkUrl} placeholder="Enter Link" />
           </FormControl>
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
+            <FormLabel>Notes</FormLabel>
             <ReactHookTextField
               name="notes"
               control={control}
-              label="Notes"
               errorMessage={errors.notes}
               placeholder="Enter Notes"
+              multiline
             />
           </FormControl>
         </Grid>
       </Grid>
       <Box display={'flex'} justifyContent={'flex-end'} mt={2}>
         <FormControl sx={{ width: 200, mr: 2 }}>
+          <FormLabel>Assembly (optional)</FormLabel>
           <Controller
             name="assemblyId"
             control={control}
@@ -245,7 +231,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               <TextField
                 {...field}
                 select
-                label="Assembly"
                 variant="outlined"
                 error={!!errors.assemblyId}
                 helperText={errors.assemblyId?.message}

@@ -73,5 +73,5 @@ const BOMTable = ({
     </Box>
   );
 };
-
+//todo: can I make datagrid with a sticky header?
 export default BOMTable;

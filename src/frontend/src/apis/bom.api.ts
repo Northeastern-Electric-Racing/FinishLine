@@ -1,8 +1,9 @@
 import { Material, WbsNumber } from 'shared';
-import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
+import { MaterialFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
  * Requests all the material types from the backend.
@@ -62,4 +63,24 @@ export const editMaterial = async (materialId: string, material: MaterialFormInp
  */
 export const deleteSingleMaterial = async (materialId: string) => {
   return axios.post<Material>(apiUrls.bomDeleteMaterial(materialId), {});
+};
+
+/**
+ * Requests to create an assmebly.
+ * @param material The assembly to create
+ * @returns The created assembly
+ */
+export const createAssembly = async (wbsNum: WbsNumber, assembly: AssemblyFormInput) => {
+  const { data } = await axios.post(apiUrls.bomCreateAssembly(wbsNum), assembly);
+  return data;
+};
+
+/**
+ * Assigns a material to an assembly.
+ * @param materialId the material being assigned
+ * @param payload containing the id of the assembly being assigned to
+ * @returns
+ */
+export const assignMaterialToAssembly = async (materialId: string, payload: { assemblyId?: string }) => {
+  return axios.post(apiUrls.bomAssignAssembly(materialId), payload);
 };

@@ -1,8 +1,8 @@
 import { Material, WbsElement } from 'shared';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useEditMaterial } from '../../../hooks/bom.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
-import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useEditMaterial } from '../../../../../hooks/bom.hooks';
+import { useToast } from '../../../../../hooks/toasts.hooks';
+import ErrorPage from '../../../../ErrorPage';
 import MaterialForm, { MaterialFormInput } from './MaterialForm';
 import React from 'react';
 

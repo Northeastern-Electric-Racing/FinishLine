@@ -1,4 +1,7 @@
 import { Material } from 'shared';
+import { GridColDefStyle } from './tables';
+import { GridRenderCellParams } from '@mui/x-data-grid';
+import { Link } from '@mui/material';
 
 export const materialToRow = (material: Material, idx: number) => {
   return {
@@ -42,4 +45,13 @@ export const bomTableStyles = {
       outline: 'none'
     }
   }
+};
+
+export const BOM_TABLE_ROW_COUNT = 'tl-table-row-count';
+
+export const bomBaseColDef: GridColDefStyle = {
+  flex: 1,
+  align: 'center',
+  headerAlign: 'center',
+  headerClassName: 'super-app-theme--header'
 };

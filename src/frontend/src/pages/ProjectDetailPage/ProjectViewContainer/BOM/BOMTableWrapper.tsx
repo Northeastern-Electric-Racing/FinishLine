@@ -1,39 +1,77 @@
 import { Box } from '@mui/system';
-import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
+import { GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
 import { useState } from 'react';
-import { Project, isLeadership } from 'shared';
-import { GridColDefStyle } from '../../../../utils/tables';
+import { MaterialStatus, Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
-import EditMaterialModal from '../../../BOMsPage/MaterialForm/EditMaterialModal';
 import BOMTable from './BOMTable';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useDeleteMaterial } from '../../../../hooks/bom.hooks';
+import { useAssignMaterialToAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import EditMaterialModal from './MaterialForm/EditMaterialModal';
+import { Link, Typography } from '@mui/material';
+import { BOM_TABLE_ROW_COUNT, bomBaseColDef } from '../../../../utils/bom.utils';
+import NERModal from '../../../../components/NERModal';
+import { displayEnum } from '../../../../utils/pipes';
 
-const BOM_TABLE_ROW_COUNT = 'tl-table-row-count';
+const renderLink = (params: GridRenderCellParams) =>
+  params.value && (
+    <Link href={params.value} target="_blank" underline="hover" sx={{ pl: 1 }}>
+      Buyer Link
+    </Link>
+  );
 
-const baseColDef: GridColDefStyle = {
-  flex: 1,
-  align: 'center',
-  headerAlign: 'center',
-  headerClassName: 'super-app-theme--header'
+//todo: make actually colors
+const renderStatus = (params: GridRenderCellParams) => {
+  if (!params.value) return;
+  const status = params.value;
+  const color =
+    status === MaterialStatus.Ordered
+      ? 'yellow'
+      : status === MaterialStatus.Unordered
+      ? 'green'
+      : status === MaterialStatus.Received
+      ? 'red'
+      : status === MaterialStatus.Shipped
+      ? 'orange'
+      : 'grey';
+  return (
+    <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
+      <Typography fontSize="14px" color="black">
+        {displayEnum(status)}
+      </Typography>
+    </Box>
+  );
 };
 
 const BOMTableWrapper = ({ project }: { project: Project }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
+  const [modalShow, setModalShow] = useState(false);
   const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
+  const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
 
   const user = useCurrentUser();
   const toast = useToast();
 
   if (isLoading) return <LoadingIndicator />;
 
+  const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
+    try {
+      await assignMaterialToAssembly({ materialId, assemblyId }).finally(() =>
+        toast.success('Material Successfully Deleted!')
+      );
+    } catch (e: unknown) {
+      console.log(e);
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
+      }
+    }
+  };
+
   const deleteMaterial = (id: string) => async () => {
-    console.log(id);
     try {
       await deleteMaterialMutateAsync({ materialId: id }).finally(() => toast.success('Material Successfully Deleted!'));
     } catch (e: unknown) {
@@ -44,13 +82,30 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
     }
   };
 
+  const renderNotes = (params: GridRenderCellParams) =>
+    params.value && (
+      <Link
+        onClick={() => {
+          setSelectedMaterialId(params.row.materialId);
+          setModalShow(true);
+        }}
+      >
+        See Notes
+      </Link>
+    );
+
   const editPerms =
     isLeadership(user.role) ||
     project.teams.some((team) => team.head.userId === user.userId) ||
     project.teams.some((team) => team.leads.map((lead) => lead.userId).includes(user.userId)) ||
     project.teams.some((team) => team.members.map((member) => member.userId).includes(user.userId));
 
+  //todo: actually add
+  const switchAssembly = true;
+
   const { assemblies, materials } = project;
+
+  const selectedMaterial = materials.find((material) => material.materialId === selectedMaterialId);
 
   const getActions = (params: GridRowParams) => {
     const actions: JSX.Element[] = [];
@@ -86,8 +141,8 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
               icon={<MoveToInboxIcon fontSize="small" />}
               label={`Switch to Assembly: ${assembly.name}`}
               showInMenu
-              disabled={true}
-              onClick={() => {}}
+              disabled={!switchAssembly}
+              onClick={assignMaterial(params.row.materialId, assembly.assemblyId)}
             />
           );
         } else {
@@ -96,8 +151,8 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
               icon={<MoveToInboxIcon fontSize="small" />}
               label={`Remove From Assembly: ${assembly.name}`}
               showInMenu
-              disabled={true}
-              onClick={() => {}}
+              disabled={!switchAssembly}
+              onClick={assignMaterial(params.row.materialId)}
             />
           );
         }
@@ -108,76 +163,80 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
 
   const columns: GridColumns<any> = [
     {
-      ...baseColDef,
-      flex: 2,
+      ...bomBaseColDef,
+      flex: 1.2,
       field: 'status',
-      headerName: 'Status'
+      headerName: 'Status',
+      renderCell: renderStatus
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'type',
       headerName: 'Type',
       type: 'string'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
+      flex: 1.5,
       field: 'name',
       headerName: 'Name',
       type: 'string'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       flex: 1.2,
       field: 'manufacturer',
       headerName: 'Manufacturer',
       type: 'string'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       flex: 1.5,
       field: 'manufacturerPN',
       headerName: 'Manufacterer PN',
       type: 'string'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       flex: 1.3,
       field: 'pdmFileName',
       headerName: 'PDM File Name',
       type: 'string'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'quantity',
       headerName: 'Quantity',
       type: 'number'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'price',
       headerName: 'Price',
       type: 'number'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'subtotal',
       headerName: 'Subtotal',
       type: 'number'
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'link',
       headerName: 'Link',
-      type: 'string'
+      type: 'string',
+      renderCell: renderLink
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       field: 'notes',
       headerName: 'Notes',
-      type: 'string'
+      type: 'string',
+      renderCell: renderNotes
     },
     {
-      ...baseColDef,
+      ...bomBaseColDef,
       flex: 0.1,
       field: 'actions',
       type: 'actions',
@@ -195,9 +254,22 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
         <EditMaterialModal
           open={showEditMaterial}
           onHide={() => setShowEditMaterial(false)}
-          material={materials.find((material) => material.materialId === selectedMaterialId)!}
+          material={selectedMaterial!}
           wbsElement={project}
         />
+      )}
+      {modalShow && (
+        <NERModal
+          open={modalShow}
+          title={`${selectedMaterial?.name} Material Notes`}
+          onHide={() => setModalShow(false)}
+          hideFormButtons
+          showCloseButton
+        >
+          <Box sx={{ minWidth: '320px' }}>
+            <Typography>{selectedMaterial?.notes}</Typography>
+          </Box>
+        </NERModal>
       )}
       <BOMTable
         columns={columns}

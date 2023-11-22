@@ -1,9 +1,9 @@
 import { WbsElement } from 'shared';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useCreateMaterial } from '../../../hooks/bom.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
-import ErrorPage from '../../ErrorPage';
 import MaterialForm, { MaterialFormInput } from './MaterialForm';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useToast } from '../../../../../hooks/toasts.hooks';
+import { useCreateMaterial } from '../../../../../hooks/bom.hooks';
+import ErrorPage from '../../../../ErrorPage';
 
 export interface CreateMaterialModalProps {
   open: boolean;

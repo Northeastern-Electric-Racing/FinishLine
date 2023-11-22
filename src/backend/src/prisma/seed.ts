@@ -22,7 +22,7 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { ClubAccount, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ClubAccount, MaterialStatus, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -880,6 +880,51 @@ const performSeed: () => Promise<void> = async () => {
    */
   await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
   await ProjectsService.createMaterialType('Resistor', thomasEmrax);
+
+  const assembly1 = await ProjectsService.createAssembly('1', thomasEmrax, {
+    carNumber: 1,
+    projectNumber: 1,
+    workPackageNumber: 0
+  });
+
+  await ProjectsService.createMaterial(
+    thomasEmrax,
+    '10k Resistor',
+    MaterialStatus.Ordered,
+    'Resistor',
+    'Digikey',
+    'abcdef',
+    20,
+    30,
+    600,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'Here are some notes',
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    }
+  );
+
+  await ProjectsService.createMaterial(
+    thomasEmrax,
+    '20k Resistor',
+    MaterialStatus.Ordered,
+    'Resistor',
+    'Digikey',
+    'bacfed',
+    10,
+    7,
+    70,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'Here are some more notes',
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    assembly1.assemblyId
+  );
 };
 
 performSeed()

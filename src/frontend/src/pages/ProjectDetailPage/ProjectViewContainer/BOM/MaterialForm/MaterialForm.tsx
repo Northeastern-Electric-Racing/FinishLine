@@ -2,9 +2,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { MaterialStatus, WbsElement } from 'shared';
 import * as yup from 'yup';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllManufacturers, useGetAllMaterialTypes, useGetAllUnits } from '../../../hooks/bom.hooks';
-import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useGetAllManufacturers, useGetAllMaterialTypes, useGetAllUnits } from '../../../../../hooks/bom.hooks';
+import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 
 const schema = yup.object().shape({

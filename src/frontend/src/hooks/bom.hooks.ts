@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
+import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
 import {
+  assignMaterialToAssembly,
+  createAssembly,
   createMaterial,
   deleteSingleMaterial,
   editMaterial,
@@ -8,7 +10,8 @@ import {
   getAllMaterialTypes,
   getAllUnits
 } from '../apis/bom.api';
-import { MaterialFormInput } from '../pages/BOMsPage/MaterialForm/MaterialForm';
+import { MaterialFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
  * Custom React hook to supply all material types.
@@ -96,6 +99,49 @@ export const useDeleteMaterial = () => {
     ['materials', 'delete'],
     async (payload: { materialId: string }) => {
       const data = await deleteSingleMaterial(payload.materialId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create an assembly.
+ * @param wbsNum The wbs num to create the assembly in
+ * @returns the mutation function to create an assembly
+ */
+export const useCreateAssembly = (wbsNum: WbsNumber) => {
+  const queryClient = useQueryClient();
+  return useMutation<Assembly, Error, AssemblyFormInput>(
+    ['assembly', 'create'],
+    async (createPayload: AssemblyFormInput) => {
+      const data = await createAssembly(wbsNum, createPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to assign a material to an assembly.
+ * @param materialId The id of the material to assign
+ * @param assemblyId The id of the assembly being assigned to
+ * @returns mutation function to delete a material
+ */
+export const useAssignMaterialToAssembly = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { materialId: string; assemblyId?: string }>(
+    ['material', 'assign'],
+    async (payload: { materialId: string; assemblyId?: string }) => {
+      const data = await assignMaterialToAssembly(payload.materialId, { assemblyId: payload.assemblyId });
       return data;
     },
     {

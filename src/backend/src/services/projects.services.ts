@@ -727,7 +727,7 @@ export default class ProjectsService {
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly
-   * @param wbsElementId The
+   * @param wbsElementId The wbsElement that the created assembly is associated with
    * @param pdmFileName optional - The name of the file holding the assembly
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
