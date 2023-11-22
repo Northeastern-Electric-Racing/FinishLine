@@ -3,12 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Grid, useTheme } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, equalsWbsNumber } from 'shared';
-import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
@@ -111,16 +110,21 @@ const ChangeRequestsOverview: React.FC = () => {
   return (
     <Box>
       {showToReview && (
-        <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
+        <>
+          <Typography variant="h5" gutterBottom>
+            To Review
+          </Typography>
           <Grid container>{displayCRCards(crToReview)}</Grid>
-        </PageBlock>
+        </>
       )}
-      <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
-        <Grid container>{displayCRCards(crUnreviewed)}</Grid>
-      </PageBlock>
-      <PageBlock title={'My Recently Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
-        <Grid container>{displayCRCards(crApproved)}</Grid>
-      </PageBlock>
+      <Typography variant="h5" gutterBottom>
+        My Un-reviewed Change Requests
+      </Typography>
+      <Grid container>{displayCRCards(crUnreviewed)}</Grid>
+      <Typography variant="h5" gutterBottom>
+        My Recently Approved Change Requests
+      </Typography>
+      <Grid container>{displayCRCards(crApproved)}</Grid>
     </Box>
   );
 };
