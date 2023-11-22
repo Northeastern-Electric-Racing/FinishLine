@@ -1,10 +1,11 @@
 import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { Box } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
+import DetailDisplay from '../../../../../components/DetailDisplay';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -18,6 +19,7 @@ export interface MaterialFormViewProps {
   allManufacturers: Manufacturer[];
   assemblies: Assembly[];
   open: boolean;
+  watch: UseFormWatch<MaterialFormInput>;
 }
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
@@ -31,8 +33,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   allUnits,
   allManufacturers,
   assemblies,
-  open
+  open,
+  watch
 }) => {
+  const quantity = watch('quantity');
+  const price = watch('price');
+  const subtotal = quantity && price ? quantity * price : 0;
+
   return (
     <NERFormModal
       open={open}
@@ -157,6 +164,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 control={control}
                 errorMessage={errors.quantity}
                 placeholder="Enter Quantity"
+                type='number'
               />
             </FormControl>
             <FormControl fullWidth>
@@ -187,19 +195,11 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Price</FormLabel>
-            <ReactHookTextField name="price" control={control} errorMessage={errors.price} placeholder="Enter Price" />
+            <ReactHookTextField name="price" control={control} errorMessage={errors.price} placeholder="Enter Price" type='number' />
           </FormControl>
         </Grid>
-        <Grid item xs={3}>
-          <FormControl fullWidth>
-            <FormLabel>Subtotal</FormLabel>
-            <ReactHookTextField
-              name="subtotal"
-              control={control}
-              errorMessage={errors.subtotal}
-              placeholder="Enter Subtotal"
-            />
-          </FormControl>
+        <Grid item xs={3} display="flex" alignItems="center" mt={2}>
+          <DetailDisplay label="Subtotal" content={subtotal.toString()} />
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>

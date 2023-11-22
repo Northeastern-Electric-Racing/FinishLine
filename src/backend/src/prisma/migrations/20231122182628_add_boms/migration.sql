@@ -67,9 +67,6 @@ CREATE TABLE "Manufacturer" (
     CONSTRAINT "Manufacturer_pkey" PRIMARY KEY ("name")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Assembly_name_key" ON "Assembly"("name");
-
 -- AddForeignKey
 ALTER TABLE "Assembly" ADD CONSTRAINT "Assembly_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 

@@ -1,22 +1,18 @@
 import { Box } from '@mui/system';
 import { DataGrid, GridColumns } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
-import { bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
-import { useTheme } from '@mui/material';
+import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
 
-const BOMTable = ({
-  columns,
-  materials,
-  assemblies
-}: {
-  columns: GridColumns<any>;
+interface BOMTableProps {
+  columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
-}) => {
-  const theme = useTheme();
+}
+
+const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
 
-  const rows: any = noAssemblyMaterials.map(materialToRow);
+  const rows: BomRow[] = noAssemblyMaterials.map(materialToRow);
 
   assemblies.forEach((assembly) => {
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
@@ -27,8 +23,8 @@ const BOMTable = ({
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: 'Assembly:',
-      pdmFileName: assembly.name,
+      manufacturerPN: `Assembly: ${assembly.name}`,
+      pdmFileName: '',
       quantity: '',
       price: '',
       subtotal: '',
@@ -47,7 +43,7 @@ const BOMTable = ({
           backgroundColor: '#ef4345'
         },
         '& .super-app-theme--assembly': {
-          backgroundColor: theme.palette.background.paper
+          backgroundColor: '#CCA5A5'
         }
       }}
     >

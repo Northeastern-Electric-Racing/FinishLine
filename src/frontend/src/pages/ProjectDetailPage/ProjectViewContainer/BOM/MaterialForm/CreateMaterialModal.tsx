@@ -1,5 +1,5 @@
 import { WbsElement } from 'shared';
-import MaterialForm, { MaterialFormInput } from './MaterialForm';
+import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCreateMaterial } from '../../../../../hooks/bom.hooks';
@@ -18,7 +18,7 @@ const CreateMaterialModal: React.FC<CreateMaterialModalProps> = ({ open, onHide,
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const onSubmit = async (data: MaterialFormInput): Promise<void> => {
+  const onSubmit = async (data: MaterialDataSubmission): Promise<void> => {
     try {
       await createMaterial(data);
       toast.success('Material Created Successfully');

@@ -16,7 +16,11 @@ import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
 
-const BOMTableWrapper = ({ project }: { project: Project }) => {
+interface BOMTableWrapperProps {
+  project: Project;
+}
+
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
@@ -171,7 +175,14 @@ const BOMTableWrapper = ({ project }: { project: Project }) => {
       headerName: 'Manufacterer PN',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      colSpan: ({ row }) => {
+        if (row.id.includes('assembly')) {
+          return 2;
+        } else {
+          return 1;
+        }
+      }
     },
     {
       ...bomBaseColDef,

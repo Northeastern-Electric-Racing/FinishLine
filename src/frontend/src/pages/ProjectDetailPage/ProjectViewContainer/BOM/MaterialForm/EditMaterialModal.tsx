@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import { useEditMaterial } from '../../../../../hooks/bom.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import ErrorPage from '../../../../ErrorPage';
-import MaterialForm, { MaterialFormInput } from './MaterialForm';
+import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import React from 'react';
 
 export interface EditMaterialModalProps {
@@ -20,7 +20,7 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const onSubmit = async (data: MaterialFormInput): Promise<void> => {
+  const onSubmit = async (data: MaterialDataSubmission): Promise<void> => {
     try {
       await editMaterial(data);
       toast.success('Material edited successfully');

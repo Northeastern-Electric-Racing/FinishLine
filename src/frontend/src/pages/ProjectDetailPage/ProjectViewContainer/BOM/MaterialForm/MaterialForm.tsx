@@ -8,17 +8,16 @@ import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 
 const schema = yup.object().shape({
-  name: yup.string().required(),
-  status: yup.string().required(),
-  materialTypeName: yup.string().required(),
-  manufacturerPartNumber: yup.string().required(),
-  nerPartNumber: yup.string().required(),
-  quantity: yup.number().required(),
-  price: yup.number().required(),
-  subtotal: yup.number().required(),
+  name: yup.string().required('Enter a name!'),
+  status: yup.string().required('Select a status!'),
+  materialTypeName: yup.string().required('Select a material type!'),
+  manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
+  nerPartNumber: yup.string().optional(),
+  quantity: yup.number().required('Enter a quantity!'),
+  price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
-  linkUrl: yup.string().required(),
-  notes: yup.string().required()
+  linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
+  notes: yup.string().required('Notes are required!')
 });
 
 export interface MaterialFormInput {
@@ -29,7 +28,6 @@ export interface MaterialFormInput {
   manufacturerPartNumber: string;
   nerPartNumber?: string;
   price: number;
-  subtotal: number;
   quantity: number;
   unitName?: string;
   linkUrl: string;
@@ -37,9 +35,13 @@ export interface MaterialFormInput {
   assemblyId?: string;
 }
 
+export interface MaterialDataSubmission extends MaterialFormInput {
+  subtotal: number;
+}
+
 export interface MaterialFormProps {
   submitText: 'Add' | 'Edit';
-  onSubmit: (payload: MaterialFormInput) => void;
+  onSubmit: (payload: MaterialDataSubmission) => void;
   defaultValues?: MaterialFormInput;
   wbsElement: WbsElement;
   onHide: () => void;
@@ -50,7 +52,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   const {
     handleSubmit,
     control,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm<MaterialFormInput>({
     defaultValues: {
       name: defaultValues?.name ?? '',
@@ -64,8 +67,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
       notes: defaultValues?.notes ?? '',
-      assemblyId: defaultValues?.assemblyId,
-      subtotal: defaultValues?.subtotal ?? 0
+      assemblyId: defaultValues?.assemblyId
     },
     resolver: yupResolver(schema)
   });
@@ -95,19 +97,24 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     return <LoadingIndicator />;
   }
 
+  const onSubmitWrapper = (data: MaterialFormInput): void => {
+    onSubmit({ ...data, subtotal: data.price * data.quantity });
+  };
+
   return (
     <MaterialFormView
       assemblies={assemblies}
       allManufacturers={manufactuers}
       allMaterialTypes={materialTypes}
       allUnits={units}
-      onSubmit={onSubmit}
+      onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
       submitText={submitText}
       onHide={onHide}
       control={control}
       errors={errors}
       open={open}
+      watch={watch}
     />
   );
 };

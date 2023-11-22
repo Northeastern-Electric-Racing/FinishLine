@@ -45,7 +45,21 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     tasks: [],
     links: [],
     materials: [],
-    assemblies: []
+    assemblies: [
+      {
+        assemblyId: '1',
+        name: 'a1',
+        pdmFileName: 'file.txt',
+        dateCreated: new Date('10/18/2022'),
+        userCreatedId: batman.userId,
+        userCreated: batman,
+        userDeletedId: null,
+        userDeleted: null,
+        materials: [],
+        wbsElementId: 65,
+        dateDeleted: null
+      }
+    ]
   },
   workPackages: [
     {

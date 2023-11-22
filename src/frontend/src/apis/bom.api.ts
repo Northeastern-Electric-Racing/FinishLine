@@ -2,7 +2,10 @@ import { Material, WbsNumber } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
-import { MaterialFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import {
+  MaterialDataSubmission,
+  MaterialFormInput
+} from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
@@ -41,7 +44,7 @@ export const getAllUnits = async () => {
  * @param material The material to create
  * @returns The created material
  */
-export const createMaterial = async (wbsNum: WbsNumber, material: MaterialFormInput) => {
+export const createMaterial = async (wbsNum: WbsNumber, material: MaterialDataSubmission) => {
   const { data } = await axios.post(apiUrls.bomCreateMaterial(wbsNum), material);
   return data;
 };

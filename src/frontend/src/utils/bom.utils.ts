@@ -1,7 +1,23 @@
 import { Material } from 'shared';
 import { GridColDefStyle } from './tables';
 
-export const materialToRow = (material: Material, idx: number) => {
+export interface BomRow {
+  id: string;
+  materialId: string;
+  status: string;
+  type: string;
+  name: string;
+  manufacturer: string;
+  manufacturerPN: string;
+  pdmFileName: string;
+  quantity: string;
+  price: string;
+  subtotal: string;
+  link: string;
+  notes: string;
+}
+
+export const materialToRow = (material: Material, idx: number): BomRow => {
   return {
     id: idx + (material.assemblyId ?? ''),
     materialId: material.materialId,
@@ -12,8 +28,8 @@ export const materialToRow = (material: Material, idx: number) => {
     manufacturerPN: material.manufacturerPartNumber,
     pdmFileName: material.pdmFileName ?? 'None',
     quantity: material.quantity + (material.unitName ?? ''),
-    price: material.price,
-    subtotal: material.subtotal,
+    price: material.price.toString(),
+    subtotal: material.subtotal.toString(),
     link: material.linkUrl,
     notes: material.notes
   };

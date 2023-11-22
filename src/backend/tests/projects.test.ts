@@ -343,7 +343,7 @@ describe('Projects', () => {
             },
             'file.txt'
           )
-      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly on this project!`));
     });
 
     test('createAssembly fails when no permissions', async () => {
