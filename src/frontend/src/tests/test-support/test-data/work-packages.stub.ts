@@ -200,7 +200,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Manufacturing
 };
 
-export const exampleIntegrationWorkPackage: WorkPackage = {
+export const exampleInstallWorkPackage: WorkPackage = {
   id: 4,
   wbsNum: exampleWbsWorkPackage4,
   dateCreated: new Date('2022-02-20'),
@@ -252,7 +252,7 @@ export const exampleIntegrationWorkPackage: WorkPackage = {
     }
   ],
   projectName: 'project3',
-  stage: WorkPackageStage.Integration
+  stage: WorkPackageStage.Install
 };
 
 export const exampleWorkPackage5: WorkPackage = {

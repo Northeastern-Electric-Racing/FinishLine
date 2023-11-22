@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement } from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, ClubAccount, ExpenseType } from 'shared';
 
 /**
  * Pipes:
@@ -85,6 +85,10 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
+export const expenseTypePipe = (expenseType: ExpenseType) => {
+  return `${expenseType.code} - ${expenseType.name}`;
+};
+
 /** Display timeline status in readable form
  *  E.G. VERY_BEHIND -> Very Behind
  */
@@ -123,4 +127,31 @@ export const dateUndefinedPipe = (date?: Date): string => {
 
 export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
+};
+
+/** Displays a refund source as a string "Code - Name" */
+export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
+  const CASH_ACCOUNT_CODE = 830667;
+  const BUDGET_ACCOUNT_CODE = 800462;
+
+  switch (refundSource) {
+    case ClubAccount.CASH:
+      return `${CASH_ACCOUNT_CODE} - ${refundSource}`;
+    case ClubAccount.BUDGET:
+      return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
+  }
+};
+
+// Takes in an enum string to capitalize first letter of each word and gets rid of underscore
+export const displayEnum = (enumString: string) => {
+  enumString = enumString.toLowerCase();
+  while (enumString.indexOf('_') !== -1) {
+    enumString =
+      enumString.substring(0, enumString.indexOf('_')) +
+      ' ' +
+      enumString.charAt(enumString.indexOf('_') + 1).toUpperCase() +
+      enumString.slice(enumString.indexOf('_') + 2);
+  }
+  enumString = enumString.charAt(0).toUpperCase() + enumString.slice(1);
+  return enumString;
 };

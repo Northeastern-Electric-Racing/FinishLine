@@ -53,6 +53,7 @@ const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
+const workPackagesMany = () => `${workPackages()}/get-many`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -64,13 +65,17 @@ const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activati
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
+const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
+const teamsCreate = () => `${teams()}/create`;
+const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -138,6 +143,7 @@ export const apiUrls = {
   workPackagesDelete,
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
+  workPackagesMany,
 
   changeRequests,
   changeRequestsById,
@@ -148,12 +154,16 @@ export const apiUrls = {
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
+  changeRequestRequestReviewer,
 
   teams,
   teamsById,
+  teamsDelete,
   teamsSetMembers,
   teamsSetHead,
   teamsSetDescription,
+  teamsCreate,
+  teamsSetLeads,
 
   descriptionBulletsCheck,
 

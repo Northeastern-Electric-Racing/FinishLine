@@ -46,9 +46,9 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
     height: '50%',
     backgroundColor: theme.palette.background.default,
     width: '100%',
-    borderRadius: '25px',
     border: 0,
-    borderColor: 'black'
+    borderColor: 'black',
+    ...sx
   };
 
   const autocompleteRenderInput = (params: AutocompleteRenderInputParams) => {

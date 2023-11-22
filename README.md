@@ -8,7 +8,7 @@ A project management web application built in Typescript, React, and Express.
 
 All of our documentation is on [our Confluence page](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/5603329/Software). Start there to learn what the project is all about.
 
-All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (backup contact: [`@anthonybernardi`](https://github.com/anthonybernardi)).
+All questions can be directed to `#software` in the [NER Slack](https://nu-electric-racing.slack.com) (backup contact: [`@RChandler234`](https://github.com/RChandler234)).
 
 ## Environment Setup
 

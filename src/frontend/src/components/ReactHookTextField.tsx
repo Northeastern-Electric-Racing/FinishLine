@@ -4,6 +4,7 @@
  */
 import { Control, Controller, FieldError } from 'react-hook-form';
 import { TextField, InputAdornment, SxProps, Theme, SvgIconProps } from '@mui/material';
+import { countWords, isUnderWordCount } from 'shared';
 
 interface ReactHookTextFieldProps {
   name: string;
@@ -20,6 +21,7 @@ interface ReactHookTextFieldProps {
   rows?: number;
   endAdornment?: React.ReactElement;
   errorMessage?: FieldError;
+  maxLength?: number;
 }
 
 const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
@@ -36,7 +38,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   multiline,
   rows,
   endAdornment,
-  errorMessage
+  errorMessage,
+  maxLength
 }) => {
   const defaultRules = { required: true };
 
@@ -70,10 +73,11 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
           sx={sx}
           type={type}
           InputProps={inputProps}
+          inputProps={maxLength ? { ...inputProps, maxLength: isUnderWordCount(value, maxLength) ? null : 0 } : undefined}
           multiline={multiline}
           rows={rows}
           error={!!errorMessage}
-          helperText={errorMessage?.message}
+          helperText={errorMessage ? errorMessage.message : maxLength ? `${countWords(value)}/300 words` : undefined}
         />
       )}
     />

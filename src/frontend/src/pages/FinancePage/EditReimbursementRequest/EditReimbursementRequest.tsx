@@ -28,11 +28,13 @@ const EditReimbursementRequestPage: React.FC = () => {
 
   const onSubmit = async (data: ReimbursementRequestDataSubmission): Promise<string> => {
     const filesToKeep = data.receiptFiles.filter((file) => file.googleFileId !== '');
-    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep });
+
+    await editReimbursementRequest({ ...data, receiptPictures: filesToKeep, account: data.account! });
     await uploadReceipts({
       id: reimbursementRequest.reimbursementRequestId,
       files: data.receiptFiles.filter((receipt) => receipt.googleFileId === '').map((file) => file.file!)
     });
+
     return reimbursementRequest.reimbursementRequestId;
   };
 

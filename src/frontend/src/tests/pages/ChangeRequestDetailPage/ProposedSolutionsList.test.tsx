@@ -9,6 +9,7 @@ import { ProposedSolution } from 'shared';
 import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
+import { ToastProvider } from '../../../components/Toast/ToastProvider';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -41,7 +42,9 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed:
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />
+      <ToastProvider>
+        <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
+      </ToastProvider>
     </RouterWrapper>
   );
 };

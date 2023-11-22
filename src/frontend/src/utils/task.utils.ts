@@ -62,7 +62,7 @@ export const transformDate = (date: Date) => {
   return `${date.getFullYear().toString()}/${month}/${day}`;
 };
 
-export const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+export const taskUserToAutocompleteOption = (user: User): { label: string; id: number } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 

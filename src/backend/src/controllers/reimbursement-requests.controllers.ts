@@ -72,9 +72,9 @@ export default class ReimbursementRequestsController {
   static async reimburseUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { amount } = req.body;
+      const { amount, dateReceived } = req.body;
 
-      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, user);
+      const reimbursement = await ReimbursementRequestService.reimburseUser(amount, dateReceived, user);
       res.status(200).json(reimbursement);
     } catch (error: unknown) {
       next(error);
@@ -162,9 +162,15 @@ export default class ReimbursementRequestsController {
 
   static async createExpenseType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, code, allowed } = req.body;
+      const { name, code, allowed, allowedRefundSources } = req.body;
       const user = await getCurrentUser(res);
-      const createdExpenseType = await ReimbursementRequestService.createExpenseType(user, name, code, allowed);
+      const createdExpenseType = await ReimbursementRequestService.createExpenseType(
+        user,
+        name,
+        code,
+        allowed,
+        allowedRefundSources
+      );
       res.status(200).json(createdExpenseType);
     } catch (error: unknown) {
       next(error);
@@ -182,6 +188,10 @@ export default class ReimbursementRequestsController {
 
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user);
 
+      const isProd = process.env.NODE_ENV === 'production';
+      const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
+
+      res.header('Access-Control-Allow-Origin', origin);
       res.status(200).json(receipt);
     } catch (error: unknown) {
       next(error);
@@ -214,6 +224,17 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
       const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async denyReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(requestId, user);
       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
       next(error);
@@ -265,14 +286,15 @@ export default class ReimbursementRequestsController {
   static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { expenseTypeId } = req.params;
-      const { name, code, allowed } = req.body;
+      const { name, code, allowed, allowedRefundSources } = req.body;
       const submitter = await getCurrentUser(res);
       const expenseTypeUpdated = await ReimbursementRequestService.editExpenseType(
         expenseTypeId,
         code,
         name,
         allowed,
-        submitter
+        submitter,
+        allowedRefundSources
       );
       res.status(200).json(expenseTypeUpdated);
     } catch (error: unknown) {

@@ -141,3 +141,12 @@ export const addProposedSolution = (
     budgetImpact
   });
 };
+
+/**
+ * Request reviewers in change request
+ * @param crId The ID of the associated change request.
+ * @param crReviewData The data to request reviewers
+ */
+export const requestCRReview = (crId: string, crReviewData: { userIds: number[] }) => {
+  return axios.post<{ message: string }>(apiUrls.changeRequestRequestReviewer(crId), crReviewData);
+};

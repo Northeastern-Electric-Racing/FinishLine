@@ -66,6 +66,18 @@ export const sendMailToAdvisor = async (subject: string, text: string) => {
   }
 };
 
+interface GoogleDriveErrorListError {
+  domain: string;
+  reason: string;
+  message: string;
+}
+
+interface GoogleDriveError {
+  errors: GoogleDriveErrorListError[];
+  code: number;
+  message: string;
+}
+
 //tutorial used to set this up: https://www.labnol.org/google-drive-api-upload-220412
 export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
@@ -101,7 +113,18 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
     const { id, name } = response.data;
     return { id, name };
   } catch (error: unknown) {
-    if (error instanceof Error) {
+    if ((error as GoogleDriveError).errors) {
+      const gError = error as GoogleDriveError;
+      throw new HttpException(
+        gError.code,
+        `Failed to Upload Receipt(s): ${gError.message}, ${gError.errors.reduce(
+          (acc: string, curr: GoogleDriveErrorListError) => {
+            return acc + ' ' + curr.message + ' ' + curr.reason;
+          },
+          ''
+        )}`
+      );
+    } else if (error instanceof Error) {
       throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);

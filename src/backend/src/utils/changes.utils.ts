@@ -39,12 +39,19 @@ export const createChange = (
   implementerId: number,
   wbsElementId: number
 ): ChangeCreateArgs | undefined => {
-  if (oldValue == null) {
+  if (oldValue == null && newValue !== null) {
     return {
       changeRequestId: crId,
       implementerId,
       wbsElementId,
       detail: `Added ${nameOfField} "${newValue}"`
+    };
+  } else if (oldValue !== null && newValue == null) {
+    return {
+      changeRequestId: crId,
+      implementerId,
+      wbsElementId,
+      detail: `Deleted ${nameOfField} "${oldValue}"`
     };
   } else if (oldValue !== newValue) {
     return {

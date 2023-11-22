@@ -18,7 +18,7 @@ import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
-import { useManyWorkPackages } from '../../../hooks/work-packages.hooks';
+import { useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 
@@ -37,7 +37,7 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
     </ul>
   );
 
-  const { data: dependencies, isError, isLoading, error } = useManyWorkPackages(workPackage.blockedBy);
+  const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const theme = useTheme();
 
   if (!dependencies || isLoading) return <LoadingIndicator />;

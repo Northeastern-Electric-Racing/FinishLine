@@ -5,6 +5,7 @@ import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import userTransformer from './user.transformer';
+import { getDateImplemented } from '../utils/change-requests.utils';
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
@@ -23,11 +24,7 @@ const changeRequestTransformer = (
     dateReviewed: changeRequest.dateReviewed ?? undefined,
     accepted: changeRequest.accepted ?? undefined,
     reviewNotes: changeRequest.reviewNotes ?? undefined,
-    dateImplemented: changeRequest.changes.reduce(
-      (res: Date | undefined, change) =>
-        !res || change.dateImplemented.valueOf() > res.valueOf() ? change.dateImplemented : res,
-      undefined
-    ),
+    dateImplemented: getDateImplemented(changeRequest),
     implementedChanges: changeRequest.changes.map((change) => ({
       wbsNum: wbsNumOf(change.wbsElement),
       changeId: change.changeId,

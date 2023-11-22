@@ -7,7 +7,7 @@ import { UseQueryResult } from 'react-query';
 import { AuthenticatedUser, WorkPackage } from 'shared';
 import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
 import { Auth } from '../../../utils/types';
-import { useManyWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useGetManyWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
 import { mockAuth, mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleDesignWorkPackage, exampleResearchWorkPackage } from '../../test-support/test-data/work-packages.stub';
@@ -25,10 +25,10 @@ const mockSingleWPHook = (isLoading: boolean, isError: boolean, data?: WorkPacka
   mockedUseSingleWorkPackage.mockReturnValue(mockUseQueryResult<WorkPackage>(isLoading, isError, data, error));
 };
 
-const mockedUseManyWorkPackages = useManyWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
+const mockedGetBlockingWorkPackages = useGetManyWorkPackages as jest.Mock<UseQueryResult<WorkPackage[]>>;
 
-const mockManyWorkPackagesHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
-  mockedUseManyWorkPackages.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
+const mockGetBlockingWorkPackagesHook = (isLoading: boolean, isError: boolean, data?: WorkPackage[], error?: Error) => {
+  mockedGetBlockingWorkPackages.mockReturnValue(mockUseQueryResult<WorkPackage[]>(isLoading, isError, data, error));
 };
 
 vi.mock('../../../hooks/auth.hooks');
@@ -63,7 +63,7 @@ describe('work package container', () => {
     mockSingleWPHook(true, false);
     mockAuthHook();
     mockCurrentUserHook();
-    mockManyWorkPackagesHook(true, false);
+    mockGetBlockingWorkPackagesHook(true, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('work package container', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook();
     mockCurrentUserHook();
-    mockManyWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
+    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('work package container', () => {
     mockSingleWPHook(false, true, undefined, new Error('404 could not find the requested work package'));
     mockAuthHook();
     mockCurrentUserHook();
-    mockManyWorkPackagesHook(false, false);
+    mockGetBlockingWorkPackagesHook(false, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('work package container', () => {
     mockSingleWPHook(false, true);
     mockAuthHook();
     mockCurrentUserHook();
-    mockManyWorkPackagesHook(false, false);
+    mockGetBlockingWorkPackagesHook(false, false);
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('work package container', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook(exampleAdminUser);
     mockCurrentUserHook();
-    mockManyWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
+    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     act(() => {
@@ -124,7 +124,7 @@ describe('work package container', () => {
     mockSingleWPHook(false, false, exampleResearchWorkPackage);
     mockAuthHook(exampleGuestUser);
     mockCurrentUserHook(exampleGuestUser);
-    mockManyWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
+    mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
     act(() => {

@@ -10,7 +10,8 @@ export enum ReimbursementStatusType {
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
-  REIMBURSED = 'REIMBURSED'
+  REIMBURSED = 'REIMBURSED',
+  DENIED = 'DENIED'
 }
 
 export interface ReimbursementStatus {
@@ -65,6 +66,7 @@ export interface ExpenseType {
   name: string;
   code: number;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 export interface ReimbursementProductCreateArgs {

@@ -7,10 +7,10 @@ const AdminToolsFinanceConfig: React.FC = () => {
   return (
     <PageBlock title="Finance Config">
       <Grid container spacing="3%">
-        <Grid item direction="column" xs={6}>
+        <Grid item direction="column" xs={12} md={6}>
           <VendorsTable />
         </Grid>
-        <Grid item direction="column" alignSelf="right" xs={6}>
+        <Grid item direction="column" alignSelf="right" xs={12} md={6}>
           <AccountCodesTable />
         </Grid>
       </Grid>

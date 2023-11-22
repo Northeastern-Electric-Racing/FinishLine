@@ -36,6 +36,7 @@ import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
+import { wbsNumComparator } from 'shared/src/validate-wbs';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -103,6 +104,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   if (isError) return <ErrorPage message={error?.message} />;
 
   const projectOptions: { label: string; id: string }[] = [];
+
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
   projects.forEach((project: Project) => {
@@ -121,6 +123,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       });
     });
   });
+
+  wbsDropdownOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,

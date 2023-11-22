@@ -67,7 +67,7 @@ enum Work_Package_Stage {
   RESEARCH
   DESIGN
   MANUFACTURING
-  INTEGRATION
+  INSTALL
 }
 
 model User {
@@ -110,6 +110,10 @@ model User {
   createdLinkTypes          LinkType[]              @relation(name: "linkTypeCreator")
   deletedReceipts           Receipt[]               @relation(name: "deletedReceipts")
   createdReceipts           Receipt[]               @relation(name: "receiptsCreatedBy")
+  deletedAssemblies         Assembly[]              @relation(name: "assemblyDeleter")
+  createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
+  deletedMaterials          Material[]              @relation(name: "materialDeleter")
+  createdMaterials          Material[]              @relation(name: "materialCreator")
 }
 
 model Team {
@@ -252,6 +256,8 @@ model WBS_Element {
   tasks                 Task[]
   reimbursementProducts Reimbursement_Product[]
   links                 Link[]                  @relation(name: "links")
+  assemblies            Assembly[]
+  materials             Material[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -358,6 +364,7 @@ enum Reimbursement_Status_Type {
   SABO_SUBMITTED
   ADVISOR_APPROVED
   REIMBURSED
+  DENIED
 }
 
 model Reimbursement_Status {
@@ -423,11 +430,12 @@ model Vendor {
 }
 
 model Expense_Type {
-  expenseTypeId String                  @id @default(uuid())
-  name          String
-  code          Int
-  allowed       Boolean
-  requests      Reimbursement_Request[]
+  expenseTypeId        String                  @id @default(uuid())
+  name                 String
+  code                 Int
+  allowed              Boolean
+  allowedRefundSources Club_Accounts[]
+  requests             Reimbursement_Request[]
 }
 
 model Reimbursement {
@@ -450,4 +458,76 @@ model User_Secure_Settings {
   state                String
   zipcode              String
   phoneNumber          String @unique
+}
+
+enum Material_Status {
+  RECEIVED
+  ORDERED
+  SHIPPED
+  UNORDERED
+}
+
+model Unit {
+  name      String     @id
+  materials Material[]
+}
+
+model Assembly {
+  assemblyId    String      @id @default(uuid())
+  name          String      @unique
+  pdmFileName   String?
+  dateDeleted   DateTime?
+  userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
+  userDeletedId Int?
+  dateCreated   DateTime
+  userCreated   User        @relation(fields: [userCreatedId], references: [userId], name: "assemblyCreator")
+  userCreatedId Int
+  wbsElement    WBS_Element @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId  Int
+  materials     Material[]
+}
+
+model Material {
+  materialId             String          @id @default(uuid())
+  assembly               Assembly?       @relation(fields: [assemblyId], references: [assemblyId])
+  assemblyId             String?
+  name                   String
+  wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElementId           Int
+  dateDeleted            DateTime?
+  userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
+  userDeletedId          Int?
+  dateCreated            DateTime
+  userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
+  userCreatedId          Int
+  status                 Material_Status
+  materialType           Material_Type   @relation(fields: [materialTypeName], references: [name])
+  materialTypeName       String
+  manufacturer           Manufacturer    @relation(fields: [manufacturerName], references: [name])
+  manufacturerName       String
+  manufacturerPartNumber String
+  pdmFileName            String?
+  quantity               Int
+  quantityUnit           Unit?           @relation(fields: [unitName], references: [name])
+  unitName               String?
+  price                  Int
+  subtotal               Int
+  linkUrl                String
+  notes                  String
+}
+
+model Material_Type {
+  name        String     @id
+  dateCreated DateTime
+  dateDeleted DateTime?
+  creatorId   Int
+  materials   Material[]
+}
+
+model Manufacturer {
+  name        String     @id
+  dateCreated DateTime
+  creatorId   Int
+  dateDeleted DateTime?
+  materials   Material[]
 }

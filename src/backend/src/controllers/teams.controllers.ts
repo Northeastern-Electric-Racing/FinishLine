@@ -62,4 +62,38 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async createTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamName, headId, slackId, description } = req.body;
+      const submitter = await getCurrentUser(res);
+      const team = await TeamsService.createTeam(submitter, teamName, headId, slackId, description);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamLeads(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+      const { teamId } = req.params;
+      const submitter = await getCurrentUser(res);
+      const team = await TeamsService.setTeamLeads(submitter, teamId, userIds);
+      return res.status(200).json(team);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const deleter = await getCurrentUser(res);
+      await TeamsService.deleteTeam(deleter, teamId);
+      return res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

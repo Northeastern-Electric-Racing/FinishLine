@@ -6,7 +6,7 @@ import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
-import { hasPermissionToEditTask } from '../utils/tasks.utils';
+import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
 import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
@@ -37,7 +37,11 @@ export default class TasksService {
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsNumber: wbsNum },
-      include: { project: { include: { teams: { ...teamQueryArgs }, wbsElement: true } } }
+      include: {
+        project: {
+          include: { teams: { ...teamQueryArgs }, wbsElement: true, workPackages: { include: { wbsElement: true } } }
+        }
+      }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
@@ -51,9 +55,23 @@ export default class TasksService {
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !teams.some((team) => isUserOnTeam(team, createdBy))) {
+    const curWorkPackages = project.workPackages;
+
+    const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
+      return (
+        workPackage.wbsElement.projectLeadId === createdBy.userId ||
+        workPackage.wbsElement.projectManagerId === createdBy.userId
+      );
+    });
+
+    if (
+      !isLeadership(createdBy.role) &&
+      !isProjectLeadOrManager &&
+      !isWorkPackageLeadOrManager &&
+      !teams.some((team) => isUserOnTeam(team, createdBy))
+    ) {
       throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
+        'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
       );
     }
 
@@ -79,7 +97,11 @@ export default class TasksService {
       ...taskQueryArgs
     });
 
-    return taskTransformer(createdTask);
+    const newTask = taskTransformer(createdTask);
+
+    sendSlackTaskAssignedNotificationToUsers(newTask, assignees);
+
+    return newTask;
   }
 
   /**
@@ -94,7 +116,10 @@ export default class TasksService {
    */
   static async editTask(user: User, taskId: string, title: string, notes: string, priority: Task_Priority, deadline: Date) {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
-    if (!hasPermission) throw new AccessDeniedException();
+    if (!hasPermission)
+      throw new AccessDeniedException(
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
+      );
 
     const originalTask = await prisma.task.findUnique({ where: { taskId } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
@@ -129,7 +154,7 @@ export default class TasksService {
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
       throw new AccessDeniedException(
-        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
       );
 
     const updatedTask = await prisma.task.update({ where: { taskId }, data: { status }, ...taskQueryArgs });
@@ -149,16 +174,20 @@ export default class TasksService {
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
       include: {
-        wbsElement: { include: { project: { ...projectQueryArgs } } }
+        wbsElement: { include: { project: { ...projectQueryArgs } } },
+        assignees: true
       }
     });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
+    const originalAssigneeIds = originalTask.assignees.map((assignee) => assignee.userId);
+    const newAssigneeIds = assignees.filter((userId) => !originalAssigneeIds.includes(userId));
+
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)
       throw new AccessDeniedException(
-        'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+        'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
       );
 
     // this throws if any of the users aren't found
@@ -180,17 +209,21 @@ export default class TasksService {
       };
     });
 
-    const updatedTask = await prisma.task.update({
-      where: { taskId },
-      data: {
-        assignees: {
-          set: transformedAssigneeUsers
-        }
-      },
-      ...taskQueryArgs
-    });
+    const updatedTask = taskTransformer(
+      await prisma.task.update({
+        where: { taskId },
+        data: {
+          assignees: {
+            set: transformedAssigneeUsers
+          }
+        },
+        ...taskQueryArgs
+      })
+    );
 
-    return taskTransformer(updatedTask);
+    await sendSlackTaskAssignedNotificationToUsers(updatedTask, newAssigneeIds);
+
+    return updatedTask;
   }
 
   /**

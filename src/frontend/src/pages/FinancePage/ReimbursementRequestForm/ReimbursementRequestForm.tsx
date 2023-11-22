@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs, WbsNumber } from 'shared';
+import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs } from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -14,15 +14,15 @@ import CreateReimbursementRequestFormView from './ReimbursementFormView';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { getAllWbsElements } from '../../../utils/reimbursement-request.utils';
+import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestFormInput {
   vendorId: string;
-  account: ClubAccount;
   dateOfExpense: Date;
   expenseTypeId: string;
   reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
+  account: ClubAccount | undefined;
 }
 
 export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
@@ -47,7 +47,11 @@ const schema = yup.object().shape({
       yup.object().shape({
         wbsNum: yup.object().required('WBS Number is required'),
         name: yup.string().required('Description is required'),
-        cost: yup.number().required('Amount is required').min(1, 'Amount must be greater than 0')
+        cost: yup
+          .number()
+          .typeError('Amount is required')
+          .required('Amount is required')
+          .min(0.01, 'Amount must be greater than 0')
       })
     )
     .required('reimbursement products required')
@@ -75,7 +79,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
-      account: defaultValues?.account ?? ClubAccount.CASH,
+      account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
@@ -120,6 +124,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     data: allProjects
   } = useAllProjects();
 
+  // checking the data here instead of using isError since function doesn't ever return an error
+  const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();
+
+  // checks to make sure none of the secure settings fields are empty, indicating not properly set
+  const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '') ? true : false;
+
   const toast = useToast();
   const history = useHistory();
 
@@ -133,7 +143,8 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     allProjectsIsLoading ||
     !allVendors ||
     !allExpenseTypes ||
-    !allProjects
+    !allProjects ||
+    checkSecureSettingsIsLoading
   )
     return <LoadingIndicator />;
 
@@ -152,15 +163,17 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        toast.error(e.message, 3000);
+        toast.error(e.message, 5000);
       }
     }
   };
 
-  const allWbsElements: {
-    wbsNum: WbsNumber;
-    wbsName: string;
-  }[] = getAllWbsElements(allProjects);
+  const allProjectWbsElements = allProjects.map((proj) => {
+    return {
+      wbsNum: proj.wbsNum,
+      wbsName: proj.name
+    };
+  });
 
   return (
     <CreateReimbursementRequestFormView
@@ -177,10 +190,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       reimbursementProductRemove={reimbursementProductRemove}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
-      allWbsElements={allWbsElements}
+      allWbsElements={allProjectWbsElements}
       submitText={submitText}
       previousPage={previousPage}
       setValue={setValue}
+      hasSecureSettingsSet={hasSecureSettingsSet}
     />
   );
 };
