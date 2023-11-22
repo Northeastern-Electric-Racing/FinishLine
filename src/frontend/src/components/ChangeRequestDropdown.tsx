@@ -64,7 +64,7 @@ const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: Chan
             <Select
               id="cr-autocomplete"
               displayEmpty
-              renderValue={(value) => renderValues.get(value)}
+              renderValue={(value) => renderValues.get(Number(value))}
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
