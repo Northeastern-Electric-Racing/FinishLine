@@ -457,9 +457,10 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    const changeRequest = { ...prismaChangeRequest1, requestedReviewers: [] };
     test('Change request successfully assigned reviewers', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
-      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue({ ...prismaChangeRequest1, requestedReviewers: [] });
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
       await ChangeRequestsService.requestCRReview(batman, [1], 1);
