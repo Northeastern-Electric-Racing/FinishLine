@@ -53,7 +53,6 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setProjectManagerId: (id?: string) => void;
   setProjectLeadId: (id?: string) => void;
-  //createProject?: boolean;
   projectLeadId?: string;
   projectManagerId?: string;
 }
@@ -66,12 +65,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   defaultValues,
   setProjectManagerId,
   setProjectLeadId,
-  //createProject,
   projectLeadId,
   projectManagerId
 }) => {
   const allUsers = useAllUsers();
-  // teamId, carNumber, name, crid, summary
   const schema = !project
     ? yup.object().shape({
         name: yup.string().required('Name is required!'),
@@ -189,7 +186,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         />
         <Stack spacing={4}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
               {!project ? 'Links (optional)' : 'Links'}
             </Typography>
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
