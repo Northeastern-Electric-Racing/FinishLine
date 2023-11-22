@@ -119,6 +119,7 @@ projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsContro
 projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssemblyType);
 projectRouter.post('/bom/material/:materialId/delete', ProjectsController.deleteMaterial);
 
+projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 export default projectRouter;

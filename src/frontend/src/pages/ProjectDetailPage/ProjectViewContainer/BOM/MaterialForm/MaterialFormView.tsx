@@ -20,6 +20,7 @@ export interface MaterialFormViewProps {
   assemblies: Assembly[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
+  createUnit: (name: string) => void;
 }
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
@@ -34,7 +35,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   allManufacturers,
   assemblies,
   open,
-  watch
+  watch,
+  createUnit
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
@@ -164,7 +166,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 control={control}
                 errorMessage={errors.quantity}
                 placeholder="Enter Quantity"
-                type='number'
+                type="number"
               />
             </FormControl>
             <FormControl fullWidth>
@@ -186,6 +188,17 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         {unit.name}
                       </MenuItem>
                     ))}
+                    <MenuItem
+                      value="createUnit"
+                      onClick={() => {
+                        const unitName = prompt('Enter Unit Name');
+                        if (unitName) {
+                          createUnit(unitName);
+                        }
+                      }}
+                    >
+                      + Create Unit
+                    </MenuItem>
                   </TextField>
                 )}
               />
@@ -195,7 +208,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Price</FormLabel>
-            <ReactHookTextField name="price" control={control} errorMessage={errors.price} placeholder="Enter Price" type='number' />
+            <ReactHookTextField
+              name="price"
+              control={control}
+              errorMessage={errors.price}
+              placeholder="Enter Price"
+              type="number"
+            />
           </FormControl>
         </Grid>
         <Grid item xs={3} display="flex" alignItems="center" mt={2}>

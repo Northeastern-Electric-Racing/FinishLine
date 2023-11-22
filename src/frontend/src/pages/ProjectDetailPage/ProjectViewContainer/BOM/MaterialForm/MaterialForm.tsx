@@ -3,7 +3,12 @@ import { useForm } from 'react-hook-form';
 import { MaterialStatus, WbsElement } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
-import { useGetAllManufacturers, useGetAllMaterialTypes, useGetAllUnits } from '../../../../../hooks/bom.hooks';
+import {
+  useCreateUnit,
+  useGetAllManufacturers,
+  useGetAllMaterialTypes,
+  useGetAllUnits
+} from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 
@@ -53,7 +58,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     handleSubmit,
     control,
     formState: { errors },
-    watch
+    watch,
+    setValue
   } = useForm<MaterialFormInput>({
     defaultValues: {
       name: defaultValues?.name ?? '',
@@ -71,6 +77,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     },
     resolver: yupResolver(schema)
   });
+
+  const { mutateAsync: createUnit, isLoading: isLoadingCreateUnit } = useCreateUnit();
 
   const {
     data: materialTypes,
@@ -93,12 +101,31 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
   if (unitsIsError) return <ErrorPage message={unitsError?.message} />;
   if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
-  if (isLoadingManufactuers || isLoadingMaterialTypes || isLoadingUnits || !materialTypes || !units || !manufactuers) {
+  if (
+    isLoadingManufactuers ||
+    isLoadingMaterialTypes ||
+    isLoadingUnits ||
+    !materialTypes ||
+    !units ||
+    !manufactuers ||
+    isLoadingCreateUnit
+  ) {
     return <LoadingIndicator />;
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     onSubmit({ ...data, subtotal: data.price * data.quantity });
+  };
+
+  const createUnitWrapper = async (unitName: string): Promise<void> => {
+    try {
+      const createdUnit = await createUnit({ name: unitName });
+      setValue('unitName', createdUnit.name);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
   };
 
   return (
@@ -115,6 +142,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       errors={errors}
       open={open}
       watch={watch}
+      createUnit={createUnitWrapper}
     />
   );
 };

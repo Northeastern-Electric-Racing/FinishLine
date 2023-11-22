@@ -1048,4 +1048,28 @@ export default class ProjectsService {
       return { ...unit, materials: unit.materials.map(materialPreviewTransformer) };
     });
   }
+
+  /**
+   * Creates a new unit
+   * @param submitter the user who's creating the unit
+   * @param name the name of the unit
+   * @throws if the submitter is a guest or the given unit name already exists
+   */
+  static async createUnit(name: string, submitter: User): Promise<Unit> {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create units');
+
+    const unit = await prisma.unit.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (unit) throw new HttpException(400, `${name} already exists as a unit!`);
+
+    const newUnit = await prisma.unit.create({
+      data: { name }
+    });
+
+    return { ...newUnit, materials: [] };
+  }
 }

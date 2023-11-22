@@ -51,6 +51,15 @@ export const createMaterialType = async (name: string) => {
 };
 
 /**
+ * Requests to create a unit.
+ * @param unit The unit to create
+ * @returns The created unit
+ */
+export const createUnit = async (name: string) => {
+  const { data } = await axios.post(apiUrls.bomCreateUnit(), { name });
+  return data;
+};
+/**
  * Requests all the units from the backend.
  * @returns All the units
  */

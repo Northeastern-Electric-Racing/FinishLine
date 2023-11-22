@@ -6,6 +6,7 @@ import {
   createManufacturer,
   createMaterial,
   createMaterialType,
+  createUnit,
   deleteSingleMaterial,
   editMaterial,
   getAllManufacturers,
@@ -172,6 +173,26 @@ export const useCreateManufacturer = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['materials', 'manufacturers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to create a unit.
+ * @returns mutation function to create a unit
+ */
+export const useCreateUnit = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { name: string }>(
+    ['unit', 'create'],
+    async (payload: { name: string }) => {
+      const data = await createUnit(payload.name);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'units']);
       }
     }
   );
