@@ -35,10 +35,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const assignMaterial = (materialId: string, assemblyId?: string) => async () => {
     try {
       await assignMaterialToAssembly({ materialId, assemblyId }).finally(() =>
-        toast.success('Material Successfully Deleted!')
+        toast.success('Material Successfully Reassigned!')
       );
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -49,7 +48,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     try {
       await deleteMaterialMutateAsync({ materialId: id }).finally(() => toast.success('Material Successfully Deleted!'));
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
