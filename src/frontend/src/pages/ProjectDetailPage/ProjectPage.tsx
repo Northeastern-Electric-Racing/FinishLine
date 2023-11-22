@@ -5,14 +5,13 @@
 
 import { useState } from 'react';
 import { WbsNumber } from 'shared';
-import { useAllLinkTypes, useSingleProject } from '../../hooks/projects.hooks';
+import { useSingleProject } from '../../hooks/projects.hooks';
 import ProjectViewContainer from './ProjectViewContainer/ProjectViewContainer';
-import ProjectEditContainer from './ProjectEdit/ProjectEditContainer';
+import ProjectEditContainer from './ProjectForm/ProjectEditContainer';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
-import { getRequiredLinkTypeNames } from '../../utils/link.utils';
 
 interface ProjectPageProps {
   wbsNum: WbsNumber;
@@ -28,19 +27,10 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
     data: project,
     error: projectError
   } = useSingleProject(wbsNum);
-  const {
-    data: allLinkTypes,
-    isLoading: allLinkTypesIsLoading,
-    isError: allLinkTypesIsError,
-    error: allLinkTypesError
-  } = useAllLinkTypes();
 
   if (projectIsError) return <ErrorPage message={projectError.message} />;
-  if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
-  if (projectIsLoading || !project || !allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
-
-  const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
+  if (projectIsLoading || !project) return <LoadingIndicator />;
 
   if (editMode) {
     return (
@@ -50,7 +40,6 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
           setEditMode(false);
           history.push(`${history.location.pathname}`);
         }}
-        requiredLinkTypeNames={requiredLinkTypeNames}
       />
     );
   }

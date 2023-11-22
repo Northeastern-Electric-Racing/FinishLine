@@ -222,24 +222,22 @@ const WorkPackageEditContainer: React.FC<WorkPackageEditContainerProps> = ({ wor
             />
           </FormControl>
         </PageBlock>
-        <PageBlock title="Expected Activities">
-          <ReactHookEditableList
-            name="expectedActivities"
-            register={register}
-            ls={expectedActivities}
-            append={appendExpectedActivity}
-            remove={removeExpectedActivity}
-          />
-        </PageBlock>
-        <PageBlock title="Deliverables">
-          <ReactHookEditableList
-            name="deliverables"
-            register={register}
-            ls={deliverables}
-            append={appendDeliverable}
-            remove={removeDeliverable}
-          />
-        </PageBlock>
+        <ReactHookEditableList
+          name="expectedActivities"
+          register={register}
+          ls={expectedActivities}
+          append={appendExpectedActivity}
+          remove={removeExpectedActivity}
+          bulletName="Expected Activity"
+        />
+        <ReactHookEditableList
+          name="deliverables"
+          register={register}
+          ls={deliverables}
+          append={appendDeliverable}
+          remove={removeDeliverable}
+          bulletName="Deliverable"
+        />
         <Box textAlign="right" sx={{ my: 2 }}>
           <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
             Cancel

@@ -13,7 +13,8 @@ import {
   prismaMaterial,
   prismaMaterialType,
   prismaUnit,
-  prismaMaterial2
+  prismaMaterial2,
+  prismaProject2
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -92,16 +93,48 @@ describe('Projects', () => {
     vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
     await expect(
-      async () => await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', ['teamId'])
+      async () =>
+        await ProjectsService.createProject(
+          batman,
+          1,
+          2,
+          'name',
+          'summary',
+          ['teamId'],
+          10,
+          [],
+          [],
+          [],
+          [],
+          [],
+          1, //batman
+          2 //superman
+        )
     ).rejects.toThrow(new NotFoundException('Team', 'teamId'));
   });
 
   test('createProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(prismaWbsElement1);
+    const projectCreateResult = { ...prismaWbsElement1, project: prismaProject2 };
+    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(projectCreateResult);
 
-    const res = await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', []);
+    const res = await ProjectsService.createProject(
+      batman,
+      1,
+      2,
+      'name',
+      'summary',
+      [],
+      10,
+      [],
+      [],
+      [],
+      [],
+      [],
+      1, //batman
+      2 //superman
+    );
 
     expect(res).toStrictEqual({
       carNumber: prismaWbsElement1.carNumber,

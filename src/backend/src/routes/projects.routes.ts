@@ -9,22 +9,10 @@ const projectRouter = express.Router();
 projectRouter.get('/', ProjectsController.getAllProjects);
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
-projectRouter.post(
-  '/create',
-  intMinZero(body('crId')),
-  nonEmptyString(body('name')),
-  intMinZero(body('carNumber')),
-  nonEmptyString(body('summary')),
-  validateInputs,
-  ProjectsController.createProject
-);
 
-projectRouter.post(
-  '/edit',
-  intMinZero(body('projectId')),
+const projectValidators = [
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('budget')),
   nonEmptyString(body('summary')),
   body('rules').isArray(),
   nonEmptyString(body('rules.*')),
@@ -41,7 +29,24 @@ projectRouter.post(
   nonEmptyString(body('links.*.url')),
   nonEmptyString(body('links.*.linkTypeName')),
   intMinZero(body('projectLeadId').optional()),
-  intMinZero(body('projectManagerId').optional()),
+  intMinZero(body('projectManagerId').optional())
+];
+
+projectRouter.post(
+  '/create',
+  intMinZero(body('carNumber')),
+  body('teamIds').isArray(),
+  nonEmptyString(body('teamIds.*')),
+  body('budget').optional().isInt({ min: 0 }).default(0),
+  ...projectValidators,
+  validateInputs,
+  ProjectsController.createProject
+);
+projectRouter.post(
+  '/edit',
+  intMinZero(body('projectId')),
+  intMinZero(body('budget')),
+  ...projectValidators,
   validateInputs,
   ProjectsController.editProject
 );
