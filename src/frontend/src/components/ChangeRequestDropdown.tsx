@@ -49,8 +49,8 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
   }));
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <FormControl>
+    <Box>
+      <FormControl fullWidth>
         <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
         <Controller
           control={control}
@@ -64,7 +64,7 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
+              sx={{ height: 56, width: '100%', textAlign: 'left' }}
               error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {

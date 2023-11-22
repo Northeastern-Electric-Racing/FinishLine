@@ -31,18 +31,20 @@ import {
   ClubAccount,
   ExpenseType,
   Reimbursement,
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   Vendor,
-  ReimbursementStatus
+  ReimbursementStatus,
+  OtherReimbursementProductCreateArgs,
+  WbsReimbursementProductCreateArgs
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
   account: ClubAccount;
 }

@@ -288,25 +288,25 @@ const CreateWorkPackageFormView: React.FC<CreateWorkPackageFormViewProps> = ({
             </Grid>
             <Grid item xs={12} md={2}>
               <FormControl fullWidth>
-                <FormLabel>Expected Activities</FormLabel>
                 <ReactHookEditableList
                   name="expectedActivities"
                   register={register}
                   ls={expectedActivities}
                   append={appendExpectedActivity}
                   remove={removeExpectedActivity}
+                  bulletName="Expected Activity"
                 />
               </FormControl>
             </Grid>
             <Grid item xs={12} md={2}>
               <FormControl fullWidth>
-                <FormLabel>Deliverables</FormLabel>
                 <ReactHookEditableList
                   name="deliverables"
                   register={register}
                   ls={deliverables}
                   append={appendDeliverable}
                   remove={removeDeliverable}
+                  bulletName="Deliverable"
                 />
               </FormControl>
             </Grid>

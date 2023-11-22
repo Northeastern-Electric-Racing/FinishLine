@@ -234,30 +234,30 @@ model Change {
 }
 
 model WBS_Element {
-  wbsElementId          Int                     @id @default(autoincrement())
-  dateCreated           DateTime                @default(now())
-  dateDeleted           DateTime?
-  carNumber             Int
-  projectNumber         Int
-  workPackageNumber     Int
-  name                  String
-  status                WBS_Element_Status      @default(INACTIVE)
-  projectLeadId         Int?
-  projectLead           User?                   @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId      Int?
-  projectManager        User?                   @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
-  changeRequests        Change_Request[]
-  changes               Change[]
-  deletedByUserId       Int?
-  deletedBy             User?                   @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
-  project               Project?
-  workPackage           Work_Package?
-  blocking              Work_Package[]          @relation("blockedBy")
-  tasks                 Task[]
-  reimbursementProducts Reimbursement_Product[]
-  links                 Link[]                  @relation(name: "links")
-  assemblies            Assembly[]
-  materials             Material[]
+  wbsElementId                Int                            @id @default(autoincrement())
+  dateCreated                 DateTime                       @default(now())
+  dateDeleted                 DateTime?
+  carNumber                   Int
+  projectNumber               Int
+  workPackageNumber           Int
+  name                        String
+  status                      WBS_Element_Status             @default(INACTIVE)
+  projectLeadId               Int?
+  projectLead                 User?                          @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId            Int?
+  projectManager              User?                          @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  changeRequests              Change_Request[]
+  changes                     Change[]
+  deletedByUserId             Int?
+  deletedBy                   User?                          @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
+  project                     Project?
+  workPackage                 Work_Package?
+  blocking                    Work_Package[]                 @relation("blockedBy")
+  tasks                       Task[]
+  links                       Link[]                         @relation(name: "links")
+  assemblies                  Assembly[]
+  materials                   Material[]
+  reimbursementProductReasons Reimbursement_Product_Reason[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -411,15 +411,31 @@ model Reimbursement_Request {
   expenseType            Expense_Type            @relation(fields: [expenseTypeId], references: [expenseTypeId])
 }
 
+enum Other_Reimbursement_Product_Reason {
+  TOOLS_AND_EQUIPMENT
+  COMPETITION
+  CONSUMABLES
+  GENERAL_STOCK
+  SUBSCRIPTIONS_AND_MEMBERSHIPS
+}
+
+model Reimbursement_Product_Reason {
+  reimbursementProductReasonId String                              @id @default(uuid())
+  wbsElementId                 Int?
+  wbsElement                   WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
+  otherReason                  Other_Reimbursement_Product_Reason?
+  reimbursementProduct         Reimbursement_Product?
+}
+
 model Reimbursement_Product {
-  reimbursementProductId String                @id @default(uuid())
-  name                   String
-  dateDeleted            DateTime?
-  cost                   Int
-  wbsElementId           Int
-  wbsElement             WBS_Element           @relation(fields: [wbsElementId], references: [wbsElementId])
-  reimbursementRequestId String
-  reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
+  reimbursementProductId       String                       @id @default(uuid())
+  name                         String
+  dateDeleted                  DateTime?
+  cost                         Int
+  reimbursementProductReasonId String                       @unique
+  reimbursementProductReason   Reimbursement_Product_Reason @relation(fields: [reimbursementProductReasonId], references: [reimbursementProductReasonId])
+  reimbursementRequestId       String
+  reimbursementRequest         Reimbursement_Request        @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
 model Vendor {
@@ -491,7 +507,7 @@ model Material {
   materialId             String          @id @default(uuid())
   assembly               Assembly?       @relation(fields: [assemblyId], references: [assemblyId])
   assemblyId             String?
-  name                   String          @unique
+  name                   String
   wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
   wbsElementId           Int
   dateDeleted            DateTime?
@@ -519,6 +535,7 @@ model Material {
 model Material_Type {
   name        String     @id
   dateCreated DateTime
+  dateDeleted DateTime?
   creatorId   Int
   materials   Material[]
 }
@@ -527,5 +544,6 @@ model Manufacturer {
   name        String     @id
   dateCreated DateTime
   creatorId   Int
+  dateDeleted DateTime?
   materials   Material[]
 }
