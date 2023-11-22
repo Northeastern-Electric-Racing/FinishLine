@@ -17,6 +17,6 @@ export const userToAutocompleteOption = (user: User): { label: string; id: numbe
  * @returns whether they can view Admin Tools
  */
 export const canAccessAdminTools = (user?: AuthenticatedUser): boolean => {
-  if (!user || !user.isAtLeastFinanceLead) return false;
+  if (!user || user.isAtLeastFinanceLead === undefined) return false;
   return isHead(user.role) || user.isAtLeastFinanceLead;
 };
