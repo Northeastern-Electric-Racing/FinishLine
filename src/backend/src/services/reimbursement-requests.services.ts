@@ -702,7 +702,12 @@ export default class ReimbursementRequestService {
    * @returns the updated vendor
    */
   static async editVendors(name: string, vendorId: string, submitter: User) {
-    if (!isHead(submitter.role)) throw new AccessDeniedAdminOnlyException('only Admins and Heads can edit vendors');
+    if (!isAdmin(submitter.role)) {
+      await validateUserIsPartOfFinanceTeam(submitter);
+
+      if (!isHead(submitter.role))
+        throw new AccessDeniedAdminOnlyException('only Admins and Finance Heads can edit vendors');
+    }
 
     const vendorUniqueName = await prisma.vendor.findUnique({
       where: { name }

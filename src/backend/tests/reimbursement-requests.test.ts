@@ -23,7 +23,16 @@ import {
   sharedGiveMeMyMoney,
   KFC
 } from './test-data/reimbursement-requests.test-data';
-import { alfred, batman, flash, sharedBatman, superman, wonderwoman, theVisitor } from './test-data/users.test-data';
+import {
+  alfred,
+  batman,
+  flash,
+  sharedBatman,
+  superman,
+  wonderwoman,
+  theVisitor,
+  alfredGuest
+} from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
@@ -628,10 +637,10 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Edit Vendor Tests', () => {
-    test('Throws error if user isnt an admin or head', async () => {
+    test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(
         ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('only Admins and Heads can edit vendors'));
+      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
     });
 
     test('Throws error if the vendor name already exists', async () => {
