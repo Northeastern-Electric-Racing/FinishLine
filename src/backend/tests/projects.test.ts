@@ -376,7 +376,7 @@ describe('Projects', () => {
             },
             'file.txt'
           )
-      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly on this project!`));
     });
 
     test('createAssembly fails when no permissions', async () => {
@@ -673,7 +673,7 @@ describe('Projects', () => {
       const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
 
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
-      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+      expect(manufacturer.userCreatedId).toBe(prismaManufacturer1.userCreatedId);
     });
 
     test('deleteManufacturer works', async () => {

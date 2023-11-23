@@ -10,6 +10,7 @@ import {
   Manufacturer,
   MaterialType,
   Project,
+  Unit,
   WbsNumber,
   wbsPipe
 } from 'shared';
@@ -30,12 +31,13 @@ import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
-import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
-import { manufacturerTransformer } from '../transformers/manufacturer.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
+import { materialPreviewTransformer } from '../transformers/material.transformer';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import manufacturerTransformer from '../transformers/manufacturer.transformer';
 
 export default class ProjectsService {
   /**
@@ -585,7 +587,7 @@ export default class ProjectsService {
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly
-   * @param wbsElementId The
+   * @param wbsElementId The wbsElement that the created assembly is associated with
    * @param pdmFileName optional - The name of the file holding the assembly
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
@@ -613,9 +615,9 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
-    const checkAssembly = await prisma.assembly.findUnique({ where: { name } });
-
-    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
+    console.log(project.wbsElement.assemblies);
+    if (project.wbsElement.assemblies.some((assembly) => assembly.name === name && !assembly.dateDeleted))
+      throw new HttpException(400, `${name} already exists as an assembly on this project!`);
 
     const { teams, wbsElementId } = project;
 
@@ -656,7 +658,7 @@ export default class ProjectsService {
     if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
 
     const newManufacturer = await prisma.manufacturer.create({
-      data: { name, dateCreated: new Date(), creatorId: submitter.userId }
+      data: { name, dateCreated: new Date(), userCreatedId: submitter.userId }
     });
 
     return newManufacturer;
@@ -754,7 +756,7 @@ export default class ProjectsService {
       data: {
         name,
         dateCreated: new Date(),
-        creatorId: submitter.userId
+        userCreatedId: submitter.userId
       }
     });
 
@@ -1027,5 +1029,47 @@ export default class ProjectsService {
     });
 
     return updatedMaterial;
+  }
+
+  /**
+   * Gets all the units in the database with all their materials
+   * @returns all the units in the database
+   */
+  static async getAllUnits(user: User): Promise<Unit[]> {
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('get units');
+
+    const units = await prisma.unit.findMany({
+      include: {
+        materials: true
+      }
+    });
+
+    return units.map((unit) => {
+      return { ...unit, materials: unit.materials.map(materialPreviewTransformer) };
+    });
+  }
+
+  /**
+   * Creates a new unit
+   * @param submitter the user who's creating the unit
+   * @param name the name of the unit
+   * @throws if the submitter is a guest or the given unit name already exists
+   */
+  static async createUnit(name: string, submitter: User): Promise<Unit> {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create units');
+
+    const unit = await prisma.unit.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (unit) throw new HttpException(400, `${name} already exists as a unit!`);
+
+    const newUnit = await prisma.unit.create({
+      data: { name }
+    });
+
+    return { ...newUnit, materials: [] };
   }
 }

@@ -114,6 +114,8 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
+  createdMaterialTypes      Material_Type[]         @relation(name: "materialTypeCreator")
+  createdManufacturers      Manufacturer[]          @relation(name: "manufacturerCreator")
 }
 
 model Team {
@@ -490,7 +492,7 @@ model Unit {
 
 model Assembly {
   assemblyId    String      @id @default(uuid())
-  name          String      @unique
+  name          String      
   pdmFileName   String?
   dateDeleted   DateTime?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
@@ -533,17 +535,19 @@ model Material {
 }
 
 model Material_Type {
-  name        String     @id
-  dateCreated DateTime
+  name          String     @id
+  dateCreated   DateTime
   dateDeleted DateTime?
-  creatorId   Int
-  materials   Material[]
+  userCreatedId Int
+  userCreated   User       @relation(name: "materialTypeCreator", fields: [userCreatedId], references: [userId])
+  materials     Material[]
 }
 
 model Manufacturer {
-  name        String     @id
-  dateCreated DateTime
-  creatorId   Int
+  name          String     @id
+  dateCreated   DateTime
+  userCreatedId Int
+  userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   dateDeleted DateTime?
-  materials   Material[]
+  materials     Material[]
 }

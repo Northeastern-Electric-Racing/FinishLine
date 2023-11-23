@@ -56,7 +56,7 @@ interface ReimbursementRequestFormViewProps {
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
-  submitText: string;
+  submitText: 'Save' | 'Submit';
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;

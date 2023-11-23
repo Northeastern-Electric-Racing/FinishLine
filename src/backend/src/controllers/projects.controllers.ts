@@ -348,4 +348,25 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async getAllUnits(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const units = await ProjectsService.getAllUnits(user);
+      res.status(200).json(units);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createUnit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdUnit = await ProjectsService.createUnit(name, user);
+      res.status(200).json(createdUnit);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
