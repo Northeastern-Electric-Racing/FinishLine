@@ -280,7 +280,6 @@ describe('Projects', () => {
 
     test('fails when project has been deleted', async () => {
       const deletedWbsElement = { ...prismaProject1.wbsElement, dateDeleted: new Date() };
-      // console.log(wbsElement);
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, wbsElement: deletedWbsElement } as any);
 
       const query = '1.1.0';

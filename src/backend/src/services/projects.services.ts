@@ -615,7 +615,6 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
-    console.log(project.wbsElement.assemblies);
     if (project.wbsElement.assemblies.some((assembly) => assembly.name === name && !assembly.dateDeleted))
       throw new HttpException(400, `${name} already exists as an assembly on this project!`);
 

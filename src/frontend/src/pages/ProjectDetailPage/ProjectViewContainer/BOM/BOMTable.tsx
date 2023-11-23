@@ -43,7 +43,13 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
           backgroundColor: '#ef4345'
         },
         '& .super-app-theme--assembly': {
-          backgroundColor: '#CCA5A5'
+          backgroundColor: '#997570',
+          '&:hover': {
+            backgroundColor: '#997570'
+          },
+          '&:focus': {
+            backgroundColor: '#997570'
+          }
         }
       }}
     >
