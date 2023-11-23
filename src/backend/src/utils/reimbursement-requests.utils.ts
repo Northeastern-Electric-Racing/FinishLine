@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, isAdmin, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
@@ -232,4 +232,14 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authU
 
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
+};
+
+export const isUserAdminOrOnFinance = async (submitter: User) => {
+  try {
+    await validateUserIsPartOfFinanceTeam(submitter);
+  } catch (error) {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
+    }
+  }
 };

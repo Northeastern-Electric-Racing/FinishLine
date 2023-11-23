@@ -631,7 +631,7 @@ describe('Reimbursement Requests', () => {
     test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(
         ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
-      ).rejects.toThrow(new AccessDeniedException('You are not a member of the finance team!'));
+      ).rejects.toThrow(new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors'));
     });
 
     test('Throws error if the vendor name already exists', async () => {

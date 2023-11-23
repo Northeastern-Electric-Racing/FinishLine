@@ -21,6 +21,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserAdminOrOnFinance,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
@@ -702,12 +703,7 @@ export default class ReimbursementRequestService {
    * @returns the updated vendor
    */
   static async editVendors(name: string, vendorId: string, submitter: User) {
-    if (!isAdmin(submitter.role)) {
-      await validateUserIsPartOfFinanceTeam(submitter);
-
-      if (!isHead(submitter.role))
-        throw new AccessDeniedAdminOnlyException('only Admins and Finance Heads can edit vendors');
-    }
+    await isUserAdminOrOnFinance(submitter);
 
     const vendorUniqueName = await prisma.vendor.findUnique({
       where: { name }
