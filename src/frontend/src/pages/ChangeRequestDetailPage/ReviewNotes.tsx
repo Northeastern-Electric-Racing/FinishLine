@@ -5,7 +5,7 @@
 
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
-import { Tooltip, Typography, Grid } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 import CRBlock from '../../layouts/CRBlock';
 
 interface ReviewNotesProps {
