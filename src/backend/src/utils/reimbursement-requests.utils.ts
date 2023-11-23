@@ -3,7 +3,16 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, isAdmin, wbsPipe } from 'shared';
+import {
+  OtherProductReason,
+  OtherReimbursementProductCreateArgs,
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  ValidatedWbsReimbursementProductCreateArgs,
+  isAdmin,
+  wbsPipe,
+  WbsReimbursementProductCreateArgs
+} from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';

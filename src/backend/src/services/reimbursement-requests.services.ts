@@ -22,6 +22,8 @@ import {
 import prisma from '../prisma/prisma';
 import {
   isUserAdminOrOnFinance,
+  createReimbursementProducts,
+  isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
   validateReimbursementProducts,
